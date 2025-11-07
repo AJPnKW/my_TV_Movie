@@ -1,11 +1,11 @@
 <!--
 File: /web/index.html
 Project: my_TV_Movie
-Version: v1.1.0 (2025-11-06)
-Purpose: Chromecast-friendly single-page app for shows
-ChangeLog:
-- v1.1.0: FIX fetch path to "data/data.json"; link Config -> "config.html"; small UX polish.
-- v1.0.0: Initial.
+Version: v1.2.0 (2025-11-06)
+Purpose: Chromecast/TV-friendly UI. Shows Calendar, A–Z, and Genres views.
+Notes:
+- Loads show data from ../data/data.json (relative path for GitHub Pages).
+- Config link goes to config.html in same folder.
 -->
 <!doctype html>
 <html lang="en">
@@ -14,28 +14,62 @@ ChangeLog:
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>My TV Hub</title>
   <style>
-    :root{--bg:#0b0b0c;--fg:#f3f3f3;--mut:#b9b9c2;--card:#15151a;--chip:#22222a;--pri:#6ad1ff}
-    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,Segoe UI,Roboto,Arial}
-    header{position:sticky;top:0;background:rgba(11,11,12,.9);backdrop-filter:saturate(1.4) blur(6px);z-index:5}
+    :root{
+      --bg:#0b0b0c;--fg:#f3f3f3;--mut:#b9b9c2;
+      --card:#15151a;--chip:#22222a;--pri:#6ad1ff
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:var(--bg);color:var(--fg);
+      font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+    }
+    header{
+      position:sticky;top:0;z-index:5;
+      background:rgba(11,11,12,.9);
+      backdrop-filter:saturate(1.4) blur(6px);
+    }
     .wrap{max-width:1100px;margin:0 auto;padding:14px}
     h1{margin:0;font-size:22px}
     nav{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-    .tab{padding:10px 14px;border-radius:999px;background:var(--chip);cursor:pointer}
+    .tab{
+      padding:10px 14px;border-radius:999px;
+      background:var(--chip);cursor:pointer;
+      font-size:14px;
+    }
     .tab.active{background:var(--pri);color:#041f2a}
     a{color:var(--pri);text-decoration:none}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
-    .card{background:var(--card);border-radius:14px;padding:12px}
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+      gap:12px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:14px;
+      padding:12px;
+    }
     .mut{color:var(--mut)}
     .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .chip{background:var(--chip);padding:6px 10px;border-radius:999px}
+    .chip{
+      background:var(--chip);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+    }
     .group{margin:12px 0}
     .title{font-size:16px;font-weight:700}
     .small{font-size:12px}
     .section{padding:16px}
     .letter{font-size:26px;margin:22px 0 6px}
     .divider{height:1px;background:#252530;margin:8px 0}
-    .pill{display:inline-block;padding:4px 8px;border:1px solid #2e2e38;border-radius:999px}
-    .links a{margin-right:10px}
+    .pill{
+      display:inline-block;
+      padding:4px 8px;
+      border:1px solid #2e2e38;
+      border-radius:999px;
+      font-size:11px;
+    }
+    .links a{margin-right:10px;font-size:11px}
   </style>
 </head>
 <body>
@@ -43,8 +77,10 @@ ChangeLog:
     <div class="wrap">
       <div class="row" style="justify-content:space-between">
         <h1>My TV Hub</h1>
-        <!-- NOTE: relative link for GitHub Pages -->
-        <div class="row small"><a href="config.html">Config</a></div>
+        <div class="row small">
+          <!-- Config is sibling file in /web -->
+          <a href="config.html">Config</a>
+        </div>
       </div>
       <nav>
         <div class="tab active" data-tab="calendar">Calendar</div>
@@ -61,130 +97,191 @@ ChangeLog:
   </main>
 
   <script>
-    const $ = s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
-    const IMG = p=> p?`https://image.tmdb.org/t/p/w300${p}`:'';
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const IMG = p => p ? `https://image.tmdb.org/t/p/w300${p}` : '';
 
-    const state = { data:null, today:new Date(), inDays:60 };
+    const state = {
+      data: null,
+      today: new Date(),
+      inDays: 60  // how far ahead Calendar view looks
+    };
 
-    async function load(){
-      // IMPORTANT: relative path works under /my_TV_Movie/ on GitHub Pages
-      const res = await fetch('data/data.json', {cache:'no-cache'});
-      state.data = await res.json();
-      renderAll(); attachTabs();
+    async function load() {
+      try {
+        // IMPORTANT: relative path, because this file is /web/index.html
+        const res = await fetch('../data/data.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error('Failed to load data.json');
+        state.data = await res.json();
+        renderAll();
+        attachTabs();
+      } catch (err) {
+        console.error(err);
+        $('#calendar').innerHTML =
+          '<div class="mut">Unable to load data. Check that data/data.json exists (run the GitHub Actions refresh).</div>';
+      }
     }
 
-    function attachTabs(){
-      $$('.tab').forEach(t=>t.addEventListener('click',()=>{
-        $$('.tab').forEach(x=>x.classList.remove('active'));
-        t.classList.add('active');
-        const tab = t.dataset.tab;
-        for(const id of ['calendar','az','genres']){ $("#"+id).hidden = id!==tab; }
-      }));
+    function attachTabs() {
+      $$('.tab').forEach(t => {
+        t.addEventListener('click', () => {
+          $$('.tab').forEach(x => x.classList.remove('active'));
+          t.classList.add('active');
+          const tab = t.dataset.tab;
+          ['calendar', 'az', 'genres'].forEach(id => {
+            $('#' + id).hidden = (id !== tab);
+          });
+        });
+      });
     }
 
-    function linkRow(links){
-      return `<div class="links small">
-        <a target="_blank" href="${links.tmdb}">TMDB</a>
-        <a target="_blank" href="${links.watch_vidsrc}">VidSrc</a>
-        <a target="_blank" href="${links.watch_videasy}">Videasy</a>
-      </div>`;
+    function linkRow(links) {
+      return `
+        <div class="links small">
+          <a target="_blank" href="${links.tmdb}">TMDB</a>
+          <a target="_blank" href="${links.watch_vidsrc}">VidSrc</a>
+          <a target="_blank" href="${links.watch_videasy}">Videasy</a>
+        </div>
+      `;
     }
 
-    function renderCalendar(){
+    function renderCalendar() {
       const host = $('#calendar');
-      const until = new Date(+state.today + state.inDays*86400000);
+      const until = new Date(+state.today + state.inDays * 86400000);
       const eps = [];
-      for(const show of state.data.shows){
-        for(const s of show.seasons){
-          for(const e of s.episodes){
-            if(!e.air_date) continue;
+
+      for (const show of state.data.shows || []) {
+        for (const s of show.seasons || []) {
+          for (const e of s.episodes || []) {
+            if (!e.air_date) continue;
             const d = new Date(e.air_date);
-            if(d>=state.today && d<=until){
-              eps.push({date:d, show, season:s.season_number, ep:e});
+            if (d >= state.today && d <= until) {
+              eps.push({ date: d, show, season: s.season_number, ep: e });
             }
           }
         }
       }
-      eps.sort((a,b)=>a.date-b.date);
+
+      eps.sort((a, b) => a.date - b.date);
+
+      if (!eps.length) {
+        host.innerHTML = '<div class="mut">No upcoming episodes in the configured window.</div>';
+        return;
+      }
+
       let out = '';
       let current = '';
-      for(const row of eps){
-        const ymd = row.date.toISOString().slice(0,10);
-        if(ymd!==current){
-          if(current) out += '<div class="divider"></div>';
+
+      for (const row of eps) {
+        const ymd = row.date.toISOString().slice(0, 10);
+        if (ymd !== current) {
+          if (current) out += '<div class="divider"></div>';
           out += `<div class="group"><div class="title">${row.date.toDateString()}</div>`;
           current = ymd;
         }
-        out += `<div class="card row" style="justify-content:space-between">
-          <div>
-            <div class="title">${row.show.name} <span class="mut small">S${String(row.season).padStart(2,'0')}E${String(row.ep.episode_number).padStart(2,'0')}</span></div>
-            <div class="mut small">${row.ep.name||''}</div>
-            ${linkRow(row.show.links)}
+        out += `
+          <div class="card row" style="justify-content:space-between">
+            <div>
+              <div class="title">
+                ${row.show.name}
+                <span class="mut small">
+                  S${String(row.season).padStart(2,'0')}E${String(row.ep.episode_number).padStart(2,'0')}
+                </span>
+              </div>
+              <div class="mut small">${row.ep.name || ''}</div>
+              ${linkRow(row.show.links)}
+            </div>
+            ${
+              row.show.poster_path
+                ? `<img alt="poster" src="${IMG(row.show.poster_path)}"
+                         width="80" height="120"
+                         style="border-radius:10px;object-fit:cover"/>`
+                : ''
+            }
           </div>
-          ${row.show.poster_path?`<img alt="poster" src="${IMG(row.show.poster_path)}" width="80" height="120" style="border-radius:10px;object-fit:cover"/>`:''}
-        </div>`;
+        `;
       }
       out += '</div>';
-      host.innerHTML = out || '<div class="mut">No upcoming episodes in window.</div>';
-    }
-
-    function renderAZ(){
-      const host = $('#az');
-      const byLetter = {};
-      for(const show of state.data.shows){
-        const letter = (show.name||'#').charAt(0).toUpperCase();
-        (byLetter[letter] ||= []).push(show);
-      }
-      const letters = Object.keys(byLetter).sort();
-      let out='';
-      for(const L of letters){
-        out += `<div class="letter">${L}</div>`;
-        out += '<div class="grid">';
-        for(const sh of byLetter[L]){
-          out += `<div class="card">
-            <div class="title">${sh.name}</div>
-            <div class="mut small">${(sh.genres||[]).join(', ')}</div>
-            <div class="divider"></div>
-            ${sh.seasons.map(se => `
-              <div class="group">
-                <div class="row"><span class="pill">Season ${se.season_number}</span></div>
-                <div class="small mut">${se.episodes.length} episodes</div>
-              </div>`).join('')}
-            ${linkRow(sh.links)}
-          </div>`
-        }
-        out += '</div>';
-      }
       host.innerHTML = out;
     }
 
-    function renderGenres(){
+    function renderAZ() {
+      const host = $('#az');
+      const byLetter = {};
+
+      for (const show of (state.data.shows || [])) {
+        const letter = (show.name || '#').charAt(0).toUpperCase();
+        (byLetter[letter] ||= []).push(show);
+      }
+
+      const letters = Object.keys(byLetter).sort();
+      let out = '';
+
+      for (const L of letters) {
+        out += `<div class="letter">${L}</div><div class="grid">`;
+        for (const sh of byLetter[L]) {
+          out += `
+            <div class="card">
+              <div class="title">${sh.name}</div>
+              <div class="mut small">${(sh.genres || []).join(', ')}</div>
+              <div class="divider"></div>
+              ${
+                (sh.seasons || []).map(se => `
+                  <div class="group">
+                    <div class="row">
+                      <span class="pill">Season ${se.season_number}</span>
+                    </div>
+                    <div class="small mut">${(se.episodes || []).length} episodes</div>
+                  </div>
+                `).join('')
+              }
+              ${linkRow(sh.links)}
+            </div>
+          `;
+        }
+        out += '</div>';
+      }
+
+      host.innerHTML = out || '<div class="mut">No shows loaded.</div>';
+    }
+
+    function renderGenres() {
       const host = $('#genres');
       const all = new Set();
-      for(const s of state.data.shows){ (s.genres||[]).forEach(g=>all.add(g)) }
+
+      for (const s of (state.data.shows || [])) {
+        (s.genres || []).forEach(g => all.add(g));
+      }
+
       const tags = ['All', ...Array.from(all).sort()];
       let active = 'All';
 
       const bar = document.createElement('div');
       bar.className = 'row';
-      for(const t of tags){
+
+      tags.forEach(t => {
         const el = document.createElement('div');
-        el.className = 'chip'; el.textContent = t; el.style.cursor='pointer';
-        el.addEventListener('click',()=>{active=t; paint();});
+        el.className = 'chip';
+        el.textContent = t;
+        el.addEventListener('click', () => { active = t; paint(); });
         bar.appendChild(el);
-      }
+      });
+
+      const divider = document.createElement('div');
+      divider.className = 'divider';
 
       const grid = document.createElement('div');
-      grid.className='grid';
+      grid.className = 'grid';
 
-      function paint(){
+      function paint() {
         grid.innerHTML = '';
-        for(const sh of state.data.shows){
-          if(active!=='All' && !(sh.genres||[]).includes(active)) continue;
-          const card = document.createElement('div'); card.className='card';
+        for (const sh of (state.data.shows || [])) {
+          if (active !== 'All' && !(sh.genres || []).includes(active)) continue;
+          const card = document.createElement('div');
+          card.className = 'card';
           card.innerHTML = `
             <div class="title">${sh.name}</div>
-            <div class="mut small">${(sh.genres||[]).join(', ')}</div>
+            <div class="mut small">${(sh.genres || []).join(', ')}</div>
             <div class="divider"></div>
             ${linkRow(sh.links)}
           `;
@@ -193,11 +290,18 @@ ChangeLog:
       }
 
       host.innerHTML = '';
-      host.appendChild(bar); host.appendChild(document.createElement('div')).className='divider'; host.appendChild(grid);
+      host.appendChild(bar);
+      host.appendChild(divider);
+      host.appendChild(grid);
       paint();
     }
 
-    function renderAll(){ renderCalendar(); renderAZ(); renderGenres(); }
+    function renderAll() {
+      renderCalendar();
+      renderAZ();
+      renderGenres();
+    }
+
     load();
   </script>
 </body>

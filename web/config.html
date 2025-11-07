@@ -1,11 +1,8 @@
 <!--
 File: /web/config.html
 Project: my_TV_Movie
-Version: v1.1.0 (2025-11-06)
-Purpose: Static config page for GitHub Pages (no Flask). Shows last refresh and provides a link to run the Actions workflow.
-ChangeLog:
-- v1.1.0: Switch to static; display last_refresh.txt; add workflow link; Home→index.html.
-- v1.0.0: Initial (Flask-based).
+Version: v1.2.0 (2025-11-06)
+Purpose: Show last_refresh timestamp and link to run the GitHub Actions workflow.
 -->
 <!doctype html>
 <html lang="en">
@@ -14,26 +11,49 @@ ChangeLog:
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Config · My TV Hub</title>
   <style>
-    body{background:#0b0b0c;color:#f3f3f3;font:15px/1.45 system-ui,Segoe UI,Roboto,Arial;margin:0}
+    body{
+      background:#0b0b0c;color:#f3f3f3;
+      font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      margin:0;
+    }
     .wrap{max-width:800px;margin:0 auto;padding:18px}
     .mut{color:#b9b9c2}
-    a{color:#6ad1ff}
-    pre{background:#13131a;padding:12px;border-radius:10px;overflow:auto}
+    a{color:#6ad1ff;text-decoration:none}
+    a:hover{text-decoration:underline}
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>Config</h1>
-    <p>Last refresh: <span id="last"></span></p>
-    <p><a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml">Run data refresh</a> (GitHub login required)</p>
-    <p class="mut">Return to <a href="index.html">Home</a> after the workflow completes.</p>
+    <p>Last refresh: <span id="last">loading…</span></p>
+
+    <p>
+      <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml">
+        Run data refresh
+      </a>
+      <span class="mut">(GitHub login required)</span>
+    </p>
+
+    <p class="mut">
+      After the workflow finishes successfully, return to
+      <a href="index.html">Home</a> and reload to see updated data.
+    </p>
   </div>
+
   <script>
     async function fetchLast(){
-      try{
-        const r = await fetch('../data/last_refresh.txt', {cache:'no-cache'});
-        if(r.ok){ document.getElementById('last').textContent = await r.text(); }
-      }catch{}
+      try {
+        // ../data because this file is /web/config.html
+        const r = await fetch('../data/last_refresh.txt', { cache: 'no-cache' });
+        if (r.ok) {
+          const txt = (await r.text()).trim();
+          document.getElementById('last').textContent = txt || 'no timestamp yet';
+        } else {
+          document.getElementById('last').textContent = 'not available';
+        }
+      } catch (e) {
+        document.getElementById('last').textContent = 'not available';
+      }
     }
     fetchLast();
   </script>
