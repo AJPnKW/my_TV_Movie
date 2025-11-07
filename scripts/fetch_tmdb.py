@@ -1,7 +1,7 @@
 # =============================================================================
 # File: scripts/fetch_tmdb.py
 # Project: my_TV_Movie
-# Version: v2.2.0 (2025-11-07)
+# Version: v2.2.1 (2025-11-08)
 #
 # Purpose:
 #   Build data/data.json for the static web UI.
@@ -19,28 +19,57 @@
 #
 # Behavior:
 #   - Fetches show + season + episode data from TMDB.
-#   - Optionally enriches with TVMaze if tvmaze_id + API_TVMAZE_KEY.
+#   - Optionally enriches episodes with TVMaze if tvmaze_id + API_TVMAZE_KEY.
 #   - Fetches movies from TMDB.
+#   - Includes show.networks[] for UI network chips.
 #   - Writes:
 #       data/data.json
 #       data/last_refresh.txt
 #
-# Output schema (simplified):
+# Output (simplified):
 #   {
 #     "generated_at": "...Z",
-#     "shows": [ { show_id, name, status, genres, links, seasons[] } ],
-#     "movies": [ { movie_id, name, status, genres, links } ],
+#     "shows": [
+#       {
+#         "show_id": ...,
+#         "name": "...",
+#         "status": "...",
+#         "genres": [...],
+#         "networks": ["ABC", "Hulu"],
+#         "links": { "tmdb": "..." },
+#         "seasons": [
+#           {
+#             "season_number": 5,
+#             "name": "Season 5",
+#             "episodes": [
+#               {
+#                 "episode_number": 1,
+#                 "name": "...",
+#                 "air_date": "YYYY-MM-DD",
+#                 "overview": "...",
+#                 "still_path": "..."
+#               }
+#             ]
+#           }
+#         ]
+#       }
+#     ],
+#     "movies": [
+#       {
+#         "movie_id": ...,
+#         "name": "...",
+#         "genres": [...],
+#         "links": { "tmdb": "..." }
+#       }
+#     ],
 #     "meta": { "shows": N, "movies": M }
 #   }
 #
 # Env / GitHub Secrets:
-#   API_TMDB_KEY     (required, unless API_TMDB_TOKEN used)
+#   API_TMDB_KEY     (required unless API_TMDB_TOKEN used)
 #   API_TMDB_TOKEN   (optional TMDB v4)
 #   API_TVMAZE_KEY   (optional; improves episodes)
-#
-# Notes:
-#   - Safe for local runs and GitHub Actions.
-#   - Skips invalid / TBD movie IDs.
+#   API_OMDB_KEY     (optional; not used here directly)
 # =============================================================================
 
 import os
@@ -67,7 +96,7 @@ TV_LIST = ROOT / "tv_list.txt"
 
 
 def find_movies_list():
-    """Find movies_list.txt or movies.txt if present."""
+    """Pick movies_list.txt or movies.txt if present."""
     for name in ("movies_list.txt", "movies.txt"):
         p = ROOT / name
         if p.exists():
@@ -125,7 +154,6 @@ def tmdb_get(path: str, extra_params=None, max_tries=5, backoff=1.5):
     for attempt in range(max_tries):
         r = s.get(url, params=params, timeout=20)
         if r.status_code == 429:
-            # rate limited; backoff
             time.sleep(backoff * (attempt + 1))
             continue
         r.raise_for_status()
@@ -188,7 +216,7 @@ def parse_tv_list(path: pathlib.Path):
     return out
 
 # -----------------------------------------------------------------------------
-# Parse movies_list (simple + robust)
+# Parse movies_list
 # -----------------------------------------------------------------------------
 def parse_movies_list(path: pathlib.Path | None):
     if not path or not path.exists():
@@ -201,7 +229,7 @@ def parse_movies_list(path: pathlib.Path | None):
                 continue
             m = MOVIE_LINE_RE.match(line)
             if not m:
-                # ignore malformed (e.g., TBD ids)
+                # Ignore malformed or TBD / extra columns
                 continue
             name, movie_id = m.groups()
             movies.append(
@@ -285,6 +313,7 @@ def enrich_with_tvmaze(show_payload: dict, tvmaze_id: int):
 def collect_show(show_id: int, season_spec, tvmaze_id=None) -> dict:
     show = tmdb_get(f"/tv/{show_id}")
     genres = [g["name"] for g in show.get("genres", [])]
+    networks = [n["name"] for n in show.get("networks", []) if n.get("name")]
 
     all_meta = {
         s["season_number"]: s
@@ -334,6 +363,7 @@ def collect_show(show_id: int, season_spec, tvmaze_id=None) -> dict:
         "poster_path": show.get("poster_path"),
         "backdrop_path": show.get("backdrop_path"),
         "genres": genres,
+        "networks": networks,
         "links": show_links(show_id),
         "seasons": seasons,
     }
