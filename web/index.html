@@ -4,7 +4,7 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.3.0 (2025-11-08)
+    Version: v2.4.0 (2025-11-08)
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -214,7 +214,7 @@
     }
 
     .cal-day.today{
-      background:#fde68a; /* gold */
+      background:#fde68a;
       color:#111827;
       box-shadow:0 0 0 1px #fed7aa;
     }
@@ -243,7 +243,6 @@
       display:flex;
       gap:4px;
       align-items:flex-start;
-      cursor:default;
     }
 
     .cal-item img{
@@ -464,16 +463,6 @@
       font-weight:600;
     }
 
-    .season-badge{
-      display:inline-block;
-      margin-left:6px;
-      padding:1px 6px;
-      border-radius:999px;
-      background:var(--chip);
-      color:var(--pri);
-      font-size:8px;
-    }
-
     .season-meta{
       font-size:9px;
       color:var(--mut);
@@ -597,7 +586,8 @@
     });
   }
 
-  // --------- helpers ---------
+  // ------------ helpers ------------
+
   function buildEpisodeIcons(show, season, epNum){
     const sid = show.show_id;
     const e = epNum || '';
@@ -658,7 +648,8 @@
     return best;
   }
 
-  // --------- Calendar ---------
+  // ------------ Calendar ------------
+
   function changeMonth(delta){
     const m = state.currentMonth;
     state.currentMonth = new Date(m.getFullYear(), m.getMonth()+delta, 1);
@@ -751,11 +742,18 @@
           const {show,s,ep} = it;
           const epCode = `S${String(s).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}`;
           html += `
-            <div class="cal-item" data-show-id="${show.show_id}" data-season="${s}">
+            <div class="cal-item">
               ${show.poster_path ? `<img src="${IMG(show.poster_path)}" alt="">` : ''}
               <div class="cal-lines">
-                <div class="cal-show">${show.name}</div>
-                <div class="cal-ep">${epCode}${ep.name ? ' · ' + ep.name : ''}</div>
+                <div class="cal-show"
+                     data-show-id="${show.show_id}">
+                  ${show.name}
+                </div>
+                <div class="cal-ep"
+                     data-show-id="${show.show_id}"
+                     data-season="${s}">
+                  ${epCode}${ep.name ? ' · ' + ep.name : ''}
+                </div>
                 ${buildNetworks(show)}
                 <div class="icon-row">
                   ${buildEpisodeIcons(show,s,ep.episode_number||'')}
@@ -790,19 +788,28 @@
     $('#cal-next').onclick = ()=>changeMonth(1);
     $('#cal-today').onclick = ()=>gotoToday();
 
-    // click anywhere on show block (except icon links) => popup with focus season
-    $$('#calendar .cal-item[data-show-id]').forEach(el=>{
-      el.addEventListener('click', e=>{
-        if(e.target.closest('.icon-link')) return;
+    // show name → show popup (all seasons)
+    $$('#calendar .cal-show[data-show-id]').forEach(el=>{
+      el.onclick = e=>{
         const id = parseInt(el.dataset.showId,10);
-        const season = parseInt(el.dataset.season||'0',10) || null;
         const show = getShows().find(s=>s.show_id===id);
-        if(show) openOverlay(show, season);
-      });
+        if(show) openShowOverlay(show, null);
+      };
+    });
+
+    // episode text → show popup with that season expanded
+    $$('#calendar .cal-ep[data-show-id][data-season]').forEach(el=>{
+      el.onclick = e=>{
+        const id = parseInt(el.dataset.showId,10);
+        const sn = parseInt(el.dataset.season,10) || null;
+        const show = getShows().find(s=>s.show_id===id);
+        if(show) openShowOverlay(show, sn);
+      };
     });
   }
 
-  // --------- Shows ---------
+  // ------------ Shows ------------
+
   function renderShows(){
     const host = $('#shows');
     const shows = getShows();
@@ -871,7 +878,9 @@
               ${(sh.genres||[]).join(', ')}
               ${sh.status ? ' • ' + sh.status : ''}
             </div>
-            ${cs ? `<div class="small" data-show-id="${sh.show_id}" data-season="${cs}">
+            ${cs ? `<div class="small link-season"
+                       data-show-id="${sh.show_id}"
+                       data-season="${cs}">
                       Current season: Season ${cs}
                     </div>` : ''}
             <div class="divider"></div>
@@ -908,28 +917,29 @@
       };
     });
 
-    // show title -> overlay
+    // show title → show popup
     $$('.link-show').forEach(el=>{
       el.onclick = e=>{
         e.preventDefault();
         const id = parseInt(el.dataset.showId,10);
         const show = getShows().find(s=>s.show_id===id);
-        if(show) openOverlay(show, null);
+        if(show) openShowOverlay(show, null);
       };
     });
 
-    // current season line -> overlay with that season expanded
-    $$('[data-show-id][data-season]').forEach(el=>{
-      el.onclick = ()=>{
+    // current season line → show popup with that season expanded
+    $$('.link-season').forEach(el=>{
+      el.onclick = e=>{
         const id = parseInt(el.dataset.showId,10);
         const sn = parseInt(el.dataset.season,10) || null;
         const show = getShows().find(s=>s.show_id===id);
-        if(show) openOverlay(show, sn);
+        if(show) openShowOverlay(show, sn);
       };
     });
   }
 
-  // --------- Movies ---------
+  // ------------ Movies ------------
+
   function renderMovies(){
     const host = $('#movies');
     const movies = getMovies();
@@ -1051,8 +1061,9 @@
     });
   }
 
-  // --------- Overlay ---------
-  function openOverlay(show, focusSeason){
+  // ------------ Show Overlay ------------
+
+  function openShowOverlay(show, focusSeason){
     const ov = $('#overlay');
     const box = $('#overlay-content');
     const seasons = show.seasons || [];
@@ -1064,9 +1075,7 @@
       const year = first && first.air_date ? first.air_date.slice(0,4) : '';
       seasonHtml += `
         <div class="season-row" data-season="${s.season_number}">
-          <div class="season-label">
-            Season ${s.season_number}
-          </div>
+          <div class="season-label">Season ${s.season_number}</div>
           <div class="season-meta">
             ${year ? year + ' • ' : ''}${eps.length} episodes
           </div>
@@ -1143,7 +1152,7 @@
     $('#overlay .overlay-backdrop').onclick = closeOverlay;
     ov.hidden = false;
 
-    // auto-expand focus season if provided
+    // auto-expand focus season (from calendar ep or current season link)
     if(focusSeason){
       const target = box.querySelector(`.season-row[data-season="${focusSeason}"]`);
       const s = seasons.find(x=>x.season_number===focusSeason);
@@ -1158,7 +1167,8 @@
     $('#overlay-content').innerHTML = '';
   }
 
-  // --------- Meta + All ---------
+  // ------------ Meta & bootstrap ------------
+
   function renderMeta(){
     if(!state.data) return;
     const sc = (state.data.meta && state.data.meta.shows) || (state.data.shows||[]).length;
