@@ -1,12 +1,27 @@
 <!--
 File: /web/index.html
 Project: my_TV_Movie
-Version: v1.2.0 (2025-11-06)
-Purpose: Chromecast/TV-friendly UI. Shows Calendar, A–Z, and Genres views.
-Notes:
-- Loads show data from ../data/data.json (relative path for GitHub Pages).
-- Config link goes to config.html in same folder.
+Version: v1.4.0 (2025-11-06)
+
+Changes in v1.4.0:
+- Calendar:
+  - True month grid (6 weeks, Sun-Sat).
+  - Prev/Next month navigation.
+  - Shows ALL days for the visible grid:
+    - Includes previous/next month days at edges.
+    - Episodes are shown for those days too (good for "missed last month").
+  - No "upcoming only" filter: past days in the month still show their episodes.
+  - Each episode row now has EPISODE-SPECIFIC VidSrc/Videasy URLs:
+    - vidsrc.net/embed/tv/<show_id>/<season>/<episode>
+    - player.videasy.net/tv/<show_id>/<season>/<episode>
+- A–Z:
+  - Click once: A→Z, click again while active: Z→A.
+  - Poster shown before show info.
+- Genres:
+  - Genre chips to filter.
+  - Poster-first show cards.
 -->
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -15,61 +30,278 @@ Notes:
   <title>My TV Hub</title>
   <style>
     :root{
-      --bg:#0b0b0c;--fg:#f3f3f3;--mut:#b9b9c2;
-      --card:#15151a;--chip:#22222a;--pri:#6ad1ff
+      --bg:#0b0b0c;
+      --fg:#f3f3f3;
+      --mut:#b9b9c2;
+      --card:#15151a;
+      --chip:#22222a;
+      --pri:#6ad1ff;
+      --border:#252530;
     }
-    *{box-sizing:border-box}
+
+    *{ box-sizing:border-box; }
+
     body{
-      margin:0;background:var(--bg);color:var(--fg);
+      margin:0;
+      background:var(--bg);
+      color:var(--fg);
       font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     }
+
+    a{
+      color:var(--pri);
+      text-decoration:none;
+    }
+    a:hover{ text-decoration:underline; }
+
     header{
-      position:sticky;top:0;z-index:5;
+      position:sticky;
+      top:0;
+      z-index:5;
       background:rgba(11,11,12,.9);
       backdrop-filter:saturate(1.4) blur(6px);
     }
-    .wrap{max-width:1100px;margin:0 auto;padding:14px}
-    h1{margin:0;font-size:22px}
-    nav{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-    .tab{
-      padding:10px 14px;border-radius:999px;
-      background:var(--chip);cursor:pointer;
-      font-size:14px;
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:14px;
     }
-    .tab.active{background:var(--pri);color:#041f2a}
-    a{color:var(--pri);text-decoration:none}
+
+    h1{
+      margin:0;
+      font-size:22px;
+    }
+
+    .row{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    nav{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .tab{
+      padding:10px 14px;
+      border-radius:999px;
+      background:var(--chip);
+      cursor:pointer;
+      font-size:14px;
+      user-select:none;
+    }
+    .tab.active{
+      background:var(--pri);
+      color:#041f2a;
+    }
+
+    main.wrap{
+      padding-top:10px;
+      padding-bottom:24px;
+    }
+
+    .section{
+      padding:4px 0 16px;
+    }
+
+    .mut{ color:var(--mut); }
+    .divider{
+      height:1px;
+      background:var(--border);
+      margin:8px 0;
+    }
+
+    .links a{
+      margin-right:10px;
+      font-size:11px;
+    }
+
+    .pill{
+      display:inline-block;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      font-size:11px;
+    }
+
+    /* --- Calendar --- */
+
+    .cal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+      gap:8px;
+    }
+
+    .cal-title{
+      font-size:18px;
+      font-weight:600;
+    }
+
+    .cal-btn{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--chip);
+      color:var(--fg);
+      font-size:12px;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .cal-grid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:4px;
+      font-size:11px;
+    }
+
+    .cal-dow{
+      text-align:center;
+      padding:4px 0;
+      color:var(--mut);
+    }
+
+    .cal-day{
+      min-height:86px;
+      padding:4px;
+      border-radius:8px;
+      background:#0f0f14;
+      border:1px solid transparent;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+
+    .cal-day.out{ opacity:0.22; }
+    .cal-day.today{
+      border-color:var(--pri);
+    }
+
+    .cal-date{
+      font-weight:600;
+      font-size:11px;
+      margin-bottom:2px;
+    }
+
+    .cal-ep{
+      display:flex;
+      gap:4px;
+      align-items:flex-start;
+    }
+
+    .cal-ep img{
+      width:22px;
+      height:33px;
+      border-radius:4px;
+      object-fit:cover;
+      flex-shrink:0;
+      background:#111;
+    }
+
+    .cal-ep span{
+      display:block;
+      font-size:9px;
+      line-height:1.2;
+    }
+
+    .cal-ep .show{
+      font-weight:600;
+      color:var(--fg);
+    }
+    .cal-ep .code{
+      color:var(--mut);
+    }
+
+    /* --- Shared card layout (A–Z, Genres) --- */
+
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
       gap:12px;
     }
+
     .card{
       background:var(--card);
       border-radius:14px;
-      padding:12px;
+      padding:10px;
+      display:flex;
+      gap:8px;
+      align-items:flex-start;
     }
-    .mut{color:var(--mut)}
-    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+    .poster{
+      width:70px;
+      height:105px;
+      border-radius:10px;
+      object-fit:cover;
+      flex-shrink:0;
+      background:#111;
+    }
+
+    .card-body{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      flex:1;
+      min-width:0;
+    }
+
+    .title{
+      font-size:16px;
+      font-weight:700;
+    }
+
+    .small{ font-size:12px; }
+
+    /* --- Genres --- */
+
     .chip{
       background:var(--chip);
       padding:6px 10px;
       border-radius:999px;
       font-size:12px;
+      cursor:pointer;
+      user-select:none;
     }
-    .group{margin:12px 0}
-    .title{font-size:16px;font-weight:700}
-    .small{font-size:12px}
-    .section{padding:16px}
-    .letter{font-size:26px;margin:22px 0 6px}
-    .divider{height:1px;background:#252530;margin:8px 0}
-    .pill{
-      display:inline-block;
+    .chip.active{
+      background:var(--pri);
+      color:#041f2a;
+    }
+
+    .genre-bar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      margin-bottom:10px;
+    }
+
+    /* --- A–Z header --- */
+
+    .az-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:6px;
+      font-size:12px;
+      color:var(--mut);
+    }
+
+    .sort-label{
       padding:4px 8px;
-      border:1px solid #2e2e38;
       border-radius:999px;
+      border:1px solid var(--border);
+      cursor:pointer;
+      user-select:none;
       font-size:11px;
     }
-    .links a{margin-right:10px;font-size:11px}
   </style>
 </head>
 <body>
@@ -78,7 +310,6 @@ Notes:
       <div class="row" style="justify-content:space-between">
         <h1>My TV Hub</h1>
         <div class="row small">
-          <!-- Config is sibling file in /web -->
           <a href="config.html">Config</a>
         </div>
       </div>
@@ -97,204 +328,354 @@ Notes:
   </main>
 
   <script>
-    const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
-    const IMG = p => p ? `https://image.tmdb.org/t/p/w300${p}` : '';
+    const $  = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+    const IMG = (p) => p ? `https://image.tmdb.org/t/p/w300${p}` : '';
+    const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
     const state = {
       data: null,
       today: new Date(),
-      inDays: 60  // how far ahead Calendar view looks
+      currentMonth: null,   // Date at 1st of visible month
+      azDir: 'asc',
+      activeGenre: 'All',
     };
+
+    // ---------- Load data ----------
 
     async function load() {
       try {
-        // IMPORTANT: relative path, because this file is /web/index.html
         const res = await fetch('../data/data.json', { cache: 'no-cache' });
         if (!res.ok) throw new Error('Failed to load data.json');
         state.data = await res.json();
+
+        state.currentMonth = new Date(
+          state.today.getFullYear(),
+          state.today.getMonth(),
+          1
+        );
+
         renderAll();
         attachTabs();
       } catch (err) {
         console.error(err);
         $('#calendar').innerHTML =
-          '<div class="mut">Unable to load data. Check that data/data.json exists (run the GitHub Actions refresh).</div>';
+          '<div class="mut">Unable to load data. Make sure the GitHub Actions refresh has run.</div>';
       }
     }
 
-    function attachTabs() {
-      $$('.tab').forEach(t => {
-        t.addEventListener('click', () => {
-          $$('.tab').forEach(x => x.classList.remove('active'));
-          t.classList.add('active');
-          const tab = t.dataset.tab;
-          ['calendar', 'az', 'genres'].forEach(id => {
-            $('#' + id).hidden = (id !== tab);
-          });
-        });
-      });
+    function getAllShows() {
+      return (state.data && Array.isArray(state.data.shows))
+        ? state.data.shows
+        : [];
     }
 
-    function linkRow(links) {
+    // ---------- Links helpers ----------
+
+    function showLinks(show) {
+      // Show-level links (A–Z, Genres)
+      const sid = show.show_id;
       return `
         <div class="links small">
-          <a target="_blank" href="${links.tmdb}">TMDB</a>
-          <a target="_blank" href="${links.watch_vidsrc}">VidSrc</a>
-          <a target="_blank" href="${links.watch_videasy}">Videasy</a>
+          <a target="_blank" href="${show.links.tmdb}">TMDB</a>
+          <a target="_blank" href="https://vidsrc.net/embed/tv/${sid}">VidSrc</a>
+          <a target="_blank" href="https://player.videasy.net/tv/${sid}">Videasy</a>
         </div>
       `;
     }
 
+    function episodeLinks(show, seasonNum, epNum) {
+      // Episode-level links used in Calendar entries
+      const sid = show.show_id;
+      const s = seasonNum;
+      const e = epNum || '';
+      return `
+        <div class="links small">
+          <a target="_blank" href="${show.links.tmdb}">TMDB</a>
+          <a target="_blank" href="https://vidsrc.net/embed/tv/${sid}/${s}/${e}">VidSrc</a>
+          <a target="_blank" href="https://player.videasy.net/tv/${sid}/${s}/${e}">Videasy</a>
+        </div>
+      `;
+    }
+
+    // ---------- Tabs ----------
+
+    function attachTabs() {
+      $$('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const target = tab.dataset.tab;
+          const isActive = tab.classList.contains('active');
+
+          // Special: clicking A–Z again toggles sort order
+          if (target === 'az' && isActive) {
+            state.azDir = state.azDir === 'asc' ? 'desc' : 'asc';
+            renderAZ();
+            return;
+          }
+
+          $$('.tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+
+          ['calendar','az','genres'].forEach(id => {
+            $('#' + id).hidden = (id !== target);
+          });
+
+          if (target === 'calendar') renderCalendar();
+          if (target === 'az')       renderAZ();
+          if (target === 'genres')   renderGenres();
+        });
+      });
+    }
+
+    // ---------- Calendar (month grid with prev/next) ----------
+
+    function changeMonth(delta) {
+      const m = state.currentMonth;
+      state.currentMonth = new Date(m.getFullYear(), m.getMonth() + delta, 1);
+      renderCalendar();
+    }
+
     function renderCalendar() {
       const host = $('#calendar');
-      const until = new Date(+state.today + state.inDays * 86400000);
-      const eps = [];
+      if (!state.currentMonth) {
+        state.currentMonth = new Date(state.today.getFullYear(), state.today.getMonth(), 1);
+      }
 
-      for (const show of state.data.shows || []) {
+      const shows = getAllShows();
+      if (!shows.length) {
+        host.innerHTML = '<div class="mut">No shows loaded.</div>';
+        return;
+      }
+
+      // Build a global map: YYYY-MM-DD -> [episodes...]
+      const byDate = {};
+      for (const show of shows) {
         for (const s of show.seasons || []) {
           for (const e of s.episodes || []) {
             if (!e.air_date) continue;
-            const d = new Date(e.air_date);
-            if (d >= state.today && d <= until) {
-              eps.push({ date: d, show, season: s.season_number, ep: e });
-            }
+            const key = e.air_date;
+            (byDate[key] ||= []).push({
+              show,
+              season: s.season_number,
+              ep: e,
+            });
           }
         }
       }
 
-      eps.sort((a, b) => a.date - b.date);
-
-      if (!eps.length) {
-        host.innerHTML = '<div class="mut">No upcoming episodes in the configured window.</div>';
-        return;
+      // Sort episodes per date for stable display
+      for (const key in byDate) {
+        byDate[key].sort((a,b) => {
+          if (a.show.name < b.show.name) return -1;
+          if (a.show.name > b.show.name) return 1;
+          return (a.ep.episode_number || 0) - (b.ep.episode_number || 0);
+        });
       }
 
-      let out = '';
-      let current = '';
+      const year  = state.currentMonth.getFullYear();
+      const month = state.currentMonth.getMonth();
 
-      for (const row of eps) {
-        const ymd = row.date.toISOString().slice(0, 10);
-        if (ymd !== current) {
-          if (current) out += '<div class="divider"></div>';
-          out += `<div class="group"><div class="title">${row.date.toDateString()}</div>`;
-          current = ymd;
-        }
-        out += `
-          <div class="card row" style="justify-content:space-between">
-            <div>
-              <div class="title">
-                ${row.show.name}
-                <span class="mut small">
-                  S${String(row.season).padStart(2,'0')}E${String(row.ep.episode_number).padStart(2,'0')}
+      const firstOfMonth = new Date(year, month, 1);
+      const firstDow = firstOfMonth.getDay(); // 0 (Sun) - 6 (Sat)
+
+      // Start from the Sunday on/before the 1st
+      const startDate = new Date(firstOfMonth);
+      startDate.setDate(firstOfMonth.getDate() - firstDow);
+
+      const monthName = firstOfMonth.toLocaleString(undefined, {
+        month:'long', year:'numeric'
+      });
+
+      let html = `
+        <div class="cal-header">
+          <button class="cal-btn" id="cal-prev">&lt; Prev</button>
+          <div class="cal-title">${monthName}</div>
+          <button class="cal-btn" id="cal-next">Next &gt;</button>
+        </div>
+        <div class="cal-grid">
+      `;
+
+      // Day-of-week row
+      for (const d of DOW) {
+        html += `<div class="cal-dow">${d}</div>`;
+      }
+
+      // 6 weeks x 7 days = 42 cells
+      for (let i = 0; i < 42; i++) {
+        const d = new Date(startDate);
+        d.setDate(startDate.getDate() + i);
+
+        const inMonth = (d.getMonth() === month);
+        const isToday =
+          d.getFullYear() === state.today.getFullYear() &&
+          d.getMonth() === state.today.getMonth() &&
+          d.getDate() === state.today.getDate();
+
+        const ymd = d.toISOString().slice(0,10);
+        const episodes = byDate[ymd] || [];
+
+        html += `<div class="cal-day${inMonth ? '' : ' out'}${isToday ? ' today' : ''}">`;
+        html += `<div class="cal-date">${d.getDate()}</div>`;
+
+        for (const item of episodes) {
+          const { show, season, ep } = item;
+          html += `
+            <div class="cal-ep">
+              ${
+                show.poster_path
+                  ? `<img src="${IMG(show.poster_path)}" alt="">`
+                  : ''
+              }
+              <div>
+                <span class="show">${show.name}</span>
+                <span class="code">
+                  S${String(season).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}
+                  ${ep.name ? ' · ' + ep.name : ''}
                 </span>
+                ${episodeLinks(show, season, ep.episode_number)}
               </div>
-              <div class="mut small">${row.ep.name || ''}</div>
-              ${linkRow(row.show.links)}
             </div>
-            ${
-              row.show.poster_path
-                ? `<img alt="poster" src="${IMG(row.show.poster_path)}"
-                         width="80" height="120"
-                         style="border-radius:10px;object-fit:cover"/>`
-                : ''
-            }
-          </div>
-        `;
+          `;
+        }
+
+        html += `</div>`;
       }
-      out += '</div>';
-      host.innerHTML = out;
+
+      html += `</div>`; // cal-grid
+
+      host.innerHTML = html;
+
+      $('#cal-prev').onclick = () => changeMonth(-1);
+      $('#cal-next').onclick = () => changeMonth(1);
     }
+
+    // ---------- A–Z view ----------
 
     function renderAZ() {
       const host = $('#az');
-      const byLetter = {};
+      const shows = getAllShows().slice();
 
-      for (const show of (state.data.shows || [])) {
-        const letter = (show.name || '#').charAt(0).toUpperCase();
-        (byLetter[letter] ||= []).push(show);
+      if (!shows.length) {
+        host.innerHTML = '<div class="mut">No shows loaded.</div>';
+        return;
       }
 
-      const letters = Object.keys(byLetter).sort();
-      let out = '';
+      shows.sort((a,b) => {
+        if (a.name < b.name) return state.azDir === 'asc' ? -1 : 1;
+        if (a.name > b.name) return state.azDir === 'asc' ? 1 : -1;
+        return 0;
+      });
 
-      for (const L of letters) {
-        out += `<div class="letter">${L}</div><div class="grid">`;
-        for (const sh of byLetter[L]) {
-          out += `
-            <div class="card">
+      let html = `
+        <div class="az-header">
+          <div>Sorted: ${state.azDir === 'asc' ? 'A → Z' : 'Z → A'}</div>
+          <div class="sort-label">Click A–Z tab again to toggle</div>
+        </div>
+        <div class="grid">
+      `;
+
+      for (const sh of shows) {
+        html += `
+          <div class="card">
+            ${
+              sh.poster_path
+                ? `<img class="poster" src="${IMG(sh.poster_path)}" alt="${sh.name} poster">`
+                : `<div class="poster"></div>`
+            }
+            <div class="card-body">
               <div class="title">${sh.name}</div>
               <div class="mut small">${(sh.genres || []).join(', ')}</div>
               <div class="divider"></div>
               ${
                 (sh.seasons || []).map(se => `
-                  <div class="group">
-                    <div class="row">
-                      <span class="pill">Season ${se.season_number}</span>
-                    </div>
-                    <div class="small mut">${(se.episodes || []).length} episodes</div>
+                  <div class="row small">
+                    <span class="pill">Season ${se.season_number}</span>
+                    <span class="mut">${(se.episodes || []).length} episodes</span>
                   </div>
                 `).join('')
               }
-              ${linkRow(sh.links)}
+              ${showLinks(sh)}
             </div>
-          `;
-        }
-        out += '</div>';
+          </div>
+        `;
       }
 
-      host.innerHTML = out || '<div class="mut">No shows loaded.</div>';
+      html += `</div>`;
+      host.innerHTML = html;
     }
+
+    // ---------- Genres view ----------
 
     function renderGenres() {
       const host = $('#genres');
-      const all = new Set();
+      const shows = getAllShows();
 
-      for (const s of (state.data.shows || [])) {
-        (s.genres || []).forEach(g => all.add(g));
+      if (!shows.length) {
+        host.innerHTML = '<div class="mut">No shows loaded.</div>';
+        return;
       }
 
-      const tags = ['All', ...Array.from(all).sort()];
-      let active = 'All';
+      const allGenres = new Set();
+      for (const sh of shows) {
+        (sh.genres || []).forEach(g => allGenres.add(g));
+      }
+
+      const tags = ['All', ...Array.from(allGenres).sort()];
+      if (!tags.includes(state.activeGenre)) state.activeGenre = 'All';
 
       const bar = document.createElement('div');
-      bar.className = 'row';
+      bar.className = 'genre-bar';
 
-      tags.forEach(t => {
-        const el = document.createElement('div');
-        el.className = 'chip';
-        el.textContent = t;
-        el.addEventListener('click', () => { active = t; paint(); });
-        bar.appendChild(el);
+      tags.forEach(g => {
+        const chip = document.createElement('div');
+        chip.className = 'chip' + (g === state.activeGenre ? ' active' : '');
+        chip.textContent = g;
+        chip.onclick = () => {
+          state.activeGenre = g;
+          renderGenres(); // full re-render for simplicity
+        };
+        bar.appendChild(chip);
       });
-
-      const divider = document.createElement('div');
-      divider.className = 'divider';
 
       const grid = document.createElement('div');
       grid.className = 'grid';
 
-      function paint() {
-        grid.innerHTML = '';
-        for (const sh of (state.data.shows || [])) {
-          if (active !== 'All' && !(sh.genres || []).includes(active)) continue;
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="title">${sh.name}</div>
-            <div class="mut small">${(sh.genres || []).join(', ')}</div>
-            <div class="divider"></div>
-            ${linkRow(sh.links)}
-          `;
-          grid.appendChild(card);
+      for (const sh of shows) {
+        if (state.activeGenre !== 'All' &&
+            !(sh.genres || []).includes(state.activeGenre)) {
+          continue;
         }
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const posterHtml = sh.poster_path
+          ? `<img class="poster" src="${IMG(sh.poster_path)}" alt="${sh.name} poster">`
+          : `<div class="poster"></div>`;
+
+        card.innerHTML = `
+          ${posterHtml}
+          <div class="card-body">
+            <div class="title">${sh.name}</div>
+            <div class="mut small">${(sh.genres || []).join(', ') || '&nbsp;'}</div>
+            <div class="divider"></div>
+            ${showLinks(sh)}
+          </div>
+        `;
+
+        grid.appendChild(card);
       }
 
       host.innerHTML = '';
       host.appendChild(bar);
-      host.appendChild(divider);
       host.appendChild(grid);
-      paint();
+
+      if (!grid.children.length) {
+        grid.innerHTML = '<div class="mut">No shows for this genre.</div>';
+      }
     }
+
+    // ---------- Orchestrator ----------
 
     function renderAll() {
       renderCalendar();
