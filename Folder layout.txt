@@ -1,0 +1,19 @@
+# Folder layout.txt
+#
+#
+C:\Users\Lenovo\Documents\Projects\my_TV_Movie\my_TV_Movie\
+│  .env                      # optional (if you prefer file-based envs)
+│  tv_list.txt               # your simple input list (see §2)
+│  requirements.txt          # Python deps
+│  run_server.bat            # one-click launcher
+│
+├─data\
+│     data.json              # generated cache (do not hand-edit)
+│     last_refresh.txt       # timestamp of last successful refresh
+│
+├─scripts\
+│     fetch_tmdb.py          # ingests tv_list.txt → data/data.json
+│
+└─web\
+      index.html             # single-file app (Calendar / A–Z / Genres)
+      config.html            # optional config page with “Refresh Data”

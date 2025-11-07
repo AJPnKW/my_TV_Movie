@@ -1,0 +1,70 @@
+<!doctype html>
+        (byLetter[letter] ||= []).push(show);
+      }
+      const letters = Object.keys(byLetter).sort();
+      let out='';
+      for(const L of letters){
+        out += `<div class="letter">${L}</div>`;
+        out += '<div class="grid">';
+        for(const sh of byLetter[L]){
+          out += `<div class="card">
+            <div class="title">${sh.name}</div>
+            <div class="mut small">${(sh.genres||[]).join(', ')}</div>
+            <div class="divider"></div>
+            ${sh.seasons.map(se => `
+              <div class="group">
+                <div class="row"><span class="pill">Season ${se.season_number}</span></div>
+                <div class="small mut">${se.episodes.length} episodes</div>
+              </div>`).join('')}
+            ${linkRow(sh.links)}
+          </div>`
+        }
+        out += '</div>';
+      }
+      host.innerHTML = out;
+    }
+
+    function renderGenres(){
+      const host = $('#genres');
+      const all = new Set();
+      for(const s of state.data.shows){ (s.genres||[]).forEach(g=>all.add(g)) }
+      const tags = ['All', ...Array.from(all).sort()];
+      let active = 'All';
+
+      const bar = document.createElement('div');
+      bar.className = 'row';
+      for(const t of tags){
+        const el = document.createElement('div');
+        el.className = 'chip'; el.textContent = t; el.style.cursor='pointer';
+        el.addEventListener('click',()=>{active=t; paint();});
+        bar.appendChild(el);
+      }
+
+      const grid = document.createElement('div');
+      grid.className='grid';
+
+      function paint(){
+        grid.innerHTML = '';
+        for(const sh of state.data.shows){
+          if(active!=='All' && !(sh.genres||[]).includes(active)) continue;
+          const card = document.createElement('div'); card.className='card';
+          card.innerHTML = `
+            <div class="title">${sh.name}</div>
+            <div class="mut small">${(sh.genres||[]).join(', ')}</div>
+            <div class="divider"></div>
+            ${linkRow(sh.links)}
+          `;
+          grid.appendChild(card);
+        }
+      }
+
+      host.innerHTML = '';
+      host.appendChild(bar); host.appendChild(document.createElement('div')).className='divider'; host.appendChild(grid);
+      paint();
+    }
+
+    function renderAll(){ renderCalendar(); renderAZ(); renderGenres(); }
+    load();
+  </script>
+</body>
+</html>
