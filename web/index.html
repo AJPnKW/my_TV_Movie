@@ -1,4 +1,138 @@
+<!--
+File: /web/index.html
+Project: my_TV_Movie
+Version: v1.1.0 (2025-11-06)
+Purpose: Chromecast-friendly single-page app for shows
+ChangeLog:
+- v1.1.0: FIX fetch path to "data/data.json"; link Config -> "config.html"; small UX polish.
+- v1.0.0: Initial.
+-->
 <!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My TV Hub</title>
+  <style>
+    :root{--bg:#0b0b0c;--fg:#f3f3f3;--mut:#b9b9c2;--card:#15151a;--chip:#22222a;--pri:#6ad1ff}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,Segoe UI,Roboto,Arial}
+    header{position:sticky;top:0;background:rgba(11,11,12,.9);backdrop-filter:saturate(1.4) blur(6px);z-index:5}
+    .wrap{max-width:1100px;margin:0 auto;padding:14px}
+    h1{margin:0;font-size:22px}
+    nav{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+    .tab{padding:10px 14px;border-radius:999px;background:var(--chip);cursor:pointer}
+    .tab.active{background:var(--pri);color:#041f2a}
+    a{color:var(--pri);text-decoration:none}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+    .card{background:var(--card);border-radius:14px;padding:12px}
+    .mut{color:var(--mut)}
+    .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .chip{background:var(--chip);padding:6px 10px;border-radius:999px}
+    .group{margin:12px 0}
+    .title{font-size:16px;font-weight:700}
+    .small{font-size:12px}
+    .section{padding:16px}
+    .letter{font-size:26px;margin:22px 0 6px}
+    .divider{height:1px;background:#252530;margin:8px 0}
+    .pill{display:inline-block;padding:4px 8px;border:1px solid #2e2e38;border-radius:999px}
+    .links a{margin-right:10px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="row" style="justify-content:space-between">
+        <h1>My TV Hub</h1>
+        <!-- NOTE: relative link for GitHub Pages -->
+        <div class="row small"><a href="config.html">Config</a></div>
+      </div>
+      <nav>
+        <div class="tab active" data-tab="calendar">Calendar</div>
+        <div class="tab" data-tab="az">A–Z</div>
+        <div class="tab" data-tab="genres">Genres</div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="calendar" class="section"></section>
+    <section id="az" class="section" hidden></section>
+    <section id="genres" class="section" hidden></section>
+  </main>
+
+  <script>
+    const $ = s=>document.querySelector(s); const $$=s=>Array.from(document.querySelectorAll(s));
+    const IMG = p=> p?`https://image.tmdb.org/t/p/w300${p}`:'';
+
+    const state = { data:null, today:new Date(), inDays:60 };
+
+    async function load(){
+      // IMPORTANT: relative path works under /my_TV_Movie/ on GitHub Pages
+      const res = await fetch('data/data.json', {cache:'no-cache'});
+      state.data = await res.json();
+      renderAll(); attachTabs();
+    }
+
+    function attachTabs(){
+      $$('.tab').forEach(t=>t.addEventListener('click',()=>{
+        $$('.tab').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        const tab = t.dataset.tab;
+        for(const id of ['calendar','az','genres']){ $("#"+id).hidden = id!==tab; }
+      }));
+    }
+
+    function linkRow(links){
+      return `<div class="links small">
+        <a target="_blank" href="${links.tmdb}">TMDB</a>
+        <a target="_blank" href="${links.watch_vidsrc}">VidSrc</a>
+        <a target="_blank" href="${links.watch_videasy}">Videasy</a>
+      </div>`;
+    }
+
+    function renderCalendar(){
+      const host = $('#calendar');
+      const until = new Date(+state.today + state.inDays*86400000);
+      const eps = [];
+      for(const show of state.data.shows){
+        for(const s of show.seasons){
+          for(const e of s.episodes){
+            if(!e.air_date) continue;
+            const d = new Date(e.air_date);
+            if(d>=state.today && d<=until){
+              eps.push({date:d, show, season:s.season_number, ep:e});
+            }
+          }
+        }
+      }
+      eps.sort((a,b)=>a.date-b.date);
+      let out = '';
+      let current = '';
+      for(const row of eps){
+        const ymd = row.date.toISOString().slice(0,10);
+        if(ymd!==current){
+          if(current) out += '<div class="divider"></div>';
+          out += `<div class="group"><div class="title">${row.date.toDateString()}</div>`;
+          current = ymd;
+        }
+        out += `<div class="card row" style="justify-content:space-between">
+          <div>
+            <div class="title">${row.show.name} <span class="mut small">S${String(row.season).padStart(2,'0')}E${String(row.ep.episode_number).padStart(2,'0')}</span></div>
+            <div class="mut small">${row.ep.name||''}</div>
+            ${linkRow(row.show.links)}
+          </div>
+          ${row.show.poster_path?`<img alt="poster" src="${IMG(row.show.poster_path)}" width="80" height="120" style="border-radius:10px;object-fit:cover"/>`:''}
+        </div>`;
+      }
+      out += '</div>';
+      host.innerHTML = out || '<div class="mut">No upcoming episodes in window.</div>';
+    }
+
+    function renderAZ(){
+      const host = $('#az');
+      const byLetter = {};
+      for(const show of state.data.shows){
+        const letter = (show.name||'#').charAt(0).toUpperCase();
         (byLetter[letter] ||= []).push(show);
       }
       const letters = Object.keys(byLetter).sort();
