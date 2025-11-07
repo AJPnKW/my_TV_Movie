@@ -1,35 +1,34 @@
 # my_TV_Movie
 
-A static, GitHub-Pages-hosted TV & Movie hub designed to be friendly on a TV (Chromecast, etc.).
+A static, GitHub-Pages-hosted TV & Movie hub designed to be used on your TV
+(Chromecast, built-in browser, etc).
 
 ## Live site
 
-Home:
+- Home: [https://ajpnkw.github.io/my_TV_Movie/](https://ajpnkw.github.io/my_TV_Movie/)
+- Direct index: [https://ajpnkw.github.io/my_TV_Movie/web/index.html](https://ajpnkw.github.io/my_TV_Movie/web/index.html)
+- Config page: [https://ajpnkw.github.io/my_TV_Movie/web/config.html](https://ajpnkw.github.io/my_TV_Movie/web/config.html)
 
-- `https://ajpnkw.github.io/my_TV_Movie/`
+Open those on your TV and you’re in.
 
-Config:
+## How it works (for Future You)
 
-- `https://ajpnkw.github.io/my_TV_Movie/config.html`
-
-## How it works
-
-1. You maintain simple text lists:
+1. You edit simple text files in the repo:
    - `tv_list.txt`
-   - `movies_list.txt` **or** `movies.txt`
-2. GitHub Actions runs `scripts/fetch_tmdb.py` to:
-   - Call TMDB (and optionally TVMaze),
-   - Generate `data/data.json`.
-3. The static web UI (`web/index.html`) reads `data/data.json` and renders:
-   - Calendar (TV + Movies),
-   - Shows library,
-   - Movies library.
+   - `movies_list.txt` (or `movies.txt`)
+2. A GitHub Actions workflow runs `scripts/fetch_tmdb.py`:
+   - Calls TMDB (and optionally TVMaze),
+   - Writes `data/data.json` + `data/last_refresh.txt`.
+3. The web UI (`web/index.html`) is 100% static and reads `data/data.json` on load.
 
-Everything runs fully on GitHub Pages — no local server needed for normal use.
+Whenever you change `tv_list.txt` or `movies_list.txt`, you must run the
+**Build TV Data** workflow so the site picks up your changes.
+
+You can run it manually, or schedule it (see below).
 
 ## Input formats
 
-### `tv_list.txt`
+### TV (`tv_list.txt`)
 
 ```text
 # name | tmdb_show_id | season_spec | tvmaze_id (optional)

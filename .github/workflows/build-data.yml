@@ -8,7 +8,7 @@ name: Build TV Data and Deploy Pages
 on:
   workflow_dispatch:
   schedule:
-    - cron: "30 8 * * *"  # 08:30 UTC ~= 03:30 America/Toronto
+    - cron: "0 */1 * * *"  # every 1 hours (UTC)
 
 permissions:
   contents: write
