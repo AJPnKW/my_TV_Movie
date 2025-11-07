@@ -1,12 +1,39 @@
-## Deploy/Run
+# my_TV_Movie
 
-### GitHub Pages (no server)
-1. Add repo secrets: `API_TMDB_KEY` (required), `API_TMDB_TOKEN` (optional).
-2. Ensure the workflow exists at `/.github/workflows/build-data.yml`.
-3. Run the workflow from the Actions tab (or wait for the daily schedule).
-4. Visit: https://ajpnkw.github.io/my_TV_Movie/  
-   (Root `/index.html` redirects to `/web/index.html`.)
+A static, GitHub-Pages-hosted TV & Movie hub designed to be friendly on a TV (Chromecast, etc.).
 
-### Local (optional)
-- `run_server.bat` creates a venv, builds `data/data.json`, and can run Flask via `app.py`.
-- Local URL: `http://<YOUR_PC_IP>:8811/` (only if you run Flask).
+## Live site
+
+Home:
+
+- `https://ajpnkw.github.io/my_TV_Movie/`
+
+Config:
+
+- `https://ajpnkw.github.io/my_TV_Movie/config.html`
+
+## How it works
+
+1. You maintain simple text lists:
+   - `tv_list.txt`
+   - `movies_list.txt` **or** `movies.txt`
+2. GitHub Actions runs `scripts/fetch_tmdb.py` to:
+   - Call TMDB (and optionally TVMaze),
+   - Generate `data/data.json`.
+3. The static web UI (`web/index.html`) reads `data/data.json` and renders:
+   - Calendar (TV + Movies),
+   - Shows library,
+   - Movies library.
+
+Everything runs fully on GitHub Pages — no local server needed for normal use.
+
+## Input formats
+
+### `tv_list.txt`
+
+```text
+# name | tmdb_show_id | season_spec | tvmaze_id (optional)
+Abbott Elementary|125935|5
+Abbott Elementary|125935|5|43354
+Only Murders in the Building|107113|5
+Stranger Things|66732|5

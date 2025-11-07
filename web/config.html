@@ -1,9 +1,16 @@
 <!--
-File: /web/config.html
+File: web/config.html
 Project: my_TV_Movie
-Version: v1.2.0 (2025-11-06)
-Purpose: Show last_refresh timestamp and link to run the GitHub Actions workflow.
+Version: v2.0.0 (2025-11-07)
+
+Purpose:
+- Let the user configure:
+    - Theme: Dark / Light
+    - Font size: Small / Normal / Large
+- Show last data refresh timestamp.
+- Provide quick link to trigger GitHub Actions workflow.
 -->
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -11,51 +18,139 @@ Purpose: Show last_refresh timestamp and link to run the GitHub Actions workflow
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Config · My TV Hub</title>
   <style>
+    :root{
+      --bg:#0b0b0c;
+      --fg:#f3f3f3;
+      --mut:#b9b9c2;
+      --pri:#6ad1ff;
+    }
     body{
-      background:#0b0b0c;color:#f3f3f3;
-      font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       margin:0;
+      background:var(--bg);
+      color:var(--fg);
+      font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     }
     .wrap{max-width:800px;margin:0 auto;padding:18px}
-    .mut{color:#b9b9c2}
-    a{color:#6ad1ff;text-decoration:none}
+    h1{margin-top:0}
+    .mut{color:var(--mut)}
+    a{color:var(--pri);text-decoration:none}
     a:hover{text-decoration:underline}
+    .group{margin:14px 0}
+    .opt-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .btn{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid #333;
+      background:#15151a;
+      color:var(--fg);
+      font-size:13px;
+      cursor:pointer;
+    }
+    .btn.active{
+      background:var(--pri);
+      color:#041f2a;
+    }
+    .small{font-size:11px}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Config</h1>
-    <p>Last refresh: <span id="last">loading…</span></p>
+    <h1>My TV Hub · Config</h1>
 
-    <p>
-      <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml">
-        Run data refresh
-      </a>
-      <span class="mut">(GitHub login required)</span>
-    </p>
+    <div class="group">
+      <strong>Last data refresh:</strong>
+      <span id="last" class="mut">loading…</span>
+    </div>
 
-    <p class="mut">
-      After the workflow finishes successfully, return to
-      <a href="index.html">Home</a> and reload to see updated data.
-    </p>
+    <div class="group">
+      <strong>Theme</strong>
+      <div class="opt-row">
+        <button class="btn" data-theme="dark">Dark (default)</button>
+        <button class="btn" data-theme="light">Light</button>
+      </div>
+      <div class="mut small">
+        Saved per device (localStorage). Home page applies it on load.
+      </div>
+    </div>
+
+    <div class="group">
+      <strong>Font size</strong>
+      <div class="opt-row">
+        <button class="btn" data-font="0.9">Small</button>
+        <button class="btn" data-font="1.0">Normal</button>
+        <button class="btn" data-font="1.2">Large</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <a href="index.html">Back to Home</a>
+    </div>
+
+    <div class="group">
+      <strong>Maintenance shortcuts</strong>
+      <div class="small">
+        <div>
+          GitHub Pages: 
+          <a href="https://ajpnkw.github.io/my_TV_Movie/" target="_blank">
+            https://ajpnkw.github.io/my_TV_Movie/
+          </a>
+        </div>
+        <div>
+          Secrets &amp; variables:
+          <a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions" target="_blank">
+            GitHub → Settings → Secrets and variables → Actions
+          </a>
+        </div>
+        <div>
+          Build data workflow:
+          <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
+            Run “Build TV Data” Action
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     async function fetchLast(){
-      try {
-        // ../data because this file is /web/config.html
-        const r = await fetch('../data/last_refresh.txt', { cache: 'no-cache' });
-        if (r.ok) {
-          const txt = (await r.text()).trim();
-          document.getElementById('last').textContent = txt || 'no timestamp yet';
-        } else {
+      try{
+        const r = await fetch('../data/last_refresh.txt', {cache:'no-cache'});
+        if(r.ok){
+          const t = (await r.text()).trim();
+          document.getElementById('last').textContent = t || 'no timestamp yet';
+        }else{
           document.getElementById('last').textContent = 'not available';
         }
-      } catch (e) {
+      }catch(e){
         document.getElementById('last').textContent = 'not available';
       }
     }
+
+    function initControls(){
+      const theme = localStorage.getItem('tvhub_theme') || 'dark';
+      const font = localStorage.getItem('tvhub_fontscale') || '1.0';
+
+      document.querySelectorAll('[data-theme]').forEach(btn=>{
+        if(btn.dataset.theme === theme) btn.classList.add('active');
+        btn.onclick = ()=>{
+          localStorage.setItem('tvhub_theme', btn.dataset.theme);
+          document.querySelectorAll('[data-theme]').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+        };
+      });
+
+      document.querySelectorAll('[data-font]').forEach(btn=>{
+        if(btn.dataset.font === font) btn.classList.add('active');
+        btn.onclick = ()=>{
+          localStorage.setItem('tvhub_fontscale', btn.dataset.font);
+          document.querySelectorAll('[data-font]').forEach(b=>b.classList.remove('active'));
+          btn.classList.add('active');
+        };
+      });
+    }
+
     fetchLast();
+    initControls();
   </script>
 </body>
 </html>
