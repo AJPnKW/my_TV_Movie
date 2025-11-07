@@ -1,25 +1,34 @@
 # -----------------------------------------------------------------------------
 # File: /scripts/fetch_tmdb.py
 # Project: my_TV_Movie
-# Version: v1.3.0 (2025-11-06)
+# Version: v1.4.0 (2025-11-07)
 #
-# Purpose
-#   - Read /tv_list.txt lines:
+# Features:
+# - Read:
+#     tv_list.txt
 #       name | tmdb_show_id | season_spec | tvmaze_id (optional)
-#     where:
-#       season_spec: "5" or "1,2,5" or "*" (all seasons)
-#   - Fetch show/season/episode data from TMDB.
-#   - Optionally enrich episodes from TVmaze (if tvmaze_id + API_TVMAZE_KEY).
-#   - Normalize episodes:
-#       * keep TMDB titles
-#       * if missing/placeholder => SxxEyy
-#   - Write:
-#       /data/data.json
-#       /data/last_refresh.txt
-#
-# Notes
-#   - Safe to run on GitHub Actions + locally.
-#   - TVmaze is optional and best-effort; TMDB is source of truth.
+#     movies_list.txt
+#       name | tmdb_movie_id
+# - Fetch from TMDB:
+#     * Show details, seasons, episodes
+#     * Movie details
+# - Optional TVMaze enrichment (episodes):
+#     * Requires:
+#         - API_TVMAZE_KEY (GitHub secret / env)
+#         - tvmaze_id in tv_list.txt line
+#     * Fills missing air_dates, real titles, overviews where TMDB is vague.
+# - Output:
+#     data/data.json:
+#       {
+#         generated_at: ISO timestamp,
+#         shows:  [ { show data..., profile } ],
+#         movies: [ { movie data..., profile } ],
+#         meta: {
+#           shows: <int>,
+#           movies: <int>
+#         }
+#       }
+#     data/last_refresh.txt (human timestamp)
 # -----------------------------------------------------------------------------
 
 import os
@@ -31,7 +40,7 @@ import sys
 from datetime import datetime
 
 try:
-    from dotenv import load_dotenv  # for local dev; ignored in CI if missing
+    from dotenv import load_dotenv
 except ImportError:
     def load_dotenv(*args, **kwargs):
         pass
@@ -41,6 +50,7 @@ import requests
 # --- Paths --------------------------------------------------------------------
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TV_LIST = ROOT / "tv_list.txt"
+MOVIES_LIST = ROOT / "movies_list.txt"
 DATA_DIR = ROOT / "data"
 DATA_JSON = DATA_DIR / "data.json"
 STAMP = DATA_DIR / "last_refresh.txt"
@@ -50,8 +60,7 @@ load_dotenv(ROOT / ".env")
 
 TMDB_V3 = os.environ.get("API_TMDB_KEY", "")
 TMDB_V4 = os.environ.get("API_TMDB_TOKEN", "")
-
-TVMAZE_KEY = os.environ.get("API_TVMAZE_KEY", "")  # optional; for enrichment
+TVMAZE_KEY = os.environ.get("API_TVMAZE_KEY", "")  # optional
 
 BASE_TMDB = "https://api.themoviedb.org/3"
 BASE_TVMAZE = "https://api.tvmaze.com"
@@ -63,9 +72,16 @@ HEADERS_TMDB = (
 )
 PARAMS_TMDB = {"api_key": TMDB_V3} if TMDB_V3 and not TMDB_V4 else {}
 
-# name | tmdb_id | seasons | (optional) tvmaze_id
-LINE_RE = re.compile(
+# tv_list line:
+# name | tmdb_show_id | season_spec | tvmaze_id?
+TV_LINE_RE = re.compile(
     r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*\|\s*([\d,\*]+)(?:\s*\|\s*(\d+))?\s*$"
+)
+
+# movies_list line:
+# name | tmdb_movie_id
+MOVIE_LINE_RE = re.compile(
+    r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*$"
 )
 
 
@@ -77,7 +93,7 @@ def tmdb_get(path: str, extra_params=None, max_tries=5, backoff=1.5):
     if not TMDB_V4:
         params.update(PARAMS_TMDB)
     if extra_params:
-        params.update(extra_params)
+        params.update(extra_params or {})
 
     session = requests.Session()
     if HEADERS_TMDB:
@@ -91,15 +107,15 @@ def tmdb_get(path: str, extra_params=None, max_tries=5, backoff=1.5):
         r.raise_for_status()
         return r.json()
 
-    raise RuntimeError(f"TMDB rate-limited/failed: {url}")
+    raise RuntimeError(f"TMDB rate-limited/failed for {url}")
 
 
 def tvmaze_get(path: str, params=None, max_tries=3, backoff=1.5):
-    """Optional helper. Does nothing if TVMAZE_KEY not set."""
+    """Optional TVMaze helper; only used if API_TVMAZE_KEY is set."""
     if not TVMAZE_KEY:
         raise RuntimeError("TVMaze disabled (no API_TVMAZE_KEY).")
     url = f"{BASE_TVMAZE}{path}"
-    headers = {"X-API-Key": TVMAZE_KEY} if TVMAZE_KEY else {}
+    headers = {"X-API-Key": TVMAZE_KEY}
     for attempt in range(max_tries):
         r = requests.get(url, headers=headers, params=params or {}, timeout=20)
         if r.status_code == 429:
@@ -107,25 +123,27 @@ def tvmaze_get(path: str, params=None, max_tries=3, backoff=1.5):
             continue
         r.raise_for_status()
         return r.json()
-    raise RuntimeError(f"TVMaze rate-limited/failed: {url}")
+    raise RuntimeError(f"TVMaze rate-limited/failed for {url}")
 
 
 def strip_html(text: str) -> str:
     return re.sub(r"<.*?>", "", text or "").strip()
 
 
-# --- tv_list.txt parser -------------------------------------------------------
+# --- Parse tv_list.txt --------------------------------------------------------
 
 def parse_tv_list(path: pathlib.Path):
+    if not path.exists():
+        return []
     shows = []
     with path.open("r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            m = LINE_RE.match(line)
+            m = TV_LINE_RE.match(line)
             if not m:
-                print(f"WARN: Skipping unrecognized line: {line}")
+                print(f"WARN: Skipping bad tv_list line: {line}")
                 continue
             name, show_id, seasons, tvmaze_id = m.groups()
             if seasons == "*":
@@ -138,6 +156,7 @@ def parse_tv_list(path: pathlib.Path):
                 "ref_name": name,
                 "show_id": int(show_id),
                 "season_spec": season_spec,
+                "profile": "default",  # hook for future profiles
             }
             if tvmaze_id:
                 entry["tvmaze_id"] = int(tvmaze_id)
@@ -145,16 +164,33 @@ def parse_tv_list(path: pathlib.Path):
     return shows
 
 
-# --- Link builders & title normalization --------------------------------------
+# --- Parse movies_list.txt ----------------------------------------------------
 
-def build_links(show_id: int):
-    return {
-        "tmdb": f"https://www.themoviedb.org/tv/{show_id}",
-        # show-level watch links (season/episode added per-use in UI where needed)
-        "watch_vidsrc": f"https://vidsrc.net/embed/tv/{show_id}",
-        "watch_videasy": f"https://player.videasy.net/tv/{show_id}",
-    }
+def parse_movies_list(path: pathlib.Path):
+    if not path.exists():
+        return []
+    movies = []
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            m = MOVIE_LINE_RE.match(line)
+            if not m:
+                print(f"WARN: Skipping bad movies_list line: {line}")
+                continue
+            name, movie_id = m.groups()
+            movies.append(
+                {
+                    "ref_name": name,
+                    "movie_id": int(movie_id),
+                    "profile": "default",  # hook for future profiles
+                }
+            )
+    return movies
 
+
+# --- Utility: episode title normalization -------------------------------------
 
 def is_placeholder_title(name: str) -> bool:
     if not name:
@@ -175,25 +211,43 @@ def ensure_title(ep: dict, season_no: int) -> str:
     return name
 
 
+# --- Link builders ------------------------------------------------------------
+
+def show_links(show_id: int):
+    return {
+        "tmdb": f"https://www.themoviedb.org/tv/{show_id}",
+        "watch_vidsrc": f"https://vidsrc.net/embed/tv/{show_id}",
+        "watch_videasy": f"https://player.videasy.net/tv/{show_id}",
+    }
+
+
+def movie_links(movie_id: int):
+    return {
+        "tmdb": f"https://www.themoviedb.org/movie/{movie_id}",
+        "watch_vidsrc": f"https://vidsrc.net/embed/movie/{movie_id}",
+        "watch_videasy": f"https://player.videasy.net/movie/{movie_id}",
+    }
+
+
 # --- TVMaze enrichment --------------------------------------------------------
 
 def enrich_with_tvmaze(show_payload: dict, tvmaze_id: int):
     """
     Best-effort:
-    - Use TVmaze episodes to fill missing dates / names / overviews.
-    - Does NOT override good TMDB data.
-    - Safe if it fails; we just log and move on.
+    - Do nothing if TVMAZE_KEY missing.
+    - For matching (season, ep) pairs, fill:
+        * missing air_date
+        * real titles if TMDB placeholder
+        * missing overviews
     """
     if not TVMAZE_KEY or not tvmaze_id:
         return
-
     try:
         eps = tvmaze_get(f"/shows/{tvmaze_id}/episodes")
     except Exception as e:
         print(f"WARN: TVMaze fetch failed for {show_payload['name']}: {e}")
         return
 
-    # Map (season, number) -> episode info
     idx = {
         (e.get("season"), e.get("number")): e
         for e in eps
@@ -208,20 +262,17 @@ def enrich_with_tvmaze(show_payload: dict, tvmaze_id: int):
             if not src:
                 continue
 
-            # Airdate: fill if missing
             if not ep.get("air_date") and src.get("airdate"):
                 ep["air_date"] = src["airdate"]
 
-            # Title: if we had to synthesize and TVmaze has real title
-            if is_placeholder_title(ep.get("name", "")) and src.get("name"):
+            if is_placeholder_title(ep.get("name") or "") and src.get("name"):
                 ep["name"] = src["name"]
 
-            # Overview: fill if empty
             if not ep.get("overview") and src.get("summary"):
                 ep["overview"] = strip_html(src["summary"])
 
 
-# --- TMDB collector -----------------------------------------------------------
+# --- Collect TV show from TMDB (+ optional TVMaze) ----------------------------
 
 def collect_show(show_id: int, season_spec, tvmaze_id=None):
     show = tmdb_get(f"/tv/{show_id}")
@@ -271,11 +322,11 @@ def collect_show(show_id: int, season_spec, tvmaze_id=None):
         "overview": show.get("overview") or "",
         "first_air_date": show.get("first_air_date"),
         "last_air_date": show.get("last_air_date"),
-        "status": show.get("status"),
+        "status": show.get("status"),  # used for filters/status display
         "poster_path": show.get("poster_path"),
         "backdrop_path": show.get("backdrop_path"),
         "genres": genres,
-        "links": build_links(show_id),
+        "links": show_links(show_id),
         "seasons": seasons,
     }
 
@@ -283,6 +334,26 @@ def collect_show(show_id: int, season_spec, tvmaze_id=None):
         enrich_with_tvmaze(payload, tvmaze_id)
 
     return payload
+
+
+# --- Collect Movie from TMDB --------------------------------------------------
+
+def collect_movie(movie_id: int):
+    mv = tmdb_get(f"/movie/{movie_id}")
+    genres = [g["name"] for g in mv.get("genres", [])]
+    return {
+        "movie_id": movie_id,
+        "name": mv.get("title"),
+        "original_name": mv.get("original_title"),
+        "overview": mv.get("overview") or "",
+        "release_date": mv.get("release_date"),
+        "runtime": mv.get("runtime"),
+        "status": mv.get("status"),  # e.g. Released, Planned, etc.
+        "poster_path": mv.get("poster_path"),
+        "backdrop_path": mv.get("backdrop_path"),
+        "genres": genres,
+        "links": movie_links(movie_id),
+    }
 
 
 # --- Main ---------------------------------------------------------------------
@@ -294,14 +365,21 @@ def main():
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    shows_spec = parse_tv_list(TV_LIST)
-    out = {"generated_at": datetime.utcnow().isoformat() + "Z", "shows": []}
+    tv_specs = parse_tv_list(TV_LIST)
+    mv_specs = parse_movies_list(MOVIES_LIST)
 
-    for item in shows_spec:
+    out = {
+        "generated_at": datetime.utcnow().isoformat() + "Z",
+        "shows": [],
+        "movies": [],
+    }
+
+    # Shows
+    for item in tv_specs:
         try:
             print(
-                f"Fetching TMDB: {item['ref_name']} "
-                f"({item['show_id']}) seasons={item['season_spec']}"
+                f"Show: {item['ref_name']} ({item['show_id']}) "
+                f"seasons={item['season_spec']}"
             )
             data = collect_show(
                 item["show_id"],
@@ -309,10 +387,28 @@ def main():
                 tvmaze_id=item.get("tvmaze_id"),
             )
             data["ref_name"] = item["ref_name"]
+            data["profile"] = item.get("profile", "default")
             out["shows"].append(data)
             time.sleep(0.2)
         except Exception as e:
-            print(f"ERROR: {item['ref_name']} ({item['show_id']}): {e}")
+            print(f"ERROR show {item['ref_name']} ({item['show_id']}): {e}")
+
+    # Movies
+    for item in mv_specs:
+        try:
+            print(f"Movie: {item['ref_name']} ({item['movie_id']})")
+            mv = collect_movie(item["movie_id"])
+            mv["ref_name"] = item["ref_name"]
+            mv["profile"] = item.get("profile", "default")
+            out["movies"].append(mv)
+            time.sleep(0.2)
+        except Exception as e:
+            print(f"ERROR movie {item['ref_name']} ({item['movie_id']}): {e}")
+
+    out["meta"] = {
+        "shows": len(out["shows"]),
+        "movies": len(out["movies"]),
+    }
 
     DATA_JSON.write_text(
         json.dumps(out, ensure_ascii=False, indent=2),
