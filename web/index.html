@@ -4,45 +4,20 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.1.0 (2025-11-07)
-
-    Highlights:
-    - Tabs: Calendar | Shows | Movies
-    - Calendar:
-        * 6x7 month grid (Sun–Sat), Prev/Next.
-        * TV episodes + movie releases.
-        * Stronger day borders & today highlight.
-        * Show/episode text more prominent than link row.
-        * Click TV show titles or SxxEyy to open show overlay.
-    - Shows tab:
-        * Sort: Title A–Z/Z–A (button label toggles) or Next episode.
-        * Filter: Genre, Status.
-        * Show cards: TMDB link only; VidSrc/Videasy are episode-level.
-        * Show titles open overlay (seasons + episodes).
-    - Movies tab:
-        * Sort: Title A–Z/Z–A or Release date.
-        * Filter: Genre, Status.
-    - Overlay:
-        * Poster, status, overview.
-        * Seasons list with heuristic “Current season”.
-        * Click season to see episodes (TBA-only hidden).
-    - Config integration:
-        * Reads tvhub_theme & tvhub_fontscale from localStorage.
-    - Footer:
-        * Data built: <iso> · Shows: N · Movies: M
+    Version: v2.2.0 (2025-11-07)
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>My TV Hub</title>
   <style>
     :root{
-      --bg:#0b0b0c;
-      --fg:#f3f3f3;
-      --mut:#b9b9c2;
-      --card:#15151a;
-      --chip:#22222a;
-      --pri:#6ad1ff;
-      --border:#252530;
+      --bg:#050509;
+      --fg:#f5f5f7;
+      --mut:#9ca3af;
+      --card:#14151d;
+      --chip:#1f2230;
+      --pri:#3b82f6;
+      --border:#f5e6c5;
       --fs-scale:1;
     }
     :root[data-theme="light"]{
@@ -55,7 +30,7 @@
       --border:#d1d5db;
     }
 
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box;}
 
     body{
       margin:0;
@@ -64,15 +39,15 @@
       font:calc(15px * var(--fs-scale))/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     }
 
-    a{ color:var(--pri); text-decoration:none; }
-    a:hover{ text-decoration:underline; }
+    a{color:var(--pri);text-decoration:none;}
+    a:hover{text-decoration:underline;}
 
     header{
       position:sticky;
       top:0;
-      z-index:20;
-      background:rgba(11,11,12,.96);
-      backdrop-filter:saturate(1.4) blur(6px);
+      z-index:40;
+      background:rgba(5,5,9,.97);
+      backdrop-filter:blur(8px);
     }
     :root[data-theme="light"] header{
       background:rgba(245,245,247,.97);
@@ -80,73 +55,61 @@
     }
 
     .wrap{
-      max-width:1100px;
+      max-width:1200px;
       margin:0 auto;
-      padding:14px;
+      padding:12px 20px;
     }
 
-    h1{ margin:0; font-size:22px; }
+    h1{
+      margin:0;
+      font-size:22px;
+    }
 
     .row{
       display:flex;
-      gap:8px;
+      justify-content:space-between;
       align-items:center;
+      gap:10px;
       flex-wrap:wrap;
     }
 
     nav{
       display:flex;
       gap:8px;
-      margin-top:10px;
+      margin-top:8px;
       flex-wrap:wrap;
     }
 
     .tab{
-      padding:8px 14px;
+      padding:7px 16px;
       border-radius:999px;
       background:var(--chip);
+      color:var(--fg);
+      font-size:12px;
       cursor:pointer;
-      font-size:13px;
       user-select:none;
     }
     .tab.active{
       background:var(--pri);
-      color:#041f2a;
+      color:#ffffff;
     }
 
-    main.wrap{
-      padding-top:10px;
-      padding-bottom:6px;
+    main{
+      padding:8px 20px 4px;
+      max-width:1200px;
+      margin:0 auto;
     }
 
-    .section{
-      padding:4px 0 16px;
-    }
+    .section{padding-bottom:16px;}
 
-    .mut{ color:var(--mut); }
-    .small{ font-size:11px; }
-    .divider{ height:1px; background:var(--border); margin:6px 0; }
+    .mut{color:var(--mut);}
+    .small{font-size:11px;}
 
-    .links a{
-      margin-right:8px;
-      font-size:9px;
-    }
-
-    .pill{
-      display:inline-block;
-      padding:3px 7px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      font-size:9px;
-    }
-
-    /* Sticky controls for subviews */
     .controls-sticky{
       position:sticky;
       top:64px;
-      z-index:15;
+      z-index:30;
       padding:6px 0 6px;
-      margin-bottom:6px;
       background:var(--bg);
     }
 
@@ -158,31 +121,39 @@
       font-size:10px;
     }
 
-    .label{ color:var(--mut); }
+    .label{
+      color:var(--mut);
+      font-size:10px;
+      margin-right:4px;
+    }
 
     .btn{
-      padding:5px 9px;
+      padding:5px 11px;
       border-radius:999px;
-      border:1px solid var(--border);
+      border:1px solid var(--chip);
       background:var(--chip);
       color:var(--fg);
       font-size:10px;
       cursor:pointer;
-      user-select:none;
+      min-width:52px;
     }
     .btn.active{
       background:var(--pri);
-      color:#041f2a;
+      color:#ffffff;
+      border-color:var(--pri);
+    }
+    .btn:focus-visible{
+      outline:2px solid var(--pri);
+      outline-offset:2px;
     }
 
     /* Calendar */
-
     .cal-head-sticky{
       position:sticky;
       top:64px;
-      z-index:15;
-      padding-bottom:4px;
+      z-index:25;
       background:var(--bg);
+      padding-bottom:4px;
     }
 
     .cal-header{
@@ -194,14 +165,14 @@
     }
 
     .cal-title{
-      font-size:17px;
+      font-size:18px;
       font-weight:600;
     }
 
     .cal-btn{
-      padding:5px 9px;
+      padding:5px 10px;
       border-radius:999px;
-      border:1px solid var(--border);
+      border:1px solid var(--chip);
       background:var(--chip);
       color:var(--fg);
       font-size:10px;
@@ -211,10 +182,11 @@
     .cal-dow-row{
       display:grid;
       grid-template-columns:repeat(7,1fr);
-      gap:3px;
       font-size:9px;
       color:var(--mut);
+      gap:4px;
     }
+
     .cal-dow{
       text-align:center;
       padding:2px 0;
@@ -223,35 +195,42 @@
     .cal-grid{
       display:grid;
       grid-template-columns:repeat(7,1fr);
-      gap:4px;
-      font-size:9px;
+      gap:6px;
+      margin-top:4px;
     }
 
     .cal-day{
-      min-height:78px;
+      min-height:96px;
       padding:4px;
-      border-radius:7px;
-      background:#101019;
-      border:1px solid #22232c;
+      border-radius:8px;
+      border:1px solid var(--border);
+      background:#0d0e15;
       display:flex;
       flex-direction:column;
       gap:3px;
     }
     :root[data-theme="light"] .cal-day{
       background:#ffffff;
-      border-color:#e5e7eb;
     }
 
     .cal-day.today{
-      background:rgba(106,209,255,0.09);
-      border-color:var(--pri);
-      box-shadow:0 0 0 1px rgba(106,209,255,0.35);
+      background:#1b2636;
+      box-shadow:0 0 0 1px var(--pri);
+    }
+    :root[data-theme="light"] .cal-day.today{
+      background:var(--pri);
+      color:#ffffff;
+    }
+    :root[data-theme="light"] .cal-day.today .cal-show,
+    :root[data-theme="light"] .cal-day.today .cal-ep,
+    :root[data-theme="light"] .cal-day.today .links-ep a{
+      color:#ffffff;
     }
 
     .cal-date{
-      font-weight:600;
       font-size:9px;
-      margin-bottom:1px;
+      font-weight:600;
+      margin-bottom:2px;
     }
 
     .cal-item{
@@ -262,28 +241,27 @@
     }
 
     .cal-item img{
-      width:22px;
-      height:33px;
-      border-radius:4px;
+      width:36px;
+      height:54px;
+      border-radius:5px;
       object-fit:cover;
       flex-shrink:0;
-      background:#111;
+      background:#111827;
     }
 
     .cal-lines{
       display:flex;
       flex-direction:column;
       gap:1px;
+      font-size:9px;
     }
 
     .cal-show{
-      font-size:9px;
-      font-weight:600;
+      font-weight:700;
       cursor:pointer;
     }
 
     .cal-ep{
-      font-size:9px;
       cursor:pointer;
     }
 
@@ -292,13 +270,30 @@
       color:var(--mut);
     }
 
-    .links-ep a{
+    .icon-row{
+      display:flex;
+      gap:4px;
+      flex-wrap:wrap;
+      margin-top:1px;
+    }
+    .icon-link{
+      display:inline-flex;
+      align-items:center;
+      gap:3px;
+      padding:1px 4px;
+      border-radius:999px;
+      background:rgba(15,23,42,.9);
       font-size:8px;
-      color:var(--pri);
+    }
+    .icon-link span{
+      font-size:9px;
+    }
+    :root[data-theme="light"] .icon-link{
+      background:rgba(17,24,39,.92);
+      color:#ffffff;
     }
 
     /* Cards */
-
     .grid{
       display:grid;
       grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
@@ -307,32 +302,29 @@
 
     .card{
       background:var(--card);
-      border-radius:12px;
+      border-radius:14px;
       padding:8px;
       display:flex;
-      gap:7px;
+      gap:8px;
+      border:1px solid var(--chip);
       align-items:flex-start;
-      border:1px solid #1c1d26;
-    }
-    :root[data-theme="light"] .card{
-      border-color:#e5e7eb;
     }
 
     .poster{
-      width:64px;
-      height:96px;
-      border-radius:9px;
+      width:70px;
+      height:104px;
+      border-radius:10px;
       object-fit:cover;
+      background:#111827;
       flex-shrink:0;
-      background:#111;
     }
 
     .card-body{
       display:flex;
       flex-direction:column;
       gap:3px;
-      flex:1;
       min-width:0;
+      flex:1;
     }
 
     .title{
@@ -341,14 +333,19 @@
       cursor:pointer;
     }
 
-    /* Overlay */
+    .divider{
+      height:1px;
+      background:rgba(148,163,253,.12);
+      margin:3px 0;
+    }
 
-    .overlay[hidden]{ display:none; }
+    /* Overlay */
+    .overlay[hidden]{display:none;}
 
     .overlay{
       position:fixed;
       inset:0;
-      z-index:40;
+      z-index:90;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -357,23 +354,23 @@
     .overlay-backdrop{
       position:absolute;
       inset:0;
-      background:rgba(0,0,0,.72);
+      background:rgba(0,0,0,.78);
     }
 
     .overlay-panel{
       position:relative;
-      max-width:900px;
+      max-width:980px;
       max-height:86vh;
-      padding:18px 14px 12px;
+      padding:18px 14px 10px;
       background:var(--card);
       border-radius:18px;
-      box-shadow:0 22px 50px rgba(0,0,0,.7);
+      box-shadow:0 24px 60px rgba(0,0,0,.75);
       overflow:auto;
-      z-index:41;
+      z-index:91;
     }
     :root[data-theme="light"] .overlay-panel{
       background:#ffffff;
-      box-shadow:0 22px 50px rgba(0,0,0,.22);
+      box-shadow:0 24px 60px rgba(0,0,0,.18);
     }
 
     .overlay-close{
@@ -391,16 +388,16 @@
       display:flex;
       gap:10px;
       align-items:flex-start;
+      padding-top:16px;
       margin-bottom:8px;
-      padding-top:14px; /* space so close button doesn't overlap */
     }
 
     .ov-poster{
-      width:90px;
-      height:135px;
+      width:105px;
+      height:158px;
       border-radius:10px;
       object-fit:cover;
-      background:#111;
+      background:#111827;
       flex-shrink:0;
     }
 
@@ -413,28 +410,34 @@
     .ov-sub{
       font-size:11px;
       color:var(--mut);
+      margin-bottom:3px;
     }
 
     .ov-overview{
-      margin-top:4px;
       font-size:12px;
       color:var(--mut);
     }
 
+    .ov-links{
+      margin-top:4px;
+      display:flex;
+      gap:4px;
+      flex-wrap:wrap;
+    }
+
     .season-list{
       margin-top:6px;
-      font-size:12px;
+      font-size:11px;
     }
 
     .season-row{
       padding:5px 0;
-      border-bottom:1px solid var(--border);
+      border-bottom:1px solid rgba(148,163,253,.18);
       cursor:pointer;
     }
 
     .season-label{
       font-weight:600;
-      font-size:12px;
     }
 
     .season-badge{
@@ -452,12 +455,6 @@
       color:var(--mut);
     }
 
-    .season-overview{
-      font-size:10px;
-      color:var(--mut);
-      margin-top:2px;
-    }
-
     .episodes{
       margin-top:3px;
       padding-left:4px;
@@ -465,709 +462,665 @@
     }
 
     .ep-row{
-      margin-bottom:2px;
+      padding:2px 0;
+      border-bottom:1px dashed rgba(148,163,253,.16);
     }
 
-    /* Footer meta */
     #meta{
       font-size:9px;
       color:var(--mut);
-      padding:2px 14px 10px;
+      padding:2px 20px 10px;
+      max-width:1200px;
+      margin:0 auto;
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <div class="row" style="justify-content:space-between">
-        <h1>My TV Hub</h1>
-        <div class="row small">
-          <a href="config.html">Config</a>
-        </div>
-      </div>
-      <nav>
-        <div class="tab active" data-tab="calendar">Calendar</div>
-        <div class="tab" data-tab="shows">Shows</div>
-        <div class="tab" data-tab="movies">Movies</div>
-      </nav>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <section id="calendar" class="section"></section>
-    <section id="shows" class="section" hidden></section>
-    <section id="movies" class="section" hidden></section>
-  </main>
-
+<header>
   <div class="wrap">
-    <div id="meta"></div>
-  </div>
-
-  <!-- Overlay for show details -->
-  <div id="overlay" class="overlay" hidden>
-    <div class="overlay-backdrop"></div>
-    <div class="overlay-panel">
-      <button class="overlay-close" aria-label="Close">&times;</button>
-      <div id="overlay-content"></div>
+    <div class="row">
+      <h1>My TV Hub</h1>
+      <div class="small">
+        <a href="config.html">Config</a>
+      </div>
     </div>
+    <nav>
+      <div class="tab active" data-tab="calendar">Calendar</div>
+      <div class="tab" data-tab="shows">Shows</div>
+      <div class="tab" data-tab="movies">Movies</div>
+    </nav>
   </div>
+</header>
 
-  <script>
-    const $  = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
-    const IMG = p => p ? `https://image.tmdb.org/t/p/w300${p}` : '';
-    const DOW = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+<main>
+  <section id="calendar" class="section"></section>
+  <section id="shows" class="section" hidden></section>
+  <section id="movies" class="section" hidden></section>
+</main>
 
-    const state = {
-      data: null,
-      today: new Date(),
-      currentMonth: null,
-      // Shows
-      showsSort: 'title', // 'title' | 'next'
-      showsDir: 'asc',
-      showsGenre: 'All',
-      showsStatus: 'All',
-      // Movies
-      moviesSort: 'title', // 'title' | 'date'
-      moviesDir: 'asc',
-      moviesGenre: 'All',
-      moviesStatus: 'All',
-    };
+<div id="meta"></div>
 
-    // Apply theme / font from localStorage
-    (function initTheme(){
-      const theme = localStorage.getItem('tvhub_theme') || 'dark';
-      const scale = parseFloat(localStorage.getItem('tvhub_fontscale') || '1.0') || 1.0;
-      document.documentElement.setAttribute('data-theme', theme);
-      document.documentElement.style.setProperty('--fs-scale', String(scale));
-    })();
+<div id="overlay" class="overlay" hidden>
+  <div class="overlay-backdrop"></div>
+  <div class="overlay-panel">
+    <button class="overlay-close" aria-label="Close">&times;</button>
+    <div id="overlay-content"></div>
+  </div>
+</div>
 
-    function getShows(){ return (state.data && state.data.shows) || []; }
-    function getMovies(){ return (state.data && state.data.movies) || []; }
+<script>
+  const $  = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+  const IMG = p => p ? `https://image.tmdb.org/t/p/w300${p}` : '';
 
-    function isPureTBA(name, overview){
-      if(!name) return false;
-      const n = name.trim().toUpperCase();
-      return (n === 'TBA' || n === 'N/A') && !overview;
+  const state = {
+    data: null,
+    today: new Date(),
+    currentMonth: null,
+    showsGenre: 'All',
+    showsStatus: 'All',
+    showsSort: 'title',
+    showsDir: 'asc',
+    moviesGenre: 'All',
+    moviesStatus: 'All',
+    moviesSort: 'title',
+    moviesDir: 'asc'
+  };
+
+  // theme + font from localStorage
+  (function initTheme(){
+    const t = localStorage.getItem('tvhub_theme') || 'dark';
+    const s = parseFloat(localStorage.getItem('tvhub_fontscale') || '1.0') || 1.0;
+    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.style.setProperty('--fs-scale', String(s));
+  })();
+
+  function getShows(){ return (state.data && state.data.shows) || []; }
+  function getMovies(){ return (state.data && state.data.movies) || []; }
+
+  function isPureTBA(name, overview){
+    if(!name) return False;
+    const n = name.trim().toUpperCase();
+    return (n === 'TBA' || n === 'N/A') && !overview;
+  }
+
+  async function load(){
+    try{
+      const r = await fetch('../data/data.json', {cache:'no-cache'});
+      if(!r.ok) throw new Error('no data.json');
+      state.data = await r.json();
+      state.currentMonth = new Date(
+        state.today.getFullYear(),
+        state.today.getMonth(),
+        1
+      );
+      attachTabs();
+      renderAll();
+    }catch(e){
+      console.error(e);
+      $('#calendar').innerHTML =
+        '<div class="mut">Unable to load data. Run the "Build TV Data and Deploy Pages" workflow.</div>';
     }
+  }
 
-    async function load(){
-      try{
-        const res = await fetch('../data/data.json', {cache:'no-cache'});
-        if(!res.ok) throw new Error('Failed to load data.json');
-        state.data = await res.json();
-        state.currentMonth = new Date(
-          state.today.getFullYear(),
-          state.today.getMonth(),
-          1
-        );
-        renderAll();
-        attachTabs();
-      }catch(e){
-        console.error(e);
-        $('#calendar').innerHTML =
-          '<div class="mut">Unable to load data. Run the "Build TV Data" workflow.</div>';
-      }
-    }
-
-    function attachTabs(){
-      $$('.tab').forEach(tab=>{
-        tab.addEventListener('click', ()=>{
-          const target = tab.dataset.tab;
-          if(tab.classList.contains('active')) return;
-
-          $$('.tab').forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-
-          ['calendar','shows','movies'].forEach(id=>{
-            $('#'+id).hidden = (id !== target);
-          });
-
-          if(target === 'calendar') renderCalendar();
-          if(target === 'shows')    renderShows();
-          if(target === 'movies')   renderMovies();
+  function attachTabs(){
+    $$('.tab').forEach(tab=>{
+      tab.onclick = ()=>{
+        const t = tab.dataset.tab;
+        if(tab.classList.contains('active')) return;
+        $$('.tab').forEach(x=>x.classList.remove('active'));
+        tab.classList.add('active');
+        ['calendar','shows','movies'].forEach(id=>{
+          $('#'+id).hidden = (id !== t);
         });
-      });
-    }
-
-    // ---------------- Calendar ----------------
-
-    function changeMonth(delta){
-      const m = state.currentMonth;
-      state.currentMonth = new Date(m.getFullYear(), m.getMonth() + delta, 1);
-      renderCalendar();
-    }
-
-    function renderCalendar(){
-      const host = $('#calendar');
-      const shows = getShows();
-      const movies = getMovies();
-
-      if(!shows.length && !movies.length){
-        host.innerHTML = '<div class="mut">No shows or movies configured.</div>';
-        return;
-      }
-
-      if(!state.currentMonth){
-        state.currentMonth = new Date(state.today.getFullYear(), state.today.getMonth(), 1);
-      }
-
-      const byDate = {};
-
-      // TV episodes
-      for(const show of shows){
-        for(const s of show.seasons || []){
-          for(const ep of s.episodes || []){
-            if(!ep.air_date) continue;
-            const key = ep.air_date;
-            (byDate[key] ||= []).push({
-              type:'episode',
-              show,
-              season:s.season_number,
-              ep
-            });
-          }
-        }
-      }
-
-      // Movies by release date
-      for(const mv of movies){
-        if(!mv.release_date) continue;
-        const key = mv.release_date;
-        (byDate[key] ||= []).push({ type:'movie', movie:mv });
-      }
-
-      // Sort within a day
-      for(const key in byDate){
-        byDate[key].sort((a,b)=>{
-          if(a.type !== b.type){
-            return a.type === 'episode' ? -1 : 1;
-          }
-          if(a.type === 'episode'){
-            if(a.show.name < b.show.name) return -1;
-            if(a.show.name > b.show.name) return 1;
-            return (a.ep.episode_number || 0) - (b.ep.episode_number || 0);
-          }
-          if(a.movie.name < b.movie.name) return -1;
-          if(a.movie.name > b.movie.name) return 1;
-          return 0;
-        });
-      }
-
-      const year  = state.currentMonth.getFullYear();
-      const month = state.currentMonth.getMonth();
-      const first = new Date(year, month, 1);
-      const firstDow = first.getDay();
-
-      const startDate = new Date(first);
-      startDate.setDate(first.getDate() - firstDow);
-
-      const monthName = first.toLocaleString(undefined, {month:'long', year:'numeric'});
-
-      let html = `
-        <div class="cal-head-sticky">
-          <div class="cal-header">
-            <button class="cal-btn" id="cal-prev">&lt; Prev</button>
-            <div class="cal-title">${monthName}</div>
-            <button class="cal-btn" id="cal-next">Next &gt;</button>
-          </div>
-          <div class="cal-dow-row">
-            ${DOW.map(d => `<div class="cal-dow">${d}</div>`).join('')}
-          </div>
-        </div>
-        <div class="cal-grid">
-      `;
-
-      for(let i=0;i<42;i++){
-        const d = new Date(startDate);
-        d.setDate(startDate.getDate() + i);
-
-        const isToday =
-          d.getFullYear() === state.today.getFullYear() &&
-          d.getMonth() === state.today.getMonth() &&
-          d.getDate() === state.today.getDate();
-
-        const ymd = d.toISOString().slice(0,10);
-        const items = byDate[ymd] || [];
-
-        html += `<div class="cal-day${isToday ? ' today' : ''}">`;
-        html += `<div class="cal-date">${d.getDate()}</div>`;
-
-        for(const item of items){
-          if(item.type === 'episode'){
-            const {show, season, ep} = item;
-            html += `
-              <div class="cal-item" data-show-id="${show.show_id}">
-                ${show.poster_path ? `<img src="${IMG(show.poster_path)}" alt="">` : ''}
-                <div class="cal-lines">
-                  <div class="cal-show">${show.name}</div>
-                  <div class="cal-ep">
-                    S${String(season).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}
-                    ${ep.name ? ' · ' + ep.name : ''}
-                  </div>
-                  <div class="links-ep">
-                    <a target="_blank" href="${show.links.tmdb}">TMDB</a>
-                    <a target="_blank" href="https://vidsrc.net/embed/tv/${show.show_id}/${season}/${ep.episode_number||''}">VidSrc</a>
-                    <a target="_blank" href="https://player.videasy.net/tv/${show.show_id}/${season}/${ep.episode_number||''}">Videasy</a>
-                  </div>
-                </div>
-              </div>
-            `;
-          } else if(item.type === 'movie'){
-            const mv = item.movie;
-            html += `
-              <div class="cal-item">
-                ${mv.poster_path ? `<img src="${IMG(mv.poster_path)}" alt="">` : ''}
-                <div class="cal-lines">
-                  <div class="cal-show">${mv.name}</div>
-                  <div class="cal-movie-label">Movie</div>
-                  <div class="links-ep">
-                    <a target="_blank" href="${mv.links.tmdb}">TMDB</a>
-                    <a target="_blank" href="https://vidsrc.net/embed/movie/${mv.movie_id}">VidSrc</a>
-                    <a target="_blank" href="https://player.videasy.net/movie/${mv.movie_id}">Videasy</a>
-                  </div>
-                </div>
-              </div>
-            `;
-          }
-        }
-
-        html += `</div>`;
-      }
-
-      html += `</div>`;
-      host.innerHTML = html;
-
-      $('#cal-prev').onclick = () => changeMonth(-1);
-      $('#cal-next').onclick = () => changeMonth(1);
-
-      // Click show / ep region opens overlay (for TV)
-      $$('#calendar .cal-item').forEach(item=>{
-        const id = item.dataset.showId;
-        if(!id) return;
-        item.addEventListener('click', e=>{
-          // ignore clicks on links
-          if(e.target.tagName === 'A') return;
-          const show = getShows().find(s => s.show_id === parseInt(id,10));
-          if(show) openOverlay(show);
-        });
-      });
-    }
-
-    // ---------------- Shows ----------------
-
-    function renderShows(){
-      const host = $('#shows');
-      const shows = getShows();
-      if(!shows.length){
-        host.innerHTML = '<div class="mut">No shows loaded.</div>';
-        return;
-      }
-
-      const genres = new Set();
-      const statuses = new Set();
-      for(const sh of shows){
-        (sh.genres || []).forEach(g => genres.add(g));
-        if(sh.status) statuses.add(sh.status);
-      }
-
-      let html = `
-        <div class="controls-sticky">
-          <div class="controls">
-            <span class="label">Sort:</span>
-            <button class="btn" id="sh-sort-title"></button>
-            <button class="btn" id="sh-sort-next">Next episode</button>
-            <span class="label">Genre:</span>
-            <button class="btn${state.showsGenre==='All'?' active':''}" data-sh-genre="All">All</button>
-      `;
-
-      for(const g of Array.from(genres).sort()){
-        html += `<button class="btn${state.showsGenre===g?' active':''}" data-sh-genre="${g}">${g}</button>`;
-      }
-
-      html += `
-            <span class="label">Status:</span>
-            <button class="btn${state.showsStatus==='All'?' active':''}" data-sh-status="All">All</button>
-      `;
-
-      for(const s of Array.from(statuses).sort()){
-        html += `<button class="btn${state.showsStatus===s?' active':''}" data-sh-status="${s}">${s}</button>`;
-      }
-
-      html += `
-          </div>
-        </div>
-        <div class="grid">
-      `;
-
-      let list = shows.slice();
-
-      if(state.showsGenre !== 'All'){
-        list = list.filter(sh => (sh.genres || []).includes(state.showsGenre));
-      }
-      if(state.showsStatus !== 'All'){
-        list = list.filter(sh => (sh.status || '') === state.showsStatus);
-      }
-
-      if(state.showsSort === 'title'){
-        list.sort((a,b)=>{
-          if(a.name < b.name) return state.showsDir === 'asc' ? -1 : 1;
-          if(a.name > b.name) return state.showsDir === 'asc' ? 1 : -1;
-          return 0;
-        });
-      }else{ // next episode / latest
-        function lastDate(sh){
-          let best = null;
-          for(const s of sh.seasons || []){
-            for(const ep of s.episodes || []){
-              if(!ep.air_date) continue;
-              const d = new Date(ep.air_date);
-              if(!best || d > best) best = d;
-            }
-          }
-          return best;
-        }
-        list.sort((a,b)=>{
-          const da = lastDate(a);
-          const db = lastDate(b);
-          if(!da && !db) return 0;
-          if(!da) return 1;
-          if(!db) return -1;
-          return da - db;
-        });
-      }
-
-      for(const sh of list){
-        html += `
-          <div class="card">
-            ${sh.poster_path ? `<img class="poster" src="${IMG(sh.poster_path)}" alt="${sh.name}">` : `<div class="poster"></div>`}
-            <div class="card-body">
-              <div class="title link-show" data-show-id="${sh.show_id}">${sh.name}</div>
-              <div class="mut small">
-                ${(sh.genres || []).join(', ')}
-                ${sh.status ? ' • ' + sh.status : ''}
-              </div>
-              <div class="divider"></div>
-              <div class="links small">
-                <a target="_blank" href="${sh.links.tmdb}">TMDB</a>
-              </div>
-            </div>
-          </div>
-        `;
-      }
-
-      html += `</div>`;
-      host.innerHTML = html;
-
-      const sortTitleBtn = $('#sh-sort-title');
-      sortTitleBtn.textContent = state.showsDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
-      sortTitleBtn.classList.add(state.showsSort === 'title' ? 'active' : '');
-      $('#sh-sort-next').classList.toggle('active', state.showsSort === 'next');
-
-      sortTitleBtn.onclick = ()=>{
-        if(state.showsSort === 'title'){
-          state.showsDir = state.showsDir === 'asc' ? 'desc' : 'asc';
-        }else{
-          state.showsSort = 'title';
-        }
-        renderShows();
+        if(t === 'calendar') renderCalendar();
+        if(t === 'shows') renderShows();
+        if(t === 'movies') renderMovies();
       };
-      $('#sh-sort-next').onclick = ()=>{
-        state.showsSort = 'next';
-        renderShows();
-      };
+    });
+  }
 
-      $$('[data-sh-genre]').forEach(btn=>{
-        btn.onclick = ()=>{
-          state.showsGenre = btn.dataset.shGenre;
-          renderShows();
-        };
-      });
-      $$('[data-sh-status]').forEach(btn=>{
-        btn.onclick = ()=>{
-          state.showsStatus = btn.dataset.shStatus;
-          renderShows();
-        };
-      });
+  // ---------------- Calendar ----------------
+  function changeMonth(delta){
+    const m = state.currentMonth;
+    state.currentMonth = new Date(m.getFullYear(), m.getMonth()+delta, 1);
+    renderCalendar();
+  }
 
-      wireShowClicks();
+  function buildEpisodeIcons(show, season, epNum){
+    const e = epNum || '';
+    const sid = show.show_id;
+    return `
+      <a class="icon-link" target="_blank"
+         href="https://www.themoviedb.org/tv/${sid}/season/${season}/episode/${e}">
+        <span>Ⓣ</span><span>TMDB</span>
+      </a>
+      <a class="icon-link" target="_blank"
+         href="https://vidsrc.net/embed/tv/${sid}/${season}/${e}">
+        <span>▶</span><span>VidSrc</span>
+      </a>
+      <a class="icon-link" target="_blank"
+         href="https://player.videasy.net/tv/${sid}/${season}/${e}">
+        <span>▶</span><span>Videasy</span>
+      </a>
+    `;
+  }
+
+  function buildMovieIcons(mv){
+    const id = mv.movie_id;
+    return `
+      <a class="icon-link" target="_blank"
+         href="${mv.links.tmdb}">
+        <span>Ⓣ</span><span>TMDB</span>
+      </a>
+      <a class="icon-link" target="_blank"
+         href="https://vidsrc.net/embed/movie/${id}">
+        <span>▶</span><span>VidSrc</span>
+      </a>
+      <a class="icon-link" target="_blank"
+         href="https://player.videasy.net/movie/${id}">
+        <span>▶</span><span>Videasy</span>
+      </a>
+    `;
+  }
+
+  function renderCalendar(){
+    const host = $('#calendar');
+    const shows = getShows();
+    const movies = getMovies();
+    if(!shows.length && !movies.length){
+      host.innerHTML = '<div class="mut">No shows or movies configured.</div>';
+      return;
     }
 
-    // ---------------- Movies ----------------
-
-    function renderMovies(){
-      const host = $('#movies');
-      const movies = getMovies();
-      if(!movies.length){
-        host.innerHTML = '<div class="mut">No movies loaded.</div>';
-        return;
-      }
-
-      const genres = new Set();
-      const statuses = new Set();
-      for(const mv of movies){
-        (mv.genres || []).forEach(g => genres.add(g));
-        if(mv.status) statuses.add(mv.status);
-      }
-
-      let html = `
-        <div class="controls-sticky">
-          <div class="controls">
-            <span class="label">Sort:</span>
-            <button class="btn" id="mv-sort-title"></button>
-            <button class="btn" id="mv-sort-date">Release date</button>
-            <span class="label">Genre:</span>
-            <button class="btn${state.moviesGenre==='All'?' active':''}" data-mv-genre="All">All</button>
-      `;
-
-      for(const g of Array.from(genres).sort()){
-        html += `<button class="btn${state.moviesGenre===g?' active':''}" data-mv-genre="${g}">${g}</button>`;
-      }
-
-      html += `
-            <span class="label">Status:</span>
-            <button class="btn${state.moviesStatus==='All'?' active':''}" data-mv-status="All">All</button>
-      `;
-
-      for(const s of Array.from(statuses).sort()){
-        html += `<button class="btn${state.moviesStatus===s?' active':''}" data-mv-status="${s}">${s}</button>`;
-      }
-
-      html += `
-          </div>
-        </div>
-        <div class="grid">
-      `;
-
-      let list = movies.slice();
-
-      if(state.moviesGenre !== 'All'){
-        list = list.filter(mv => (mv.genres || []).includes(state.moviesGenre));
-      }
-      if(state.moviesStatus !== 'All'){
-        list = list.filter(mv => (mv.status || '') === state.moviesStatus);
-      }
-
-      if(state.moviesSort === 'title'){
-        list.sort((a,b)=>{
-          if(a.name < b.name) return state.moviesDir === 'asc' ? -1 : 1;
-          if(a.name > b.name) return state.moviesDir === 'asc' ? 1 : -1;
-          return 0;
-        });
-      }else{
-        list.sort((a,b)=>{
-          const da = a.release_date ? new Date(a.release_date) : null;
-          const db = b.release_date ? new Date(b.release_date) : null;
-          if(!da && !db) return 0;
-          if(!da) return 1;
-          if(!db) return -1;
-          return da - db;
-        });
-      }
-
-      for(const mv of list){
-        html += `
-          <div class="card">
-            ${mv.poster_path ? `<img class="poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="poster"></div>`}
-            <div class="card-body">
-              <div class="title">${mv.name}</div>
-              <div class="mut small">
-                ${(mv.genres || []).join(', ')}
-                ${mv.status ? ' • ' + mv.status : ''}
-                ${mv.release_date ? ' • ' + mv.release_date : ''}
-              </div>
-              <div class="divider"></div>
-              ${movieLinks(mv)}
-            </div>
-          </div>
-        `;
-      }
-
-      html += `</div>`;
-      host.innerHTML = html;
-
-      const sortTitleBtn = $('#mv-sort-title');
-      sortTitleBtn.textContent = state.moviesDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
-      sortTitleBtn.classList.add(state.moviesSort === 'title' ? 'active' : '');
-      $('#mv-sort-date').classList.toggle('active', state.moviesSort === 'date');
-
-      sortTitleBtn.onclick = ()=>{
-        if(state.moviesSort === 'title'){
-          state.moviesDir = state.moviesDir === 'asc' ? 'desc' : 'asc';
-        }else{
-          state.moviesSort = 'title';
-        }
-        renderMovies();
-      };
-      $('#mv-sort-date').onclick = ()=>{
-        state.moviesSort = 'date';
-        renderMovies();
-      };
-
-      $$('[data-mv-genre]').forEach(btn=>{
-        btn.onclick = ()=>{
-          state.moviesGenre = btn.dataset.mvGenre;
-          renderMovies();
-        };
-      });
-      $$('[data-mv-status]').forEach(btn=>{
-        btn.onclick = ()=>{
-          state.moviesStatus = btn.dataset.mvStatus;
-          renderMovies();
-        };
-      });
-    }
-
-    function movieLinks(mv){
-      const mid = mv.movie_id;
-      return `
-        <div class="links small">
-          <a target="_blank" href="${mv.links.tmdb}">TMDB</a>
-          <a target="_blank" href="https://vidsrc.net/embed/movie/${mid}">VidSrc</a>
-          <a target="_blank" href="https://player.videasy.net/movie/${mid}">Videasy</a>
-        </div>
-      `;
-    }
-
-    // ---------------- Overlay (Show details) ----------------
-
-    function wireShowClicks(){
-      $$('.link-show').forEach(el=>{
-        el.onclick = e=>{
-          e.preventDefault();
-          const id = parseInt(el.dataset.showId, 10);
-          const show = getShows().find(s => s.show_id === id);
-          if(show) openOverlay(show);
-        };
-      });
-    }
-
-    function guessCurrentSeason(show){
-      if(!show.seasons || !show.seasons.length) return null;
-      let best = null;
-      let bestDate = null;
-      for(const s of show.seasons){
+    const by = {};
+    // shows
+    for(const sh of shows){
+      for(const s of sh.seasons || []){
         for(const ep of s.episodes || []){
           if(!ep.air_date) continue;
-          const d = new Date(ep.air_date);
-          if(!bestDate || d > bestDate){
-            bestDate = d;
-            best = s.season_number;
-          }
+          const key = ep.air_date;
+          (by[key] ||= []).push({type:'ep', show:sh, s:s.season_number, ep});
         }
       }
-      return best;
+    }
+    // movies
+    for(const mv of movies){
+      if(!mv.release_date) continue;
+      const key = mv.release_date;
+      (by[key] ||= []).push({type:'mv', mv});
     }
 
-    function openOverlay(show){
-      const ov = $('#overlay');
-      const content = $('#overlay-content');
-      const seasons = show.seasons || [];
-      const current = guessCurrentSeason(show);
+    const year = state.currentMonth.getFullYear();
+    const month = state.currentMonth.getMonth();
+    const first = new Date(year, month, 1);
+    const start = new Date(first);
+    start.setDate(first.getDate() - first.getDay());
 
-      let seasonsHtml = '';
-      for(const s of seasons){
-        const eps = s.episodes || [];
-        const first = eps.find(ep => ep.air_date) || eps[0];
-        const year = first && first.air_date ? first.air_date.slice(0,4) : '';
-        seasonsHtml += `
-          <div class="season-row" data-season="${s.season_number}">
-            <div class="season-label">
-              Season ${s.season_number}
-              ${current === s.season_number ? '<span class="season-badge">Current season</span>' : ''}
+    const monthName = first.toLocaleString(undefined,{month:'long',year:'numeric'});
+
+    let html = `
+      <div class="cal-head-sticky">
+        <div class="cal-header">
+          <button class="cal-btn" id="cal-prev">&lt; Prev</button>
+          <div class="cal-title">${monthName}</div>
+          <button class="cal-btn" id="cal-next">Next &gt;</button>
+        </div>
+        <div class="cal-dow-row">
+          <div class="cal-dow">Sun</div>
+          <div class="cal-dow">Mon</div>
+          <div class="cal-dow">Tue</div>
+          <div class="cal-dow">Wed</div>
+          <div class="cal-dow">Thu</div>
+          <div class="cal-dow">Fri</div>
+          <div class="cal-dow">Sat</div>
+        </div>
+      </div>
+      <div class="cal-grid">
+    `;
+
+    for(let i=0;i<42;i++){
+      const d = new Date(start);
+      d.setDate(start.getDate()+i);
+      const isToday =
+        d.getFullYear()===state.today.getFullYear() &&
+        d.getMonth()===state.today.getMonth() &&
+        d.getDate()===state.today.getDate();
+      const key = d.toISOString().slice(0,10);
+      const items = by[key] || [];
+
+      html += `<div class="cal-day${isToday?' today':''}">`;
+      html += `<div class="cal-date">${d.getDate()}</div>`;
+
+      for(const it of items){
+        if(it.type === 'ep'){
+          const {show,s,ep} = it;
+          const epCode = `S${String(s).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}`;
+          html += `
+            <div class="cal-item" data-show-id="${show.show_id}">
+              ${show.poster_path ? `<img src="${IMG(show.poster_path)}" alt="">` : ''}
+              <div class="cal-lines">
+                <div class="cal-show">${show.name}</div>
+                <div class="cal-ep" data-show-id="${show.show_id}">
+                  ${epCode}${ep.name ? ' · ' + ep.name : ''}
+                </div>
+                <div class="icon-row">
+                  ${buildEpisodeIcons(show,s,ep.episode_number||'')}
+                </div>
+              </div>
             </div>
-            <div class="season-meta">
-              ${year ? year + ' • ' : ''}${eps.length} Episodes
+          `;
+        } else {
+          const mv = it.mv;
+          html += `
+            <div class="cal-item">
+              ${mv.poster_path ? `<img src="${IMG(mv.poster_path)}" alt="">` : ''}
+              <div class="cal-lines">
+                <div class="cal-show">${mv.name}</div>
+                <div class="cal-movie-label">Movie</div>
+                <div class="icon-row">
+                  ${buildMovieIcons(mv)}
+                </div>
+              </div>
             </div>
-            ${s.overview ? `<div class="season-overview">${s.overview}</div>` : ''}
-          </div>
-        `;
+          `;
+        }
       }
 
-      content.innerHTML = `
-        <div class="ov-header">
-          ${show.poster_path ? `<img class="ov-poster" src="${IMG(show.poster_path)}" alt="${show.name}">` : `<div class="ov-poster"></div>`}
-          <div>
-            <div class="ov-title">${show.name}</div>
-            <div class="ov-sub">
-              ${(show.genres || []).join(', ')}
-              ${show.status ? ' • ' + show.status : ''}
+      html += `</div>`;
+    }
+
+    html += `</div>`;
+    host.innerHTML = html;
+
+    $('#cal-prev').onclick = ()=>changeMonth(-1);
+    $('#cal-next').onclick = ()=>changeMonth(1);
+
+    // click show/ep (not icons) => overlay
+    $$('#calendar .cal-item').forEach(el=>{
+      const id = el.dataset.showId || el.querySelector('.cal-ep[data-show-id]')?.dataset.showId;
+      if(!id) return;
+      el.addEventListener('click', e=>{
+        if(e.target.closest('.icon-link')) return;
+        const show = getShows().find(s=>s.show_id===parseInt(id,10));
+        if(show) openOverlay(show);
+      });
+    });
+  }
+
+  // ---------------- Shows ----------------
+  function renderShows(){
+    const host = $('#shows');
+    const shows = getShows();
+    if(!shows.length){
+      host.innerHTML = '<div class="mut">No shows loaded.</div>';
+      return;
+    }
+
+    const genreSet = new Set();
+    const statusSet = new Set();
+    shows.forEach(sh=>{
+      (sh.genres||[]).forEach(g=>genreSet.add(g));
+      if(sh.status) statusSet.add(sh.status);
+    });
+
+    let html = `
+      <div class="controls-sticky">
+        <div class="controls">
+          <span class="label">Genre</span>
+          <button class="btn${state.showsGenre==='All'?' active':''}" data-sh-genre="All">All</button>
+    `;
+    Array.from(genreSet).sort().forEach(g=>{
+      html += `<button class="btn${state.showsGenre===g?' active':''}" data-sh-genre="${g}">${g}</button>`;
+    });
+    html += `
+        </div>
+        <div class="controls" style="margin-top:4px;">
+          <span class="label">Sort</span>
+          <button class="btn" id="sh-sort-title"></button>
+          <span class="label">Status</span>
+          <button class="btn${state.showsStatus==='All'?' active':''}" data-sh-status="All">All</button>
+    `;
+    Array.from(statusSet).sort().forEach(s=>{
+      html += `<button class="btn${state.showsStatus===s?' active':''}" data-sh-status="${s}">${s}</button>`;
+    });
+    html += `
+        </div>
+      </div>
+      <div class="grid">
+    `;
+
+    // filter
+    let list = shows.slice();
+    if(state.showsGenre !== 'All'){
+      list = list.filter(sh => (sh.genres||[]).includes(state.showsGenre));
+    }
+    if(state.showsStatus !== 'All'){
+      list = list.filter(sh => sh.status === state.showsStatus);
+    }
+
+    // sort
+    list.sort((a,b)=>{
+      const an = a.name || '';
+      const bn = b.name || '';
+      if(an < bn) return state.showsDir === 'asc' ? -1 : 1;
+      if(an > bn) return state.showsDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    for(const sh of list){
+      html += `
+        <div class="card">
+          ${sh.poster_path ? `<img class="poster" src="${IMG(sh.poster_path)}" alt="${sh.name}">` : `<div class="poster"></div>`}
+          <div class="card-body">
+            <div class="title link-show" data-show-id="${sh.show_id}">${sh.name}</div>
+            <div class="mut small">
+              ${(sh.genres||[]).join(', ')}
+              ${sh.status ? ' • ' + sh.status : ''}
             </div>
-            ${show.overview ? `<div class="ov-overview">${show.overview}</div>` : ''}
+            <div class="divider"></div>
+            <div class="icon-row">
+              <a class="icon-link" target="_blank" href="${sh.links.tmdb}">
+                <span>Ⓣ</span><span>TMDB</span>
+              </a>
+            </div>
           </div>
         </div>
-        <div class="season-list">
-          ${seasonsHtml || '<div class="mut">No seasons found.</div>'}
+      `;
+    }
+    html += `</div>`;
+    host.innerHTML = html;
+
+    // wire controls
+    const sortBtn = $('#sh-sort-title');
+    sortBtn.textContent = state.showsDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
+    sortBtn.classList.add('active');
+    sortBtn.onclick = ()=>{
+      state.showsDir = state.showsDir === 'asc' ? 'desc' : 'asc';
+      renderShows();
+    };
+
+    $$('[data-sh-genre]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.showsGenre = btn.dataset.shGenre;
+        renderShows();
+      };
+    });
+    $$('[data-sh-status]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.showsStatus = btn.dataset.shStatus;
+        renderShows();
+      };
+    });
+
+    wireShowClicks();
+  }
+
+  // ---------------- Movies ----------------
+  function renderMovies(){
+    const host = $('#movies');
+    const movies = getMovies();
+    if(!movies.length){
+      host.innerHTML = '<div class="mut">No movies loaded.</div>';
+      return;
+    }
+
+    const genreSet = new Set();
+    const statusSet = new Set();
+    movies.forEach(mv=>{
+      (mv.genres||[]).forEach(g=>genreSet.add(g));
+      if(mv.status) statusSet.add(mv.status);
+    });
+
+    let html = `
+      <div class="controls-sticky">
+        <div class="controls">
+          <span class="label">Genre</span>
+          <button class="btn${state.moviesGenre==='All'?' active':''}" data-mv-genre="All">All</button>
+    `;
+    Array.from(genreSet).sort().forEach(g=>{
+      html += `<button class="btn${state.moviesGenre===g?' active':''}" data-mv-genre="${g}">${g}</button>`;
+    });
+    html += `
+        </div>
+        <div class="controls" style="margin-top:4px;">
+          <span class="label">Sort</span>
+          <button class="btn" id="mv-sort-title"></button>
+          <button class="btn${state.moviesSort==='date'?' active':''}" id="mv-sort-date">Release date</button>
+          <span class="label">Status</span>
+          <button class="btn${state.moviesStatus==='All'?' active':''}" data-mv-status="All">All</button>
+    `;
+    Array.from(statusSet).sort().forEach(s=>{
+      html += `<button class="btn${state.moviesStatus===s?' active':''}" data-mv-status="${s}">${s}</button>`;
+    });
+    html += `
+        </div>
+      </div>
+      <div class="grid">
+    `;
+
+    let list = movies.slice();
+    if(state.moviesGenre !== 'All'){
+      list = list.filter(mv => (mv.genres||[]).includes(state.moviesGenre));
+    }
+    if(state.moviesStatus !== 'All'){
+      list = list.filter(mv => mv.status === state.moviesStatus);
+    }
+
+    if(state.moviesSort === 'title'){
+      list.sort((a,b)=>{
+        const an = a.name || '';
+        const bn = b.name || '';
+        if(an < bn) return state.moviesDir === 'asc' ? -1 : 1;
+        if(an > bn) return state.moviesDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }else{
+      list.sort((a,b)=>{
+        const da = a.release_date ? new Date(a.release_date) : null;
+        const db = b.release_date ? new Date(b.release_date) : null;
+        if(!da && !db) return 0;
+        if(!da) return 1;
+        if(!db) return -1;
+        return da - db;
+      });
+    }
+
+    for(const mv of list){
+      html += `
+        <div class="card">
+          ${mv.poster_path ? `<img class="poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="poster"></div>`}
+          <div class="card-body">
+            <div class="title">${mv.name}</div>
+            <div class="mut small">
+              ${(mv.genres||[]).join(', ')}
+              ${mv.status ? ' • ' + mv.status : ''}
+              ${mv.release_date ? ' • ' + mv.release_date : ''}
+            </div>
+            <div class="divider"></div>
+            <div class="icon-row">
+              ${buildMovieIcons(mv)}
+            </div>
+          </div>
         </div>
       `;
-
-      content.querySelectorAll('.season-row').forEach(row=>{
-        row.addEventListener('click', ()=>{
-          const sn = parseInt(row.dataset.season, 10);
-          const s = seasons.find(x => x.season_number === sn);
-          if(!s) return;
-
-          const existing = row.nextElementSibling;
-          if(existing && existing.classList.contains('episodes')){
-            existing.remove();
-            return;
-          }
-          content.querySelectorAll('.episodes').forEach(e => e.remove());
-
-          const wrap = document.createElement('div');
-          wrap.className = 'episodes';
-
-          const eps = (s.episodes || []).filter(ep => !isPureTBA(ep.name, ep.overview));
-
-          if(!eps.length){
-            wrap.innerHTML = '<div class="mut">No detailed episodes yet.</div>';
-          }else{
-            wrap.innerHTML = eps.map(ep=>{
-              const code = `S${String(sn).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}`;
-              const date = ep.air_date ? ` • ${ep.air_date}` : '';
-              const ov = ep.overview ? ` — ${ep.overview}` : '';
-              return `<div class="ep-row"><strong>${code}</strong> ${ep.name || ''}${date}${ov}</div>`;
-            }).join('');
-          }
-
-          row.insertAdjacentElement('afterend', wrap);
-        });
-      });
-
-      ov.hidden = false;
-      $('.overlay-close').onclick = closeOverlay;
-      $('.overlay-backdrop').onclick = closeOverlay;
     }
+    html += `</div>`;
+    host.innerHTML = html;
 
-    function closeOverlay(){
-      $('#overlay').hidden = true;
-      $('#overlay-content').innerHTML = '';
-    }
-
-    // ---------------- Footer meta ----------------
-
-    function renderMeta(){
-      if(!state.data) return;
-      const metaEl = $('#meta');
-      const ts = state.data.generated_at || '';
-      const sc = (state.data.meta && state.data.meta.shows) || (state.data.shows || []).length;
-      const mc = (state.data.meta && state.data.meta.movies) || (state.data.movies || []).length;
-      metaEl.textContent = `Data built: ${ts} · Shows: ${sc} · Movies: ${mc}`;
-    }
-
-    // ---------------- Orchestrator ----------------
-
-    function renderAll(){
-      renderCalendar();
-      renderShows();
+    const sortTitleBtn = $('#mv-sort-title');
+    sortTitleBtn.textContent = state.moviesDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
+    sortTitleBtn.classList.toggle('active', state.moviesSort === 'title');
+    sortTitleBtn.onclick = ()=>{
+      if(state.moviesSort === 'title'){
+        state.moviesDir = state.moviesDir === 'asc' ? 'desc' : 'asc';
+      }else{
+        state.moviesSort = 'title';
+      }
       renderMovies();
-      renderMeta();
-      // initial visible tab is calendar
-      $('#shows').hidden = true;
-      $('#movies').hidden = true;
-    }
+    };
+    $('#mv-sort-date').onclick = ()=>{
+      state.moviesSort = 'date';
+      renderMovies();
+    };
 
-    load();
-  </script>
+    $$('[data-mv-genre]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.moviesGenre = btn.dataset.mvGenre;
+        renderMovies();
+      };
+    });
+    $$('[data-mv-status]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.moviesStatus = btn.dataset.mvStatus;
+        renderMovies();
+      };
+    });
+  }
+
+  // ---------------- Overlay ----------------
+  function wireShowClicks(){
+    $$('.link-show').forEach(el=>{
+      el.onclick = e=>{
+        e.preventDefault();
+        const id = parseInt(el.dataset.showId,10);
+        const show = getShows().find(s=>s.show_id===id);
+        if(show) openOverlay(show);
+      };
+    });
+  }
+
+  function guessCurrentSeason(show){
+    let best = null, bestDate = null;
+    (show.seasons||[]).forEach(s=>{
+      (s.episodes||[]).forEach(ep=>{
+        if(!ep.air_date) return;
+        const d = new Date(ep.air_date);
+        if(!bestDate || d > bestDate){
+          bestDate = d;
+          best = s.season_number;
+        }
+      });
+    });
+    return best;
+  }
+
+  function openOverlay(show){
+    const ov = $('#overlay');
+    const box = $('#overlay-content');
+    const seasons = show.seasons || [];
+    const current = guessCurrentSeason(show);
+
+    let seasonHtml = '';
+    seasons.forEach(s=>{
+      const eps = s.episodes || [];
+      const first = eps.find(ep=>ep.air_date) || eps[0];
+      const year = first && first.air_date ? first.air_date.slice(0,4) : '';
+      seasonHtml += `
+        <div class="season-row" data-season="${s.season_number}">
+          <div class="season-label">
+            Season ${s.season_number}
+            ${current===s.season_number ? '<span class="season-badge">Current season</span>' : ''}
+          </div>
+          <div class="season-meta">
+            ${year ? year + ' • ' : ''}${eps.length} episodes
+          </div>
+        </div>
+      `;
+    });
+
+    box.innerHTML = `
+      <div class="ov-header">
+        ${show.poster_path ? `<img class="ov-poster" src="${IMG(show.poster_path)}" alt="${show.name}">` : `<div class="ov-poster"></div>`}
+        <div>
+          <div class="ov-title">
+            <a href="${show.links.tmdb}" target="_blank">${show.name}</a>
+          </div>
+          <div class="ov-sub">
+            ${(show.genres||[]).join(', ')}
+            ${show.status ? ' • ' + show.status : ''}
+          </div>
+          ${show.overview ? `<div class="ov-overview">${show.overview}</div>` : ''}
+          <div class="ov-links">
+            <a class="icon-link" target="_blank" href="${show.links.tmdb}">
+              <span>Ⓣ</span><span>TMDB</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="season-list">
+        ${seasonHtml || '<div class="mut">No seasons found.</div>'}
+      </div>
+    `;
+
+    box.querySelectorAll('.season-row').forEach(row=>{
+      row.onclick = ()=>{
+        const sn = parseInt(row.dataset.season,10);
+        const s = seasons.find(x=>x.season_number===sn);
+        if(!s) return;
+
+        const existing = row.nextElementSibling;
+        if(existing && existing.classList.contains('episodes')){
+          existing.remove();
+          return;
+        }
+        box.querySelectorAll('.episodes').forEach(e=>e.remove());
+
+        const wrap = document.createElement('div');
+        wrap.className = 'episodes';
+        const eps = (s.episodes||[]).filter(ep => !(isPureTBA(ep.name, ep.overview)));
+
+        if(!eps.length){
+          wrap.innerHTML = '<div class="mut">No detailed episodes yet.</div>';
+        }else{
+          wrap.innerHTML = eps.map(ep=>{
+            const code = `S${String(sn).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}`;
+            const date = ep.air_date ? ` • ${ep.air_date}` : '';
+            const ov = ep.overview ? ` — ${ep.overview}` : '';
+            return `
+              <div class="ep-row">
+                <strong>${code}</strong> ${ep.name || ''}${date}${ov}
+                <div class="icon-row">
+                  ${buildEpisodeIcons(show,sn,ep.episode_number||'')}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+        row.insertAdjacentElement('afterend', wrap);
+      };
+    });
+
+    $('#overlay .overlay-close').onclick = closeOverlay;
+    $('#overlay .overlay-backdrop').onclick = closeOverlay;
+    ov.hidden = false;
+  }
+
+  function closeOverlay(){
+    $('#overlay').hidden = true;
+    $('#overlay-content').innerHTML = '';
+  }
+
+  // ---------------- Meta ----------------
+  function renderMeta(){
+    if(!state.data) return;
+    const sc = (state.data.meta && state.data.meta.shows) || (state.data.shows||[]).length;
+    const mc = (state.data.meta && state.data.meta.movies) || (state.data.movies||[]).length;
+    $('#meta').textContent =
+      `Data built: ${state.data.generated_at || 'n/a'} · Shows: ${sc} · Movies: ${mc}`;
+  }
+
+  function renderAll(){
+    renderCalendar();
+    renderShows();
+    renderMovies();
+    renderMeta();
+    // default visible: calendar
+    $('#shows').hidden = true;
+    $('#movies').hidden = true;
+  }
+
+  load();
+</script>
 </body>
 </html>

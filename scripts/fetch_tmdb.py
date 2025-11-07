@@ -1,45 +1,46 @@
 # =============================================================================
 # File: scripts/fetch_tmdb.py
 # Project: my_TV_Movie
-# Version: v2.1.0 (2025-11-07)
+# Version: v2.2.0 (2025-11-07)
 #
 # Purpose:
-#   Build a single static data file used by the web UI:
+#   Build data/data.json for the static web UI.
+#
+# Inputs:
+#   tv_list.txt
+#       name | tmdb_show_id | season_spec | tvmaze_id (optional)
+#         season_spec:
+#           5       -> only season 5
+#           1,2,5   -> seasons 1, 2, 5
+#           *       -> all seasons
+#
+#   movies_list.txt OR movies.txt
+#       name | tmdb_movie_id
+#
+# Behavior:
+#   - Fetches show + season + episode data from TMDB.
+#   - Optionally enriches with TVMaze if tvmaze_id + API_TVMAZE_KEY.
+#   - Fetches movies from TMDB.
+#   - Writes:
 #       data/data.json
+#       data/last_refresh.txt
 #
-#   Sources:
-#     - tv_list.txt
-#         name | tmdb_show_id | season_spec | tvmaze_id (optional)
-#           season_spec:
-#             5       -> only season 5
-#             1,2,5   -> seasons 1, 2, and 5
-#             *       -> all seasons from TMDB
+# Output schema (simplified):
+#   {
+#     "generated_at": "...Z",
+#     "shows": [ { show_id, name, status, genres, links, seasons[] } ],
+#     "movies": [ { movie_id, name, status, genres, links } ],
+#     "meta": { "shows": N, "movies": M }
+#   }
 #
-#     - movies_list.txt OR movies.txt
-#         Preferred:
-#           name | tmdb_movie_id
-#
-#         Robust mode:
-#           If the file is one long line with repeated:
-#             Movie Name | 123456 |
-#           this script uses a regex to extract all (name, id) pairs.
-#
-#   Output (data/data.json):
-#     {
-#       "generated_at": "<UTC ISO8601>",
-#       "shows":  [ { ... } ],
-#       "movies": [ { ... } ],
-#       "meta": { "shows": N, "movies": M }
-#     }
-#
-# Env / Secrets:
-#   API_TMDB_KEY   (required unless API_TMDB_TOKEN set)
-#   API_TMDB_TOKEN (optional v4)
-#   API_TVMAZE_KEY (optional; improves episode metadata when tvmaze_id given)
+# Env / GitHub Secrets:
+#   API_TMDB_KEY     (required, unless API_TMDB_TOKEN used)
+#   API_TMDB_TOKEN   (optional TMDB v4)
+#   API_TVMAZE_KEY   (optional; improves episodes)
 #
 # Notes:
-#   - Safe to run locally and in GitHub Actions.
-#   - Movies with non-numeric IDs (e.g. "TBD") are skipped.
+#   - Safe for local runs and GitHub Actions.
+#   - Skips invalid / TBD movie IDs.
 # =============================================================================
 
 import os
@@ -64,12 +65,15 @@ import requests
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TV_LIST = ROOT / "tv_list.txt"
 
+
 def find_movies_list():
+    """Find movies_list.txt or movies.txt if present."""
     for name in ("movies_list.txt", "movies.txt"):
         p = ROOT / name
         if p.exists():
             return p
     return None
+
 
 MOVIES_LIST = find_movies_list()
 
@@ -78,7 +82,7 @@ DATA_JSON = DATA_DIR / "data.json"
 STAMP = DATA_DIR / "last_refresh.txt"
 
 # -----------------------------------------------------------------------------
-# Env
+# Environment
 # -----------------------------------------------------------------------------
 load_dotenv(ROOT / ".env")
 
@@ -98,14 +102,15 @@ PARAMS_TMDB = {"api_key": TMDB_V3} if TMDB_V3 and not TMDB_V4 else {}
 TV_LINE_RE = re.compile(
     r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*\|\s*([\d,\*]+)(?:\s*\|\s*(\d+))?\s*$"
 )
-
-# matches "Movie Name | 123456"
-MOVIE_PAIR_RE = re.compile(r"([^|#]+?)\s*\|\s*(\d{1,10})\b")
+MOVIE_LINE_RE = re.compile(
+    r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*$"
+)
 
 # -----------------------------------------------------------------------------
 # HTTP helpers
 # -----------------------------------------------------------------------------
 def tmdb_get(path: str, extra_params=None, max_tries=5, backoff=1.5):
+    """GET from TMDB with retry + v3/v4 auth."""
     url = f"{BASE_TMDB}{path}"
     params = {}
     if not TMDB_V4:
@@ -120,15 +125,17 @@ def tmdb_get(path: str, extra_params=None, max_tries=5, backoff=1.5):
     for attempt in range(max_tries):
         r = s.get(url, params=params, timeout=20)
         if r.status_code == 429:
+            # rate limited; backoff
             time.sleep(backoff * (attempt + 1))
             continue
         r.raise_for_status()
         return r.json()
 
-    raise RuntimeError(f"TMDB request failed (rate-limited?): {url}")
+    raise RuntimeError(f"TMDB request failed after retries: {url}")
 
 
 def tvmaze_get(path: str, params=None, max_tries=3, backoff=1.5):
+    """GET from TVMaze if enabled."""
     if not TVMAZE_KEY:
         raise RuntimeError("TVMaze disabled (no API_TVMAZE_KEY).")
     url = f"{BASE_TVMAZE}{path}"
@@ -140,7 +147,7 @@ def tvmaze_get(path: str, params=None, max_tries=3, backoff=1.5):
             continue
         r.raise_for_status()
         return r.json()
-    raise RuntimeError(f"TVMaze request failed (rate-limited?): {url}")
+    raise RuntimeError(f"TVMaze request failed after retries: {url}")
 
 
 def strip_html(text: str) -> str:
@@ -181,51 +188,33 @@ def parse_tv_list(path: pathlib.Path):
     return out
 
 # -----------------------------------------------------------------------------
-# Parse movies_list (robust)
+# Parse movies_list (simple + robust)
 # -----------------------------------------------------------------------------
 def parse_movies_list(path: pathlib.Path | None):
     if not path or not path.exists():
         return []
-    text = path.read_text(encoding="utf-8")
-
     movies = []
-    # First, try strict "one per line" mode.
-    for raw in text.splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#"):
-            continue
-        parts = [p.strip() for p in line.split("|")]
-        if len(parts) >= 2 and parts[1].isdigit():
-            name = parts[0]
-            mid = int(parts[1])
-            if name:
-                movies.append({
-                    "ref_name": name,
-                    "movie_id": mid,
+    with path.open("r", encoding="utf-8") as f:
+        for raw in f:
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            m = MOVIE_LINE_RE.match(line)
+            if not m:
+                # ignore malformed (e.g., TBD ids)
+                continue
+            name, movie_id = m.groups()
+            movies.append(
+                {
+                    "ref_name": name.strip(),
+                    "movie_id": int(movie_id),
                     "profile": "default",
-                })
-
-    if movies:
-        return movies
-
-    # Fallback: dense format "# header ... Name | 123 | Name2 | 456 | ..."
-    for name, mid in MOVIE_PAIR_RE.findall(text):
-        name = name.strip()
-        if not name:
-            continue
-        # skip header fragments
-        if name.lower().startswith("name ") or "tmdb_movie_id" in name.lower():
-            continue
-        movies.append({
-            "ref_name": name,
-            "movie_id": int(mid),
-            "profile": "default",
-        })
-
+                }
+            )
     return movies
 
 # -----------------------------------------------------------------------------
-# Episode helpers
+# Helpers
 # -----------------------------------------------------------------------------
 def is_placeholder_title(name: str) -> bool:
     if not name:
@@ -314,21 +303,25 @@ def collect_show(show_id: int, season_spec, tvmaze_id=None) -> dict:
         info = tmdb_get(f"/tv/{show_id}/season/{sn}")
         eps = []
         for ep in info.get("episodes", []):
-            eps.append({
-                "episode_number": ep.get("episode_number"),
-                "name": ensure_title(ep, sn),
-                "air_date": ep.get("air_date"),
-                "overview": ep.get("overview") or "",
-                "still_path": ep.get("still_path"),
-            })
-        seasons.append({
-            "season_number": sn,
-            "name": meta.get("name") or f"Season {sn}",
-            "air_date": meta.get("air_date") or info.get("air_date"),
-            "episode_count": len(eps),
-            "overview": info.get("overview") or meta.get("overview") or "",
-            "episodes": eps,
-        })
+            eps.append(
+                {
+                    "episode_number": ep.get("episode_number"),
+                    "name": ensure_title(ep, sn),
+                    "air_date": ep.get("air_date"),
+                    "overview": ep.get("overview") or "",
+                    "still_path": ep.get("still_path"),
+                }
+            )
+        seasons.append(
+            {
+                "season_number": sn,
+                "name": meta.get("name") or f"Season {sn}",
+                "air_date": meta.get("air_date") or info.get("air_date"),
+                "episode_count": len(eps),
+                "overview": info.get("overview") or meta.get("overview") or "",
+                "episodes": eps,
+            }
+        )
 
     payload = {
         "show_id": show_id,
@@ -387,10 +380,10 @@ def main():
         "movies": [],
     }
 
-    # TV
+    # TV shows
     for item in tv_specs:
         try:
-            print(f"Show {item['ref_name']} ({item['show_id']}) seasons={item['season_spec']}")
+            print(f"[TV] {item['ref_name']} ({item['show_id']}) {item['season_spec']}")
             sh = collect_show(
                 item["show_id"],
                 item["season_spec"],
@@ -406,7 +399,7 @@ def main():
     # Movies
     for item in mv_specs:
         try:
-            print(f"Movie {item['ref_name']} ({item['movie_id']})")
+            print(f"[MV] {item['ref_name']} ({item['movie_id']})")
             mv = collect_movie(item["movie_id"])
             mv["ref_name"] = item["ref_name"]
             mv["profile"] = item.get("profile", "default")
@@ -420,10 +413,20 @@ def main():
         "movies": len(out["movies"]),
     }
 
-    DATA_JSON.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    STAMP.write_text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
+    DATA_JSON.write_text(
+        json.dumps(out, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+    STAMP.write_text(
+        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        encoding="utf-8",
+    )
 
-    print(f"OK: wrote {DATA_JSON} with {out['meta']['shows']} shows, {out['meta']['movies']} movies")
+    print(
+        f"OK: wrote {DATA_JSON} with "
+        f"{out['meta']['shows']} shows, {out['meta']['movies']} movies"
+    )
+
 
 if __name__ == "__main__":
     main()
