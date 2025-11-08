@@ -4,7 +4,7 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.5.0 (2025-11-09)
+    Version: v2.7.0 (2025-11-09)
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -29,16 +29,13 @@
       --pri:#2563eb;
       --border:#d1d5db;
     }
-
     *{box-sizing:border-box;margin:0;padding:0;}
-
     body{
       margin:0;
       background:var(--bg);
       color:var(--fg);
       font:calc(15px * var(--fs-scale))/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     }
-
     a{color:var(--pri);text-decoration:none;}
     a:hover{text-decoration:underline;}
 
@@ -53,18 +50,15 @@
       background:rgba(245,245,247,.97);
       backdrop-filter:none;
     }
-
     .wrap{
       max-width:1200px;
       margin:0 auto;
       padding:10px 20px 8px;
     }
-
     h1{
       font-size:22px;
       font-weight:700;
     }
-
     .row{
       display:flex;
       justify-content:space-between;
@@ -72,14 +66,12 @@
       flex-wrap:wrap;
       gap:8px;
     }
-
     nav{
       display:flex;
       gap:8px;
       margin-top:6px;
       flex-wrap:wrap;
     }
-
     .tab{
       padding:6px 14px;
       border-radius:999px;
@@ -98,7 +90,6 @@
       max-width:1200px;
       margin:0 auto;
     }
-
     .section{padding-bottom:16px;}
     .mut{color:var(--mut);}
     .small{font-size:10px;}
@@ -148,7 +139,6 @@
       background:var(--bg);
       padding-bottom:4px;
     }
-
     .cal-header{
       display:flex;
       justify-content:space-between;
@@ -156,17 +146,14 @@
       gap:6px;
       margin-bottom:4px;
     }
-
     .cal-title{
       font-size:17px;
       font-weight:600;
     }
-
     .cal-nav{
       display:flex;
       gap:4px;
     }
-
     .cal-btn{
       padding:5px 8px;
       border-radius:999px;
@@ -178,7 +165,6 @@
       min-width:46px;
       text-align:center;
     }
-
     .cal-dow-row{
       display:grid;
       grid-template-columns:repeat(7,1fr);
@@ -186,19 +172,16 @@
       color:var(--mut);
       gap:4px;
     }
-
     .cal-dow{
       text-align:center;
       padding-bottom:1px;
     }
-
     .cal-grid{
       display:grid;
       grid-template-columns:repeat(7,1fr);
       gap:6px;
       margin-top:4px;
     }
-
     .cal-day{
       min-height:98px;
       padding:4px;
@@ -212,7 +195,6 @@
     :root[data-theme="light"] .cal-day{
       background:#ffffff;
     }
-
     .cal-day.today{
       background:#fde68a;
       color:#111827;
@@ -223,28 +205,16 @@
       color:#ffffff;
       box-shadow:0 0 0 1px #1d4ed8;
     }
-    .cal-day.today .cal-show,
-    .cal-day.today .cal-ep,
-    .cal-day.today .cal-movie-label{
-      color:inherit;
-    }
-    .cal-day.today .icon-link{
-      background:rgba(15,23,42,.96);
-      color:#ffffff;
-    }
-
     .cal-date{
       font-size:8px;
       font-weight:600;
       margin-bottom:1px;
     }
-
     .cal-item{
       display:flex;
       gap:4px;
       align-items:flex-start;
     }
-
     .cal-item img{
       width:40px;
       height:60px;
@@ -253,23 +223,19 @@
       background:#111827;
       flex-shrink:0;
     }
-
     .cal-lines{
       display:flex;
       flex-direction:column;
       gap:1px;
       font-size:8.5px;
     }
-
     .cal-show{
       font-weight:700;
       cursor:pointer;
     }
-
     .cal-ep{
       cursor:pointer;
     }
-
     .cal-movie-label{
       font-size:7.5px;
       color:var(--mut);
@@ -287,6 +253,15 @@
       background:rgba(148,163,253,.14);
       font-size:7px;
       color:var(--mut);
+      display:flex;
+      align-items:center;
+      gap:2px;
+    }
+    .net-logo{
+      height:10px;
+      max-width:40px;
+      object-fit:contain;
+      display:block;
     }
 
     .icon-row{
@@ -313,7 +288,7 @@
       color:#ffffff;
     }
 
-    /* Cards */
+    /* Grids */
 
     .grid{
       display:grid;
@@ -321,7 +296,6 @@
       gap:10px;
       margin-top:4px;
     }
-
     .card{
       background:var(--card);
       border-radius:14px;
@@ -331,7 +305,6 @@
       border:1px solid var(--chip);
       align-items:flex-start;
     }
-
     .poster{
       width:70px;
       height:104px;
@@ -340,7 +313,6 @@
       background:#111827;
       flex-shrink:0;
     }
-
     .card-body{
       display:flex;
       flex-direction:column;
@@ -348,23 +320,20 @@
       min-width:0;
       flex:1;
     }
-
     .title{
       font-size:14px;
       font-weight:700;
       cursor:pointer;
     }
-
     .divider{
       height:1px;
       background:rgba(148,163,253,.14);
       margin:3px 0;
     }
 
-    /* Overlay */
+    /* Overlay + stacked views */
 
     .overlay[hidden]{display:none;}
-
     .overlay{
       position:fixed;
       inset:0;
@@ -373,13 +342,11 @@
       align-items:center;
       justify-content:center;
     }
-
     .overlay-backdrop{
       position:absolute;
       inset:0;
       background:rgba(0,0,0,.78);
     }
-
     .overlay-panel{
       position:relative;
       max-width:980px;
@@ -397,7 +364,6 @@
       background:#ffffff;
       box-shadow:0 24px 60px rgba(0,0,0,.18);
     }
-
     .overlay-close{
       position:absolute;
       top:6px;
@@ -408,6 +374,16 @@
       font-size:24px;
       cursor:pointer;
     }
+    .overlay-back{
+      position:absolute;
+      top:10px;
+      left:10px;
+      border:none;
+      background:transparent;
+      color:var(--mut);
+      font-size:16px;
+      cursor:pointer;
+    }
 
     .ov-header{
       display:flex;
@@ -416,7 +392,6 @@
       padding-top:16px;
       margin-bottom:6px;
     }
-
     .ov-poster{
       width:105px;
       height:158px;
@@ -425,35 +400,30 @@
       background:#111827;
       flex-shrink:0;
     }
-
     .ov-title-row{
       display:flex;
       align-items:center;
       gap:8px;
+      flex-wrap:wrap;
     }
-
     .ov-title{
       font-size:19px;
       font-weight:700;
     }
-
     .ov-sub{
       font-size:11px;
       color:var(--mut);
       margin:2px 0;
     }
-
     .ov-current{
       font-size:10px;
       margin:1px 0;
     }
-
     .ov-overview{
       font-size:12px;
       color:var(--mut);
       margin-top:2px;
     }
-
     .ov-links{
       margin-top:4px;
       display:flex;
@@ -465,24 +435,19 @@
       margin-top:8px;
       font-size:11px;
     }
-
     .season-row{
       padding:4px 0;
       border-bottom:1px solid rgba(148,163,253,.18);
       cursor:pointer;
     }
-
     .season-label{
       font-weight:600;
-      display:inline-block;
       margin-right:6px;
     }
-
     .season-meta{
       font-size:9px;
       color:var(--mut);
     }
-
     .season-desc{
       font-size:9px;
       color:var(--mut);
@@ -494,10 +459,10 @@
       padding-left:4px;
       font-size:10px;
     }
-
     .ep-row{
       padding:2px 0;
       border-bottom:1px dashed rgba(148,163,253,.16);
+      cursor:pointer;
     }
 
     #meta{
@@ -506,6 +471,14 @@
       padding:2px 20px 10px;
       max-width:1200px;
       margin:0 auto;
+    }
+
+    /* Remote focus */
+
+    .remote-focus{
+      outline:2px solid var(--pri);
+      outline-offset:2px;
+      border-radius:6px;
     }
   </style>
 </head>
@@ -519,7 +492,7 @@
       </div>
     </div>
     <nav>
-      <div class="tab active" data-tab="calendar">Calendar</div>
+      <div class="tab" data-tab="calendar">Calendar</div>
       <div class="tab" data-tab="shows">Shows</div>
       <div class="tab" data-tab="movies">Movies</div>
     </nav>
@@ -537,6 +510,7 @@
 <div id="overlay" class="overlay" hidden>
   <div class="overlay-backdrop"></div>
   <div class="overlay-panel">
+    <button class="overlay-back" aria-label="Back" hidden>&larr;</button>
     <button class="overlay-close" aria-label="Close">&times;</button>
     <div id="overlay-content"></div>
   </div>
@@ -549,21 +523,25 @@
 
   const state = {
     data:null,
+    serviceLogos:{},
     today:new Date(),
     currentMonth:null,
     // shows filters
     showsGenre:'All',
     showsStatus:'All',
     showsWhen:'All',
-    showsSort:'title', // 'title' | 'latest' | 'upcoming'
+    showsSort:'title',
     showsDir:'asc',
     // movies filters
     moviesGenre:'All',
     moviesStatus:'All',
     moviesWhen:'All',
-    moviesSort:'title', // 'title' | 'date' | 'upcoming'
+    moviesSort:'title',
     moviesDir:'asc'
   };
+
+  let overlayStack = [];
+  let remoteIndex = -1;
 
   (function initTheme(){
     const t = localStorage.getItem('tvhub_theme') || 'dark';
@@ -577,15 +555,21 @@
 
   async function load(){
     try{
-      const r = await fetch('../data/data.json', {cache:'no-cache'});
-      if(!r.ok) throw new Error('no data.json');
-      state.data = await r.json();
+      const [logos, data] = await Promise.all([
+        loadServiceLogos().catch(()=> ({})),
+        fetch('../data/data.json', {cache:'no-cache'}).then(r=>{
+          if(!r.ok) throw new Error('no data.json');
+          return r.json();
+        })
+      ]);
+      state.serviceLogos = logos || {};
+      state.data = data;
       state.currentMonth = new Date(
         state.today.getFullYear(),
         state.today.getMonth(),
         1
       );
-      attachTabs();
+      initTabs();
       renderAll();
     }catch(e){
       console.error(e);
@@ -594,12 +578,41 @@
     }
   }
 
-  function attachTabs(){
-    $$('.tab').forEach(tab=>{
+  async function loadServiceLogos(){
+    const url = '../reports/service_logo_report_20251108_011548.csv';
+    try{
+      const r = await fetch(url, {cache:'no-cache'});
+      if(!r.ok) return {};
+      const text = await r.text();
+      if(!text) return {};
+      const lines = text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+      if(lines.length < 2) return {};
+      const header = lines[0].split(',').map(s=>s.trim().toLowerCase());
+      const nameIdx = header.findIndex(h=>h.includes('name') || h.includes('service'));
+      const logoIdx = header.findIndex(h=>h.includes('logo'));
+      if(nameIdx === -1 || logoIdx === -1) return {};
+      const map = {};
+      for(let i=1;i<lines.length;i++){
+        const cols = lines[i].split(',').map(s=>s.trim());
+        const name = cols[nameIdx];
+        const logo = cols[logoIdx];
+        if(!name || !logo) continue;
+        map[name.toLowerCase()] = logo;
+      }
+      return map;
+    }catch(e){
+      console.warn('Logo CSV load failed', e);
+      return {};
+    }
+  }
+
+  function initTabs(){
+    const tabs = $$('.tab');
+    tabs.forEach(tab=>{
       tab.onclick = ()=>{
         const t = tab.dataset.tab;
         if(tab.classList.contains('active')) return;
-        $$('.tab').forEach(x=>x.classList.remove('active'));
+        tabs.forEach(x=>x.classList.remove('active'));
         tab.classList.add('active');
         ['calendar','shows','movies'].forEach(id=>{
           $('#'+id).hidden = (id !== t);
@@ -607,11 +620,14 @@
         if(t === 'calendar') renderCalendar();
         if(t === 'shows') renderShows();
         if(t === 'movies') renderMovies();
+        remoteIndex = -1;
       };
     });
+    // default
+    tabs[0].classList.add('active');
   }
 
-  // ---------- shared helpers ----------
+  // ---------- helpers ----------
 
   function buildEpisodeIcons(show, season, epNum){
     const sid = show.show_id;
@@ -653,7 +669,17 @@
     const first = nets.slice(0,3);
     return `
       <div class="net-row">
-        ${first.map(n=>`<div class="net-chip">${n}</div>`).join('')}
+        ${first.map(n=>{
+          const key = n.toLowerCase();
+          const logo = state.serviceLogos[key];
+          if(logo){
+            const src = logo.startsWith('http')
+              ? logo
+              : `../image/services_logos/${logo}`;
+            return `<div class="net-chip"><img class="net-logo" src="${src}" alt="${n}"></div>`;
+          }
+          return `<div class="net-chip">${n}</div>`;
+        }).join('')}
       </div>
     `;
   }
@@ -704,7 +730,6 @@
   function inWhenBucket(datePast, dateFuture, when, today){
     if(when === 'All') return true;
     if(when === 'Past'){
-      // only past, nothing upcoming
       return !!datePast && (!dateFuture || dateFuture < today);
     }
     if(when === 'Future'){
@@ -712,15 +737,29 @@
     }
     if(when === 'Next30'){
       if(!dateFuture) return false;
-      const diff = (dateFuture - today) / (1000*60*60*24);
+      const diff = (dateFuture - today) / 86400000;
       return diff >= 0 && diff <= 30;
     }
     if(when === 'Next90'){
       if(!dateFuture) return false;
-      const diff = (dateFuture - today) / (1000*60*60*24);
+      const diff = (dateFuture - today) / 86400000;
       return diff >= 0 && diff <= 90;
     }
     return true;
+  }
+
+  function buildWhenButtons(type, current){
+    const opts = [
+      ['All','All'],
+      ['Past','Past'],
+      ['30d','Next30'],
+      ['90d','Next90'],
+      ['Future','Future'],
+    ];
+    return opts.map(([label,val])=>{
+      const active = current === val ? ' active' : '';
+      return `<button class="btn${active}" data-when-type="${type}" data-when="${val}">${label}</button>`;
+    }).join('');
   }
 
   // ---------- Calendar ----------
@@ -730,7 +769,6 @@
     state.currentMonth = new Date(m.getFullYear(), m.getMonth()+delta, 1);
     renderCalendar();
   }
-
   function gotoToday(){
     state.currentMonth = new Date(
       state.today.getFullYear(),
@@ -751,7 +789,6 @@
     }
 
     const by = {};
-    // shows
     for(const sh of shows){
       for(const s of sh.seasons || []){
         for(const ep of s.episodes || []){
@@ -761,7 +798,6 @@
         }
       }
     }
-    // movies
     for(const mv of movies){
       if(!mv.release_date) continue;
       const key = mv.release_date;
@@ -820,13 +856,13 @@
             <div class="cal-item">
               ${show.poster_path ? `<img src="${IMG(show.poster_path)}" alt="">` : ''}
               <div class="cal-lines">
-                <div class="cal-show"
-                     data-show-id="${show.show_id}">
+                <div class="cal-show remote" data-show-id="${show.show_id}">
                   ${show.name}
                 </div>
-                <div class="cal-ep"
+                <div class="cal-ep remote"
                      data-show-id="${show.show_id}"
-                     data-season="${s}">
+                     data-season="${s}"
+                     data-ep="${ep.episode_number||''}">
                   ${epCode}${ep.name ? ' · ' + ep.name : ''}
                 </div>
                 ${buildNetworks(show)}
@@ -842,7 +878,7 @@
             <div class="cal-item">
               ${mv.poster_path ? `<img src="${IMG(mv.poster_path)}" alt="">` : ''}
               <div class="cal-lines">
-                <div class="cal-show cal-movie-title"
+                <div class="cal-show cal-movie-title remote"
                      data-movie-id="${mv.movie_id}">
                   ${mv.name}
                 </div>
@@ -868,33 +904,37 @@
     $('#cal-next').onclick = ()=>changeMonth(1);
     $('#cal-today').onclick = ()=>gotoToday();
 
-    // show name → show popup (all seasons)
     $$('#calendar .cal-show[data-show-id]').forEach(el=>{
       el.onclick = ()=>{
-        const id = parseInt(el.dataset.showId,10);
+        const id = +el.dataset.showId;
         const show = getShows().find(s=>s.show_id===id);
         if(show) openShowOverlay(show, null);
       };
     });
-
-    // episode text → show popup with that season expanded
-    $$('#calendar .cal-ep[data-show-id][data-season]').forEach(el=>{
+    $$('#calendar .cal-ep[data-show-id]').forEach(el=>{
       el.onclick = ()=>{
-        const id = parseInt(el.dataset.showId,10);
-        const sn = parseInt(el.dataset.season,10) || null;
+        const id = +el.dataset.showId;
+        const sn = +el.dataset.season || null;
+        const epn = parseInt(el.dataset.ep||'0',10) || null;
         const show = getShows().find(s=>s.show_id===id);
-        if(show) openShowOverlay(show, sn);
+        if(!show) return;
+        if(epn){
+          const season = (show.seasons||[]).find(x=>x.season_number===sn);
+          const ep = season && (season.episodes||[]).find(e=>e.episode_number===epn);
+          if(ep) return openEpisodeOverlay(show, season, ep);
+        }
+        openShowOverlay(show, sn);
       };
     });
-
-    // movie title → movie popup
-    $$('#calendar .cal-movie-title[data-movie-id]').forEach(el=>{
+    $$('#calendar .cal-movie-title').forEach(el=>{
       el.onclick = ()=>{
-        const id = parseInt(el.dataset.movieId,10);
+        const id = +el.dataset.movieId;
         const mv = getMovies().find(m=>m.movie_id===id);
         if(mv) openMovieOverlay(mv);
       };
     });
+
+    remoteIndex = -1;
   }
 
   // ---------- Shows ----------
@@ -921,11 +961,9 @@
         <div class="controls">
           <span class="label">Genre</span>
           <button class="btn${state.showsGenre==='All'?' active':''}" data-sh-genre="All">All</button>
-    `;
-    Array.from(genreSet).sort().forEach(g=>{
-      html += `<button class="btn${state.showsGenre===g?' active':''}" data-sh-genre="${g}">${g}</button>`;
-    });
-    html += `
+          ${Array.from(genreSet).sort().map(g =>
+            `<button class="btn${state.showsGenre===g?' active':''}" data-sh-genre="${g}">${g}</button>`
+          ).join('')}
           <span class="label">When</span>
           ${buildWhenButtons('show', state.showsWhen)}
         </div>
@@ -936,11 +974,9 @@
           <button class="btn${state.showsSort==='upcoming'?' active':''}" id="sh-sort-upcoming">Upcoming</button>
           <span class="label">Status</span>
           <button class="btn${state.showsStatus==='All'?' active':''}" data-sh-status="All">All</button>
-    `;
-    Array.from(statusSet).sort().forEach(s=>{
-      html += `<button class="btn${state.showsStatus===s?' active':''}" data-sh-status="${s}">${s}</button>`;
-    });
-    html += `
+          ${Array.from(statusSet).sort().map(s =>
+            `<button class="btn${state.showsStatus===s?' active':''}" data-sh-status="${s}">${s}</button>`
+          ).join('')}
         </div>
       </div>
       <div class="grid">
@@ -948,24 +984,18 @@
 
     let list = shows.slice();
 
-    // Genre filter
     if(state.showsGenre !== 'All'){
       list = list.filter(sh => (sh.genres||[]).includes(state.showsGenre));
     }
-
-    // Status filter
     if(state.showsStatus !== 'All'){
       list = list.filter(sh => sh.status === state.showsStatus);
     }
-
-    // When filter
     list = list.filter(sh=>{
       const last = getShowLastAir(sh);
       const next = getShowNextAir(sh, today);
       return inWhenBucket(last, next, state.showsWhen, today);
     });
 
-    // Sort
     list.sort((a,b)=>{
       if(state.showsSort === 'title'){
         const an = (a.name||'').toLowerCase();
@@ -980,15 +1010,15 @@
         if(!al && !bl) return 0;
         if(!al) return 1;
         if(!bl) return -1;
-        return bl - al; // newest first
+        return bl - al;
       }
       if(state.showsSort === 'upcoming'){
-        const anext = getShowNextAir(a, today);
-        const bnext = getShowNextAir(b, today);
-        if(!anext && !bnext) return 0;
-        if(!anext) return 1;
-        if(!bnext) return -1;
-        return anext - bnext; // soonest first
+        const an = getShowNextAir(a, today);
+        const bn = getShowNextAir(b, today);
+        if(!an && !bn) return 0;
+        if(!an) return 1;
+        if(!bn) return -1;
+        return an - bn;
       }
       return 0;
     });
@@ -999,12 +1029,12 @@
         <div class="card">
           ${sh.poster_path ? `<img class="poster" src="${IMG(sh.poster_path)}" alt="${sh.name}">` : `<div class="poster"></div>`}
           <div class="card-body">
-            <div class="title link-show" data-show-id="${sh.show_id}">${sh.name}</div>
+            <div class="title link-show remote" data-show-id="${sh.show_id}">${sh.name}</div>
             <div class="mut small">
               ${(sh.genres||[]).join(', ')}
               ${sh.status ? ' • ' + sh.status : ''}
             </div>
-            ${cs ? `<div class="small link-season"
+            ${cs ? `<div class="small link-season remote"
                        data-show-id="${sh.show_id}"
                        data-season="${cs}">
                       Current season: Season ${cs}
@@ -1022,7 +1052,6 @@
     html += `</div>`;
     host.innerHTML = html;
 
-    // Sort buttons
     const sortTitleBtn = $('#sh-sort-title');
     sortTitleBtn.textContent = state.showsDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
     sortTitleBtn.onclick = ()=>{
@@ -1042,45 +1071,34 @@
       renderShows();
     };
 
-    // Genre, Status, When filters
     $$('[data-sh-genre]').forEach(btn=>{
-      btn.onclick = ()=>{
-        state.showsGenre = btn.dataset.shGenre;
-        renderShows();
-      };
+      btn.onclick = ()=>{ state.showsGenre = btn.dataset.shGenre; renderShows(); };
     });
     $$('[data-sh-status]').forEach(btn=>{
-      btn.onclick = ()=>{
-        state.showsStatus = btn.dataset.shStatus;
-        renderShows();
-      };
+      btn.onclick = ()=>{ state.showsStatus = btn.dataset.shStatus; renderShows(); };
     });
     $$('[data-when-type="show"]').forEach(btn=>{
-      btn.onclick = ()=>{
-        state.showsWhen = btn.dataset.when;
-        renderShows();
-      };
+      btn.onclick = ()=>{ state.showsWhen = btn.dataset.when; renderShows(); };
     });
 
-    // show title → show popup
     $$('.link-show').forEach(el=>{
       el.onclick = e=>{
         e.preventDefault();
-        const id = parseInt(el.dataset.showId,10);
+        const id = +el.dataset.showId;
         const show = getShows().find(s=>s.show_id===id);
         if(show) openShowOverlay(show, null);
       };
     });
-
-    // current season line → show popup with that season expanded
     $$('.link-season').forEach(el=>{
       el.onclick = ()=>{
-        const id = parseInt(el.dataset.showId,10);
-        const sn = parseInt(el.dataset.season,10) || null;
+        const id = +el.dataset.showId;
+        const sn = +el.dataset.season || null;
         const show = getShows().find(s=>s.show_id===id);
         if(show) openShowOverlay(show, sn);
       };
     });
+
+    remoteIndex = -1;
   }
 
   // ---------- Movies ----------
@@ -1107,11 +1125,9 @@
         <div class="controls">
           <span class="label">Genre</span>
           <button class="btn${state.moviesGenre==='All'?' active':''}" data-mv-genre="All">All</button>
-    `;
-    Array.from(genreSet).sort().forEach(g=>{
-      html += `<button class="btn${state.moviesGenre===g?' active':''}" data-mv-genre="${g}">${g}</button>`;
-    });
-    html += `
+          ${Array.from(genreSet).sort().map(g =>
+            `<button class="btn${state.moviesGenre===g?' active':''}" data-mv-genre="${g}">${g}</button>`
+          ).join('')}
           <span class="label">When</span>
           ${buildWhenButtons('movie', state.moviesWhen)}
         </div>
@@ -1122,11 +1138,9 @@
           <button class="btn${state.moviesSort==='upcoming'?' active':''}" id="mv-sort-upcoming">Upcoming</button>
           <span class="label">Status</span>
           <button class="btn${state.moviesStatus==='All'?' active':''}" data-mv-status="All">All</button>
-    `;
-    Array.from(statusSet).sort().forEach(s=>{
-      html += `<button class="btn${state.moviesStatus===s?' active':''}" data-mv-status="${s}">${s}</button>`;
-    });
-    html += `
+          ${Array.from(statusSet).sort().map(s =>
+            `<button class="btn${state.moviesStatus===s?' active':''}" data-mv-status="${s}">${s}</button>`
+          ).join('')}
         </div>
       </div>
       <div class="grid">
@@ -1134,17 +1148,12 @@
 
     let list = movies.slice();
 
-    // Genre filter
     if(state.moviesGenre !== 'All'){
       list = list.filter(mv => (mv.genres||[]).includes(state.moviesGenre));
     }
-
-    // Status filter
     if(state.moviesStatus !== 'All'){
       list = list.filter(mv => mv.status === state.moviesStatus);
     }
-
-    // When filter
     list = list.filter(mv=>{
       const d = getMovieDate(mv);
       const future = d && d >= today ? d : null;
@@ -1152,7 +1161,6 @@
       return inWhenBucket(past, future, state.moviesWhen, today);
     });
 
-    // Sort
     list.sort((a,b)=>{
       if(state.moviesSort === 'title'){
         const an = (a.name||'').toLowerCase();
@@ -1167,7 +1175,7 @@
         if(!ad && !bd) return 0;
         if(!ad) return 1;
         if(!bd) return -1;
-        return bd - ad; // newest first
+        return bd - ad;
       }
       if(state.moviesSort === 'upcoming'){
         const ad = getMovieDate(a);
@@ -1177,7 +1185,7 @@
         if(!at && !bt) return 0;
         if(!at) return 1;
         if(!bt) return -1;
-        return at - bt; // soonest first
+        return at - bt;
       }
       return 0;
     });
@@ -1187,7 +1195,7 @@
         <div class="card">
           ${mv.poster_path ? `<img class="poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="poster"></div>`}
           <div class="card-body">
-            <div class="title mv-link" data-movie-id="${mv.movie_id}">${mv.name}</div>
+            <div class="title mv-link remote" data-movie-id="${mv.movie_id}">${mv.name}</div>
             <div class="mut small">
               ${(mv.genres||[]).join(', ')}
               ${mv.status ? ' • ' + mv.status : ''}
@@ -1204,7 +1212,6 @@
     html += `</div>`;
     host.innerHTML = html;
 
-    // Sort buttons
     const sortTitleBtn = $('#mv-sort-title');
     sortTitleBtn.textContent = state.moviesDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
     sortTitleBtn.onclick = ()=>{
@@ -1224,80 +1231,113 @@
       renderMovies();
     };
 
-    // Genre/Status/When filters
     $$('[data-mv-genre]').forEach(btn=>{
-      btn.onclick = ()=>{
-        state.moviesGenre = btn.dataset.mvGenre;
-        renderMovies();
-      };
+      btn.onclick = ()=>{ state.moviesGenre = btn.dataset.mvGenre; renderMovies(); };
     });
     $$('[data-mv-status]').forEach(btn=>{
-      btn.onclick = ()=>{
-        state.moviesStatus = btn.dataset.mvStatus;
-        renderMovies();
-      };
+      btn.onclick = ()=>{ state.moviesStatus = btn.dataset.mvStatus; renderMovies(); };
     });
     $$('[data-when-type="movie"]').forEach(btn=>{
-      btn.onclick = ()=>{
-        state.moviesWhen = btn.dataset.when;
-        renderMovies();
-      };
+      btn.onclick = ()=>{ state.moviesWhen = btn.dataset.when; renderMovies(); };
     });
 
-    // Movie title -> movie popup
     $$('.mv-link').forEach(el=>{
       el.onclick = ()=>{
-        const id = parseInt(el.dataset.movieId,10);
+        const id = +el.dataset.movieId;
         const mv = getMovies().find(m=>m.movie_id===id);
         if(mv) openMovieOverlay(mv);
       };
     });
+
+    remoteIndex = -1;
   }
 
-  function buildWhenButtons(type, current){
-    const opts = [
-      ['All','All'],
-      ['Past','Past'],
-      ['30d','Next30'],
-      ['90d','Next90'],
-      ['Future','Future'],
-    ];
-    return opts.map(([label,val])=>{
-      const active = current === val ? ' active' : '';
-      return `<button class="btn${active}" data-when-type="${type}" data-when="${val}">${label}</button>`;
-    }).join('');
+  // ---------- Overlay stack & views ----------
+
+  function showOverlay(){
+    const ov = $('#overlay');
+    const panel = $('#overlay .overlay-panel');
+    const backBtn = $('#overlay .overlay-back');
+    const closeBtn = $('#overlay .overlay-close');
+    const box = $('#overlay-content');
+
+    if(!overlayStack.length){
+      ov.hidden = true;
+      box.innerHTML = '';
+      return;
+    }
+
+    ov.hidden = false;
+    const top = overlayStack[overlayStack.length-1];
+
+    backBtn.hidden = overlayStack.length <= 1;
+    backBtn.onclick = ()=>popOverlayOne();
+    closeBtn.onclick = ()=>{ overlayStack = []; showOverlay(); };
+    $('#overlay .overlay-backdrop').onclick = ()=>{ overlayStack = []; showOverlay(); };
+
+    if(top.type === 'show'){
+      renderShowView(top, box);
+    }else if(top.type === 'episode'){
+      renderEpisodeView(top, box);
+    }else if(top.type === 'movie'){
+      renderMovieView(top, box);
+    }
+
+    panel.scrollTop = top.scroll || 0;
   }
 
-  // ---------- Show popup ----------
+  function popOverlayOne(){
+    if(overlayStack.length <= 1){
+      overlayStack = [];
+      showOverlay();
+      return;
+    }
+    overlayStack.pop();
+    showOverlay();
+  }
 
   function openShowOverlay(show, focusSeason){
-    const ov = $('#overlay');
-    const box = $('#overlay-content');
+    const panel = $('#overlay .overlay-panel');
+    if(overlayStack.length){
+      overlayStack[overlayStack.length-1].scroll = panel.scrollTop;
+    }
+    overlayStack.push({type:'show', showId:show.show_id, focusSeason:focusSeason||null, scroll:0});
+    showOverlay();
+  }
+
+  function openEpisodeOverlay(show, season, ep){
+    const panel = $('#overlay .overlay-panel');
+    if(overlayStack.length){
+      overlayStack[overlayStack.length-1].scroll = panel.scrollTop;
+    }
+    overlayStack.push({
+      type:'episode',
+      showId:show.show_id,
+      season:season.season_number,
+      ep:ep.episode_number,
+      scroll:0
+    });
+    showOverlay();
+  }
+
+  function openMovieOverlay(mv){
+    const panel = $('#overlay .overlay-panel');
+    if(overlayStack.length){
+      overlayStack[overlayStack.length-1].scroll = panel.scrollTop;
+    }
+    overlayStack.push({type:'movie', movieId:mv.movie_id, scroll:0});
+    showOverlay();
+  }
+
+  function renderShowView(view, box){
+    const show = getShows().find(s=>s.show_id===view.showId);
+    if(!show){
+      box.innerHTML = '<div class="mut">Show not found.</div>';
+      return;
+    }
     const seasons = show.seasons || [];
     const cs = guessCurrentSeason(show);
 
-    let seasonHtml = '';
-    seasons.forEach(s=>{
-      const eps = s.episodes || [];
-      const first = eps[0];
-      const year = first && first.air_date ? first.air_date.slice(0,4) : '';
-      const metaParts = [];
-      if(year) metaParts.push(year);
-      metaParts.push(`${eps.length} episodes`);
-      const meta = metaParts.join(' • ');
-      const desc = (s.overview || '').trim();
-      seasonHtml += `
-        <div class="season-row" data-season="${s.season_number}">
-          <div>
-            <span class="season-label">Season ${s.season_number}</span>
-            <span class="season-meta">${meta}</span>
-            ${desc ? `<div class="season-desc">${desc}</div>` : ''}
-          </div>
-        </div>
-      `;
-    });
-
-    // Build current season summary if we can
     let currentLine = '';
     if(cs){
       const s = seasons.find(x=>x.season_number===cs);
@@ -1306,12 +1346,31 @@
         const first = eps[0];
         const year = first && first.air_date ? first.air_date.slice(0,4) : '';
         const meta = [];
-        meta.push(`Season ${cs}`);
+        meta.push('Season ' + cs);
         if(year) meta.push(year);
-        meta.push(`${eps.length} episodes`);
-        currentLine = `Current Season: ${meta.join(' • ')}`;
+        meta.push(eps.length + ' episodes');
+        currentLine = 'Current Season: ' + meta.join(' • ');
       }
     }
+
+    let seasonHtml = '';
+    seasons.forEach(s=>{
+      const eps = s.episodes || [];
+      const first = eps[0];
+      const year = first && first.air_date ? first.air_date.slice(0,4) : '';
+      const metaParts = [];
+      if(year) metaParts.push(year);
+      metaParts.push(eps.length + ' episodes');
+      const meta = metaParts.join(' • ');
+      const desc = (s.overview || '').trim();
+      seasonHtml += `
+        <div class="season-row" data-season="${s.season_number}">
+          <span class="season-label">Season ${s.season_number}</span>
+          <span class="season-meta">${meta}</span>
+          ${desc ? `<div class="season-desc">${desc}</div>` : ''}
+        </div>
+      `;
+    });
 
     box.innerHTML = `
       <div class="ov-header">
@@ -1337,12 +1396,12 @@
       </div>
     `;
 
-    function renderEpisodesUnder(row, s){
-      // remove old episode blocks
+    const panel = $('#overlay .overlay-panel');
+
+    function attachEpisodes(row, s){
       box.querySelectorAll('.episodes').forEach(e=>e.remove());
       const wrap = document.createElement('div');
       wrap.className = 'episodes';
-
       const eps = s.episodes || [];
       if(!eps.length){
         wrap.innerHTML = '<div class="mut">No episodes.</div>';
@@ -1352,7 +1411,10 @@
           const date = ep.air_date ? ` • ${ep.air_date}` : '';
           const ov = ep.overview ? ` — ${ep.overview}` : '';
           return `
-            <div class="ep-row">
+            <div class="ep-row"
+                 data-show-id="${show.show_id}"
+                 data-season="${s.season_number}"
+                 data-ep="${ep.episode_number}">
               <strong>${code}</strong> ${ep.name || ''}${date}${ov}
               <div class="icon-row">
                 ${buildEpisodeIcons(show,s.season_number,ep.episode_number||'')}
@@ -1361,13 +1423,29 @@
           `;
         }).join('');
       }
-
       row.insertAdjacentElement('afterend', wrap);
+
+      wrap.querySelectorAll('.ep-row').forEach(epRow=>{
+        epRow.addEventListener('click', ev=>{
+          if(ev.target.closest('a')) return; // let links work
+          const sid = +epRow.dataset.showId;
+          const sn = +epRow.dataset.season;
+          const epn = +epRow.dataset.ep;
+          const sh = getShows().find(s=>s.show_id===sid);
+          const season = sh && (sh.seasons||[]).find(x=>x.season_number===sn);
+          const ep = season && (season.episodes||[]).find(e=>e.episode_number===epn);
+          if(sh && season && ep){
+            // save scroll on current view
+            overlayStack[overlayStack.length-1].scroll = panel.scrollTop;
+            openEpisodeOverlay(sh, season, ep);
+          }
+        });
+      });
     }
 
     box.querySelectorAll('.season-row').forEach(row=>{
-      row.onclick = ()=>{
-        const sn = parseInt(row.dataset.season,10);
+      row.addEventListener('click', ()=>{
+        const sn = +row.dataset.season;
         const s = seasons.find(x=>x.season_number===sn);
         if(!s) return;
         const next = row.nextElementSibling;
@@ -1375,30 +1453,64 @@
           next.remove();
           return;
         }
-        renderEpisodesUnder(row, s);
-      };
+        attachEpisodes(row, s);
+      });
     });
 
-    $('#overlay .overlay-close').onclick = closeOverlay;
-    $('#overlay .overlay-backdrop').onclick = closeOverlay;
-    ov.hidden = false;
-
-    // auto-expand focus season (from calendar ep or current season link)
-    if(focusSeason){
-      const target = box.querySelector(`.season-row[data-season="${focusSeason}"]`);
-      const s = seasons.find(x=>x.season_number===focusSeason);
+    if(view.focusSeason){
+      const target = box.querySelector(`.season-row[data-season="${view.focusSeason}"]`);
+      const s = seasons.find(x=>x.season_number===view.focusSeason);
       if(target && s){
-        renderEpisodesUnder(target, s);
+        attachEpisodes(target, s);
       }
     }
   }
 
-  // ---------- Movie popup ----------
+  function renderEpisodeView(view, box){
+    const show = getShows().find(s=>s.show_id===view.showId);
+    if(!show){
+      box.innerHTML = '<div class="mut">Episode parent show not found.</div>';
+      return;
+    }
+    const season = (show.seasons||[]).find(s=>s.season_number===view.season);
+    const ep = season && (season.episodes||[]).find(e=>e.episode_number===view.ep);
+    if(!season || !ep){
+      box.innerHTML = '<div class="mut">Episode not found.</div>';
+      return;
+    }
+    const code = `S${String(season.season_number).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}`;
+    const date = ep.air_date || 'TBA';
+    const ov = ep.overview || 'No overview available yet.';
 
-  function openMovieOverlay(mv){
-    const ov = $('#overlay');
-    const box = $('#overlay-content');
+    box.innerHTML = `
+      <div class="ov-header">
+        ${show.poster_path ? `<img class="ov-poster" src="${IMG(show.poster_path)}" alt="${show.name}">` : `<div class="ov-poster"></div>`}
+        <div>
+          <div class="ov-title-row">
+            <div class="ov-title">${show.name}</div>
+            <a class="icon-link" target="_blank" href="${show.links.tmdb}">
+              <span>Ⓣ</span><span>TMDB</span>
+            </a>
+          </div>
+          ${buildNetworks(show)}
+          <div class="ov-sub">
+            ${code} · ${ep.name || 'TBA'} • ${date}
+          </div>
+          <div class="ov-overview">${ov}</div>
+          <div class="ov-links">
+            ${buildEpisodeIcons(show, season.season_number, ep.episode_number||'')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
+  function renderMovieView(view, box){
+    const mv = getMovies().find(m=>m.movie_id===view.movieId);
+    if(!mv){
+      box.innerHTML = '<div class="mut">Movie not found.</div>';
+      return;
+    }
     box.innerHTML = `
       <div class="ov-header">
         ${mv.poster_path ? `<img class="ov-poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="ov-poster"></div>`}
@@ -1421,18 +1533,68 @@
         </div>
       </div>
     `;
-
-    $('#overlay .overlay-close').onclick = closeOverlay;
-    $('#overlay .overlay-backdrop').onclick = closeOverlay;
-    ov.hidden = false;
   }
 
-  function closeOverlay(){
-    $('#overlay').hidden = true;
-    $('#overlay-content').innerHTML = '';
+  // ---------- Remote / keyboard nav ----------
+
+  document.addEventListener('keydown', e=>{
+    const ovOpen = !$('#overlay').hidden && overlayStack.length;
+    if(ovOpen){
+      if(e.key === 'Escape' || e.key === 'Backspace'){
+        e.preventDefault();
+        popOverlayOne();
+      }
+      return;
+    }
+    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter'].includes(e.key)){
+      e.preventDefault();
+      remoteNavigate(e.key);
+    }
+  });
+
+  function collectRemoteItems(){
+    const items = [];
+    // tabs
+    $$('.tab').forEach(el=>items.push(el));
+    // calendar items
+    if(!$('#calendar').hidden){
+      $$('#calendar .cal-show.remote, #calendar .cal-ep.remote, #calendar .cal-movie-title.remote')
+        .forEach(el=>items.push(el));
+    }
+    // shows
+    if(!$('#shows').hidden){
+      $$('#shows .link-show.remote, #shows .link-season.remote')
+        .forEach(el=>items.push(el));
+    }
+    // movies
+    if(!$('#movies').hidden){
+      $$('#movies .mv-link.remote').forEach(el=>items.push(el));
+    }
+    return items;
   }
 
-  // ---------- Meta / bootstrap ----------
+  function remoteNavigate(key){
+    const items = collectRemoteItems();
+    if(!items.length) return;
+    if(remoteIndex < 0 || remoteIndex >= items.length){
+      remoteIndex = 0;
+    }
+    if(key === 'ArrowRight' || key === 'ArrowDown'){
+      remoteIndex = (remoteIndex + 1) % items.length;
+    }else if(key === 'ArrowLeft' || key === 'ArrowUp'){
+      remoteIndex = (remoteIndex - 1 + items.length) % items.length;
+    }else if(key === 'Enter'){
+      const el = items[remoteIndex];
+      el.click();
+      return;
+    }
+    items.forEach(el=>el.classList.remove('remote-focus'));
+    const el = items[remoteIndex];
+    el.classList.add('remote-focus');
+    el.scrollIntoView({block:'nearest'});
+  }
+
+  // ---------- Meta & initial ----------
 
   function renderMeta(){
     if(!state.data) return;
@@ -1447,8 +1609,12 @@
     renderShows();
     renderMovies();
     renderMeta();
+    // default to Calendar visible
+    $('#calendar').hidden = false;
     $('#shows').hidden = true;
     $('#movies').hidden = true;
+    $$('.tab').forEach(t=>t.classList.remove('active'));
+    $$('.tab')[0].classList.add('active');
   }
 
   load();

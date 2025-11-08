@@ -1,32 +1,52 @@
-# app.py (place at repo root)
-from flask import Flask, send_from_directory, jsonify
-import subprocess, sys, pathlib, time
+#!/usr/bin/env python
+# =============================================================================
+# File: app.py
+# Project: my_TV_Movie
+# Version: v1.0.0 (2025-11-09)
+#
+# Purpose:
+#   Minimal local development server for testing the static site.
+#   - Serves files from the repository root.
+#   - Lets you open /web/index.html in a browser.
+#
+# Usage:
+#   python app.py
+#   Then open: http://localhost:8811/web/index.html
+#
+# Notes:
+#   This is NOT used by GitHub Pages in production.
+# =============================================================================
 
-ROOT = pathlib.Path(__file__).resolve().parent
-APP = Flask(__name__, static_folder=str(ROOT / 'web'), static_url_path='')
+import http.server
+import socketserver
+import os
+from pathlib import Path
 
-@APP.get('/')
-def root():
-    return send_from_directory(APP.static_folder, 'index.html')
+PORT = 8811
 
-@APP.get('/config')
-def config_page():
-    return send_from_directory(APP.static_folder, 'config.html')
+# Serve from repo root (directory containing this file)
+ROOT = Path(__file__).resolve().parent
+os.chdir(ROOT)
 
-@APP.get('/data/<path:filename>')
-def data_files(filename):
-    return send_from_directory(str(ROOT / 'data'), filename)
+class Handler(http.server.SimpleHTTPRequestHandler):
+    # Default behavior serves from current working directory (ROOT)
+    # which includes:
+    #   /web
+    #   /data
+    #   /image
+    #   /scripts
+    #
+    # No override needed unless you want custom routing.
+    pass
 
-@APP.post('/api/refresh')
-def refresh():
-    start = time.time()
-    try:
-        cmd = [sys.executable, str(ROOT / 'scripts' / 'fetch_tmdb.py')]
-        res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-        took = round(time.time() - start, 2)
-        return jsonify({'ok': True, 'seconds': took, 'stdout': res.stdout[-2000:]})
-    except subprocess.CalledProcessError as e:
-        return jsonify({'ok': False, 'stdout': e.stdout[-2000:] if e.stdout else '', 'stderr': e.stderr[-2000:] if e.stderr else ''}), 500
+def main() -> None:
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        print(f"Serving my_TV_Movie at http://localhost:{PORT}/web/index.html")
+        print("Press Ctrl+C to stop.")
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\nShutting down...")
 
-if __name__ == '__main__':
-    APP.run(host='0.0.0.0', port=8811, debug=False)
+if __name__ == "__main__":
+    main()
