@@ -1,7 +1,7 @@
-Here’s the complete `README.md` as clean pasteable text (no extra chatter, formatting fixed, movies format corrected to what the code expects):
+<!-- Version: v1.1.0 (2025-11-09) -->
 
-````markdown
 # my_TV_Movie
+...
 
 Static TV + Movies hub, built from text lists and deployed on GitHub Pages.  
 Optimized for TV browsers (Chromecast, Android TV, Shield, etc).

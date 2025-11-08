@@ -1,3 +1,11 @@
+:: =============================================================================
+:: File: run_server.bat
+:: Project: my_TV_Movie
+:: Version: v1.0.0 (2025-11-09)
+::
+:: Purpose:
+::   Convenience script to run local test server (app.py).
+:: =============================================================================
 @echo off
 setlocal ENABLEDELAYEDEXPANSION
 cd /d %~dp0

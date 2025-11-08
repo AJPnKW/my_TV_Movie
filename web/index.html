@@ -4,7 +4,7 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.4.0 (2025-11-08)
+    Version: v2.5.0 (2025-11-09)
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -390,6 +390,8 @@
       box-shadow:0 24px 60px rgba(0,0,0,.75);
       overflow:auto;
       z-index:91;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
     }
     :root[data-theme="light"] .overlay-panel{
       background:#ffffff;
@@ -424,21 +426,32 @@
       flex-shrink:0;
     }
 
+    .ov-title-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+
     .ov-title{
       font-size:19px;
       font-weight:700;
-      margin-bottom:2px;
     }
 
     .ov-sub{
       font-size:11px;
       color:var(--mut);
-      margin-bottom:3px;
+      margin:2px 0;
+    }
+
+    .ov-current{
+      font-size:10px;
+      margin:1px 0;
     }
 
     .ov-overview{
       font-size:12px;
       color:var(--mut);
+      margin-top:2px;
     }
 
     .ov-links{
@@ -449,7 +462,7 @@
     }
 
     .season-list{
-      margin-top:6px;
+      margin-top:8px;
       font-size:11px;
     }
 
@@ -461,11 +474,19 @@
 
     .season-label{
       font-weight:600;
+      display:inline-block;
+      margin-right:6px;
     }
 
     .season-meta{
       font-size:9px;
       color:var(--mut);
+    }
+
+    .season-desc{
+      font-size:9px;
+      color:var(--mut);
+      margin-top:1px;
     }
 
     .episodes{
@@ -530,13 +551,17 @@
     data:null,
     today:new Date(),
     currentMonth:null,
+    // shows filters
     showsGenre:'All',
     showsStatus:'All',
-    showsSort:'title',
+    showsWhen:'All',
+    showsSort:'title', // 'title' | 'latest' | 'upcoming'
     showsDir:'asc',
+    // movies filters
     moviesGenre:'All',
     moviesStatus:'All',
-    moviesSort:'title',
+    moviesWhen:'All',
+    moviesSort:'title', // 'title' | 'date' | 'upcoming'
     moviesDir:'asc'
   };
 
@@ -586,7 +611,7 @@
     });
   }
 
-  // ------------ helpers ------------
+  // ---------- shared helpers ----------
 
   function buildEpisodeIcons(show, season, epNum){
     const sid = show.show_id;
@@ -648,7 +673,57 @@
     return best;
   }
 
-  // ------------ Calendar ------------
+  function getShowLastAir(show){
+    let last = null;
+    (show.seasons||[]).forEach(s=>{
+      (s.episodes||[]).forEach(ep=>{
+        if(!ep.air_date) return;
+        const d = new Date(ep.air_date);
+        if(!last || d > last) last = d;
+      });
+    });
+    return last;
+  }
+
+  function getShowNextAir(show, today){
+    let next = null;
+    (show.seasons||[]).forEach(s=>{
+      (s.episodes||[]).forEach(ep=>{
+        if(!ep.air_date) return;
+        const d = new Date(ep.air_date);
+        if(d >= today && (!next || d < next)) next = d;
+      });
+    });
+    return next;
+  }
+
+  function getMovieDate(mv){
+    return mv.release_date ? new Date(mv.release_date) : null;
+  }
+
+  function inWhenBucket(datePast, dateFuture, when, today){
+    if(when === 'All') return true;
+    if(when === 'Past'){
+      // only past, nothing upcoming
+      return !!datePast && (!dateFuture || dateFuture < today);
+    }
+    if(when === 'Future'){
+      return !!dateFuture && dateFuture >= today;
+    }
+    if(when === 'Next30'){
+      if(!dateFuture) return false;
+      const diff = (dateFuture - today) / (1000*60*60*24);
+      return diff >= 0 && diff <= 30;
+    }
+    if(when === 'Next90'){
+      if(!dateFuture) return false;
+      const diff = (dateFuture - today) / (1000*60*60*24);
+      return diff >= 0 && diff <= 90;
+    }
+    return true;
+  }
+
+  // ---------- Calendar ----------
 
   function changeMonth(delta){
     const m = state.currentMonth;
@@ -767,8 +842,13 @@
             <div class="cal-item">
               ${mv.poster_path ? `<img src="${IMG(mv.poster_path)}" alt="">` : ''}
               <div class="cal-lines">
-                <div class="cal-show">${mv.name}</div>
-                <div class="cal-movie-label">Movie</div>
+                <div class="cal-show cal-movie-title"
+                     data-movie-id="${mv.movie_id}">
+                  ${mv.name}
+                </div>
+                <div class="cal-movie-label">
+                  Movie${mv.release_date ? ' • ' + mv.release_date : ''}
+                </div>
                 <div class="icon-row">
                   ${buildMovieIcons(mv)}
                 </div>
@@ -790,7 +870,7 @@
 
     // show name → show popup (all seasons)
     $$('#calendar .cal-show[data-show-id]').forEach(el=>{
-      el.onclick = e=>{
+      el.onclick = ()=>{
         const id = parseInt(el.dataset.showId,10);
         const show = getShows().find(s=>s.show_id===id);
         if(show) openShowOverlay(show, null);
@@ -799,16 +879,25 @@
 
     // episode text → show popup with that season expanded
     $$('#calendar .cal-ep[data-show-id][data-season]').forEach(el=>{
-      el.onclick = e=>{
+      el.onclick = ()=>{
         const id = parseInt(el.dataset.showId,10);
         const sn = parseInt(el.dataset.season,10) || null;
         const show = getShows().find(s=>s.show_id===id);
         if(show) openShowOverlay(show, sn);
       };
     });
+
+    // movie title → movie popup
+    $$('#calendar .cal-movie-title[data-movie-id]').forEach(el=>{
+      el.onclick = ()=>{
+        const id = parseInt(el.dataset.movieId,10);
+        const mv = getMovies().find(m=>m.movie_id===id);
+        if(mv) openMovieOverlay(mv);
+      };
+    });
   }
 
-  // ------------ Shows ------------
+  // ---------- Shows ----------
 
   function renderShows(){
     const host = $('#shows');
@@ -820,6 +909,8 @@
 
     const genreSet = new Set();
     const statusSet = new Set();
+    const today = state.today;
+
     shows.forEach(sh=>{
       (sh.genres||[]).forEach(g=>genreSet.add(g));
       if(sh.status) statusSet.add(sh.status);
@@ -835,10 +926,14 @@
       html += `<button class="btn${state.showsGenre===g?' active':''}" data-sh-genre="${g}">${g}</button>`;
     });
     html += `
+          <span class="label">When</span>
+          ${buildWhenButtons('show', state.showsWhen)}
         </div>
         <div class="controls" style="margin-top:4px;">
           <span class="label">Sort</span>
-          <button class="btn" id="sh-sort-title"></button>
+          <button class="btn${state.showsSort==='title'?' active':''}" id="sh-sort-title"></button>
+          <button class="btn${state.showsSort==='latest'?' active':''}" id="sh-sort-latest">Latest</button>
+          <button class="btn${state.showsSort==='upcoming'?' active':''}" id="sh-sort-upcoming">Upcoming</button>
           <span class="label">Status</span>
           <button class="btn${state.showsStatus==='All'?' active':''}" data-sh-status="All">All</button>
     `;
@@ -852,18 +947,49 @@
     `;
 
     let list = shows.slice();
+
+    // Genre filter
     if(state.showsGenre !== 'All'){
       list = list.filter(sh => (sh.genres||[]).includes(state.showsGenre));
     }
+
+    // Status filter
     if(state.showsStatus !== 'All'){
       list = list.filter(sh => sh.status === state.showsStatus);
     }
 
+    // When filter
+    list = list.filter(sh=>{
+      const last = getShowLastAir(sh);
+      const next = getShowNextAir(sh, today);
+      return inWhenBucket(last, next, state.showsWhen, today);
+    });
+
+    // Sort
     list.sort((a,b)=>{
-      const an = (a.name||'').toLowerCase();
-      const bn = (b.name||'').toLowerCase();
-      if(an < bn) return state.showsDir === 'asc' ? -1 : 1;
-      if(an > bn) return state.showsDir === 'asc' ? 1 : -1;
+      if(state.showsSort === 'title'){
+        const an = (a.name||'').toLowerCase();
+        const bn = (b.name||'').toLowerCase();
+        if(an < bn) return state.showsDir === 'asc' ? -1 : 1;
+        if(an > bn) return state.showsDir === 'asc' ? 1 : -1;
+        return 0;
+      }
+      if(state.showsSort === 'latest'){
+        const al = getShowLastAir(a);
+        const bl = getShowLastAir(b);
+        if(!al && !bl) return 0;
+        if(!al) return 1;
+        if(!bl) return -1;
+        return bl - al; // newest first
+      }
+      if(state.showsSort === 'upcoming'){
+        const anext = getShowNextAir(a, today);
+        const bnext = getShowNextAir(b, today);
+        if(!anext && !bnext) return 0;
+        if(!anext) return 1;
+        if(!bnext) return -1;
+        return anext - bnext; // soonest first
+      }
       return 0;
     });
 
@@ -896,14 +1022,27 @@
     html += `</div>`;
     host.innerHTML = html;
 
-    const sortBtn = $('#sh-sort-title');
-    sortBtn.textContent = state.showsDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
-    sortBtn.classList.add('active');
-    sortBtn.onclick = ()=>{
-      state.showsDir = state.showsDir === 'asc' ? 'desc' : 'asc';
+    // Sort buttons
+    const sortTitleBtn = $('#sh-sort-title');
+    sortTitleBtn.textContent = state.showsDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
+    sortTitleBtn.onclick = ()=>{
+      if(state.showsSort !== 'title'){
+        state.showsSort = 'title';
+      }else{
+        state.showsDir = state.showsDir === 'asc' ? 'desc' : 'asc';
+      }
+      renderShows();
+    };
+    $('#sh-sort-latest').onclick = ()=>{
+      state.showsSort = 'latest';
+      renderShows();
+    };
+    $('#sh-sort-upcoming').onclick = ()=>{
+      state.showsSort = 'upcoming';
       renderShows();
     };
 
+    // Genre, Status, When filters
     $$('[data-sh-genre]').forEach(btn=>{
       btn.onclick = ()=>{
         state.showsGenre = btn.dataset.shGenre;
@@ -913,6 +1052,12 @@
     $$('[data-sh-status]').forEach(btn=>{
       btn.onclick = ()=>{
         state.showsStatus = btn.dataset.shStatus;
+        renderShows();
+      };
+    });
+    $$('[data-when-type="show"]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.showsWhen = btn.dataset.when;
         renderShows();
       };
     });
@@ -929,7 +1074,7 @@
 
     // current season line → show popup with that season expanded
     $$('.link-season').forEach(el=>{
-      el.onclick = e=>{
+      el.onclick = ()=>{
         const id = parseInt(el.dataset.showId,10);
         const sn = parseInt(el.dataset.season,10) || null;
         const show = getShows().find(s=>s.show_id===id);
@@ -938,7 +1083,7 @@
     });
   }
 
-  // ------------ Movies ------------
+  // ---------- Movies ----------
 
   function renderMovies(){
     const host = $('#movies');
@@ -950,6 +1095,8 @@
 
     const genreSet = new Set();
     const statusSet = new Set();
+    const today = state.today;
+
     movies.forEach(mv=>{
       (mv.genres||[]).forEach(g=>genreSet.add(g));
       if(mv.status) statusSet.add(mv.status);
@@ -965,11 +1112,14 @@
       html += `<button class="btn${state.moviesGenre===g?' active':''}" data-mv-genre="${g}">${g}</button>`;
     });
     html += `
+          <span class="label">When</span>
+          ${buildWhenButtons('movie', state.moviesWhen)}
         </div>
         <div class="controls" style="margin-top:4px;">
           <span class="label">Sort</span>
-          <button class="btn" id="mv-sort-title"></button>
+          <button class="btn${state.moviesSort==='title'?' active':''}" id="mv-sort-title"></button>
           <button class="btn${state.moviesSort==='date'?' active':''}" id="mv-sort-date">Release date</button>
+          <button class="btn${state.moviesSort==='upcoming'?' active':''}" id="mv-sort-upcoming">Upcoming</button>
           <span class="label">Status</span>
           <button class="btn${state.moviesStatus==='All'?' active':''}" data-mv-status="All">All</button>
     `;
@@ -983,38 +1133,61 @@
     `;
 
     let list = movies.slice();
+
+    // Genre filter
     if(state.moviesGenre !== 'All'){
       list = list.filter(mv => (mv.genres||[]).includes(state.moviesGenre));
     }
+
+    // Status filter
     if(state.moviesStatus !== 'All'){
       list = list.filter(mv => mv.status === state.moviesStatus);
     }
 
-    if(state.moviesSort === 'title'){
-      list.sort((a,b)=>{
+    // When filter
+    list = list.filter(mv=>{
+      const d = getMovieDate(mv);
+      const future = d && d >= today ? d : null;
+      const past = d && d < today ? d : null;
+      return inWhenBucket(past, future, state.moviesWhen, today);
+    });
+
+    // Sort
+    list.sort((a,b)=>{
+      if(state.moviesSort === 'title'){
         const an = (a.name||'').toLowerCase();
         const bn = (b.name||'').toLowerCase();
         if(an < bn) return state.moviesDir === 'asc' ? -1 : 1;
         if(an > bn) return state.moviesDir === 'asc' ? 1 : -1;
         return 0;
-      });
-    }else{
-      list.sort((a,b)=>{
-        const da = a.release_date ? new Date(a.release_date) : null;
-        const db = b.release_date ? new Date(b.release_date) : null;
-        if(!da && !db) return 0;
-        if(!da) return 1;
-        if(!db) return -1;
-        return da - db;
-      });
-    }
+      }
+      if(state.moviesSort === 'date'){
+        const ad = getMovieDate(a);
+        const bd = getMovieDate(b);
+        if(!ad && !bd) return 0;
+        if(!ad) return 1;
+        if(!bd) return -1;
+        return bd - ad; // newest first
+      }
+      if(state.moviesSort === 'upcoming'){
+        const ad = getMovieDate(a);
+        const bd = getMovieDate(b);
+        const at = ad && ad >= today ? ad : null;
+        const bt = bd && bd >= today ? bd : null;
+        if(!at && !bt) return 0;
+        if(!at) return 1;
+        if(!bt) return -1;
+        return at - bt; // soonest first
+      }
+      return 0;
+    });
 
     for(const mv of list){
       html += `
         <div class="card">
           ${mv.poster_path ? `<img class="poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="poster"></div>`}
           <div class="card-body">
-            <div class="title">${mv.name}</div>
+            <div class="title mv-link" data-movie-id="${mv.movie_id}">${mv.name}</div>
             <div class="mut small">
               ${(mv.genres||[]).join(', ')}
               ${mv.status ? ' • ' + mv.status : ''}
@@ -1031,14 +1204,14 @@
     html += `</div>`;
     host.innerHTML = html;
 
+    // Sort buttons
     const sortTitleBtn = $('#mv-sort-title');
     sortTitleBtn.textContent = state.moviesDir === 'asc' ? 'Title A–Z' : 'Title Z–A';
-    sortTitleBtn.classList.toggle('active', state.moviesSort === 'title');
     sortTitleBtn.onclick = ()=>{
-      if(state.moviesSort === 'title'){
-        state.moviesDir = state.moviesDir === 'asc' ? 'desc' : 'asc';
-      }else{
+      if(state.moviesSort !== 'title'){
         state.moviesSort = 'title';
+      }else{
+        state.moviesDir = state.moviesDir === 'asc' ? 'desc' : 'asc';
       }
       renderMovies();
     };
@@ -1046,7 +1219,12 @@
       state.moviesSort = 'date';
       renderMovies();
     };
+    $('#mv-sort-upcoming').onclick = ()=>{
+      state.moviesSort = 'upcoming';
+      renderMovies();
+    };
 
+    // Genre/Status/When filters
     $$('[data-mv-genre]').forEach(btn=>{
       btn.onclick = ()=>{
         state.moviesGenre = btn.dataset.mvGenre;
@@ -1059,47 +1237,99 @@
         renderMovies();
       };
     });
+    $$('[data-when-type="movie"]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.moviesWhen = btn.dataset.when;
+        renderMovies();
+      };
+    });
+
+    // Movie title -> movie popup
+    $$('.mv-link').forEach(el=>{
+      el.onclick = ()=>{
+        const id = parseInt(el.dataset.movieId,10);
+        const mv = getMovies().find(m=>m.movie_id===id);
+        if(mv) openMovieOverlay(mv);
+      };
+    });
   }
 
-  // ------------ Show Overlay ------------
+  function buildWhenButtons(type, current){
+    const opts = [
+      ['All','All'],
+      ['Past','Past'],
+      ['30d','Next30'],
+      ['90d','Next90'],
+      ['Future','Future'],
+    ];
+    return opts.map(([label,val])=>{
+      const active = current === val ? ' active' : '';
+      return `<button class="btn${active}" data-when-type="${type}" data-when="${val}">${label}</button>`;
+    }).join('');
+  }
+
+  // ---------- Show popup ----------
 
   function openShowOverlay(show, focusSeason){
     const ov = $('#overlay');
     const box = $('#overlay-content');
     const seasons = show.seasons || [];
+    const cs = guessCurrentSeason(show);
 
     let seasonHtml = '';
     seasons.forEach(s=>{
       const eps = s.episodes || [];
       const first = eps[0];
       const year = first && first.air_date ? first.air_date.slice(0,4) : '';
+      const metaParts = [];
+      if(year) metaParts.push(year);
+      metaParts.push(`${eps.length} episodes`);
+      const meta = metaParts.join(' • ');
+      const desc = (s.overview || '').trim();
       seasonHtml += `
         <div class="season-row" data-season="${s.season_number}">
-          <div class="season-label">Season ${s.season_number}</div>
-          <div class="season-meta">
-            ${year ? year + ' • ' : ''}${eps.length} episodes
+          <div>
+            <span class="season-label">Season ${s.season_number}</span>
+            <span class="season-meta">${meta}</span>
+            ${desc ? `<div class="season-desc">${desc}</div>` : ''}
           </div>
         </div>
       `;
     });
 
+    // Build current season summary if we can
+    let currentLine = '';
+    if(cs){
+      const s = seasons.find(x=>x.season_number===cs);
+      if(s){
+        const eps = s.episodes || [];
+        const first = eps[0];
+        const year = first && first.air_date ? first.air_date.slice(0,4) : '';
+        const meta = [];
+        meta.push(`Season ${cs}`);
+        if(year) meta.push(year);
+        meta.push(`${eps.length} episodes`);
+        currentLine = `Current Season: ${meta.join(' • ')}`;
+      }
+    }
+
     box.innerHTML = `
       <div class="ov-header">
         ${show.poster_path ? `<img class="ov-poster" src="${IMG(show.poster_path)}" alt="${show.name}">` : `<div class="ov-poster"></div>`}
         <div>
-          <div class="ov-title">
-            <a href="${show.links.tmdb}" target="_blank">${show.name}</a>
+          <div class="ov-title-row">
+            <div class="ov-title">${show.name}</div>
+            <a class="icon-link" target="_blank" href="${show.links.tmdb}">
+              <span>Ⓣ</span><span>TMDB</span>
+            </a>
           </div>
+          ${currentLine ? `<div class="ov-current">${currentLine}</div>` : ''}
+          ${buildNetworks(show)}
           <div class="ov-sub">
             ${(show.genres||[]).join(', ')}
             ${show.status ? ' • ' + show.status : ''}
           </div>
           ${show.overview ? `<div class="ov-overview">${show.overview}</div>` : ''}
-          <div class="ov-links">
-            <a class="icon-link" target="_blank" href="${show.links.tmdb}">
-              <span>Ⓣ</span><span>TMDB</span>
-            </a>
-          </div>
         </div>
       </div>
       <div class="season-list">
@@ -1108,6 +1338,7 @@
     `;
 
     function renderEpisodesUnder(row, s){
+      // remove old episode blocks
       box.querySelectorAll('.episodes').forEach(e=>e.remove());
       const wrap = document.createElement('div');
       wrap.className = 'episodes';
@@ -1162,12 +1393,46 @@
     }
   }
 
+  // ---------- Movie popup ----------
+
+  function openMovieOverlay(mv){
+    const ov = $('#overlay');
+    const box = $('#overlay-content');
+
+    box.innerHTML = `
+      <div class="ov-header">
+        ${mv.poster_path ? `<img class="ov-poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="ov-poster"></div>`}
+        <div>
+          <div class="ov-title-row">
+            <div class="ov-title">${mv.name}</div>
+            <a class="icon-link" target="_blank" href="${mv.links.tmdb}">
+              <span>Ⓣ</span><span>TMDB</span>
+            </a>
+          </div>
+          <div class="ov-sub">
+            ${(mv.genres||[]).join(', ')}
+            ${mv.status ? ' • ' + mv.status : ''}
+            ${mv.release_date ? ' • ' + mv.release_date : ''}
+          </div>
+          ${mv.overview ? `<div class="ov-overview">${mv.overview}</div>` : ''}
+          <div class="ov-links">
+            ${buildMovieIcons(mv)}
+          </div>
+        </div>
+      </div>
+    `;
+
+    $('#overlay .overlay-close').onclick = closeOverlay;
+    $('#overlay .overlay-backdrop').onclick = closeOverlay;
+    ov.hidden = false;
+  }
+
   function closeOverlay(){
     $('#overlay').hidden = true;
     $('#overlay-content').innerHTML = '';
   }
 
-  // ------------ Meta & bootstrap ------------
+  // ---------- Meta / bootstrap ----------
 
   function renderMeta(){
     if(!state.data) return;
