@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 # =============================================================================
-# File: scripts/fetch_live_tv_stub.py
+# File: scripts/fetch_live_tv.py
 # Project: my_TV_Movie
-# Version: v0.1.0 (2025-11-09)
+# Version: v1.0.0 (2025-11-09)
 #
 # Purpose:
-#   Read live_tv_list.txt and inject a simple `live_tv` array into data/data.json.
-#   This is a stub to support the Live TV tab UI.
-#   Future: resolve epg_hint to actual EPG sources, merge schedules, etc.
+#   Read live_tv_list.txt and inject a `live_tv` array into data.json.
+#   Used by the Live TV tab (guide-style skeleton, no EPG yet).
 # =============================================================================
 
 import json
@@ -19,7 +18,7 @@ DATA_FILE = ROOT / "data" / "data.json"
 
 
 def log(msg: str) -> None:
-    print(f"[live_tv_stub] {msg}", flush=True)
+    print(f"[fetch_live_tv] {msg}", flush=True)
 
 
 def load_data():
@@ -34,7 +33,7 @@ def save_data(data):
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     with DATA_FILE.open("w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    log("Updated data.json with live_tv stub entries.")
+    log("Updated data.json with live_tv entries.")
 
 
 def parse_live_tv():
@@ -48,20 +47,22 @@ def parse_live_tv():
         if not line or line.startswith("#") or set(line) == {"-"}:
             continue
         parts = [p.strip() for p in line.split("|")]
-        if len(parts) < 2:
+        if len(parts) < 1:
             continue
         name = parts[0]
         country = parts[1] if len(parts) > 1 else ""
         group = parts[2] if len(parts) > 2 else ""
         logo = parts[3] if len(parts) > 3 else ""
         epg_hint = parts[4] if len(parts) > 4 else ""
-        items.append({
-            "name": name,
-            "country": country,
-            "group": group,
-            "logo": logo,
-            "epg_hint": epg_hint,
-        })
+        items.append(
+            {
+                "name": name,
+                "country": country,
+                "group": group,
+                "logo": logo,
+                "epg_hint": epg_hint,
+            }
+        )
     log(f"Parsed {len(items)} live_tv entries.")
     return items
 

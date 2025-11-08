@@ -4,21 +4,27 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.01 (2025-11-09)
+    Version: v2.8.02 (2025-11-09)
 
-    Features:
-      - SPA: Calendar / Shows / Movies / Live TV
+    Highlights:
+      - Single-page app:
+          Tabs: Calendar / Shows / Movies / Live TV
       - Popups:
           P1: Show + seasons
-          P2: Season episodes (inline in P1)
+          P2: Season episodes (inline under P1 when selected)
           P3: Episode detail
           P4: Movie detail
-      - Trakt-integrated profiles (via scripts/sync_trakt.py):
-          profiles[] + episode.watched_by[]
-      - "Upcoming 30d" quick filter
-      - Directional remote navigation
-      - TV-friendly layout
-      - Live TV: stubbed grid using data.live_tv (channel, country, group, logo)
+      - Trakt integration (via sync_trakt.py):
+          profiles[] + episode.watched_by[] + movie.watched_by[]
+      - Filters:
+          Shows & Movies: Genre, Status, When, Watched
+          Calendar: clean monthly view
+      - Movies:
+          4 status labels (In Theatres, Released, In Production, Announced)
+          Related titles via TMDB collections (if present in data)
+      - Live TV:
+          Guide-style skeleton (channels x times), no EPG yet
+      - Remote-friendly navigation + scroll-safe overlays
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -62,7 +68,6 @@
     }
     :root[data-theme="light"] header{
       background:rgba(245,245,247,.97);
-      backdrop-filter:none;
     }
     .wrap{
       max-width:1200px;
@@ -148,7 +153,6 @@
       font-size:9px;
       min-width:0;
     }
-
     .controls-sticky{
       position:sticky;
       top:64px;
@@ -169,7 +173,6 @@
       margin-right:2px;
     }
 
-    /* Calendar */
     .cal-head-sticky{
       position:sticky;
       top:64px;
@@ -299,11 +302,11 @@
       font-size:7px;
       cursor:pointer;
     }
-    .icon-link span{font-size:8px;}
     :root[data-theme="light"] .icon-link{
       background:rgba(17,24,39,.98);
       color:#ffffff;
     }
+    .icon-link span{font-size:8px;}
 
     .grid{
       display:grid;
@@ -346,7 +349,6 @@
       margin:3px 0;
     }
 
-    /* Overlay */
     .overlay[hidden]{display:none;}
     .overlay{
       position:fixed;
@@ -399,7 +401,6 @@
       font-size:16px;
       cursor:pointer;
     }
-
     .ov-header{
       display:flex;
       gap:10px;
@@ -445,7 +446,6 @@
       gap:4px;
       flex-wrap:wrap;
     }
-
     .season-list{
       margin-top:8px;
       font-size:11px;
@@ -468,7 +468,6 @@
       color:var(--mut);
       margin-top:1px;
     }
-
     .episodes{
       margin-top:3px;
       padding-left:4px;
@@ -485,43 +484,58 @@
       margin-left:4px;
     }
 
-    /* Live TV */
-    .ltv-grid{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
-      gap:8px;
+    .ltv-wrap{
       margin-top:4px;
     }
-    .ltv-card{
-      background:var(--card);
-      border-radius:12px;
-      padding:6px;
-      border:1px solid var(--chip);
+    .ltv-head{
+      position:sticky;
+      top:64px;
+      z-index:25;
+      background:var(--bg);
+      padding:4px 0;
+      font-size:8px;
+      color:var(--mut);
+    }
+    .ltv-grid{
+      display:block;
+      margin-top:2px;
+      border-top:1px solid rgba(148,163,253,.18);
+    }
+    .ltv-row{
+      display:grid;
+      grid-template-columns:140px repeat(5,1fr);
+      gap:2px;
+      align-items:stretch;
+      padding:3px 0;
+      border-bottom:1px solid rgba(148,163,253,.08);
+      font-size:8px;
+    }
+    .ltv-chan{
       display:flex;
-      gap:6px;
+      gap:4px;
       align-items:center;
+      padding-right:4px;
     }
     .ltv-logo{
-      width:40px;
-      height:40px;
-      border-radius:8px;
+      width:22px;
+      height:22px;
+      border-radius:6px;
       object-fit:contain;
       background:#111827;
       flex-shrink:0;
     }
-    .ltv-body{
-      display:flex;
-      flex-direction:column;
-      gap:1px;
+    .ltv-name{
       font-size:9px;
-    }
-    .ltv-title{
-      font-size:11px;
       font-weight:600;
     }
     .ltv-meta{
       color:var(--mut);
-      font-size:8px;
+      font-size:7px;
+    }
+    .ltv-slot{
+      border-radius:4px;
+      border:1px dashed rgba(148,163,253,.16);
+      min-height:14px;
     }
 
     #meta{
@@ -585,16 +599,20 @@
     today: new Date(),
     currentMonth: null,
     profile: 'All',
+
     showsGenre: 'All',
     showsStatus: 'All',
     showsWhen: 'All',
+    showsWatch: 'All',
     showsSort: 'title',
     showsDir: 'asc',
+
     moviesGenre: 'All',
     moviesStatus: 'All',
     moviesWhen: 'All',
+    moviesWatch: 'All',
     moviesSort: 'title',
-    moviesDir: 'asc'
+    moviesDir: 'asc',
   };
 
   let overlayStack = [];
@@ -684,8 +702,8 @@
 
   function initProfileBar(){
     const pb = $('#profileBar');
-    const profiles = (state.data && state.data.profiles) || null;
-    if(!profiles || !profiles.length){
+    const profiles = (state.data && state.data.profiles) || [];
+    if(!profiles.length){
       pb.hidden = true;
       return;
     }
@@ -695,13 +713,14 @@
       {id:'Andrew', label:'Andrew'},
       {id:'Brant', label:'Brant'},
       {id:'Both', label:'Both'}
-    ].filter(p => p.id === 'All' || profiles.includes(p.id));
+    ];
     pb.innerHTML =
       '<span class="label">Profile</span>' +
-      cand.map(p =>
-        `<button class="btn-profile${p.id===state.profile?' active':''}" data-prof="${p.id}">${p.label}</button>`
-      ).join('') +
-      `<button class="btn-profile${state.showsWhen==='Next30' && state.moviesWhen==='Next30'?' active':''}"
+      cand.map(p =>{
+        const active = state.profile === p.id ? ' active' : '';
+        return `<button class="btn-profile${active}" data-prof="${p.id}">${p.label}</button>`;
+      }).join('') +
+      `<button class="btn-profile${(state.showsWhen==='Next30' && state.moviesWhen==='Next30')?' active':''}"
          data-quick-upcoming="1">Upcoming 30d</button>`;
     $$('[data-prof]').forEach(b=>{
       b.onclick = () => {
@@ -712,9 +731,9 @@
     });
     $$('[data-quick-upcoming]').forEach(b=>{
       b.onclick = () => {
-        const active = state.showsWhen==='Next30' && state.moviesWhen==='Next30';
-        state.showsWhen = active ? 'All' : 'Next30';
-        state.moviesWhen = active ? 'All' : 'Next30';
+        const on = state.showsWhen==='Next30' && state.moviesWhen==='Next30';
+        state.showsWhen = on ? 'All' : 'Next30';
+        state.moviesWhen = on ? 'All' : 'Next30';
         initProfileBar();
         renderAll();
       };
@@ -743,7 +762,7 @@
   function buildMovieIcons(mv){
     const id = mv.movie_id;
     return `
-      <a class="icon-link" target="_blank" href="${mv.links.tmdb}">
+      <a class="icon-link" target="_blank" href="${mv.links && mv.links.tmdb ? mv.links.tmdb : `https://www.themoviedb.org/movie/${id}`}">
         <span>Ⓣ</span><span>TMDB</span>
       </a>
       <a class="icon-link" target="_blank" href="https://vidsrc.net/embed/movie/${id}">
@@ -758,10 +777,9 @@
   function buildNetworks(show){
     const nets = show.networks || [];
     if(!nets.length) return '';
-    const first = nets.slice(0,3);
     return `
       <div class="net-row">
-        ${first.map(n=>{
+        ${nets.slice(0,3).map(n=>{
           const key = n.toLowerCase();
           const logo = state.serviceLogos[key];
           if(logo){
@@ -817,6 +835,15 @@
 
   const getMovieDate = mv => mv.release_date ? new Date(mv.release_date) : null;
 
+  function watchedByProfile(list, profile){
+    if(!list || !list.length) return false;
+    if(profile === 'All') return list.length > 0;
+    if(profile === 'Andrew') return list.includes('Andrew');
+    if(profile === 'Brant') return list.includes('Brant');
+    if(profile === 'Both') return list.includes('Andrew') && list.includes('Brant');
+    return false;
+  }
+
   function watchedLabel(ep){
     const wb = ep.watched_by || [];
     if(!wb.length) return '';
@@ -825,13 +852,28 @@
     if(wb.includes('Brant')) return '<span class="ep-watched">Watched: Brant</span>';
     return '';
   }
-  function isVisibleForProfile(ep){
-    const wb = ep.watched_by || [];
-    if(state.profile === 'All') return true;
-    if(state.profile === 'Andrew') return !wb.includes('Andrew');
-    if(state.profile === 'Brant') return !wb.includes('Brant');
-    if(state.profile === 'Both') return !(wb.includes('Andrew') && wb.includes('Brant'));
-    return true;
+
+  function showWatchState(show, profile){
+    let any = false, all = true, anyWatched = false;
+    (show.seasons||[]).forEach(s=>{
+      (s.episodes||[]).forEach(ep=>{
+        if(!ep.air_date) return;
+        any = true;
+        const w = watchedByProfile(ep.watched_by, profile);
+        if(w) anyWatched = true; else all = false;
+      });
+    });
+    if(!any) return 'none';
+    if(all && anyWatched) return 'watched';
+    if(anyWatched) return 'partial';
+    return 'unwatched';
+  }
+
+  function movieWatchState(mv, profile){
+    const wb = mv.watched_by || [];
+    if(!wb.length) return 'unwatched';
+    if(watchedByProfile(wb, profile)) return 'watched';
+    return 'unwatched';
   }
 
   function inWhenBucket(datePast, dateFuture, when, today){
@@ -851,6 +893,20 @@
     return true;
   }
 
+  function movieStatusLabel(mv, today){
+    const raw = (mv.status || '').toLowerCase();
+    const d = getMovieDate(mv);
+    if(raw === 'released' && d && d <= today) return 'Released';
+    if(raw === 'in production' || raw === 'post production') return 'In Production';
+    if(raw === 'planned' || raw === 'rumored' || raw === 'announced') return 'Announced';
+    if(d && d > today){
+      const diff = (d - today) / 86400000;
+      if(diff >= -7 && diff <= 21) return 'In Theatres';
+      return 'Announced';
+    }
+    return raw ? raw[0].toUpperCase() + raw.slice(1) : '';
+  }
+
   function buildWhenButtons(type, current){
     const opts = [
       ['All','All'],
@@ -865,7 +921,20 @@
     }).join('');
   }
 
-  // Calendar (P1/P2/P3/P4 wiring via click handlers)
+  function buildWatchButtons(type, current){
+    const opts = [
+      ['All','All'],
+      ['Unwatched','Unwatched'],
+      ['In-Progress','InProgress'],
+      ['Watched','Watched'],
+    ];
+    return opts.map(([label,val])=>{
+      const active = current === val ? ' active' : '';
+      return `<button class="btn chip${active}" data-watch-type="${type}" data-watch="${val}">${label}</button>`;
+    }).join('');
+  }
+
+  // Calendar
 
   function changeMonth(delta){
     const m = state.currentMonth;
@@ -887,11 +956,12 @@
     }
 
     const by = {};
+    const today = state.today;
+
     for(const sh of shows){
       for(const s of sh.seasons || []){
         for(const ep of s.episodes || []){
           if(!ep.air_date) continue;
-          if(!isVisibleForProfile(ep)) continue;
           const key = ep.air_date;
           (by[key] ||= []).push({type:'ep', show:sh, s:s.season_number, ep});
         }
@@ -931,7 +1001,7 @@
     for(let i=0;i<42;i++){
       const d = new Date(start);
       d.setDate(start.getDate()+i);
-      const isToday = d.toDateString() === state.today.toDateString();
+      const isToday = d.toDateString() === today.toDateString();
       const key = d.toISOString().slice(0,10);
       const items = by[key] || [];
       html += `<div class="cal-day${isToday?' today':''}"><div class="cal-date">${d.getDate()}</div>`;
@@ -966,7 +1036,9 @@
                 <div class="cal-show cal-movie-title remote" data-movie-id="${mv.movie_id}">
                   ${mv.name}
                 </div>
-                <div class="cal-movie-label">Movie${mv.release_date?' • '+mv.release_date:''}</div>
+                <div class="cal-movie-label">
+                  Movie${mv.release_date?' • '+mv.release_date:''}
+                </div>
                 <div class="icon-row">${buildMovieIcons(mv)}</div>
               </div>
             </div>
@@ -1029,6 +1101,7 @@
     const genreSet = new Set();
     const statusSet = new Set();
     const today = state.today;
+
     shows.forEach(sh=>{
       (sh.genres||[]).forEach(g=>genreSet.add(g));
       if(sh.status) statusSet.add(sh.status);
@@ -1055,6 +1128,8 @@
           ${Array.from(statusSet).sort().map(s =>
             `<button class="btn chip${state.showsStatus===s?' active':''}" data-sh-status="${s}">${s}</button>`
           ).join('')}
+          <span class="label">Watched</span>
+          ${buildWatchButtons('show', state.showsWatch)}
         </div>
       </div>
       <div class="grid">
@@ -1072,7 +1147,14 @@
     list = list.filter(sh=>{
       const last = getShowLastAir(sh);
       const next = getShowNextAir(sh, today);
-      return inWhenBucket(last, next, state.showsWhen, today);
+      if(!inWhenBucket(last, next, state.showsWhen, today)) return false;
+
+      const ws = showWatchState(sh, state.profile);
+      if(state.showsWatch === 'All') return true;
+      if(state.showsWatch === 'Unwatched') return ws === 'unwatched';
+      if(state.showsWatch === 'Watched') return ws === 'watched';
+      if(state.showsWatch === 'InProgress') return ws === 'partial';
+      return true;
     });
 
     list.sort((a,b)=>{
@@ -1120,7 +1202,7 @@
                     </div>` : ''}
             <div class="divider"></div>
             <div class="icon-row">
-              <a class="icon-link" target="_blank" href="${sh.links.tmdb}">
+              <a class="icon-link" target="_blank" href="${sh.links && sh.links.tmdb ? sh.links.tmdb : `https://www.themoviedb.org/tv/${sh.show_id}`}">
                 <span>Ⓣ</span><span>TMDB</span>
               </a>
             </div>
@@ -1153,6 +1235,12 @@
     });
     $$('[data-when-type="show"]').forEach(btn=>{
       btn.onclick = ()=>{ state.showsWhen = btn.dataset.when; renderShows(); };
+    });
+    $$('[data-watch-type="show"]').forEach(btn=>{
+      btn.onclick = ()=>{
+        state.showsWatch = btn.dataset.watch;
+        renderShows();
+      };
     });
 
     $$('.link-show').forEach(el=>{
@@ -1191,7 +1279,8 @@
 
     movies.forEach(mv=>{
       (mv.genres||[]).forEach(g=>genreSet.add(g));
-      if(mv.status) statusSet.add(mv.status);
+      const lbl = movieStatusLabel(mv, today);
+      if(lbl) statusSet.add(lbl);
     });
 
     let html = `
@@ -1215,6 +1304,8 @@
           ${Array.from(statusSet).sort().map(s =>
             `<button class="btn chip${state.moviesStatus===s?' active':''}" data-mv-status="${s}">${s}</button>`
           ).join('')}
+          <span class="label">Watched</span>
+          ${buildWatchButtons('movie', state.moviesWatch)}
         </div>
       </div>
       <div class="grid">
@@ -1225,14 +1316,23 @@
     if(state.moviesGenre !== 'All'){
       list = list.filter(mv => (mv.genres||[]).includes(state.moviesGenre));
     }
-    if(state.moviesStatus !== 'All'){
-      list = list.filter(mv => mv.status === state.moviesStatus);
-    }
+
     list = list.filter(mv=>{
+      const statusLbl = movieStatusLabel(mv, today);
+      if(state.moviesStatus !== 'All' && statusLbl !== state.moviesStatus)
+        return false;
+
       const d = getMovieDate(mv);
       const future = d && d >= today ? d : null;
       const past = d && d < today ? d : null;
-      return inWhenBucket(past, future, state.moviesWhen, today);
+      if(!inWhenBucket(past, future, state.moviesWhen, today)) return false;
+
+      const ws = movieWatchState(mv, state.profile);
+      if(state.moviesWatch === 'All') return true;
+      if(state.moviesWatch === 'Unwatched') return ws === 'unwatched';
+      if(state.moviesWatch === 'Watched') return ws === 'watched';
+      if(state.moviesWatch === 'InProgress') return false; // movies are single; no partial
+      return true;
     });
 
     list.sort((a,b)=>{
@@ -1265,18 +1365,26 @@
     });
 
     for(const mv of list){
+      const d = getMovieDate(mv);
+      const statusLbl = movieStatusLabel(mv, today);
+      const genres = (mv.genres || []).join(', ');
+      const wb = mv.watched_by || [];
       html += `
         <div class="card">
           ${mv.poster_path ? `<img class="poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="poster"></div>`}
           <div class="card-body">
             <div class="title mv-link remote" data-movie-id="${mv.movie_id}">${mv.name}</div>
-            <div class="mut small">
-              ${(mv.genres||[]).join(', ')}
-              ${mv.status ? ' • ' + mv.status : ''}
-              ${mv.release_date ? ' • ' + mv.release_date : ''}
+            <div class="small">
+              ${genres || ''}
+            </div>
+            <div class="small">
+              ${d ? d.toISOString().slice(0,10) : 'TBA'}
+              ${statusLbl ? ' • ' + statusLbl : ''}
+              ${wb.length ? ' • Watched: ' + wb.join(', ') : ''}
             </div>
             <div class="divider"></div>
             <div class="icon-row">${buildMovieIcons(mv)}</div>
+            ${buildRelatedMovies(mv, list)}
           </div>
         </div>
       `;
@@ -1307,6 +1415,9 @@
     $$('[data-when-type="movie"]').forEach(btn=>{
       btn.onclick = ()=>{ state.moviesWhen = btn.dataset.when; renderMovies(); };
     });
+    $$('[data-watch-type="movie"]').forEach(btn=>{
+      btn.onclick = ()=>{ state.moviesWatch = btn.dataset.watch; renderMovies(); };
+    });
 
     $$('.mv-link').forEach(el=>{
       el.onclick = ()=>{
@@ -1319,7 +1430,25 @@
     remoteIndex = -1;
   }
 
-  // Live TV (stubbed): shows configured channels; schedule is future work.
+  function buildRelatedMovies(mv, allMovies){
+    const col = mv.collection_id || (mv.belongs_to_collection && mv.belongs_to_collection.id);
+    if(!col) return '';
+    const related = allMovies.filter(m =>
+      m !== mv &&
+      (m.collection_id === col ||
+       (m.belongs_to_collection && m.belongs_to_collection.id === col))
+    );
+    if(!related.length) return '';
+    return `
+      <div class="small" style="margin-top:3px;">
+        ${related.map(r =>
+          `<a href="javascript:void(0)" class="mv-link" data-movie-id="${r.movie_id}">${r.name}</a>`
+        ).join(' • ')}
+      </div>
+    `;
+  }
+
+  // Live TV guide-style skeleton
 
   function renderLiveTV(){
     const host = $('#livetv');
@@ -1327,97 +1456,297 @@
     if(!items.length){
       host.innerHTML = `
         <div class="mut">
-          Live TV framework ready.
-          Populate <code>live_tv_list.txt</code> and build to see channels here.
+          Live TV view ready. Populate <code>live_tv_list.txt</code> and rebuild to see channels here.
+          Guide slots are placeholders (no EPG wired yet).
         </div>`;
       return;
     }
-    const countries = new Set();
-    const groups = new Set();
-    items.forEach(c=>{
-      if(c.country) countries.add(c.country);
-      if(c.group) groups.add(c.group);
-    });
+
+    const times = ['18:00','20:00','22:00','00:00','02:00'];
 
     let html = `
-      <div class="controls-sticky">
-        <div class="controls">
-          <span class="label">Country</span>
-          <button class="btn chip active" data-ltv-country="All">All</button>
-          ${Array.from(countries).sort().map(c =>
-            `<button class="btn chip" data-ltv-country="${c}">${c}</button>`
-          ).join('')}
-          <span class="label">Group</span>
-          <button class="btn chip active" data-ltv-group="All">All</button>
-          ${Array.from(groups).sort().map(g =>
-            `<button class="btn chip" data-ltv-group="${g}">${g}</button>`
-          ).join('')}
+      <div class="ltv-wrap">
+        <div class="ltv-head">
+          Live TV (skeleton guide) — layout only, schedule to come later.
         </div>
-      </div>
-      <div class="ltv-grid" id="ltv-grid"></div>
+        <div class="ltv-grid">
+          <div class="ltv-row">
+            <div></div>
+            ${times.map(t=>`<div style="font-size:8px;color:var(--mut);text-align:center;">${t}</div>`).join('')}
+          </div>
     `;
-    host.innerHTML = html;
 
-    let fCountry = 'All';
-    let fGroup = 'All';
-
-    function draw(){
-      const grid = $('#ltv-grid');
-      const filtered = items.filter(c =>
-        (fCountry === 'All' || c.country === fCountry) &&
-        (fGroup === 'All' || c.group === fGroup)
-      );
-      grid.innerHTML = filtered.map(c=>{
-        const logo = c.logo || '';
-        const logoSrc = logo
-          ? (logo.startsWith('http')
-             ? logo
-             : `../image/services_logos/${logo}`)
-          : '';
-        return `
-          <div class="ltv-card remote">
+    items.forEach(c=>{
+      const logo = c.logo || '';
+      const logoSrc = logo
+        ? (logo.startsWith('http') ? logo : `../image/services_logos/${logo}`)
+        : '';
+      html += `
+        <div class="ltv-row remote">
+          <div class="ltv-chan">
             ${logoSrc ? `<img class="ltv-logo" src="${logoSrc}" alt="${c.name}">` : `<div class="ltv-logo"></div>`}
-            <div class="ltv-body">
-              <div class="ltv-title">${c.name}</div>
+            <div>
+              <div class="ltv-name">${c.name}</div>
               <div class="ltv-meta">
-                ${c.country||''}
-                ${c.group ? ' • '+c.group : ''}
-                ${c.epg_hint ? ' • '+c.epg_hint : ''}
+                ${c.country || ''}${c.group ? ' • '+c.group : ''}${c.epg_hint ? ' • '+c.epg_hint : ''}
               </div>
             </div>
           </div>
-        `;
-      }).join('') || '<div class="mut">No channels match filters.</div>';
-      remoteIndex = -1;
-    }
-
-    $$('[data-ltv-country]').forEach(btn=>{
-      btn.onclick = ()=>{
-        fCountry = btn.dataset.ltvCountry;
-        $$('[data-ltv-country]').forEach(b=>b.classList.toggle('active', b===btn));
-        draw();
-      };
-    });
-    $$('[data-ltv-group]').forEach(btn=>{
-      btn.onclick = ()=>{
-        fGroup = btn.dataset.ltvGroup;
-        $$('[data-ltv-group]').forEach(b=>b.classList.toggle('active', b===btn));
-        draw();
-      };
+          ${times.map(()=>'<div class="ltv-slot"></div>').join('')}
+        </div>
+      `;
     });
 
-    draw();
+    html += `</div></div>`;
+    host.innerHTML = html;
+
+    remoteIndex = -1;
   }
 
-  // Overlay (P1, P2, P3, P4) implementation identical to previous answer:
-  // openShowOverlay, openEpisodeOverlay, openMovieOverlay, showOverlay,
-  // renderShowView, renderEpisodeView, renderMovieView (unchanged from design).
+  // Overlay stack & renderers
 
-  // For brevity here, those functions are already defined above
-  // in your current version; keep them as-is from prior block.
-  // (If anything is missing in your local file, shout and I'll resend that slice.)
+  function openShowOverlay(show, focusSeason){
+    overlayStack.push({type:'show', showId:show.show_id, season:focusSeason||null});
+    showOverlay();
+  }
 
-  // Remote navigation (directional)
+  function openEpisodeOverlay(show, season, ep){
+    overlayStack.push({
+      type:'episode',
+      showId:show.show_id,
+      season:season.season_number,
+      ep:ep.episode_number
+    });
+    showOverlay();
+  }
+
+  function openMovieOverlay(mv){
+    overlayStack.push({type:'movie', movieId:mv.movie_id});
+    showOverlay();
+  }
+
+  function showOverlay(){
+    const ov = $('#overlay');
+    const backBtn = $('.overlay-back');
+    const closeBtn = $('.overlay-close');
+    const content = $('#overlay-content');
+
+    if(!overlayStack.length){
+      ov.hidden = true;
+      content.innerHTML = '';
+      return;
+    }
+
+    ov.hidden = false;
+    const top = overlayStack[overlayStack.length-1];
+
+    backBtn.hidden = overlayStack.length <= 1;
+
+    if(top.type === 'show'){
+      const sh = getShows().find(s=>s.show_id===top.showId);
+      if(!sh){ overlayStack.pop(); return showOverlay(); }
+      renderShowView(sh, top.season);
+    } else if(top.type === 'episode'){
+      const sh = getShows().find(s=>s.show_id===top.showId);
+      if(!sh){ overlayStack.pop(); return showOverlay(); }
+      const season = (sh.seasons||[]).find(s=>s.season_number===top.season);
+      const ep = season && (season.episodes||[]).find(e=>e.episode_number===top.ep);
+      if(!season || !ep){ overlayStack.pop(); return showOverlay(); }
+      renderEpisodeView(sh, season, ep);
+    } else if(top.type === 'movie'){
+      const mv = getMovies().find(m=>m.movie_id===top.movieId);
+      if(!mv){ overlayStack.pop(); return showOverlay(); }
+      renderMovieView(mv);
+    }
+
+    closeBtn.onclick = ()=>{
+      overlayStack = [];
+      showOverlay();
+    };
+    backBtn.onclick = ()=>{
+      if(overlayStack.length > 1){
+        overlayStack.pop();
+        showOverlay();
+      }else{
+        overlayStack = [];
+        showOverlay();
+      }
+    };
+    $('.overlay-backdrop').onclick = closeBtn.onclick;
+  }
+
+  function renderShowView(sh, focusSeason){
+    const content = $('#overlay-content');
+    const cs = guessCurrentSeason(sh);
+
+    let html = `
+      <div class="ov-header">
+        ${sh.poster_path ? `<img class="ov-poster" src="${IMG(sh.poster_path)}" alt="${sh.name}">` : `<div class="ov-poster"></div>`}
+        <div>
+          <div class="ov-title-row">
+            <div class="ov-title">${sh.name}</div>
+            <div class="icon-row">
+              <a class="icon-link" target="_blank" href="${sh.links && sh.links.tmdb ? sh.links.tmdb : `https://www.themoviedb.org/tv/${sh.show_id}`}">
+                <span>Ⓣ</span><span>TMDB</span>
+              </a>
+            </div>
+          </div>
+          ${cs ? `<div class="ov-current">Current season: ${cs}</div>` : ''}
+          <div class="ov-sub">
+            ${(sh.genres||[]).join(', ')}${sh.status ? ' • ' + sh.status : ''}
+          </div>
+          ${buildNetworks(sh)}
+          ${sh.overview ? `<div class="ov-overview">${sh.overview}</div>` : ''}
+        </div>
+      </div>
+      <div class="season-list">
+    `;
+
+    (sh.seasons||[])
+      .filter(s=>s.season_number>0)
+      .sort((a,b)=>a.season_number-b.season_number)
+      .forEach(s=>{
+        const label = `Season ${s.season_number}`;
+        const epCount = (s.episodes||[]).length;
+        const firstAir = (s.episodes||[]).find(e=>e.air_date)?.air_date || 'TBA';
+        html += `
+          <div class="season-row"
+               data-show-id="${sh.show_id}"
+               data-season="${s.season_number}">
+            <span class="season-label">${label}</span>
+            <span class="season-meta">
+              ${firstAir.slice(0,10)} • ${epCount} episodes
+            </span>
+            ${s.overview ? `<div class="season-desc">${s.overview}</div>` : ''}
+          </div>
+        `;
+        if(focusSeason === s.season_number){
+          html += buildEpisodesBlock(sh, s);
+        }
+      });
+
+    html += `</div>`;
+    content.innerHTML = html;
+
+    $$('#overlay .season-row').forEach(row=>{
+      row.onclick = ()=>{
+        const sid = +row.dataset.showId;
+        const sn = +row.dataset.season;
+        const show = getShows().find(s=>s.show_id===sid);
+        if(!show) return;
+        // Replace top of stack with new focus season
+        overlayStack[overlayStack.length-1] = {
+          type:'show',
+          showId:sid,
+          season:sn
+        };
+        showOverlay();
+      };
+    });
+
+    $$('#overlay .ep-row').forEach(row=>{
+      row.onclick = ()=>{
+        const sid = +row.dataset.showId;
+        const sn = +row.dataset.season;
+        const en = +row.dataset.ep;
+        const show = getShows().find(s=>s.show_id===sid);
+        const season = show && (show.seasons||[]).find(s=>s.season_number===sn);
+        const ep = season && (season.episodes||[]).find(e=>e.episode_number===en);
+        if(show && season && ep) openEpisodeOverlay(show, season, ep);
+      };
+    });
+  }
+
+  function buildEpisodesBlock(show, season){
+    const eps = (season.episodes||[]).slice().sort((a,b)=>(a.episode_number||0)-(b.episode_number||0));
+    let html = `<div class="episodes">`;
+    eps.forEach(ep=>{
+      const code = `S${String(season.season_number).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}`;
+      html += `
+        <div class="ep-row"
+             data-show-id="${show.show_id}"
+             data-season="${season.season_number}"
+             data-ep="${ep.episode_number||''}">
+          <strong>${code}</strong>
+          ${ep.name ? ' · ' + ep.name : ''}
+          ${ep.air_date ? ' • ' + ep.air_date.slice(0,10) : ''}
+          ${watchedLabel(ep)}
+          <div class="icon-row">
+            ${buildEpisodeIcons(show, season.season_number, ep.episode_number||'')}
+          </div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  function renderEpisodeView(show, season, ep){
+    const content = $('#overlay-content');
+    const code = `S${String(season.season_number).padStart(2,'0')}E${String(ep.episode_number||0).padStart(2,'0')}`;
+    const wb = ep.watched_by || [];
+    content.innerHTML = `
+      <div class="ov-header">
+        ${show.poster_path ? `<img class="ov-poster" src="${IMG(show.poster_path)}" alt="${show.name}">` : `<div class="ov-poster"></div>`}
+        <div>
+          <div class="ov-title">${show.name}</div>
+          <div class="ov-sub">${code}${ep.name ? ' · ' + ep.name : ''}</div>
+          <div class="ov-sub">
+            ${ep.air_date ? ep.air_date.slice(0,10) : 'TBA'}
+            ${wb.length ? ' • Watched: ' + wb.join(', ') : ''}
+          </div>
+          ${ep.overview ? `<div class="ov-overview">${ep.overview}</div>` : ''}
+          <div class="ov-links">
+            ${buildEpisodeIcons(show, season.season_number, ep.episode_number||'')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderMovieView(mv){
+    const content = $('#overlay-content');
+    const today = state.today;
+    const d = getMovieDate(mv);
+    const statusLbl = movieStatusLabel(mv, today);
+    const wb = mv.watched_by || [];
+    const genres = (mv.genres||[]).join(', ');
+    content.innerHTML = `
+      <div class="ov-header">
+        ${mv.poster_path ? `<img class="ov-poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="ov-poster"></div>`}
+        <div>
+          <div class="ov-title-row">
+            <div class="ov-title">${mv.name}</div>
+            <div class="icon-row">${buildMovieIcons(mv)}</div>
+          </div>
+          <div class="ov-sub">
+            ${genres || ''}
+          </div>
+          <div class="ov-sub">
+            ${d ? d.toISOString().slice(0,10) : 'TBA'}
+            ${statusLbl ? ' • ' + statusLbl : ''}
+            ${wb.length ? ' • Watched: ' + wb.join(', ') : ''}
+          </div>
+          ${mv.overview ? `<div class="ov-overview">${mv.overview}</div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  // Overlay stack helpers
+
+  function popOverlayOne(){
+    if(overlayStack.length <= 1){
+      overlayStack = [];
+      $('#overlay').hidden = true;
+      $('#overlay-content').innerHTML = '';
+      return;
+    }
+    overlayStack.pop();
+    showOverlay();
+  }
+
+  // Remote navigation
 
   document.addEventListener('keydown', e=>{
     const ovOpen = !$('#overlay').hidden && overlayStack.length;
@@ -1490,16 +1819,7 @@
     next.scrollIntoView({block:'nearest'});
   }
 
-  function popOverlayOne(){
-    if(overlayStack.length <= 1){
-      overlayStack = [];
-      $('#overlay').hidden = true;
-      $('#overlay-content').innerHTML = '';
-      return;
-    }
-    overlayStack.pop();
-    showOverlay();
-  }
+  // Meta footer
 
   function renderMeta(){
     if(!state.data) return;
@@ -1516,7 +1836,6 @@
     renderMovies();
     renderLiveTV();
     renderMeta();
-    // default Calendar
     $('#calendar').hidden=false;
     $('#shows').hidden=true;
     $('#movies').hidden=true;

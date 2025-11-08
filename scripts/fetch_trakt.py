@@ -1,162 +1,186 @@
 #!/usr/bin/env python
 # =============================================================================
-# File: scripts/sync_trakt.py
+# File: scripts/fetch_trakt.py
 # Project: my_TV_Movie
 # Version: v1.0.0 (2025-11-09)
 #
 # Purpose:
-#   Enrich data/data.json with Trakt-based watched flags for profiles.
-#   - Reads existing data/data.json produced by fetch_tmdb.py.
-#   - For each configured Trakt user, pulls watched episodes.
-#   - Marks episodes with `watched_by: ["Andrew", "Brant"]` etc.
+#   Fetch watched shows/movies from Trakt per profile and normalize into:
+#     data/trakt_raw.json
 #
-# Usage:
-#   Export:
-#     TRAKT_PROFILES='Andrew:trakt_username1;Brant:trakt_username2'
-#     API_TRAKT_CLIENT_ID='...'
-#   Then:
-#     python scripts/sync_trakt.py
+#   This script:
+#     - Does NOT modify data.json directly.
+#     - Is consumed by sync_trakt.py.
 #
-# Notes:
-#   - Uses Trakt "sync/watched/shows" (public per-user with API key).
-#   - This is OPTIONAL. If no env vars, script exits quietly.
-#   - Do NOT expose these secrets in front-end JS.
+#   Expected env:
+#     API_TRAKT_CLIENT_ID        - Trakt API client id (public)
+#     TRAKT_PROFILES             - "Label:trakt_user;Other:trakt_user2"
+#     TRAKT_TOKEN_<LABEL>        - OAuth access token for that profile label
+#
+#   Notes:
+#     - If tokens are missing, script logs and writes an empty structure.
+#     - This keeps behavior deterministic and safe.
 # =============================================================================
 
 import json
 import os
-import sys
-import time
 from pathlib import Path
 
-import urllib.request
-import urllib.error
+import requests
 
 ROOT = Path(__file__).resolve().parents[1]
-DATA_PATH = ROOT / "data" / "data.json"
+OUT = ROOT / "data" / "trakt_raw.json"
 
-TRAKT_CLIENT_ID = os.getenv("API_TRAKT_CLIENT_ID") or os.getenv("API_TRAKT_ID")
-TRAKT_PROFILES = os.getenv("TRAKT_PROFILES", "").strip()
-TRAKT_API_URL = "https://api.trakt.tv"
+TRAKT_API = "https://api.trakt.tv"
+
 
 def log(msg: str) -> None:
-    print(f"[sync_trakt] {msg}", flush=True)
+    print(f"[fetch_trakt] {msg}", flush=True)
 
-def load_data():
-    if not DATA_PATH.exists():
-        log("data.json not found; skipping Trakt sync.")
-        return None
-    with DATA_PATH.open("r", encoding="utf-8") as f:
-        return json.load(f)
-
-def save_data(data):
-    DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with DATA_PATH.open("w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    log("Updated data.json with Trakt watched flags.")
 
 def parse_profiles():
-    """
-    TRAKT_PROFILES format:
-      "Andrew:trakt_user1;Brant:trakt_user2"
-    """
+    raw = os.getenv("TRAKT_PROFILES", "").strip()
+    if not raw:
+        log("TRAKT_PROFILES not set; no Trakt profiles configured.")
+        return {}
     profiles = {}
-    if not TRAKT_PROFILES:
-        return profiles
-    for part in TRAKT_PROFILES.split(";"):
+    for part in raw.split(";"):
         part = part.strip()
         if not part:
-          continue
+            continue
         if ":" not in part:
-          continue
+            continue
         label, user = part.split(":", 1)
         label = label.strip()
         user = user.strip()
         if label and user:
             profiles[label] = user
+    if not profiles:
+        log("TRAKT_PROFILES parsed empty.")
+    else:
+        log(f"Configured Trakt profiles: {', '.join(profiles.keys())}")
     return profiles
 
-def trakt_get(path: str):
-    if not TRAKT_CLIENT_ID:
-        raise RuntimeError("Missing API_TRAKT_CLIENT_ID / API_TRAKT_ID")
-    url = TRAKT_API_URL + path
-    req = urllib.request.Request(url)
-    req.add_header("Content-Type", "application/json")
-    req.add_header("trakt-api-version", "2")
-    req.add_header("trakt-api-key", TRAKT_CLIENT_ID)
-    try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
-            return json.loads(resp.read().decode("utf-8"))
-    except urllib.error.HTTPError as e:
-        log(f"Trakt HTTP error {e.code} for {path}")
-    except Exception as e:
-        log(f"Trakt request failed for {path}: {e}")
-    return None
 
-def fetch_watched_map(trakt_user: str):
-    """
-    Returns {(tmdb_show_id, season, episode): True} for watched episodes.
-    Uses sync/watched/shows which returns per-show seasons/episodes.
-    """
-    data = trakt_get(f"/users/{trakt_user}/watched/shows")
-    watched = {}
-    if not data:
-        return watched
-    for item in data:
-        ids = item.get("show", {}).get("ids", {})
-        tmdb_id = ids.get("tmdb")
-        if not tmdb_id:
-            continue
-        for s in item.get("seasons", []):
-            sn = s.get("number")
-            for ep in s.get("episodes", []):
-                en = ep.get("number")
-                if sn is None or en is None:
-                    continue
-                watched[(int(tmdb_id), int(sn), int(en))] = True
-    return watched
-
-def apply_watched_flags(data, profiles_map):
-    shows = data.get("shows", [])
-    # Initialize profiles list for frontend
-    data.setdefault("profiles", list(profiles_map.keys()))
-    # Pre-build mapping per profile
-    profile_watched = {
-        label: fetch_watched_map(user)
-        for label, user in profiles_map.items()
+def get_headers(label: str) -> dict | None:
+    client_id = os.getenv("API_TRAKT_CLIENT_ID") or os.getenv("API_TRAKT_KEY")
+    if not client_id:
+        log("API_TRAKT_CLIENT_ID / API_TRAKT_KEY missing; cannot call Trakt.")
+        return None
+    token = os.getenv(f"TRAKT_TOKEN_{label.upper()}")
+    if not token:
+        log(f"TRAKT_TOKEN_{label.upper()} missing; {label} will be skipped.")
+        return None
+    return {
+        "Content-Type": "application/json",
+        "trakt-api-version": "2",
+        "trakt-api-key": client_id,
+        "Authorization": f"Bearer {token}",
     }
-    # Annotate episodes
-    for sh in shows:
-        sid = sh.get("show_id")
-        for s in sh.get("seasons", []):
-            sn = s.get("season_number")
-            for ep in s.get("episodes", []):
-                en = ep.get("episode_number")
-                if not (sid and sn is not None and en is not None):
+
+
+def fetch_watched_shows(headers: dict) -> list:
+    url = f"{TRAKT_API}/sync/watched/shows"
+    r = requests.get(url, headers=headers, timeout=30)
+    if not r.ok:
+        log(f"watched shows failed: HTTP {r.status_code}")
+        return []
+    return r.json() or []
+
+
+def fetch_watched_movies(headers: dict) -> list:
+    url = f"{TRAKT_API}/sync/watched/movies"
+    r = requests.get(url, headers=headers, timeout=30)
+    if not r.ok:
+        log(f"watched movies failed: HTTP {r.status_code}")
+        return []
+    return r.json() or []
+
+
+def normalize(profiles: dict) -> dict:
+    data = {
+        "profiles": [],
+        "episodes_watched": {},  # profile -> show_id -> season -> set(eps)
+        "movies_watched": {},    # profile -> movie_id -> True
+    }
+
+    for label, _user in profiles.items():
+        headers = get_headers(label)
+        if not headers:
+            continue
+
+        data["profiles"].append(label)
+        eps_map = {}
+        mov_map = {}
+
+        shows = fetch_watched_shows(headers)
+        for item in shows:
+            ids = (item.get("show") or {}).get("ids") or {}
+            tmdb_id = ids.get("tmdb")
+            if not tmdb_id:
+                continue
+            sid = str(tmdb_id)
+            for s in item.get("seasons") or []:
+                sn = s.get("number")
+                if sn is None:
                     continue
-                key = (int(sid), int(sn), int(en))
-                wb = []
-                for label, wmap in profile_watched.items():
-                    if key in wmap:
-                        wb.append(label)
-                if wb:
-                  ep["watched_by"] = sorted(wb)
+                sn = int(sn)
+                for e in s.get("episodes") or []:
+                    en = e.get("number")
+                    if en is None:
+                        continue
+                    en = int(en)
+                    eps_map.setdefault(sid, {}).setdefault(sn, set()).add(en)
+
+        movies = fetch_watched_movies(headers)
+        for item in movies:
+            ids = (item.get("movie") or {}).get("ids") or {}
+            tmdb_id = ids.get("tmdb")
+            if not tmdb_id:
+                continue
+            mid = str(tmdb_id)
+            mov_map[mid] = True
+
+        data["episodes_watched"][label] = {
+            sid: {str(sn): sorted(list(eps)) for sn, eps in seas.items()}
+            for sid, seas in eps_map.items()
+        }
+        data["movies_watched"][label] = mov_map
+
+        log(f"{label}: {len(eps_map)} shows with watched episodes, {len(mov_map)} watched movies.")
+
     return data
 
+
 def main():
-    if not TRAKT_CLIENT_ID or not TRAKT_PROFILES:
-        log("Trakt not configured (missing CLIENT_ID or TRAKT_PROFILES); nothing to do.")
+    profiles = parse_profiles()
+    if not profiles:
+        # Still write predictable empty structure.
+        empty = {
+            "profiles": [],
+            "episodes_watched": {},
+            "movies_watched": {},
+        }
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        OUT.write_text(json.dumps(empty, indent=2), encoding="utf-8")
+        log("No profiles; wrote empty trakt_raw.json.")
         return
-    data = load_data()
-    if data is None:
-        return
-    profiles_map = parse_profiles()
-    if not profiles_map:
-        log("TRAKT_PROFILES not parseable; skipping.")
-        return
-    log(f"Syncing Trakt for profiles: {', '.join(profiles_map.keys())}")
-    data = apply_watched_flags(data, profiles_map)
-    save_data(data)
+
+    try:
+        data = normalize(profiles)
+    except Exception as e:  # noqa: BLE001
+        log(f"Exception while talking to Trakt: {e}")
+        # Write empty fallback to avoid breaking pipeline.
+        data = {
+            "profiles": [],
+            "episodes_watched": {},
+            "movies_watched": {},
+        }
+
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    log(f"Wrote {OUT.relative_to(ROOT)}")
+
 
 if __name__ == "__main__":
     main()
