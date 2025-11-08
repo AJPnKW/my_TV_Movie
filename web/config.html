@@ -4,7 +4,7 @@
   <!--
     File: web/config.html
     Project: my_TV_Movie
-    Version: v1.2.0 (2025-11-09)
+    Version: v1.3.0 (2025-11-09)
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -36,26 +36,14 @@
     }
     a{color:var(--pri);text-decoration:none;}
     a:hover{text-decoration:underline;}
-
     .wrap{
       max-width:1100px;
       margin:0 auto;
       padding:14px 18px 20px;
     }
-
-    h1{
-      font-size:22px;
-      font-weight:700;
-      margin-bottom:4px;
-    }
-    h2{
-      font-size:16px;
-      margin:14px 0 6px;
-    }
-    h3{
-      font-size:13px;
-      margin:8px 0 4px;
-    }
+    h1{font-size:22px;font-weight:700;margin-bottom:4px;}
+    h2{font-size:16px;margin:14px 0 6px;}
+    h3{font-size:13px;margin:8px 0 4px;}
     .mut{color:var(--mut);font-size:11px;}
     .card{
       background:var(--card);
@@ -71,9 +59,7 @@
       flex-wrap:wrap;
     }
     label{font-size:11px;}
-    select,input[type="range"]{
-      font-size:11px;
-    }
+    select,input[type="range"]{font-size:11px;}
     .btn{
       padding:6px 14px;
       border-radius:999px;
@@ -101,10 +87,7 @@
       resize:vertical;
       white-space:pre;
     }
-    .link-list{
-      margin-top:4px;
-      font-size:11px;
-    }
+    .link-list{margin-top:4px;font-size:11px;}
     .link-list div{margin-bottom:2px;}
     .pill{
       display:inline-block;
@@ -121,17 +104,24 @@
       margin-top:8px;
       flex-wrap:wrap;
     }
+    ul.quick{
+      margin:4px 0 0 14px;
+      padding:0;
+      font-size:10px;
+      color:var(--mut);
+      list-style:square;
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1>My TV Hub — Config</h1>
   <div class="mut">
-    Local preferences + helper editors for <code>tv_list.txt</code> and <code>movies_list.txt</code>.
-    Changes here do <strong>not</strong> auto-commit to GitHub; download and commit via GitHub UI.
+    Local display settings + helper editors. Editing here updates <em>your</em> browser and gives you ready-to-commit list files.
+    The actual site data updates when you commit and run the build workflow.
   </div>
 
-  <!-- THEME / FONT -->
+  <!-- DISPLAY -->
   <div class="card">
     <h2>Display</h2>
     <div class="row">
@@ -151,33 +141,32 @@
       <button class="btn" id="applyDisplay">Apply</button>
       <button class="btn outline" id="returnHome">Return to Hub</button>
     </div>
-    <div class="mut">
-      Theme + font scale are stored in your browser and picked up by <code>index.html</code>.
-    </div>
+    <ul class="quick">
+      <li>Settings are stored locally in this browser (TV/box specific).</li>
+      <li>If something looks tiny on TV, bump font size and Apply.</li>
+    </ul>
   </div>
 
-  <!-- TV LIST EDITOR -->
+  <!-- TV LIST -->
   <div class="card">
     <h2>Edit TV List (<code>tv_list.txt</code>)</h2>
     <div class="mut">
-      Helper for maintaining your tracked shows.
       Format:
       <span class="pill">name | tmdb_show_id | season_spec | tvmaze_id(optional)</span>
     </div>
     <div class="actions">
-      <button class="btn outline" id="loadTv">Load current tv_list.txt</button>
+      <button class="btn outline" id="loadTv">Load current</button>
       <button class="btn outline" id="resetTv">Clear</button>
-      <button class="btn" id="downloadTv">Download updated tv_list.txt</button>
+      <button class="btn" id="downloadTv">Download tv_list.txt</button>
     </div>
     <textarea id="tvText" placeholder="# Paste or edit your tv_list.txt here"></textarea>
-    <div class="mut">
-      To use:
-      1) Load or paste. 2) Edit. 3) Download. 4) Commit <code>tv_list.txt</code> in GitHub.
-      5) Run “Build TV Data” workflow.
-    </div>
+    <ul class="quick">
+      <li>1 line per show. <code>season_spec</code>: <code>*</code>, <code>5</code>, or <code>1,2,5</code>.</li>
+      <li>After downloading: commit <code>tv_list.txt</code> → run “Build TV Data and Deploy”.</li>
+    </ul>
   </div>
 
-  <!-- MOVIES LIST EDITOR -->
+  <!-- MOVIES LIST -->
   <div class="card">
     <h2>Edit Movies List (<code>movies_list.txt</code>)</h2>
     <div class="mut">
@@ -185,13 +174,26 @@
       <span class="pill">name | tmdb_movie_id</span>
     </div>
     <div class="actions">
-      <button class="btn outline" id="loadMovies">Load current movies_list.txt</button>
+      <button class="btn outline" id="loadMovies">Load current</button>
       <button class="btn outline" id="resetMovies">Clear</button>
-      <button class="btn" id="downloadMovies">Download updated movies_list.txt</button>
+      <button class="btn" id="downloadMovies">Download movies_list.txt</button>
     </div>
     <textarea id="moviesText" placeholder="# Paste or edit your movies_list.txt here"></textarea>
+    <ul class="quick">
+      <li>After downloading: commit <code>movies_list.txt</code> → run “Build TV Data and Deploy”.</li>
+    </ul>
+  </div>
+
+  <!-- TRAKT / PROFILES INFO -->
+  <div class="card">
+    <h2>Profiles & Trakt / TVMaze (optional)</h2>
     <div class="mut">
-      Same flow: edit → download → commit → run workflow.
+      If enabled via build scripts:
+      <ul class="quick">
+        <li>Profiles like <strong>Andrew</strong>, <strong>Brant</strong>, <strong>Both</strong> appear in the main hub.</li>
+        <li>Episodes can be marked watched per profile (based on Trakt history).</li>
+        <li>All API keys stay server-side (GitHub Actions / local env), never in the TV page.</li>
+      </ul>
     </div>
   </div>
 
@@ -201,7 +203,7 @@
     <div class="link-list">
       <div>App: <a href="index.html">/web/index.html</a></div>
       <div>GitHub Pages: <a href="https://ajpnkw.github.io/my_TV_Movie/">https://ajpnkw.github.io/my_TV_Movie/</a></div>
-      <div>Secrets: <a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions">GitHub → Settings → Secrets and variables → Actions</a></div>
+      <div>Secrets: <a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions">Settings → Secrets and variables → Actions</a></div>
       <div>Build workflow: <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml">Build TV Data and Deploy</a></div>
     </div>
   </div>
