@@ -1,33 +1,41 @@
-name: Build TV Data and Deploy Pages
+
+---
+
+## 4️⃣ `.github/workflows/build-data.yml`
+
+Full file:
+
+```yaml
+name: Build TV Data and Deploy
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */4 * * *" # every 4 hours (UTC)
+    - cron: "0 */4 * * *"
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
-
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
-        run: pip install requests python-dotenv
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
 
       - name: Build data.json
         env:
@@ -35,20 +43,19 @@ jobs:
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
           API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
           API_OMDB_KEY: ${{ secrets.API_OMDB_KEY }}
-        run: python scripts/fetch_tmdb.py
+          API_TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_CLIENT_ID }}
+          TRAKT_PROFILES: ${{ secrets.TRAKT_PROFILES }}
+        run: |
+          python scripts/fetch_tmdb.py
+          python scripts/fetch_tvmaze.py || echo "tvmaze"
+          python scripts/fetch_omdb.py || echo "omdb"
+          python scripts/sync_trakt.py
+          python scripts/fetch_live_tv.py || echo "live tv"
 
-      - name: Upload artifact for Pages
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: ./web
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
         uses: actions/deploy-pages@v4
