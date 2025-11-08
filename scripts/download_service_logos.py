@@ -2,30 +2,17 @@
 # -*- coding: utf-8 -*-
 """
 Script Name : download_service_logos.py
-Version     : 3.1.0
+Version     : 3.2.0
 Purpose     :
-    Use tv-logo/tv-logos mosaic index files to deterministically map your
-    curated channel list to actual logo image URLs, download them, and
-    save normalized assets for the my_TV_Movie project.
+    Use tv-logo/tv-logos mosaic index files to map your curated channel list
+    to actual logo image URLs, download them, and save normalized assets.
 
-Key fix vs 3.0.0:
-    - Correctly parses reference-style entries in 0_all_logos_mosaic.md:
-        [cbc]:cbc-ca.png
-        [ctv]:ctv-ca.png
-      instead of only inline image syntax.
-
-Workflow:
-    1. Fetch mosaic markdown for:
-         - US, CA, UK, AU (0_all_logos_mosaic.md)
-    2. Parse:
-         - Inline images:      ![Alt](path.png)
-         - Reference-style:    [key]:path.png
-    3. Build lookup:
-         normalize(name) -> {display_name, url, filename}
-    4. For each TARGET_CHANNELS entry:
-         - Match by normalized label.
-         - If found: download & save PNG+SVG wrapper.
-         - If not: mark NOT_FOUND_IN_MOSAIC.
+Improvements vs 3.1.0:
+    - Adds deterministic heuristic matching for cases like:
+        CBS             -> cbs-logo-white-us.png
+        CTV Sci-Fi      -> ctv-sci-fi-channel-ca.png
+        MTV Canada      -> mtv-ca.png
+    - Uses filename-based logic with uniqueness checks, no wild guessing.
 
 Outputs:
     - image/services_logos/<service_id>.png
@@ -57,10 +44,11 @@ TARGET_HEIGHT = 96          # px
 HTTP_TIMEOUT = 20           # seconds
 
 HTTP_HEADERS = {
-    "User-Agent": "my_TV_Movie-logo-fetcher/3.1.0"
+    "User-Agent": "my_TV_Movie-logo-fetcher/3.2.0"
 }
 
-# Use the exact URLs you provided (refs/heads)
+GITHUB_RAW_BASE = "https://raw.githubusercontent.com/tv-logo/tv-logos/main/"
+
 MOSAIC_URLS = [
     "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/united-states/0_all_logos_mosaic.md",
     "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/canada/0_all_logos_mosaic.md",
@@ -68,8 +56,7 @@ MOSAIC_URLS = [
     "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/australia/0_all_logos_mosaic.md",
 ]
 
-# ===== TARGET CHANNELS =====================================================
-
+# Your curated list
 TARGET_CHANNELS = {
     # US
     "abc": "ABC",
@@ -149,8 +136,7 @@ TARGET_CHANNELS = {
     "ten_au": "10 (AU)",
     "sky_news_au": "Sky News Australia",
 
-    # Streaming: still included so they show in CSV;
-    # tv-logos mosaics may or may not include them.
+    # Streaming / apps (some present, some not)
     "netflix": "Netflix",
     "prime_video": "Prime Video",
     "disney_plus": "Disney+",
@@ -171,6 +157,15 @@ TARGET_CHANNELS = {
     "ten_play": "10 Play",
     "nine_now": "9Now",
     "seven_plus": "7plus",
+}
+
+# Optional explicit overrides for stubborn cases where we know the exact file
+FALLBACK_PATHS = {
+    # explicit paths derived from tv-logos repo
+    "cbs": "countries/united-states/cbs-logo-white-us.png",
+    "ctv_scifi": "countries/canada/ctv-sci-fi-channel-ca.png",
+    "mtv_ca": "countries/canada/mtv-ca.png",
+    # leave OutTV unset: appears missing / not in repo
 }
 
 # ===== LOGGING =============================================================
@@ -199,7 +194,7 @@ def setup_logging() -> logging.Logger:
     logger.addHandler(ch)
 
     logger.info("============================================================")
-    logger.info(" my_TV_Movie Service Logo Downloader v3.1.0 (mosaic-based)")
+    logger.info(" my_TV_Movie Service Logo Downloader v3.2.0 (mosaic-based)")
     logger.info("============================================================")
     logger.info(f"Log file : {log_path}")
     logger.info(f"Base dir : {BASE_DIR}")
@@ -230,24 +225,19 @@ def http_get_bytes(url: str, logger: logging.Logger) -> bytes:
         raise RuntimeError(f"HTTP {resp.status_code} for {url}")
     return resp.content
 
-# Patterns:
+# ===== MOSAIC PARSING ======================================================
+
 IMG_INLINE_RE = re.compile(r'!\[(.*?)\]\((.*?)\)')
 REF_DEF_RE = re.compile(r'^\s*\[([^\]]+)\]\s*:\s*(\S+)\s*$')
 
-# ===== MOSAIC PARSING ======================================================
-
 def parse_mosaic(url: str, logger: logging.Logger):
     """
-    Parse a mosaic markdown file.
-
-    Supports:
-      - Inline images:
-            ![ABC](abc-us.png)
-      - Reference-style defs:
-            [cbc]:cbc-ca.png
+    Parse one 0_all_logos_mosaic.md:
+      - Inline images:    ![Alt](path.png)
+      - Reference defs:   [key]:path.png
 
     Returns:
-        dict: norm_name -> {display_name, url, filename}
+        dict: norm_key -> {display_name, url, filename, base_norm}
     """
     logger.info(f"[INFO] Loading mosaic: {url}")
     text = http_get(url, logger)
@@ -260,7 +250,7 @@ def parse_mosaic(url: str, logger: logging.Logger):
         if not line:
             continue
 
-        # 1) Inline image syntax: ![Alt](src)
+        # 1) Inline: ![Alt](src)
         m_img = IMG_INLINE_RE.search(line)
         if m_img:
             alt = m_img.group(1).strip()
@@ -273,16 +263,18 @@ def parse_mosaic(url: str, logger: logging.Logger):
                 src_clean = src.lstrip("./")
                 full_url = f"{base_dir}/{src_clean}"
             filename = src.split("/")[-1]
-            norm = normalize_name(alt)
-            if norm and norm not in mapping:
-                mapping[norm] = {
+            key_norm = normalize_name(alt)
+            base_norm = normalize_name(filename.rsplit(".", 1)[0])
+            if key_norm and key_norm not in mapping:
+                mapping[key_norm] = {
                     "display_name": alt,
                     "url": full_url,
                     "filename": filename,
+                    "base_norm": base_norm,
                 }
             continue
 
-        # 2) Reference-style: [key]:path.png
+        # 2) Reference-style: [key]: src
         m_ref = REF_DEF_RE.match(line)
         if m_ref:
             key = m_ref.group(1).strip()
@@ -295,12 +287,14 @@ def parse_mosaic(url: str, logger: logging.Logger):
                 src_clean = src.lstrip("./")
                 full_url = f"{base_dir}/{src_clean}"
             filename = src.split("/")[-1]
-            norm = normalize_name(key)
-            if norm and norm not in mapping:
-                mapping[norm] = {
+            key_norm = normalize_name(key)
+            base_norm = normalize_name(filename.rsplit(".", 1)[0])
+            if key_norm and key_norm not in mapping:
+                mapping[key_norm] = {
                     "display_name": key,
                     "url": full_url,
                     "filename": filename,
+                    "base_norm": base_norm,
                 }
 
     logger.info(f"[INFO] Parsed {len(mapping)} logo entries from mosaic.")
@@ -315,10 +309,102 @@ def build_global_mosaic_index(logger: logging.Logger):
             logger.error(f"[ERROR] Failed to parse mosaic {url}: {e}")
             continue
         for norm, data in m.items():
-            # first one wins; that's fine for our mapping
             combined.setdefault(norm, data)
     logger.info(f"[INFO] Global mosaic index size: {len(combined)}")
     return combined
+
+# ===== MATCHING LOGIC ======================================================
+
+def heuristic_match(label: str, mosaic_index: dict, logger: logging.Logger):
+    """
+    Fallback when direct normalized-name match fails.
+
+    Strategy:
+      - Compare against base_norm (from filename without extension).
+      - Allow:
+          * base_norm == target_norm
+          * base_norm startswith(target_norm)
+          * target_norm startswith(base_norm)
+      - Handle 'canada' -> 'ca' style for region-specific logos.
+      - Only accept if exactly ONE candidate matches (no ambiguity).
+    """
+    target_norm = normalize_name(label)
+    candidates = []
+
+    for entry in mosaic_index.values():
+        base_norm = entry.get("base_norm") or normalize_name(
+            entry["filename"].rsplit(".", 1)[0]
+        )
+
+        # direct / prefix relationships
+        if base_norm == target_norm:
+            candidates.append(entry)
+            continue
+        if base_norm.startswith(target_norm):
+            candidates.append(entry)
+            continue
+        if target_norm.startswith(base_norm) and len(base_norm) >= 3:
+            candidates.append(entry)
+            continue
+
+        # special-case: canada vs ca
+        if "canada" in target_norm:
+            t2 = target_norm.replace("canada", "ca")
+            if base_norm == t2 or base_norm.startswith(t2):
+                candidates.append(entry)
+                continue
+
+    # If unique, trust it. If ambiguous or none, bail.
+    if len(candidates) == 1:
+        c = candidates[0]
+        logger.info(
+            f"[HEURISTIC] Matched '{label}' via filename '{c['filename']}'"
+        )
+        return c
+
+    if len(candidates) > 1:
+        logger.warning(
+            f"[HEURISTIC] Ambiguous matches for '{label}' ({len(candidates)} candidates), skipping."
+        )
+
+    return None
+
+def get_entry_for_service(service_id: str, label: str, mosaic_index: dict, logger: logging.Logger):
+    """
+    Unified resolver:
+      1. Direct normalized label lookup.
+      2. Heuristic filename-based lookup.
+      3. Explicit FALLBACK_PATHS (service_id-based).
+    """
+    target_norm = normalize_name(label)
+
+    # 1) Direct
+    entry = mosaic_index.get(target_norm)
+    if entry:
+        return entry
+
+    # 2) Heuristic based on filenames / keys
+    entry = heuristic_match(label, mosaic_index, logger)
+    if entry:
+        return entry
+
+    # 3) Explicit fallback path if configured
+    fb_rel = FALLBACK_PATHS.get(service_id)
+    if fb_rel:
+        url = GITHUB_RAW_BASE + fb_rel.lstrip("/")
+        filename = fb_rel.split("/")[-1]
+        base_norm = normalize_name(filename.rsplit(".", 1)[0])
+        logger.info(
+            f"[FALLBACK] Using explicit path for '{label}' -> {fb_rel}"
+        )
+        return {
+            "display_name": label,
+            "url": url,
+            "filename": filename,
+            "base_norm": base_norm,
+        }
+
+    return None
 
 # ===== IMAGE SAVE & WRAPPER ===============================================
 
@@ -355,14 +441,13 @@ def download_and_save_logo(service_id: str, entry: dict, logger: logging.Logger)
 
     content = http_get_bytes(url, logger)
 
-    # tv-logo repo is PNG; but handle jpg defensively
     if ext in ("png", "jpg", "jpeg"):
         png_path = save_png_normalized(content, service_id, logger)
         svg_path = save_svg_wrapper(service_id, png_path, logger)
         status = "OK" if png_path.exists() and svg_path.exists() else "PARTIAL"
         return status, png_path.name, svg_path.name, str(png_path), str(svg_path)
 
-    # Unexpected type: still try to treat as image
+    # Unexpected: treat as image anyway
     png_path = save_png_normalized(content, service_id, logger)
     svg_path = save_svg_wrapper(service_id, png_path, logger)
     return "PARTIAL", png_path.name, svg_path.name, str(png_path), str(svg_path)
@@ -373,7 +458,7 @@ def main():
     logger = setup_logging()
     ensure_directories(logger)
 
-    # Log env vars present, for your sanity
+    # Log env var presence (just for your sanity)
     api_vars = ["API_TMDB_KEY", "API_TVMAZE_KEY", "API_OMDB_KEY"]
     detected = [v for v in api_vars if os.getenv(v)]
     if detected:
@@ -412,13 +497,14 @@ def main():
 
         for service_id, label in TARGET_CHANNELS.items():
             ts_row = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            norm = normalize_name(label)
-
             logger.info(f"--- {label} ({service_id}) ---")
 
-            entry = mosaic_index.get(norm)
+            entry = get_entry_for_service(service_id, label, mosaic_index, logger)
+
             if not entry:
-                logger.warning(f"[MISS] No mosaic match for '{label}' (norm='{norm}')")
+                logger.warning(
+                    f"[MISS] No match for '{label}' (norm='{normalize_name(label)}')"
+                )
                 status = "NOT_FOUND_IN_MOSAIC"
                 miss_count += 1
                 writer.writerow([
