@@ -4,7 +4,7 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.02 (2025-11-09)
+    Version: v2.8.02 (2025-11-08 14:27 EST)
 
     Highlights:
       - Single-page app:
@@ -14,17 +14,16 @@
           P2: Season episodes (inline under P1 when selected)
           P3: Episode detail
           P4: Movie detail
-      - Trakt integration (via sync_trakt.py):
+      - Trakt integration hook (via sync_trakt.py):
           profiles[] + episode.watched_by[] + movie.watched_by[]
       - Filters:
           Shows & Movies: Genre, Status, When, Watched
-          Calendar: clean monthly view
+          Calendar: monthly view
       - Movies:
-          4 status labels (In Theatres, Released, In Production, Announced)
-          Related titles via TMDB collections (if present in data)
+          Simplified status labels; related titles via collections
       - Live TV:
           Guide-style skeleton (channels x times), no EPG yet
-      - Remote-friendly navigation + scroll-safe overlays
+      - Remote-friendly navigation; scroll-safe overlays
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -375,7 +374,6 @@
       z-index:91;
       -webkit-overflow-scrolling:touch;
       overscroll-behavior:contain;
-      touch-action:auto;
     }
     :root[data-theme="light"] .overlay-panel{
       background:#ffffff;
@@ -934,7 +932,7 @@
     }).join('');
   }
 
-  // Calendar
+  // Calendar -----------------------------------------------------------------
 
   function changeMonth(delta){
     const m = state.currentMonth;
@@ -1088,7 +1086,7 @@
     remoteIndex = -1;
   }
 
-  // Shows
+  // Shows --------------------------------------------------------------------
 
   function renderShows(){
     const host = $('#shows');
@@ -1263,7 +1261,7 @@
     remoteIndex = -1;
   }
 
-  // Movies
+  // Movies -------------------------------------------------------------------
 
   function renderMovies(){
     const host = $('#movies');
@@ -1331,7 +1329,7 @@
       if(state.moviesWatch === 'All') return true;
       if(state.moviesWatch === 'Unwatched') return ws === 'unwatched';
       if(state.moviesWatch === 'Watched') return ws === 'watched';
-      if(state.moviesWatch === 'InProgress') return false; // movies are single; no partial
+      if(state.moviesWatch === 'InProgress') return false;
       return true;
     });
 
@@ -1374,9 +1372,7 @@
           ${mv.poster_path ? `<img class="poster" src="${IMG(mv.poster_path)}" alt="${mv.name}">` : `<div class="poster"></div>`}
           <div class="card-body">
             <div class="title mv-link remote" data-movie-id="${mv.movie_id}">${mv.name}</div>
-            <div class="small">
-              ${genres || ''}
-            </div>
+            <div class="small">${genres || ''}</div>
             <div class="small">
               ${d ? d.toISOString().slice(0,10) : 'TBA'}
               ${statusLbl ? ' • ' + statusLbl : ''}
@@ -1384,7 +1380,6 @@
             </div>
             <div class="divider"></div>
             <div class="icon-row">${buildMovieIcons(mv)}</div>
-            ${buildRelatedMovies(mv, list)}
           </div>
         </div>
       `;
@@ -1430,25 +1425,7 @@
     remoteIndex = -1;
   }
 
-  function buildRelatedMovies(mv, allMovies){
-    const col = mv.collection_id || (mv.belongs_to_collection && mv.belongs_to_collection.id);
-    if(!col) return '';
-    const related = allMovies.filter(m =>
-      m !== mv &&
-      (m.collection_id === col ||
-       (m.belongs_to_collection && m.belongs_to_collection.id === col))
-    );
-    if(!related.length) return '';
-    return `
-      <div class="small" style="margin-top:3px;">
-        ${related.map(r =>
-          `<a href="javascript:void(0)" class="mv-link" data-movie-id="${r.movie_id}">${r.name}</a>`
-        ).join(' • ')}
-      </div>
-    `;
-  }
-
-  // Live TV guide-style skeleton
+  // Live TV skeleton ---------------------------------------------------------
 
   function renderLiveTV(){
     const host = $('#livetv');
@@ -1457,7 +1434,7 @@
       host.innerHTML = `
         <div class="mut">
           Live TV view ready. Populate <code>live_tv_list.txt</code> and rebuild to see channels here.
-          Guide slots are placeholders (no EPG wired yet).
+          Guide slots are placeholders (no schedule yet).
         </div>`;
       return;
     }
@@ -1467,7 +1444,7 @@
     let html = `
       <div class="ltv-wrap">
         <div class="ltv-head">
-          Live TV (skeleton guide) — layout only, schedule to come later.
+          Live TV (layout only; EPG integration planned as a later phase).
         </div>
         <div class="ltv-grid">
           <div class="ltv-row">
@@ -1503,7 +1480,7 @@
     remoteIndex = -1;
   }
 
-  // Overlay stack & renderers
+  // Overlay stack ------------------------------------------------------------
 
   function openShowOverlay(show, focusSeason){
     overlayStack.push({type:'show', showId:show.show_id, season:focusSeason||null});
@@ -1634,7 +1611,6 @@
         const sn = +row.dataset.season;
         const show = getShows().find(s=>s.show_id===sid);
         if(!show) return;
-        // Replace top of stack with new focus season
         overlayStack[overlayStack.length-1] = {
           type:'show',
           showId:sid,
@@ -1719,9 +1695,7 @@
             <div class="ov-title">${mv.name}</div>
             <div class="icon-row">${buildMovieIcons(mv)}</div>
           </div>
-          <div class="ov-sub">
-            ${genres || ''}
-          </div>
+          <div class="ov-sub">${genres || ''}</div>
           <div class="ov-sub">
             ${d ? d.toISOString().slice(0,10) : 'TBA'}
             ${statusLbl ? ' • ' + statusLbl : ''}
@@ -1732,8 +1706,6 @@
       </div>
     `;
   }
-
-  // Overlay stack helpers
 
   function popOverlayOne(){
     if(overlayStack.length <= 1){
@@ -1746,7 +1718,7 @@
     showOverlay();
   }
 
-  // Remote navigation
+  // Remote navigation --------------------------------------------------------
 
   document.addEventListener('keydown', e=>{
     const ovOpen = !$('#overlay').hidden && overlayStack.length;
@@ -1819,23 +1791,26 @@
     next.scrollIntoView({block:'nearest'});
   }
 
-  // Meta footer
+  // Meta footer --------------------------------------------------------------
 
   function renderMeta(){
     if(!state.data) return;
+
     const shows = (state.data.meta && state.data.meta.shows) || (state.data.shows || []).length;
     const movies = (state.data.meta && state.data.meta.movies) || (state.data.movies || []).length;
     const live = (state.data.live_tv || []).length;
     const built = state.data.generated_at || state.data.built_at || 'n/a';
-  
+
     const txt =
       'index.html: v2.8.02 (2025-11-08 14:27 EST) • ' +
       'config.html: v1.4.0 (2025-11-09 14:26 EST) • ' +
       `Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
-  
+
     const el = document.getElementById('meta');
     if(el) el.textContent = txt;
   }
+
+  // Entry --------------------------------------------------------------------
 
   function renderAll(){
     renderCalendar();

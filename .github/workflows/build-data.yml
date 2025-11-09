@@ -1,3 +1,11 @@
+# File: .github/workflows/build-data.yml
+# Project: my_TV_Movie
+# Version: v1.2.0 (2025-11-09)
+#
+# Purpose:
+#   Build data/data.json from tv_list.txt, movies_list.txt, live_tv_list.txt
+#   using scripts in /scripts, then deploy /web + /data via GitHub Pages.
+
 name: Build TV Data and Deploy
 
 on:
@@ -11,14 +19,14 @@ permissions:
   id-token: write
 
 concurrency:
-  group: github-pages
+  group: pages
   cancel-in-progress: false
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    # REQUIRED for actions/deploy-pages@v4
+    # Required for deploy-pages@v4
     environment:
       name: github-pages
 
@@ -47,17 +55,18 @@ jobs:
           TRAKT_PROFILES: ${{ secrets.TRAKT_PROFILES }}
         run: |
           python scripts/fetch_tmdb.py
-          python scripts/fetch_tvmaze.py || echo "tvmaze failed (non-fatal)"
-          python scripts/fetch_omdb.py || echo "omdb failed (non-fatal)"
-          python scripts/fetch_trakt.py || echo "trakt failed (non-fatal)"
-          python scripts/sync_trakt.py
-          python scripts/fetch_live_tv.py || echo "live tv failed (non-fatal)"
+          python scripts/fetch_tvmaze.py || echo "[warn] tvmaze enrichment failed"
+          python scripts/fetch_omdb.py || echo "[warn] omdb enrichment failed"
+          python scripts/fetch_trakt.py || echo "[info] trakt not configured / skipped"
+          python scripts/sync_trakt.py || echo "[info] sync_trakt skipped or no trakt data"
+          python scripts/fetch_live_tv.py || echo "[info] live_tv not configured / skipped"
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./web
+          # Deploy repo root so /web and /data are both published
+          path: ./
 
       - name: Deploy to GitHub Pages
-        id: deploy
+        id: deployment
         uses: actions/deploy-pages@v4
