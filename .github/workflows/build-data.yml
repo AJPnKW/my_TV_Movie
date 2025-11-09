@@ -45,19 +45,22 @@ jobs:
         run: |
           echo "Running fetch_tmdb.py from $(pwd)"
           python scripts/fetch_tmdb.py
-          echo "Resulting data.json:"
+
+          echo "Validating data/data.json..."
           python - << 'EOF'
-          import json, os
+          import json, os, sys
           p = os.path.join("data", "data.json")
           if not os.path.exists(p):
-              raise SystemExit("FATAL: data/data.json not created.")
+              print("FATAL: data/data.json not created.", file=sys.stderr)
+              raise SystemExit(1)
           with open(p, "r", encoding="utf-8") as f:
               j = json.load(f)
           shows = len(j.get("shows", []))
           movies = len(j.get("movies", []))
           print(f"SUMMARY: shows={shows}, movies={movies}")
           if shows == 0 and movies == 0:
-              raise SystemExit("FATAL: No shows and no movies in data.json.")
+              print("FATAL: 0 shows and 0 movies in data.json.", file=sys.stderr)
+              raise SystemExit(1)
           EOF
 
       - name: Upload artifact

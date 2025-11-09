@@ -4,49 +4,45 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.11 (2025-11-10 23:15 EST)
+    Version: v2.8.12 (2025-11-10 23:59 EST)
 
-    Key points:
-      - Single-page app:
-          Calendar / Shows / Movies / Live TV / Config
+    Highlights:
+      - SPA: Calendar / Shows / Movies / Live TV / Config
       - Sticky global header
-      - Meta line:
+      - Meta line shows:
           index.html + config.html versions + Data built + counts
       - Calendar:
           * Month header sticky
           * Day cells with header strip
           * Date text larger & bold
-          * Calendar posters: +50% size (episode/movie entries)
+          * Calendar posters ~36x54 (bigger than before)
           * Show poster/title → Show popup (P1)
           * Episode code/name → Episode popup (P3)
           * Episode runtime shown when present
       - Shows:
-          * Posters reverted to compact size
+          * Poster compact (aspect-ratio 2:3)
           * Poster + title → Show popup (P1)
           * Current Season line → Season popup (P2)
       - Movies:
-          * Filters:
-              Status: All / In Theatres / Released / In Production / Announced
-              Sort: Title / Release date
-              Watched: UI stub (no-op yet)
-          * Uses 4-bucket status mapping
-          * Movie cards compact; runtime + icons
+          * Filters: Genre, Status (4-bucket), Sort (Title/Date)
+          * Uses runtime + icons
       - Popups (P1–P4):
+          * Include [tmdb_id] next to titles
           * Compact posters
           * All episodes incl TBA
-          * TMDB / VidSrc / Videasy icons (logo-based)
+          * TMDB / VidSrc / Videasy icons as 32x32 logos
       - Config:
           * 6.1 Display
-          * 6.2 Maintenance Shortcuts
-          * 6.3 Integration Info
+          * 6.2 Maintenance
+          * 6.3 Integration
           * 6.4 Edit Helpers
           * 6.5 Debug checklist
       - Live TV:
-          * Logo grid skeleton (no EPG yet)
+          * Logo grid skeleton
 
     Note:
-      - All section blocks are labeled with HTML comments (6.1–6.5, etc.)
-      - Non-calendar posters reduced by ~1/3 vs previous build.
+      - Font scale slider: 0.8x – 2.0x.
+      - All major blocks have HTML comments (6.3 Integration Info etc.).
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -64,7 +60,7 @@
       --today-ring: #3b82f6;
       --danger: #f97316;
       --font-scale: 1.0;
-      --side-pad: 40px; /* wider for overscan on TVs */
+      --side-pad: 40px; /* extra for TV overscan */
     }
     :root[data-theme="light"] {
       --bg: #f3f4f6;
@@ -141,7 +137,7 @@
     .view { display: none; }
     .view.active { display: block; }
 
-    /* Shared sticky area (Calendar/Filters) -------------------------------- */
+    /* Shared sticky blocks -------------------------------------------------- */
 
     .sticky-header,
     .filters {
@@ -232,12 +228,12 @@
       opacity: 0.25;
     }
 
-    /* 2.3 Calendar entries: posters +50% vs original ------------------------ */
+    /* 2.3 Calendar entries -------------------------------------------------- */
 
     .ep-item,
     .movie-item {
       display: grid;
-      grid-template-columns: 36px 1fr; /* calendar posters larger */
+      grid-template-columns: 36px 1fr;
       gap: 3px;
       align-items: flex-start;
       padding: 2px;
@@ -296,14 +292,15 @@
       justify-content: center;
     }
 
+    /* Icons 32x32 (doubled) */
     .ico {
-      width: 16px;
-      height: 16px;
+      width: 32px;
+      height: 32px;
       object-fit: contain;
       display:block;
     }
 
-    /* 3. Shows / Movies grids ----------------------------------------------- */
+    /* 3. Shows / Movies grids ---------------------------------------------- */
 
     .filter-row {
       display: flex;
@@ -350,11 +347,12 @@
       gap: 2px;
     }
 
-    /* 3.2 Show card poster: compact (reduced ~1/3) -------------------------- */
+    /* 3.2 Show/Movie card poster: compact, aspect ratio safe ---------------- */
 
     .poster-md {
       width: 100%;
-      height: 72px; /* compact; previously 110px */
+      aspect-ratio: 2 / 3;
+      height: auto;
       border-radius: 6px;
       object-fit: cover;
       background:#111827;
@@ -503,10 +501,8 @@
       color: var(--muted);
     }
 
-    /* Popup posters: compact (reduced ~1/3) -------------------------------- */
-
     .popup-poster {
-      width: 80px; /* compact vs previous 110px */
+      width: 80px;
       border-radius: 8px;
       object-fit: cover;
       background:#111827;
@@ -617,7 +613,7 @@
         <button class="pill" id="cfg-dark">Dark</button>
         <button class="pill" id="cfg-light">Light</button>
         <span class="filter-label" style="margin-left:8px;">Font size:</span>
-        <input type="range" id="cfg-font" min="0.8" max="1.4" step="0.05" value="1.0">
+        <input type="range" id="cfg-font" min="0.8" max="2.0" step="0.05" value="1.0">
         <span id="cfg-font-label" class="filter-label">1.00x</span>
       </div>
       <div class="sub" style="margin-top:2px;">
@@ -686,24 +682,20 @@
         • Confirm <code>"shows"</code> and <code>"movies"</code> arrays have entries.<br><br>
         2. <b>Validate input files</b><br>
         • One entry per line.<br>
-        • TV:
-        <code>name|tmdb_show_id|season_spec|tvmaze_id(optional)</code><br>
-        • Movies:
-        <code>name|tmdb_movie_id</code><br>
+        • TV: <code>name|tmdb_show_id|season_spec|tvmaze_id(optional)</code><br>
+        • Movies: <code>name|tmdb_movie_id</code><br>
         • Lines starting with <code>#</code> are comments. No separator-only lines.<br><br>
         3. <b>Check workflow</b><br>
         • Last run of
         <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
           Build TV Data and Deploy
         </a>
-        must be green.<br>
-        • If it failed: fix secrets / HTTP errors / Python errors and rerun.<br><br>
+        must be green.<br><br>
         4. <b>Wiring sanity</b><br>
         • Workflow must call <code>python scripts/fetch_tmdb.py</code> from repo root.<br>
         • Script must read <code>tv_list.txt</code> and <code>movies_list.txt</code> in repo root.<br><br>
-        5. <b>If UI empty but data.json is OK</b><br>
-        • Open dev tools → Network → confirm <code>data.json</code> loads 200.<br>
-        • Hard refresh / clear cache on TV browser.
+        5. <b>UI cache</b><br>
+        • If <code>data.json</code> has movies but Movies tab is empty, hard refresh / clear cache.
       </div>
     </div>
   </div>
@@ -776,7 +768,7 @@
       const movies = (DATA.meta && DATA.meta.movies) || (DATA.movies || []).length || 0;
       const live = (DATA.meta && DATA.meta.live_tv) || (DATA.live_tv || []).length || 0;
       metaEl.textContent =
-        `index.html: v2.8.11 • config.html: v1.4.4 • ` +
+        `index.html: v2.8.12 • config.html: v1.4.4 • ` +
         `Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
     }
 
@@ -897,12 +889,8 @@
       const today = new Date().toISOString().slice(0,10);
       const rd = mv.release_date || '';
 
-      if (raw.includes('in production') || raw.includes('post production')) {
-        return 'In Production';
-      }
-      if (raw.includes('planned') || raw.includes('announced')) {
-        return 'Announced';
-      }
+      if (raw.includes('in production') || raw.includes('post production')) return 'In Production';
+      if (raw.includes('planned') || raw.includes('announced')) return 'Announced';
       if (raw.includes('released')) {
         if (rd && rd <= today) {
           const diffDays = (new Date(today) - new Date(rd)) / 86400000;
@@ -913,7 +901,7 @@
 
       if (rd) {
         if (rd > today) return 'Announced';
-        if (rd <= today) return 'Released';
+        return 'Released';
       }
       return '';
     }
@@ -959,7 +947,7 @@
           <div class="overlay-header">
             <div>
               <div class="overlay-title">
-                ${show.name}
+                ${show.name} [${show.show_id}]
                 ${show.links && show.links.tmdb
                   ? `<a href="${show.links.tmdb}" target="_blank">
                        <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
@@ -1019,7 +1007,9 @@
         <div>
           <div class="overlay-header">
             <div>
-              <div class="overlay-title">${show.name} — Season ${seasonNum}</div>
+              <div class="overlay-title">
+                ${show.name} [${show.show_id}] — Season ${seasonNum}
+              </div>
               <div class="overlay-sub">${season.overview || ''}</div>
             </div>
             <button class="overlay-close">✕</button>
@@ -1051,7 +1041,9 @@
         <div>
           <div class="overlay-header">
             <div>
-              <div class="overlay-title">${show.name} — ${code}</div>
+              <div class="overlay-title">
+                ${show.name} [${show.show_id}] — ${code}
+              </div>
               <div class="overlay-sub">
                 ${air}${rt ? ' • ' + rt : ''}
               </div>
@@ -1086,7 +1078,9 @@
         <div>
           <div class="overlay-header">
             <div>
-              <div class="overlay-title">${mv.name}</div>
+              <div class="overlay-title">
+                ${mv.name} [${mv.movie_id}]
+              </div>
               <div class="overlay-sub">
                 ${rd}${status ? ' • ' + status : ''}${rt ? ' • ' + rt : ''}
               </div>
@@ -1226,7 +1220,7 @@
         grid.appendChild(dayEl);
       }
 
-      // Wiring
+      // Click wiring
       grid.querySelectorAll('img.poster-sm[data-show]').forEach(img => {
         img.onclick = () => {
           const id = parseInt(img.dataset.show,10);
@@ -1332,7 +1326,9 @@
           const card = el(`
             <div class="card">
               <img class="poster-md" src="${poster}" alt="" data-show="${show.show_id}">
-              <div class="title-link" data-show="${show.show_id}">${show.name}</div>
+              <div class="title-link" data-show="${show.show_id}">
+                ${show.name} [${show.show_id}]
+              </div>
               <div class="sub current-season"
                    data-show="${show.show_id}"
                    data-season="${currentSeason ? currentSeason.season_number : ''}">
@@ -1456,7 +1452,9 @@
           const card = el(`
             <div class="card">
               <img class="poster-md" src="${poster}" alt="" data-movie="${mv.movie_id}">
-              <div class="title-link" data-movie="${mv.movie_id}">${mv.name}</div>
+              <div class="title-link" data-movie="${mv.movie_id}">
+                ${mv.name} [${mv.movie_id}]
+              </div>
               <div class="sub">${(mv.genres || []).join(', ')}</div>
               <div class="sub">
                 ${rd}${status ? ' • ' + status : ''}${rt ? ' • ' + rt : ''}

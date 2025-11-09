@@ -3,63 +3,34 @@
 """
 File: scripts/fetch_tmdb.py
 Project: my_TV_Movie
-Version: v2.3.0 (2025-11-10)
+Version: v2.3.1 (2025-11-11)
 
 Purpose:
-    Single source of truth for building data/data.json from:
+    Build data/data.json from:
       - tv_list.txt
       - movies_list.txt
 
-Inputs (repo root):
-    tv_list.txt
-        name|tmdb_show_id|season_spec|tvmaze_id(optional)
-        Examples:
-            Abbott Elementary|125935|5
-            Abbott Elementary|125935|5|43354
-            Stranger Things|66732|5
-            Only Murders in the Building|107113|5
-        season_spec:
-            5       -> only season 5
-            1,2,5   -> seasons 1,2,5
-            *       -> all seasons
-
-    movies_list.txt
-        name|tmdb_movie_id
-        Example:
-            Dune: Part Two|693134
-
 Behavior:
-    - Skips:
-        * Blank lines
-        * Lines starting with '#'
-    - Treats any other malformed line as a warning (does NOT abort whole build).
-    - Fetches:
-        * Show info + seasons + episodes (all episodes, including unaired/TBA).
-        * Movie info (including status, runtime, genres, belongs_to_collection).
+    - Skips blank lines and lines starting with '#'.
+    - Warns on malformed lines; continues.
+    - Fetches from TMDB:
+        * Shows + seasons + episodes (all, incl. TBA).
+        * Movies (status, runtime, genres, collection).
     - Writes:
-        data/data.json with structure:
-            {
-              "generated_at": "...",
-              "shows": [...],
-              "movies": [...],
-              "live_tv": [],
-              "meta": { "shows": N, "movies": M, "live_tv": 0 }
-            }
+        data/data.json:
+          {
+            "generated_at": "...",
+            "shows": [...],
+            "movies": [...],
+            "live_tv": [],
+            "meta": { "shows": N, "movies": M, "live_tv": 0 }
+          }
+    - Fails (non-zero) if:
+        * API_TMDB_KEY missing, OR
+        * tv_list.txt has entries but 0 shows built, OR
+        * movies_list.txt has entries but 0 movies built.
 
-Environment:
-    Requires:
-        API_TMDB_KEY
-
-    Optional (for future integration; currently not fatal if missing):
-        API_TMDB_TOKEN
-        API_TVMAZE_KEY
-        API_OMDB_KEY
-        API_TRAKT_CLIENT_ID / API_TRAKT_CLIENT_SECRET / API_TRAKT.TV_USER
-
-Notes:
-    - Fails loudly on missing API_TMDB_KEY.
-    - If movies or shows come out as 0, it logs a clear WARNING so
-      you know it's a data/parse/wiring issue, not the frontend.
+This prevents silent deploys with "Movies: 0" when input is non-empty.
 """
 
 import os
@@ -113,7 +84,7 @@ def tmdb_get(path: str, params: Dict[str, Any]) -> Dict[str, Any]:
 def load_tv_list() -> List[Dict[str, Any]]:
     shows = []
     if not TV_LIST_PATH.exists():
-        print(f"INFO: {TV_LIST_PATH.name} not found, no shows.", file=sys.stderr)
+        print(f"INFO: {TV_LIST_PATH.name} not found, no shows requested.", file=sys.stderr)
         return shows
 
     with TV_LIST_PATH.open("r", encoding="utf-8") as f:
@@ -143,14 +114,14 @@ def load_tv_list() -> List[Dict[str, Any]]:
                 "tvmaze_id": tvmaze_id
             })
 
-    print(f"INFO: Loaded {len(shows)} TV entries from tv_list.txt")
+    print(f"INFO: Loaded {len(shows)} TV entries from tv_list.txt", file=sys.stderr)
     return shows
 
 
 def load_movies_list() -> List[Dict[str, Any]]:
     movies = []
     if not MOVIES_LIST_PATH.exists():
-        print(f"INFO: {MOVIES_LIST_PATH.name} not found, no movies.", file=sys.stderr)
+        print(f"INFO: {MOVIES_LIST_PATH.name} not found, no movies requested.", file=sys.stderr)
         return movies
 
     with MOVIES_LIST_PATH.open("r", encoding="utf-8") as f:
@@ -176,13 +147,13 @@ def load_movies_list() -> List[Dict[str, Any]]:
                 "tmdb_id": int(tmdb_id),
             })
 
-    print(f"INFO: Loaded {len(movies)} movie entries from movies_list.txt")
+    print(f"INFO: Loaded {len(movies)} movie entries from movies_list.txt", file=sys.stderr)
     return movies
 
 
 def parse_season_spec(spec: str, all_seasons: List[int]) -> List[int]:
     spec = (spec or "*").strip()
-    if spec == "*" or spec == "":
+    if spec in ("", "*"):
         return sorted(all_seasons)
     selected = set()
     for part in spec.split(","):
@@ -209,17 +180,17 @@ def build_show_entry(cfg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         print(f"ERROR: Failed to fetch show {show_id}: {e}", file=sys.stderr)
         return None
 
-    # Collect all season numbers (exclude specials if you like)
-    season_nums = [s["season_number"] for s in info.get("seasons", []) if s.get("season_number") is not None]
+    season_nums = [s["season_number"] for s in info.get("seasons", [])
+                   if s.get("season_number") is not None]
     wanted = parse_season_spec(cfg.get("season_spec", "*"), season_nums)
 
     seasons_out: List[Dict[str, Any]] = []
     for sn in wanted:
         try:
-            sdata = tmdb_get(f"/tv/{show_id}/season/{sn}", {})
+          sdata = tmdb_get(f"/tv/{show_id}/season/{sn}", {})
         except Exception as e:
-            print(f"ERROR: Failed to fetch S{sn} for show {show_id}: {e}", file=sys.stderr)
-            continue
+          print(f"ERROR: Failed to fetch S{sn} for show {show_id}: {e}", file=sys.stderr)
+          continue
 
         episodes_out: List[Dict[str, Any]] = []
         for ep in sdata.get("episodes", []):
@@ -262,9 +233,8 @@ def build_shows(tv_cfgs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         entry = build_show_entry(cfg)
         if entry:
             shows_out.append(entry)
-        # Gentle delay to avoid hammering TMDB
         time.sleep(0.2)
-    print(f"INFO: Built {len(shows_out)} shows")
+    print(f"INFO: Built {len(shows_out)} shows", file=sys.stderr)
     return shows_out
 
 
@@ -293,10 +263,10 @@ def build_movie_entry(cfg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "runtime": info.get("runtime") or None,
         "status": info.get("status") or "",
         "genres": genres,
-        "belongs_to_collection": {
-            "id": coll.get("id"),
-            "name": coll.get("name")
-        } if coll else None,
+        "belongs_to_collection": (
+            {"id": coll.get("id"), "name": coll.get("name")}
+            if coll else None
+        ),
     }
 
 
@@ -307,7 +277,7 @@ def build_movies(movies_cfgs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         if entry:
             movies_out.append(entry)
         time.sleep(0.2)
-    print(f"INFO: Built {len(movies_out)} movies")
+    print(f"INFO: Built {len(movies_out)} movies", file=sys.stderr)
     return movies_out
 
 
@@ -323,16 +293,24 @@ def main() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
     tv_cfgs = load_tv_list()
-    movie_cfgs = load_movies_list()
+    movies_cfgs = load_movies_list()
 
     shows = build_shows(tv_cfgs)
-    movies = build_movies(movie_cfgs)
+    movies = build_movies(movies_cfgs)
+
+    # Hard guards: avoid silent "0" cases when lists are non-empty.
+    if tv_cfgs and not shows:
+        print("FATAL: tv_list.txt has entries but 0 shows were built.", file=sys.stderr)
+        sys.exit(1)
+    if movies_cfgs and not movies:
+        print("FATAL: movies_list.txt has entries but 0 movies were built.", file=sys.stderr)
+        sys.exit(1)
 
     out = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "shows": shows,
         "movies": movies,
-        "live_tv": [],  # reserved
+        "live_tv": [],
         "meta": {
             "shows": len(shows),
             "movies": len(movies),
@@ -344,12 +322,10 @@ def main() -> None:
     with out_path.open("w", encoding="utf-8") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
 
-    print(f"INFO: Wrote {out_path} (shows={len(shows)}, movies={len(movies)})")
-
-    if len(movies) == 0:
-        print("WARNING: 0 movies built. Check movies_list.txt formatting and TMDB IDs.", file=sys.stderr)
-    if len(shows) == 0:
-        print("WARNING: 0 shows built. Check tv_list.txt formatting and TMDB IDs.", file=sys.stderr)
+    print(
+        f"INFO: Wrote {out_path} (shows={len(shows)}, movies={len(movies)})",
+        file=sys.stderr
+    )
 
 
 if __name__ == "__main__":
