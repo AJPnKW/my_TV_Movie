@@ -4,27 +4,42 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.08 (2025-11-10 02:05 EST)
+    Version: v2.8.10 (2025-11-10 05:10 EST)
 
-    This build:
-      - Fixes JS syntax bug that broke initialization.
+    Includes:
+      - Single-page hub: Calendar / Shows / Movies / Live TV / Config.
       - Sticky global header.
+      - Meta line under title:
+          index.html + config.html versions + Data built + counts.
       - Calendar:
-          * Day-cell episode posters +50% (only in calendar cells).
-          * Larger bold date, softened today highlight.
+          * Proper sticky month header.
+          * Day cell: larger bold date; header strip shading.
+          * Episode/movie posters ~50% larger than original (calendar ONLY).
+          * Click show name/poster → Show popup (P1).
+          * Click ep code/title → Episode popup (P3).
+          * Runtime displayed when available.
       - Shows:
-          * Card posters compact (pre-50% size).
+          * Poster size reverted to compact card style.
           * Poster + title → Show popup (P1).
-          * Current Season line → Season popup (P2).
-      - Popups:
-          * P1 Show: poster, seasons list with season descriptions.
-          * P2 Season: poster, all episodes incl. TBA, runtime, icons.
-          * P3 Episode: poster, runtime, icons.
-          * P4 Movie: poster, status, runtime, icons.
+          * "Current Season" line → Season popup (P2).
       - Movies:
-          * Title/date sorting + status labels.
+          * Filters:
+              Status: All / In Theatres / Released / In Production / Announced.
+              Sort: Title / Release date.
+              Watched: stub (no-op yet, UI only).
+          * Uses simple heuristic to label statuses.
+      - Popups:
+          * P1 Show: poster (compact), current season line, network logos, seasons list.
+          * P2 Season: poster (compact), all episodes incl TBA, runtime, icons.
+          * P3 Episode: poster (compact), runtime, icons.
+          * P4 Movie: poster (compact), status, runtime, icons, collection.
+      - Config view:
+          * 6.1 Display
+          * 6.2 Maintenance Shortcuts
+          * 6.3 Integration Info
+          * 6.4 Edit Helpers
       - Live TV:
-          * Skeleton grid using logos; no EPG yet.
+          * Logo-based channel grid skeleton (no EPG yet).
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -42,7 +57,7 @@
       --today-ring: #3b82f6;
       --danger: #f97316;
       --font-scale: 1.0;
-      --side-pad: 40px;
+      --side-pad: 40px; /* wider for TV overscan */
     }
     :root[data-theme="light"] {
       --bg: #f3f4f6;
@@ -71,6 +86,7 @@
     a:hover { text-decoration: underline; }
 
     /* Sticky global header */
+
     .app-header-wrap {
       position: sticky;
       top: 0;
@@ -118,14 +134,18 @@
     .view { display: none; }
     .view.active { display: block; }
 
-    /* Calendar */
-    .sticky-header {
+    /* Sticky section headers */
+
+    .sticky-header,
+    .filters {
       position: sticky;
       top: 64px;
       z-index: 60;
       padding: 4px 0 4px;
       background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0.0));
     }
+
+    /* Calendar */
 
     .cal-header {
       display: flex;
@@ -201,10 +221,16 @@
       box-shadow: 0 0 0 2px var(--today-ring);
     }
 
+    .day:not(.today)[data-outside="1"] {
+      opacity: 0.25;
+    }
+
+    /* Calendar entries: +50% poster size vs original */
+
     .ep-item,
     .movie-item {
       display: grid;
-      grid-template-columns: 36px 1fr; /* poster +50% vs old 24px */
+      grid-template-columns: 36px 1fr; /* 24px -> 36px */
       gap: 3px;
       align-items: flex-start;
       padding: 2px;
@@ -270,14 +296,7 @@
       display:block;
     }
 
-    /* Shows / Movies */
-    .filters {
-      position: sticky;
-      top: 64px;
-      z-index: 60;
-      padding: 4px 0 4px;
-      background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0.0));
-    }
+    /* Shows / Movies grids */
 
     .filter-row {
       display: flex;
@@ -303,7 +322,7 @@
     }
     .pill.active {
       background: var(--accent);
-      color: #ffffff;
+      color: #fff;
       border-color: var(--accent);
     }
 
@@ -324,10 +343,11 @@
       gap: 2px;
     }
 
-    /* Compact posters for Show/Movie cards */
+    /* Reverted compact poster for cards & popups */
+
     .poster-md {
       width: 100%;
-      height: 120px;
+      height: 110px; /* compact */
       border-radius: 6px;
       object-fit: cover;
       background:#111827;
@@ -347,6 +367,7 @@
     }
 
     /* Live TV */
+
     .livetv-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
@@ -381,6 +402,7 @@
     }
 
     /* Popups */
+
     .overlay-backdrop {
       position: fixed;
       inset: 0;
@@ -466,7 +488,7 @@
     }
 
     .popup-poster {
-      width: 140px;
+      width: 110px; /* compact poster for P1–P4 */
       border-radius: 8px;
       object-fit: cover;
       background:#111827;
@@ -515,14 +537,14 @@
       <div class="filter-row" id="shows-genre-row">
         <span class="filter-label">Genre:</span>
       </div>
-      <!-- Row 2: Sort / Status / Watched / When -->
+      <!-- Row 2: Sort / Status / Watched / When (Watched/When = future wiring) -->
       <div class="filter-row" id="shows-other-row">
         <span class="filter-label">Filters:</span>
         <button class="pill active" data-shows-sort="az">A–Z</button>
         <button class="pill" data-shows-sort="za">Z–A</button>
-        <button class="pill" data-shows-status="all">All status</button>
-        <button class="pill" data-shows-watched="all">All</button>
-        <button class="pill" data-shows-when="all">Any time</button>
+        <button class="pill active" data-shows-status="all">All status</button>
+        <button class="pill active" data-shows-watched="all">All</button>
+        <button class="pill active" data-shows-when="all">Any time</button>
       </div>
     </div>
     <div id="shows-grid" class="grid"></div>
@@ -531,22 +553,29 @@
   <!-- MOVIES VIEW -->
   <div id="view-movies" class="view">
     <div class="filters">
+      <!-- Row 1: Genre -->
       <div class="filter-row" id="movies-genre-row">
         <span class="filter-label">Genre:</span>
       </div>
+      <!-- Row 2: Status / Sort / Watched (future) -->
       <div class="filter-row" id="movies-other-row">
         <span class="filter-label">Filters:</span>
+        <button class="pill active" data-movies-status="all">All</button>
+        <button class="pill" data-movies-status="in_theatres">In Theatres</button>
+        <button class="pill" data-movies-status="released">Released</button>
+        <button class="pill" data-movies-status="in_production">In Production</button>
+        <button class="pill" data-movies-status="announced">Announced</button>
+
         <button class="pill active" data-movies-sort="title">Title</button>
         <button class="pill" data-movies-sort="date">Release date</button>
-        <button class="pill active" data-movies-status="all">All status</button>
-        <button class="pill" data-movies-watched="all">All</button>
-        <button class="pill" data-movies-when="all">Any time</button>
+
+        <button class="pill active" data-movies-watched="all">All</button>
       </div>
     </div>
     <div id="movies-grid" class="grid"></div>
   </div>
 
-  <!-- LIVE TV VIEW -->
+  <!-- LIVE TV VIEW (skeleton) -->
   <div id="view-livetv" class="view">
     <div class="filters">
       <div class="filter-row">
@@ -561,20 +590,73 @@
     <div id="livetv-grid" class="livetv-grid"></div>
   </div>
 
-  <!-- CONFIG VIEW (inline helper) -->
+  <!-- CONFIG VIEW -->
   <div id="view-config" class="view">
-    <p class="sub">
-      Full settings live in
-      <a href="config.html" target="_blank">config.html</a>.
-      Theme &amp; font size here apply locally on this device.
-    </p>
-    <div style="margin-top:6px;">
-      <span class="filter-label">Theme:</span>
-      <button class="pill" id="cfg-dark">Dark</button>
-      <button class="pill" id="cfg-light">Light</button>
-      <span class="filter-label" style="margin-left:8px;">Font size:</span>
-      <input type="range" id="cfg-font" min="0.8" max="1.4" step="0.05" value="1.0">
-      <span id="cfg-font-label" class="filter-label">1.00x</span>
+    <!-- 6.1 Display Settings -->
+    <div class="card" style="margin-top:4px;">
+      <div class="filter-label">Display</div>
+      <div class="filter-row" style="margin-top:4px;">
+        <span class="filter-label">Theme:</span>
+        <button class="pill" id="cfg-dark">Dark</button>
+        <button class="pill" id="cfg-light">Light</button>
+        <span class="filter-label" style="margin-left:8px;">Font size:</span>
+        <input type="range" id="cfg-font" min="0.8" max="1.4" step="0.05" value="1.0">
+        <span id="cfg-font-label" class="filter-label">1.00x</span>
+      </div>
+      <div class="sub" style="margin-top:2px;">
+        Stored in this browser. Applies to the hub immediately.
+      </div>
+    </div>
+
+    <!-- 6.2 Maintenance Shortcuts -->
+    <div class="card" style="margin-top:6px;">
+      <div class="filter-label">Maintenance shortcuts</div>
+      <div class="sub" style="margin-top:4px;">
+        • Hub:
+        <a href="index.html">/web/index.html</a><br>
+        • Config:
+        <a href="config.html" target="_blank">/web/config.html</a><br>
+        • Build workflow:
+        <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
+          Build TV Data and Deploy
+        </a><br>
+        • Secrets & variables:
+        <a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions" target="_blank">
+          Settings → Secrets and variables → Actions
+        </a><br>
+        • Repo:
+        <a href="https://github.com/AJPnKW/my_TV_Movie" target="_blank">
+          AJPnKW/my_TV_Movie
+        </a>
+      </div>
+    </div>
+
+    <!-- 6.3 Integration Info -->
+    <div class="card" style="margin-top:6px;">
+      <div class="filter-label">Integrations</div>
+      <div class="sub" style="margin-top:4px;">
+        Uses TMDB (shows+movies), TVMaze (where enabled), OMDB (optional), Trakt (planned profiles).
+        Keys are provided via GitHub Repository secrets.
+      </div>
+    </div>
+
+    <!-- 6.4 Edit Helpers -->
+    <div class="card" style="margin-top:6px;">
+      <div class="filter-label">Edit source lists</div>
+      <div class="sub" style="margin-top:4px;">
+        • TV list:
+        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/tv_list.txt" target="_blank">
+          edit tv_list.txt
+        </a><br>
+        • Movies list:
+        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/movies_list.txt" target="_blank">
+          edit movies_list.txt
+        </a><br>
+        • Live TV list:
+        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/live_tv_list.txt" target="_blank">
+          edit live_tv_list.txt
+        </a> (if present)
+      </div>
     </div>
   </div>
 
@@ -584,7 +666,8 @@
   </div>
 
   <script>
-    // ---------- constants ----------
+    // ---------- constants & helpers ----------
+
     const ICONS = {
       tmdb: '../image/services_logos/TMDB_icon.png',
       vidsrc: '../image/services_logos/VidSrc_icon.png',
@@ -631,11 +714,12 @@
     let DATA = null;
     let currentMonth = new Date();
 
-    // ---------- meta ----------
+    // ---------- meta line ----------
+
     function renderMeta() {
       const metaEl = document.getElementById('meta');
       if (!DATA) {
-        metaEl.textContent = 'Unable to load data. Run the "Build TV Data and Deploy" workflow.';
+        metaEl.textContent = 'Unable to load data. Run "Build TV Data and Deploy".';
         return;
       }
       const built = DATA.generated_at || 'n/a';
@@ -643,11 +727,12 @@
       const movies = (DATA.meta && DATA.meta.movies) || (DATA.movies || []).length || 0;
       const live = (DATA.meta && DATA.meta.live_tv) || (DATA.live_tv || []).length || 0;
       metaEl.textContent =
-        `index.html: v2.8.08 • config.html: v1.4.4 • ` +
+        `index.html: v2.8.10 • config.html: v1.4.4 • ` +
         `Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
     }
 
     // ---------- nav ----------
+
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
@@ -659,14 +744,18 @@
     });
 
     // ---------- theme & font ----------
+
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('tvhub_theme', t);
-      if (document.getElementById('cfg-dark')) {
-        document.getElementById('cfg-dark').classList.toggle('active', t === 'dark');
-        document.getElementById('cfg-light').classList.toggle('active', t === 'light');
+      const dk = document.getElementById('cfg-dark');
+      const lt = document.getElementById('cfg-light');
+      if (dk && lt) {
+        dk.classList.toggle('active', t === 'dark');
+        lt.classList.toggle('active', t === 'light');
       }
     }
+
     function applyFontScale(v) {
       document.documentElement.style.setProperty('--font-scale', v);
       localStorage.setItem('tvhub_fontscale', v);
@@ -690,6 +779,7 @@
     }
 
     // ---------- overlay ----------
+
     const overlayBackdrop = document.getElementById('overlay-backdrop');
     const overlayEl = document.getElementById('overlay');
 
@@ -714,7 +804,8 @@
       if (closeBtn) closeBtn.onclick = closeOverlay;
     }
 
-    // ---------- icon row builders ----------
+    // ---------- icon rows ----------
+
     function buildEpisodeIconRow(showId, season, ep) {
       const tmdb = `https://www.themoviedb.org/tv/${showId}/season/${season}/episode/${ep}`;
       const vids = `https://vidsrc.net/embed/tv/${showId}/${season}/${ep}`;
@@ -750,7 +841,39 @@
       `;
     }
 
-    // ---------- popup builders ----------
+    // ---------- movie status mapping (4.1.2) ----------
+
+    function labelMovieStatus(mv) {
+      const raw = (mv.status || '').toLowerCase();
+      const today = new Date().toISOString().slice(0,10);
+      const rd = mv.release_date || '';
+
+      // Normalize into the four buckets.
+      if (raw.includes('in production') || raw.includes('post production')) {
+        return 'In Production';
+      }
+      if (raw.includes('planned') || raw.includes('announced')) {
+        return 'Announced';
+      }
+      if (raw.includes('released')) {
+        // Heuristic: recent = "In Theatres"
+        if (rd && rd <= today) {
+          const diffDays = (new Date(today) - new Date(rd)) / 86400000;
+          if (diffDays >= 0 && diffDays <= 45) return 'In Theatres';
+        }
+        return 'Released';
+      }
+
+      // Fallbacks based on date only
+      if (rd) {
+        if (rd > today) return 'Announced';
+        if (rd <= today) return 'Released';
+      }
+      return '';
+    }
+
+    // ---------- popups (P1–P4) ----------
+
     function showShowPopup(show) {
       if (!show) return;
       const poster = show.poster_path
@@ -761,6 +884,7 @@
       const currentLine = currentSeason
         ? `Current Season: ${currentSeason.season_number} • ${epCount} episodes`
         : '';
+
       const netHtml = (show.networks || []).map(n => {
         const src = getServiceLogo(n);
         return src
@@ -770,7 +894,7 @@
 
       const seasonsHtml = seasons.map(s => {
         const c = (s.episodes || []).length;
-        const desc = s.overview ? s.overview : '';
+        const desc = s.overview || '';
         return `
           <div class="ep-row"
                onclick="window.__openSeason(${show.show_id}, ${s.season_number})">
@@ -799,7 +923,7 @@
               <div class="overlay-sub">
                 ${currentLine}<br>
                 <span class="net-logos">${netHtml}</span><br>
-                ${(show.genres || []).join(', ')} ${show.status ? '• ' + show.status : ''}
+                ${(show.genres || []).join(', ')}${show.status ? ' • ' + show.status : ''}
               </div>
             </div>
             <button class="overlay-close">✕</button>
@@ -835,7 +959,9 @@
                    onclick="window.__openEpisode(${show.show_id}, ${seasonNum}, ${ep.episode_number})">
                 ${code} · ${ep.name || 'TBA'}
               </div>
-              <div class="ep-row-meta">${air}${rt ? ' • ' + rt : ''}</div>
+              <div class="ep-row-meta">
+                ${air}${rt ? ' • ' + rt : ''}
+              </div>
             </div>
             <div class="ep-row-meta">${desc}</div>
             <div class="icon-row">${icons}</div>
@@ -880,7 +1006,9 @@
           <div class="overlay-header">
             <div>
               <div class="overlay-title">${show.name} — ${code}</div>
-              <div class="overlay-sub">${air}${rt ? ' • ' + rt : ''}</div>
+              <div class="overlay-sub">
+                ${air}${rt ? ' • ' + rt : ''}
+              </div>
             </div>
             <button class="overlay-close">✕</button>
           </div>
@@ -931,25 +1059,8 @@
     window.__openSeason = showSeasonPopup;
     window.__openEpisode = showEpisodePopup;
 
-    // ---------- movie status ----------
-    function labelMovieStatus(mv) {
-      const raw = (mv.status || '').toLowerCase();
-      const today = new Date().toISOString().slice(0,10);
-      const rd = mv.release_date || '';
+    // ---------- Calendar builder ----------
 
-      if (raw.includes('released')) return 'Released';
-      if (raw.includes('post production')) return 'In Production';
-      if (raw.includes('in production')) return 'In Production';
-      if (raw.includes('planned') || raw.includes('announced')) return 'Announced';
-
-      if (rd) {
-        if (rd > today) return 'Announced';
-        if (rd <= today) return 'Released';
-      }
-      return '';
-    }
-
-    // ---------- calendar ----------
     function buildCalendar() {
       if (!DATA) return;
       const grid = document.getElementById('cal-grid');
@@ -975,14 +1086,14 @@
         const isToday = isTodayMonth && inMonth && cellDate.getDate() === today.getDate();
 
         const dayEl = el(`<div class="day ${isToday ? 'today' : ''}"></div>`);
+        if (!inMonth) dayEl.dataset.outside = "1";
+
         const head = el(`
           <div class="day-header-strip">
             <div class="day-date">${cellDate.getDate()}</div>
           </div>
         `);
         const body = el(`<div class="day-body"></div>`);
-
-        if (!inMonth) dayEl.style.opacity = 0.25;
 
         const airStr = cellDate.toISOString().slice(0,10);
 
@@ -1069,7 +1180,7 @@
         grid.appendChild(dayEl);
       }
 
-      // calendar click wiring
+      // Wiring (calendar)
       grid.querySelectorAll('img.poster-sm[data-show]').forEach(img => {
         img.onclick = () => {
           const id = parseInt(img.dataset.show,10);
@@ -1120,7 +1231,8 @@
       buildCalendar();
     };
 
-    // ---------- shows ----------
+    // ---------- shows grid ----------
+
     function buildShows() {
       const grid = document.getElementById('shows-grid');
       const genreRow = document.getElementById('shows-genre-row');
@@ -1228,7 +1340,8 @@
       apply();
     }
 
-    // ---------- movies ----------
+    // ---------- movies grid ----------
+
     function buildMovies() {
       const grid = document.getElementById('movies-grid');
       const genreRow = document.getElementById('movies-genre-row');
@@ -1245,10 +1358,11 @@
         genreRow.appendChild(el(`<button class="pill" data-movies-genre="${g}">${g}</button>`));
       });
 
-      moviesOther.querySelector('[data-movies-status="all"]').classList.add('active');
+      // Status/sort pills already in markup; just wire behavior.
 
       function apply() {
         grid.innerHTML = '';
+
         const gbtn = genreRow.querySelector('.pill.active[data-movies-genre]');
         const gsel = gbtn ? gbtn.dataset.moviesGenre : 'all';
 
@@ -1259,15 +1373,28 @@
         const ssel = stbtn ? stbtn.dataset.moviesStatus : 'all';
 
         let list = movies.slice();
+
+        // Genre filter
         if (gsel !== 'all') {
           list = list.filter(m => (m.genres || []).includes(gsel));
         }
 
+        // Label statuses
         list.forEach(m => m._statusLabel = labelMovieStatus(m));
+
+        // Status filter
         if (ssel !== 'all') {
-          list = list.filter(m => m._statusLabel === ssel);
+          const map = {
+            in_theatres: 'In Theatres',
+            released: 'Released',
+            in_production: 'In Production',
+            announced: 'Announced'
+          };
+          const want = map[ssel];
+          list = list.filter(m => m._statusLabel === want);
         }
 
+        // Sort
         list.sort((a,b) => {
           if (sort === 'date') {
             const ad = a.release_date || '';
@@ -1277,6 +1404,7 @@
           return (a.name || '').localeCompare(b.name || '');
         });
 
+        // Render
         list.forEach(mv => {
           const poster = mv.poster_path
             ? `https://image.tmdb.org/t/p/w342${mv.poster_path}` : '';
@@ -1299,6 +1427,7 @@
           grid.appendChild(card);
         });
 
+        // Clicks
         grid.querySelectorAll('.poster-md[data-movie], .title-link[data-movie]').forEach(n => {
           n.onclick = () => {
             const id = parseInt(n.dataset.movie,10);
@@ -1316,19 +1445,22 @@
       });
 
       moviesOther.addEventListener('click', e => {
-        const sBtn = e.target.closest('.pill[data-movies-sort]');
-        if (sBtn) {
-          moviesOther.querySelectorAll('.pill[data-movies-sort]')
+        const stBtn = e.target.closest('.pill[data-movies-status]');
+        if (stBtn) {
+          moviesOther
+            .querySelectorAll('.pill[data-movies-status]')
             .forEach(b => b.classList.remove('active'));
-          sBtn.classList.add('active');
+          stBtn.classList.add('active');
           apply();
           return;
         }
-        const stBtn = e.target.closest('.pill[data-movies-status]');
-        if (stBtn) {
-          moviesOther.querySelectorAll('.pill[data-movies-status]')
+
+        const sBtn = e.target.closest('.pill[data-movies-sort]');
+        if (sBtn) {
+          moviesOther
+            .querySelectorAll('.pill[data-movies-sort]')
             .forEach(b => b.classList.remove('active'));
-          stBtn.classList.add('active');
+          sBtn.classList.add('active');
           apply();
         }
       });
@@ -1336,7 +1468,8 @@
       apply();
     }
 
-    // ---------- live tv ----------
+    // ---------- live tv skeleton ----------
+
     function buildLiveTV() {
       const grid = document.getElementById('livetv-grid');
       grid.innerHTML = '';
@@ -1364,6 +1497,7 @@
     }
 
     // ---------- load data ----------
+
     async function loadData() {
       try {
         const res = await fetch('../data/data.json', { cache: 'no-cache' });
