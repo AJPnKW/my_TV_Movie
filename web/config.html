@@ -4,7 +4,7 @@
   <!--
     File: web/config.html
     Project: my_TV_Movie
-    Version: v1.4.3 (2025-11-09 23:40 EST)
+    Version: v1.4.4 (2025-11-10 01:05 EST)
 
     Sections:
       1) Display
@@ -14,7 +14,7 @@
       5) Edit Movies list
       6) Edit Live TV list
 
-    Uses localStorage keys:
+    Uses localStorage:
       tvhub_theme
       tvhub_fontscale
   -->
@@ -151,7 +151,7 @@
 <body>
   <h1>My TV Hub – Config</h1>
   <div class="meta">
-    config.html: v1.4.3 • Local settings only.
+    config.html: v1.4.4 • Local settings only.
     Main hub:
     <a href="index.html">/web/index.html</a>
   </div>
@@ -219,7 +219,9 @@
   <div class="card">
     <div class="section-title">Profiles &amp; Integrations</div>
     <div class="mut">
-      These are handled by the backend scripts (not this page). Common keys:
+      Handled by backend scripts. Common keys:
+      <code>API_TMDB_KEY</code>, <code>API_TVMAZE_KEY</code>,
+      <code>API_OMDB_KEY</code>, Trakt keys (future).
     </div>
     <div class="icon-row">
       <span class="mut">TMDB</span>
@@ -230,11 +232,7 @@
       <img src="../image/services_logos/videasy_icon.png" class="ico" alt="Videasy">
     </div>
     <div class="hint">
-      Set in GitHub Secrets:
-      <code>API_TMDB_KEY</code>,
-      <code>API_TVMAZE_KEY</code>,
-      <code>API_OMDB_KEY</code>,
-      and any Trakt / Live TV keys as needed.
+      Use GitHub Secrets for all keys. Frontend remains read-only & safe.
     </div>
   </div>
 
@@ -258,9 +256,8 @@
       </div>
     </div>
     <div class="hint">
-      Examples:
-      <code>Abbott Elementary|125935|5</code> or
-      <code>Stranger Things|66732|*</code>.
+      Example:
+      <code>Abbott Elementary|125935|5</code>.
     </div>
   </div>
 
@@ -284,7 +281,7 @@
       </div>
     </div>
     <div class="hint">
-      After saving, run the Build workflow to refresh Movies view.
+      After saving, run the build workflow to refresh Movies.
     </div>
   </div>
 
@@ -292,7 +289,7 @@
   <div class="card">
     <div class="section-title">Edit Live TV List (live_tv_list.txt)</div>
     <div class="mut">
-      Optional Live TV channel grid.
+      Optional Live TV grid.
       Suggested:
       <code>name|country|group|logo(optional)|location(optional)|timezone(optional)</code>
     </div>
