@@ -1823,11 +1823,18 @@
 
   function renderMeta(){
     if(!state.data) return;
-    const sc = (state.data.meta && state.data.meta.shows) || (state.data.shows||[]).length;
-    const mc = (state.data.meta && state.data.meta.movies) || (state.data.movies||[]).length;
-    const built = state.data.generated_at || 'n/a';
-    $('#meta').textContent =
-      `Data built: ${built} · Shows: ${sc} · Movies: ${mc}`;
+    const shows = (state.data.meta && state.data.meta.shows) || (state.data.shows || []).length;
+    const movies = (state.data.meta && state.data.meta.movies) || (state.data.movies || []).length;
+    const live = (state.data.live_tv || []).length;
+    const built = state.data.generated_at || state.data.built_at || 'n/a';
+  
+    const txt =
+      'index.html: v2.8.02 (2025-11-08 14:27 EST) • ' +
+      'config.html: v1.4.0 (2025-11-09 14:26 EST) • ' +
+      `Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
+  
+    const el = document.getElementById('meta');
+    if(el) el.textContent = txt;
   }
 
   function renderAll(){
