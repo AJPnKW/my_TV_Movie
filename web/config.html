@@ -4,19 +4,19 @@
   <!--
     File: web/config.html
     Project: my_TV_Movie
-    Version: v1.4.2 (2025-11-09 22:45 EST)
+    Version: v1.4.3 (2025-11-09 23:40 EST)
 
-    Purpose:
-      - Local display preferences (theme, font scale)
-      - Quick links: Hub, Workflow, Secrets, Repo
-      - Integration info (TMDB / Trakt / TVMaze / OMDB)
-      - Edit helpers for tv_list.txt, movies_list.txt, live_tv_list.txt
+    Sections:
+      1) Display
+      2) Maintenance shortcuts
+      3) Profiles & Integrations
+      4) Edit TV list
+      5) Edit Movies list
+      6) Edit Live TV list
 
-    Notes:
-      - Settings here affect this browser only via localStorage.
-      - index.html reads the same keys:
-          tvhub_theme
-          tvhub_fontscale
+    Uses localStorage keys:
+      tvhub_theme
+      tvhub_fontscale
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -31,6 +31,7 @@
       --border: #202938;
       --radius: 12px;
       --font-scale: 1.0;
+      --side-pad: 40px;
     }
     :root[data-theme="light"] {
       --bg: #f3f4f6;
@@ -41,31 +42,35 @@
       --border: #d1d5db;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+
     body {
       background: var(--bg);
       color: var(--fg);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: calc(14px * var(--font-scale));
       line-height: 1.5;
-      padding: 16px 40px 24px;
+      padding: 16px var(--side-pad) 24px var(--side-pad);
     }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+
+    a { color: var(--accent); text-decoration:none; }
+    a:hover { text-decoration:underline; }
 
     h1 {
       font-size: 22px;
       font-weight: 600;
       margin-bottom: 4px;
     }
+
     .meta {
       font-size: 11px;
       color: var(--muted);
-      margin-bottom: 14px;
+      margin-bottom: 10px;
     }
+
     .nav-link {
       font-size: 11px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .card {
@@ -75,21 +80,25 @@
       padding: 10px;
       margin-bottom: 10px;
     }
+
     .section-title {
       font-size: 13px;
       font-weight: 600;
       margin-bottom: 4px;
     }
+
     .mut {
       font-size: 10px;
       color: var(--muted);
     }
+
     .row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
       gap: 6px;
     }
+
     .btn {
       padding: 4px 10px;
       border-radius: 999px;
@@ -104,28 +113,19 @@
       border-color: var(--accent);
       color: #ffffff;
     }
+
     input[type="range"] {
       accent-color: var(--accent);
     }
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      background: #020617;
-      color: var(--fg);
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      padding: 6px;
-      font-family: monospace;
-      font-size: 10px;
-      resize: vertical;
-      white-space: pre;
-      overflow-wrap: normal;
-      overflow-x: auto;
-    }
-    code {
-      font-family: monospace;
+
+    .link-list {
+      margin-top: 4px;
       font-size: 10px;
     }
+    .link-list div {
+      margin-bottom: 2px;
+    }
+
     .icon-row {
       display: inline-flex;
       gap: 6px;
@@ -136,27 +136,23 @@
       width: 14px;
       height: 14px;
       object-fit: contain;
-      vertical-align: middle;
     }
     .hint {
       font-size: 9px;
       color: var(--muted);
       margin-top: 2px;
     }
-    .link-list {
-      margin-top: 4px;
+    code {
+      font-family: monospace;
       font-size: 10px;
-    }
-    .link-list div {
-      margin-bottom: 2px;
     }
   </style>
 </head>
 <body>
   <h1>My TV Hub – Config</h1>
   <div class="meta">
-    config.html: v1.4.2 • Uses local settings for this browser.
-    Open main hub:
+    config.html: v1.4.3 • Local settings only.
+    Main hub:
     <a href="index.html">/web/index.html</a>
   </div>
 
@@ -184,8 +180,7 @@
       <span id="font-scale-label" class="mut">1.00x</span>
     </div>
     <div class="mut" style="margin-top:4px;">
-      Stored in this browser only. The same values are read by
-      <code>index.html</code> to render Calendar, Shows, Movies, and Live TV.
+      Stored in this browser only. Read by <code>index.html</code> for all views.
     </div>
   </div>
 
@@ -193,7 +188,11 @@
   <div class="card">
     <div class="section-title">Maintenance shortcuts</div>
     <div class="link-list">
-      <div>Hub (GitHub Pages): <a href="index.html">https://ajpnkw.github.io/my_TV_Movie/web/index.html</a></div>
+      <div>Hub (GitHub Pages):
+        <a href="index.html">
+          https://ajpnkw.github.io/my_TV_Movie/web/index.html
+        </a>
+      </div>
       <div>Build workflow:
         <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml">
           Build TV Data and Deploy
@@ -212,7 +211,7 @@
     </div>
     <div class="hint">
       After editing <code>tv_list.txt</code> or <code>movies_list.txt</code>,
-      re-run the workflow so <code>data/data.json</code> is regenerated.
+      re-run the workflow so <code>data/data.json</code> is updated.
     </div>
   </div>
 
@@ -220,7 +219,7 @@
   <div class="card">
     <div class="section-title">Profiles &amp; Integrations</div>
     <div class="mut">
-      Optional APIs used by the data builder scripts:
+      These are handled by the backend scripts (not this page). Common keys:
     </div>
     <div class="icon-row">
       <span class="mut">TMDB</span>
@@ -231,15 +230,11 @@
       <img src="../image/services_logos/videasy_icon.png" class="ico" alt="Videasy">
     </div>
     <div class="hint">
-      Set keys in GitHub Secrets (repository):
+      Set in GitHub Secrets:
       <code>API_TMDB_KEY</code>,
       <code>API_TVMAZE_KEY</code>,
       <code>API_OMDB_KEY</code>,
-      and any future Trakt / Live TV tokens as documented in the README.
-    </div>
-    <div class="hint">
-      Profile-specific watch status and full Trakt / TVMaze sync wiring are
-      planned; current UI is read-only for those signals.
+      and any Trakt / Live TV keys as needed.
     </div>
   </div>
 
@@ -247,27 +242,25 @@
   <div class="card">
     <div class="section-title">Edit TV List (tv_list.txt)</div>
     <div class="mut">
-      Source: <code>/tv_list.txt</code> in the repo.
       Format:
       <code>name|tmdb_show_id|season_spec|tvmaze_id(optional)</code>
     </div>
-    <div class="hint">
-      To edit:
-      open on GitHub, modify, save, then re-run the build workflow.
-    </div>
     <div class="link-list">
-      <div>
-        View:
+      <div>View:
         <a href="https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/tv_list.txt">
           Raw tv_list.txt
         </a>
       </div>
-      <div>
-        Edit:
+      <div>Edit:
         <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/tv_list.txt">
           Edit on GitHub
         </a>
       </div>
+    </div>
+    <div class="hint">
+      Examples:
+      <code>Abbott Elementary|125935|5</code> or
+      <code>Stranger Things|66732|*</code>.
     </div>
   </div>
 
@@ -275,27 +268,23 @@
   <div class="card">
     <div class="section-title">Edit Movies List (movies_list.txt)</div>
     <div class="mut">
-      Source: <code>/movies_list.txt</code> in the repo.
       Format:
       <code>name|tmdb_movie_id</code>
     </div>
-    <div class="hint">
-      After changes, re-run:
-      <code>Build TV Data and Deploy</code>.
-    </div>
     <div class="link-list">
-      <div>
-        View:
+      <div>View:
         <a href="https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/movies_list.txt">
           Raw movies_list.txt
         </a>
       </div>
-      <div>
-        Edit:
+      <div>Edit:
         <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/movies_list.txt">
           Edit on GitHub
         </a>
       </div>
+    </div>
+    <div class="hint">
+      After saving, run the Build workflow to refresh Movies view.
     </div>
   </div>
 
@@ -303,35 +292,28 @@
   <div class="card">
     <div class="section-title">Edit Live TV List (live_tv_list.txt)</div>
     <div class="mut">
-      Placeholder for Live TV / channel grid.
-      Suggested format:
+      Optional Live TV channel grid.
+      Suggested:
       <code>name|country|group|logo(optional)|location(optional)|timezone(optional)</code>
     </div>
-    <div class="hint">
-      If present, entries will appear in the Live TV view using logos from
-      <code>/image/services_logos/</code>.
-    </div>
     <div class="link-list">
-      <div>
-        (If file exists)
-        View:
+      <div>(If exists) View:
         <a href="https://github.com/AJPnKW/my_TV_Movie/blob/main/live_tv_list.txt">
           live_tv_list.txt
         </a>
       </div>
-      <div>
-        (If file exists)
-        Edit:
+      <div>(If exists) Edit:
         <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/live_tv_list.txt">
           Edit on GitHub
         </a>
       </div>
     </div>
+    <div class="hint">
+      Logos pulled from <code>/image/services_logos/</code>.
+    </div>
   </div>
 
   <script>
-    // Keep theme/font in sync with index.html
-
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('tvhub_theme', t);
@@ -348,7 +330,6 @@
     (function init() {
       const t = localStorage.getItem('tvhub_theme') || 'dark';
       applyTheme(t);
-
       const fs = parseFloat(localStorage.getItem('tvhub_fontscale') || '1.0') || 1.0;
       applyFontScale(fs);
       const slider = document.getElementById('font-scale');
@@ -357,9 +338,8 @@
 
     document.getElementById('theme-dark').onclick = () => applyTheme('dark');
     document.getElementById('theme-light').onclick = () => applyTheme('light');
-    document.getElementById('font-scale').oninput = e => {
+    document.getElementById('font-scale').oninput = e =>
       applyFontScale(parseFloat(e.target.value));
-    };
   </script>
 </body>
 </html>

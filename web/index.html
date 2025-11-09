@@ -4,19 +4,30 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.05 (2025-11-09 22:30 EST)
+    Version: v2.8.06 (2025-11-09 23:40 EST)
 
-    Key:
-      - Calendar / Shows / Movies / Live TV / Config tabs
+    Implements:
+      - Sticky global header (title + meta + nav).
+      - Calendar:
+          * Bigger date text + shaded header strip.
+          * Today highlight softened.
+          * Day-cell posters +50% and clickable to Show popup.
+          * Episode runtimes shown when present.
+          * Network/service logos visible.
+          * TMDB / VidSrc / Videasy icons as logos (bigger).
+      - Shows:
+          * Poster size sane (no accidental +50%).
+          * Poster + title → Show popup.
+          * Current Season line → Season popup.
+      - Movies:
+          * Status + runtime in card.
+          * Sort: Title / Release date.
+          * Basic status labels for filter (In Theatres / Released / In Production / Announced).
       - Popups:
-          P1: Show
-          P2: Season episodes
-          P3: Episode detail
-          P4: Movie detail
-      - Icons:
-          TMDB_icon.png, VidSrc_icon.png, videasy_icon.png
-      - Service logos:
-          ../image/services_logos/<name>.png (see getServiceLogo)
+          * Show (P1), Season (P2), Episode (P3), Movie (P4).
+          * Descriptions + runtimes where available.
+          * Logos scaled up; close button high contrast.
+      - Live TV: logo-based skeleton.
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -27,14 +38,14 @@
       --fg: #f9fafb;
       --muted: #9ca3af;
       --accent: #3b82f6;
-      --accent-soft: #1f2937;
-      --accent-soft2: #111827;
+      --accent-soft: #111827;
       --card: #050816;
       --border: #202938;
-      --today-bg: #111827;
+      --today-bg: #101827;
       --today-ring: #3b82f6;
       --danger: #f97316;
       --font-scale: 1.0;
+      --side-pad: 40px;
     }
     :root[data-theme="light"] {
       --bg: #f3f4f6;
@@ -42,7 +53,6 @@
       --muted: #6b7280;
       --accent: #2563eb;
       --accent-soft: #e5e7eb;
-      --accent-soft2: #ffffff;
       --card: #ffffff;
       --border: #d1d5db;
       --today-bg: #dbeafe;
@@ -50,38 +60,54 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
       background: var(--bg);
       color: var(--fg);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       font-size: calc(14px * var(--font-scale));
       line-height: 1.5;
-      padding: 12px 40px 20px; /* wider sides for TV edge cut-off */
+      padding: 8px var(--side-pad) 20px var(--side-pad);
     }
+
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
+
+    /* Sticky app header */
+
+    .app-header-wrap {
+      position: sticky;
+      top: 0;
+      z-index: 80;
+      padding-bottom: 6px;
+      margin-bottom: 4px;
+      background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0.0));
+    }
+
     h1 {
       font-size: calc(22px * var(--font-scale));
       font-weight: 600;
-      margin-bottom: 2px;
+      margin-bottom: 1px;
     }
+
     .meta-line {
       font-size: calc(11px * var(--font-scale));
       color: var(--muted);
-      margin-bottom: 10px;
+      margin-bottom: 6px;
     }
 
     .nav {
       display: flex;
       gap: 8px;
-      margin-bottom: 10px;
       flex-wrap: wrap;
+      margin-bottom: 2px;
     }
+
     .nav-btn {
       padding: 6px 14px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: var(--accent-soft2);
+      background: var(--card);
       color: var(--fg);
       font-size: calc(12px * var(--font-scale));
       cursor: pointer;
@@ -93,43 +119,42 @@
       border-color: var(--accent);
     }
 
-    .view {
-      display: none;
-    }
-    .view.active {
-      display: block;
-    }
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Calendar */
 
     .sticky-header {
       position: sticky;
-      top: 0;
-      z-index: 50;
-      padding: 6px 0 6px;
-      background: linear-gradient(to bottom, var(--bg), transparent);
+      top: 64px;
+      z-index: 60;
+      padding: 4px 0 4px;
+      background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0.0));
     }
-
-    /* Calendar */
 
     .cal-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
+
     .cal-title {
       font-size: calc(18px * var(--font-scale));
       font-weight: 600;
     }
+
     .cal-nav-btn {
       padding: 4px 10px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: var(--accent-soft2);
+      background: var(--card);
       color: var(--fg);
       font-size: calc(11px * var(--font-scale));
       cursor: pointer;
     }
+
     .cal-weekdays {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
@@ -138,104 +163,114 @@
       color: var(--muted);
       margin-bottom: 3px;
     }
+
     .cal-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       gap: 3px;
     }
+
     .day {
-      min-height: 90px;
+      min-height: 96px;
       border-radius: 6px;
       border: 1px solid var(--border);
-      padding: 0;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       background: var(--card);
     }
+
     .day-header-strip {
-      background: rgba(59,130,246,0.10); /* same family as today but lighter */
+      background: rgba(59,130,246,0.11);
       padding: 2px 4px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 4px;
     }
+
     .day-date {
-      font-size: calc(16px * var(--font-scale)); /* 4x-ish larger */
+      font-size: calc(16px * var(--font-scale));
       font-weight: 700;
     }
-    .day-label {
-      font-size: calc(8px * var(--font-scale));
-      color: var(--muted);
-      margin-left: 4px;
-    }
+
     .day-body {
       padding: 2px 3px 3px;
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
+
     .day.today {
       background: var(--today-bg);
       box-shadow: 0 0 0 2px var(--today-ring);
     }
 
-    .ep-item, .movie-item {
+    .ep-item,
+    .movie-item {
       display: grid;
-      grid-template-columns: 26px 1fr;
+      grid-template-columns: 36px 1fr; /* poster +50% vs previous 24px */
       gap: 3px;
       align-items: flex-start;
-      padding: 2px 2px;
+      padding: 2px;
       border-radius: 4px;
-      background: rgba(15,23,42,0.85);
+      background: rgba(7,11,23,0.96);
       font-size: calc(9px * var(--font-scale));
     }
     :root[data-theme="light"] .ep-item,
     :root[data-theme="light"] .movie-item {
-      background: rgba(229,231,235,0.95);
+      background: rgba(229,231,235,0.98);
     }
+
     .poster-sm {
-      width: 26px;
-      height: 40px;
+      width: 36px;
+      height: 54px;
       border-radius: 3px;
       object-fit: cover;
       background:#111827;
+      cursor: pointer;
     }
+
     .ep-title {
       font-weight: 600;
       cursor: pointer;
     }
+
     .ep-meta,
     .movie-meta {
       font-size: calc(8px * var(--font-scale));
       color: var(--muted);
     }
+
     .net-logos {
-      display: inline-flex;
-      gap: 2px;
-      align-items: center;
-      margin-right: 2px;
-    }
-    .net-logo {
-      height: 10px;
-      max-width: 24px;
-      object-fit: contain;
-    }
-    .icon-row {
       display: inline-flex;
       gap: 3px;
       align-items: center;
       margin-top: 1px;
     }
+
+    .net-logo {
+      height: 14px;
+      max-width: 40px;
+      object-fit: contain;
+    }
+
+    .icon-row {
+      display: inline-flex;
+      gap: 4px;
+      align-items: center;
+      margin-top: 1px;
+    }
+
     .ico-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 0;
     }
+
     .ico {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       object-fit: contain;
       display:block;
     }
@@ -244,26 +279,30 @@
 
     .filters {
       position: sticky;
-      top: 32px;
-      z-index: 40;
-      padding: 4px 0 6px;
-      background: linear-gradient(to bottom, var(--bg), transparent);
+      top: 64px;
+      z-index: 60;
+      padding: 4px 0 4px;
+      background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0.0));
     }
+
     .filter-row {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       margin-bottom: 3px;
+      align-items: center;
     }
+
     .filter-label {
       font-size: calc(9px * var(--font-scale));
       color: var(--muted);
     }
+
     .pill {
       padding: 3px 9px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: var(--accent-soft2);
+      background: var(--card);
       font-size: calc(9px * var(--font-scale));
       color: var(--fg);
       cursor: pointer;
@@ -280,6 +319,7 @@
       gap: 8px;
       margin-top: 4px;
     }
+
     .card {
       background: var(--card);
       border-radius: 10px;
@@ -289,19 +329,23 @@
       flex-direction: column;
       gap: 2px;
     }
+
     .poster-md {
       width: 100%;
-      height: 150px;
+      height: 140px; /* sane size, not oversized */
       border-radius: 6px;
       object-fit: cover;
       background:#111827;
       margin-bottom: 2px;
+      cursor: pointer;
     }
+
     .title-link {
       font-size: calc(11px * var(--font-scale));
       font-weight: 600;
       cursor: pointer;
     }
+
     .sub {
       font-size: calc(8px * var(--font-scale));
       color: var(--muted);
@@ -315,6 +359,7 @@
       gap: 6px;
       margin-top: 4px;
     }
+
     .livetv-card {
       background: var(--card);
       border-radius: 10px;
@@ -324,15 +369,18 @@
       align-items: center;
       gap: 4px;
     }
+
     .livetv-logo {
       width: 28px;
       height: 28px;
       object-fit: contain;
     }
+
     .livetv-name {
       font-size: calc(10px * var(--font-scale));
       font-weight: 600;
     }
+
     .livetv-meta {
       font-size: calc(8px * var(--font-scale));
       color: var(--muted);
@@ -343,7 +391,7 @@
     .overlay-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.70);
+      background: rgba(0,0,0,0.72);
       display: none;
       align-items: center;
       justify-content: center;
@@ -356,11 +404,11 @@
       background: var(--card);
       border-radius: 14px;
       border: 1px solid var(--accent);
-      max-width: 720px;
+      max-width: 760px;
       max-height: 88vh;
       padding: 10px;
       overflow-y: auto;
-      box-shadow: 0 18px 40px rgba(0,0,0,0.8);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.9);
     }
     .overlay-header {
       display: flex;
@@ -402,13 +450,13 @@
     .ep-row {
       padding: 2px 3px;
       border-radius: 4px;
-      background: rgba(15,23,42,0.9);
+      background: rgba(7,11,23,0.96);
       display: flex;
       flex-direction: column;
       gap: 1px;
     }
     :root[data-theme="light"] .ep-row {
-      background: rgba(229,231,235,0.95);
+      background: rgba(229,231,235,0.98);
     }
     .ep-row-header {
       display: flex;
@@ -428,17 +476,16 @@
   </style>
 </head>
 <body>
-  <h1>My TV Hub</h1>
-  <div id="meta" class="meta-line">
-    Loading versions & data…
-  </div>
-
-  <div class="nav">
-    <button class="nav-btn active" data-view="calendar">Calendar</button>
-    <button class="nav-btn" data-view="shows">Shows</button>
-    <button class="nav-btn" data-view="movies">Movies</button>
-    <button class="nav-btn" data-view="livetv">Live TV</button>
-    <button class="nav-btn" data-view="config">Config</button>
+  <div class="app-header-wrap">
+    <h1>My TV Hub</h1>
+    <div id="meta" class="meta-line">Loading versions &amp; data…</div>
+    <div class="nav">
+      <button class="nav-btn active" data-view="calendar">Calendar</button>
+      <button class="nav-btn" data-view="shows">Shows</button>
+      <button class="nav-btn" data-view="movies">Movies</button>
+      <button class="nav-btn" data-view="livetv">Live TV</button>
+      <button class="nav-btn" data-view="config">Config</button>
+    </div>
   </div>
 
   <!-- CALENDAR VIEW -->
@@ -466,12 +513,12 @@
       <!-- Row 1: Genre -->
       <div class="filter-row" id="shows-genre-row">
         <span class="filter-label">Genre:</span>
-        <button class="pill" data-shows-genre="all">All</button>
+        <!-- pills injected -->
       </div>
-      <!-- Row 2: Sort / Status / Watched / When -->
+      <!-- Row 2: Sort / Status / Watched / When (stubs for now) -->
       <div class="filter-row" id="shows-other-row">
         <span class="filter-label">Filters:</span>
-        <button class="pill" data-shows-sort="az">A–Z</button>
+        <button class="pill active" data-shows-sort="az">A–Z</button>
         <button class="pill" data-shows-sort="za">Z–A</button>
         <button class="pill" data-shows-status="all">All status</button>
         <button class="pill" data-shows-watched="all">All</button>
@@ -486,11 +533,11 @@
     <div class="filters">
       <div class="filter-row" id="movies-genre-row">
         <span class="filter-label">Genre:</span>
-        <button class="pill" data-movies-genre="all">All</button>
+        <!-- pills injected -->
       </div>
       <div class="filter-row" id="movies-other-row">
         <span class="filter-label">Filters:</span>
-        <button class="pill" data-movies-sort="title">Title</button>
+        <button class="pill active" data-movies-sort="title">Title</button>
         <button class="pill" data-movies-sort="date">Release date</button>
         <button class="pill" data-movies-status="all">All status</button>
         <button class="pill" data-movies-watched="all">All</button>
@@ -505,22 +552,22 @@
     <div class="filters">
       <div class="filter-row">
         <span class="filter-label">Country:</span>
-        <button class="pill" data-lt-country="all">All</button>
+        <button class="pill active" data-lt-country="all">All</button>
       </div>
       <div class="filter-row">
         <span class="filter-label">Group:</span>
-        <button class="pill" data-lt-group="all">All</button>
+        <button class="pill active" data-lt-group="all">All</button>
       </div>
     </div>
     <div id="livetv-grid" class="livetv-grid"></div>
   </div>
 
-  <!-- CONFIG VIEW (inline helper, main config.html is richer) -->
+  <!-- CONFIG VIEW (inline helper) -->
   <div id="view-config" class="view">
     <p class="sub">
-      For full settings open
-      <a href="config.html" target="_blank">Config</a>.
-      Theme & font size below apply locally.
+      Full settings live in
+      <a href="config.html" target="_blank">config.html</a>.
+      Theme &amp; font size here apply locally.
     </p>
     <div style="margin-top:6px;">
       <span class="filter-label">Theme:</span>
@@ -539,7 +586,6 @@
 
   <script>
     // ---------- helpers ----------
-
     const ICONS = {
       tmdb: '../image/services_logos/TMDB_icon.png',
       vidsrc: '../image/services_logos/VidSrc_icon.png',
@@ -548,26 +594,25 @@
 
     function slugLogo(name) {
       if (!name) return null;
-      let s = name.toLowerCase().replace(/\+/g, 'plus')
+      let s = name.toLowerCase()
+        .replace(/\+/g, 'plus')
         .replace(/&/g, 'and')
         .replace(/[^a-z0-9]+/g, '_')
         .replace(/^_+|_+$/g, '');
-      if (!s) return null;
-      return '../image/services_logos/' + s + '.png';
+      return s ? '../image/services_logos/' + s + '.png' : null;
     }
 
     function getServiceLogo(name) {
+      if (!name) return null;
+      const key = name.toLowerCase();
       const special = {
         'paramount network': 'paramount_network.png',
         'paramount+': 'paramount_plus.png',
         'nat geo': 'natgeo.png',
         'national geographic': 'natgeo.png'
       };
-      if (!name) return null;
-      const key = name.toLowerCase();
       if (special[key]) return '../image/services_logos/' + special[key];
-      const guess = slugLogo(name);
-      return guess;
+      return slugLogo(name);
     }
 
     function formatRuntime(mins) {
@@ -584,13 +629,10 @@
       return t.content.firstChild;
     }
 
-    // ---------- state ----------
-
     let DATA = null;
     let currentMonth = new Date();
 
     // ---------- meta ----------
-
     function renderMeta() {
       const metaEl = document.getElementById('meta');
       if (!DATA) {
@@ -602,27 +644,29 @@
       const movies = (DATA.meta && DATA.meta.movies) || (DATA.movies || []).length || 0;
       const live = (DATA.meta && DATA.meta.live_tv) || (DATA.live_tv || []).length || 0;
       metaEl.textContent =
-        `index.html: v2.8.05 (2025-11-09 22:30 EST) • ` +
-        `config.html: v1.4.1 • ` +
+        `index.html: v2.8.06 • config.html: v1.4.3 • ` +
         `Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
     }
 
     // ---------- nav ----------
-
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.toggle('active', b === btn));
+        document.querySelectorAll('.nav-btn')
+          .forEach(b => b.classList.toggle('active', b === btn));
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.getElementById('view-' + view).classList.add('active');
       });
     });
 
     // ---------- theme & font ----------
-
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('tvhub_theme', t);
+      if (document.getElementById('cfg-dark')) {
+        document.getElementById('cfg-dark').classList.toggle('active', t === 'dark');
+        document.getElementById('cfg-light').classList.toggle('active', t === 'light');
+      }
     }
     function applyFontScale(v) {
       document.documentElement.style.setProperty('--font-scale', v);
@@ -631,30 +675,22 @@
       if (lbl) lbl.textContent = v.toFixed(2) + 'x';
     }
 
-    (function initTheme() {
-      const t = localStorage.getItem('tvhub_theme') || 'dark';
-      applyTheme(t);
-    })();
-    (function initFont() {
-      const v = parseFloat(localStorage.getItem('tvhub_fontscale') || '1.0') || 1.0;
-      applyFontScale(v);
+    (function initThemeFont() {
+      applyTheme(localStorage.getItem('tvhub_theme') || 'dark');
+      const fs = parseFloat(localStorage.getItem('tvhub_fontscale') || '1.0') || 1.0;
+      applyFontScale(fs);
       const slider = document.getElementById('cfg-font');
-      if (slider) slider.value = v.toFixed(2);
+      if (slider) slider.value = fs.toFixed(2);
     })();
 
-    const cfgDark = document.getElementById('cfg-dark');
-    const cfgLight = document.getElementById('cfg-light');
-    if (cfgDark && cfgLight) {
-      cfgDark.onclick = () => applyTheme('dark');
-      cfgLight.onclick = () => applyTheme('light');
-    }
-    const cfgFont = document.getElementById('cfg-font');
-    if (cfgFont) {
-      cfgFont.oninput = e => applyFontScale(parseFloat(e.target.value));
+    if (document.getElementById('cfg-dark')) {
+      document.getElementById('cfg-dark').onclick = () => applyTheme('dark');
+      document.getElementById('cfg-light').onclick = () => applyTheme('light');
+      document.getElementById('cfg-font').oninput = e =>
+        applyFontScale(parseFloat(e.target.value));
     }
 
     // ---------- overlay ----------
-
     const overlayBackdrop = document.getElementById('overlay-backdrop');
     const overlayEl = document.getElementById('overlay');
 
@@ -662,9 +698,11 @@
       overlayBackdrop.classList.remove('active');
       overlayEl.innerHTML = '';
     }
+
     overlayBackdrop.addEventListener('click', e => {
       if (e.target === overlayBackdrop) closeOverlay();
     });
+
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeOverlay();
     });
@@ -678,18 +716,23 @@
     }
 
     // ---------- popup builders ----------
-
     function showShowPopup(show) {
       if (!show) return;
-      const currentSeason = (show.seasons || []).slice().sort((a,b)=>b.season_number-a.season_number)[0];
+      const poster = show.poster_path
+        ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
+      const seasons = show.seasons || [];
+      const currentSeason = seasons.slice().sort((a,b)=>b.season_number-a.season_number)[0];
       const currentLine = currentSeason
-        ? `Current Season: ${currentSeason.season_number} • ${currentSeason.episodes?.length || 0} episodes`
+        ? `Current Season: ${currentSeason.season_number} • ${(currentSeason.episodes || []).length} episodes`
         : '';
       const netHtml = (show.networks || []).map(n => {
         const src = getServiceLogo(n);
-        return src ? `<img src="${src}" class="net-logo" alt="${n}">` : `<span>${n}</span>`;
+        return src
+          ? `<img src="${src}" class="net-logo" alt="${n}">`
+          : `<span>${n}</span>`;
       }).join(' ');
-      const seasonsHtml = (show.seasons || []).map(s => {
+
+      const seasonsHtml = seasons.map(s => {
         const epCount = (s.episodes || []).length;
         const label = `Season ${s.season_number} • ${epCount} ep`;
         const desc = s.overview ? ` – ${s.overview}` : '';
@@ -707,19 +750,22 @@
             <div>
               <div class="overlay-title">
                 ${show.name}
-                ${show.links?.tmdb ? `<a href="${show.links.tmdb}" target="_blank">
-                  <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
-                </a>` : ''}
+                ${show.links?.tmdb
+                  ? `<a href="${show.links.tmdb}" target="_blank">
+                       <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
+                     </a>`
+                  : ''}
               </div>
               <div class="overlay-sub">
                 ${currentLine}<br>
                 <span class="net-logos">${netHtml}</span><br>
-                ${show.genres?.join(', ') || ''} • ${show.status || ''}
+                ${(show.genres || []).join(', ')} ${show.status ? '• ' + show.status : ''}
               </div>
             </div>
             <button class="overlay-close">✕</button>
           </div>
-          <div class="overlay-sub">${show.overview || ''}</div>
+          ${poster ? `<img src="${poster}" alt="" class="poster-md" style="max-width:160px;">` : ''}
+          <div class="overlay-sub" style="margin-top:2px;">${show.overview || ''}</div>
           <div class="overlay-section-title">Seasons</div>
           <div class="ep-list">
             ${seasonsHtml || '<div class="ep-row-meta">No seasons data.</div>'}
@@ -739,16 +785,17 @@
         const air = ep.air_date || 'TBA';
         const rt = formatRuntime(ep.runtime || ep.episode_run_time);
         const desc = ep.overview || '';
-        const links = buildEpisodeIconRow(show.show_id, seasonNum, ep.episode_number, show.name);
+        const icons = buildEpisodeIconRow(show.show_id, seasonNum, ep.episode_number);
         return `<div class="ep-row">
           <div class="ep-row-header">
-            <div class="ep-row-title" onclick="window.__openEpisode(${show.show_id}, ${seasonNum}, ${ep.episode_number})">
+            <div class="ep-row-title"
+                 onclick="window.__openEpisode(${show.show_id}, ${seasonNum}, ${ep.episode_number})">
               ${code} · ${ep.name || 'TBA'}
             </div>
             <div class="ep-row-meta">${air}${rt ? ' • ' + rt : ''}</div>
           </div>
           <div class="ep-row-meta">${desc}</div>
-          <div class="icon-row">${links}</div>
+          <div class="icon-row">${icons}</div>
         </div>`;
       }).join('');
 
@@ -776,7 +823,7 @@
       const code = `S${String(seasonNum).padStart(2,'0')}E${String(epNum).padStart(2,'0')}`;
       const air = ep.air_date || 'TBA';
       const rt = formatRuntime(ep.runtime || ep.episode_run_time);
-      const links = buildEpisodeIconRow(show.show_id, seasonNum, epNum, show.name);
+      const icons = buildEpisodeIconRow(show.show_id, seasonNum, epNum);
 
       openOverlay(`
         <div>
@@ -789,7 +836,7 @@
           </div>
           <div class="overlay-sub">${ep.overview || 'No description.'}</div>
           <div class="overlay-section-title">Watch</div>
-          <div class="icon-row">${links}</div>
+          <div class="icon-row">${icons}</div>
         </div>
       `);
     }
@@ -799,10 +846,9 @@
       if (!mv) return;
       const rd = mv.release_date || 'TBA';
       const rt = formatRuntime(mv.runtime);
-      const status = mv.status || '';
-      const links = buildMovieIconRow(mv);
-
-      const rel = mv.belongs_to_collection?.name
+      const status = labelMovieStatus(mv);
+      const icons = buildMovieIconRow(mv);
+      const coll = mv.belongs_to_collection && mv.belongs_to_collection.name
         ? `<div class="overlay-section-title">Collection</div>
            <div class="overlay-sub">${mv.belongs_to_collection.name}</div>`
         : '';
@@ -820,8 +866,8 @@
           </div>
           <div class="overlay-sub">${mv.overview || ''}</div>
           <div class="overlay-section-title">Watch</div>
-          <div class="icon-row">${links}</div>
-          ${rel}
+          <div class="icon-row">${icons}</div>
+          ${coll}
         </div>
       `);
     }
@@ -830,13 +876,12 @@
     window.__openEpisode = showEpisodePopup;
 
     // ---------- icon row builders ----------
-
-    function buildEpisodeIconRow(showId, season, ep, showName) {
-      const baseTmdb = `https://www.themoviedb.org/tv/${showId}/season/${season}/episode/${ep}`;
+    function buildEpisodeIconRow(showId, season, ep) {
+      const tmdb = `https://www.themoviedb.org/tv/${showId}/season/${season}/episode/${ep}`;
       const vids = `https://vidsrc.net/embed/tv/${showId}/${season}/${ep}`;
       const vea = `https://player.videasy.net/tv/${showId}/${season}/${ep}`;
       return `
-        <a class="ico-link" href="${baseTmdb}" target="_blank" title="TMDB">
+        <a class="ico-link" href="${tmdb}" target="_blank" title="TMDB">
           <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
         </a>
         <a class="ico-link" href="${vids}" target="_blank" title="VidSrc">
@@ -866,8 +911,26 @@
       `;
     }
 
-    // ---------- calendar rendering ----------
+    // ---------- movie status helpers ----------
+    function labelMovieStatus(mv) {
+      // If TMDB status is present, normalize.
+      const raw = (mv.status || '').toLowerCase();
+      const today = new Date().toISOString().slice(0,10);
+      const rd = mv.release_date || '';
 
+      if (raw.includes('released')) return 'Released';
+      if (raw.includes('post production')) return 'In Production';
+      if (raw.includes('in production')) return 'In Production';
+      if (raw.includes('planned') || raw.includes('announced')) return 'Announced';
+
+      if (rd) {
+        if (rd > today) return 'Announced';
+        if (rd <= today) return 'Released';
+      }
+      return '';
+    }
+
+    // ---------- calendar ----------
     function buildCalendar() {
       if (!DATA) return;
       const grid = document.getElementById('cal-grid');
@@ -884,55 +947,59 @@
 
       const today = new Date();
       const isTodayMonth = today.getFullYear() === year && today.getMonth() === month;
-
       const totalCells = 42;
       let d = 1 - startDay;
 
       for (let i = 0; i < totalCells; i++, d++) {
         const cellDate = new Date(year, month, d);
         const inMonth = cellDate.getMonth() === month;
-        const isToday = isTodayMonth && cellDate.getDate() === today.getDate() && inMonth;
+        const isToday = isTodayMonth && inMonth && cellDate.getDate() === today.getDate();
 
         const dayEl = el(`<div class="day ${isToday ? 'today' : ''}"></div>`);
         const head = el(`
           <div class="day-header-strip">
             <div class="day-date">${cellDate.getDate()}</div>
-            <div class="day-label">${inMonth ? '' : ''}</div>
           </div>
         `);
         const body = el(`<div class="day-body"></div>`);
 
-        if (!inMonth) {
-          dayEl.style.opacity = 0.25;
-        }
+        if (!inMonth) dayEl.style.opacity = 0.25;
 
         const airStr = cellDate.toISOString().slice(0,10);
 
-        // episodes
+        // TV episodes
         (DATA.shows || []).forEach(show => {
           (show.seasons || []).forEach(season => {
             (season.episodes || []).forEach(ep => {
-              const epDate = ep.air_date;
-              if (!epDate || epDate !== airStr) return;
+              if (!ep.air_date || ep.air_date !== airStr) return;
               const poster = show.poster_path
-                ? `https://image.tmdb.org/t/p/w154${show.poster_path}`
-                : '';
+                ? `https://image.tmdb.org/t/p/w154${show.poster_path}` : '';
               const code = `S${String(season.season_number).padStart(2,'0')}E${String(ep.episode_number).padStart(2,'0')}`;
               const rt = formatRuntime(ep.runtime || ep.episode_run_time);
               const nets = (show.networks || []).map(n => {
                 const src = getServiceLogo(n);
                 return src ? `<img src="${src}" class="net-logo" alt="${n}">` : '';
               }).join('');
-              const icons = buildEpisodeIconRow(show.show_id, season.season_number, ep.episode_number, show.name);
+              const icons = buildEpisodeIconRow(show.show_id, season.season_number, ep.episode_number);
 
               const item = el(`
                 <div class="ep-item">
-                  <img class="poster-sm" src="${poster}" alt="">
+                  <img class="poster-sm"
+                       src="${poster}"
+                       alt=""
+                       data-show="${show.show_id}">
                   <div>
-                    <div class="ep-title" data-action="show" data-id="${show.show_id}">${show.name}</div>
+                    <div class="ep-title"
+                         data-action="show"
+                         data-id="${show.show_id}">
+                      ${show.name}
+                    </div>
                     <div class="ep-meta">
-                      <span class="ep-title" data-action="ep" data-show="${show.show_id}"
-                        data-season="${season.season_number}" data-ep="${ep.episode_number}">
+                      <span class="ep-title"
+                            data-action="ep"
+                            data-show="${show.show_id}"
+                            data-season="${season.season_number}"
+                            data-ep="${ep.episode_number}">
                         ${code} · ${ep.name || 'TBA'}
                       </span>
                       ${rt ? ' • ' + rt : ''}
@@ -949,22 +1016,27 @@
           });
         });
 
-        // movies
+        // Movies
         (DATA.movies || []).forEach(mv => {
-          const rel = mv.release_date;
-          if (!rel || rel !== airStr) return;
+          if (!mv.release_date || mv.release_date !== airStr) return;
           const poster = mv.poster_path
-            ? `https://image.tmdb.org/t/p/w154${mv.poster_path}`
-            : '';
+            ? `https://image.tmdb.org/t/p/w154${mv.poster_path}` : '';
           const rt = formatRuntime(mv.runtime);
           const icons = buildMovieIconRow(mv);
           const item = el(`
             <div class="movie-item">
-              <img class="poster-sm" src="${poster}" alt="">
+              <img class="poster-sm"
+                   src="${poster}"
+                   alt=""
+                   data-movie="${mv.movie_id}">
               <div>
-                <div class="ep-title" data-action="movie" data-id="${mv.movie_id}">${mv.name}</div>
+                <div class="ep-title"
+                     data-action="movie"
+                     data-id="${mv.movie_id}">
+                  ${mv.name}
+                </div>
                 <div class="movie-meta">
-                  ${mv.genres?.slice(0,2).join(', ') || ''}${rt ? ' • ' + rt : ''}
+                  ${(mv.genres || []).slice(0,2).join(', ')}${rt ? ' • ' + rt : ''}
                 </div>
                 <div class="icon-row">${icons}</div>
               </div>
@@ -978,12 +1050,25 @@
         grid.appendChild(dayEl);
       }
 
-      // click handlers for show/ep/movie in calendar
+      // calendar click wiring
+      grid.querySelectorAll('img.poster-sm[data-show]').forEach(img => {
+        img.onclick = () => {
+          const id = parseInt(img.dataset.show,10);
+          const s = (DATA.shows || []).find(x => x.show_id === id);
+          showShowPopup(s);
+        };
+      });
+      grid.querySelectorAll('img.poster-sm[data-movie]').forEach(img => {
+        img.onclick = () => {
+          const id = parseInt(img.dataset.movie,10);
+          showMoviePopup(id);
+        };
+      });
       grid.querySelectorAll('[data-action="show"]').forEach(n => {
         n.onclick = () => {
           const id = parseInt(n.dataset.id,10);
-          const show = (DATA.shows || []).find(s => s.show_id === id);
-          showShowPopup(show);
+          const s = (DATA.shows || []).find(x => x.show_id === id);
+          showShowPopup(s);
         };
       });
       grid.querySelectorAll('[data-action="ep"]').forEach(n => {
@@ -1016,46 +1101,49 @@
       buildCalendar();
     };
 
-    // ---------- shows view ----------
-
+    // ---------- shows ----------
     function buildShows() {
       const grid = document.getElementById('shows-grid');
       const genreRow = document.getElementById('shows-genre-row');
       grid.innerHTML = '';
 
       const shows = (DATA.shows || []).slice();
-
-      // build genre pills
       const genres = new Set();
       shows.forEach(s => (s.genres || []).forEach(g => genres.add(g)));
-      genreRow.querySelectorAll('button[data-shows-genre]').forEach(b => b.remove());
+
+      genreRow.innerHTML = '<span class="filter-label">Genre:</span>';
       const allBtn = el('<button class="pill active" data-shows-genre="all">All</button>');
       genreRow.appendChild(allBtn);
       Array.from(genres).sort().forEach(g => {
         genreRow.appendChild(el(`<button class="pill" data-shows-genre="${g}">${g}</button>`));
       });
 
-      function applyFilter() {
+      function apply() {
         grid.innerHTML = '';
-        const activeGenre = (genreRow.querySelector('.pill.active[data-shows-genre]') || {}).dataset?.showsGenre || 'all';
+        const activeGenreBtn = genreRow.querySelector('.pill.active[data-shows-genre]');
+        const gsel = activeGenreBtn ? activeGenreBtn.dataset.showsGenre : 'all';
 
         let list = shows.slice();
-        if (activeGenre !== 'all') {
-          list = list.filter(s => (s.genres || []).includes(activeGenre));
-        }
-        // simple A-Z default
-        list.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+        if (gsel !== 'all') list = list.filter(s => (s.genres || []).includes(gsel));
+
+        const sortBtn = document.querySelector('.pill.active[data-shows-sort]');
+        const sort = sortBtn ? sortBtn.dataset.showsSort : 'az';
+        list.sort((a,b) => (a.name || '').localeCompare(b.name || '') * (sort === 'za' ? -1 : 1));
 
         list.forEach(show => {
           const poster = show.poster_path
-            ? `https://image.tmdb.org/t/p/w342${show.poster_path}`
-            : '';
-          const currentSeason = (show.seasons || []).slice().sort((a,b)=>b.season_number-a.season_number)[0];
+            ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
+          const seasons = show.seasons || [];
+          const currentSeason = seasons.slice().sort((a,b)=>b.season_number-a.season_number)[0];
           const currentLine = currentSeason
-            ? `Current Season: ${currentSeason.season_number} • ${currentSeason.episodes?.length || 0} episodes`
+            ? `Current Season: ${currentSeason.season_number} • ${(currentSeason.episodes || []).length} episodes`
             : '';
           const icons = `
-            ${show.links?.tmdb ? `<a class="ico-link" href="${show.links.tmdb}" target="_blank"><img src="${ICONS.tmdb}" class="ico" alt="TMDB"></a>` : ''}
+            ${show.links?.tmdb
+              ? `<a class="ico-link" href="${show.links.tmdb}" target="_blank">
+                   <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
+                 </a>`
+              : ''}
             <a class="ico-link" href="https://vidsrc.net/embed/tv/${show.show_id}" target="_blank">
               <img src="${ICONS.vidsrc}" class="ico" alt="VidSrc">
             </a>
@@ -1065,22 +1153,37 @@
           `;
           const card = el(`
             <div class="card">
-              <img class="poster-md" src="${poster}" alt="">
+              <img class="poster-md" src="${poster}" alt="" data-show="${show.show_id}">
               <div class="title-link" data-show="${show.show_id}">${show.name}</div>
-              <div class="sub">${currentLine}</div>
-              <div class="sub">${(show.genres || []).join(', ')} • ${show.status || ''}</div>
+              <div class="sub current-season"
+                   data-show="${show.show_id}"
+                   data-season="${currentSeason ? currentSeason.season_number : ''}">
+                ${currentLine}
+              </div>
+              <div class="sub">
+                ${(show.genres || []).join(', ')}
+                ${show.status ? '• ' + show.status : ''}
+              </div>
               <div class="icon-row">${icons}</div>
             </div>
           `);
           grid.appendChild(card);
         });
 
-        grid.querySelectorAll('.title-link[data-show]').forEach(n => {
+        grid.querySelectorAll('.poster-md[data-show], .title-link[data-show]').forEach(n => {
           n.onclick = () => {
             const id = parseInt(n.dataset.show,10);
-            const show = shows.find(s => s.show_id === id);
-            showShowPopup(show);
+            const s = shows.find(x => x.show_id === id);
+            showShowPopup(s);
           };
+        });
+
+        grid.querySelectorAll('.current-season[data-season]').forEach(n => {
+          const sid = parseInt(n.dataset.show,10);
+          const sn = parseInt(n.dataset.season,10);
+          if (!sn) return;
+          n.style.cursor = 'pointer';
+          n.onclick = () => showSeasonPopup(sid, sn);
         });
       }
 
@@ -1089,14 +1192,24 @@
         if (!btn) return;
         genreRow.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        applyFilter();
+        apply();
       });
 
-      applyFilter();
+      document.getElementById('shows-other-row').addEventListener('click', e => {
+        const sortBtn = e.target.closest('.pill[data-shows-sort]');
+        if (sortBtn) {
+          document
+            .querySelectorAll('.pill[data-shows-sort]')
+            .forEach(b => b.classList.remove('active'));
+          sortBtn.classList.add('active');
+          apply();
+        }
+      });
+
+      apply();
     }
 
-    // ---------- movies view ----------
-
+    // ---------- movies ----------
     function buildMovies() {
       const grid = document.getElementById('movies-grid');
       const genreRow = document.getElementById('movies-genre-row');
@@ -1106,44 +1219,67 @@
       const genres = new Set();
       movies.forEach(m => (m.genres || []).forEach(g => genres.add(g)));
 
-      genreRow.querySelectorAll('button[data-movies-genre]').forEach(b => b.remove());
+      genreRow.innerHTML = '<span class="filter-label">Genre:</span>';
       genreRow.appendChild(el('<button class="pill active" data-movies-genre="all">All</button>'));
       Array.from(genres).sort().forEach(g => {
         genreRow.appendChild(el(`<button class="pill" data-movies-genre="${g}">${g}</button>`));
       });
 
-      function applyFilter() {
+      function apply() {
         grid.innerHTML = '';
-        const activeGenre = (genreRow.querySelector('.pill.active[data-movies-genre]') || {}).dataset?.moviesGenre || 'all';
+        const activeGenreBtn = genreRow.querySelector('.pill.active[data-movies-genre]');
+        const gsel = activeGenreBtn ? activeGenreBtn.dataset.moviesGenre : 'all';
+
+        const sortBtn = document.querySelector('.pill.active[data-movies-sort]');
+        const sort = sortBtn ? sortBtn.dataset.moviesSort : 'title';
+
+        const statusBtn = document.querySelector('.pill.active[data-movies-status]');
+        const ssel = statusBtn ? statusBtn.dataset.moviesStatus : 'all';
 
         let list = movies.slice();
-        if (activeGenre !== 'all') {
-          list = list.filter(m => (m.genres || []).includes(activeGenre));
+        if (gsel !== 'all') {
+          list = list.filter(m => (m.genres || []).includes(gsel));
         }
-        // default sort: by title
-        list.sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+
+        // compute status labels
+        list.forEach(m => m._statusLabel = labelMovieStatus(m));
+
+        if (ssel !== 'all') {
+          list = list.filter(m => m._statusLabel === ssel);
+        }
+
+        list.sort((a,b) => {
+          if (sort === 'date') {
+            const ad = a.release_date || '';
+            const bd = b.release_date || '';
+            return (ad || '').localeCompare(bd || '');
+          }
+          return (a.name || '').localeCompare(b.name || '');
+        });
 
         list.forEach(mv => {
           const poster = mv.poster_path
-            ? `https://image.tmdb.org/t/p/w342${mv.poster_path}`
-            : '';
+            ? `https://image.tmdb.org/t/p/w342${mv.poster_path}` : '';
           const rd = mv.release_date || 'TBA';
           const rt = formatRuntime(mv.runtime);
-          const status = mv.status || '';
+          const status = mv._statusLabel || '';
           const icons = buildMovieIconRow(mv);
+
           const card = el(`
             <div class="card">
-              <img class="poster-md" src="${poster}" alt="">
+              <img class="poster-md" src="${poster}" alt="" data-movie="${mv.movie_id}">
               <div class="title-link" data-movie="${mv.movie_id}">${mv.name}</div>
               <div class="sub">${(mv.genres || []).join(', ')}</div>
-              <div class="sub">${rd}${status ? ' • ' + status : ''}${rt ? ' • ' + rt : ''}</div>
+              <div class="sub">
+                ${rd}${status ? ' • ' + status : ''}${rt ? ' • ' + rt : ''}
+              </div>
               <div class="icon-row">${icons}</div>
             </div>
           `);
           grid.appendChild(card);
         });
 
-        grid.querySelectorAll('.title-link[data-movie]').forEach(n => {
+        grid.querySelectorAll('.poster-md[data-movie], .title-link[data-movie]').forEach(n => {
           n.onclick = () => {
             const id = parseInt(n.dataset.movie,10);
             showMoviePopup(id);
@@ -1156,37 +1292,59 @@
         if (!btn) return;
         genreRow.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        applyFilter();
+        apply();
       });
 
-      applyFilter();
+      const moviesOther = document.getElementById('movies-other-row');
+      moviesOther.addEventListener('click', e => {
+        const sBtn = e.target.closest('.pill[data-movies-sort]');
+        if (sBtn) {
+          moviesOther.querySelectorAll('.pill[data-movies-sort]')
+            .forEach(b => b.classList.remove('active'));
+          sBtn.classList.add('active');
+          apply();
+          return;
+        }
+        const stBtn = e.target.closest('.pill[data-movies-status]');
+        if (stBtn) {
+          moviesOther.querySelectorAll('.pill[data-movies-status]')
+            .forEach(b => b.classList.remove('active'));
+          stBtn.classList.add('active');
+          apply();
+        }
+      });
+
+      apply();
     }
 
-    // ---------- live tv view ----------
-
+    // ---------- live tv ----------
     function buildLiveTV() {
       const grid = document.getElementById('livetv-grid');
       grid.innerHTML = '';
       const chans = DATA.live_tv || [];
       chans.forEach(ch => {
-        const logo = ch.logo ? '../image/services_logos/' + ch.logo : getServiceLogo(ch.name);
-        const elc = el(`
+        const logo = ch.logo
+          ? '../image/services_logos/' + ch.logo
+          : getServiceLogo(ch.name);
+        const c = el(`
           <div class="livetv-card">
             ${logo ? `<img src="${logo}" class="livetv-logo" alt="${ch.name}">` : ''}
             <div>
               <div class="livetv-name">${ch.name}</div>
               <div class="livetv-meta">
-                ${ch.country || ''} ${ch.group ? '• ' + ch.group : ''} ${ch.location || ''} ${ch.timezone || ''}
+                ${(ch.country || '')}
+                ${ch.group ? '• ' + ch.group : ''}
+                ${ch.location ? '• ' + ch.location : ''}
+                ${ch.timezone ? '• ' + ch.timezone : ''}
               </div>
             </div>
           </div>
         `);
-        grid.appendChild(elc);
+        grid.appendChild(c);
       });
     }
 
     // ---------- load data ----------
-
     async function loadData() {
       try {
         const res = await fetch('../data/data.json', { cache: 'no-cache' });
