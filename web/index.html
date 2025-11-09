@@ -4,20 +4,27 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.07 (2025-11-10 00:45 EST)
+    Version: v2.8.08 (2025-11-10 02:05 EST)
 
-    Fixes in this version:
-      - Global header remains sticky.
+    This build:
+      - Fixes JS syntax bug that broke initialization.
+      - Sticky global header.
       - Calendar:
-          * Day-cell posters enlarged (+50%) ONLY in calendar entries.
+          * Day-cell episode posters +50% (only in calendar cells).
+          * Larger bold date, softened today highlight.
       - Shows:
-          * Show card posters reverted to original compact size.
+          * Card posters compact (pre-50% size).
+          * Poster + title → Show popup (P1).
+          * Current Season line → Season popup (P2).
       - Popups:
-          * Show (P1) includes poster at compact size.
-          * Season (P2) includes show poster at compact size.
-          * Episode (P3) includes show poster at compact size.
-          * Movie (P4) includes poster at compact size.
-      - No layout change to data.json expectations.
+          * P1 Show: poster, seasons list with season descriptions.
+          * P2 Season: poster, all episodes incl. TBA, runtime, icons.
+          * P3 Episode: poster, runtime, icons.
+          * P4 Movie: poster, status, runtime, icons.
+      - Movies:
+          * Title/date sorting + status labels.
+      - Live TV:
+          * Skeleton grid using logos; no EPG yet.
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -64,7 +71,6 @@
     a:hover { text-decoration: underline; }
 
     /* Sticky global header */
-
     .app-header-wrap {
       position: sticky;
       top: 0;
@@ -113,7 +119,6 @@
     .view.active { display: block; }
 
     /* Calendar */
-
     .sticky-header {
       position: sticky;
       top: 64px;
@@ -175,11 +180,12 @@
       padding: 2px 4px;
       display: flex;
       align-items: center;
+      justify-content: flex-start;
       gap: 4px;
     }
 
     .day-date {
-      font-size: calc(16px * var(--font-scale)); /* bigger and bold */
+      font-size: calc(16px * var(--font-scale));
       font-weight: 700;
     }
 
@@ -198,7 +204,7 @@
     .ep-item,
     .movie-item {
       display: grid;
-      grid-template-columns: 36px 1fr; /* calendar posters enlarged here */
+      grid-template-columns: 36px 1fr; /* poster +50% vs old 24px */
       gap: 3px;
       align-items: flex-start;
       padding: 2px;
@@ -265,7 +271,6 @@
     }
 
     /* Shows / Movies */
-
     .filters {
       position: sticky;
       top: 64px;
@@ -319,7 +324,7 @@
       gap: 2px;
     }
 
-    /* Show/movie card poster: revert to compact size */
+    /* Compact posters for Show/Movie cards */
     .poster-md {
       width: 100%;
       height: 120px;
@@ -342,7 +347,6 @@
     }
 
     /* Live TV */
-
     .livetv-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill,minmax(150px,1fr));
@@ -377,7 +381,6 @@
     }
 
     /* Popups */
-
     .overlay-backdrop {
       position: fixed;
       inset: 0;
@@ -462,15 +465,12 @@
       color: var(--muted);
     }
 
-    /* Poster in popups: compact, consistent */
-    .poster-popup {
-      width: 110px;
-      height: 165px;
+    .popup-poster {
+      width: 140px;
       border-radius: 8px;
       object-fit: cover;
       background:#111827;
-      margin: 2px 8px 2px 0;
-      float: left;
+      margin: 2px 0 4px;
     }
 
     .hidden { display: none !important; }
@@ -479,7 +479,7 @@
 <body>
   <div class="app-header-wrap">
     <h1>My TV Hub</h1>
-    <div id="meta" class="meta-line">Loading versions &amp; data…</div>
+    <div id="meta" class="meta-line">Loading…</div>
     <div class="nav">
       <button class="nav-btn active" data-view="calendar">Calendar</button>
       <button class="nav-btn" data-view="shows">Shows</button>
@@ -511,16 +511,18 @@
   <!-- SHOWS VIEW -->
   <div id="view-shows" class="view">
     <div class="filters">
+      <!-- Row 1: Genre -->
       <div class="filter-row" id="shows-genre-row">
         <span class="filter-label">Genre:</span>
       </div>
+      <!-- Row 2: Sort / Status / Watched / When -->
       <div class="filter-row" id="shows-other-row">
         <span class="filter-label">Filters:</span>
         <button class="pill active" data-shows-sort="az">A–Z</button>
         <button class="pill" data-shows-sort="za">Z–A</button>
-        <button class="pill active" data-shows-status="all">All status</button>
-        <button class="pill active" data-shows-watched="all">All</button>
-        <button class="pill active" data-shows-when="all">Any time</button>
+        <button class="pill" data-shows-status="all">All status</button>
+        <button class="pill" data-shows-watched="all">All</button>
+        <button class="pill" data-shows-when="all">Any time</button>
       </div>
     </div>
     <div id="shows-grid" class="grid"></div>
@@ -537,8 +539,8 @@
         <button class="pill active" data-movies-sort="title">Title</button>
         <button class="pill" data-movies-sort="date">Release date</button>
         <button class="pill active" data-movies-status="all">All status</button>
-        <button class="pill active" data-movies-watched="all">All</button>
-        <button class="pill active" data-movies-when="all">Any time</button>
+        <button class="pill" data-movies-watched="all">All</button>
+        <button class="pill" data-movies-when="all">Any time</button>
       </div>
     </div>
     <div id="movies-grid" class="grid"></div>
@@ -562,9 +564,9 @@
   <!-- CONFIG VIEW (inline helper) -->
   <div id="view-config" class="view">
     <p class="sub">
-      Full settings:
+      Full settings live in
       <a href="config.html" target="_blank">config.html</a>.
-      Theme &amp; font here affect only this device.
+      Theme &amp; font size here apply locally on this device.
     </p>
     <div style="margin-top:6px;">
       <span class="filter-label">Theme:</span>
@@ -582,6 +584,7 @@
   </div>
 
   <script>
+    // ---------- constants ----------
     const ICONS = {
       tmdb: '../image/services_logos/TMDB_icon.png',
       vidsrc: '../image/services_logos/VidSrc_icon.png',
@@ -628,7 +631,7 @@
     let DATA = null;
     let currentMonth = new Date();
 
-    // -------- meta line --------
+    // ---------- meta ----------
     function renderMeta() {
       const metaEl = document.getElementById('meta');
       if (!DATA) {
@@ -640,11 +643,11 @@
       const movies = (DATA.meta && DATA.meta.movies) || (DATA.movies || []).length || 0;
       const live = (DATA.meta && DATA.meta.live_tv) || (DATA.live_tv || []).length || 0;
       metaEl.textContent =
-        `index.html: v2.8.07 • config.html: v1.4.3 • ` +
+        `index.html: v2.8.08 • config.html: v1.4.4 • ` +
         `Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
     }
 
-    // -------- nav --------
+    // ---------- nav ----------
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
@@ -655,7 +658,7 @@
       });
     });
 
-    // -------- theme / font --------
+    // ---------- theme & font ----------
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
       localStorage.setItem('tvhub_theme', t);
@@ -670,6 +673,7 @@
       const lbl = document.getElementById('cfg-font-label');
       if (lbl) lbl.textContent = v.toFixed(2) + 'x';
     }
+
     (function initThemeFont() {
       applyTheme(localStorage.getItem('tvhub_theme') || 'dark');
       const fs = parseFloat(localStorage.getItem('tvhub_fontscale') || '1.0') || 1.0;
@@ -677,6 +681,7 @@
       const slider = document.getElementById('cfg-font');
       if (slider) slider.value = fs.toFixed(2);
     })();
+
     if (document.getElementById('cfg-dark')) {
       document.getElementById('cfg-dark').onclick = () => applyTheme('dark');
       document.getElementById('cfg-light').onclick = () => applyTheme('light');
@@ -684,7 +689,7 @@
         applyFontScale(parseFloat(e.target.value));
     }
 
-    // -------- overlay plumbing --------
+    // ---------- overlay ----------
     const overlayBackdrop = document.getElementById('overlay-backdrop');
     const overlayEl = document.getElementById('overlay');
 
@@ -692,12 +697,15 @@
       overlayBackdrop.classList.remove('active');
       overlayEl.innerHTML = '';
     }
+
     overlayBackdrop.addEventListener('click', e => {
       if (e.target === overlayBackdrop) closeOverlay();
     });
+
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') closeOverlay();
     });
+
     function openOverlay(html) {
       overlayEl.innerHTML = '';
       overlayEl.appendChild(el(html));
@@ -706,180 +714,11 @@
       if (closeBtn) closeBtn.onclick = closeOverlay;
     }
 
-    // -------- popups --------
-    function showShowPopup(show) {
-      if (!show) return;
-      const poster = show.poster_path
-        ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
-      const seasons = show.seasons || [];
-      const currentSeason = seasons.slice().sort((a,b)=>b.season_number-a.season_number)[0];
-      const currentLine = currentSeason
-        ? `Current Season: ${currentSeason.season_number} • ${(currentSeason.episodes || []).length} episodes`
-        : '';
-      const netHtml = (show.networks || []).map(n => {
-        const src = getServiceLogo(n);
-        return src
-          ? `<img src="${src}" class="net-logo" alt="${n}">`
-          : `<span>${n}</span>`;
-      }).join(' ');
-
-      const seasonsHtml = seasons.map(s => {
-        const epCount = (s.episodes || []).length;
-        const label = `Season ${s.season_number} • ${epCount} ep`;
-        const desc = s.overview or '' ? ` – ${s.overview}` : '';
-        return `<div class="ep-row" onclick="window.__openSeason(${show.show_id}, ${s.season_number})">
-          <div class="ep-row-header">
-            <div class="ep-row-title">${label}</div>
-          </div>
-          <div class="ep-row-meta">${desc}</div>
-        </div>`;
-      }).join('');
-
-      openOverlay(`
-        <div>
-          <div class="overlay-header">
-            <div>
-              <div class="overlay-title">
-                ${show.name}
-                ${show.links?.tmdb
-                  ? `<a href="${show.links.tmdb}" target="_blank">
-                       <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
-                     </a>`
-                  : ''}
-              </div>
-              <div class="overlay-sub">
-                ${currentLine}<br>
-                <span class="net-logos">${netHtml}</span><br>
-                ${(show.genres || []).join(', ')} ${show.status ? '• ' + show.status : ''}
-              </div>
-            </div>
-            <button class="overlay-close">✕</button>
-          </div>
-          ${poster ? `<img src="${poster}" alt="" class="poster-popup">` : ''}
-          <div class="overlay-sub">${show.overview || ''}</div>
-          <div class="overlay-section-title">Seasons</div>
-          <div class="ep-list">
-            ${seasonsHtml || '<div class="ep-row-meta">No seasons data.</div>'}
-          </div>
-        </div>
-      `);
-    }
-
-    function showSeasonPopup(showId, seasonNum) {
-      const show = (DATA.shows || []).find(s => s.show_id === showId);
-      if (!show) return;
-      const season = (show.seasons || []).find(s => s.season_number === seasonNum);
-      if (!season) return;
-
-      const poster = show.poster_path
-        ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
-
-      const epsHtml = (season.episodes || []).map(ep => {
-        const code = `S${String(seasonNum).padStart(2,'0')}E${String(ep.episode_number).padStart(2,'0')}`;
-        const air = ep.air_date || 'TBA';
-        const rt = formatRuntime(ep.runtime);
-        const desc = ep.overview || '';
-        const icons = buildEpisodeIconRow(show.show_id, seasonNum, ep.episode_number);
-        return `<div class="ep-row">
-          <div class="ep-row-header">
-            <div class="ep-row-title"
-                 onclick="window.__openEpisode(${show.show_id}, ${seasonNum}, ${ep.episode_number})">
-              ${code} · ${ep.name || 'TBA'}
-            </div>
-            <div class="ep-row-meta">${air}${rt ? ' • ' + rt : ''}</div>
-          </div>
-          <div class="ep-row-meta">${desc}</div>
-          <div class="icon-row">${icons}</div>
-        </div>`;
-      }).join('');
-
-      openOverlay(`
-        <div>
-          <div class="overlay-header">
-            <div>
-              <div class="overlay-title">${show.name} — Season ${seasonNum}</div>
-              <div class="overlay-sub">${season.overview || ''}</div>
-            </div>
-            <button class="overlay-close">✕</button>
-          </div>
-          ${poster ? `<img src="${poster}" alt="" class="poster-popup">` : ''}
-          <div class="overlay-section-title">Episodes</div>
-          <div class="ep-list">${epsHtml || '<div class="ep-row-meta">No episodes.</div>'}</div>
-        </div>
-      `);
-    }
-
-    function showEpisodePopup(showId, seasonNum, epNum) {
-      const show = (DATA.shows || []).find(s => s.show_id === showId);
-      const season = show && (show.seasons || []).find(s => s.season_number === seasonNum);
-      const ep = season && (season.episodes || []).find(e => e.episode_number === epNum);
-      if (!show || !season || !ep) return;
-
-      const poster = show.poster_path
-        ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
-      const code = `S${String(seasonNum).padStart(2,'0')}E${String(epNum).padStart(2,'0')}`;
-      const air = ep.air_date || 'TBA';
-      const rt = formatRuntime(ep.runtime);
-      const icons = buildEpisodeIconRow(show.show_id, seasonNum, epNum);
-
-      openOverlay(`
-        <div>
-          <div class="overlay-header">
-            <div>
-              <div class="overlay-title">${show.name} — ${code}</div>
-              <div class="overlay-sub">${air}${rt ? ' • ' + rt : ''}</div>
-            </div>
-            <button class="overlay-close">✕</button>
-          </div>
-          ${poster ? `<img src="${poster}" alt="" class="poster-popup">` : ''}
-          <div class="overlay-sub">${ep.overview || 'No description.'}</div>
-          <div class="overlay-section-title">Watch</div>
-          <div class="icon-row">${icons}</div>
-        </div>
-      `);
-    }
-
-    function showMoviePopup(movieId) {
-      const mv = (DATA.movies || []).find(m => m.movie_id === movieId);
-      if (!mv) return;
-      const poster = mv.poster_path
-        ? `https://image.tmdb.org/t/p/w342${mv.poster_path}` : '';
-      const rd = mv.release_date || 'TBA';
-      const rt = formatRuntime(mv.runtime);
-      const status = labelMovieStatus(mv);
-      const icons = buildMovieIconRow(mv);
-      const coll = mv.belongs_to_collection && mv.belongs_to_collection.name
-        ? `<div class="overlay-section-title">Collection</div>
-           <div class="overlay-sub">${mv.belongs_to_collection.name}</div>`
-        : '';
-
-      openOverlay(`
-        <div>
-          <div class="overlay-header">
-            <div>
-              <div class="overlay-title">${mv.name}</div>
-              <div class="overlay-sub">
-                ${rd}${status ? ' • ' + status : ''}${rt ? ' • ' + rt : ''}
-              </div>
-            </div>
-            <button class="overlay-close">✕</button>
-          </div>
-          ${poster ? `<img src="${poster}" alt="" class="poster-popup">` : ''}
-          <div class="overlay-sub">${mv.overview || ''}</div>
-          <div class="overlay-section-title">Watch</div>
-          <div class="icon-row">${icons}</div>
-          ${coll}
-        </div>
-      `);
-    }
-
-    window.__openSeason = showSeasonPopup;
-    window.__openEpisode = showEpisodePopup;
-
+    // ---------- icon row builders ----------
     function buildEpisodeIconRow(showId, season, ep) {
       const tmdb = `https://www.themoviedb.org/tv/${showId}/season/${season}/episode/${ep}`;
       const vids = `https://vidsrc.net/embed/tv/${showId}/${season}/${ep}`;
-      const vea = `https://player.videasy.net/tv/${showId}/${season}/${ep}`;
+      const vea  = `https://player.videasy.net/tv/${showId}/${season}/${ep}`;
       return `
         <a class="ico-link" href="${tmdb}" target="_blank" title="TMDB">
           <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
@@ -897,7 +736,7 @@
       const id = mv.movie_id;
       const tmdb = `https://www.themoviedb.org/movie/${id}`;
       const vids = `https://vidsrc.net/embed/movie/${id}`;
-      const vea = `https://player.videasy.net/movie/${id}`;
+      const vea  = `https://player.videasy.net/movie/${id}`;
       return `
         <a class="ico-link" href="${tmdb}" target="_blank" title="TMDB">
           <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
@@ -911,6 +750,188 @@
       `;
     }
 
+    // ---------- popup builders ----------
+    function showShowPopup(show) {
+      if (!show) return;
+      const poster = show.poster_path
+        ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
+      const seasons = show.seasons || [];
+      const currentSeason = seasons.slice().sort((a,b)=>b.season_number-a.season_number)[0];
+      const epCount = currentSeason ? (currentSeason.episodes || []).length : 0;
+      const currentLine = currentSeason
+        ? `Current Season: ${currentSeason.season_number} • ${epCount} episodes`
+        : '';
+      const netHtml = (show.networks || []).map(n => {
+        const src = getServiceLogo(n);
+        return src
+          ? `<img src="${src}" class="net-logo" alt="${n}">`
+          : `<span>${n}</span>`;
+      }).join(' ');
+
+      const seasonsHtml = seasons.map(s => {
+        const c = (s.episodes || []).length;
+        const desc = s.overview ? s.overview : '';
+        return `
+          <div class="ep-row"
+               onclick="window.__openSeason(${show.show_id}, ${s.season_number})">
+            <div class="ep-row-header">
+              <div class="ep-row-title">
+                Season ${s.season_number} • ${c} episodes
+              </div>
+            </div>
+            <div class="ep-row-meta">${desc}</div>
+          </div>
+        `;
+      }).join('');
+
+      openOverlay(`
+        <div>
+          <div class="overlay-header">
+            <div>
+              <div class="overlay-title">
+                ${show.name}
+                ${show.links && show.links.tmdb
+                  ? `<a href="${show.links.tmdb}" target="_blank">
+                       <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
+                     </a>`
+                  : ''}
+              </div>
+              <div class="overlay-sub">
+                ${currentLine}<br>
+                <span class="net-logos">${netHtml}</span><br>
+                ${(show.genres || []).join(', ')} ${show.status ? '• ' + show.status : ''}
+              </div>
+            </div>
+            <button class="overlay-close">✕</button>
+          </div>
+          ${poster ? `<img src="${poster}" alt="" class="popup-poster">` : ''}
+          <div class="overlay-sub">${show.overview || ''}</div>
+          <div class="overlay-section-title">Seasons</div>
+          <div class="ep-list">
+            ${seasonsHtml || '<div class="ep-row-meta">No seasons data.</div>'}
+          </div>
+        </div>
+      `);
+    }
+
+    function showSeasonPopup(showId, seasonNum) {
+      const show = (DATA.shows || []).find(s => s.show_id === showId);
+      if (!show) return;
+      const season = (show.seasons || []).find(s => s.season_number === seasonNum);
+      if (!season) return;
+      const poster = show.poster_path
+        ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
+
+      const epsHtml = (season.episodes || []).map(ep => {
+        const code = `S${String(seasonNum).padStart(2,'0')}E${String(ep.episode_number).padStart(2,'0')}`;
+        const air = ep.air_date || 'TBA';
+        const rt = formatRuntime(ep.runtime);
+        const desc = ep.overview || '';
+        const icons = buildEpisodeIconRow(show.show_id, seasonNum, ep.episode_number);
+        return `
+          <div class="ep-row">
+            <div class="ep-row-header">
+              <div class="ep-row-title"
+                   onclick="window.__openEpisode(${show.show_id}, ${seasonNum}, ${ep.episode_number})">
+                ${code} · ${ep.name || 'TBA'}
+              </div>
+              <div class="ep-row-meta">${air}${rt ? ' • ' + rt : ''}</div>
+            </div>
+            <div class="ep-row-meta">${desc}</div>
+            <div class="icon-row">${icons}</div>
+          </div>
+        `;
+      }).join('');
+
+      openOverlay(`
+        <div>
+          <div class="overlay-header">
+            <div>
+              <div class="overlay-title">${show.name} — Season ${seasonNum}</div>
+              <div class="overlay-sub">${season.overview || ''}</div>
+            </div>
+            <button class="overlay-close">✕</button>
+          </div>
+          ${poster ? `<img src="${poster}" alt="" class="popup-poster">` : ''}
+          <div class="overlay-section-title">Episodes</div>
+          <div class="ep-list">
+            ${epsHtml || '<div class="ep-row-meta">No episodes.</div>'}
+          </div>
+        </div>
+      `);
+    }
+
+    function showEpisodePopup(showId, seasonNum, epNum) {
+      const show = (DATA.shows || []).find(s => s.show_id === showId);
+      const season = show && (show.seasons || []).find(s => s.season_number === seasonNum);
+      const ep = season && (season.episodes || []).find(e => e.episode_number === epNum);
+      if (!show || !season || !ep) return;
+
+      const poster = show.poster_path
+        ? `https://image.tmdb.org/t/p/w342${show.poster_path}` : '';
+
+      const code = `S${String(seasonNum).padStart(2,'0')}E${String(epNum).padStart(2,'0')}`;
+      const air = ep.air_date || 'TBA';
+      const rt = formatRuntime(ep.runtime);
+      const icons = buildEpisodeIconRow(show.show_id, seasonNum, epNum);
+
+      openOverlay(`
+        <div>
+          <div class="overlay-header">
+            <div>
+              <div class="overlay-title">${show.name} — ${code}</div>
+              <div class="overlay-sub">${air}${rt ? ' • ' + rt : ''}</div>
+            </div>
+            <button class="overlay-close">✕</button>
+          </div>
+          ${poster ? `<img src="${poster}" alt="" class="popup-poster">` : ''}
+          <div class="overlay-sub">${ep.overview || 'No description.'}</div>
+          <div class="overlay-section-title">Watch</div>
+          <div class="icon-row">${icons}</div>
+        </div>
+      `);
+    }
+
+    function showMoviePopup(movieId) {
+      const mv = (DATA.movies || []).find(m => m.movie_id === movieId);
+      if (!mv) return;
+      const poster = mv.poster_path
+        ? `https://image.tmdb.org/t/p/w342${mv.poster_path}` : '';
+      const rd = mv.release_date || 'TBA';
+      const rt = formatRuntime(mv.runtime);
+      const status = labelMovieStatus(mv);
+      const icons = buildMovieIconRow(mv);
+      const coll = mv.belongs_to_collection && mv.belongs_to_collection.name
+        ? `
+          <div class="overlay-section-title">Collection</div>
+          <div class="overlay-sub">${mv.belongs_to_collection.name}</div>
+        `
+        : '';
+
+      openOverlay(`
+        <div>
+          <div class="overlay-header">
+            <div>
+              <div class="overlay-title">${mv.name}</div>
+              <div class="overlay-sub">
+                ${rd}${status ? ' • ' + status : ''}${rt ? ' • ' + rt : ''}
+              </div>
+            </div>
+            <button class="overlay-close">✕</button>
+          </div>
+          ${poster ? `<img src="${poster}" alt="" class="popup-poster">` : ''}
+          <div class="overlay-sub">${mv.overview || ''}</div>
+          <div class="overlay-section-title">Watch</div>
+          <div class="icon-row">${icons}</div>
+          ${coll}
+        </div>
+      `);
+    }
+
+    window.__openSeason = showSeasonPopup;
+    window.__openEpisode = showEpisodePopup;
+
+    // ---------- movie status ----------
     function labelMovieStatus(mv) {
       const raw = (mv.status || '').toLowerCase();
       const today = new Date().toISOString().slice(0,10);
@@ -928,7 +949,7 @@
       return '';
     }
 
-    // -------- calendar build --------
+    // ---------- calendar ----------
     function buildCalendar() {
       if (!DATA) return;
       const grid = document.getElementById('cal-grid');
@@ -965,7 +986,7 @@
 
         const airStr = cellDate.toISOString().slice(0,10);
 
-        // episodes
+        // TV episodes
         (DATA.shows || []).forEach(show => {
           (show.seasons || []).forEach(season => {
             (season.episodes || []).forEach(ep => {
@@ -979,6 +1000,7 @@
                 return src ? `<img src="${src}" class="net-logo" alt="${n}">` : '';
               }).join('');
               const icons = buildEpisodeIconRow(show.show_id, season.season_number, ep.episode_number);
+
               const item = el(`
                 <div class="ep-item">
                   <img class="poster-sm"
@@ -988,7 +1010,9 @@
                   <div>
                     <div class="ep-title"
                          data-action="show"
-                         data-id="${show.show_id}">${show.name}</div>
+                         data-id="${show.show_id}">
+                      ${show.name}
+                    </div>
                     <div class="ep-meta">
                       <span class="ep-title"
                             data-action="ep"
@@ -1011,7 +1035,7 @@
           });
         });
 
-        // movies
+        // Movies
         (DATA.movies || []).forEach(mv => {
           if (!mv.release_date || mv.release_date !== airStr) return;
           const poster = mv.poster_path
@@ -1027,7 +1051,9 @@
               <div>
                 <div class="ep-title"
                      data-action="movie"
-                     data-id="${mv.movie_id}">${mv.name}</div>
+                     data-id="${mv.movie_id}">
+                  ${mv.name}
+                </div>
                 <div class="movie-meta">
                   ${(mv.genres || []).slice(0,2).join(', ')}${rt ? ' • ' + rt : ''}
                 </div>
@@ -1043,7 +1069,7 @@
         grid.appendChild(dayEl);
       }
 
-      // click wiring
+      // calendar click wiring
       grid.querySelectorAll('img.poster-sm[data-show]').forEach(img => {
         img.onclick = () => {
           const id = parseInt(img.dataset.show,10);
@@ -1094,13 +1120,13 @@
       buildCalendar();
     };
 
-    // -------- shows --------
+    // ---------- shows ----------
     function buildShows() {
       const grid = document.getElementById('shows-grid');
       const genreRow = document.getElementById('shows-genre-row');
+      const shows = (DATA.shows || []).slice();
       grid.innerHTML = '';
 
-      const shows = (DATA.shows || []).slice();
       const genres = new Set();
       shows.forEach(s => (s.genres || []).forEach(g => genres.add(g)));
 
@@ -1132,7 +1158,7 @@
             ? `Current Season: ${currentSeason.season_number} • ${(currentSeason.episodes || []).length} episodes`
             : '';
           const icons = `
-            ${show.links?.tmdb
+            ${show.links && show.links.tmdb
               ? `<a class="ico-link" href="${show.links.tmdb}" target="_blank">
                    <img src="${ICONS.tmdb}" class="ico" alt="TMDB">
                  </a>`
@@ -1202,13 +1228,14 @@
       apply();
     }
 
-    // -------- movies --------
+    // ---------- movies ----------
     function buildMovies() {
       const grid = document.getElementById('movies-grid');
       const genreRow = document.getElementById('movies-genre-row');
+      const moviesOther = document.getElementById('movies-other-row');
+      const movies = (DATA.movies || []).slice();
       grid.innerHTML = '';
 
-      const movies = (DATA.movies || []).slice();
       const genres = new Set();
       movies.forEach(m => (m.genres || []).forEach(g => genres.add(g)));
 
@@ -1218,16 +1245,18 @@
         genreRow.appendChild(el(`<button class="pill" data-movies-genre="${g}">${g}</button>`));
       });
 
+      moviesOther.querySelector('[data-movies-status="all"]').classList.add('active');
+
       function apply() {
         grid.innerHTML = '';
-        const activeGenreBtn = genreRow.querySelector('.pill.active[data-movies-genre]');
-        const gsel = activeGenreBtn ? activeGenreBtn.dataset.moviesGenre : 'all';
+        const gbtn = genreRow.querySelector('.pill.active[data-movies-genre]');
+        const gsel = gbtn ? gbtn.dataset.moviesGenre : 'all';
 
-        const sortBtn = document.querySelector('.pill.active[data-movies-sort]');
-        const sort = sortBtn ? sortBtn.dataset.moviesSort : 'title';
+        const sbtn = moviesOther.querySelector('.pill.active[data-movies-sort]');
+        const sort = sbtn ? sbtn.dataset.moviesSort : 'title';
 
-        const statusBtn = document.querySelector('.pill.active[data-movies-status]');
-        const ssel = statusBtn ? statusBtn.dataset.moviesStatus : 'all';
+        const stbtn = moviesOther.querySelector('.pill.active[data-movies-status]');
+        const ssel = stbtn ? stbtn.dataset.moviesStatus : 'all';
 
         let list = movies.slice();
         if (gsel !== 'all') {
@@ -1286,7 +1315,6 @@
         apply();
       });
 
-      const moviesOther = document.getElementById('movies-other-row');
       moviesOther.addEventListener('click', e => {
         const sBtn = e.target.closest('.pill[data-movies-sort]');
         if (sBtn) {
@@ -1308,7 +1336,7 @@
       apply();
     }
 
-    // -------- live tv (skeleton) --------
+    // ---------- live tv ----------
     function buildLiveTV() {
       const grid = document.getElementById('livetv-grid');
       grid.innerHTML = '';
@@ -1335,7 +1363,7 @@
       });
     }
 
-    // -------- data load --------
+    // ---------- load data ----------
     async function loadData() {
       try {
         const res = await fetch('../data/data.json', { cache: 'no-cache' });
