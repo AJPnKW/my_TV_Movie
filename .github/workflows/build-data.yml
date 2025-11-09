@@ -1,35 +1,24 @@
-# File: .github/workflows/build-data.yml
-# Project: my_TV_Movie
-# Version: v1.2.0 (2025-11-09)
-#
-# Purpose:
-#   Build data/data.json from tv_list.txt, movies_list.txt, live_tv_list.txt
-#   using scripts in /scripts, then deploy /web + /data via GitHub Pages.
-
 name: Build TV Data and Deploy
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */4 * * *'
+    - cron: "0 */4 * * *"
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-concurrency:
-  group: pages
-  cancel-in-progress: false
+env:
+  PYTHONUNBUFFERED: "1"
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-
-    # Required for deploy-pages@v4
-    environment:
-      name: github-pages
-
+    defaults:
+      run:
+        working-directory: .
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,13 +26,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
 
       - name: Build data.json
         env:
@@ -52,21 +40,41 @@ jobs:
           API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
           API_OMDB_KEY: ${{ secrets.API_OMDB_KEY }}
           API_TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_CLIENT_ID }}
-          TRAKT_PROFILES: ${{ secrets.TRAKT_PROFILES }}
+          API_TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_CLIENT_SECRET }}
+          API_TRAKT_TV_USER: ${{ secrets.API_TRAKT_TV_USER }}
         run: |
+          echo "Running fetch_tmdb.py from $(pwd)"
           python scripts/fetch_tmdb.py
-          python scripts/fetch_tvmaze.py || echo "[warn] tvmaze enrichment failed"
-          python scripts/fetch_omdb.py || echo "[warn] omdb enrichment failed"
-          python scripts/fetch_trakt.py || echo "[info] trakt not configured / skipped"
-          python scripts/sync_trakt.py || echo "[info] sync_trakt skipped or no trakt data"
-          python scripts/fetch_live_tv.py || echo "[info] live_tv not configured / skipped"
+          echo "Resulting data.json:"
+          python - << 'EOF'
+          import json, os
+          p = os.path.join("data", "data.json")
+          if not os.path.exists(p):
+              raise SystemExit("FATAL: data/data.json not created.")
+          with open(p, "r", encoding="utf-8") as f:
+              j = json.load(f)
+          shows = len(j.get("shows", []))
+          movies = len(j.get("movies", []))
+          print(f"SUMMARY: shows={shows}, movies={movies}")
+          if shows == 0 and movies == 0:
+              raise SystemExit("FATAL: No shows and no movies in data.json.")
+          EOF
 
-      - name: Upload Pages artifact
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Deploy repo root so /web and /data are both published
-          path: ./
+          path: .
 
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

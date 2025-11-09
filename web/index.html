@@ -4,42 +4,49 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.10 (2025-11-10 05:10 EST)
+    Version: v2.8.11 (2025-11-10 23:15 EST)
 
-    Includes:
-      - Single-page hub: Calendar / Shows / Movies / Live TV / Config.
-      - Sticky global header.
-      - Meta line under title:
-          index.html + config.html versions + Data built + counts.
+    Key points:
+      - Single-page app:
+          Calendar / Shows / Movies / Live TV / Config
+      - Sticky global header
+      - Meta line:
+          index.html + config.html versions + Data built + counts
       - Calendar:
-          * Proper sticky month header.
-          * Day cell: larger bold date; header strip shading.
-          * Episode/movie posters ~50% larger than original (calendar ONLY).
-          * Click show name/poster → Show popup (P1).
-          * Click ep code/title → Episode popup (P3).
-          * Runtime displayed when available.
+          * Month header sticky
+          * Day cells with header strip
+          * Date text larger & bold
+          * Calendar posters: +50% size (episode/movie entries)
+          * Show poster/title → Show popup (P1)
+          * Episode code/name → Episode popup (P3)
+          * Episode runtime shown when present
       - Shows:
-          * Poster size reverted to compact card style.
-          * Poster + title → Show popup (P1).
-          * "Current Season" line → Season popup (P2).
+          * Posters reverted to compact size
+          * Poster + title → Show popup (P1)
+          * Current Season line → Season popup (P2)
       - Movies:
           * Filters:
-              Status: All / In Theatres / Released / In Production / Announced.
-              Sort: Title / Release date.
-              Watched: stub (no-op yet, UI only).
-          * Uses simple heuristic to label statuses.
-      - Popups:
-          * P1 Show: poster (compact), current season line, network logos, seasons list.
-          * P2 Season: poster (compact), all episodes incl TBA, runtime, icons.
-          * P3 Episode: poster (compact), runtime, icons.
-          * P4 Movie: poster (compact), status, runtime, icons, collection.
-      - Config view:
+              Status: All / In Theatres / Released / In Production / Announced
+              Sort: Title / Release date
+              Watched: UI stub (no-op yet)
+          * Uses 4-bucket status mapping
+          * Movie cards compact; runtime + icons
+      - Popups (P1–P4):
+          * Compact posters
+          * All episodes incl TBA
+          * TMDB / VidSrc / Videasy icons (logo-based)
+      - Config:
           * 6.1 Display
           * 6.2 Maintenance Shortcuts
           * 6.3 Integration Info
           * 6.4 Edit Helpers
+          * 6.5 Debug checklist
       - Live TV:
-          * Logo-based channel grid skeleton (no EPG yet).
+          * Logo grid skeleton (no EPG yet)
+
+    Note:
+      - All section blocks are labeled with HTML comments (6.1–6.5, etc.)
+      - Non-calendar posters reduced by ~1/3 vs previous build.
   -->
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -57,7 +64,7 @@
       --today-ring: #3b82f6;
       --danger: #f97316;
       --font-scale: 1.0;
-      --side-pad: 40px; /* wider for TV overscan */
+      --side-pad: 40px; /* wider for overscan on TVs */
     }
     :root[data-theme="light"] {
       --bg: #f3f4f6;
@@ -85,7 +92,7 @@
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    /* Sticky global header */
+    /* 1.1 Global Header ----------------------------------------------------- */
 
     .app-header-wrap {
       position: sticky;
@@ -134,7 +141,7 @@
     .view { display: none; }
     .view.active { display: block; }
 
-    /* Sticky section headers */
+    /* Shared sticky area (Calendar/Filters) -------------------------------- */
 
     .sticky-header,
     .filters {
@@ -145,7 +152,7 @@
       background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0.0));
     }
 
-    /* Calendar */
+    /* 2. Calendar View ------------------------------------------------------ */
 
     .cal-header {
       display: flex;
@@ -225,12 +232,12 @@
       opacity: 0.25;
     }
 
-    /* Calendar entries: +50% poster size vs original */
+    /* 2.3 Calendar entries: posters +50% vs original ------------------------ */
 
     .ep-item,
     .movie-item {
       display: grid;
-      grid-template-columns: 36px 1fr; /* 24px -> 36px */
+      grid-template-columns: 36px 1fr; /* calendar posters larger */
       gap: 3px;
       align-items: flex-start;
       padding: 2px;
@@ -296,7 +303,7 @@
       display:block;
     }
 
-    /* Shows / Movies grids */
+    /* 3. Shows / Movies grids ----------------------------------------------- */
 
     .filter-row {
       display: flex;
@@ -343,11 +350,11 @@
       gap: 2px;
     }
 
-    /* Reverted compact poster for cards & popups */
+    /* 3.2 Show card poster: compact (reduced ~1/3) -------------------------- */
 
     .poster-md {
       width: 100%;
-      height: 110px; /* compact */
+      height: 72px; /* compact; previously 110px */
       border-radius: 6px;
       object-fit: cover;
       background:#111827;
@@ -366,7 +373,7 @@
       color: var(--muted);
     }
 
-    /* Live TV */
+    /* 5. Live TV ------------------------------------------------------------ */
 
     .livetv-grid {
       display: grid;
@@ -401,7 +408,7 @@
       color: var(--muted);
     }
 
-    /* Popups */
+    /* 7. Popups (P1–P4) ----------------------------------------------------- */
 
     .overlay-backdrop {
       position: fixed;
@@ -412,9 +419,8 @@
       justify-content: center;
       z-index: 1000;
     }
-    .overlay-backdrop.active {
-      display: flex;
-    }
+    .overlay-backdrop.active { display: flex; }
+
     .overlay {
       background: var(--card);
       border-radius: 14px;
@@ -425,6 +431,7 @@
       overflow-y: auto;
       box-shadow: 0 18px 40px rgba(0,0,0,0.9);
     }
+
     .overlay-header {
       display: flex;
       justify-content: space-between;
@@ -432,14 +439,17 @@
       align-items: flex-start;
       margin-bottom: 4px;
     }
+
     .overlay-title {
       font-size: calc(14px * var(--font-scale));
       font-weight: 600;
     }
+
     .overlay-sub {
       font-size: calc(9px * var(--font-scale));
       color: var(--muted);
     }
+
     .overlay-close {
       cursor: pointer;
       font-size: 16px;
@@ -450,11 +460,13 @@
       color: #ffffff;
       border: none;
     }
+
     .overlay-section-title {
       margin-top: 4px;
       font-size: calc(9px * var(--font-scale));
       font-weight: 600;
     }
+
     .ep-list {
       margin-top: 2px;
       display: flex;
@@ -462,6 +474,7 @@
       gap: 2px;
       font-size: calc(8px * var(--font-scale));
     }
+
     .ep-row {
       padding: 2px 3px;
       border-radius: 4px;
@@ -473,22 +486,27 @@
     :root[data-theme="light"] .ep-row {
       background: rgba(229,231,235,0.98);
     }
+
     .ep-row-header {
       display: flex;
       justify-content: space-between;
       gap: 4px;
     }
+
     .ep-row-title {
       font-weight: 600;
       cursor: pointer;
     }
+
     .ep-row-meta {
       font-size: inherit;
       color: var(--muted);
     }
 
+    /* Popup posters: compact (reduced ~1/3) -------------------------------- */
+
     .popup-poster {
-      width: 110px; /* compact poster for P1–P4 */
+      width: 80px; /* compact vs previous 110px */
       border-radius: 8px;
       object-fit: cover;
       background:#111827;
@@ -499,6 +517,7 @@
   </style>
 </head>
 <body>
+  <!-- 1. App Shell / Header ------------------------------------------------- -->
   <div class="app-header-wrap">
     <h1>My TV Hub</h1>
     <div id="meta" class="meta-line">Loading…</div>
@@ -511,7 +530,7 @@
     </div>
   </div>
 
-  <!-- CALENDAR VIEW -->
+  <!-- 2. CALENDAR VIEW ------------------------------------------------------ -->
   <div id="view-calendar" class="view active">
     <div class="sticky-header">
       <div class="cal-header">
@@ -523,21 +542,21 @@
         </div>
       </div>
       <div class="cal-weekdays">
-        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div>
-        <div>Thu</div><div>Fri</div><div>Sat</div>
+        <div>Sun</div><div>Mon</div><div>Tue</div>
+        <div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
       </div>
     </div>
     <div id="cal-grid" class="cal-grid"></div>
   </div>
 
-  <!-- SHOWS VIEW -->
+  <!-- 3. SHOWS VIEW --------------------------------------------------------- -->
   <div id="view-shows" class="view">
     <div class="filters">
-      <!-- Row 1: Genre -->
+      <!-- 3.1.1 Genre filter row -->
       <div class="filter-row" id="shows-genre-row">
         <span class="filter-label">Genre:</span>
       </div>
-      <!-- Row 2: Sort / Status / Watched / When (Watched/When = future wiring) -->
+      <!-- 3.1.2+ Sort / Status / Watched / When -->
       <div class="filter-row" id="shows-other-row">
         <span class="filter-label">Filters:</span>
         <button class="pill active" data-shows-sort="az">A–Z</button>
@@ -550,14 +569,14 @@
     <div id="shows-grid" class="grid"></div>
   </div>
 
-  <!-- MOVIES VIEW -->
+  <!-- 4. MOVIES VIEW -------------------------------------------------------- -->
   <div id="view-movies" class="view">
     <div class="filters">
-      <!-- Row 1: Genre -->
+      <!-- 4.1.1 Genre -->
       <div class="filter-row" id="movies-genre-row">
         <span class="filter-label">Genre:</span>
       </div>
-      <!-- Row 2: Status / Sort / Watched (future) -->
+      <!-- 4.1.2 Status / 4.1.3 Sort / 4.1.4 Watched stub -->
       <div class="filter-row" id="movies-other-row">
         <span class="filter-label">Filters:</span>
         <button class="pill active" data-movies-status="all">All</button>
@@ -565,17 +584,15 @@
         <button class="pill" data-movies-status="released">Released</button>
         <button class="pill" data-movies-status="in_production">In Production</button>
         <button class="pill" data-movies-status="announced">Announced</button>
-
         <button class="pill active" data-movies-sort="title">Title</button>
         <button class="pill" data-movies-sort="date">Release date</button>
-
         <button class="pill active" data-movies-watched="all">All</button>
       </div>
     </div>
     <div id="movies-grid" class="grid"></div>
   </div>
 
-  <!-- LIVE TV VIEW (skeleton) -->
+  <!-- 5. LIVE TV VIEW (skeleton) ------------------------------------------- -->
   <div id="view-livetv" class="view">
     <div class="filters">
       <div class="filter-row">
@@ -590,7 +607,7 @@
     <div id="livetv-grid" class="livetv-grid"></div>
   </div>
 
-  <!-- CONFIG VIEW -->
+  <!-- 6. CONFIG VIEW -------------------------------------------------------- -->
   <div id="view-config" class="view">
     <!-- 6.1 Display Settings -->
     <div class="card" style="margin-top:4px;">
@@ -620,7 +637,7 @@
         <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
           Build TV Data and Deploy
         </a><br>
-        • Secrets & variables:
+        • Secrets &amp; variables:
         <a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions" target="_blank">
           Settings → Secrets and variables → Actions
         </a><br>
@@ -635,55 +652,10 @@
     <div class="card" style="margin-top:6px;">
       <div class="filter-label">Integrations</div>
       <div class="sub" style="margin-top:4px;">
-        Uses TMDB (shows+movies), TVMaze (where enabled), OMDB (optional), Trakt (planned profiles).
-        Keys are provided via GitHub Repository secrets.
+        Uses TMDB (shows &amp; movies), TVMaze (where enabled), OMDB (optional),
+        Trakt (planned profiles). API keys are provided via GitHub Repository secrets.
       </div>
     </div>
-
-    <!-- 6.5 Debug: Why are movies/shows missing? -->
-    <div class="card" style="margin-top:6px;">
-      <div class="filter-label">Debug: data not showing</div>
-      <div class="sub" style="margin-top:4px;">
-        <b>Quick checklist when something disappears:</b><br><br>
-
-        1. <b>Check data.json</b><br>
-        • Open
-        <a href="../data/data.json" target="_blank">/data/data.json</a><br>
-        • Confirm there is a <code>"movies"</code> array and its length &gt; 0.<br>
-        • If <code>"movies": []</code> or missing, the issue is <i>build-side</i>, not the UI.<br><br>
-
-        2. <b>Validate source lists</b><br>
-        • TV:
-        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/tv_list.txt" target="_blank">
-          tv_list.txt
-        </a><br>
-        • Movies:
-        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/movies_list.txt" target="_blank">
-          movies_list.txt
-        </a><br>
-        • Rules: one entry per line, <code>name|tmdb_id</code>, comments start with <code>#</code>,
-          no separator bars or weird Unicode.<br><br>
-
-        3. <b>Check workflow run</b><br>
-        • Open
-        <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
-          Build TV Data and Deploy
-        </a><br>
-        • Last run must be green.<br>
-        • If it failed, read the log for:
-          missing secrets, HTTP errors from TMDB/TVMaze, or Python tracebacks.<br><br>
-
-        4. <b>Parser / wiring sanity</b><br>
-        • Confirm workflow calls:
-          <code>python scripts/fetch_tmdb.py</code> and reads <code>movies_list.txt</code> (not <code>movies.txt</code>).<br>
-        • Any change to file names or formats ⇒ update scripts and retry.<br><br>
-
-        5. <b>If UI still empty but data.json looks good</b><br>
-        • Check browser dev tools → Network → confirm <code>data.json</code> loads without 404/500.<br>
-        • Hard refresh on TV/desktop to clear cached JS/HTML.
-      </div>
-    </div>
-
 
     <!-- 6.4 Edit Helpers -->
     <div class="card" style="margin-top:6px;">
@@ -703,21 +675,53 @@
         </a> (if present)
       </div>
     </div>
+
+    <!-- 6.5 Debug: data not showing -->
+    <div class="card" style="margin-top:6px;">
+      <div class="filter-label">Debug: data not showing</div>
+      <div class="sub" style="margin-top:4px;">
+        1. <b>Check data.json</b><br>
+        • Open
+        <a href="../data/data.json" target="_blank">/data/data.json</a><br>
+        • Confirm <code>"shows"</code> and <code>"movies"</code> arrays have entries.<br><br>
+        2. <b>Validate input files</b><br>
+        • One entry per line.<br>
+        • TV:
+        <code>name|tmdb_show_id|season_spec|tvmaze_id(optional)</code><br>
+        • Movies:
+        <code>name|tmdb_movie_id</code><br>
+        • Lines starting with <code>#</code> are comments. No separator-only lines.<br><br>
+        3. <b>Check workflow</b><br>
+        • Last run of
+        <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
+          Build TV Data and Deploy
+        </a>
+        must be green.<br>
+        • If it failed: fix secrets / HTTP errors / Python errors and rerun.<br><br>
+        4. <b>Wiring sanity</b><br>
+        • Workflow must call <code>python scripts/fetch_tmdb.py</code> from repo root.<br>
+        • Script must read <code>tv_list.txt</code> and <code>movies_list.txt</code> in repo root.<br><br>
+        5. <b>If UI empty but data.json is OK</b><br>
+        • Open dev tools → Network → confirm <code>data.json</code> loads 200.<br>
+        • Hard refresh / clear cache on TV browser.
+      </div>
+    </div>
   </div>
 
-  <!-- POPUP OVERLAY -->
+  <!-- 7. POPUP OVERLAY ------------------------------------------------------ -->
   <div id="overlay-backdrop" class="overlay-backdrop">
     <div id="overlay" class="overlay"></div>
   </div>
 
   <script>
-    // ---------- constants & helpers ----------
-
+    // ---------- ICON PATHS --------------------------------------------------
     const ICONS = {
       tmdb: '../image/services_logos/TMDB_icon.png',
       vidsrc: '../image/services_logos/VidSrc_icon.png',
       videasy: '../image/services_logos/videasy_icon.png'
     };
+
+    // ---------- Helpers -----------------------------------------------------
 
     function slugLogo(name) {
       if (!name) return null;
@@ -759,7 +763,7 @@
     let DATA = null;
     let currentMonth = new Date();
 
-    // ---------- meta line ----------
+    // ---------- Meta line ---------------------------------------------------
 
     function renderMeta() {
       const metaEl = document.getElementById('meta');
@@ -772,11 +776,11 @@
       const movies = (DATA.meta && DATA.meta.movies) || (DATA.movies || []).length || 0;
       const live = (DATA.meta && DATA.meta.live_tv) || (DATA.live_tv || []).length || 0;
       metaEl.textContent =
-        `index.html: v2.8.10 • config.html: v1.4.4 • ` +
+        `index.html: v2.8.11 • config.html: v1.4.4 • ` +
         `Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
     }
 
-    // ---------- nav ----------
+    // ---------- Nav switching ----------------------------------------------
 
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -788,7 +792,7 @@
       });
     });
 
-    // ---------- theme & font ----------
+    // ---------- Theme & font ------------------------------------------------
 
     function applyTheme(t) {
       document.documentElement.setAttribute('data-theme', t);
@@ -823,7 +827,7 @@
         applyFontScale(parseFloat(e.target.value));
     }
 
-    // ---------- overlay ----------
+    // ---------- Overlay core -----------------------------------------------
 
     const overlayBackdrop = document.getElementById('overlay-backdrop');
     const overlayEl = document.getElementById('overlay');
@@ -849,7 +853,7 @@
       if (closeBtn) closeBtn.onclick = closeOverlay;
     }
 
-    // ---------- icon rows ----------
+    // ---------- Icon row builders ------------------------------------------
 
     function buildEpisodeIconRow(showId, season, ep) {
       const tmdb = `https://www.themoviedb.org/tv/${showId}/season/${season}/episode/${ep}`;
@@ -886,14 +890,13 @@
       `;
     }
 
-    // ---------- movie status mapping (4.1.2) ----------
+    // ---------- Movie status normalization ---------------------------------
 
     function labelMovieStatus(mv) {
       const raw = (mv.status || '').toLowerCase();
       const today = new Date().toISOString().slice(0,10);
       const rd = mv.release_date || '';
 
-      // Normalize into the four buckets.
       if (raw.includes('in production') || raw.includes('post production')) {
         return 'In Production';
       }
@@ -901,7 +904,6 @@
         return 'Announced';
       }
       if (raw.includes('released')) {
-        // Heuristic: recent = "In Theatres"
         if (rd && rd <= today) {
           const diffDays = (new Date(today) - new Date(rd)) / 86400000;
           if (diffDays >= 0 && diffDays <= 45) return 'In Theatres';
@@ -909,7 +911,6 @@
         return 'Released';
       }
 
-      // Fallbacks based on date only
       if (rd) {
         if (rd > today) return 'Announced';
         if (rd <= today) return 'Released';
@@ -917,7 +918,7 @@
       return '';
     }
 
-    // ---------- popups (P1–P4) ----------
+    // ---------- Popups P1–P4 -----------------------------------------------
 
     function showShowPopup(show) {
       if (!show) return;
@@ -1104,7 +1105,7 @@
     window.__openSeason = showSeasonPopup;
     window.__openEpisode = showEpisodePopup;
 
-    // ---------- Calendar builder ----------
+    // ---------- Calendar builder -------------------------------------------
 
     function buildCalendar() {
       if (!DATA) return;
@@ -1142,7 +1143,7 @@
 
         const airStr = cellDate.toISOString().slice(0,10);
 
-        // TV episodes
+        // Episodes
         (DATA.shows || []).forEach(show => {
           (show.seasons || []).forEach(season => {
             (season.episodes || []).forEach(ep => {
@@ -1225,7 +1226,7 @@
         grid.appendChild(dayEl);
       }
 
-      // Wiring (calendar)
+      // Wiring
       grid.querySelectorAll('img.poster-sm[data-show]').forEach(img => {
         img.onclick = () => {
           const id = parseInt(img.dataset.show,10);
@@ -1263,6 +1264,7 @@
       });
     }
 
+    // Calendar nav
     document.getElementById('cal-prev').onclick = () => {
       currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
       buildCalendar();
@@ -1276,7 +1278,7 @@
       buildCalendar();
     };
 
-    // ---------- shows grid ----------
+    // ---------- Shows grid --------------------------------------------------
 
     function buildShows() {
       const grid = document.getElementById('shows-grid');
@@ -1385,7 +1387,7 @@
       apply();
     }
 
-    // ---------- movies grid ----------
+    // ---------- Movies grid -------------------------------------------------
 
     function buildMovies() {
       const grid = document.getElementById('movies-grid');
@@ -1403,8 +1405,6 @@
         genreRow.appendChild(el(`<button class="pill" data-movies-genre="${g}">${g}</button>`));
       });
 
-      // Status/sort pills already in markup; just wire behavior.
-
       function apply() {
         grid.innerHTML = '';
 
@@ -1419,15 +1419,12 @@
 
         let list = movies.slice();
 
-        // Genre filter
         if (gsel !== 'all') {
           list = list.filter(m => (m.genres || []).includes(gsel));
         }
 
-        // Label statuses
         list.forEach(m => m._statusLabel = labelMovieStatus(m));
 
-        // Status filter
         if (ssel !== 'all') {
           const map = {
             in_theatres: 'In Theatres',
@@ -1439,7 +1436,6 @@
           list = list.filter(m => m._statusLabel === want);
         }
 
-        // Sort
         list.sort((a,b) => {
           if (sort === 'date') {
             const ad = a.release_date || '';
@@ -1449,7 +1445,6 @@
           return (a.name || '').localeCompare(b.name || '');
         });
 
-        // Render
         list.forEach(mv => {
           const poster = mv.poster_path
             ? `https://image.tmdb.org/t/p/w342${mv.poster_path}` : '';
@@ -1472,7 +1467,6 @@
           grid.appendChild(card);
         });
 
-        // Clicks
         grid.querySelectorAll('.poster-md[data-movie], .title-link[data-movie]').forEach(n => {
           n.onclick = () => {
             const id = parseInt(n.dataset.movie,10);
@@ -1499,7 +1493,6 @@
           apply();
           return;
         }
-
         const sBtn = e.target.closest('.pill[data-movies-sort]');
         if (sBtn) {
           moviesOther
@@ -1513,7 +1506,7 @@
       apply();
     }
 
-    // ---------- live tv skeleton ----------
+    // ---------- Live TV skeleton -------------------------------------------
 
     function buildLiveTV() {
       const grid = document.getElementById('livetv-grid');
@@ -1541,7 +1534,7 @@
       });
     }
 
-    // ---------- load data ----------
+    // ---------- Load data ---------------------------------------------------
 
     async function loadData() {
       try {
