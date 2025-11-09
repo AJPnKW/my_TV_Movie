@@ -640,6 +640,51 @@
       </div>
     </div>
 
+    <!-- 6.5 Debug: Why are movies/shows missing? -->
+    <div class="card" style="margin-top:6px;">
+      <div class="filter-label">Debug: data not showing</div>
+      <div class="sub" style="margin-top:4px;">
+        <b>Quick checklist when something disappears:</b><br><br>
+
+        1. <b>Check data.json</b><br>
+        • Open
+        <a href="../data/data.json" target="_blank">/data/data.json</a><br>
+        • Confirm there is a <code>"movies"</code> array and its length &gt; 0.<br>
+        • If <code>"movies": []</code> or missing, the issue is <i>build-side</i>, not the UI.<br><br>
+
+        2. <b>Validate source lists</b><br>
+        • TV:
+        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/tv_list.txt" target="_blank">
+          tv_list.txt
+        </a><br>
+        • Movies:
+        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/movies_list.txt" target="_blank">
+          movies_list.txt
+        </a><br>
+        • Rules: one entry per line, <code>name|tmdb_id</code>, comments start with <code>#</code>,
+          no separator bars or weird Unicode.<br><br>
+
+        3. <b>Check workflow run</b><br>
+        • Open
+        <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
+          Build TV Data and Deploy
+        </a><br>
+        • Last run must be green.<br>
+        • If it failed, read the log for:
+          missing secrets, HTTP errors from TMDB/TVMaze, or Python tracebacks.<br><br>
+
+        4. <b>Parser / wiring sanity</b><br>
+        • Confirm workflow calls:
+          <code>python scripts/fetch_tmdb.py</code> and reads <code>movies_list.txt</code> (not <code>movies.txt</code>).<br>
+        • Any change to file names or formats ⇒ update scripts and retry.<br><br>
+
+        5. <b>If UI still empty but data.json looks good</b><br>
+        • Check browser dev tools → Network → confirm <code>data.json</code> loads without 404/500.<br>
+        • Hard refresh on TV/desktop to clear cached JS/HTML.
+      </div>
+    </div>
+
+
     <!-- 6.4 Edit Helpers -->
     <div class="card" style="margin-top:6px;">
       <div class="filter-label">Edit source lists</div>
