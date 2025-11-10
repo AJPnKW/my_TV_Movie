@@ -4,16 +4,13 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.8.20 (2025-11-10)
-    Purpose:
-      - Single-page hub for Calendar / Shows / Movies / Live TV / Config.
-      - Uses data/data.json (built by .github/workflows/build-data.yml).
-      - TV-friendly (Chromecast / Shield / Android TV), DPAD-friendly.
-      - Fixes:
-          * Lock background when popup open.
-          * Scroll only inside popup (arrows, PgUp/PgDn, wheel).
-          * Prevent DPAD/Tab from escaping overlay.
-          * Make cards focusable (Enter/OK opens).
+    Version: v2.8.22 (2025-11-10)
+    Summary:
+      - Stable SPA hub for Calendar / Shows / Movies / Live TV / Config.
+      - Header + tabs sticky and simple (no numeric labels).
+      - Calendar, Shows, Movies all render from data/data.json.
+      - Popups: scrollable, focus-trapped, DPAD-friendly.
+      - TMDB / VidSrc / Videasy icons wired.
   -->
   <meta charset="UTF-8" />
   <title>My TV Hub</title>
@@ -27,18 +24,18 @@
       --accent: #1e88ff;
       --accent-soft: rgba(30,136,255,0.16);
       --accent-soft2: rgba(30,136,255,0.26);
-      --border-soft: rgba(255,255,255,0.10);
-      --border-strong: rgba(255,255,255,0.24);
+      --border-soft: rgba(255,255,255,0.12);
+      --border-strong: rgba(255,255,255,0.30);
       --text: #f7f7ff;
       --text-soft: #9ba4c4;
       --danger: #ff5370;
       --radius: 14px;
       --transition-fast: 0.18s ease-out;
-      --shadow-soft: 0 10px 26px rgba(0,0,0,0.5);
+      --shadow-soft: 0 10px 26px rgba(0,0,0,0.55);
       --font-scale: 1.0;
-      --poster-w: 120px;
-      --poster-h: 180px;
-      --poster-cal-w: 80px;
+      --poster-w: 110px;      /* show/movie card poster */
+      --poster-h: 165px;
+      --poster-cal-w: 80px;   /* calendar poster (slightly larger) */
       --poster-cal-h: 120px;
       --scrollbar: rgba(255,255,255,0.26);
     }
@@ -57,9 +54,7 @@
       --scrollbar: rgba(15,23,42,0.4);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html, body {
       margin: 0;
@@ -79,7 +74,6 @@
       flex-direction: column;
     }
 
-    /* When overlay open: lock background + disable pointer events */
     body.overlay-open {
       overflow: hidden;
     }
@@ -90,13 +84,8 @@
       pointer-events: auto;
     }
 
-    ::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb {
       background: var(--scrollbar);
       border-radius: 999px;
@@ -106,34 +95,22 @@
       color: var(--accent);
       text-decoration: none;
     }
-    a:hover {
-      text-decoration: underline;
-    }
-
-    /* 1. APP SHELL --------------------------------------------------------- */
+    a:hover { text-decoration: underline; }
 
     .app-wrap {
       max-width: 1920px;
       margin: 0 auto;
-      padding: 10px 24px 32px;
+      padding: 10px 32px 32px;
     }
 
-    /* 1.1 Global Header (sticky) */
-
+    /* 1.1 Global Header (sticky, simple) */
     .app-header-wrap {
       position: sticky;
       top: 0;
       z-index: 50;
-      padding: 10px 0 8px;
-      margin: 0 -24px 8px;
-      padding-left: 24px;
-      padding-right: 24px;
-      background: linear-gradient(
-        to bottom,
-        rgba(2,4,10,0.98),
-        rgba(2,4,10,0.94),
-        rgba(2,4,10,0.92)
-      );
+      margin: 0 -32px 10px;
+      padding: 10px 32px 8px;
+      background: rgba(2,4,10,0.97);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border-soft);
     }
@@ -141,12 +118,12 @@
     .app-header {
       display: flex;
       flex-wrap: wrap;
-      align-items: baseline;
-      gap: 10px 18px;
+      align-items: flex-end;
+      gap: 10px 20px;
     }
 
     .app-title {
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 700;
       letter-spacing: 0.03em;
     }
@@ -154,39 +131,44 @@
     .meta-line {
       font-size: 0.78rem;
       color: var(--text-soft);
+      margin-top: 2px;
     }
 
     .nav-tabs {
-      display: flex;
-      gap: 8px;
       margin-left: auto;
+      display: flex;
       flex-wrap: wrap;
+      gap: 6px;
     }
 
     .tab-btn {
-      padding: 6px 14px;
+      padding: 6px 16px;
       border-radius: 999px;
-      border: 1px solid transparent;
-      background: transparent;
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,0.02);
       color: var(--text-soft);
       cursor: pointer;
       font-size: 0.86rem;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
       transition: all var(--transition-fast);
       outline: none;
+      min-width: 88px;
     }
-    .tab-btn span {
-      font-size: 0.72rem;
-      opacity: 0.7;
+
+    .tab-btn:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
     }
+
     .tab-btn.active {
       background: var(--accent-soft2);
-      color: var(--accent);
       border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(30,136,255,0.18);
+      color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(30,136,255,0.22);
     }
+
     .tab-btn:focus-visible {
       outline: 2px solid var(--accent);
       outline-offset: 1px;
@@ -194,11 +176,9 @@
 
     .view {
       display: none;
-      margin-top: 8px;
+      margin-top: 4px;
     }
-    .view.active {
-      display: block;
-    }
+    .view.active { display: block; }
 
     .mut {
       color: var(--text-soft);
@@ -233,6 +213,10 @@
       cursor: pointer;
       margin-right: 4px;
       transition: all var(--transition-fast);
+    }
+    .btn:hover {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
     }
     .btn.active {
       background: var(--accent-soft2);
@@ -305,7 +289,8 @@
       align-items: baseline;
       gap: 4px;
     }
-    .title-line span.mut-id {
+
+    .mut-id {
       font-size: 0.7rem;
       color: var(--text-soft);
     }
@@ -317,6 +302,7 @@
       margin-top: 2px;
       flex-wrap: wrap;
     }
+
     .icon-link img {
       width: 20px;
       height: 20px;
@@ -331,25 +317,19 @@
       filter: drop-shadow(0 0 2px rgba(0,0,0,0.8));
     }
 
-    /* 2. CALENDAR ---------------------------------------------------------- */
+    /* 2. CALENDAR -------------------------------------------------------- */
 
-    .calendar-wrap {
-      margin-top: 4px;
-    }
+    .calendar-wrap { margin-top: 4px; }
 
     .cal-header {
       position: sticky;
-      top: 54px; /* under main header */
+      top: 52px;
       z-index: 40;
       display: flex;
       align-items: center;
       gap: 8px;
       padding: 6px 4px;
-      background: linear-gradient(
-        to bottom,
-        rgba(2,4,10,0.98),
-        rgba(2,4,10,0.94)
-      );
+      background: rgba(2,4,10,0.97);
       border-bottom: 1px solid var(--border-soft);
     }
 
@@ -373,7 +353,7 @@
     }
 
     .cal-cell {
-      min-height: 120px;
+      min-height: 130px;
       border-radius: 8px;
       background: var(--bg-soft);
       border: 1px solid var(--border-soft);
@@ -440,19 +420,9 @@
       font-size: 0.7rem;
     }
 
-    .cal-title {
-      font-weight: 600;
-    }
-
-    .cal-ep {
-      color: var(--text-soft);
-      font-size: 0.68rem;
-    }
-
-    .cal-runtime {
-      font-size: 0.66rem;
-      color: var(--text-soft);
-    }
+    .cal-title { font-weight: 600; }
+    .cal-ep { color: var(--text-soft); font-size: 0.68rem; }
+    .cal-runtime { font-size: 0.66rem; color: var(--text-soft); }
 
     .cal-icons {
       display: inline-flex;
@@ -467,7 +437,7 @@
       object-fit: contain;
     }
 
-    /* 6. CONFIG VIEW ------------------------------------------------------- */
+    /* 6. CONFIG VIEW ----------------------------------------------------- */
 
     .config-grid {
       display: grid;
@@ -489,7 +459,7 @@
       word-break: break-all;
     }
 
-    /* 7. POPUPS / OVERLAYS ------------------------------------------------ */
+    /* 7. POPUPS ---------------------------------------------------------- */
 
     #overlay-root {
       position: fixed;
@@ -501,9 +471,7 @@
       padding: 24px 10px 18px;
       z-index: 2000;
     }
-    #overlay-root.open {
-      display: flex;
-    }
+    #overlay-root.open { display: flex; }
 
     .overlay-inner {
       width: min(1200px, 100%);
@@ -513,7 +481,7 @@
       border: 1px solid var(--border-strong);
       box-shadow: 0 18px 42px rgba(0,0,0,0.85);
       padding: 10px;
-      overflow-y: auto; /* single scroll container */
+      overflow-y: auto;
       position: relative;
       scroll-behavior: smooth;
     }
@@ -562,8 +530,8 @@
     }
 
     .overlay-poster {
-      width: 140px;
-      height: 210px;
+      width: 120px;
+      height: 180px;
       border-radius: 10px;
       object-fit: cover;
       background: var(--bg-softer);
@@ -580,17 +548,12 @@
     }
 
     .overlay-title {
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 700;
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       align-items: baseline;
-    }
-
-    .mut-id {
-      font-size: 0.7rem;
-      color: var(--text-soft);
     }
 
     .overlay-sub {
@@ -605,6 +568,7 @@
       flex-wrap: wrap;
       margin-top: 2px;
     }
+
     .overlay-icons img {
       width: 20px;
       height: 20px;
@@ -667,17 +631,9 @@
     }
 
     @media (max-width: 768px) {
-      .overlay-content {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      .overlay-poster {
-        width: 120px;
-        height: 180px;
-      }
-      .cal-header {
-        top: 60px;
-      }
+      .overlay-content { flex-direction: column; }
+      .overlay-poster { width: 100px; height: 150px; }
+      .cal-header { top: 60px; }
     }
   </style>
 </head>
@@ -689,15 +645,15 @@
       <div>
         <div class="app-title">My TV Hub</div>
         <div id="meta-line" class="meta-line">
-          index.html: v2.8.20 • config.html: v1.4.4 • Data: loading...
+          index.html: v2.8.22 • config.html: v1.4.4 • Data built: n/a • Shows: n/a • Movies: n/a • LiveTV: 0
         </div>
       </div>
       <div class="nav-tabs" id="nav-tabs">
-        <button class="tab-btn active" data-view="calendar"><span>1</span>Calendar</button>
-        <button class="tab-btn" data-view="shows"><span>2</span>Shows</button>
-        <button class="tab-btn" data-view="movies"><span>3</span>Movies</button>
-        <button class="tab-btn" data-view="livetv"><span>4</span>Live&nbsp;TV</button>
-        <button class="tab-btn" data-view="config"><span>5</span>Config</button>
+        <button class="tab-btn active" data-view="calendar">Calendar</button>
+        <button class="tab-btn" data-view="shows">Shows</button>
+        <button class="tab-btn" data-view="movies">Movies</button>
+        <button class="tab-btn" data-view="livetv">Live TV</button>
+        <button class="tab-btn" data-view="config">Config</button>
       </div>
     </div>
   </div>
@@ -707,10 +663,9 @@
     <div class="calendar-wrap">
       <div class="cal-header">
         <button class="btn" id="cal-prev">◀ Prev</button>
-        <button class="btn" id="cal-today">● Today</button>
+        <button class="btn" id="cal-today">Today</button>
         <button class="btn" id="cal-next">Next ▶</button>
         <div class="cal-month" id="cal-month-label"></div>
-        <div class="mut">Episodes + movie releases by air date.</div>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
@@ -719,11 +674,8 @@
   <!-- 3. SHOWS VIEW -->
   <div id="view-shows" class="view">
     <div class="card">
-      <div class="section-title">Show Filters</div>
-      <div class="mut">Line 1: Genre</div>
-      <div id="shows-genre-filters"></div>
-      <div class="mut" style="margin-top:4px;">Line 2: Sort / Status</div>
-      <div id="shows-sort-status" style="margin-bottom:4px;"></div>
+      <div class="section-title">Shows</div>
+      <div class="mut">All tracked shows from tv_list.txt.</div>
     </div>
     <div class="shows-grid" id="shows-grid"></div>
   </div>
@@ -731,32 +683,29 @@
   <!-- 4. MOVIES VIEW -->
   <div id="view-movies" class="view">
     <div class="card">
-      <div class="section-title">Movie Filters</div>
-      <div class="mut">Genre / Status / Sort</div>
-      <div id="movies-filters"></div>
+      <div class="section-title">Movies</div>
+      <div class="mut">All tracked movies from movies_list.txt.</div>
     </div>
     <div class="movies-grid" id="movies-grid"></div>
   </div>
 
-  <!-- 5. LIVE TV VIEW (skeleton) -->
+  <!-- 5. LIVE TV VIEW (skeleton only) -->
   <div id="view-livetv" class="view">
     <div class="card">
-      <div class="section-title">Live TV (Preview)</div>
+      <div class="section-title">Live TV (preview)</div>
       <div class="mut">
-        Static channel grid using your logos. EPG/schedules will be a separate phase.
+        Channel grid skeleton. EPG integration will be wired in a later phase.
       </div>
     </div>
-    <div class="channels-grid" id="channels-grid">
-      <!-- to be powered by live_tv_list.txt later -->
-    </div>
+    <div class="channels-grid" id="channels-grid"></div>
   </div>
 
   <!-- 6. CONFIG VIEW -->
   <div id="view-config" class="view">
-    <!-- 6.1 Display Settings -->
+    <!-- 6.1 Display -->
     <div class="card">
       <div class="section-title">Display</div>
-      <div class="row" style="margin-top:4px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
+      <div style="margin-top:4px; display:flex; align-items:center; flex-wrap:wrap; gap:6px;">
         <div class="mut">Theme:</div>
         <button class="btn" id="theme-dark">Dark</button>
         <button class="btn" id="theme-light">Light</button>
@@ -765,7 +714,7 @@
         <span id="font-scale-label" class="mut">1.00x</span>
       </div>
       <div class="mut" style="margin-top:4px;">
-        Settings are stored in this browser only and used by index.html.
+        Settings are stored in this browser only and used by this page.
       </div>
     </div>
 
@@ -776,7 +725,7 @@
         <li><a href="https://github.com/AJPnKW/my_TV_Movie" target="_blank">Repository</a></li>
         <li><a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">Build TV Data and Deploy workflow</a></li>
         <li><a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions" target="_blank">Secrets &amp; variables (Actions)</a></li>
-        <li><a href="../data/data.json" target="_blank">data/data.json (current build)</a></li>
+        <li><a href="../data/data.json" target="_blank">View data/data.json</a></li>
       </ul>
     </div>
 
@@ -784,9 +733,9 @@
     <div class="card">
       <div class="section-title">Integrations</div>
       <div class="mut">
-        Uses <strong>TMDB</strong> for primary metadata.
-        Optional future enrichment via <strong>TVMaze</strong>, <strong>Trakt</strong>, and <strong>OMDb</strong>.
-        All credentials stay in GitHub secrets; nothing sensitive is exposed in the client.
+        Uses <strong>TMDB</strong> for metadata.
+        Optional enrichment via <strong>TVMaze</strong>, <strong>Trakt</strong>, <strong>OMDb</strong>.
+        API keys live in GitHub Secrets; nothing sensitive is exposed client-side.
       </div>
     </div>
 
@@ -812,7 +761,7 @@
           <div class="mut">live_tv_list.txt (future)</div>
           <div class="mono-box" id="livetv-list-preview"></div>
           <a class="mut" href="https://github.com/AJPnKW/my_TV_Movie/edit/main/live_tv_list.txt" target="_blank">
-            Edit on GitHub (if present)
+            Edit on GitHub
           </a>
         </div>
       </div>
@@ -826,7 +775,7 @@
   </div>
 </div>
 
-<!-- 7. POPUP OVERLAY ROOT -->
+<!-- 7. POPUP ROOT -->
 <div id="overlay-root" aria-hidden="true">
   <div class="overlay-inner" id="overlay-inner" tabindex="-1">
     <div class="overlay-close">
@@ -837,9 +786,7 @@
 </div>
 
 <script>
-/* ------------------------------------------------------------------
-   GLOBAL STATE
-------------------------------------------------------------------- */
+/*** GLOBAL STATE ***********************************************************/
 const state = {
   data: null,
   showsById: {},
@@ -858,31 +805,27 @@ const ICON_VIDSRC  = '../image/services_logos/VidSrc_icon.png';
 const ICON_VIDEASY = '../image/services_logos/videasy_icon.png';
 
 function $(id){ return document.getElementById(id); }
-function safeText(s){ return s || ''; }
+function safe(s){ return s || ''; }
 
-/* ------------------------------------------------------------------
-   META LINE
-------------------------------------------------------------------- */
-function setMetaLine() {
+/*** META LINE **************************************************************/
+function setMetaLine(){
   const el = $('meta-line');
   if (!el) return;
   const d = state.data;
   if (!d || !d.meta) {
-    el.textContent =
-      'index.html: v2.8.20 • config.html: v1.4.4 • Data: not loaded';
+    el.textContent = 'index.html: v2.8.22 • config.html: v1.4.4 • Data built: n/a • Shows: n/a • Movies: n/a • LiveTV: 0';
     return;
   }
+  const shows = d.meta.shows ?? (d.shows ? d.shows.length : 'n/a');
+  const movies = d.meta.movies ?? (d.movies ? d.movies.length : 'n/a');
+  const lt = d.meta.live_tv ?? (d.live_tv ? d.live_tv.length : 0);
   el.textContent =
-    `index.html: v2.8.20 • config.html: v1.4.4 • ` +
+    `index.html: v2.8.22 • config.html: v1.4.4 • ` +
     `Data built: ${d.meta.generated_at || 'n/a'} • ` +
-    `Shows: ${d.meta.shows ?? (d.shows ? d.shows.length : 'n/a')} • ` +
-    `Movies: ${d.meta.movies ?? (d.movies ? d.movies.length : 'n/a')} • ` +
-    `LiveTV: ${d.meta.live_tv ?? (d.live_tv ? d.live_tv.length : 0)}`;
+    `Shows: ${shows} • Movies: ${movies} • LiveTV: ${lt}`;
 }
 
-/* ------------------------------------------------------------------
-   THEME & FONT
-------------------------------------------------------------------- */
+/*** THEME & FONT ***********************************************************/
 function loadDisplayPrefs(){
   try {
     const t = localStorage.getItem('mytv_theme');
@@ -893,24 +836,24 @@ function loadDisplayPrefs(){
   applyTheme();
   applyFontScale();
 }
+
 function applyTheme(){
   document.body.dataset.theme = state.theme;
-  if ($('theme-dark'))
-    $('theme-dark').classList.toggle('active', state.theme === 'dark');
-  if ($('theme-light'))
-    $('theme-light').classList.toggle('active', state.theme === 'light');
-}
-function applyFontScale(){
-  document.documentElement.style.setProperty('--font-scale', state.fontScale.toString());
-  if ($('font-scale-label'))
-    $('font-scale-label').textContent = state.fontScale.toFixed(2) + 'x';
+  const dark = $('theme-dark');
+  const light = $('theme-light');
+  if (dark) dark.classList.toggle('active', state.theme === 'dark');
+  if (light) light.classList.toggle('active', state.theme === 'light');
 }
 
-/* ------------------------------------------------------------------
-   VIEW SWITCHING
-------------------------------------------------------------------- */
+function applyFontScale(){
+  document.documentElement.style.setProperty('--font-scale', state.fontScale.toString());
+  const lbl = $('font-scale-label');
+  if (lbl) lbl.textContent = state.fontScale.toFixed(2) + 'x';
+}
+
+/*** VIEW SWITCHING *********************************************************/
 function setView(view){
-  if (state.overlayOpen) return; // do not switch under popup
+  if (state.overlayOpen) return;
   state.currentView = view;
   document.querySelectorAll('.view').forEach(v=>{
     v.classList.toggle('active', v.id === 'view-' + view);
@@ -919,6 +862,7 @@ function setView(view){
     btn.classList.toggle('active', btn.dataset.view === view);
   });
 }
+
 function initNav(){
   const nav = $('nav-tabs');
   if (!nav) return;
@@ -930,22 +874,27 @@ function initNav(){
   });
 }
 
-/* ------------------------------------------------------------------
-   DATA LOAD
-------------------------------------------------------------------- */
+/*** DATA LOAD **************************************************************/
 async function loadData(){
-  const dbg = msg => {
-    const box = $('debug-info');
-    if (box) box.textContent += msg + '\n';
-  };
+  const dbgBox = $('debug-info');
+  const dbg = msg => { if (dbgBox) dbgBox.textContent += msg + '\n'; };
+
   try {
-    dbg('Fetching data/data.json ...');
+    dbg('Fetching ../data/data.json ...');
     const res = await fetch('../data/data.json', { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const json = await res.json();
     state.data = json;
-    (json.shows || []).forEach(s => s?.tmdb_id && (state.showsById[s.tmdb_id] = s));
-    (json.movies || []).forEach(m => m?.tmdb_id && (state.moviesById[m.tmdb_id] = m));
+
+    (json.shows || []).forEach(s => {
+      const id = s.tmdb_id || s.id;
+      if (id) state.showsById[id] = s;
+    });
+    (json.movies || []).forEach(m => {
+      const id = m.tmdb_id || m.id;
+      if (id) state.moviesById[id] = m;
+    });
+
     dbg('Loaded data.json OK.');
     setMetaLine();
     renderAll();
@@ -960,53 +909,63 @@ async function loadData(){
   }
 }
 
-/* ------------------------------------------------------------------
-   CALENDAR
-------------------------------------------------------------------- */
+/*** CALENDAR INDEX *********************************************************/
 function buildCalendarEventsIndex(){
   const idx = {};
   const d = state.data || {};
+
   (d.shows || []).forEach(show=>{
+    const showId = show.tmdb_id || show.id;
+    const showPoster = show.poster || show.poster_path || '';
     (show.seasons || []).forEach(season=>{
       (season.episodes || []).forEach(ep=>{
-        if (!ep.air_date) return;
-        const key = ep.air_date;
-        (idx[key] ||= []).push({
+        const air = ep.air_date;
+        if (!air) return;
+        const key = air;
+        if (!idx[key]) idx[key] = [];
+        idx[key].push({
           type: 'episode',
-          show_tmdb_id: show.tmdb_id,
+          show_tmdb_id: showId,
           show_name: show.name,
-          show_poster: show.poster,
+          show_poster: showPoster,
           season_number: ep.season_number,
           episode_number: ep.episode_number,
           name: ep.name,
           runtime: ep.runtime,
-          still_path: ep.still_path
+          still: ep.still || ep.still_path || ''
         });
       });
     });
   });
+
   (d.movies || []).forEach(m=>{
-    if (!m.release_date) return;
-    const key = m.release_date;
-    (idx[key] ||= []).push({
+    const rd = m.release_date;
+    if (!rd) return;
+    const key = rd;
+    if (!idx[key]) idx[key] = [];
+    idx[key].push({
       type: 'movie',
-      tmdb_id: m.tmdb_id,
+      tmdb_id: m.tmdb_id || m.id,
       title: m.title,
       release_date: m.release_date,
       status: m.status,
       runtime: m.runtime,
-      poster: m.poster
+      poster: m.poster || m.poster_path || '',
+      genres: m.genres || []
     });
   });
+
   return idx;
 }
 
+/*** CALENDAR RENDER *******************************************************/
 function buildCalendar(){
   const grid = $('cal-grid');
   const label = $('cal-month-label');
   if (!grid || !state.data) return;
 
   grid.innerHTML = '';
+
   const dows = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   dows.forEach(d=>{
     const h = document.createElement('div');
@@ -1030,7 +989,7 @@ function buildCalendar(){
 
   const eventsByDate = buildCalendarEventsIndex();
 
-  for (let i=0;i<totalCells;i++){
+  for (let i=0; i<totalCells; i++){
     const cell = document.createElement('div');
     cell.className = 'cal-cell';
 
@@ -1046,9 +1005,15 @@ function buildCalendar(){
       dateObj = new Date(year, month, dayNum);
     }
 
-    const isToday = (new Date()).toDateString() === dateObj.toDateString()
-                    && state.calMonthOffset === 0;
-    if (isToday) cell.classList.add('today');
+    const today = new Date();
+    if (
+      dateObj.getFullYear() === today.getFullYear() &&
+      dateObj.getMonth() === today.getMonth() &&
+      dateObj.getDate() === today.getDate() &&
+      state.calMonthOffset === 0
+    ) {
+      cell.classList.add('today');
+    }
 
     const dateKey = dateObj.toISOString().slice(0,10);
 
@@ -1068,7 +1033,7 @@ function buildCalendar(){
         pwrap.className = 'cal-poster-wrap';
         const img = document.createElement('img');
         img.className = 'cal-poster';
-        img.src = ev.still_path || ev.show_poster || '';
+        img.src = ev.still || ev.show_poster || '';
         img.alt = ev.show_name || '';
         pwrap.appendChild(img);
 
@@ -1084,7 +1049,7 @@ function buildCalendar(){
         t2.className = 'cal-ep';
         t2.textContent =
           `S${String(ev.season_number).padStart(2,'0')}` +
-          `E${String(ev.episode_number).padStart(2,'0')} · ${safeText(ev.name)}`;
+          `E${String(ev.episode_number).padStart(2,'0')} · ${safe(ev.name)}`;
         txt.appendChild(t2);
 
         if (ev.runtime) {
@@ -1096,18 +1061,27 @@ function buildCalendar(){
 
         const icons = document.createElement('div');
         icons.className = 'cal-icons';
-        icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(ev.show_tmdb_id), 'TMDB'));
-        icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcTvUrl(ev.show_tmdb_id, ev.season_number, ev.episode_number), 'VidSrc'));
-        icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyTvUrl(ev.show_tmdb_id, ev.season_number, ev.episode_number), 'Videasy'));
+        const showId = ev.show_tmdb_id;
+        icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(showId), 'TMDB'));
+        icons.appendChild(buildIconLink(
+          ICON_VIDSRC,
+          makeVidSrcTvUrl(showId, ev.season_number, ev.episode_number),
+          'VidSrc'
+        ));
+        icons.appendChild(buildIconLink(
+          ICON_VIDEASY,
+          makeVideasyTvUrl(showId, ev.season_number, ev.episode_number),
+          'Videasy'
+        ));
         txt.appendChild(icons);
 
         row.appendChild(pwrap);
         row.appendChild(txt);
 
-        const open = () => openEpisodePopup(ev.show_tmdb_id, ev.season_number, ev.episode_number);
-        row.addEventListener('click', open);
+        const openEp = () => openEpisodePopup(showId, ev.season_number, ev.episode_number);
+        row.addEventListener('click', openEp);
         row.addEventListener('keydown', e=>{
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openEp(); }
         });
 
         cell.appendChild(row);
@@ -1119,7 +1093,7 @@ function buildCalendar(){
         const pwrap = document.createElement('div');
         pwrap.className = 'cal-poster-wrap';
         const img = document.createElement('img');
-        img.className = 'cal-poster';
+        img.className = 'poster-img';
         img.src = ev.poster || '';
         img.alt = ev.title || '';
         pwrap.appendChild(img);
@@ -1132,17 +1106,14 @@ function buildCalendar(){
         t1.textContent = ev.title || 'Unknown movie';
         txt.appendChild(t1);
 
+        const bits = [];
+        bits.push(ev.release_date || 'TBA');
+        if (ev.status) bits.push(ev.status);
+        if (ev.runtime) bits.push(ev.runtime + 'm');
         const t2 = document.createElement('div');
         t2.className = 'cal-ep';
-        t2.textContent = `${ev.release_date || 'TBA'} · ${ev.status || ''}`;
+        t2.textContent = bits.join(' • ');
         txt.appendChild(t2);
-
-        if (ev.runtime) {
-          const rt = document.createElement('div');
-          rt.className = 'cal-runtime';
-          rt.textContent = `${ev.runtime}m`;
-          txt.appendChild(rt);
-        }
 
         const icons = document.createElement('div');
         icons.className = 'cal-icons';
@@ -1154,10 +1125,10 @@ function buildCalendar(){
         row.appendChild(pwrap);
         row.appendChild(txt);
 
-        const open = () => openMoviePopup(ev.tmdb_id);
-        row.addEventListener('click', open);
+        const openMovie = () => openMoviePopup(ev.tmdb_id);
+        row.addEventListener('click', openMovie);
         row.addEventListener('keydown', e=>{
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMovie(); }
         });
 
         cell.appendChild(row);
@@ -1168,14 +1139,14 @@ function buildCalendar(){
   }
 }
 
-/* ------------------------------------------------------------------
-   SHOWS
-------------------------------------------------------------------- */
+/*** SHOWS ******************************************************************/
 function renderShows(){
   const grid = $('shows-grid');
   if (!grid || !state.data) return;
   grid.innerHTML = '';
+
   (state.data.shows || []).forEach(show=>{
+    const showId = show.tmdb_id || show.id;
     const card = document.createElement('div');
     card.className = 'show-card';
     card.tabIndex = 0;
@@ -1184,30 +1155,30 @@ function renderShows(){
     pwrap.className = 'poster-wrap';
     const img = document.createElement('img');
     img.className = 'poster-img';
-    img.src = show.poster || '';
+    img.src = show.poster || show.poster_path || '';
     img.alt = show.name || '';
     pwrap.appendChild(img);
 
     const body = document.createElement('div');
     body.className = 'card-body';
 
-    const title = document.createElement('div');
-    title.className = 'title-line';
-    title.textContent = show.name || 'Unknown show';
+    const tl = document.createElement('div');
+    tl.className = 'title-line';
+    tl.textContent = show.name || 'Unknown show';
     const idSpan = document.createElement('span');
     idSpan.className = 'mut-id';
-    idSpan.textContent = `[${show.tmdb_id}]`;
-    title.appendChild(idSpan);
-    body.appendChild(title);
+    idSpan.textContent = `[${showId}]`;
+    tl.appendChild(idSpan);
+    body.appendChild(tl);
 
     if (show.current_season) {
-      const cur = document.createElement('div');
-      cur.className = 'mut';
-      cur.textContent =
+      const cs = document.createElement('div');
+      cs.className = 'mut';
+      cs.textContent =
         `Current: S${show.current_season.season_number} • ` +
         `${show.current_season.year || ''} • ` +
         `${show.current_season.episode_count || '?'} eps`;
-      body.appendChild(cur);
+      body.appendChild(cs);
     }
 
     const meta = document.createElement('div');
@@ -1218,12 +1189,12 @@ function renderShows(){
 
     const icons = document.createElement('div');
     icons.className = 'icon-row';
-    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(show.tmdb_id), 'TMDB'));
-    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcTvUrl(show.tmdb_id), 'VidSrc'));
-    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyTvUrl(show.tmdb_id), 'Videasy'));
+    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(showId), 'TMDB'));
+    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcTvUrl(showId), 'VidSrc'));
+    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyTvUrl(showId), 'Videasy'));
     body.appendChild(icons);
 
-    const open = () => openShowPopup(show.tmdb_id);
+    const open = () => openShowPopup(showId);
     card.addEventListener('click', open);
     card.addEventListener('keydown', e=>{
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
@@ -1233,14 +1204,14 @@ function renderShows(){
   });
 }
 
-/* ------------------------------------------------------------------
-   MOVIES
-------------------------------------------------------------------- */
+/*** MOVIES *****************************************************************/
 function renderMovies(){
   const grid = $('movies-grid');
   if (!grid || !state.data) return;
   grid.innerHTML = '';
+
   (state.data.movies || []).forEach(m=>{
+    const id = m.tmdb_id || m.id;
     const card = document.createElement('div');
     card.className = 'movie-card';
     card.tabIndex = 0;
@@ -1249,44 +1220,46 @@ function renderMovies(){
     pwrap.className = 'poster-wrap';
     const img = document.createElement('img');
     img.className = 'poster-img';
-    img.src = m.poster || '';
+    img.src = m.poster || m.poster_path || '';
     img.alt = m.title || '';
     pwrap.appendChild(img);
 
     const body = document.createElement('div');
     body.className = 'card-body';
 
-    const title = document.createElement('div');
-    title.className = 'title-line';
-    title.textContent = m.title || 'Unknown movie';
+    const tl = document.createElement('div');
+    tl.className = 'title-line';
+    tl.textContent = m.title || 'Unknown movie';
     const idSpan = document.createElement('span');
     idSpan.className = 'mut-id';
-    idSpan.textContent = `[${m.tmdb_id}]`;
-    title.appendChild(idSpan);
-    body.appendChild(title);
+    idSpan.textContent = `[${id}]`;
+    tl.appendChild(idSpan);
+    body.appendChild(tl);
 
+    const bits = [];
+    bits.push(m.release_date || 'TBA');
+    if (m.status) bits.push(m.status);
+    if (m.runtime) bits.push(m.runtime + 'm');
     const meta = document.createElement('div');
     meta.className = 'mut';
-    const parts = [];
-    parts.push(m.release_date || 'TBA');
-    if (m.status) parts.push(m.status);
-    if (m.runtime) parts.push(m.runtime + 'm');
-    meta.textContent = parts.join(' • ');
+    meta.textContent = bits.join(' • ');
     body.appendChild(meta);
 
-    const genres = document.createElement('div');
-    genres.className = 'mut';
-    genres.textContent = (m.genres || []).join(', ');
-    body.appendChild(genres);
+    if (m.genres && m.genres.length){
+      const g = document.createElement('div');
+      g.className = 'mut';
+      g.textContent = m.genres.join(', ');
+      body.appendChild(g);
+    }
 
     const icons = document.createElement('div');
     icons.className = 'icon-row';
-    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbMovieUrl(m.tmdb_id), 'TMDB'));
-    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcMovieUrl(m.tmdb_id), 'VidSrc'));
-    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyMovieUrl(m.tmdb_id), 'Videasy'));
+    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbMovieUrl(id), 'TMDB'));
+    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcMovieUrl(id), 'VidSrc'));
+    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyMovieUrl(id), 'Videasy'));
     body.appendChild(icons);
 
-    const open = () => openMoviePopup(m.tmdb_id);
+    const open = () => openMoviePopup(id);
     card.addEventListener('click', open);
     card.addEventListener('keydown', e=>{
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
@@ -1296,9 +1269,7 @@ function renderMovies(){
   });
 }
 
-/* ------------------------------------------------------------------
-   ICON HELPERS
-------------------------------------------------------------------- */
+/*** ICON URL HELPERS *******************************************************/
 function buildIconLink(src, href, alt){
   const a = document.createElement('a');
   a.className = 'icon-link';
@@ -1327,9 +1298,7 @@ function makeVideasyTvUrl(id,s,e){
 function makeVidSrcMovieUrl(id){ return id ? `https://vidsrc.net/embed/movie/${id}` : '#'; }
 function makeVideasyMovieUrl(id){ return id ? `https://player.videasy.net/movie/${id}` : '#'; }
 
-/* ------------------------------------------------------------------
-   POPUPS: CORE (LOCK + FOCUS TRAP)
-------------------------------------------------------------------- */
+/*** POPUP CORE *************************************************************/
 const overlayRoot = $('overlay-root');
 const overlayInner = $('overlay-inner');
 const overlayBody  = $('overlay-body');
@@ -1371,28 +1340,27 @@ if (overlayClose){
     closeOverlay();
   });
 }
-
 if (overlayRoot){
   overlayRoot.addEventListener('click', e=>{
     if (e.target === overlayRoot) closeOverlay();
   });
 }
 
-/* Focus trap + scroll handling for overlay */
+/*** POPUP FOCUS + SCROLL (TV/DPAD SAFE) ***********************************/
 document.addEventListener('keydown', e=>{
   if (!state.overlayOpen) return;
 
-  // Close keys
   if (e.key === 'Escape' || e.key === 'Backspace') {
     e.preventDefault();
     closeOverlay();
     return;
   }
 
-  // Trap Tab inside overlay
   if (e.key === 'Tab') {
     e.preventDefault();
-    const focusables = overlayInner.querySelectorAll('button,[href],[tabindex]:not([tabindex="-1"])');
+    const focusables = overlayInner.querySelectorAll(
+      'button,[href],[tabindex]:not([tabindex="-1"])'
+    );
     if (!focusables.length) {
       overlayInner.focus({ preventScroll:true });
       return;
@@ -1403,13 +1371,12 @@ document.addEventListener('keydown', e=>{
     if (e.shiftKey) {
       next = idx <= 0 ? list[list.length-1] : list[idx-1];
     } else {
-      next = idx === -1 || idx === list.length-1 ? list[0] : list[idx+1];
+      next = (idx === -1 || idx === list.length-1) ? list[0] : list[idx+1];
     }
     next.focus({ preventScroll:true });
     return;
   }
 
-  // Scroll with arrows / page keys inside popup
   if (['ArrowDown','ArrowUp','PageDown','PageUp'].includes(e.key)) {
     e.preventDefault();
     const box = overlayInner;
@@ -1418,7 +1385,7 @@ document.addEventListener('keydown', e=>{
     if (e.key === 'ArrowDown') delta = step;
     if (e.key === 'ArrowUp') delta = -step;
     if (e.key === 'PageDown') delta = box.clientHeight - 40;
-    if (e.key === 'PageUp') delta = - (box.clientHeight - 40);
+    if (e.key === 'PageUp') delta = -(box.clientHeight - 40);
     box.scrollTop = Math.max(
       0,
       Math.min(box.scrollTop + delta, box.scrollHeight - box.clientHeight)
@@ -1426,7 +1393,6 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-/* Wheel / touchpad -> popup scroll only */
 if (overlayRoot){
   overlayRoot.addEventListener('wheel', e=>{
     if (!state.overlayOpen) return;
@@ -1440,39 +1406,38 @@ if (overlayRoot){
   }, { passive:false });
 }
 
-/* ------------------------------------------------------------------
-   POPUP BUILDERS (Show / Season / Episode / Movie)
-------------------------------------------------------------------- */
+/*** POPUP BUILDERS *********************************************************/
 function openShowPopup(tmdbId){
   const show = state.showsById[tmdbId];
   if (!show) return;
+
   openOverlay(body=>{
     const wrap = document.createElement('div');
     wrap.className = 'overlay-content';
 
     const poster = document.createElement('img');
     poster.className = 'overlay-poster';
-    poster.src = show.poster || '';
+    poster.src = show.poster || show.poster_path || '';
     poster.alt = show.name || '';
     wrap.appendChild(poster);
 
     const main = document.createElement('div');
     main.className = 'overlay-main';
 
-    const title = document.createElement('div');
-    title.className = 'overlay-title';
-    title.textContent = show.name || 'Unknown show';
+    const tl = document.createElement('div');
+    tl.className = 'overlay-title';
+    tl.textContent = show.name || 'Unknown show';
     const idSpan = document.createElement('span');
     idSpan.className = 'mut-id';
-    idSpan.textContent = `[${show.tmdb_id}]`;
-    title.appendChild(idSpan);
-    main.appendChild(title);
+    idSpan.textContent = `[${tmdbId}]`;
+    tl.appendChild(idSpan);
+    main.appendChild(tl);
 
     if (show.current_season) {
       const cs = document.createElement('div');
       cs.className = 'overlay-sub';
       cs.textContent =
-        `Current: S${cs.season_number || show.current_season.season_number} • ` +
+        `Current: S${show.current_season.season_number} • ` +
         `${show.current_season.year || ''} • ` +
         `${show.current_season.episode_count || '?'} eps`;
       main.appendChild(cs);
@@ -1486,12 +1451,12 @@ function openShowPopup(tmdbId){
 
     const icons = document.createElement('div');
     icons.className = 'overlay-icons';
-    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(show.tmdb_id), 'TMDB'));
-    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcTvUrl(show.tmdb_id), 'VidSrc'));
-    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyTvUrl(show.tmdb_id), 'Videasy'));
+    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(tmdbId), 'TMDB'));
+    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcTvUrl(tmdbId), 'VidSrc'));
+    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyTvUrl(tmdbId), 'Videasy'));
     main.appendChild(icons);
 
-    if (show.overview) {
+    if (show.overview){
       const ov = document.createElement('div');
       ov.className = 'overlay-sub';
       ov.textContent = show.overview;
@@ -1509,12 +1474,12 @@ function openShowPopup(tmdbId){
       if (!season || !season.season_number) return;
       const row = document.createElement('div');
       row.className = 'ep-row';
-      const tl = document.createElement('div');
-      tl.className = 'ep-title-line';
-      tl.textContent =
+      const h = document.createElement('div');
+      h.className = 'ep-title-line';
+      h.textContent =
         `Season ${season.season_number} • ${season.year || ''} • ` +
         `${season.episode_count || '?'} eps`;
-      row.appendChild(tl);
+      row.appendChild(h);
       if (season.overview) {
         const mv = document.createElement('div');
         mv.className = 'ep-meta';
@@ -1522,7 +1487,7 @@ function openShowPopup(tmdbId){
         row.appendChild(mv);
       }
       row.addEventListener('click', ()=>{
-        openSeasonPopup(show.tmdb_id, season.season_number);
+        openSeasonPopup(tmdbId, season.season_number);
       });
       sl.appendChild(row);
     });
@@ -1545,23 +1510,23 @@ function openSeasonPopup(showId, seasonNumber){
 
     const poster = document.createElement('img');
     poster.className = 'overlay-poster';
-    poster.src = show.poster || '';
+    poster.src = show.poster || show.poster_path || '';
     poster.alt = show.name || '';
     wrap.appendChild(poster);
 
     const main = document.createElement('div');
     main.className = 'overlay-main';
 
-    const title = document.createElement('div');
-    title.className = 'overlay-title';
-    title.textContent = `${show.name} — Season ${season.season_number}`;
+    const tl = document.createElement('div');
+    tl.className = 'overlay-title';
+    tl.textContent = `${show.name} — Season ${season.season_number}`;
     const idSpan = document.createElement('span');
     idSpan.className = 'mut-id';
-    idSpan.textContent = `[${show.tmdb_id}]`;
-    title.appendChild(idSpan);
-    main.appendChild(title);
+    idSpan.textContent = `[${showId}]`;
+    tl.appendChild(idSpan);
+    main.appendChild(tl);
 
-    if (season.overview) {
+    if (season.overview){
       const ov = document.createElement('div');
       ov.className = 'overlay-sub';
       ov.textContent = season.overview;
@@ -1579,12 +1544,12 @@ function openSeasonPopup(showId, seasonNumber){
       const row = document.createElement('div');
       row.className = 'ep-row';
 
-      const tl = document.createElement('div');
-      tl.className = 'ep-title-line';
-      tl.textContent =
+      const h = document.createElement('div');
+      h.className = 'ep-title-line';
+      h.textContent =
         `S${String(ep.season_number).padStart(2,'0')}` +
-        `E${String(ep.episode_number).padStart(2,'0')} · ${safeText(ep.name)}`;
-      row.appendChild(tl);
+        `E${String(ep.episode_number).padStart(2,'0')} · ${safe(ep.name)}`;
+      row.appendChild(h);
 
       const meta = document.createElement('div');
       meta.className = 'ep-meta';
@@ -1597,21 +1562,21 @@ function openSeasonPopup(showId, seasonNumber){
 
       const icons = document.createElement('div');
       icons.className = 'overlay-icons';
-      icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(show.tmdb_id), 'TMDB'));
+      icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(showId), 'TMDB'));
       icons.appendChild(buildIconLink(
         ICON_VIDSRC,
-        makeVidSrcTvUrl(show.tmdb_id, ep.season_number, ep.episode_number),
+        makeVidSrcTvUrl(showId, ep.season_number, ep.episode_number),
         'VidSrc'
       ));
       icons.appendChild(buildIconLink(
         ICON_VIDEASY,
-        makeVideasyTvUrl(show.tmdb_id, ep.season_number, ep.episode_number),
+        makeVideasyTvUrl(showId, ep.season_number, ep.episode_number),
         'Videasy'
       ));
       row.appendChild(icons);
 
       row.addEventListener('click', ()=>{
-        openEpisodePopup(show.tmdb_id, ep.season_number, ep.episode_number);
+        openEpisodePopup(showId, ep.season_number, ep.episode_number);
       });
 
       list.appendChild(row);
@@ -1637,23 +1602,23 @@ function openEpisodePopup(showId, seasonNumber, episodeNumber){
 
     const poster = document.createElement('img');
     poster.className = 'overlay-poster';
-    poster.src = show.poster || '';
+    poster.src = show.poster || show.poster_path || '';
     poster.alt = show.name || '';
     wrap.appendChild(poster);
 
     const main = document.createElement('div');
     main.className = 'overlay-main';
 
-    const title = document.createElement('div');
-    title.className = 'overlay-title';
-    title.textContent =
+    const tl = document.createElement('div');
+    tl.className = 'overlay-title';
+    tl.textContent =
       `${show.name} — S${String(ep.season_number).padStart(2,'0')}` +
-      `E${String(ep.episode_number).padStart(2,'0')} · ${safeText(ep.name)}`;
+      `E${String(ep.episode_number).padStart(2,'0')} · ${safe(ep.name)}`;
     const idSpan = document.createElement('span');
     idSpan.className = 'mut-id';
-    idSpan.textContent = `[${show.tmdb_id}]`;
-    title.appendChild(idSpan);
-    main.appendChild(title);
+    idSpan.textContent = `[${showId}]`;
+    tl.appendChild(idSpan);
+    main.appendChild(tl);
 
     const meta = document.createElement('div');
     meta.className = 'overlay-sub';
@@ -1663,7 +1628,7 @@ function openEpisodePopup(showId, seasonNumber, episodeNumber){
     meta.textContent = bits.join(' • ');
     main.appendChild(meta);
 
-    if (ep.overview) {
+    if (ep.overview){
       const ov = document.createElement('div');
       ov.className = 'overlay-sub';
       ov.textContent = ep.overview;
@@ -1672,15 +1637,15 @@ function openEpisodePopup(showId, seasonNumber, episodeNumber){
 
     const icons = document.createElement('div');
     icons.className = 'overlay-icons';
-    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(show.tmdb_id), 'TMDB'));
+    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbTvUrl(showId), 'TMDB'));
     icons.appendChild(buildIconLink(
       ICON_VIDSRC,
-      makeVidSrcTvUrl(show.tmdb_id, ep.season_number, ep.episode_number),
+      makeVidSrcTvUrl(showId, ep.season_number, ep.episode_number),
       'VidSrc'
     ));
     icons.appendChild(buildIconLink(
       ICON_VIDEASY,
-      makeVideasyTvUrl(show.tmdb_id, ep.season_number, ep.episode_number),
+      makeVideasyTvUrl(showId, ep.season_number, ep.episode_number),
       'Videasy'
     ));
     main.appendChild(icons);
@@ -1700,28 +1665,28 @@ function openMoviePopup(movieId){
 
     const poster = document.createElement('img');
     poster.className = 'overlay-poster';
-    poster.src = m.poster || '';
+    poster.src = m.poster || m.poster_path || '';
     poster.alt = m.title || '';
     wrap.appendChild(poster);
 
     const main = document.createElement('div');
     main.className = 'overlay-main';
 
-    const title = document.createElement('div');
-    title.className = 'overlay-title';
-    title.textContent = m.title || 'Unknown movie';
+    const tl = document.createElement('div');
+    tl.className = 'overlay-title';
+    tl.textContent = m.title || 'Unknown movie';
     const idSpan = document.createElement('span');
     idSpan.className = 'mut-id';
-    idSpan.textContent = `[${m.tmdb_id}]`;
-    title.appendChild(idSpan);
-    main.appendChild(title);
+    idSpan.textContent = `[${movieId}]`;
+    tl.appendChild(idSpan);
+    main.appendChild(tl);
 
-    const meta = document.createElement('div');
-    meta.className = 'overlay-sub';
     const bits = [];
     bits.push(m.release_date || 'TBA');
     if (m.status) bits.push(m.status);
     if (m.runtime) bits.push(m.runtime + 'm');
+    const meta = document.createElement('div');
+    meta.className = 'overlay-sub';
     meta.textContent = bits.join(' • ');
     main.appendChild(meta);
 
@@ -1741,9 +1706,9 @@ function openMoviePopup(movieId){
 
     const icons = document.createElement('div');
     icons.className = 'overlay-icons';
-    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbMovieUrl(m.tmdb_id), 'TMDB'));
-    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcMovieUrl(m.tmdb_id), 'VidSrc'));
-    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyMovieUrl(m.tmdb_id), 'Videasy'));
+    icons.appendChild(buildIconLink(ICON_TMDB, makeTmdbMovieUrl(movieId), 'TMDB'));
+    icons.appendChild(buildIconLink(ICON_VIDSRC, makeVidSrcMovieUrl(movieId), 'VidSrc'));
+    icons.appendChild(buildIconLink(ICON_VIDEASY, makeVideasyMovieUrl(movieId), 'Videasy'));
     main.appendChild(icons);
 
     wrap.appendChild(main);
@@ -1751,9 +1716,7 @@ function openMoviePopup(movieId){
   });
 }
 
-/* ------------------------------------------------------------------
-   CONFIG BEHAVIOR
-------------------------------------------------------------------- */
+/*** CONFIG INIT ************************************************************/
 function initConfig(){
   const darkBtn = $('theme-dark');
   const lightBtn = $('theme-light');
@@ -1782,7 +1745,6 @@ function initConfig(){
     });
   }
 
-  // Previews
   fetch('../tv_list.txt').then(r=>r.ok?r.text():'').then(t=>{
     const box = $('tv-list-preview');
     if (box) box.textContent = t || '(no tv_list.txt or empty)';
@@ -1797,9 +1759,7 @@ function initConfig(){
   }).catch(()=>{});
 }
 
-/* ------------------------------------------------------------------
-   CALENDAR NAV
-------------------------------------------------------------------- */
+/*** CAL NAV ***************************************************************/
 function initCalendarNav(){
   const prev = $('cal-prev');
   const next = $('cal-next');
@@ -1809,18 +1769,14 @@ function initCalendarNav(){
   if (today) today.addEventListener('click', ()=>{ state.calMonthOffset = 0; buildCalendar(); });
 }
 
-/* ------------------------------------------------------------------
-   RENDER ALL
-------------------------------------------------------------------- */
+/*** RENDER ALL *************************************************************/
 function renderAll(){
   buildCalendar();
   renderShows();
   renderMovies();
 }
 
-/* ------------------------------------------------------------------
-   INIT
-------------------------------------------------------------------- */
+/*** INIT *******************************************************************/
 (function init(){
   loadDisplayPrefs();
   initNav();
