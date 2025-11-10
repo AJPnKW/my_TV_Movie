@@ -4,16 +4,15 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.9.1 (2025-11-10 22:30 EST)
+    Version: v2.9.2 (2025-11-10 23:30 EST)
 
-    Key points:
+    Highlights:
       - Single-page hub: Calendar / Shows / Movies / Live TV / Config
-      - Reads ../data/data.json (shows + movies + meta)
-      - Calendar: stable month grid; episodes + movies grouped by air/release date
-      - Shows & Movies: grids driven 100% by data.json (no stray text)
-      - Popups: Show (P1), Season (P2), Episode (P3), Movie (P4)
-      - Config: Display, Maintenance shortcuts, Integration info, Edit helpers, Debug
-      - TMDB / VidSrc / Videasy use icon images; each on its own row in tight layout
+      - Uses ../data/data.json (shows + movies + meta)
+      - Calendar: stable month grid; episodes + movies by air/release date
+      - Shows & Movies: filters (genre, status, sort, watched), TMDB ids, icons
+      - Popups: Show(P1), Season(P2), Episode(P3), Movie(P4)
+      - Config: display, shortcuts, integrations, edit helpers, debug
   -->
   <meta charset="UTF-8" />
   <title>My TV Hub</title>
@@ -30,15 +29,15 @@
       --accent-soft: rgba(42,169,255,0.16);
       --border-soft: #242424;
       --calendar-today: #111827;
-      --calendar-topshade: #0b0f19;
+      --calendar-topshade: #111827;
       --radius-xl: 22px;
       --radius-lg: 18px;
       --radius-md: 12px;
       --radius-sm: 8px;
       --shadow-soft: 0 10px 26px rgba(0,0,0,0.55);
       --font-scale: 1.0;
-      --poster-cal: 70px;           /* Calendar posters (slightly larger) */
-      --poster-card-w: 120px;       /* Show/Movie cards */
+      --poster-cal: 78px;          /* calendar posters */
+      --poster-card-w: 118px;      /* show/movie cards */
       --transition-fast: 0.18s ease-out;
     }
 
@@ -52,7 +51,7 @@
       --accent-soft: rgba(0,102,255,0.16);
       --border-soft: #d0d3e0;
       --calendar-today: #d8e6ff;
-      --calendar-topshade: #e5eeff;
+      --calendar-topshade: #d8e6ff;
       --shadow-soft: 0 4px 16px rgba(0,0,0,0.16);
     }
 
@@ -76,10 +75,7 @@
       color: var(--accent);
       text-decoration: none;
     }
-
-    a:hover {
-      text-decoration: underline;
-    }
+    a:hover { text-decoration: underline; }
 
     .app-root {
       max-width: 1600px;
@@ -92,10 +88,10 @@
     .app-header {
       position: sticky;
       top: 0;
-      z-index: 50;
-      margin: 0 -40px 4px;
-      padding: 10px 40px 6px;
-      background: linear-gradient(to bottom, var(--bg) 72%, transparent);
+      z-index: 60;
+      margin: 0 -40px 0;
+      padding: 10px 40px 4px;
+      background: linear-gradient(to bottom, var(--bg) 80%, transparent);
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -148,40 +144,42 @@
       outline-offset: 2px;
     }
 
-    /* Views */
+    /* Views wrapper */
 
-    .views {
-      margin-top: 2px;
-    }
+    .views { margin-top: 4px; }
+    .view { display: none; }
+    .view.active { display: block; }
 
-    .view {
-      display: none;
-    }
+    /* Sticky per-view title row */
 
-    .view.active {
-      display: block;
+    .view-header {
+      position: sticky;
+      top: 52px;
+      z-index: 50;
+      padding: 4px 0 4px;
+      background: linear-gradient(to bottom, var(--bg) 85%, transparent);
     }
 
     .view-title {
       font-size: 17px;
       font-weight: 600;
-      margin: 4px 0 2px;
+      margin: 0;
     }
 
     .view-sub {
       font-size: 10px;
       color: var(--muted);
-      margin-bottom: 4px;
+      margin: 0;
     }
 
-    /* per-view sticky filter header */
+    /* Filters */
 
     .filters-sticky {
       position: sticky;
-      top: 52px;
-      z-index: 40;
-      padding: 4px 0 2px;
-      background: linear-gradient(to bottom, var(--bg) 70%, transparent);
+      top: 84px;
+      z-index: 45;
+      padding: 2px 0 2px;
+      background: linear-gradient(to bottom, var(--bg) 80%, transparent);
     }
 
     .filters-row {
@@ -267,7 +265,7 @@
     }
 
     .calendar-day {
-      min-height: 110px;
+      min-height: 120px;
       background: var(--bg-soft);
       border-radius: var(--radius-md);
       border: 1px solid var(--border-soft);
@@ -355,7 +353,8 @@
       font-size: 8px;
     }
 
-    .cal-icons-row {
+    .cal-icons-row,
+    .cal-net-row {
       margin-top: 2px;
       display: flex;
       flex-wrap: wrap;
@@ -364,8 +363,15 @@
     }
 
     .link-icon {
-      width: 16px;
-      height: 16px;
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      display: inline-block;
+    }
+
+    .net-icon {
+      width: 22px;
+      height: 14px;
       object-fit: contain;
       display: inline-block;
     }
@@ -377,7 +383,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       gap: 10px;
-      margin-top: 8px;
+      margin-top: 6px;
     }
 
     .card {
@@ -434,7 +440,21 @@
       margin-top: 2px;
     }
 
-    /* 5. Live TV (skeleton) */
+    .watch-pill {
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 8px;
+      cursor: pointer;
+      color: var(--muted);
+    }
+    .watch-pill.on {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* 5. Live TV skeleton */
 
     .livetv-note {
       font-size: 10px;
@@ -488,9 +508,7 @@
       z-index: 100;
     }
 
-    .overlay-backdrop.active {
-      display: flex;
-    }
+    .overlay-backdrop.active { display: flex; }
 
     .overlay {
       width: min(900px, 96vw);
@@ -607,21 +625,22 @@
         padding: 0 14px 18px;
       }
       .app-header {
-        margin: 0 -14px 4px;
-        padding: 8px 14px 6px;
+        margin: 0 -14px 0;
+        padding: 8px 14px 4px;
       }
     }
   </style>
 </head>
 <body data-theme="dark">
 <div class="app-root">
-  <!-- 1. Global Header -->
+
+  <!-- GLOBAL HEADER -->
   <header class="app-header">
     <div class="app-header-row">
       <div>
         <div class="app-title">My TV Hub</div>
         <div id="meta-line" class="meta-line">
-          index.html: v2.9.1 (2025-11-10 22:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0
+          index.html: v2.9.2 (2025-11-10 23:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0
         </div>
       </div>
       <nav class="nav-tabs" aria-label="Main views">
@@ -637,8 +656,9 @@
   <main class="views">
     <!-- 2. CALENDAR VIEW -->
     <section id="view-calendar" class="view active">
-      <div class="view-title">Calendar</div>
-      <div class="view-sub">Episodes &amp; movie releases by air date.</div>
+      <div class="view-header">
+        <h2 class="view-title">Calendar</h2>
+      </div>
 
       <div class="filters-sticky">
         <div class="calendar-header-row">
@@ -663,8 +683,10 @@
 
     <!-- 3. SHOWS VIEW -->
     <section id="view-shows" class="view">
-      <div class="view-title">Shows</div>
-      <div class="view-sub">All tracked shows from tv_list.txt.</div>
+      <div class="view-header">
+        <h2 class="view-title">Shows</h2>
+        <p class="view-sub">All tracked shows from tv_list.txt.</p>
+      </div>
 
       <div class="filters-sticky">
         <div class="filters-row">
@@ -678,6 +700,9 @@
           <span class="pill active" data-shows-status="all">All</span>
           <span class="pill" data-shows-status="running">Running</span>
           <span class="pill" data-shows-status="ended">Ended</span>
+          <span class="pill active" data-shows-watched="all">All</span>
+          <span class="pill" data-shows-watched="watched">Watched</span>
+          <span class="pill" data-shows-watched="unwatched">Unwatched</span>
         </div>
       </div>
 
@@ -686,8 +711,10 @@
 
     <!-- 4. MOVIES VIEW -->
     <section id="view-movies" class="view">
-      <div class="view-title">Movies</div>
-      <div class="view-sub">All tracked movies from movies_list.txt.</div>
+      <div class="view-header">
+        <h2 class="view-title">Movies</h2>
+        <p class="view-sub">All tracked movies from movies_list.txt.</p>
+      </div>
 
       <div class="filters-sticky">
         <div class="filters-row">
@@ -697,12 +724,15 @@
         <div class="filters-row">
           <div class="filters-label">Filters</div>
           <span class="pill active" data-movies-status="all">All</span>
+          <span class="pill" data-movies-status="releasedto">Released To</span>
           <span class="pill" data-movies-status="intheatres">In Theatres</span>
-          <span class="pill" data-movies-status="released">Released</span>
           <span class="pill" data-movies-status="inprod">In Production</span>
           <span class="pill" data-movies-status="announced">Announced</span>
           <span class="pill active" data-movies-sort="title">Title</span>
           <span class="pill" data-movies-sort="date">Release</span>
+          <span class="pill active" data-movies-watched="all">All</span>
+          <span class="pill" data-movies-watched="watched">Watched</span>
+          <span class="pill" data-movies-watched="unwatched">Unwatched</span>
         </div>
       </div>
 
@@ -711,8 +741,10 @@
 
     <!-- 5. LIVE TV VIEW (SKELETON) -->
     <section id="view-live" class="view">
-      <div class="view-title">Live TV (preview)</div>
-      <div class="view-sub">Channel grid skeleton. EPG integration is a later phase.</div>
+      <div class="view-header">
+        <h2 class="view-title">Live TV (preview)</h2>
+        <p class="view-sub">Channel grid skeleton. EPG integration is a later phase.</p>
+      </div>
       <div class="filters-sticky">
         <div class="filters-row">
           <div class="filters-label">Country</div>
@@ -724,16 +756,18 @@
         </div>
       </div>
       <div class="livetv-note">
-        Once inputs are ready, this will show your curated channels with logos and schedule rows.
+        This will render your curated channel list with logos; schedule rows land in the next phase.
       </div>
     </section>
 
     <!-- 6. CONFIG VIEW -->
     <section id="view-config" class="view">
-      <!-- 6.1 Display -->
-      <div class="view-title">Config</div>
-      <div class="view-sub">Display preferences, shortcuts &amp; list helpers.</div>
+      <div class="view-header">
+        <h2 class="view-title">Config</h2>
+        <p class="view-sub">Display preferences, shortcuts, integrations &amp; list helpers.</p>
+      </div>
 
+      <!-- 6.1 Display -->
       <div class="config-section-title">Display</div>
       <div class="config-note">
         Theme &amp; font scale are stored in this browser only and applied to this page.
@@ -764,7 +798,7 @@
       <!-- 6.3 Integration Info -->
       <div class="config-section-title">Integrations</div>
       <div class="config-note">
-        Uses TMDB for core metadata; TVMaze/OMDb/Trakt hooks are additive and configured via Actions secrets.
+        TMDB is the primary metadata source. TVMaze / OMDb / Trakt hooks are additive and configured via Actions secrets.
       </div>
 
       <!-- 6.4 Edit Helpers -->
@@ -781,9 +815,9 @@
       <div class="config-section-title">Debug: nothing showing?</div>
       <div class="config-note">
         1) Open <a href="/my_TV_Movie/data/data.json" target="_blank">data.json</a>.
-        2) Confirm "shows" / "movies" are not empty.<br/>
-        3) Ensure the "Build TV Data and Deploy" workflow succeeded.<br/>
-        4) If data.json looks good but UI is blank, force-refresh / clear cache on the TV browser.
+        2) Confirm "shows" / "movies" arrays are not empty.<br/>
+        3) Check the "Build TV Data and Deploy" workflow result.<br/>
+        4) If data.json is good but UI is blank, force-refresh / clear cache on the TV browser.
       </div>
     </section>
   </main>
@@ -804,6 +838,7 @@
       <div id="ov-debug" class="overlay-debug"></div>
     </div>
   </div>
+
 </div>
 
 <script>
@@ -814,12 +849,40 @@
     videasy: "../image/services_logos/videasy_icon.png"
   };
 
+  // naive logo mapper: expects files like "HBO.png", "Netflix.png", "paramount_plus.png" etc.
+  function logoFor(name) {
+    if (!name) return null;
+    const clean = name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    const candidates = [
+      `../image/services_logos/${clean}.png`,
+      `../image/services_logos/${clean}.svg`,
+      `../image/services_logos/${name}.png`
+    ];
+    return candidates[0]; // we trust your folder; if missing, browser just 404s silently
+  }
+
   const state = {
     data: null,
     showsById: {},
     moviesById: {},
     view: "calendar",
-    calOffset: 0
+    calOffset: 0,
+    showsFilters: {
+      sort: "az",
+      status: "all",
+      watched: "all",
+      genre: null
+    },
+    moviesFilters: {
+      sort: "title",
+      status: "all",
+      watched: "all",
+      genre: null
+    },
+    watched: {
+      shows: new Set(JSON.parse(localStorage.getItem("mytv_watched_shows") || "[]")),
+      movies: new Set(JSON.parse(localStorage.getItem("mytv_watched_movies") || "[]"))
+    }
   };
 
   const el = {
@@ -832,17 +895,23 @@
       live: document.getElementById("view-live"),
       config: document.getElementById("view-config")
     },
+    // calendar
     calMonth: document.getElementById("cal-month-label"),
     calGrid: document.getElementById("calendar-grid"),
     calPrev: document.getElementById("cal-prev"),
     calNext: document.getElementById("cal-next"),
     calToday: document.getElementById("cal-today"),
+    // shows/movies
     showsGrid: document.getElementById("shows-grid"),
     moviesGrid: document.getElementById("movies-grid"),
+    showsGenres: document.getElementById("shows-genre-pills"),
+    moviesGenres: document.getElementById("movies-genre-pills"),
+    // config
     cfgThemeDark: document.getElementById("cfg-theme-dark"),
     cfgThemeLight: document.getElementById("cfg-theme-light"),
     cfgFont: document.getElementById("cfg-font"),
     cfgFontLabel: document.getElementById("cfg-font-label"),
+    // overlay
     ovBackdrop: document.getElementById("overlay-backdrop"),
     ovPoster: document.getElementById("ov-poster"),
     ovTitle: document.getElementById("ov-title"),
@@ -874,11 +943,11 @@
     return m.movie_id || m.tmdb_id || m.id;
   }
 
-  function iconImg(src, alt) {
+  function iconImg(src, alt, cls) {
     const i = document.createElement("img");
     i.src = src;
     i.alt = alt || "";
-    i.className = "link-icon";
+    i.className = cls || "link-icon";
     i.loading = "lazy";
     return i;
   }
@@ -890,8 +959,10 @@
     const movies = Array.isArray(data.movies) ? data.movies.length : (meta.movies || 0);
     const live = Array.isArray(data.live_tv) ? data.live_tv.length : 0;
     el.meta.textContent =
-      `index.html: v2.9.1 (2025-11-10 22:30 EST) • config.html: v1.4.4 • Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
+      `index.html: v2.9.2 (2025-11-10 23:30 EST) • config.html: v1.4.4 • Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
   }
+
+  /* VIEW SWITCH */
 
   function setView(v) {
     state.view = v;
@@ -907,7 +978,7 @@
     btn.addEventListener("click", () => setView(btn.dataset.view));
   });
 
-  /* Theme & font */
+  /* THEME & FONT */
 
   function applyTheme(theme) {
     document.body.dataset.theme = theme;
@@ -934,7 +1005,34 @@
   const savedFont = parseFloat(localStorage.getItem("mytv_font") || "1.0");
   if (savedFont >= 0.8 && savedFont <= 2.0) applyFont(savedFont);
 
-  /* Overlay */
+  /* WATCHED LOCAL */
+
+  function saveWatched() {
+    localStorage.setItem(
+      "mytv_watched_shows",
+      JSON.stringify(Array.from(state.watched.shows))
+    );
+    localStorage.setItem(
+      "mytv_watched_movies",
+      JSON.stringify(Array.from(state.watched.movies))
+    );
+  }
+
+  function toggleShowWatched(id) {
+    if (state.watched.shows.has(id)) state.watched.shows.delete(id);
+    else state.watched.shows.add(id);
+    saveWatched();
+    renderShows();
+  }
+
+  function toggleMovieWatched(id) {
+    if (state.watched.movies.has(id)) state.watched.movies.delete(id);
+    else state.watched.movies.add(id);
+    saveWatched();
+    renderMovies();
+  }
+
+  /* OVERLAY */
 
   function openOverlay({title, sub, poster, icons, bodyHTML, debug}) {
     el.ovTitle.textContent = title || "";
@@ -950,12 +1048,12 @@
     el.ovBody.innerHTML = bodyHTML || "";
     el.ovDebug.textContent = debug || "";
     el.ovBackdrop.classList.add("active");
-    el.ovBackdrop.setAttribute("aria-hidden","false");
+    el.ovBackdrop.setAttribute("aria-hidden", "false");
   }
 
   function closeOverlay() {
     el.ovBackdrop.classList.remove("active");
-    el.ovBackdrop.setAttribute("aria-hidden","true");
+    el.ovBackdrop.setAttribute("aria-hidden", "true");
     el.ovBody.innerHTML = "";
     el.ovIcons.innerHTML = "";
     el.ovDebug.textContent = "";
@@ -969,7 +1067,7 @@
     if (e.key === "Escape") closeOverlay();
   });
 
-  /* Popups */
+  /* POPUPS */
 
   function showShowPopup(showId) {
     const show = state.showsById[showId];
@@ -981,33 +1079,36 @@
       t.onclick = ev => { ev.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
       icons.push(t);
     }
-    let body = "";
+    const bodyParts = [];
     if (show.overview) {
-      body += `<div>${escapeHtml(show.overview)}</div>`;
+      bodyParts.push(`<div>${escapeHtml(show.overview)}</div>`);
     }
     const seasons = show.seasons || [];
     if (seasons.length) {
-      body += `<div><strong>Seasons</strong></div>`;
+      bodyParts.push(`<div><strong>Seasons</strong></div>`);
       seasons.forEach(s => {
         const label = s.name || `Season ${s.season_number}`;
         const air = s.air_date || "";
         const eps = s.episode_count != null ? ` • ${s.episode_count} eps` : "";
-        body += `
+        bodyParts.push(`
           <div class="overlay-list-item"
                data-action="open-season"
                data-show-id="${showId}"
                data-sn="${s.season_number}">
             <div class="overlay-ep-line">${escapeHtml(label)}</div>
             <div class="overlay-ep-sub">${escapeHtml(air + eps)}</div>
-          </div>`;
+          </div>`);
       });
     }
+    const subBits = [];
+    if (show.genres && show.genres.length) subBits.push(show.genres.join(", "));
+    if (show.status) subBits.push(show.status);
     openOverlay({
       title: `${show.name || ""} [${tmdbId}]`,
-      sub: `${(show.genres || []).join(", ")}${show.status ? " • " + show.status : ""}`,
+      sub: subBits.join(" • "),
       poster: posterUrl(show.poster_path),
       icons,
-      bodyHTML: body
+      bodyHTML: bodyParts.join("")
     });
     el.ovBody.querySelectorAll("[data-action='open-season']").forEach(n => {
       n.addEventListener("click", () => {
@@ -1025,21 +1126,26 @@
     const tmdbId = makeShowId(show) || "?";
     const season = (show.seasons || []).find(s => s.season_number === sn);
     if (!season) return;
+
     const icons = [];
     if (show.links && show.links.tmdb) {
       const t = iconImg(ICONS.tmdb, "TMDB");
       t.onclick = ev => { ev.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
       icons.push(t);
     }
-    let body = `<div><strong>${escapeHtml(season.name || ("Season " + sn))}</strong></div>`;
+
+    const parts = [];
+    parts.push(`<div><strong>${escapeHtml(season.name || ("Season " + sn))}</strong></div>`);
     if (season.overview) {
-      body += `<div class="overlay-ep-sub">${escapeHtml(season.overview)}</div>`;
+      parts.push(`<div class="overlay-ep-sub">${escapeHtml(season.overview)}</div>`);
     }
+
     const episodes = season.episodes || [];
     if (episodes.length) {
       episodes.forEach(ep => {
         const code = `S${String(sn).padStart(2,"0")}E${String(ep.episode_number).padStart(2,"0")}`;
-        body += `
+        const runtime = ep.runtime ? `${ep.runtime}m` : "";
+        parts.push(`
           <div class="overlay-list-item"
                data-action="open-episode"
                data-show-id="${showId}"
@@ -1048,19 +1154,22 @@
             <div class="overlay-ep-line">${code} · ${escapeHtml(ep.name || "")}</div>
             <div class="overlay-ep-sub">
               <span>${escapeHtml(ep.air_date || "TBA")}</span>
+              ${runtime ? `<span>${runtime}</span>` : ""}
             </div>
-          </div>`;
+          </div>`);
       });
     } else {
-      body += `<div class="overlay-ep-sub">No episodes listed.</div>`;
+      parts.push(`<div class="overlay-ep-sub">No episodes listed.</div>`);
     }
+
     openOverlay({
       title: `${show.name || ""} [${tmdbId}]`,
       sub: `Season ${sn}`,
       poster: posterUrl(show.poster_path),
       icons,
-      bodyHTML: body
+      bodyHTML: parts.join("")
     });
+
     el.ovBody.querySelectorAll("[data-action='open-episode']").forEach(n => {
       n.addEventListener("click", () => {
         showEpisodePopup(
@@ -1091,16 +1200,14 @@
       t.onclick = ev => { ev.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
       icons.push(t);
     }
-    const v1 = iconImg(ICONS.vidsrc, "VidSrc");
-    v1.onclick = ev => { ev.stopPropagation(); window.open(vs, "_blank"); };
-    icons.push(v1);
-    const v2 = iconImg(ICONS.videasy, "Videasy");
-    v2.onclick = ev => { ev.stopPropagation(); window.open(ve, "_blank"); };
-    icons.push(v2);
+    icons.push((() => { const i = iconImg(ICONS.vidsrc, "VidSrc"); i.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); }; return i; })());
+    icons.push((() => { const i = iconImg(ICONS.videasy, "Videasy"); i.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); }; return i; })());
+
+    const runtime = ep.runtime ? `${ep.runtime}m` : "";
 
     openOverlay({
       title: `${show.name || ""} [${tmdbId}]`,
-      sub: `${code} · ${ep.name || ""} • ${ep.air_date || "TBA"}`,
+      sub: `${code} · ${ep.name || ""} • ${ep.air_date || "TBA"}${runtime ? " • " + runtime : ""}`,
       poster: posterUrl(ep.still_path || show.poster_path),
       icons,
       bodyHTML: `<div>${escapeHtml(ep.overview || "No overview available.")}</div>`
@@ -1120,25 +1227,22 @@
     if (m.tmdb_id) {
       const vs = `https://vidsrc.net/embed/movie/${m.tmdb_id}`;
       const ve = `https://player.videasy.net/movie/${m.tmdb_id}`;
-      const v1 = iconImg(ICONS.vidsrc, "VidSrc");
-      v1.onclick = ev => { ev.stopPropagation(); window.open(vs, "_blank"); };
-      icons.push(v1);
-      const v2 = iconImg(ICONS.videasy, "Videasy");
-      v2.onclick = ev => { ev.stopPropagation(); window.open(ve, "_blank"); };
-      icons.push(v2);
+      icons.push((() => { const i = iconImg(ICONS.vidsrc, "VidSrc"); i.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); }; return i; })());
+      icons.push((() => { const i = iconImg(ICONS.videasy, "Videasy"); i.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); }; return i; })());
     }
-    const statusLine =
-      `${m.release_date || ""}${m.status ? " • " + m.status : ""}`;
+    const runtime = m.runtime ? `${m.runtime}m` : "";
+    const sub =
+      `${m.release_date || ""}${m.status ? " • " + m.status : ""}${runtime ? " • " + runtime : ""}`;
     openOverlay({
       title: `${m.title || ""} [${tmdbId}]`,
-      sub: statusLine,
+      sub,
       poster: posterUrl(m.poster_path),
       icons,
       bodyHTML: `<div>${escapeHtml(m.overview || "No overview available.")}</div>`
     });
   }
 
-  /* Calendar render */
+  /* CALENDAR RENDER */
 
   function buildCalendar() {
     const data = state.data;
@@ -1152,7 +1256,7 @@
     const target = new Date(base.getFullYear(), base.getMonth() + state.calOffset, 1);
     const year = target.getFullYear();
     const month = target.getMonth();
-    const monthName = target.toLocaleString("en", {month:"long"});
+    const monthName = target.toLocaleString("en", { month: "long" });
     el.calMonth.textContent = `${monthName} ${year}`;
 
     const first = new Date(year, month, 1);
@@ -1228,13 +1332,28 @@
           tEp.textContent = `${code} · ${ev.ep.name || ""}`;
           tEp.onclick = e => { e.stopPropagation(); showSeasonPopup(ev.showId, ev.sn); };
 
+          const runtime = ev.ep.runtime ? `${ev.ep.runtime}m` : "";
           const tRun = document.createElement("div");
           tRun.className = "cal-runtime";
-          tRun.textContent = "";
+          tRun.textContent = runtime;
 
           txt.appendChild(tShow);
           txt.appendChild(tEp);
-          txt.appendChild(tRun);
+          if (runtime) txt.appendChild(tRun);
+
+          // network logos (from show.networks, if present)
+          if (Array.isArray(ev.show.networks) && ev.show.networks.length) {
+            const netRow = document.createElement("div");
+            netRow.className = "cal-net-row";
+            ev.show.networks.slice(0,4).forEach(nm => {
+              const src = logoFor(nm);
+              if (src) {
+                const ni = iconImg(src, nm, "net-icon");
+                netRow.appendChild(ni);
+              }
+            });
+            txt.appendChild(netRow);
+          }
 
           const iconRow = document.createElement("div");
           iconRow.className = "cal-icons-row";
@@ -1276,9 +1395,11 @@
           tTitle.textContent = m.title || "";
           tTitle.onclick = e => { e.stopPropagation(); showMoviePopup(ev.movieId); };
 
+          const runtime = m.runtime ? `${m.runtime}m` : "";
           const tDate = document.createElement("div");
           tDate.className = "cal-ep";
-          tDate.textContent = m.release_date || "";
+          tDate.textContent =
+            `${m.release_date || ""}${m.status ? " • " + m.status : ""}${runtime ? " • " + runtime : ""}`;
           txt.appendChild(tTitle);
           txt.appendChild(tDate);
 
@@ -1311,7 +1432,41 @@
     }
   }
 
-  /* Shows */
+  /* SHOWS RENDER */
+
+  function buildShowsGenres(shows) {
+    const s = new Set();
+    shows.forEach(sh => (sh.genres || []).forEach(g => s.add(g)));
+    el.showsGenres.innerHTML = "";
+    const all = document.createElement("span");
+    all.className = "pill active";
+    all.textContent = "All";
+    all.dataset.genre = "";
+    el.showsGenres.appendChild(all);
+    all.addEventListener("click", () => {
+      state.showsFilters.genre = null;
+      updateGenrePills(el.showsGenres, "");
+      renderShows();
+    });
+    Array.from(s).sort().forEach(g => {
+      const p = document.createElement("span");
+      p.className = "pill";
+      p.textContent = g;
+      p.dataset.genre = g;
+      p.addEventListener("click", () => {
+        state.showsFilters.genre = g;
+        updateGenrePills(el.showsGenres, g);
+        renderShows();
+      });
+      el.showsGenres.appendChild(p);
+    });
+  }
+
+  function updateGenrePills(container, val) {
+    container.querySelectorAll(".pill").forEach(p => {
+      p.classList.toggle("active", (p.dataset.genre || "") === (val || ""));
+    });
+  }
 
   function renderShows() {
     const d = state.data;
@@ -1319,9 +1474,38 @@
       el.showsGrid.innerHTML = '<div class="config-note">No shows in data.json.</div>';
       return;
     }
-    const shows = d.shows.slice().sort((a,b) => (a.name || "").localeCompare(b.name || ""));
+    const f = state.showsFilters;
+    let list = d.shows.slice();
+
+    // status filter
+    if (f.status === "running") {
+      list = list.filter(s => (s.status || "").toLowerCase().includes("running"));
+    } else if (f.status === "ended") {
+      list = list.filter(s => (s.status || "").toLowerCase().includes("ended"));
+    }
+
+    // genre filter
+    if (f.genre) {
+      list = list.filter(s => (s.genres || []).includes(f.genre));
+    }
+
+    // watched filter
+    if (f.watched === "watched") {
+      list = list.filter(s => state.watched.shows.has(String(makeShowId(s))));
+    } else if (f.watched === "unwatched") {
+      list = list.filter(s => !state.watched.shows.has(String(makeShowId(s))));
+    }
+
+    // sort
+    list.sort((a,b) => {
+      const na = (a.name || "").toLowerCase();
+      const nb = (b.name || "").toLowerCase();
+      if (f.sort === "za") return nb.localeCompare(na);
+      return na.localeCompare(nb);
+    });
+
     el.showsGrid.innerHTML = "";
-    shows.forEach(show => {
+    list.forEach(show => {
       const sid = makeShowId(show);
       if (!sid) return;
       const card = document.createElement("div");
@@ -1340,6 +1524,18 @@
       t.onclick = () => showShowPopup(sid);
       card.appendChild(t);
 
+      // current season line (best-effort)
+      const seasons = show.seasons || [];
+      if (seasons.length) {
+        const last = seasons[seasons.length - 1];
+        const cs = document.createElement("div");
+        cs.className = "card-sub";
+        cs.textContent = `Current season: ${last.season_number} (${last.episode_count || 0} eps)`;
+        cs.style.cursor = "pointer";
+        cs.onclick = () => showSeasonPopup(sid, last.season_number);
+        card.appendChild(cs);
+      }
+
       const sub = document.createElement("div");
       sub.className = "card-sub";
       sub.textContent =
@@ -1354,20 +1550,62 @@
       chips.appendChild(idChip);
       card.appendChild(chips);
 
-      const icons = document.createElement("div");
-      icons.className = "icon-row";
+      const row = document.createElement("div");
+      row.className = "icon-row";
+
+      // watched toggle
+      const w = document.createElement("div");
+      w.className = "watch-pill";
+      const key = String(sid);
+      const isOn = state.watched.shows.has(key);
+      if (isOn) w.classList.add("on");
+      w.textContent = isOn ? "Watched" : "Mark watched";
+      w.onclick = (e) => {
+        e.stopPropagation();
+        toggleShowWatched(key);
+      };
+      row.appendChild(w);
+
       if (show.links && show.links.tmdb) {
         const tm = iconImg(ICONS.tmdb, "TMDB");
         tm.onclick = e => { e.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
-        icons.appendChild(tm);
+        row.appendChild(tm);
       }
-      card.appendChild(icons);
 
+      card.appendChild(row);
       el.showsGrid.appendChild(card);
     });
   }
 
-  /* Movies */
+  /* MOVIES RENDER */
+
+  function buildMoviesGenres(movies) {
+    const s = new Set();
+    movies.forEach(m => (m.genres || []).forEach(g => s.add(g)));
+    el.moviesGenres.innerHTML = "";
+    const all = document.createElement("span");
+    all.className = "pill active";
+    all.textContent = "All";
+    all.dataset.genre = "";
+    el.moviesGenres.appendChild(all);
+    all.addEventListener("click", () => {
+      state.moviesFilters.genre = null;
+      updateGenrePills(el.moviesGenres, "");
+      renderMovies();
+    });
+    Array.from(s).sort().forEach(g => {
+      const p = document.createElement("span");
+      p.className = "pill";
+      p.textContent = g;
+      p.dataset.genre = g;
+      p.addEventListener("click", () => {
+        state.moviesFilters.genre = g;
+        updateGenrePills(el.moviesGenres, g);
+        renderMovies();
+      });
+      el.moviesGenres.appendChild(p);
+    });
+  }
 
   function renderMovies() {
     const d = state.data;
@@ -1376,9 +1614,48 @@
       el.moviesGrid.innerHTML = '<div class="config-note">No movies in data.json.</div>';
       return;
     }
-    const sorted = movies.slice().sort((a,b) => (a.title || "").localeCompare(b.title || ""));
+    const f = state.moviesFilters;
+    let list = movies.slice();
+
+    // genre filter
+    if (f.genre) {
+      list = list.filter(m => (m.genres || []).includes(f.genre));
+    }
+
+    // status filter (simplified mapping)
+    function mapStatus(raw) {
+      if (!raw) return "";
+      const r = raw.toLowerCase();
+      if (r.includes("released")) return "releasedto";
+      if (r.includes("theatrical") || r.includes("in theaters") or r.includes("in theatres")) return "intheatres";
+      if (r.includes("post") || r.includes("prod")) return "inprod";
+      if (r.includes("announced")) return "announced";
+      return "";
+    }
+
+    if (f.status !== "all") {
+      list = list.filter(m => mapStatus(m.status) === f.status);
+    }
+
+    // watched filter
+    if (f.watched === "watched") {
+      list = list.filter(m => state.watched.movies.has(String(makeMovieId(m))));
+    } else if (f.watched === "unwatched") {
+      list = list.filter(m => !state.watched.movies.has(String(makeMovieId(m))));
+    }
+
+    // sort
+    list.sort((a,b) => {
+      if (f.sort === "date") {
+        const da = a.release_date || "";
+        const db = b.release_date || "";
+        return da.localeCompare(db);
+      }
+      return (a.title || "").localeCompare(b.title || "");
+    });
+
     el.moviesGrid.innerHTML = "";
-    sorted.forEach(m => {
+    list.forEach(m => {
       const mid = makeMovieId(m);
       const card = document.createElement("div");
       card.className = "card";
@@ -1396,10 +1673,11 @@
       t.onclick = () => showMoviePopup(mid);
       card.appendChild(t);
 
+      const runtime = m.runtime ? `${m.runtime}m` : "";
       const sub = document.createElement("div");
       sub.className = "card-sub";
       sub.textContent =
-        `${(m.genres || []).join(", ")}${m.release_date ? " • " + m.release_date : ""}${m.status ? " • " + m.status : ""}`;
+        `${(m.genres || []).join(", ")}${m.release_date ? " • " + m.release_date : ""}${m.status ? " • " + m.status : ""}${runtime ? " • " + runtime : ""}`;
       card.appendChild(sub);
 
       const chips = document.createElement("div");
@@ -1410,30 +1688,90 @@
       chips.appendChild(idChip);
       card.appendChild(chips);
 
-      const icons = document.createElement("div");
-      icons.className = "icon-row";
+      const row = document.createElement("div");
+      row.className = "icon-row";
+
+      const key = String(mid);
+      const w = document.createElement("div");
+      w.className = "watch-pill";
+      const isOn = state.watched.movies.has(key);
+      if (isOn) w.classList.add("on");
+      w.textContent = isOn ? "Watched" : "Mark watched";
+      w.onclick = (e) => {
+        e.stopPropagation();
+        toggleMovieWatched(key);
+      };
+      row.appendChild(w);
+
       if (m.links && m.links.tmdb) {
         const tm = iconImg(ICONS.tmdb, "TMDB");
         tm.onclick = e => { e.stopPropagation(); window.open(m.links.tmdb, "_blank"); };
-        icons.appendChild(tm);
+        row.appendChild(tm);
       }
       if (m.tmdb_id) {
         const vs = `https://vidsrc.net/embed/movie/${m.tmdb_id}`;
         const ve = `https://player.videasy.net/movie/${m.tmdb_id}`;
         const vi = iconImg(ICONS.vidsrc, "VidSrc");
         vi.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); };
-        icons.appendChild(vi);
+        row.appendChild(vi);
         const vii = iconImg(ICONS.videasy, "Videasy");
         vii.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); };
-        icons.appendChild(vii);
+        row.appendChild(vii);
       }
-      card.appendChild(icons);
 
+      card.appendChild(row);
       el.moviesGrid.appendChild(card);
     });
   }
 
-  /* Load data.json */
+  /* FILTER CLICK WIRING */
+
+  document.addEventListener("click", (e) => {
+    const p = e.target.closest(".pill");
+    if (!p) return;
+
+    // Shows
+    if (p.dataset.showsSort) {
+      document.querySelectorAll("[data-shows-sort]").forEach(x => x.classList.remove("active"));
+      p.classList.add("active");
+      state.showsFilters.sort = p.dataset.showsSort;
+      renderShows();
+    }
+    if (p.dataset.showsStatus) {
+      document.querySelectorAll("[data-shows-status]").forEach(x => x.classList.remove("active"));
+      p.classList.add("active");
+      state.showsFilters.status = p.dataset.showsStatus;
+      renderShows();
+    }
+    if (p.dataset.showsWatched) {
+      document.querySelectorAll("[data-shows-watched]").forEach(x => x.classList.remove("active"));
+      p.classList.add("active");
+      state.showsFilters.watched = p.dataset.showsWatched;
+      renderShows();
+    }
+
+    // Movies
+    if (p.dataset.moviesStatus) {
+      document.querySelectorAll("[data-movies-status]").forEach(x => x.classList.remove("active"));
+      p.classList.add("active");
+      state.moviesFilters.status = p.dataset.moviesStatus;
+      renderMovies();
+    }
+    if (p.dataset.moviesSort) {
+      document.querySelectorAll("[data-movies-sort]").forEach(x => x.classList.remove("active"));
+      p.classList.add("active");
+      state.moviesFilters.sort = p.dataset.moviesSort;
+      renderMovies();
+    }
+    if (p.dataset.moviesWatched) {
+      document.querySelectorAll("[data-movies-watched]").forEach(x => x.classList.remove("active"));
+      p.classList.add("active");
+      state.moviesFilters.watched = p.dataset.moviesWatched;
+      renderMovies();
+    }
+  });
+
+  /* LOAD DATA */
 
   function loadData() {
     fetch("../data/data.json?_ts=" + Date.now())
@@ -1455,35 +1793,26 @@
         });
         setMetaLine(data);
         buildCalendar();
+        buildShowsGenres(data.shows || []);
         renderShows();
+        buildMoviesGenres(data.movies || []);
         renderMovies();
       })
       .catch(err => {
         console.error("data.json load failed", err);
         el.meta.textContent =
-          "index.html: v2.9.1 (2025-11-10 22:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0 (failed to load data.json)";
+          "index.html: v2.9.2 (2025-11-10 23:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0 (failed to load data.json)";
         el.calMonth.textContent = "No data";
       });
   }
 
-  /* Calendar nav */
-
-  el.calPrev.addEventListener("click", () => {
-    state.calOffset -= 1;
-    buildCalendar();
-  });
-  el.calNext.addEventListener("click", () => {
-    state.calOffset += 1;
-    buildCalendar();
-  });
-  el.calToday.addEventListener("click", () => {
-    state.calOffset = 0;
-    buildCalendar();
-  });
+  /* CAL NAV */
+  el.calPrev.addEventListener("click", () => { state.calOffset -= 1; buildCalendar(); });
+  el.calNext.addEventListener("click", () => { state.calOffset += 1; buildCalendar(); });
+  el.calToday.addEventListener("click", () => { state.calOffset = 0; buildCalendar(); });
 
   loadData();
 })();
 </script>
 </body>
 </html>
-0\
