@@ -5,51 +5,52 @@ on:
   schedule:
     - cron: "0 */4 * * *"
 
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install -r requirements.txt
 
-      - name: Build data (TMDB shows+movies)
+      - name: Build data.json
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
+          API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
+          API_OMDB_KEY: ${{ secrets.API_OMDB_KEY }}
         run: |
-          mkdir -p data
           python scripts/fetch_tmdb.py
 
-      - name: Upload artifact (Pages)
+      - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
 
   deploy:
-    needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
+    needs: build
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
