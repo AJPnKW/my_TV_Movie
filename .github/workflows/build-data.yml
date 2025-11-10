@@ -5,20 +5,14 @@ on:
   schedule:
     - cron: "0 */4 * * *"
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-env:
-  PYTHONUNBUFFERED: "1"
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,42 +22,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Build data.json
+      - name: Build data (TMDB shows+movies)
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
-          API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
-          API_OMDB_KEY: ${{ secrets.API_OMDB_KEY }}
-          API_TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_CLIENT_ID }}
-          API_TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_CLIENT_SECRET }}
-          API_TRAKT_TV_USER: ${{ secrets.API_TRAKT_TV_USER }}
         run: |
-          echo "Running fetch_tmdb.py from $(pwd)"
+          mkdir -p data
           python scripts/fetch_tmdb.py
 
-          echo "Validating data/data.json..."
-          python - << 'EOF'
-          import json, os, sys
-          p = os.path.join("data", "data.json")
-          if not os.path.exists(p):
-              print("FATAL: data/data.json not created.", file=sys.stderr)
-              raise SystemExit(1)
-          with open(p, "r", encoding="utf-8") as f:
-              j = json.load(f)
-          shows = len(j.get("shows", []))
-          movies = len(j.get("movies", []))
-          print(f"SUMMARY: shows={shows}, movies={movies}")
-          if shows == 0 and movies == 0:
-              print("FATAL: 0 shows and 0 movies in data.json.", file=sys.stderr)
-              raise SystemExit(1)
-          EOF
-
-      - name: Upload artifact
+      - name: Upload artifact (Pages)
         uses: actions/upload-pages-artifact@v3
         with:
           path: .
@@ -71,12 +43,13 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     permissions:
       pages: write
       id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
