@@ -4,15 +4,16 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.9.1 (2025-11-10)
+    Version: v2.9.1 (2025-11-10 22:30 EST)
 
-    Stable single-page UI:
-      - Calendar / Shows / Movies / Live TV / Config
-      - Reads ../data/data.json
-      - Icons placed on dedicated rows (no clipping)
-      - Posters sized consistently
+    Key points:
+      - Single-page hub: Calendar / Shows / Movies / Live TV / Config
+      - Reads ../data/data.json (shows + movies + meta)
+      - Calendar: stable month grid; episodes + movies grouped by air/release date
+      - Shows & Movies: grids driven 100% by data.json (no stray text)
       - Popups: Show (P1), Season (P2), Episode (P3), Movie (P4)
-      - Config restored: Display, Shortcuts, Integrations, Edit helpers, Debug
+      - Config: Display, Maintenance shortcuts, Integration info, Edit helpers, Debug
+      - TMDB / VidSrc / Videasy use icon images; each on its own row in tight layout
   -->
   <meta charset="UTF-8" />
   <title>My TV Hub</title>
@@ -36,8 +37,8 @@
       --radius-sm: 8px;
       --shadow-soft: 0 10px 26px rgba(0,0,0,0.55);
       --font-scale: 1.0;
-      --poster-cal: 70px;
-      --poster-card-w: 120px;
+      --poster-cal: 70px;           /* Calendar posters (slightly larger) */
+      --poster-card-w: 120px;       /* Show/Movie cards */
       --transition-fast: 0.18s ease-out;
     }
 
@@ -86,15 +87,15 @@
       padding: 0 40px 32px;
     }
 
-    /* 1.1 Global Header ---------------------------------------------------- */
+    /* 1.1 Global Header */
 
     .app-header {
       position: sticky;
       top: 0;
       z-index: 50;
-      margin: 0 -40px 6px;
-      padding: 14px 40px 8px;
-      background: linear-gradient(to bottom, var(--bg) 70%, transparent);
+      margin: 0 -40px 4px;
+      padding: 10px 40px 6px;
+      background: linear-gradient(to bottom, var(--bg) 72%, transparent);
       display: flex;
       flex-direction: column;
       gap: 4px;
@@ -147,7 +148,7 @@
       outline-offset: 2px;
     }
 
-    /* Views wrapper -------------------------------------------------------- */
+    /* Views */
 
     .views {
       margin-top: 2px;
@@ -170,14 +171,14 @@
     .view-sub {
       font-size: 10px;
       color: var(--muted);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
-    /* Filter rows (sticky per-view) --------------------------------------- */
+    /* per-view sticky filter header */
 
     .filters-sticky {
       position: sticky;
-      top: 56px;
+      top: 52px;
       z-index: 40;
       padding: 4px 0 2px;
       background: linear-gradient(to bottom, var(--bg) 70%, transparent);
@@ -188,7 +189,7 @@
       flex-wrap: wrap;
       align-items: center;
       gap: 6px;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .filters-label {
@@ -221,7 +222,7 @@
       outline-offset: 1px;
     }
 
-    /* 2. Calendar ---------------------------------------------------------- */
+    /* 2. Calendar */
 
     .calendar-header-row {
       display: flex;
@@ -358,7 +359,7 @@
       margin-top: 2px;
       display: flex;
       flex-wrap: wrap;
-      gap: 3px;
+      gap: 4px;
       align-items: center;
     }
 
@@ -369,7 +370,7 @@
       display: inline-block;
     }
 
-    /* 3. Shows & 4. Movies ------------------------------------------------- */
+    /* 3. Shows & 4. Movies */
 
     .shows-grid,
     .movies-grid {
@@ -433,7 +434,7 @@
       margin-top: 2px;
     }
 
-    /* 5. Live TV (skeleton) ----------------------------------------------- */
+    /* 5. Live TV (skeleton) */
 
     .livetv-note {
       font-size: 10px;
@@ -441,7 +442,7 @@
       margin-top: 6px;
     }
 
-    /* 6. Config ------------------------------------------------------------ */
+    /* 6. Config */
 
     .config-section-title {
       font-size: 12px;
@@ -475,7 +476,7 @@
       resize: vertical;
     }
 
-    /* 7. Popups ------------------------------------------------------------ */
+    /* 7. Popups */
 
     .overlay-backdrop {
       position: fixed;
@@ -606,21 +607,21 @@
         padding: 0 14px 18px;
       }
       .app-header {
-        margin: 0 -14px 6px;
-        padding: 10px 14px 6px;
+        margin: 0 -14px 4px;
+        padding: 8px 14px 6px;
       }
     }
   </style>
 </head>
 <body data-theme="dark">
 <div class="app-root">
-  <!-- 1.1 Global Header -->
+  <!-- 1. Global Header -->
   <header class="app-header">
     <div class="app-header-row">
       <div>
         <div class="app-title">My TV Hub</div>
         <div id="meta-line" class="meta-line">
-          index.html: v2.9.1 • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0
+          index.html: v2.9.1 (2025-11-10 22:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0
         </div>
       </div>
       <nav class="nav-tabs" aria-label="Main views">
@@ -637,7 +638,7 @@
     <!-- 2. CALENDAR VIEW -->
     <section id="view-calendar" class="view active">
       <div class="view-title">Calendar</div>
-      <div class="view-sub">Episodes & movie releases by air date.</div>
+      <div class="view-sub">Episodes &amp; movie releases by air date.</div>
 
       <div class="filters-sticky">
         <div class="calendar-header-row">
@@ -731,11 +732,11 @@
     <section id="view-config" class="view">
       <!-- 6.1 Display -->
       <div class="view-title">Config</div>
-      <div class="view-sub">Display preferences, shortcuts & list helpers.</div>
+      <div class="view-sub">Display preferences, shortcuts &amp; list helpers.</div>
 
       <div class="config-section-title">Display</div>
       <div class="config-note">
-        Theme & font scale are stored in this browser only and applied to this page.
+        Theme &amp; font scale are stored in this browser only and applied to this page.
       </div>
       <div class="filters-row">
         <div class="filters-label">Theme</div>
@@ -755,7 +756,7 @@
           Build TV Data and Deploy (workflow)
         </a>
         <a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions" target="_blank">
-          Secrets & variables (Actions)
+          Secrets &amp; variables (Actions)
         </a>
         <a href="https://github.com/AJPnKW/my_TV_Movie" target="_blank">Repository</a>
       </div>
@@ -780,9 +781,9 @@
       <div class="config-section-title">Debug: nothing showing?</div>
       <div class="config-note">
         1) Open <a href="/my_TV_Movie/data/data.json" target="_blank">data.json</a>.
-        2) Confirm "shows" / "movies" are not empty.
-        3) Ensure the "Build TV Data and Deploy" workflow succeeded.
-        4) If data.json looks good but UI is blank, force-refresh or clear cache on the TV.
+        2) Confirm "shows" / "movies" are not empty.<br/>
+        3) Ensure the "Build TV Data and Deploy" workflow succeeded.<br/>
+        4) If data.json looks good but UI is blank, force-refresh / clear cache on the TV browser.
       </div>
     </section>
   </main>
@@ -852,8 +853,6 @@
     ovDebug: document.getElementById("ov-debug")
   };
 
-  /* Helpers */
-
   function escapeHtml(s) {
     return String(s || "")
       .replace(/&/g,"&amp;")
@@ -891,10 +890,8 @@
     const movies = Array.isArray(data.movies) ? data.movies.length : (meta.movies || 0);
     const live = Array.isArray(data.live_tv) ? data.live_tv.length : 0;
     el.meta.textContent =
-      `index.html: v2.9.1 • config.html: v1.4.4 • Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
+      `index.html: v2.9.1 (2025-11-10 22:30 EST) • config.html: v1.4.4 • Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
   }
-
-  /* View switching */
 
   function setView(v) {
     state.view = v;
@@ -933,8 +930,7 @@
     applyFont(v);
   });
 
-  const savedTheme = localStorage.getItem("mytv_theme");
-  applyTheme(savedTheme === "light" ? "light" : "dark");
+  applyTheme(localStorage.getItem("mytv_theme") === "light" ? "light" : "dark");
   const savedFont = parseFloat(localStorage.getItem("mytv_font") || "1.0");
   if (savedFont >= 0.8 && savedFont <= 2.0) applyFont(savedFont);
 
@@ -1043,7 +1039,6 @@
     if (episodes.length) {
       episodes.forEach(ep => {
         const code = `S${String(sn).padStart(2,"0")}E${String(ep.episode_number).padStart(2,"0")}`;
-        const air = ep.air_date || "TBA";
         body += `
           <div class="overlay-list-item"
                data-action="open-episode"
@@ -1052,7 +1047,7 @@
                data-en="${ep.episode_number}">
             <div class="overlay-ep-line">${code} · ${escapeHtml(ep.name || "")}</div>
             <div class="overlay-ep-sub">
-              <span>${escapeHtml(air)}</span>
+              <span>${escapeHtml(ep.air_date || "TBA")}</span>
             </div>
           </div>`;
       });
@@ -1152,6 +1147,7 @@
       el.calGrid.innerHTML = "";
       return;
     }
+
     const base = new Date();
     const target = new Date(base.getFullYear(), base.getMonth() + state.calOffset, 1);
     const year = target.getFullYear();
@@ -1198,7 +1194,7 @@
       num.textContent = d.getDate();
       const lbl = document.createElement("div");
       lbl.className = "calendar-day-label";
-      lbl.textContent = inMonth ? "" : "";
+      lbl.textContent = "";
       head.appendChild(num);
       head.appendChild(lbl);
       cell.appendChild(head);
@@ -1465,7 +1461,7 @@
       .catch(err => {
         console.error("data.json load failed", err);
         el.meta.textContent =
-          "index.html: v2.9.1 • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0 (failed to load data.json)";
+          "index.html: v2.9.1 (2025-11-10 22:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0 (failed to load data.json)";
         el.calMonth.textContent = "No data";
       });
   }
@@ -1490,3 +1486,4 @@
 </script>
 </body>
 </html>
+0\

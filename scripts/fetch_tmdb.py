@@ -1,36 +1,26 @@
 # -----------------------------------------------------------------------------
 # File: scripts/fetch_tmdb.py
 # Project: my_TV_Movie
-# Version: v2.0.0 (2025-11-10)
+# Version: v2.0.0 (2025-11-10 22:30 EST)
 #
-# Purpose:
+# Purpose
 #   - Parse tv_list.txt and movies_list.txt
-#   - Fetch metadata from TMDB for:
-#       * Shows + selected seasons + all episodes
+#   - Fetch metadata from TMDB:
+#       * TV shows + selected seasons + all episodes
 #       * Movies by TMDB ID
-#   - Normalize into a single data.json:
+#   - Emit data/data.json consumed by web/index.html:
 #       {
 #         "generated_at": "...Z",
 #         "shows": [...],
 #         "movies": [...],
 #         "meta": { "shows": N, "movies": M }
 #       }
-#
-# Inputs:
-#   - Environment:
-#       API_TMDB_KEY  (v3 key)  or
-#       API_TMDB_TOKEN (v4 bearer)
-#   - Files (repo root):
-#       tv_list.txt       # name|tmdb_show_id|season_spec
-#       movies_list.txt   # name|tmdb_movie_id
-#
-# Outputs:
-#   - data/data.json
-#   - data/last_refresh.txt
-#
-# Notes:
-#   - Minimal, stable; no partial overwrites with empty arrays.
-#   - If movies_list.txt missing or empty, movies = [] but shows unaffected.
+# Requirements
+#   - Env:
+#       API_TMDB_KEY or API_TMDB_TOKEN
+#   - Files:
+#       tv_list.txt   lines: name|tmdb_show_id|season_spec
+#       movies_list.txt lines: name|tmdb_movie_id
 # -----------------------------------------------------------------------------
 
 import os
@@ -42,14 +32,12 @@ import sys
 from datetime import datetime
 
 try:
-    from dotenv import load_dotenv  # local dev
+    from dotenv import load_dotenv
 except ImportError:
     def load_dotenv(*args, **kwargs):
         pass
 
 import requests
-
-# --- Paths -------------------------------------------------------------------
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 TV_LIST = ROOT / "tv_list.txt"
@@ -57,8 +45,6 @@ MOVIES_LIST = ROOT / "movies_list.txt"
 DATA_DIR = ROOT / "data"
 DATA_JSON = DATA_DIR / "data.json"
 STAMP = DATA_DIR / "last_refresh.txt"
-
-# --- Env / API ---------------------------------------------------------------
 
 load_dotenv(ROOT / ".env")
 
@@ -80,7 +66,6 @@ SESSION.headers.update(HEADERS)
 
 
 def tmdb_get(path, extra=None, tries=4, backoff=1.6):
-    """GET wrapper with gentle backoff."""
     url = f"{BASE}{path}"
     params = dict(PARAMS_KEY)
     if extra:
@@ -88,85 +73,79 @@ def tmdb_get(path, extra=None, tries=4, backoff=1.6):
     for attempt in range(tries):
         r = SESSION.get(url, params=params, timeout=25)
         if r.status_code == 429:
-            time.sleep(backoff * (attempt + 1))
+            sleep_for = backoff * (attempt + 1)
+            print(f"RATE: 429 on {url}, sleeping {sleep_for:.1f}s")
+            time.sleep(sleep_for)
             continue
         r.raise_for_status()
         return r.json()
     raise RuntimeError(f"TMDB failed after {tries} tries: {url}")
 
 
-# --- Parsers -----------------------------------------------------------------
+RE_TV = re.compile(r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*\|\s*([\d,\*]+)\s*$")
 
-RE_TV = re.compile(
-    r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*\|\s*([\d,\*]+)\s*$"
-)
 
 def parse_tv_list(path: pathlib.Path):
     shows = []
     if not path.exists():
+        print(f"NOTE: {path} not found, no shows to fetch.")
         return shows
-    with path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            m = RE_TV.match(line)
-            if not m:
-                print(f"WARN[tv]: skip bad line: {line}")
-                continue
-            name, show_id, spec = m.groups()
-            if spec == "*":
-                season_spec = "*"
-            else:
-                season_spec = [int(s.strip()) for s in spec.split(",") if s.strip().isdigit()]
-            shows.append(
-                {
-                    "ref_name": name,
-                    "show_id": int(show_id),
-                    "season_spec": season_spec,
-                }
-            )
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = RE_TV.match(line)
+        if not m:
+            print(f"WARN[tv]: skip bad line: {line}")
+            continue
+        name, show_id, spec = m.groups()
+        if spec == "*":
+            season_spec = "*"
+        else:
+            season_spec = [int(s.strip()) for s in spec.split(",") if s.strip().isdigit()]
+        shows.append({
+            "ref_name": name,
+            "show_id": int(show_id),
+            "season_spec": season_spec,
+        })
     return shows
 
 
-RE_MOVIE = re.compile(
-    r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*$"
-)
+RE_MOVIE = re.compile(r"^\s*([^#|]+?)\s*\|\s*(\d+)\s*$")
+
 
 def parse_movies_list(path: pathlib.Path):
     movies = []
     if not path.exists():
+        print(f"NOTE: {path} not found, no movies to fetch.")
         return movies
-    with path.open("r", encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            m = RE_MOVIE.match(line)
-            if not m:
-                print(f"WARN[movie]: skip bad line: {line}")
-                continue
-            name, mid = m.groups()
-            movies.append(
-                {
-                    "ref_name": name,
-                    "movie_id": int(mid),
-                }
-            )
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = RE_MOVIE.match(line)
+        if not m:
+            print(f"WARN[movie]: skip bad line: {line}")
+            continue
+        name, mid = m.groups()
+        movies.append({
+            "ref_name": name,
+            "movie_id": int(mid),
+        })
     return movies
 
-
-# --- Builders ----------------------------------------------------------------
 
 def build_show_links(show_id: int):
     return {
         "tmdb": f"https://www.themoviedb.org/tv/{show_id}",
     }
 
+
 def build_movie_links(movie_id: int):
     return {
         "tmdb": f"https://www.themoviedb.org/movie/{movie_id}",
     }
+
 
 def ensure_ep_title(ep, season_no: int):
     name = (ep.get("name") or "").strip()
@@ -195,26 +174,22 @@ def collect_show(show_id: int, season_spec):
         s_info = tmdb_get(f"/tv/{show_id}/season/{sn}")
         episodes_out = []
         for ep in s_info.get("episodes", []):
-            episodes_out.append(
-                {
-                    "episode_number": ep.get("episode_number"),
-                    "name": ensure_ep_title(ep, sn),
-                    "air_date": ep.get("air_date"),
-                    "overview": ep.get("overview") or "",
-                    "still_path": ep.get("still_path"),
-                    "runtime": ep.get("runtime"),  # may be None
-                }
-            )
-        seasons_out.append(
-            {
-                "season_number": sn,
-                "name": s_info.get("name") or f"Season {sn}",
-                "air_date": s_info.get("air_date"),
-                "overview": s_info.get("overview") or "",
-                "episode_count": len(episodes_out),
-                "episodes": episodes_out,
-            }
-        )
+            episodes_out.append({
+                "episode_number": ep.get("episode_number"),
+                "name": ensure_ep_title(ep, sn),
+                "air_date": ep.get("air_date"),
+                "overview": ep.get("overview") or "",
+                "still_path": ep.get("still_path"),
+                "runtime": ep.get("runtime"),
+            })
+        seasons_out.append({
+            "season_number": sn,
+            "name": s_info.get("name") or f"Season {sn}",
+            "air_date": s_info.get("air_date"),
+            "overview": s_info.get("overview") or "",
+            "episode_count": len(episodes_out),
+            "episodes": episodes_out,
+        })
 
     return {
         "show_id": show_id,
@@ -255,8 +230,6 @@ def collect_movie(movie_id: int, ref_name: str):
     }
 
 
-# --- Main --------------------------------------------------------------------
-
 def main():
     if not (TMDB_V3 or TMDB_V4):
         print("ERROR: API_TMDB_KEY or API_TMDB_TOKEN required.")
@@ -271,44 +244,33 @@ def main():
         "generated_at": datetime.utcnow().isoformat() + "Z",
         "shows": [],
         "movies": [],
-        "meta": {
-            "shows": 0,
-            "movies": 0,
-        },
+        "meta": {"shows": 0, "movies": 0},
     }
 
-    # Shows
     for item in tv_items:
         try:
             print(f"[show] {item['ref_name']} ({item['show_id']}) {item['season_spec']}")
             s = collect_show(item["show_id"], item["season_spec"])
             s["ref_name"] = item["ref_name"]
             out["shows"].append(s)
-            time.sleep(0.2)
+            time.sleep(0.25)
         except Exception as e:
             print(f"ERROR[show] {item['ref_name']} ({item['show_id']}): {e}")
 
-    # Movies
     for item in mv_items:
         try:
             print(f"[movie] {item['ref_name']} ({item['movie_id']})")
             m = collect_movie(item["movie_id"], item["ref_name"])
             out["movies"].append(m)
-            time.sleep(0.2)
+            time.sleep(0.25)
         except Exception as e:
             print(f"ERROR[movie] {item['ref_name']} ({item['movie_id']}): {e}")
 
     out["meta"]["shows"] = len(out["shows"])
     out["meta"]["movies"] = len(out["movies"])
 
-    DATA_JSON.write_text(
-        json.dumps(out, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
-    STAMP.write_text(
-        datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        encoding="utf-8",
-    )
+    DATA_JSON.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
+    STAMP.write_text(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
     print(f"Wrote {DATA_JSON} (shows={out['meta']['shows']}, movies={out['meta']['movies']})")
 
 
