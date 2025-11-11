@@ -1,32 +1,38 @@
 # File: .github/workflows/build-data.yml
 # Project: my_TV_Movie
-# Version: v1.3.0 (2025-11-10 22:30 EST)
+# Version: v1.5.0 (2025-11-11 23:05 EST)
 #
 # Purpose:
-#   - Build data/data.json from tv_list.txt, movies_list.txt, live_tv_list.txt
-#   - Commit updated data (optional)
+#   - Build data/data.json from:
+#       tv_list.txt, movies_list.txt, live_tv_list.txt (if present)
+#   - (Optionally) commit updated data
 #   - Deploy /web via GitHub Pages
 #
-# Notes:
-#   - Requires repo settings:
-#       Settings → Pages → Build and deployment → Source: GitHub Actions
-#   - Requires:
-#       Settings → Actions → General → Workflow permissions: Read and write
-#   - Secrets (min):
-#       API_TMDB_KEY
-#   - Optional:
-#       API_TMDB_TOKEN, API_TVMAZE_KEY, API_OMDB_KEY,
-#       API_TRAKT_CLIENT_ID, TRAKT_PROFILES, etc.
+# Requirements:
+#   Repo settings:
+#     - Settings → Pages → Build and deployment → Source: GitHub Actions
+#     - Settings → Actions → General → Workflow permissions: Read and write
+#
+# Secrets (min):
+#   - API_TMDB_KEY
+#
+# Optional (scripts will soft-fail if missing):
+#   - API_TMDB_TOKEN
+#   - API_TVMAZE_KEY
+#   - API_OMDB_KEY
+#   - API_TRAKT_CLIENT_ID
+#   - API_TRAKT_CLIENT_SECRET
+#   - TRAKT_PROFILES
 
 name: Build TV Data and Deploy
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */4 * * *"   # every 4 hours
+    - cron: "0 */4 * * *"  # every 4 hours
 
 permissions:
-  contents: write      # for committing data.json if changed
+  contents: write      # for optional data commits
   pages: write         # for Pages deploy
   id-token: write
 
@@ -64,42 +70,60 @@ jobs:
           API_TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_CLIENT_SECRET }}
           TRAKT_PROFILES: ${{ secrets.TRAKT_PROFILES }}
         run: |
+          set -e
           mkdir -p data
 
           echo "[build] fetch_tmdb.py"
           python scripts/fetch_tmdb.py
 
           echo "[build] fetch_tvmaze.py (soft-fail ok)"
-          python scripts/fetch_tvmaze.py || echo "[build] tvmaze skipped"
+          if [ -f scripts/fetch_tvmaze.py ]; then
+            python scripts/fetch_tvmaze.py || echo "[build] tvmaze skipped"
+          fi
 
           echo "[build] fetch_omdb.py (soft-fail ok)"
-          python scripts/fetch_omdb.py || echo "[build] omdb skipped"
+          if [ -f scripts/fetch_omdb.py ]; then
+            python scripts/fetch_omdb.py || echo "[build] omdb skipped"
+          fi
 
           echo "[build] sync_trakt.py (soft-fail ok)"
-          python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
+          if [ -f scripts/sync_trakt.py ]; then
+            python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
+          fi
 
-          echo "[build] final data.json:"
+          echo "[build] fetch_live_tv.py (soft-fail ok)"
+          if [ -f scripts/fetch_live_tv.py ]; then
+            python scripts/fetch_live_tv.py || echo "[build] live tv skipped"
+          fi
+
+          echo "[build] verify data.json"
           python - << 'EOF'
-          import json, pathlib
+          import json, pathlib, sys
           p = pathlib.Path("data/data.json")
           if not p.exists():
-              raise SystemExit("data/data.json missing after build.")
-          data = json.loads(p.read_text(encoding="utf-8"))
+              raise SystemExit("ERROR: data/data.json missing after build.")
+          try:
+              data = json.loads(p.read_text(encoding="utf-8"))
+          except Exception as e:
+              raise SystemExit(f"ERROR: invalid JSON in data/data.json: {e}")
           meta = data.get("meta", {})
-          print("[build] Shows:", meta.get("shows"), "Movies:", meta.get("movies"), "LiveTV:", meta.get("livetv", 0))
+          print("[build] Shows:", meta.get("shows"),
+                "Movies:", meta.get("movies"),
+                "LiveTV:", meta.get("livetv", 0))
           EOF
 
       - name: Commit updated data (optional)
         if: github.ref == 'refs/heads/main'
         run: |
           if git status --porcelain data/ | grep .; then
+            echo "[build] committing updated data/"
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add data/
             git commit -m "Update data.json ($(date -u +'%Y-%m-%dT%H:%M:%SZ'))" || true
             git push || true
           else
-            echo "No data changes to commit."
+            echo "[build] No data changes to commit."
           fi
 
       - name: Upload web artifact
