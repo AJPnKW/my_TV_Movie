@@ -1,7 +1,7 @@
 # =============================================================================
 # File: scripts/fetch_tvmaze.py
 # Project: my_TV_Movie
-# Version: v1.0.0 (2025-11-07)
+# Version: v1.0.1 (2025-11-10)
 #
 # Purpose:
 #   Optional helper to dump raw TVMaze episode data for shows
@@ -10,9 +10,13 @@
 #   Output:
 #     data/tvmaze_raw.json
 #
+# Behavior:
+#   - If API_TVMAZE_KEY is missing -> log + exit(0) (does NOT break pipeline).
+#   - If tv_list.txt has no tvmaze_id entries -> writes empty structure.
+#
 # Notes:
-#   - Not required by the UI. Main integration is in fetch_tmdb.py.
-#   - Useful for debugging and verifying TVMaze vs TMDB.
+#   - Does NOT modify data.json.
+#   - Main UI still driven by TMDB; this is for cross-checking & future merge.
 # =============================================================================
 
 import os
@@ -37,11 +41,15 @@ LINE_RE = re.compile(
 )
 
 
+def log(msg: str) -> None:
+    print(f"[fetch_tvmaze] {msg}", flush=True)
+
+
 def tvmaze_get(path: str, params=None):
-    if not TVMAZE_KEY:
-        raise RuntimeError("API_TVMAZE_KEY not set.")
     url = f"{BASE_TVMAZE}{path}"
-    headers = {"X-API-Key": TVMAZE_KEY}
+    headers = {}
+    if TVMAZE_KEY:
+        headers["X-API-Key"] = TVMAZE_KEY
     r = requests.get(url, headers=headers, params=params or {}, timeout=20)
     r.raise_for_status()
     return r.json()
@@ -49,6 +57,7 @@ def tvmaze_get(path: str, params=None):
 
 def parse_tv_list():
     if not TV_LIST.exists():
+        log("tv_list.txt missing; nothing to do.")
         return []
     items = []
     with TV_LIST.open("r", encoding="utf-8") as f:
@@ -62,13 +71,23 @@ def parse_tv_list():
             name, _tmdb, _seasons, tvmaze_id = m.groups()
             if tvmaze_id:
                 items.append({"name": name, "tvmaze_id": int(tvmaze_id)})
+    log(f"Found {len(items)} shows with tvmaze_id.")
     return items
 
 
 def main():
+    # Soft-fail if no key; we do NOT want to break the whole workflow.
     if not TVMAZE_KEY:
-        print("No API_TVMAZE_KEY; nothing to do.")
-        sys.exit(0)
+        log("API_TVMAZE_KEY not set; skipping TVMaze fetch.")
+        # Still write a predictable empty file for debugging.
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        empty = {
+            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "shows": [],
+            "note": "Skipped: missing API_TVMAZE_KEY",
+        }
+        OUT.write_text(json.dumps(empty, ensure_ascii=False, indent=2), encoding="utf-8")
+        return
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     shows = parse_tv_list()
@@ -88,11 +107,11 @@ def main():
                     "episodes": eps,
                 }
             )
-        } catch Exception as e:
-            print(f"ERROR TVMaze {item['name']}: {e}")
+        except Exception as e:  # noqa: BLE001
+            log(f"ERROR TVMaze {item['name']} ({item['tvmaze_id']}): {e}")
 
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"OK: wrote {OUT}")
+    log(f"OK: wrote {OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":
