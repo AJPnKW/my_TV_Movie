@@ -4,1814 +4,1392 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v2.9.2 (2025-11-10 23:30 EST)
+    Version: v2.9.3 (2025-11-10 23:59 EST)
 
-    Highlights:
-      - Single-page hub: Calendar / Shows / Movies / Live TV / Config
-      - Uses ../data/data.json (shows + movies + meta)
-      - Calendar: stable month grid; episodes + movies by air/release date
-      - Shows & Movies: filters (genre, status, sort, watched), TMDB ids, icons
-      - Popups: Show(P1), Season(P2), Episode(P3), Movie(P4)
-      - Config: display, shortcuts, integrations, edit helpers, debug
+    Purpose:
+      Single-page hub for:
+        - Calendar: episodes + movies by date
+        - Shows: library grid
+        - Movies: library grid
+        - Live TV: skeleton
+        - Config: theme, links, helpers
+
+    Notes:
+      - Reads ../data/data.json
+      - Tolerates missing movies or shows (no blank fatal states)
+      - Designed for TV browsers (Chromecast / Android TV) + desktop
   -->
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>My TV Hub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <style>
     :root {
       --bg: #050505;
-      --bg-soft: #101010;
-      --bg-softer: #151515;
+      --bg-alt: #111111;
+      --bg-soft: #151515;
       --fg: #f5f5f5;
-      --muted: #9a9a9a;
-      --accent: #2aa9ff;
-      --accent-soft: rgba(42,169,255,0.16);
-      --border-soft: #242424;
-      --calendar-today: #111827;
-      --calendar-topshade: #111827;
-      --radius-xl: 22px;
-      --radius-lg: 18px;
-      --radius-md: 12px;
-      --radius-sm: 8px;
-      --shadow-soft: 0 10px 26px rgba(0,0,0,0.55);
+      --fg-soft: #b0b0b0;
+      --accent: #2196f3;
+      --accent-soft: rgba(33,150,243,0.14);
+      --danger: #ff5252;
+      --border-soft: #303030;
+      --radius: 10px;
+      --pad: 8px;
       --font-scale: 1.0;
-      --poster-cal: 78px;          /* calendar posters */
-      --poster-card-w: 118px;      /* show/movie cards */
-      --transition-fast: 0.18s ease-out;
+      --shadow-soft: 0 4px 14px rgba(0,0,0,0.65);
+      --sticky-z: 60;
+      --max-width: 1600px;
     }
 
-    [data-theme="light"] {
-      --bg: #f4f4f8;
-      --bg-soft: #ffffff;
-      --bg-softer: #eef0f8;
-      --fg: #111111;
-      --muted: #666666;
-      --accent: #0066ff;
-      --accent-soft: rgba(0,102,255,0.16);
-      --border-soft: #d0d3e0;
-      --calendar-today: #d8e6ff;
-      --calendar-topshade: #d8e6ff;
-      --shadow-soft: 0 4px 16px rgba(0,0,0,0.16);
+    * {
+      box-sizing: border-box;
     }
 
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: var(--bg);
       color: var(--fg);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: calc(15px * var(--font-scale));
-      -webkit-font-smoothing: antialiased;
-      height: 100%;
+      font-size: calc(14px * var(--font-scale));
     }
 
     body {
-      overflow-y: scroll;
-      overscroll-behavior-y: none;
+      display: flex;
+      justify-content: center;
+    }
+
+    #app {
+      width: 100%;
+      max-width: var(--max-width);
+      padding: 8px 24px 40px 24px;
     }
 
     a {
       color: var(--accent);
       text-decoration: none;
     }
-    a:hover { text-decoration: underline; }
-
-    .app-root {
-      max-width: 1600px;
-      margin: 0 auto;
-      padding: 0 40px 32px;
+    a:hover {
+      text-decoration: underline;
     }
 
-    /* 1.1 Global Header */
+    .muted {
+      color: var(--fg-soft);
+      font-size: 0.82em;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .btn {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      background: #141414;
+      color: var(--fg-soft);
+      font-size: 0.82em;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background: #1f1f1f;
+    }
+    .btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    /* HEADER / NAV -------------------------------------------------------- */
 
     .app-header {
       position: sticky;
       top: 0;
-      z-index: 60;
-      margin: 0 -40px 0;
-      padding: 10px 40px 4px;
-      background: linear-gradient(to bottom, var(--bg) 80%, transparent);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      z-index: var(--sticky-z);
+      padding: 4px 0 6px 0;
+      background: linear-gradient(to bottom, rgba(5,5,5,0.98), rgba(5,5,5,0.96));
     }
-
-    .app-header-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
-    }
-
     .app-title {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: 0.04em;
+      font-size: 1.8em;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      margin: 0 0 2px 0;
     }
-
     .meta-line {
-      font-size: 11px;
-      color: var(--muted);
+      font-size: 0.78em;
+      color: var(--fg-soft);
+      margin: 0 0 4px 0;
     }
-
     .nav-tabs {
-      display: inline-flex;
-      flex-wrap: wrap;
+      display: flex;
       gap: 6px;
+      margin: 0;
+      flex-wrap: wrap;
     }
-
-    .nav-btn {
-      padding: 6px 14px;
+    .nav-tab {
+      padding: 5px 12px;
       border-radius: 999px;
       border: 1px solid var(--border-soft);
-      background: rgba(255,255,255,0.02);
-      color: var(--muted);
-      font-size: 12px;
+      background: #111;
+      color: var(--fg-soft);
+      font-size: 0.86em;
       cursor: pointer;
-      transition: all var(--transition-fast);
     }
-
-    .nav-btn.active {
+    .nav-tab.active {
       background: var(--accent);
       color: #fff;
       border-color: var(--accent);
-      box-shadow: var(--shadow-soft);
     }
 
-    .nav-btn:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
+    /* COMMON VIEW WRAPPER ------------------------------------------------- */
+
+    .view {
+      margin-top: 10px;
     }
 
-    /* Views wrapper */
-
-    .views { margin-top: 4px; }
-    .view { display: none; }
-    .view.active { display: block; }
-
-    /* Sticky per-view title row */
-
-    .view-header {
+    .section-sticky {
       position: sticky;
-      top: 52px;
-      z-index: 50;
-      padding: 4px 0 4px;
-      background: linear-gradient(to bottom, var(--bg) 85%, transparent);
+      top: 64px;
+      z-index: 40;
+      padding: 6px 0;
+      background: var(--bg);
     }
 
-    .view-title {
-      font-size: 17px;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .view-sub {
-      font-size: 10px;
-      color: var(--muted);
-      margin: 0;
-    }
-
-    /* Filters */
-
-    .filters-sticky {
-      position: sticky;
-      top: 84px;
-      z-index: 45;
-      padding: 2px 0 2px;
-      background: linear-gradient(to bottom, var(--bg) 80%, transparent);
-    }
-
-    .filters-row {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 2px;
-    }
-
-    .filters-label {
-      font-size: 9px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.09em;
-    }
-
-    .pill {
-      padding: 4px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: rgba(255,255,255,0.015);
-      font-size: 10px;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      white-space: nowrap;
-    }
-
-    .pill.active {
-      background: var(--accent-soft);
-      color: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .pill:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 1px;
-    }
-
-    /* 2. Calendar */
-
-    .calendar-header-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 2px;
-    }
-
-    .calendar-month-label {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .calendar-nav-btn {
-      padding: 3px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: rgba(255,255,255,0.03);
-      color: var(--muted);
-      font-size: 10px;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-    }
-
-    .calendar-nav-btn:hover {
-      background: var(--accent-soft);
-      color: var(--accent);
-    }
-
-    .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0,1fr));
-      gap: 5px;
-      margin-top: 4px;
-    }
-
-    .calendar-dow {
-      font-size: 9px;
-      color: var(--muted);
-      text-align: center;
-      margin-bottom: 2px;
-    }
-
-    .calendar-day {
-      min-height: 120px;
-      background: var(--bg-soft);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border-soft);
-      padding: 2px 3px 4px;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      overflow: hidden;
-    }
-
-    .calendar-day-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2px 4px;
-      border-radius: var(--radius-sm);
-      background: var(--calendar-topshade);
-    }
-
-    .calendar-day-number {
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .calendar-day-label {
-      font-size: 8px;
-      color: var(--muted);
-    }
-
-    .calendar-day.today {
-      box-shadow: 0 0 0 1px var(--accent);
-      background: var(--calendar-today);
-    }
-
-    .calendar-items {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      margin-top: 2px;
-      overflow-y: auto;
-    }
-
-    .cal-item {
-      padding: 3px 3px 4px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-softer);
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 4px;
-      cursor: pointer;
-      transition: background var(--transition-fast);
-    }
-
-    .cal-item:hover {
-      background: rgba(255,255,255,0.04);
-    }
-
-    .cal-poster {
-      width: var(--poster-cal);
-      height: calc(var(--poster-cal) * 1.5);
-      border-radius: var(--radius-sm);
-      object-fit: cover;
-      background: #222;
-    }
-
-    .cal-text {
-      display: flex;
-      flex-direction: column;
-      gap: 1px;
-      font-size: 9px;
-    }
-
-    .cal-show {
-      font-weight: 600;
-      color: var(--fg);
-    }
-
-    .cal-ep {
-      color: var(--muted);
-      font-size: 8px;
-    }
-
-    .cal-runtime {
-      color: var(--muted);
-      font-size: 8px;
-    }
-
-    .cal-icons-row,
-    .cal-net-row {
-      margin-top: 2px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      align-items: center;
-    }
-
-    .link-icon {
-      width: 18px;
-      height: 18px;
-      object-fit: contain;
-      display: inline-block;
-    }
-
-    .net-icon {
-      width: 22px;
-      height: 14px;
-      object-fit: contain;
-      display: inline-block;
-    }
-
-    /* 3. Shows & 4. Movies */
-
-    .shows-grid,
-    .movies-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 10px;
-      margin-top: 6px;
+    .section-label {
+      font-weight: 500;
+      margin-bottom: 4px;
+      font-size: 1.02em;
     }
 
     .card {
-      background: var(--bg-soft);
-      border-radius: var(--radius-lg);
-      padding: 6px;
-      border: 1px solid var(--border-soft);
+      background: var(--bg-alt);
+      border-radius: var(--radius);
+      padding: var(--pad);
+      border: 1px solid #181818;
       box-shadow: var(--shadow-soft);
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
+      overflow: hidden;
     }
+
+    /* POSTERS ------------------------------------------------------------- */
 
     .poster {
-      width: var(--poster-card-w);
-      max-width: 100%;
-      height: auto;
-      border-radius: var(--radius-md);
+      width: 100%;
+      border-radius: 6px;
+      display: block;
+      background: #222;
+      object-fit: cover;
+      max-height: 240px; /* revert from oversized */
+    }
+
+    .poster-cal {
+      width: 34%;                /* calendar-only: bigger vs before */
+      max-height: 120px;
+      border-radius: 4px;
       object-fit: cover;
       background: #222;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.55);
-      cursor: pointer;
+      flex-shrink: 0;
     }
 
-    .card-title {
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .card-sub {
-      font-size: 9px;
-      color: var(--muted);
-    }
-
-    .chip-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 3px;
-      font-size: 8px;
-      color: var(--muted);
-    }
-
-    .chip {
-      padding: 1px 5px;
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.03);
+      font-size: 0.7em;
+      margin: 1px;
+      border: 1px solid var(--border-soft);
+      color: var(--fg-soft);
     }
 
     .icon-row {
       display: flex;
-      gap: 4px;
       align-items: center;
-      margin-top: 2px;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 3px;
+    }
+    .svc-icon {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 1px #000);
     }
 
-    .watch-pill {
-      padding: 1px 6px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      font-size: 8px;
-      cursor: pointer;
-      color: var(--muted);
-    }
-    .watch-pill.on {
-      background: var(--accent-soft);
-      color: var(--accent);
-      border-color: var(--accent);
-    }
+    /* CALENDAR ------------------------------------------------------------ */
 
-    /* 5. Live TV skeleton */
-
-    .livetv-note {
-      font-size: 10px;
-      color: var(--muted);
-      margin-top: 6px;
-    }
-
-    /* 6. Config */
-
-    .config-section-title {
-      font-size: 12px;
-      font-weight: 600;
-      margin: 10px 0 3px;
-    }
-
-    .config-note {
-      font-size: 9px;
-      color: var(--muted);
+    .cal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       margin-bottom: 4px;
     }
-
-    .config-links {
-      font-size: 10px;
+    .cal-month {
+      font-size: 1.2em;
+      font-weight: 500;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+    .cal-dow {
+      text-align: center;
+      font-size: 0.78em;
+      color: var(--fg-soft);
+      padding-bottom: 2px;
+    }
+    .cal-cell {
+      min-height: 110px;
+      border-radius: 6px;
+      background: #080808;
+      border: 1px solid var(--border-soft);
+      padding: 3px;
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
+    .cal-cell-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1px 3px;
+      border-radius: 4px;
+      background: var(--accent-soft); /* requested shading */
+      font-size: 0.86em;
+      color: var(--fg-soft);
+      font-weight: 500;
+    }
+    .cal-cell.today {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+    .cal-item {
+      display: flex;
+      gap: 4px;
+      margin-top: 2px;
+    }
+    .cal-item-body {
+      flex: 1;
+      min-width: 0;
+    }
+    .cal-show-title {
+      font-size: 0.76em;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--fg);
+    }
+    .cal-ep-line {
+      font-size: 0.72em;
+      color: var(--fg-soft);
+      cursor: pointer;
+    }
+    .cal-runtime {
+      font-size: 0.68em;
+      color: var(--fg-soft);
+    }
 
-    .config-textbox {
+    /* SHOWS & MOVIES GRIDS ------------------------------------------------ */
+
+    .shows-filters,
+    .movies-filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .shows-grid,
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 8px;
+    }
+
+    .show-title,
+    .movie-title {
+      font-size: 0.92em;
+      font-weight: 500;
+      margin-top: 4px;
+      cursor: pointer;
+    }
+
+    .show-meta,
+    .movie-meta {
+      font-size: 0.78em;
+      color: var(--fg-soft);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.68em;
+      color: var(--fg-soft);
+      margin-top: 2px;
+      gap: 3px;
+    }
+
+    /* LIVE TV (skeleton) -------------------------------------------------- */
+
+    .livetv-note {
+      font-size: 0.8em;
+      color: var(--fg-soft);
+      margin-top: 4px;
+    }
+    .livetv-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .livetv-card {
+      background: var(--bg-alt);
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid var(--border-soft);
+      font-size: 0.78em;
+    }
+
+    /* CONFIG -------------------------------------------------------------- */
+
+    .config-card {
+      margin-top: 8px;
+      padding: 8px;
+      border-radius: 8px;
+      background: var(--bg-alt);
+      border: 1px solid var(--border-soft);
+      box-shadow: var(--shadow-soft);
+    }
+    .config-title {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    .config-note {
+      font-size: 0.78em;
+      color: var(--fg-soft);
+      margin-bottom: 4px;
+    }
+    .config-links {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 0.8em;
+    }
+    .config-textarea {
       width: 100%;
       min-height: 80px;
-      padding: 4px;
-      border-radius: var(--radius-md);
+      background: #050505;
+      color: var(--fg-soft);
+      border-radius: 6px;
       border: 1px solid var(--border-soft);
-      background: var(--bg-soft);
-      color: var(--fg);
-      font-size: 9px;
+      padding: 4px;
       font-family: monospace;
+      font-size: 0.75em;
       resize: vertical;
     }
 
-    /* 7. Popups */
+    /* POPUPS -------------------------------------------------------------- */
 
     .overlay-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.82);
+      background: rgba(0,0,0,0.86);
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 100;
+      z-index: 200;
     }
-
-    .overlay-backdrop.active { display: flex; }
-
+    .overlay-backdrop.active {
+      display: flex;
+    }
     .overlay {
       width: min(900px, 96vw);
       max-height: 90vh;
-      background: var(--bg-soft);
-      border-radius: var(--radius-xl);
-      border: 1px solid var(--border-soft);
-      box-shadow: 0 20px 46px rgba(0,0,0,0.88);
+      background: #050505;
+      border-radius: 10px;
       padding: 10px;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.9);
       display: flex;
       flex-direction: column;
       gap: 6px;
-      overflow: hidden;
     }
-
     .overlay-header {
       display: flex;
+      justify-content: space-between;
       gap: 8px;
       align-items: flex-start;
     }
-
-    .overlay-poster {
-      width: 110px;
-      height: 165px;
-      border-radius: var(--radius-md);
-      background: #222;
-      object-fit: cover;
+    .overlay-title {
+      font-size: 1.02em;
+      font-weight: 500;
+    }
+    .overlay-close {
+      cursor: pointer;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--danger);
+      color: #fff;
+      font-size: 0.8em;
+      white-space: nowrap;
+    }
+    .overlay-body {
+      overflow-y: auto;
+      padding-right: 4px;
+      display: flex;
+      gap: 8px;
+    }
+    .overlay-col-left {
+      width: 150px;
       flex-shrink: 0;
     }
-
-    .overlay-title-block {
+    .overlay-col-right {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      font-size: 10px;
+      min-width: 0;
+      font-size: 0.8em;
+      color: var(--fg-soft);
     }
-
-    .overlay-title {
-      font-size: 15px;
-      font-weight: 600;
+    .overlay-poster {
+      width: 100%;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #111;
     }
-
-    .overlay-sub {
-      font-size: 9px;
-      color: var(--muted);
-    }
-
-    .overlay-icons-row {
-      margin-top: 2px;
-      display: flex;
-      gap: 4px;
-      align-items: center;
-    }
-
-    .overlay-close {
-      padding: 2px 9px;
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      background: #ff5555;
-      color: #fff;
-      font-size: 10px;
-      cursor: pointer;
-      align-self: flex-start;
-    }
-
-    .overlay-body {
+    .ep-list {
       margin-top: 4px;
-      padding: 4px;
-      background: var(--bg-softer);
-      border-radius: var(--radius-md);
-      overflow-y: auto;
-      font-size: 9px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 3px;
+      font-size: 0.78em;
     }
-
-    .overlay-list-item {
-      padding: 2px 4px;
-      border-radius: var(--radius-sm);
-      border: 1px solid transparent;
-      cursor: pointer;
+    .ep-row {
+      padding: 3px 4px;
+      border-radius: 4px;
+      background: #080808;
+      border: 1px solid #161616;
       display: flex;
       flex-direction: column;
       gap: 1px;
+      cursor: pointer;
     }
-
-    .overlay-list-item:hover {
-      border-color: var(--accent);
-      background: rgba(255,255,255,0.02);
-    }
-
-    .overlay-ep-line {
-      font-size: 9px;
+    .ep-row-title {
+      font-weight: 500;
       color: var(--fg);
     }
-
-    .overlay-ep-sub {
-      font-size: 8px;
-      color: var(--muted);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
+    .ep-row-meta {
+      font-size: 0.7em;
+      color: var(--fg-soft);
     }
 
-    .overlay-debug {
-      font-size: 8px;
-      color: var(--muted);
+    .no-data {
+      font-size: 0.8em;
+      color: var(--fg-soft);
+      margin-top: 6px;
     }
 
-    @media (max-width: 900px) {
-      .app-root {
-        padding: 0 14px 18px;
+    @media (max-width: 720px) {
+      #app {
+        padding-left: 8px;
+        padding-right: 8px;
       }
-      .app-header {
-        margin: 0 -14px 0;
-        padding: 8px 14px 4px;
+      .shows-grid,
+      .movies-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      }
+      .overlay-body {
+        flex-direction: column;
+      }
+      .overlay-col-left {
+        width: 100%;
+        max-width: 220px;
       }
     }
   </style>
 </head>
-<body data-theme="dark">
-<div class="app-root">
-
-  <!-- GLOBAL HEADER -->
+<body>
+<div id="app">
+  <!-- HEADER -->
   <header class="app-header">
-    <div class="app-header-row">
-      <div>
-        <div class="app-title">My TV Hub</div>
-        <div id="meta-line" class="meta-line">
-          index.html: v2.9.2 (2025-11-10 23:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0
-        </div>
-      </div>
-      <nav class="nav-tabs" aria-label="Main views">
-        <button class="nav-btn active" data-view="calendar">Calendar</button>
-        <button class="nav-btn" data-view="shows">Shows</button>
-        <button class="nav-btn" data-view="movies">Movies</button>
-        <button class="nav-btn" data-view="live">Live TV</button>
-        <button class="nav-btn" data-view="config">Config</button>
-      </nav>
+    <div class="app-title">My TV Hub</div>
+    <div id="meta-line" class="meta-line">Loading data…</div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" data-view="calendar">Calendar</div>
+      <div class="nav-tab" data-view="shows">Shows</div>
+      <div class="nav-tab" data-view="movies">Movies</div>
+      <div class="nav-tab" data-view="livetv">Live TV</div>
+      <div class="nav-tab" data-view="config">Config</div>
     </div>
   </header>
 
-  <main class="views">
-    <!-- 2. CALENDAR VIEW -->
-    <section id="view-calendar" class="view active">
-      <div class="view-header">
-        <h2 class="view-title">Calendar</h2>
-      </div>
-
-      <div class="filters-sticky">
-        <div class="calendar-header-row">
-          <span id="cal-month-label" class="calendar-month-label">Loading…</span>
-          <button id="cal-prev" class="calendar-nav-btn">&lt; Prev</button>
-          <button id="cal-today" class="calendar-nav-btn">Today</button>
-          <button id="cal-next" class="calendar-nav-btn">Next &gt;</button>
-        </div>
-        <div class="calendar-grid">
-          <div class="calendar-dow">Sun</div>
-          <div class="calendar-dow">Mon</div>
-          <div class="calendar-dow">Tue</div>
-          <div class="calendar-dow">Wed</div>
-          <div class="calendar-dow">Thu</div>
-          <div class="calendar-dow">Fri</div>
-          <div class="calendar-dow">Sat</div>
+  <!-- CALENDAR VIEW -->
+  <section id="view-calendar" class="view">
+    <div class="section-sticky">
+      <div class="cal-header">
+        <div id="cal-month-label" class="cal-month">Month YYYY</div>
+        <div class="row">
+          <button class="btn" id="cal-prev">Prev</button>
+          <button class="btn" id="cal-today">Today</button>
+          <button class="btn" id="cal-next">Next</button>
         </div>
       </div>
-
-      <div id="calendar-grid" class="calendar-grid"></div>
-    </section>
-
-    <!-- 3. SHOWS VIEW -->
-    <section id="view-shows" class="view">
-      <div class="view-header">
-        <h2 class="view-title">Shows</h2>
-        <p class="view-sub">All tracked shows from tv_list.txt.</p>
+      <div class="cal-grid">
+        <div class="cal-dow">Sun</div>
+        <div class="cal-dow">Mon</div>
+        <div class="cal-dow">Tue</div>
+        <div class="cal-dow">Wed</div>
+        <div class="cal-dow">Thu</div>
+        <div class="cal-dow">Fri</div>
+        <div class="cal-dow">Sat</div>
       </div>
+    </div>
+    <div id="cal-grid" class="cal-grid"></div>
+  </section>
 
-      <div class="filters-sticky">
-        <div class="filters-row">
-          <div class="filters-label">Genre</div>
-          <div id="shows-genre-pills"></div>
-        </div>
-        <div class="filters-row">
-          <div class="filters-label">Filters</div>
-          <span class="pill active" data-shows-sort="az">A–Z</span>
-          <span class="pill" data-shows-sort="za">Z–A</span>
-          <span class="pill active" data-shows-status="all">All</span>
-          <span class="pill" data-shows-status="running">Running</span>
-          <span class="pill" data-shows-status="ended">Ended</span>
-          <span class="pill active" data-shows-watched="all">All</span>
-          <span class="pill" data-shows-watched="watched">Watched</span>
-          <span class="pill" data-shows-watched="unwatched">Unwatched</span>
-        </div>
+  <!-- SHOWS VIEW -->
+  <section id="view-shows" class="view" style="display:none;">
+    <div class="section-sticky">
+      <div class="section-label">Shows</div>
+      <div class="shows-filters">
+        <span class="muted">Genre:</span>
+        <button class="btn active" data-shows-genre="all">All</button>
+        <span class="muted">Sort:</span>
+        <button class="btn active" data-shows-sort="az">A–Z</button>
+        <button class="btn" data-shows-sort="za">Z–A</button>
+        <span class="muted">Status:</span>
+        <button class="btn active" data-shows-status="all">All</button>
+        <button class="btn" data-shows-status="running">Running</button>
+        <button class="btn" data-shows-status="ended">Ended</button>
       </div>
+    </div>
+    <div id="shows-grid" class="shows-grid"></div>
+  </section>
 
-      <div id="shows-grid" class="shows-grid"></div>
-    </section>
-
-    <!-- 4. MOVIES VIEW -->
-    <section id="view-movies" class="view">
-      <div class="view-header">
-        <h2 class="view-title">Movies</h2>
-        <p class="view-sub">All tracked movies from movies_list.txt.</p>
+  <!-- MOVIES VIEW -->
+  <section id="view-movies" class="view" style="display:none;">
+    <div class="section-sticky">
+      <div class="section-label">Movies</div>
+      <div class="movies-filters">
+        <span class="muted">Genre:</span>
+        <button class="btn active" data-movies-genre="all">All</button>
+        <span class="muted">Status:</span>
+        <button class="btn active" data-movies-status="all">All</button>
+        <button class="btn" data-movies-status="releasedto">Released</button>
+        <button class="btn" data-movies-status="intheatres">In Theatres</button>
+        <button class="btn" data-movies-status="inprod">In Production</button>
+        <button class="btn" data-movies-status="announced">Announced</button>
+        <span class="muted">Sort:</span>
+        <button class="btn active" data-movies-sort="title">Title</button>
+        <button class="btn" data-movies-sort="date">Release date</button>
       </div>
+    </div>
+    <div id="movies-grid" class="movies-grid"></div>
+  </section>
 
-      <div class="filters-sticky">
-        <div class="filters-row">
-          <div class="filters-label">Genre</div>
-          <div id="movies-genre-pills"></div>
-        </div>
-        <div class="filters-row">
-          <div class="filters-label">Filters</div>
-          <span class="pill active" data-movies-status="all">All</span>
-          <span class="pill" data-movies-status="releasedto">Released To</span>
-          <span class="pill" data-movies-status="intheatres">In Theatres</span>
-          <span class="pill" data-movies-status="inprod">In Production</span>
-          <span class="pill" data-movies-status="announced">Announced</span>
-          <span class="pill active" data-movies-sort="title">Title</span>
-          <span class="pill" data-movies-sort="date">Release</span>
-          <span class="pill active" data-movies-watched="all">All</span>
-          <span class="pill" data-movies-watched="watched">Watched</span>
-          <span class="pill" data-movies-watched="unwatched">Unwatched</span>
-        </div>
-      </div>
+  <!-- LIVE TV VIEW (skeleton) -->
+  <section id="view-livetv" class="view" style="display:none;">
+    <div class="section-label">Live TV (Preview)</div>
+    <div class="livetv-note">
+      Placeholder only. Once <code>live_tv_list.txt</code> and <code>fetch_live_tv.py</code> are wired,
+      channels and groups will be rendered here.
+    </div>
+    <div id="livetv-grid" class="livetv-grid"></div>
+  </section>
 
-      <div id="movies-grid" class="movies-grid"></div>
-    </section>
-
-    <!-- 5. LIVE TV VIEW (SKELETON) -->
-    <section id="view-live" class="view">
-      <div class="view-header">
-        <h2 class="view-title">Live TV (preview)</h2>
-        <p class="view-sub">Channel grid skeleton. EPG integration is a later phase.</p>
+  <!-- CONFIG VIEW -->
+  <section id="view-config" class="view" style="display:none;">
+    <!-- 6.1 Display Settings -->
+    <div class="config-card">
+      <div class="config-title">Display</div>
+      <div class="row" style="margin-bottom:4px;">
+        <span class="config-note">Theme:</span>
+        <button class="btn" id="theme-dark">Dark</button>
+        <button class="btn" id="theme-light">Light</button>
+        <span class="config-note" style="margin-left:10px;">Font size:</span>
+        <input type="range" id="font-scale" min="0.8" max="2.0" step="0.05" value="1.0" />
+        <span id="font-scale-label" class="config-note">1.00x</span>
       </div>
-      <div class="filters-sticky">
-        <div class="filters-row">
-          <div class="filters-label">Country</div>
-          <span class="pill active">All</span>
-        </div>
-        <div class="filters-row">
-          <div class="filters-label">Group</div>
-          <span class="pill active">All</span>
-        </div>
-      </div>
-      <div class="livetv-note">
-        This will render your curated channel list with logos; schedule rows land in the next phase.
-      </div>
-    </section>
-
-    <!-- 6. CONFIG VIEW -->
-    <section id="view-config" class="view">
-      <div class="view-header">
-        <h2 class="view-title">Config</h2>
-        <p class="view-sub">Display preferences, shortcuts, integrations &amp; list helpers.</p>
-      </div>
-
-      <!-- 6.1 Display -->
-      <div class="config-section-title">Display</div>
       <div class="config-note">
-        Theme &amp; font scale are stored in this browser only and applied to this page.
+        Settings are stored per browser and applied to all views.
       </div>
-      <div class="filters-row">
-        <div class="filters-label">Theme</div>
-        <span class="pill active" id="cfg-theme-dark">Dark</span>
-        <span class="pill" id="cfg-theme-light">Light</span>
-        <div class="filters-label" style="margin-left:10px;">Font</div>
-        <input type="range" id="cfg-font" min="0.8" max="2.0" step="0.05" value="1.0" />
-        <span id="cfg-font-label" class="filters-label">1.00x</span>
-      </div>
+    </div>
 
-      <!-- 6.2 Maintenance Shortcuts -->
-      <div class="config-section-title">Maintenance shortcuts</div>
+    <!-- 6.2 Maintenance Shortcuts -->
+    <div class="config-card">
+      <div class="config-title">Maintenance shortcuts</div>
       <div class="config-links">
-        <a href="/my_TV_Movie/web/index.html" target="_blank">Open hub</a>
-        <a href="/my_TV_Movie/web/config.html" target="_blank">Open config (standalone)</a>
+        <a href="https://ajpnkw.github.io/my_TV_Movie/web/index.html" target="_blank">Open Hub page</a>
         <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">
-          Build TV Data and Deploy (workflow)
+          Run “Build TV Data and Deploy” workflow
         </a>
         <a href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions" target="_blank">
-          Secrets &amp; variables (Actions)
+          Secrets & variables
         </a>
-        <a href="https://github.com/AJPnKW/my_TV_Movie" target="_blank">Repository</a>
+        <a href="https://github.com/AJPnKW/my_TV_Movie" target="_blank">
+          Repository
+        </a>
       </div>
+    </div>
 
-      <!-- 6.3 Integration Info -->
-      <div class="config-section-title">Integrations</div>
+    <!-- 6.3 Integration Info -->
+    <div class="config-card">
+      <div class="config-title">Integrations</div>
       <div class="config-note">
-        TMDB is the primary metadata source. TVMaze / OMDb / Trakt hooks are additive and configured via Actions secrets.
+        Uses TMDB for primary metadata. TVMaze, OMDB, and Trakt support are wired via scripts
+        (if configured) and reflected in <code>data.json</code>.
       </div>
+    </div>
 
-      <!-- 6.4 Edit Helpers -->
-      <div class="config-section-title">Edit source lists</div>
+    <!-- 6.4 Edit Helpers -->
+    <div class="config-card">
+      <div class="config-title">Edit lists</div>
+      <div class="config-note">
+        Edit in GitHub, then run “Build TV Data and Deploy”.
+      </div>
       <div class="config-links">
         <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/tv_list.txt" target="_blank">Edit tv_list.txt</a>
         <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/movies_list.txt" target="_blank">Edit movies_list.txt</a>
-        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/live_tv_list.txt" target="_blank">
-          Edit live_tv_list.txt (if present)
-        </a>
+        <a href="https://github.com/AJPnKW/my_TV_Movie/edit/main/live_tv_list.txt" target="_blank">Edit live_tv_list.txt (future)</a>
       </div>
+    </div>
+  </section>
+</div>
 
-      <!-- 6.5 Debug -->
-      <div class="config-section-title">Debug: nothing showing?</div>
-      <div class="config-note">
-        1) Open <a href="/my_TV_Movie/data/data.json" target="_blank">data.json</a>.
-        2) Confirm "shows" / "movies" arrays are not empty.<br/>
-        3) Check the "Build TV Data and Deploy" workflow result.<br/>
-        4) If data.json is good but UI is blank, force-refresh / clear cache on the TV browser.
+<!-- POPUP OVERLAY (P1/P2/P3/P4 shared) -->
+<div id="overlay-backdrop" class="overlay-backdrop">
+  <div class="overlay" role="dialog" aria-modal="true">
+    <div class="overlay-header">
+      <div id="overlay-title" class="overlay-title"></div>
+      <div id="overlay-close" class="overlay-close">Close</div>
+    </div>
+    <div class="overlay-body">
+      <div class="overlay-col-left">
+        <img id="overlay-poster" class="overlay-poster" alt="" />
+        <div id="overlay-icons" class="icon-row"></div>
       </div>
-    </section>
-  </main>
-
-  <!-- 7. POPUPS (P1–P4) -->
-  <div id="overlay-backdrop" class="overlay-backdrop" aria-hidden="true">
-    <div id="overlay" class="overlay" role="dialog" aria-modal="true">
-      <div class="overlay-header">
-        <img id="ov-poster" class="overlay-poster" alt="" />
-        <div class="overlay-title-block">
-          <div id="ov-title" class="overlay-title"></div>
-          <div id="ov-sub" class="overlay-sub"></div>
-          <div id="ov-icons" class="overlay-icons-row"></div>
-        </div>
-        <button id="ov-close" class="overlay-close">Close</button>
-      </div>
-      <div id="ov-body" class="overlay-body"></div>
-      <div id="ov-debug" class="overlay-debug"></div>
+      <div id="overlay-content" class="overlay-col-right"></div>
     </div>
   </div>
-
 </div>
 
 <script>
-(function() {
-  const ICONS = {
+(function () {
+  const DATA_URL = "../data/data.json";
+  const TMDB_IMG = "https://image.tmdb.org/t/p/w300";
+
+  const LOGOS = {
     tmdb: "../image/services_logos/TMDB_icon.png",
     vidsrc: "../image/services_logos/VidSrc_icon.png",
     videasy: "../image/services_logos/videasy_icon.png"
   };
 
-  // naive logo mapper: expects files like "HBO.png", "Netflix.png", "paramount_plus.png" etc.
-  function logoFor(name) {
-    if (!name) return null;
-    const clean = name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
-    const candidates = [
-      `../image/services_logos/${clean}.png`,
-      `../image/services_logos/${clean}.svg`,
-      `../image/services_logos/${name}.png`
-    ];
-    return candidates[0]; // we trust your folder; if missing, browser just 404s silently
-  }
-
   const state = {
-    data: null,
-    showsById: {},
-    moviesById: {},
     view: "calendar",
-    calOffset: 0,
-    showsFilters: {
-      sort: "az",
-      status: "all",
-      watched: "all",
-      genre: null
-    },
-    moviesFilters: {
-      sort: "title",
-      status: "all",
-      watched: "all",
-      genre: null
-    },
-    watched: {
-      shows: new Set(JSON.parse(localStorage.getItem("mytv_watched_shows") || "[]")),
-      movies: new Set(JSON.parse(localStorage.getItem("mytv_watched_movies") || "[]"))
+    data: null,
+    calYear: null,
+    calMonth: null,
+    showsFilters: { genre: "all", sort: "az", status: "all" },
+    moviesFilters: { genre: "all", status: "all", sort: "title" }
+  };
+
+  const qs = (s) => document.querySelector(s);
+  const qsa = (s) => Array.from(document.querySelectorAll(s));
+
+  /* META LINE ------------------------------------------------------------ */
+
+  function updateMetaLine() {
+    const el = qs("#meta-line");
+    if (!el) return;
+    if (!state.data) {
+      el.textContent = "Loading data…";
+      return;
     }
-  };
-
-  const el = {
-    meta: document.getElementById("meta-line"),
-    navBtns: document.querySelectorAll(".nav-btn[data-view]"),
-    views: {
-      calendar: document.getElementById("view-calendar"),
-      shows: document.getElementById("view-shows"),
-      movies: document.getElementById("view-movies"),
-      live: document.getElementById("view-live"),
-      config: document.getElementById("view-config")
-    },
-    // calendar
-    calMonth: document.getElementById("cal-month-label"),
-    calGrid: document.getElementById("calendar-grid"),
-    calPrev: document.getElementById("cal-prev"),
-    calNext: document.getElementById("cal-next"),
-    calToday: document.getElementById("cal-today"),
-    // shows/movies
-    showsGrid: document.getElementById("shows-grid"),
-    moviesGrid: document.getElementById("movies-grid"),
-    showsGenres: document.getElementById("shows-genre-pills"),
-    moviesGenres: document.getElementById("movies-genre-pills"),
-    // config
-    cfgThemeDark: document.getElementById("cfg-theme-dark"),
-    cfgThemeLight: document.getElementById("cfg-theme-light"),
-    cfgFont: document.getElementById("cfg-font"),
-    cfgFontLabel: document.getElementById("cfg-font-label"),
-    // overlay
-    ovBackdrop: document.getElementById("overlay-backdrop"),
-    ovPoster: document.getElementById("ov-poster"),
-    ovTitle: document.getElementById("ov-title"),
-    ovSub: document.getElementById("ov-sub"),
-    ovIcons: document.getElementById("ov-icons"),
-    ovBody: document.getElementById("ov-body"),
-    ovClose: document.getElementById("ov-close"),
-    ovDebug: document.getElementById("ov-debug")
-  };
-
-  function escapeHtml(s) {
-    return String(s || "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;");
+    const meta = state.data.meta || {};
+    const gen = state.data.generated_at || "n/a";
+    el.textContent =
+      `index.html: v2.9.3 • Data built: ${gen} • ` +
+      `Shows: ${meta.shows || (state.data.shows || []).length || 0} • ` +
+      `Movies: ${meta.movies || (state.data.movies || []).length || 0} • ` +
+      `LiveTV: ${meta.livetv || (state.data.livetv || []).length || 0}`;
   }
 
-  function posterUrl(path) {
-    if (!path) return "";
-    if (path.startsWith("http")) return path;
-    return "https://image.tmdb.org/t/p/w300" + path;
-  }
-
-  function makeShowId(show) {
-    return show.show_id || show.tmdb_id || show.id;
-  }
-
-  function makeMovieId(m) {
-    return m.movie_id || m.tmdb_id || m.id;
-  }
-
-  function iconImg(src, alt, cls) {
-    const i = document.createElement("img");
-    i.src = src;
-    i.alt = alt || "";
-    i.className = cls || "link-icon";
-    i.loading = "lazy";
-    return i;
-  }
-
-  function setMetaLine(data) {
-    const meta = data.meta || {};
-    const built = data.generated_at || meta.generated_at || "n/a";
-    const shows = Array.isArray(data.shows) ? data.shows.length : (meta.shows || 0);
-    const movies = Array.isArray(data.movies) ? data.movies.length : (meta.movies || 0);
-    const live = Array.isArray(data.live_tv) ? data.live_tv.length : 0;
-    el.meta.textContent =
-      `index.html: v2.9.2 (2025-11-10 23:30 EST) • config.html: v1.4.4 • Data built: ${built} • Shows: ${shows} • Movies: ${movies} • LiveTV: ${live}`;
-  }
-
-  /* VIEW SWITCH */
+  /* NAV ------------------------------------------------------------------ */
 
   function setView(v) {
     state.view = v;
-    Object.entries(el.views).forEach(([key,node]) => {
-      node.classList.toggle("active", key === v);
+    qsa(".nav-tab").forEach(t => {
+      t.classList.toggle("active", t.dataset.view === v);
     });
-    el.navBtns.forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.view === v);
+    qsa(".view").forEach(sec => {
+      sec.style.display = (sec.id === `view-${v}`) ? "" : "none";
     });
   }
 
-  el.navBtns.forEach(btn => {
-    btn.addEventListener("click", () => setView(btn.dataset.view));
-  });
+  function initNav() {
+    qsa(".nav-tab").forEach(t => {
+      t.addEventListener("click", () => setView(t.dataset.view));
+    });
+  }
 
-  /* THEME & FONT */
+  /* CONFIG (theme + font) ------------------------------------------------ */
+
+  function loadCfg() {
+    try {
+      return JSON.parse(localStorage.getItem("mytv_cfg") || "{}");
+    } catch {
+      return {};
+    }
+  }
+  function saveCfg(cfg) {
+    localStorage.setItem("mytv_cfg", JSON.stringify(cfg));
+  }
+
+  function applyFontScale(v) {
+    document.documentElement.style.setProperty("--font-scale", v);
+  }
 
   function applyTheme(theme) {
-    document.body.dataset.theme = theme;
-    localStorage.setItem("mytv_theme", theme);
-    el.cfgThemeDark.classList.toggle("active", theme === "dark");
-    el.cfgThemeLight.classList.toggle("active", theme === "light");
-  }
-
-  function applyFont(scale) {
-    document.documentElement.style.setProperty("--font-scale", scale);
-    el.cfgFont.value = scale;
-    el.cfgFontLabel.textContent = scale.toFixed(2) + "x";
-    localStorage.setItem("mytv_font", scale);
-  }
-
-  el.cfgThemeDark.addEventListener("click", () => applyTheme("dark"));
-  el.cfgThemeLight.addEventListener("click", () => applyTheme("light"));
-  el.cfgFont.addEventListener("input", () => {
-    const v = parseFloat(el.cfgFont.value || "1.0") || 1.0;
-    applyFont(v);
-  });
-
-  applyTheme(localStorage.getItem("mytv_theme") === "light" ? "light" : "dark");
-  const savedFont = parseFloat(localStorage.getItem("mytv_font") || "1.0");
-  if (savedFont >= 0.8 && savedFont <= 2.0) applyFont(savedFont);
-
-  /* WATCHED LOCAL */
-
-  function saveWatched() {
-    localStorage.setItem(
-      "mytv_watched_shows",
-      JSON.stringify(Array.from(state.watched.shows))
-    );
-    localStorage.setItem(
-      "mytv_watched_movies",
-      JSON.stringify(Array.from(state.watched.movies))
-    );
-  }
-
-  function toggleShowWatched(id) {
-    if (state.watched.shows.has(id)) state.watched.shows.delete(id);
-    else state.watched.shows.add(id);
-    saveWatched();
-    renderShows();
-  }
-
-  function toggleMovieWatched(id) {
-    if (state.watched.movies.has(id)) state.watched.movies.delete(id);
-    else state.watched.movies.add(id);
-    saveWatched();
-    renderMovies();
-  }
-
-  /* OVERLAY */
-
-  function openOverlay({title, sub, poster, icons, bodyHTML, debug}) {
-    el.ovTitle.textContent = title || "";
-    el.ovSub.textContent = sub || "";
-    if (poster) {
-      el.ovPoster.src = poster;
-      el.ovPoster.style.display = "block";
+    if (theme === "light") {
+      document.documentElement.style.setProperty("--bg", "#f5f5f5");
+      document.documentElement.style.setProperty("--bg-alt", "#ffffff");
+      document.documentElement.style.setProperty("--fg", "#111");
+      document.documentElement.style.setProperty("--fg-soft", "#444");
+      document.documentElement.style.setProperty("--border-soft", "#cccccc");
     } else {
-      el.ovPoster.style.display = "none";
+      document.documentElement.style.setProperty("--bg", "#050505");
+      document.documentElement.style.setProperty("--bg-alt", "#111111");
+      document.documentElement.style.setProperty("--fg", "#f5f5f5");
+      document.documentElement.style.setProperty("--fg-soft", "#b0b0b0");
+      document.documentElement.style.setProperty("--border-soft", "#303030");
     }
-    el.ovIcons.innerHTML = "";
-    (icons || []).forEach(i => el.ovIcons.appendChild(i));
-    el.ovBody.innerHTML = bodyHTML || "";
-    el.ovDebug.textContent = debug || "";
-    el.ovBackdrop.classList.add("active");
-    el.ovBackdrop.setAttribute("aria-hidden", "false");
   }
 
-  function closeOverlay() {
-    el.ovBackdrop.classList.remove("active");
-    el.ovBackdrop.setAttribute("aria-hidden", "true");
-    el.ovBody.innerHTML = "";
-    el.ovIcons.innerHTML = "";
-    el.ovDebug.textContent = "";
+  function initConfig() {
+    const cfg = loadCfg();
+    if (cfg.theme) applyTheme(cfg.theme);
+    if (cfg.fontScale) {
+      applyFontScale(cfg.fontScale);
+      const s = qs("#font-scale");
+      const l = qs("#font-scale-label");
+      if (s) s.value = cfg.fontScale;
+      if (l) l.textContent = `${cfg.fontScale.toFixed(2)}x`;
+    }
+
+    const dark = qs("#theme-dark");
+    const light = qs("#theme-light");
+    const slider = qs("#font-scale");
+    const label = qs("#font-scale-label");
+
+    if (dark) dark.onclick = () => {
+      applyTheme("dark");
+      saveCfg({ ...loadCfg(), theme: "dark" });
+    };
+    if (light) light.onclick = () => {
+      applyTheme("light");
+      saveCfg({ ...loadCfg(), theme: "light" });
+    };
+    if (slider && label) {
+      slider.oninput = () => {
+        const v = parseFloat(slider.value) || 1.0;
+        applyFontScale(v);
+        label.textContent = `${v.toFixed(2)}x`;
+        saveCfg({ ...loadCfg(), fontScale: v });
+      };
+    }
   }
 
-  el.ovClose.addEventListener("click", closeOverlay);
-  el.ovBackdrop.addEventListener("click", e => {
-    if (e.target === el.ovBackdrop) closeOverlay();
-  });
-  document.addEventListener("keydown", e => {
-    if (e.key === "Escape") closeOverlay();
-  });
+  /* DATA LOAD ------------------------------------------------------------ */
 
-  /* POPUPS */
-
-  function showShowPopup(showId) {
-    const show = state.showsById[showId];
-    if (!show) return;
-    const tmdbId = makeShowId(show) || "?";
-    const icons = [];
-    if (show.links && show.links.tmdb) {
-      const t = iconImg(ICONS.tmdb, "TMDB");
-      t.onclick = ev => { ev.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
-      icons.push(t);
+  async function loadData() {
+    try {
+      const res = await fetch(DATA_URL + "?_=" + Date.now());
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      state.data = json || {};
+      if (!state.data.shows) state.data.shows = [];
+      if (!state.data.movies) state.data.movies = [];
+      updateMetaLine();
+      initCalendarState();
+      renderAll();
+    } catch (err) {
+      console.error("data.json load failed", err);
+      const el = qs("#meta-line");
+      if (el) {
+        el.textContent = 'Unable to load data. Run the "Build TV Data and Deploy" workflow.';
+      }
+      // render empty safe views
+      qs("#cal-grid").innerHTML = "";
+      qs("#shows-grid").innerHTML = '<div class="no-data">No data.</div>';
+      qs("#movies-grid").innerHTML = '<div class="no-data">No data.</div>';
     }
-    const bodyParts = [];
-    if (show.overview) {
-      bodyParts.push(`<div>${escapeHtml(show.overview)}</div>`);
-    }
-    const seasons = show.seasons || [];
-    if (seasons.length) {
-      bodyParts.push(`<div><strong>Seasons</strong></div>`);
-      seasons.forEach(s => {
-        const label = s.name || `Season ${s.season_number}`;
-        const air = s.air_date || "";
-        const eps = s.episode_count != null ? ` • ${s.episode_count} eps` : "";
-        bodyParts.push(`
-          <div class="overlay-list-item"
-               data-action="open-season"
-               data-show-id="${showId}"
-               data-sn="${s.season_number}">
-            <div class="overlay-ep-line">${escapeHtml(label)}</div>
-            <div class="overlay-ep-sub">${escapeHtml(air + eps)}</div>
-          </div>`);
-      });
-    }
-    const subBits = [];
-    if (show.genres && show.genres.length) subBits.push(show.genres.join(", "));
-    if (show.status) subBits.push(show.status);
-    openOverlay({
-      title: `${show.name || ""} [${tmdbId}]`,
-      sub: subBits.join(" • "),
-      poster: posterUrl(show.poster_path),
-      icons,
-      bodyHTML: bodyParts.join("")
-    });
-    el.ovBody.querySelectorAll("[data-action='open-season']").forEach(n => {
-      n.addEventListener("click", () => {
-        showSeasonPopup(
-          Number(n.dataset.showId),
-          Number(n.dataset.sn)
-        );
-      });
-    });
   }
 
-  function showSeasonPopup(showId, sn) {
-    const show = state.showsById[showId];
-    if (!show) return;
-    const tmdbId = makeShowId(show) || "?";
-    const season = (show.seasons || []).find(s => s.season_number === sn);
-    if (!season) return;
+  /* CALENDAR RENDER ------------------------------------------------------ */
 
-    const icons = [];
-    if (show.links && show.links.tmdb) {
-      const t = iconImg(ICONS.tmdb, "TMDB");
-      t.onclick = ev => { ev.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
-      icons.push(t);
-    }
-
-    const parts = [];
-    parts.push(`<div><strong>${escapeHtml(season.name || ("Season " + sn))}</strong></div>`);
-    if (season.overview) {
-      parts.push(`<div class="overlay-ep-sub">${escapeHtml(season.overview)}</div>`);
-    }
-
-    const episodes = season.episodes || [];
-    if (episodes.length) {
-      episodes.forEach(ep => {
-        const code = `S${String(sn).padStart(2,"0")}E${String(ep.episode_number).padStart(2,"0")}`;
-        const runtime = ep.runtime ? `${ep.runtime}m` : "";
-        parts.push(`
-          <div class="overlay-list-item"
-               data-action="open-episode"
-               data-show-id="${showId}"
-               data-sn="${sn}"
-               data-en="${ep.episode_number}">
-            <div class="overlay-ep-line">${code} · ${escapeHtml(ep.name || "")}</div>
-            <div class="overlay-ep-sub">
-              <span>${escapeHtml(ep.air_date || "TBA")}</span>
-              ${runtime ? `<span>${runtime}</span>` : ""}
-            </div>
-          </div>`);
-      });
-    } else {
-      parts.push(`<div class="overlay-ep-sub">No episodes listed.</div>`);
-    }
-
-    openOverlay({
-      title: `${show.name || ""} [${tmdbId}]`,
-      sub: `Season ${sn}`,
-      poster: posterUrl(show.poster_path),
-      icons,
-      bodyHTML: parts.join("")
-    });
-
-    el.ovBody.querySelectorAll("[data-action='open-episode']").forEach(n => {
-      n.addEventListener("click", () => {
-        showEpisodePopup(
-          Number(n.dataset.showId),
-          Number(n.dataset.sn),
-          Number(n.dataset.en)
-        );
-      });
-    });
+  function initCalendarState() {
+    const d = new Date();
+    state.calYear = d.getFullYear();
+    state.calMonth = d.getMonth();
   }
 
-  function showEpisodePopup(showId, sn, en) {
-    const show = state.showsById[showId];
-    if (!show) return;
-    const tmdbId = makeShowId(show) || "?";
-    const season = (show.seasons || []).find(s => s.season_number === sn);
-    if (!season) return;
-    const ep = (season.episodes || []).find(e => e.episode_number === en);
-    if (!ep) return;
-
-    const code = `S${String(sn).padStart(2,"0")}E${String(en).padStart(2,"0")}`;
-    const vs = `https://vidsrc.net/embed/tv/${showId}/${sn}/${en}`;
-    const ve = `https://player.videasy.net/tv/${showId}/${sn}/${en}`;
-
-    const icons = [];
-    if (show.links && show.links.tmdb) {
-      const t = iconImg(ICONS.tmdb, "TMDB");
-      t.onclick = ev => { ev.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
-      icons.push(t);
-    }
-    icons.push((() => { const i = iconImg(ICONS.vidsrc, "VidSrc"); i.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); }; return i; })());
-    icons.push((() => { const i = iconImg(ICONS.videasy, "Videasy"); i.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); }; return i; })());
-
-    const runtime = ep.runtime ? `${ep.runtime}m` : "";
-
-    openOverlay({
-      title: `${show.name || ""} [${tmdbId}]`,
-      sub: `${code} · ${ep.name || ""} • ${ep.air_date || "TBA"}${runtime ? " • " + runtime : ""}`,
-      poster: posterUrl(ep.still_path || show.poster_path),
-      icons,
-      bodyHTML: `<div>${escapeHtml(ep.overview || "No overview available.")}</div>`
-    });
+  function changeMonth(delta) {
+    let m = state.calMonth + delta;
+    let y = state.calYear;
+    if (m < 0) { m = 11; y--; }
+    if (m > 11) { m = 0; y++; }
+    state.calMonth = m;
+    state.calYear = y;
+    renderCalendar();
   }
 
-  function showMoviePopup(movieId) {
-    const m = state.moviesById[movieId];
-    if (!m) return;
-    const tmdbId = makeMovieId(m) || "?";
-    const icons = [];
-    if (m.links && m.links.tmdb) {
-      const t = iconImg(ICONS.tmdb, "TMDB");
-      t.onclick = ev => { ev.stopPropagation(); window.open(m.links.tmdb, "_blank"); };
-      icons.push(t);
-    }
-    if (m.tmdb_id) {
-      const vs = `https://vidsrc.net/embed/movie/${m.tmdb_id}`;
-      const ve = `https://player.videasy.net/movie/${m.tmdb_id}`;
-      icons.push((() => { const i = iconImg(ICONS.vidsrc, "VidSrc"); i.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); }; return i; })());
-      icons.push((() => { const i = iconImg(ICONS.videasy, "Videasy"); i.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); }; return i; })());
-    }
-    const runtime = m.runtime ? `${m.runtime}m` : "";
-    const sub =
-      `${m.release_date || ""}${m.status ? " • " + m.status : ""}${runtime ? " • " + runtime : ""}`;
-    openOverlay({
-      title: `${m.title || ""} [${tmdbId}]`,
-      sub,
-      poster: posterUrl(m.poster_path),
-      icons,
-      bodyHTML: `<div>${escapeHtml(m.overview || "No overview available.")}</div>`
-    });
-  }
+  function renderCalendar() {
+    if (!state.data) return;
+    const label = qs("#cal-month-label");
+    const grid = qs("#cal-grid");
+    if (!label || !grid) return;
 
-  /* CALENDAR RENDER */
+    const y = state.calYear;
+    const m = state.calMonth;
+    const first = new Date(y, m, 1);
+    const dow = first.getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    label.textContent = first.toLocaleString(undefined, { month: "long", year: "numeric" });
 
-  function buildCalendar() {
-    const data = state.data;
-    if (!data || !Array.isArray(data.shows)) {
-      el.calMonth.textContent = "No data";
-      el.calGrid.innerHTML = "";
-      return;
-    }
+    const today = new Date().toISOString().slice(0, 10);
 
-    const base = new Date();
-    const target = new Date(base.getFullYear(), base.getMonth() + state.calOffset, 1);
-    const year = target.getFullYear();
-    const month = target.getMonth();
-    const monthName = target.toLocaleString("en", { month: "long" });
-    el.calMonth.textContent = `${monthName} ${year}`;
+    // Build date -> items map
+    const byDate = {};
+    const shows = state.data.shows || [];
+    const movies = state.data.movies || [];
 
-    const first = new Date(year, month, 1);
-    const start = new Date(first);
-    start.setDate(first.getDate() - first.getDay());
-
-    const events = {};
-    (data.shows || []).forEach(show => {
-      const sid = makeShowId(show);
-      (show.seasons || []).forEach(s => {
-        const sn = s.season_number;
-        (s.episodes || []).forEach(ep => {
-          if (!ep.air_date) return;
-          (events[ep.air_date] ||= []).push({ kind: "ep", show, showId: sid, sn, ep });
-        });
-      });
-    });
-    (data.movies || []).forEach(m => {
-      if (!m.release_date) return;
-      (events[m.release_date] ||= []).push({ kind: "movie", movie: m, movieId: makeMovieId(m) });
-    });
-
-    const todayIso = new Date().toISOString().slice(0,10);
-    el.calGrid.innerHTML = "";
-    for (let i=0;i<42;i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      const iso = d.toISOString().slice(0,10);
-      const inMonth = d.getMonth() === month;
-
-      const cell = document.createElement("div");
-      cell.className = "calendar-day";
-      if (iso === todayIso && inMonth) cell.classList.add("today");
-
-      const head = document.createElement("div");
-      head.className = "calendar-day-header";
-      const num = document.createElement("div");
-      num.className = "calendar-day-number";
-      num.textContent = d.getDate();
-      const lbl = document.createElement("div");
-      lbl.className = "calendar-day-label";
-      lbl.textContent = "";
-      head.appendChild(num);
-      head.appendChild(lbl);
-      cell.appendChild(head);
-
-      const list = document.createElement("div");
-      list.className = "calendar-items";
-
-      (events[iso] || []).forEach(ev => {
-        if (ev.kind === "ep") {
-          const item = document.createElement("div");
-          item.className = "cal-item";
-
-          const p = document.createElement("img");
-          p.className = "cal-poster";
-          p.src = posterUrl(ev.show.poster_path);
-          p.alt = ev.show.name || "";
-          p.onclick = e => { e.stopPropagation(); showShowPopup(ev.showId); };
-          item.appendChild(p);
-
-          const txt = document.createElement("div");
-          txt.className = "cal-text";
-
-          const tShow = document.createElement("div");
-          tShow.className = "cal-show";
-          tShow.textContent = ev.show.name || "";
-          tShow.onclick = e => { e.stopPropagation(); showShowPopup(ev.showId); };
-
-          const code = `S${String(ev.sn).padStart(2,"0")}E${String(ev.ep.episode_number).padStart(2,"0")}`;
-          const tEp = document.createElement("div");
-          tEp.className = "cal-ep";
-          tEp.textContent = `${code} · ${ev.ep.name || ""}`;
-          tEp.onclick = e => { e.stopPropagation(); showSeasonPopup(ev.showId, ev.sn); };
-
-          const runtime = ev.ep.runtime ? `${ev.ep.runtime}m` : "";
-          const tRun = document.createElement("div");
-          tRun.className = "cal-runtime";
-          tRun.textContent = runtime;
-
-          txt.appendChild(tShow);
-          txt.appendChild(tEp);
-          if (runtime) txt.appendChild(tRun);
-
-          // network logos (from show.networks, if present)
-          if (Array.isArray(ev.show.networks) && ev.show.networks.length) {
-            const netRow = document.createElement("div");
-            netRow.className = "cal-net-row";
-            ev.show.networks.slice(0,4).forEach(nm => {
-              const src = logoFor(nm);
-              if (src) {
-                const ni = iconImg(src, nm, "net-icon");
-                netRow.appendChild(ni);
-              }
-            });
-            txt.appendChild(netRow);
-          }
-
-          const iconRow = document.createElement("div");
-          iconRow.className = "cal-icons-row";
-          if (ev.show.links && ev.show.links.tmdb) {
-            const t = iconImg(ICONS.tmdb, "TMDB");
-            t.onclick = e => { e.stopPropagation(); window.open(ev.show.links.tmdb, "_blank"); };
-            iconRow.appendChild(t);
-          }
-          const vs = `https://vidsrc.net/embed/tv/${ev.showId}/${ev.sn}/${ev.ep.episode_number}`;
-          const ve = `https://player.videasy.net/tv/${ev.showId}/${ev.sn}/${ev.ep.episode_number}`;
-          const vi = iconImg(ICONS.vidsrc, "VidSrc");
-          vi.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); };
-          iconRow.appendChild(vi);
-          const vii = iconImg(ICONS.videasy, "Videasy");
-          vii.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); };
-          iconRow.appendChild(vii);
-
-          txt.appendChild(iconRow);
-          item.appendChild(txt);
-          list.appendChild(item);
-
-        } else if (ev.kind === "movie") {
-          const m = ev.movie;
-          const item = document.createElement("div");
-          item.className = "cal-item";
-
-          const p = document.createElement("img");
-          p.className = "cal-poster";
-          p.src = posterUrl(m.poster_path);
-          p.alt = m.title || "";
-          p.onclick = e => { e.stopPropagation(); showMoviePopup(ev.movieId); };
-          item.appendChild(p);
-
-          const txt = document.createElement("div");
-          txt.className = "cal-text";
-
-          const tTitle = document.createElement("div");
-          tTitle.className = "cal-show";
-          tTitle.textContent = m.title || "";
-          tTitle.onclick = e => { e.stopPropagation(); showMoviePopup(ev.movieId); };
-
-          const runtime = m.runtime ? `${m.runtime}m` : "";
-          const tDate = document.createElement("div");
-          tDate.className = "cal-ep";
-          tDate.textContent =
-            `${m.release_date || ""}${m.status ? " • " + m.status : ""}${runtime ? " • " + runtime : ""}`;
-          txt.appendChild(tTitle);
-          txt.appendChild(tDate);
-
-          const iconRow = document.createElement("div");
-          iconRow.className = "cal-icons-row";
-          if (m.links && m.links.tmdb) {
-            const t = iconImg(ICONS.tmdb, "TMDB");
-            t.onclick = e => { e.stopPropagation(); window.open(m.links.tmdb, "_blank"); };
-            iconRow.appendChild(t);
-          }
-          if (m.tmdb_id) {
-            const vs = `https://vidsrc.net/embed/movie/${m.tmdb_id}`;
-            const ve = `https://player.videasy.net/movie/${m.tmdb_id}`;
-            const vi = iconImg(ICONS.vidsrc, "VidSrc");
-            vi.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); };
-            iconRow.appendChild(vi);
-            const vii = iconImg(ICONS.videasy, "Videasy");
-            vii.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); };
-            iconRow.appendChild(vii);
-          }
-          txt.appendChild(iconRow);
-
-          item.appendChild(txt);
-          list.appendChild(item);
+    // Episodes
+    for (const show of shows) {
+      const sid = show.show_id || show.id;
+      const sName = show.name || show.ref_name;
+      const poster = show.poster_path;
+      if (!Array.isArray(show.seasons)) continue;
+      for (const season of show.seasons) {
+        if (!Array.isArray(season.episodes)) continue;
+        for (const ep of season.episodes) {
+          const air = ep.air_date;
+          if (!air) continue;
+          (byDate[air] ||= []).push({
+            type: "ep",
+            showId: sid,
+            showName: sName,
+            poster,
+            s: season.season_number,
+            e: ep.episode_number,
+            name: ep.name,
+            runtime: ep.runtime
+          });
         }
-      });
-
-      cell.appendChild(list);
-      el.calGrid.appendChild(cell);
-    }
-  }
-
-  /* SHOWS RENDER */
-
-  function buildShowsGenres(shows) {
-    const s = new Set();
-    shows.forEach(sh => (sh.genres || []).forEach(g => s.add(g)));
-    el.showsGenres.innerHTML = "";
-    const all = document.createElement("span");
-    all.className = "pill active";
-    all.textContent = "All";
-    all.dataset.genre = "";
-    el.showsGenres.appendChild(all);
-    all.addEventListener("click", () => {
-      state.showsFilters.genre = null;
-      updateGenrePills(el.showsGenres, "");
-      renderShows();
-    });
-    Array.from(s).sort().forEach(g => {
-      const p = document.createElement("span");
-      p.className = "pill";
-      p.textContent = g;
-      p.dataset.genre = g;
-      p.addEventListener("click", () => {
-        state.showsFilters.genre = g;
-        updateGenrePills(el.showsGenres, g);
-        renderShows();
-      });
-      el.showsGenres.appendChild(p);
-    });
-  }
-
-  function updateGenrePills(container, val) {
-    container.querySelectorAll(".pill").forEach(p => {
-      p.classList.toggle("active", (p.dataset.genre || "") === (val || ""));
-    });
-  }
-
-  function renderShows() {
-    const d = state.data;
-    if (!d || !Array.isArray(d.shows) || !d.shows.length) {
-      el.showsGrid.innerHTML = '<div class="config-note">No shows in data.json.</div>';
-      return;
-    }
-    const f = state.showsFilters;
-    let list = d.shows.slice();
-
-    // status filter
-    if (f.status === "running") {
-      list = list.filter(s => (s.status || "").toLowerCase().includes("running"));
-    } else if (f.status === "ended") {
-      list = list.filter(s => (s.status || "").toLowerCase().includes("ended"));
-    }
-
-    // genre filter
-    if (f.genre) {
-      list = list.filter(s => (s.genres || []).includes(f.genre));
-    }
-
-    // watched filter
-    if (f.watched === "watched") {
-      list = list.filter(s => state.watched.shows.has(String(makeShowId(s))));
-    } else if (f.watched === "unwatched") {
-      list = list.filter(s => !state.watched.shows.has(String(makeShowId(s))));
-    }
-
-    // sort
-    list.sort((a,b) => {
-      const na = (a.name || "").toLowerCase();
-      const nb = (b.name || "").toLowerCase();
-      if (f.sort === "za") return nb.localeCompare(na);
-      return na.localeCompare(nb);
-    });
-
-    el.showsGrid.innerHTML = "";
-    list.forEach(show => {
-      const sid = makeShowId(show);
-      if (!sid) return;
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const p = document.createElement("img");
-      p.className = "poster";
-      p.src = posterUrl(show.poster_path);
-      p.alt = show.name || "";
-      p.onclick = () => showShowPopup(sid);
-      card.appendChild(p);
-
-      const t = document.createElement("div");
-      t.className = "card-title";
-      t.textContent = show.name || "";
-      t.onclick = () => showShowPopup(sid);
-      card.appendChild(t);
-
-      // current season line (best-effort)
-      const seasons = show.seasons || [];
-      if (seasons.length) {
-        const last = seasons[seasons.length - 1];
-        const cs = document.createElement("div");
-        cs.className = "card-sub";
-        cs.textContent = `Current season: ${last.season_number} (${last.episode_count || 0} eps)`;
-        cs.style.cursor = "pointer";
-        cs.onclick = () => showSeasonPopup(sid, last.season_number);
-        card.appendChild(cs);
       }
-
-      const sub = document.createElement("div");
-      sub.className = "card-sub";
-      sub.textContent =
-        `${(show.genres || []).join(", ")}${show.status ? " • " + show.status : ""}`;
-      card.appendChild(sub);
-
-      const chips = document.createElement("div");
-      chips.className = "chip-row";
-      const idChip = document.createElement("div");
-      idChip.className = "chip";
-      idChip.textContent = `TMDB: ${sid}`;
-      chips.appendChild(idChip);
-      card.appendChild(chips);
-
-      const row = document.createElement("div");
-      row.className = "icon-row";
-
-      // watched toggle
-      const w = document.createElement("div");
-      w.className = "watch-pill";
-      const key = String(sid);
-      const isOn = state.watched.shows.has(key);
-      if (isOn) w.classList.add("on");
-      w.textContent = isOn ? "Watched" : "Mark watched";
-      w.onclick = (e) => {
-        e.stopPropagation();
-        toggleShowWatched(key);
-      };
-      row.appendChild(w);
-
-      if (show.links && show.links.tmdb) {
-        const tm = iconImg(ICONS.tmdb, "TMDB");
-        tm.onclick = e => { e.stopPropagation(); window.open(show.links.tmdb, "_blank"); };
-        row.appendChild(tm);
-      }
-
-      card.appendChild(row);
-      el.showsGrid.appendChild(card);
-    });
-  }
-
-  /* MOVIES RENDER */
-
-  function buildMoviesGenres(movies) {
-    const s = new Set();
-    movies.forEach(m => (m.genres || []).forEach(g => s.add(g)));
-    el.moviesGenres.innerHTML = "";
-    const all = document.createElement("span");
-    all.className = "pill active";
-    all.textContent = "All";
-    all.dataset.genre = "";
-    el.moviesGenres.appendChild(all);
-    all.addEventListener("click", () => {
-      state.moviesFilters.genre = null;
-      updateGenrePills(el.moviesGenres, "");
-      renderMovies();
-    });
-    Array.from(s).sort().forEach(g => {
-      const p = document.createElement("span");
-      p.className = "pill";
-      p.textContent = g;
-      p.dataset.genre = g;
-      p.addEventListener("click", () => {
-        state.moviesFilters.genre = g;
-        updateGenrePills(el.moviesGenres, g);
-        renderMovies();
-      });
-      el.moviesGenres.appendChild(p);
-    });
-  }
-
-  function renderMovies() {
-    const d = state.data;
-    const movies = Array.isArray(d && d.movies) ? d.movies : [];
-    if (!movies.length) {
-      el.moviesGrid.innerHTML = '<div class="config-note">No movies in data.json.</div>';
-      return;
-    }
-    const f = state.moviesFilters;
-    let list = movies.slice();
-
-    // genre filter
-    if (f.genre) {
-      list = list.filter(m => (m.genres || []).includes(f.genre));
-    }
-
-    // status filter (simplified mapping)
-    function mapStatus(raw) {
-      if (!raw) return "";
-      const r = raw.toLowerCase();
-      if (r.includes("released")) return "releasedto";
-      if (r.includes("theatrical") || r.includes("in theaters") or r.includes("in theatres")) return "intheatres";
-      if (r.includes("post") || r.includes("prod")) return "inprod";
-      if (r.includes("announced")) return "announced";
-      return "";
-    }
-
-    if (f.status !== "all") {
-      list = list.filter(m => mapStatus(m.status) === f.status);
-    }
-
-    // watched filter
-    if (f.watched === "watched") {
-      list = list.filter(m => state.watched.movies.has(String(makeMovieId(m))));
-    } else if (f.watched === "unwatched") {
-      list = list.filter(m => !state.watched.movies.has(String(makeMovieId(m))));
-    }
-
-    // sort
-    list.sort((a,b) => {
-      if (f.sort === "date") {
-        const da = a.release_date || "";
-        const db = b.release_date || "";
-        return da.localeCompare(db);
-      }
-      return (a.title || "").localeCompare(b.title || "");
-    });
-
-    el.moviesGrid.innerHTML = "";
-    list.forEach(m => {
-      const mid = makeMovieId(m);
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const p = document.createElement("img");
-      p.className = "poster";
-      p.src = posterUrl(m.poster_path);
-      p.alt = m.title || "";
-      p.onclick = () => showMoviePopup(mid);
-      card.appendChild(p);
-
-      const t = document.createElement("div");
-      t.className = "card-title";
-      t.textContent = m.title || "";
-      t.onclick = () => showMoviePopup(mid);
-      card.appendChild(t);
-
-      const runtime = m.runtime ? `${m.runtime}m` : "";
-      const sub = document.createElement("div");
-      sub.className = "card-sub";
-      sub.textContent =
-        `${(m.genres || []).join(", ")}${m.release_date ? " • " + m.release_date : ""}${m.status ? " • " + m.status : ""}${runtime ? " • " + runtime : ""}`;
-      card.appendChild(sub);
-
-      const chips = document.createElement("div");
-      chips.className = "chip-row";
-      const idChip = document.createElement("div");
-      idChip.className = "chip";
-      idChip.textContent = `TMDB: ${mid || "?"}`;
-      chips.appendChild(idChip);
-      card.appendChild(chips);
-
-      const row = document.createElement("div");
-      row.className = "icon-row";
-
-      const key = String(mid);
-      const w = document.createElement("div");
-      w.className = "watch-pill";
-      const isOn = state.watched.movies.has(key);
-      if (isOn) w.classList.add("on");
-      w.textContent = isOn ? "Watched" : "Mark watched";
-      w.onclick = (e) => {
-        e.stopPropagation();
-        toggleMovieWatched(key);
-      };
-      row.appendChild(w);
-
-      if (m.links && m.links.tmdb) {
-        const tm = iconImg(ICONS.tmdb, "TMDB");
-        tm.onclick = e => { e.stopPropagation(); window.open(m.links.tmdb, "_blank"); };
-        row.appendChild(tm);
-      }
-      if (m.tmdb_id) {
-        const vs = `https://vidsrc.net/embed/movie/${m.tmdb_id}`;
-        const ve = `https://player.videasy.net/movie/${m.tmdb_id}`;
-        const vi = iconImg(ICONS.vidsrc, "VidSrc");
-        vi.onclick = e => { e.stopPropagation(); window.open(vs, "_blank"); };
-        row.appendChild(vi);
-        const vii = iconImg(ICONS.videasy, "Videasy");
-        vii.onclick = e => { e.stopPropagation(); window.open(ve, "_blank"); };
-        row.appendChild(vii);
-      }
-
-      card.appendChild(row);
-      el.moviesGrid.appendChild(card);
-    });
-  }
-
-  /* FILTER CLICK WIRING */
-
-  document.addEventListener("click", (e) => {
-    const p = e.target.closest(".pill");
-    if (!p) return;
-
-    // Shows
-    if (p.dataset.showsSort) {
-      document.querySelectorAll("[data-shows-sort]").forEach(x => x.classList.remove("active"));
-      p.classList.add("active");
-      state.showsFilters.sort = p.dataset.showsSort;
-      renderShows();
-    }
-    if (p.dataset.showsStatus) {
-      document.querySelectorAll("[data-shows-status]").forEach(x => x.classList.remove("active"));
-      p.classList.add("active");
-      state.showsFilters.status = p.dataset.showsStatus;
-      renderShows();
-    }
-    if (p.dataset.showsWatched) {
-      document.querySelectorAll("[data-shows-watched]").forEach(x => x.classList.remove("active"));
-      p.classList.add("active");
-      state.showsFilters.watched = p.dataset.showsWatched;
-      renderShows();
     }
 
     // Movies
-    if (p.dataset.moviesStatus) {
-      document.querySelectorAll("[data-movies-status]").forEach(x => x.classList.remove("active"));
-      p.classList.add("active");
-      state.moviesFilters.status = p.dataset.moviesStatus;
-      renderMovies();
-    }
-    if (p.dataset.moviesSort) {
-      document.querySelectorAll("[data-movies-sort]").forEach(x => x.classList.remove("active"));
-      p.classList.add("active");
-      state.moviesFilters.sort = p.dataset.moviesSort;
-      renderMovies();
-    }
-    if (p.dataset.moviesWatched) {
-      document.querySelectorAll("[data-movies-watched]").forEach(x => x.classList.remove("active"));
-      p.classList.add("active");
-      state.moviesFilters.watched = p.dataset.moviesWatched;
-      renderMovies();
-    }
-  });
-
-  /* LOAD DATA */
-
-  function loadData() {
-    fetch("../data/data.json?_ts=" + Date.now())
-      .then(r => {
-        if (!r.ok) throw new Error("HTTP " + r.status);
-        return r.json();
-      })
-      .then(data => {
-        state.data = data;
-        state.showsById = {};
-        (data.shows || []).forEach(s => {
-          const id = makeShowId(s);
-          if (id) state.showsById[id] = s;
-        });
-        state.moviesById = {};
-        (data.movies || []).forEach(m => {
-          const id = makeMovieId(m);
-          if (id) state.moviesById[id] = m;
-        });
-        setMetaLine(data);
-        buildCalendar();
-        buildShowsGenres(data.shows || []);
-        renderShows();
-        buildMoviesGenres(data.movies || []);
-        renderMovies();
-      })
-      .catch(err => {
-        console.error("data.json load failed", err);
-        el.meta.textContent =
-          "index.html: v2.9.2 (2025-11-10 23:30 EST) • config.html: v1.4.4 • Data built: n/a • Shows: 0 • Movies: 0 • LiveTV: 0 (failed to load data.json)";
-        el.calMonth.textContent = "No data";
+    for (const mv of movies) {
+      const d = mv.release_date;
+      if (!d) continue;
+      (byDate[d] ||= []).push({
+        type: "movie",
+        id: mv.movie_id || mv.tmdb_id,
+        title: mv.title,
+        poster: mv.poster_path,
+        status: mv.status,
+        runtime: mv.runtime
       });
+    }
+
+    grid.innerHTML = "";
+
+    const total = 42;
+    let day = 1;
+    let nextDay = 1;
+    const prevDays = new Date(y, m, 0).getDate();
+
+    for (let i = 0; i < total; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cal-cell";
+
+      let dateObj;
+      if (i < dow) {
+        const d = prevDays - (dow - 1) + i;
+        dateObj = new Date(y, m - 1, d);
+      } else if (day <= daysInMonth) {
+        dateObj = new Date(y, m, day++);
+      } else {
+        dateObj = new Date(y, m + 1, nextDay++);
+      }
+
+      const dateKey = dateObj.toISOString().slice(0, 10);
+      if (dateKey === today) cell.classList.add("today");
+
+      const top = document.createElement("div");
+      top.className = "cal-cell-top";
+      top.textContent = dateObj.getDate();
+      cell.appendChild(top);
+
+      const items = byDate[dateKey] || [];
+      for (const it of items) {
+        const row = document.createElement("div");
+        row.className = "cal-item";
+
+        const poster = document.createElement("img");
+        poster.className = "poster-cal";
+        if (it.poster) poster.src = TMDB_IMG + it.poster;
+        poster.alt = "";
+        poster.onclick = () => {
+          if (it.type === "ep") openShowPopup(it.showId);
+          else openMoviePopup(it.id);
+        };
+
+        const body = document.createElement("div");
+        body.className = "cal-item-body";
+
+        if (it.type === "ep") {
+          const t = document.createElement("div");
+          t.className = "cal-show-title";
+          t.textContent = it.showName;
+          t.onclick = () => openShowPopup(it.showId);
+
+          const ep = document.createElement("div");
+          ep.className = "cal-ep-line";
+          const code = `S${String(it.s).padStart(2,"0")}E${String(it.e).padStart(2,"0")}`;
+          ep.textContent = `${code} · ${it.name || ""}`;
+          ep.onclick = () => openEpisodePopup(it.showId, it.s, it.e);
+
+          const rt = document.createElement("div");
+          rt.className = "cal-runtime";
+          if (it.runtime) rt.textContent = `${it.runtime} min`;
+
+          const icons = document.createElement("div");
+          icons.className = "icon-row";
+          appendLinkIcon(icons, LOGOS.tmdb, `https://www.themoviedb.org/tv/${it.showId}`);
+          appendLinkIcon(icons, LOGOS.vidsrc, buildVidSrcUrl("tv", it.showId, it.s, it.e));
+          appendLinkIcon(icons, LOGOS.videasy, buildVideasyUrl("tv", it.showId, it.s, it.e));
+
+          body.appendChild(t);
+          body.appendChild(ep);
+          if (it.runtime) body.appendChild(rt);
+          body.appendChild(icons);
+        } else {
+          const t = document.createElement("div");
+          t.className = "cal-show-title";
+          t.textContent = it.title;
+          t.onclick = () => openMoviePopup(it.id);
+
+          const meta = document.createElement("div");
+          meta.className = "cal-ep-line";
+          const bits = [];
+          if (it.status) bits.push(it.status);
+          if (it.runtime) bits.push(`${it.runtime} min`);
+          meta.textContent = bits.join(" • ");
+
+          const icons = document.createElement("div");
+          icons.className = "icon-row";
+          appendLinkIcon(icons, LOGOS.tmdb, `https://www.themoviedb.org/movie/${it.id}`);
+          appendLinkIcon(icons, LOGOS.vidsrc, buildVidSrcUrl("movie", it.id));
+          appendLinkIcon(icons, LOGOS.videasy, buildVideasyUrl("movie", it.id));
+
+          body.appendChild(t);
+          body.appendChild(meta);
+          body.appendChild(icons);
+        }
+
+        row.appendChild(poster);
+        row.appendChild(body);
+        cell.appendChild(row);
+      }
+
+      grid.appendChild(cell);
+    }
   }
 
-  /* CAL NAV */
-  el.calPrev.addEventListener("click", () => { state.calOffset -= 1; buildCalendar(); });
-  el.calNext.addEventListener("click", () => { state.calOffset += 1; buildCalendar(); });
-  el.calToday.addEventListener("click", () => { state.calOffset = 0; buildCalendar(); });
+  /* SHOWS ---------------------------------------------------------------- */
 
-  loadData();
+  function renderShows() {
+    const grid = qs("#shows-grid");
+    if (!grid) return;
+    const shows = (state.data && state.data.shows) ? [...state.data.shows] : [];
+    if (!shows.length) {
+      grid.innerHTML = '<div class="no-data">No shows loaded. Check tv_list.txt and workflow.</div>';
+      return;
+    }
+
+    shows.sort((a,b) =>
+      state.showsFilters.sort === "za"
+        ? (b.name || "").localeCompare(a.name || "")
+        : (a.name || "").localeCompare(b.name || "")
+    );
+
+    grid.innerHTML = "";
+    for (const s of shows) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const poster = document.createElement("img");
+      poster.className = "poster";
+      if (s.poster_path) poster.src = TMDB_IMG + s.poster_path;
+      poster.alt = s.name || "";
+      poster.onclick = () => openShowPopup(s.show_id);
+
+      const title = document.createElement("div");
+      title.className = "show-title";
+      title.textContent = `${s.name || s.ref_name || "Show"}${s.show_id ? " ["+s.show_id+"]" : ""}`;
+      title.onclick = () => openShowPopup(s.show_id);
+
+      const meta = document.createElement("div");
+      meta.className = "show-meta";
+      const genres = (s.genres || []).join(", ");
+      meta.textContent = `${s.status || ""}${genres ? " • " + genres : ""}`;
+
+      const icons = document.createElement("div");
+      icons.className = "icon-row";
+      appendLinkIcon(icons, LOGOS.tmdb, s.links && s.links.tmdb);
+      appendLinkIcon(icons, LOGOS.vidsrc, buildVidSrcUrl("tv", s.show_id));
+      appendLinkIcon(icons, LOGOS.videasy, buildVideasyUrl("tv", s.show_id));
+
+      card.appendChild(poster);
+      card.appendChild(title);
+      card.appendChild(meta);
+      card.appendChild(icons);
+
+      grid.appendChild(card);
+    }
+  }
+
+  /* MOVIES --------------------------------------------------------------- */
+
+  function mapStatus(raw) {
+    if (!raw) return "";
+    const r = raw.toLowerCase();
+    if (r.includes("released")) return "releasedto";
+    if (r.includes("theatrical") || r.includes("theatres") || r.includes("theaters")) return "intheatres";
+    if (r.includes("prod")) return "inprod";
+    if (r.includes("announced")) return "announced";
+    return "";
+  }
+
+  function renderMovies() {
+    const grid = qs("#movies-grid");
+    if (!grid) return;
+    const movies = (state.data && state.data.movies) ? [...state.data.movies] : [];
+    if (!movies.length) {
+      grid.innerHTML = '<div class="no-data">No movies loaded. Check movies_list.txt and workflow.</div>';
+      return;
+    }
+
+    if (state.moviesFilters.sort === "title") {
+      movies.sort((a,b) => (a.title || "").localeCompare(b.title || ""));
+    } else {
+      movies.sort((a,b) => (a.release_date || "").localeCompare(b.release_date || ""));
+    }
+
+    grid.innerHTML = "";
+    for (const mv of movies) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const poster = document.createElement("img");
+      poster.className = "poster";
+      if (mv.poster_path) poster.src = TMDB_IMG + mv.poster_path;
+      poster.alt = mv.title || "";
+      poster.onclick = () => openMoviePopup(mv.movie_id || mv.tmdb_id);
+
+      const title = document.createElement("div");
+      title.className = "movie-title";
+      title.textContent = `${mv.title || "Movie"}${mv.tmdb_id ? " ["+mv.tmdb_id+"]" : ""}`;
+      title.onclick = () => openMoviePopup(mv.movie_id || mv.tmdb_id);
+
+      const sCode = mapStatus(mv.status);
+      let label = mv.status || "";
+      if (sCode === "releasedto") label = "Released";
+      if (sCode === "intheatres") label = "In Theatres";
+      if (sCode === "inprod") label = "In Production";
+      if (sCode === "announced") label = "Announced";
+
+      const meta = document.createElement("div");
+      meta.className = "movie-meta";
+      const bits = [];
+      if (mv.release_date) bits.push(mv.release_date);
+      if (label) bits.push(label);
+      if (mv.runtime) bits.push(`${mv.runtime} min`);
+      meta.textContent = bits.join(" • ");
+
+      const icons = document.createElement("div");
+      icons.className = "icon-row";
+      const mid = mv.movie_id || mv.tmdb_id;
+      appendLinkIcon(icons, LOGOS.tmdb, mv.links && mv.links.tmdb);
+      appendLinkIcon(icons, LOGOS.vidsrc, buildVidSrcUrl("movie", mid));
+      appendLinkIcon(icons, LOGOS.videasy, buildVideasyUrl("movie", mid));
+
+      card.appendChild(poster);
+      card.appendChild(title);
+      card.appendChild(meta);
+      card.appendChild(icons);
+
+      grid.appendChild(card);
+    }
+  }
+
+  /* LIVE TV (placeholder render) ----------------------------------------- */
+
+  function renderLiveTV() {
+    const grid = qs("#livetv-grid");
+    if (!grid) return;
+    grid.innerHTML = '<div class="no-data">Live TV view is a visual stub; no channels loaded yet.</div>';
+  }
+
+  /* POPUPS --------------------------------------------------------------- */
+
+  const overlayBackdrop = qs("#overlay-backdrop");
+  const overlayTitle = qs("#overlay-title");
+  const overlayPoster = qs("#overlay-poster");
+  const overlayIcons = qs("#overlay-icons");
+  const overlayContent = qs("#overlay-content");
+  const overlayClose = qs("#overlay-close");
+
+  function openOverlay() {
+    overlayBackdrop.classList.add("active");
+  }
+  function closeOverlay() {
+    overlayBackdrop.classList.remove("active");
+    overlayTitle.textContent = "";
+    overlayPoster.removeAttribute("src");
+    overlayIcons.innerHTML = "";
+    overlayContent.innerHTML = "";
+  }
+
+  if (overlayClose) overlayClose.onclick = closeOverlay;
+  if (overlayBackdrop) {
+    overlayBackdrop.addEventListener("click", (e) => {
+      if (e.target === overlayBackdrop) closeOverlay();
+    });
+  }
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeOverlay();
+  });
+
+  function appendLinkIcon(container, src, href) {
+    if (!href || !src) return;
+    const a = document.createElement("a");
+    a.href = href;
+    a.target = "_blank";
+    const img = document.createElement("img");
+    img.src = src;
+    img.className = "svc-icon";
+    a.appendChild(img);
+    container.appendChild(a);
+  }
+
+  function buildVidSrcUrl(type, id, s, e) {
+    if (!id) return "";
+    if (type === "tv") {
+      if (s && e) return `https://vidsrc.net/embed/tv/${id}/${s}/${e}`;
+      return `https://vidsrc.net/embed/tv/${id}`;
+    }
+    return `https://vidsrc.net/embed/movie/${id}`;
+  }
+
+  function buildVideasyUrl(type, id, s, e) {
+    if (!id) return "";
+    if (type === "tv") {
+      if (s && e) return `https://player.videasy.net/tv/${id}/${s}/${e}`;
+      return `https://player.videasy.net/tv/${id}`;
+    }
+    return `https://player.videasy.net/movie/${id}`;
+  }
+
+  function findShow(id) {
+    return (state.data.shows || []).find(
+      s => s.show_id === id || s.id === id
+    );
+  }
+
+  function findMovie(id) {
+    return (state.data.movies || []).find(
+      m => m.movie_id === id || m.tmdb_id === id
+    );
+  }
+
+  function openShowPopup(showId) {
+    const s = findShow(showId);
+    if (!s) return;
+    overlayTitle.textContent = `${s.name || s.ref_name || "Show"}${s.show_id ? " ["+s.show_id+"]" : ""}`;
+    if (s.poster_path) overlayPoster.src = TMDB_IMG + s.poster_path;
+    overlayIcons.innerHTML = "";
+    appendLinkIcon(overlayIcons, LOGOS.tmdb, s.links && s.links.tmdb);
+    appendLinkIcon(overlayIcons, LOGOS.vidsrc, buildVidSrcUrl("tv", s.show_id));
+    appendLinkIcon(overlayIcons, LOGOS.videasy, buildVideasyUrl("tv", s.show_id));
+
+    const c = document.createElement("div");
+    c.innerHTML = `
+      <div><strong>Status:</strong> ${s.status || "n/a"}</div>
+      <div><strong>Genres:</strong> ${(s.genres || []).join(", ") || "n/a"}</div>
+      <div style="margin-top:4px;">${s.overview || ""}</div>
+      <div style="margin-top:6px;"><strong>Seasons:</strong></div>
+    `;
+
+    const list = document.createElement("div");
+    list.className = "ep-list";
+    (s.seasons || []).forEach(season => {
+      const row = document.createElement("div");
+      row.className = "ep-row";
+      row.innerHTML = `
+        <div class="ep-row-title">Season ${season.season_number} (${season.episode_count || (season.episodes||[]).length || 0} eps)</div>
+        <div class="ep-row-meta">${season.overview || ""}</div>
+      `;
+      row.onclick = () => openSeasonPopup(s, season.season_number);
+      list.appendChild(row);
+    });
+
+    overlayContent.innerHTML = "";
+    overlayContent.appendChild(c);
+    overlayContent.appendChild(list);
+    openOverlay();
+  }
+
+  function openSeasonPopup(show, seasonNumber) {
+    const season = (show.seasons || []).find(se => se.season_number === seasonNumber);
+    if (!season) return;
+    const code = `Season ${seasonNumber}`;
+    overlayTitle.textContent = `${show.name || "Show"}${show.show_id ? " ["+show.show_id+"]" : ""} — ${code}`;
+    if (show.poster_path) overlayPoster.src = TMDB_IMG + show.poster_path;
+    overlayIcons.innerHTML = "";
+    appendLinkIcon(overlayIcons, LOGOS.tmdb, show.links && show.links.tmdb);
+
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `
+      <div><strong>Air:</strong> ${season.air_date || "n/a"}</div>
+      <div style="margin-top:2px;">${season.overview || ""}</div>
+      <div style="margin-top:4px;"><strong>Episodes:</strong></div>
+    `;
+
+    const list = document.createElement("div");
+    list.className = "ep-list";
+    (season.episodes || []).forEach(ep => {
+      const row = document.createElement("div");
+      const epCode = `S${String(seasonNumber).padStart(2,"0")}E${String(ep.episode_number).padStart(2,"0")}`;
+      row.className = "ep-row";
+      row.innerHTML = `
+        <div class="ep-row-title">${epCode} · ${ep.name || ""}</div>
+        <div class="ep-row-meta">
+          ${ep.air_date || "TBA"}${ep.runtime ? " • " + ep.runtime + " min" : ""}
+        </div>
+      `;
+      row.onclick = () => openEpisodePopup(show.show_id, seasonNumber, ep.episode_number);
+      list.appendChild(row);
+    });
+
+    overlayContent.innerHTML = "";
+    overlayContent.appendChild(wrap);
+    overlayContent.appendChild(list);
+    openOverlay();
+  }
+
+  function openEpisodePopup(showId, seasonNumber, epNumber) {
+    const show = findShow(showId);
+    if (!show) return;
+    const season = (show.seasons || []).find(se => se.season_number === seasonNumber);
+    if (!season) return;
+    const ep = (season.episodes || []).find(e => e.episode_number === epNumber);
+    if (!ep) return;
+
+    const code = `S${String(seasonNumber).padStart(2,"0")}E${String(epNumber).padStart(2,"0")}`;
+    overlayTitle.textContent =
+      `${show.name || "Show"}${show.show_id ? " ["+show.show_id+"]" : ""} — ${code}`;
+    if (show.poster_path) overlayPoster.src = TMDB_IMG + show.poster_path;
+    overlayIcons.innerHTML = "";
+    appendLinkIcon(overlayIcons, LOGOS.tmdb, show.links && show.links.tmdb);
+    appendLinkIcon(overlayIcons, LOGOS.vidsrc, buildVidSrcUrl("tv", show.show_id, seasonNumber, epNumber));
+    appendLinkIcon(overlayIcons, LOGOS.videasy, buildVideasyUrl("tv", show.show_id, seasonNumber, epNumber));
+
+    const c = document.createElement("div");
+    c.innerHTML = `
+      <div><strong>${code} · ${ep.name || ""}</strong></div>
+      <div>${ep.air_date || "TBA"}${ep.runtime ? " • " + ep.runtime + " min" : ""}</div>
+      <div style="margin-top:4px;">${ep.overview || ""}</div>
+    `;
+    overlayContent.innerHTML = "";
+    overlayContent.appendChild(c);
+    openOverlay();
+  }
+
+  function openMoviePopup(movieId) {
+    const mv = findMovie(movieId);
+    if (!mv) return;
+    overlayTitle.textContent =
+      `${mv.title || "Movie"}${mv.tmdb_id || mv.movie_id ? " ["+(mv.tmdb_id || mv.movie_id)+"]" : ""}`;
+    if (mv.poster_path) overlayPoster.src = TMDB_IMG + mv.poster_path;
+    overlayIcons.innerHTML = "";
+    appendLinkIcon(overlayIcons, LOGOS.tmdb, mv.links && mv.links.tmdb);
+    appendLinkIcon(overlayIcons, LOGOS.vidsrc, buildVidSrcUrl("movie", mv.movie_id || mv.tmdb_id));
+    appendLinkIcon(overlayIcons, LOGOS.videasy, buildVideasyUrl("movie", mv.movie_id || mv.tmdb_id));
+
+    const sCode = mapStatus(mv.status);
+    let label = mv.status || "";
+    if (sCode === "releasedto") label = "Released";
+    if (sCode === "intheatres") label = "In Theatres";
+    if (sCode === "inprod") label = "In Production";
+    if (sCode === "announced") label = "Announced";
+
+    const bits = [];
+    if (mv.release_date) bits.push(mv.release_date);
+    if (label) bits.push(label);
+    if (mv.runtime) bits.push(`${mv.runtime} min`);
+
+    const c = document.createElement("div");
+    c.innerHTML = `
+      <div>${bits.join(" • ")}</div>
+      <div style="margin-top:4px;">${mv.overview || ""}</div>
+    `;
+    overlayContent.innerHTML = "";
+    overlayContent.appendChild(c);
+    openOverlay();
+  }
+
+  /* RENDER ALL ----------------------------------------------------------- */
+
+  function renderAll() {
+    renderCalendar();
+    renderShows();
+    renderMovies();
+    renderLiveTV();
+  }
+
+  /* INIT ----------------------------------------------------------------- */
+
+  function initCalendarControls() {
+    const prev = qs("#cal-prev");
+    const next = qs("#cal-next");
+    const today = qs("#cal-today");
+    if (prev) prev.onclick = () => changeMonth(-1);
+    if (next) next.onclick = () => changeMonth(1);
+    if (today) today.onclick = () => {
+      const d = new Date();
+      state.calYear = d.getFullYear();
+      state.calMonth = d.getMonth();
+      renderCalendar();
+    };
+  }
+
+  function init() {
+    initNav();
+    initConfig();
+    initCalendarControls();
+    loadData();
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
 })();
 </script>
 </body>
