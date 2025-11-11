@@ -1,62 +1,119 @@
 # File: .github/workflows/build-data.yml
 # Project: my_TV_Movie
-# Version: v1.3.0 (2025-11-10 23:40 EST)
+# Version: v1.3.0 (2025-11-10 22:30 EST)
+#
+# Purpose:
+#   - Build data/data.json from tv_list.txt, movies_list.txt, live_tv_list.txt
+#   - Commit updated data (optional)
+#   - Deploy /web via GitHub Pages
+#
+# Notes:
+#   - Requires repo settings:
+#       Settings → Pages → Build and deployment → Source: GitHub Actions
+#   - Requires:
+#       Settings → Actions → General → Workflow permissions: Read and write
+#   - Secrets (min):
+#       API_TMDB_KEY
+#   - Optional:
+#       API_TMDB_TOKEN, API_TVMAZE_KEY, API_OMDB_KEY,
+#       API_TRAKT_CLIENT_ID, TRAKT_PROFILES, etc.
 
 name: Build TV Data and Deploy
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */4 * * *"
+    - cron: "0 */4 * * *"   # every 4 hours
 
 permissions:
-  contents: write
-  pages: write
+  contents: write      # for committing data.json if changed
+  pages: write         # for Pages deploy
   id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Install deps
         run: |
-          pip install -r requirements.txt
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
 
       - name: Build data.json
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
+          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
           API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
           API_OMDB_KEY: ${{ secrets.API_OMDB_KEY }}
           API_TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_CLIENT_ID }}
           API_TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_CLIENT_SECRET }}
+          TRAKT_PROFILES: ${{ secrets.TRAKT_PROFILES }}
         run: |
-          set -e
           mkdir -p data
-          python scripts/fetch_tmdb.py
-          python scripts/fetch_tvmaze.py || echo "tvmaze enrichment skipped"
-          python scripts/fetch_omdb.py || echo "omdb enrichment skipped"
-          python scripts/sync_trakt.py || echo "trakt sync skipped"
-          python scripts/fetch_live_tv.py || echo "live tv skipped"
-          cat data/data.json
 
-      - name: Upload artifact (web)
+          echo "[build] fetch_tmdb.py"
+          python scripts/fetch_tmdb.py
+
+          echo "[build] fetch_tvmaze.py (soft-fail ok)"
+          python scripts/fetch_tvmaze.py || echo "[build] tvmaze skipped"
+
+          echo "[build] fetch_omdb.py (soft-fail ok)"
+          python scripts/fetch_omdb.py || echo "[build] omdb skipped"
+
+          echo "[build] sync_trakt.py (soft-fail ok)"
+          python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
+
+          echo "[build] final data.json:"
+          python - << 'EOF'
+          import json, pathlib
+          p = pathlib.Path("data/data.json")
+          if not p.exists():
+              raise SystemExit("data/data.json missing after build.")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          meta = data.get("meta", {})
+          print("[build] Shows:", meta.get("shows"), "Movies:", meta.get("movies"), "LiveTV:", meta.get("livetv", 0))
+          EOF
+
+      - name: Commit updated data (optional)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          if git status --porcelain data/ | grep .; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/
+            git commit -m "Update data.json ($(date -u +'%Y-%m-%dT%H:%M:%SZ'))" || true
+            git push || true
+          else
+            echo "No data changes to commit."
+          fi
+
+      - name: Upload web artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./web
 
   deploy:
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
