@@ -1,18 +1,20 @@
 # File: .github/workflows/build-data.yml
 # Project: my_TV_Movie
-# Version: v1.3.1 (2025-11-11 18:35 EST)
+# Version: v1.3.2 (2025-11-12 18:20 EST)
 #
 # Purpose:
-#   Build data/data.json, then publish SPA under /web including web/data/data.json
-#   so index.html can fetch ./data/data.json reliably on GitHub Pages.
+#   Build data/data.json, verify it exists & is non-empty, then copy it to web/data/data.json
+#   so the SPA can always fetch ./data/data.json on GitHub Pages.
 #
-# Requirements (repo settings):
+# Repo settings:
 #   Settings → Pages → Build and deployment → Source: GitHub Actions
 #   Settings → Actions → General → Workflow permissions: Read and write
 #
-# Secrets:
-#   API_TMDB_KEY  (required)
-#   API_TMDB_TOKEN, API_TVMAZE_KEY, API_OMDB_KEY, API_TRAKT_CLIENT_ID, API_TRAKT_CLIENT_SECRET, TRAKT_PROFILES (optional)
+# Secrets (min):
+#   API_TMDB_KEY
+# Optional:
+#   API_TMDB_TOKEN, API_TVMAZE_KEY, API_OMDB_KEY,
+#   API_TRAKT_CLIENT_ID, API_TRAKT_CLIENT_SECRET, TRAKT_PROFILES
 
 name: Build TV Data and Deploy
 
@@ -70,13 +72,19 @@ jobs:
           echo "[build] sync_trakt.py (soft-fail ok)"
           python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
 
-          # Sanity check & stamp
+          # Sanity check + stamp
           python - << 'EOF'
-          import json, pathlib, datetime
+          import json, pathlib, datetime, sys
           p = pathlib.Path("data/data.json")
           if not p.exists():
-              raise SystemExit("data/data.json missing after build.")
-          data = json.loads(p.read_text(encoding="utf-8"))
+              sys.exit("FAIL: data/data.json missing after build.")
+          txt = p.read_text(encoding="utf-8").strip()
+          if not txt:
+              sys.exit("FAIL: data/data.json is empty.")
+          try:
+              data = json.loads(txt)
+          except Exception as e:
+              sys.exit(f"FAIL: data/data.json is invalid JSON: {e}")
           meta = data.setdefault("meta", {})
           meta.setdefault("shows", len(data.get("shows", [])))
           meta.setdefault("movies", len(data.get("movies", [])))
@@ -85,10 +93,21 @@ jobs:
           print("[build] Shows:", meta["shows"], "Movies:", meta["movies"], "LiveTV:", meta.get("livetv", 0))
           EOF
 
-          # Make sure the SPA can fetch the data from /web
+          # Copy into /web so Pages always serves it next to index.html
           mkdir -p web/data
           cp data/data.json web/data/data.json
           echo "[build] Copied data/data.json -> web/data/data.json"
+
+      - name: List important files (debug)
+        run: |
+          echo "== TREE (top) =="
+          ls -la
+          echo "== TREE (web) =="
+          ls -la web || true
+          echo "== TREE (web/data) =="
+          ls -la web/data || true
+          echo "== Head of web/data/data.json =="
+          head -n 20 web/data/data.json || true
 
       - name: Commit updated data (optional)
         if: github.ref == 'refs/heads/main'

@@ -4,11 +4,11 @@
   <!--
     File: web/index.html
     Project: my_TV_Movie
-    Version: v3.0.1 (2025-11-11 18:35 EST)
-    Change log:
-      - Fetch ./data/data.json (matches workflow copy step)
-      - Sticky header + filters
-      - Icon size 24px
+    Version: v3.0.2 (2025-11-12 18:20 EST)
+    Changes:
+      - Robust data loader: tries ./data/data.json, data/data.json, /my_TV_Movie/data/data.json
+      - Cache-busting query string
+      - Human-friendly diagnostics if fetch fails
   -->
   <meta charset="UTF-8" />
   <title>My TV Hub</title>
@@ -53,7 +53,6 @@
     .cal-item:hover{background:rgba(255,255,255,.06)}
     .sub{color:var(--muted);font-size:.8em}
     .sh-title,.mv-title{font-weight:600;cursor:pointer}
-    /* overlay */
     .back{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;z-index:100}
     .back.act{display:flex}
     .ovl{max-width:900px;max-height:90vh;overflow:auto;background:var(--bg-alt);border:1px solid var(--accent);border-radius:18px;padding:10px}
@@ -66,10 +65,8 @@
 <body>
 <div class="app">
   <header class="hdr">
-    <div class="row">
-      <div class="title">My TV Hub</div>
-    </div>
-    <div id="meta" class="meta">index.html: v3.0.1 • Data built: n/a • Shows: n/a • Movies: n/a • LiveTV: 0</div>
+    <div class="row"><div class="title">My TV Hub</div></div>
+    <div id="meta" class="meta">index.html: v3.0.2 • Data built: n/a • Shows: n/a • Movies: n/a • LiveTV: 0</div>
     <div class="tabs">
       <button class="tab act" data-v="cal">Calendar</button>
       <button class="tab" data-v="shows">Shows</button>
@@ -80,7 +77,6 @@
   </header>
 
   <main>
-    <!-- Calendar -->
     <section id="v-cal" class="view act">
       <div class="vtitle">Calendar</div>
       <div class="stick row">
@@ -91,79 +87,51 @@
       </div>
       <div id="cal-grid" class="cal-grid"></div>
       <div id="cal-empty" class="mut" style="display:none;margin-top:6px">No items for this month.</div>
+      <div id="diag" class="mut" style="margin-top:6px;white-space:pre-wrap"></div>
     </section>
 
-    <!-- Shows -->
     <section id="v-shows" class="view">
       <div class="vtitle">Shows</div>
       <div class="stick">
+        <div class="row"><span class="mut">Genre:</span><button class="btn act" data-s-genre="All">All</button></div>
         <div class="row">
-          <span class="mut">Genre:</span>
-          <button class="btn act" data-s-genre="All">All</button>
-        </div>
-        <div class="row">
-          <span class="mut">Sort:</span>
-          <button class="btn act" data-s-sort="az">A–Z</button>
-          <button class="btn" data-s-sort="za">Z–A</button>
-          <span class="mut">Status:</span>
-          <button class="btn act" data-s-status="All">All</button>
-          <button class="btn" data-s-status="Running">Running</button>
-          <button class="btn" data-s-status="Ended">Ended</button>
-          <button class="btn" data-s-status="In Production">In Prod</button>
+          <span class="mut">Sort:</span><button class="btn act" data-s-sort="az">A–Z</button><button class="btn" data-s-sort="za">Z–A</button>
+          <span class="mut">Status:</span><button class="btn act" data-s-status="All">All</button><button class="btn" data-s-status="Running">Running</button><button class="btn" data-s-status="Ended">Ended</button><button class="btn" data-s-status="In Production">In Prod</button>
         </div>
       </div>
       <div id="shows-body" class="grid-shows"></div>
       <div id="shows-empty" class="mut" style="display:none;margin-top:6px">No shows match filters.</div>
     </section>
 
-    <!-- Movies -->
     <section id="v-movies" class="view">
       <div class="vtitle">Movies</div>
       <div class="stick">
+        <div class="row"><span class="mut">Genre:</span><button class="btn act" data-m-genre="All">All</button></div>
         <div class="row">
-          <span class="mut">Genre:</span>
-          <button class="btn act" data-m-genre="All">All</button>
-        </div>
-        <div class="row">
-          <span class="mut">Status:</span>
-          <button class="btn act" data-m-status="All">All</button>
-          <button class="btn" data-m-status="Released">Released</button>
-          <button class="btn" data-m-status="In Theatres">In Theatres</button>
-          <button class="btn" data-m-status="In Production">In Prod</button>
-          <button class="btn" data-m-status="Announced">Announced</button>
-          <span class="mut">Sort:</span>
-          <button class="btn act" data-m-sort="title">Title</button>
-          <button class="btn" data-m-sort="date">Release</button>
+          <span class="mut">Status:</span><button class="btn act" data-m-status="All">All</button><button class="btn" data-m-status="Released">Released</button><button class="btn" data-m-status="In Theatres">In Theatres</button><button class="btn" data-m-status="In Production">In Prod</button><button class="btn" data-m-status="Announced">Announced</button>
+          <span class="mut">Sort:</span><button class="btn act" data-m-sort="title">Title</button><button class="btn" data-m-sort="date">Release</button>
         </div>
       </div>
       <div id="movies-body" class="grid-movies"></div>
       <div id="movies-empty" class="mut" style="display:none;margin-top:6px">No movies match filters.</div>
     </section>
 
-    <!-- Live TV -->
     <section id="v-live" class="view">
       <div class="vtitle">Live TV (Preview)</div>
-      <div class="card mut">Guide skeleton placeholder. When live_tv_list and fetch_live_tv write to data.json, channels will render here.</div>
+      <div class="card mut">Guide skeleton placeholder (channels will render once live_tv data exists).</div>
     </section>
 
-    <!-- Config -->
     <section id="v-cfg" class="view">
       <div class="vtitle">Config</div>
-
-      <!-- 6.1 Display -->
       <div class="card">
         <div style="font-weight:600;margin-bottom:4px">Display</div>
         <div class="row">
           <span class="mut">Theme:</span>
-          <button class="btn" id="t-dark">Dark</button>
-          <button class="btn" id="t-light">Light</button>
+          <button class="btn" id="t-dark">Dark</button><button class="btn" id="t-light">Light</button>
           <span class="mut">Font size:</span>
-          <input type="range" id="fs" min="0.8" max="2.0" step="0.05" value="1.0"/>
-          <span id="fs-lbl" class="mut">1.00x</span>
+          <input type="range" id="fs" min="0.8" max="2.0" step="0.05" value="1.0"/><span id="fs-lbl" class="mut">1.00x</span>
         </div>
       </div>
-
-      <!-- 6.2 Maintenance Shortcuts -->
       <div class="card">
         <div style="font-weight:600;margin-bottom:4px">Maintenance</div>
         <div class="row">
@@ -174,14 +142,10 @@
           <a class="btn" href="https://ajpnkw.github.io/my_TV_Movie/web/data/data.json" target="_blank">View data.json</a>
         </div>
       </div>
-
-      <!-- 6.3 Integrations -->
       <div class="card">
         <div style="font-weight:600;margin-bottom:4px">Integrations</div>
         <div class="mut">TMDB primary; optional TVMaze/OMDb/Trakt. Service logos under <code>image/services_logos/</code>.</div>
       </div>
-
-      <!-- 6.4 Edit Helpers -->
       <div class="card">
         <div style="font-weight:600;margin-bottom:4px">Edit lists</div>
         <div class="row">
@@ -195,30 +159,23 @@
   </main>
 </div>
 
-<!-- Overlay -->
 <div id="back" class="back" role="dialog" aria-modal="true">
   <div class="ovl">
-    <div class="ovl-h">
-      <div>
-        <div id="ovl-t" class="ovl-t"></div>
-        <div id="ovl-s" class="ovl-s"></div>
-      </div>
-      <button id="ovl-x" class="close">Close</button>
-    </div>
+    <div class="ovl-h"><div><div id="ovl-t" class="ovl-t"></div><div id="ovl-s" class="ovl-s"></div></div><button id="ovl-x" class="close">Close</button></div>
     <div id="ovl-b" style="margin-top:6px"></div>
   </div>
 </div>
 
 <script>
 (function(){
-  const VER = "v3.0.1 (2025-11-11 18:35 EST)";
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => document.querySelectorAll(sel);
+  const VER = "v3.0.2 (2025-11-12 18:20 EST)";
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
   const meta = $("#meta");
+  const diag = $("#diag");
   const views = {cal:$("#v-cal"),shows:$("#v-shows"),movies:$("#v-movies"),live:$("#v-live"),cfg:$("#v-cfg")};
   let DATA=null;
 
-  // Tabs
   $$(".tab").forEach(b=>b.onclick=()=>{ $$(".tab").forEach(x=>x.classList.remove("act")); b.classList.add("act");
     const v=b.dataset.v; Object.values(views).forEach(vv=>vv.classList.remove("act")); views[v].classList.add("act"); });
 
@@ -230,20 +187,38 @@
   td.onclick=()=>{document.body.dataset.theme="dark"; td.classList.add("act"); tl.classList.remove("act"); localStorage.setItem("theme","dark");};
   tl.onclick=()=>{document.body.dataset.theme="light"; tl.classList.add("act"); td.classList.remove("act"); localStorage.setItem("theme","light");};
 
-  // Load data.json shipped inside /web/data/
+  // --- Robust data loader ----------------------------------------------------
   meta.textContent=`index.html: ${VER} • Data built: loading… • Shows: … • Movies: … • LiveTV: 0`;
-  fetch("./data/data.json").then(r=>{if(!r.ok)throw new Error("HTTP "+r.status); return r.json();})
-  .then(j=>{
-    DATA=normalize(j||{});
-    const m=DATA.meta||{};
-    meta.textContent=`index.html: ${VER} • Data built: ${m.built||"n/a"} • Shows: ${m.shows??"n/a"} • Movies: ${m.movies??"n/a"} • LiveTV: ${m.livetv??0}`;
-    renderCalendar(); renderShows(); renderMovies();
-  })
-  .catch(e=>{
-    console.error("data load failed",e);
+  const base = location.pathname.replace(/\/index\.html?$/,'');
+  const candidates = [
+    `${base}/data/data.json`,
+    `./data/data.json`,
+    `data/data.json`,
+    `/my_TV_Movie/data/data.json`
+  ].map(u => `${u}?cb=${Date.now()}`);
+
+  (async function loadData(){
+    let lastErr=null;
+    for(const url of candidates){
+      try{
+        const r = await fetch(url, {cache:"no-store"});
+        if(!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = await r.json();
+        DATA = normalize(j||{});
+        const m=DATA.meta||{};
+        diag.textContent = `Loaded: ${url.replace(/\?cb=.*/,'')}`;
+        meta.textContent=`index.html: ${VER} • Data built: ${m.built||"n/a"} • Shows: ${m.shows??"n/a"} • Movies: ${m.movies??"n/a"} • LiveTV: ${m.livetv??0}`;
+        renderCalendar(); renderShows(); renderMovies();
+        return;
+      }catch(e){
+        lastErr = `${url} → ${e}`;
+      }
+    }
+    const msg = "Unable to load data. Run the “Build TV Data and Deploy” workflow.";
+    $("#cal-grid").innerHTML = `<div class="card" style="grid-column:1/-1;color:#ff4d6a">${msg}</div>`;
     meta.textContent=`index.html: ${VER} • Data built: n/a • Shows: n/a • Movies: n/a • LiveTV: 0`;
-    $("#cal-grid").innerHTML = '<div class="card" style="grid-column:1/-1;color:#ff4d6a">Unable to load data. Run the “Build TV Data and Deploy” workflow.</div>';
-  });
+    diag.textContent = `Tried:\n- ${candidates.map(u=>u.replace(/\?cb=.*/,'')).join("\n- ")}\nLast error: ${lastErr||'n/a'}`;
+  })();
 
   function normalize(raw){
     const shows=Array.isArray(raw.shows)?raw.shows:[];
@@ -254,7 +229,7 @@
     return {shows,movies,meta};
   }
 
-  // Calendar
+  // Calendar (unchanged core)
   const calLabel=$("#cal-label"), calGrid=$("#cal-grid"), calEmpty=$("#cal-empty");
   const now=new Date(); let cursor=new Date(now.getFullYear(),now.getMonth(),1);
   $("#cal-prev").onclick=()=>{cursor.setMonth(cursor.getMonth()-1); renderCalendar();};
@@ -266,7 +241,6 @@
     const y=cursor.getFullYear(), m=cursor.getMonth();
     calLabel.textContent = `${cursor.toLocaleString("default",{month:"long"})} ${y}`;
 
-    // Build date->items
     const map={};
     (DATA.shows||[]).forEach(sh=>{
       (sh.seasons||[]).forEach(se=>{
@@ -281,7 +255,6 @@
       (map[mm.release_date]=map[mm.release_date]||[]).push({type:"mv", mm});
     });
 
-    // Grid
     calGrid.innerHTML="";
     ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].forEach(d=>{
       const el=document.createElement("div"); el.className="dow"; el.textContent=d; calGrid.appendChild(el);
@@ -295,7 +268,6 @@
     let any=false;
     for(let i=0;i<42;i++){
       const cell=document.createElement("div"); cell.className="day";
-      const row=Math.floor(i/7);
       let inMonth=true, dnum;
       if(i<startDow){ dnum=prevDays-(startDow-1-i); inMonth=false; }
       else if(i>=startDow+daysIn){ dnum=i-(startDow+daysIn)+1; inMonth=false; }
@@ -331,7 +303,7 @@
           row.onclick=()=>openShow(it.sh,it.se,it.ep);
           img.onclick=(e)=>{e.stopPropagation(); openShow(it.sh);};
           list.appendChild(row);
-        } else {
+        }else{
           const row=document.createElement("div"); row.className="cal-item";
           const img=document.createElement("img"); img.className="poster-cal";
           img.src=it.mm.poster_path?`https://image.tmdb.org/t/p/w185${it.mm.poster_path}`:""; img.alt=it.mm.title||"";
@@ -339,8 +311,8 @@
           const txt=document.createElement("div");
           const a=document.createElement("div"); a.style.fontWeight="600"; a.textContent=it.mm.title||"Movie"; txt.appendChild(a);
           const b=document.createElement("div"); b.className="sub";
-          const bits=[]; if(it.mm.status) bits.push(it.mm.status); if(it.mm.runtime) bits.push(it.mm.runtime+"m"); b.textContent=bits.join(" • ");
-          txt.appendChild(b);
+          const bits=[]; if(it.mm.status) bits.push(it.mm.status); if(it.mm.runtime) bits.push(it.mm.runtime+"m");
+          b.textContent=bits.join(" • "); txt.appendChild(b);
           const ic=document.createElement("div"); ic.className="icons";
           addIcon(ic, it.mm.links&&it.mm.links.tmdb, "TMDB");
           addIcon(ic, it.mm.tmdb_id?`https://vidsrc.net/embed/movie/${it.mm.tmdb_id}`:"", "VidSrc");
@@ -358,7 +330,6 @@
     calEmpty.style.display = any ? "none" : "block";
   }
 
-  // Shows
   function renderShows(){
     const body=$("#shows-body"), empty=$("#shows-empty");
     if(!DATA){return;}
@@ -387,7 +358,6 @@
     });
   }
 
-  // Movies
   function renderMovies(){
     const body=$("#movies-body"), empty=$("#movies-empty");
     if(!DATA){return;}
@@ -422,7 +392,7 @@
     });
   }
 
-  // Overlay
+  // Overlay basics
   const back=$("#back"), ovlT=$("#ovl-t"), ovlS=$("#ovl-s"), ovlB=$("#ovl-b"); $("#ovl-x").onclick=()=>back.classList.remove("act");
   function openShow(s,se,ep){
     const title=`${s.name||"Show"} [${s.tmdb_id||""}]`;
@@ -448,7 +418,6 @@
     ovlB.innerHTML=html; back.classList.add("act");
   }
 
-  // Helpers
   function addIcon(container,url,kind){ if(!url) return; const a=document.createElement("a"); a.href=url; a.target="_blank";
     const img=document.createElement("img"); img.className="icon"; img.alt=kind; img.src=logo(kind); a.appendChild(img); container.appendChild(a); }
   function iconHTML(url,kind){ if(!url) return ""; return `<a href="${escAttr(url)}" target="_blank"><img class="icon" alt="${kind}" src="${escAttr(logo(kind))}"></a>`; }
