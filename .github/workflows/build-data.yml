@@ -1,28 +1,18 @@
 # File: .github/workflows/build-data.yml
 # Project: my_TV_Movie
-# Version: v1.5.0 (2025-11-11 23:05 EST)
+# Version: v1.3.1 (2025-11-11 18:35 EST)
 #
 # Purpose:
-#   - Build data/data.json from:
-#       tv_list.txt, movies_list.txt, live_tv_list.txt (if present)
-#   - (Optionally) commit updated data
-#   - Deploy /web via GitHub Pages
+#   Build data/data.json, then publish SPA under /web including web/data/data.json
+#   so index.html can fetch ./data/data.json reliably on GitHub Pages.
 #
-# Requirements:
-#   Repo settings:
-#     - Settings → Pages → Build and deployment → Source: GitHub Actions
-#     - Settings → Actions → General → Workflow permissions: Read and write
+# Requirements (repo settings):
+#   Settings → Pages → Build and deployment → Source: GitHub Actions
+#   Settings → Actions → General → Workflow permissions: Read and write
 #
-# Secrets (min):
-#   - API_TMDB_KEY
-#
-# Optional (scripts will soft-fail if missing):
-#   - API_TMDB_TOKEN
-#   - API_TVMAZE_KEY
-#   - API_OMDB_KEY
-#   - API_TRAKT_CLIENT_ID
-#   - API_TRAKT_CLIENT_SECRET
-#   - TRAKT_PROFILES
+# Secrets:
+#   API_TMDB_KEY  (required)
+#   API_TMDB_TOKEN, API_TVMAZE_KEY, API_OMDB_KEY, API_TRAKT_CLIENT_ID, API_TRAKT_CLIENT_SECRET, TRAKT_PROFILES (optional)
 
 name: Build TV Data and Deploy
 
@@ -32,8 +22,8 @@ on:
     - cron: "0 */4 * * *"  # every 4 hours
 
 permissions:
-  contents: write      # for optional data commits
-  pages: write         # for Pages deploy
+  contents: write
+  pages: write
   id-token: write
 
 concurrency:
@@ -43,7 +33,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,58 +61,46 @@ jobs:
         run: |
           set -e
           mkdir -p data
-
           echo "[build] fetch_tmdb.py"
           python scripts/fetch_tmdb.py
-
           echo "[build] fetch_tvmaze.py (soft-fail ok)"
-          if [ -f scripts/fetch_tvmaze.py ]; then
-            python scripts/fetch_tvmaze.py || echo "[build] tvmaze skipped"
-          fi
-
+          python scripts/fetch_tvmaze.py || echo "[build] tvmaze skipped"
           echo "[build] fetch_omdb.py (soft-fail ok)"
-          if [ -f scripts/fetch_omdb.py ]; then
-            python scripts/fetch_omdb.py || echo "[build] omdb skipped"
-          fi
-
+          python scripts/fetch_omdb.py || echo "[build] omdb skipped"
           echo "[build] sync_trakt.py (soft-fail ok)"
-          if [ -f scripts/sync_trakt.py ]; then
-            python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
-          fi
+          python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
 
-          echo "[build] fetch_live_tv.py (soft-fail ok)"
-          if [ -f scripts/fetch_live_tv.py ]; then
-            python scripts/fetch_live_tv.py || echo "[build] live tv skipped"
-          fi
-
-          echo "[build] verify data.json"
+          # Sanity check & stamp
           python - << 'EOF'
-          import json, pathlib, sys
+          import json, pathlib, datetime
           p = pathlib.Path("data/data.json")
           if not p.exists():
-              raise SystemExit("ERROR: data/data.json missing after build.")
-          try:
-              data = json.loads(p.read_text(encoding="utf-8"))
-          except Exception as e:
-              raise SystemExit(f"ERROR: invalid JSON in data/data.json: {e}")
-          meta = data.get("meta", {})
-          print("[build] Shows:", meta.get("shows"),
-                "Movies:", meta.get("movies"),
-                "LiveTV:", meta.get("livetv", 0))
+              raise SystemExit("data/data.json missing after build.")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          meta = data.setdefault("meta", {})
+          meta.setdefault("shows", len(data.get("shows", [])))
+          meta.setdefault("movies", len(data.get("movies", [])))
+          meta["built"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+          p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+          print("[build] Shows:", meta["shows"], "Movies:", meta["movies"], "LiveTV:", meta.get("livetv", 0))
           EOF
+
+          # Make sure the SPA can fetch the data from /web
+          mkdir -p web/data
+          cp data/data.json web/data/data.json
+          echo "[build] Copied data/data.json -> web/data/data.json"
 
       - name: Commit updated data (optional)
         if: github.ref == 'refs/heads/main'
         run: |
           if git status --porcelain data/ | grep .; then
-            echo "[build] committing updated data/"
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
             git add data/
             git commit -m "Update data.json ($(date -u +'%Y-%m-%dT%H:%M:%SZ'))" || true
             git push || true
           else
-            echo "[build] No data changes to commit."
+            echo "No data changes to commit."
           fi
 
       - name: Upload web artifact
@@ -137,7 +114,6 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
