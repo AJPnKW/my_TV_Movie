@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- File: web/index.html
+       Project: my_TV_Movie
+       Version: v3.1.0 (2025-11-12 20:45 EST)
+       Purpose:
+         - Single-page hub for Calendar / Shows / Movies / Live TV / Config
+         - Robust data loader for data/data.json
+         - Safe baseline UI: no broken nav, no “Run workflow” loop if data exists
+  -->
+  <meta charset="utf-8" />
+  <title>My TV Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #05060a;
+      --bg-alt: #111622;
+      --bg-card: #171c2a;
+      --bg-popup: #151a26;
+      --fg: #f3f5ff;
+      --muted: #a2aac3;
+      --accent: #3ea6ff;
+      --accent-soft: rgba(62,166,255,0.12);
+      --border-subtle: #242b3b;
+      --danger: #ff5c7a;
+      --shadow-soft: 0 10px 30px rgba(0,0,0,0.4);
+
+      --nav-height: 52px;
+      --header-height: 38px;
+      --font-scale: 1.0;
+      --poster-w: 110px;
+      --poster-h: 165px;
+      --poster-w-calendar: 90px;
+      --poster-h-calendar: 135px;
+      --icon-size: 24px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: calc(16px * var(--font-scale));
+      overflow: hidden; /* app shell handles scrolling */
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    /* Global header / nav -------------------------------------------------- */
+
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      height: var(--nav-height);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      background: linear-gradient(90deg, #05060a, #101525);
+      border-bottom: 1px solid var(--border-subtle);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .app-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .app-title {
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+    }
+
+    .meta-line {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 52vw;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+    }
+
+    .nav-tab {
+      border: 1px solid transparent;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav-tab span.idx {
+      color: var(--accent);
+      font-weight: 600;
+      opacity: 0.85;
+    }
+
+    .nav-tab.active {
+      background: var(--accent-soft);
+      color: var(--fg);
+      border-color: var(--accent);
+    }
+
+    .nav-tab:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    /* Shell layout -------------------------------------------------------- */
+
+    .app-main {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding: 10px 18px 12px;
+      overflow: hidden;
+    }
+
+    .view {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .view.active {
+      display: flex;
+    }
+
+    .view-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 4px 0 6px;
+      background: linear-gradient(180deg, rgba(5,6,10,0.98), rgba(5,6,10,0.92), transparent);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .view-title {
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .view-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .view-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      margin-top: 4px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    /* Generic small components --------------------------------------------- */
+
+    .pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .pill-ghost {
+      background: transparent;
+    }
+
+    .pill-ghost.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--fg);
+    }
+
+    .btn {
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #101525;
+      color: var(--fg);
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+    }
+
+    .mut {
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .error {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255,92,122,0.12);
+      border: 1px solid rgba(255,92,122,0.5);
+      color: #ffb8c7;
+      font-size: 0.84rem;
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .logo-chip {
+      height: 18px;
+      padding: 0 4px;
+      background: #05060a;
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-chip img {
+      max-height: 16px;
+      max-width: 48px;
+      object-fit: contain;
+    }
+
+    .icon-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 5px;
+    }
+
+    .icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: var(--icon-size);
+      height: var(--icon-size);
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #05060a;
+      overflow: hidden;
+    }
+
+    .icon-link img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Calendar ------------------------------------------------------------- */
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      font-size: 0.78rem;
+    }
+
+    .calendar-dow-row {
+      display: contents;
+    }
+
+    .calendar-dow {
+      text-align: center;
+      padding-bottom: 4px;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .day-cell {
+      border-radius: 10px;
+      background: #101525;
+      border: 1px solid #1b2233;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 90px;
+    }
+
+    .day-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.72rem;
+      padding: 2px 4px;
+      border-radius: 8px;
+      background: #141b2f;
+    }
+
+    .day-head.today {
+      background: rgba(62,166,255,0.2);
+      color: var(--fg);
+    }
+
+    .day-num {
+      font-weight: 600;
+    }
+
+    .day-meta {
+      color: var(--muted);
+      font-size: 0.68rem;
+    }
+
+    .calendar-items {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 2px;
+    }
+
+    .cal-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px;
+      border-radius: 8px;
+      background: #0a0f1b;
+      padding: 4px;
+    }
+
+    .cal-poster {
+      width: var(--poster-w-calendar);
+      height: var(--poster-h-calendar);
+      border-radius: 6px;
+      background: #202842;
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
+    .cal-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .cal-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .cal-show {
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .cal-ep {
+      font-size: 0.72rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .cal-meta-line {
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* Shows ---------------------------------------------------------------- */
+
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .shows-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .show-card {
+      border-radius: 10px;
+      background: #101525;
+      border: 1px solid #1b2233;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      padding: 6px;
+      cursor: pointer;
+    }
+
+    .poster {
+      width: var(--poster-w);
+      height: var(--poster-h);
+      border-radius: 8px;
+      background: #202842;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .show-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .show-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .show-line {
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    /* Movies --------------------------------------------------------------- */
+
+    .movies-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .movie-card {
+      border-radius: 10px;
+      background: #101525;
+      border: 1px solid #1b2233;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 8px;
+      padding: 6px;
+      cursor: pointer;
+    }
+
+    .movie-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .movie-line {
+      font-size: 0.74rem;
+      color: var(--muted);
+    }
+
+    /* Live TV -------------------------------------------------------------- */
+
+    .livetv-note {
+      margin-top: 10px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    /* Config --------------------------------------------------------------- */
+
+    .card {
+      border-radius: 10px;
+      background: #101525;
+      border: 1px solid #1b2233;
+      padding: 8px 10px;
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 0.86rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .card-body {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .config-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .range-label {
+      min-width: 60px;
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    .mono {
+      font-family: ui-monospace, Menlo, Monaco, "SF Mono", "Fira Code", monospace;
+      font-size: 0.78rem;
+    }
+
+    /* Popups --------------------------------------------------------------- */
+
+    .overlay-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .overlay-backdrop.active {
+      display: flex;
+    }
+
+    .overlay-panel {
+      width: min(960px, 96vw);
+      max-height: 90vh;
+      background: var(--bg-popup);
+      border-radius: 16px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .overlay-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px 6px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top left, #27324d, #141824);
+    }
+
+    .overlay-title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .overlay-title {
+      font-size: 0.98rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .overlay-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .overlay-close {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #1b2133;
+      color: var(--muted);
+      font-size: 0.8rem;
+      padding: 4px 9px;
+      cursor: pointer;
+    }
+
+    .overlay-body {
+      padding: 10px 14px 12px;
+      overflow-y: auto;
+      display: flex;
+      gap: 10px;
+    }
+
+    .overlay-body-main {
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: 0.84rem;
+      color: var(--fg);
+    }
+
+    .overlay-body-side {
+      width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .overlay-poster {
+      width: 100%;
+      border-radius: 10px;
+      background: #202842;
+      overflow: hidden;
+    }
+
+    .overlay-poster img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+    }
+
+    .overlay-section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-top: 8px;
+      margin-bottom: 4px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .overlay-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .overlay-ep-line {
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .overlay-body {
+        flex-direction: column-reverse;
+      }
+      .overlay-body-side {
+        width: 100%;
+        flex-direction: row;
+        gap: 10px;
+      }
+      .overlay-poster {
+        max-width: 40%;
+      }
+    }
+
+  </style>
+</head>
+<body>
+<div id="app">
+  <header class="app-header">
+    <div class="app-title-block">
+      <div class="app-title">My TV Hub</div>
+      <div id="meta-line" class="meta-line">
+        index.html: v3.1.0 • Data built: n/a • Shows: n/a • Movies: n/a • LiveTV: 0
+      </div>
+    </div>
+    <nav class="nav-tabs" aria-label="Main navigation">
+      <button class="nav-tab active" data-view="calendar">
+        <span class="idx">1</span><span>Calendar</span>
+      </button>
+      <button class="nav-tab" data-view="shows">
+        <span class="idx">2</span><span>Shows</span>
+      </button>
+      <button class="nav-tab" data-view="movies">
+        <span class="idx">3</span><span>Movies</span>
+      </button>
+      <button class="nav-tab" data-view="livetv">
+        <span class="idx">4</span><span>Live TV</span>
+      </button>
+      <button class="nav-tab" data-view="config">
+        <span class="idx">5</span><span>Config</span>
+      </button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+    <!-- Calendar --------------------------------------------------------- -->
+    <section id="view-calendar" class="view active">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Calendar</div>
+          <div class="view-sub">Episodes &amp; movie releases by air date.</div>
+        </div>
+        <div class="filters-row">
+          <button class="btn btn-ghost" id="cal-prev">&laquo; Prev</button>
+          <button class="btn btn-ghost" id="cal-today">Today</button>
+          <button class="btn btn-ghost" id="cal-next">Next &raquo;</button>
+          <span id="cal-month-label" class="mut"></span>
+        </div>
+      </div>
+      <div id="calendar-body" class="view-body">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- Shows ------------------------------------------------------------ -->
+    <section id="view-shows" class="view">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Shows</div>
+          <div class="view-sub">All tracked series.</div>
+        </div>
+        <div class="filters-row">
+          <div class="pill">Genre: <span id="shows-genre-label">All</span></div>
+          <div class="pill">Sort: <span id="shows-sort-label">Title A–Z</span></div>
+          <div class="pill">Status: <span id="shows-status-label">All</span></div>
+        </div>
+      </div>
+      <div id="shows-body" class="view-body">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- Movies ----------------------------------------------------------- -->
+    <section id="view-movies" class="view">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Movies</div>
+          <div class="view-sub">Tracked films from your list.</div>
+        </div>
+        <div class="filters-row">
+          <div class="pill">Genre: <span id="movies-genre-label">All</span></div>
+          <div class="pill">Status: <span id="movies-status-label">All</span></div>
+          <div class="pill">Sort: <span id="movies-sort-label">Title A–Z</span></div>
+        </div>
+      </div>
+      <div id="movies-body" class="view-body">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- Live TV ---------------------------------------------------------- -->
+    <section id="view-livetv" class="view">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Live TV (Preview)</div>
+          <div class="view-sub">Channel grid skeleton (data sync to come).</div>
+        </div>
+      </div>
+      <div class="view-body">
+        <div class="card">
+          <div class="card-title">Live TV Grid (Phase 1)</div>
+          <div class="card-body">
+            This version shows the basic Live TV section shell only.
+            Channel lists, EPG data, and logo mapping will be wired in a later phase,
+            after the core Calendar/Shows/Movies flows are fully stable again.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Config ----------------------------------------------------------- -->
+    <section id="view-config" class="view">
+      <div class="view-header">
+        <div>
+          <div class="view-title">Config</div>
+          <div class="view-sub">Local display and quick links.</div>
+        </div>
+      </div>
+      <div class="view-body">
+        <!-- 6.1 Display --------------------------------------------------- -->
+        <div class="card">
+          <div class="card-title">Display</div>
+          <div class="card-body">
+            <div class="config-row">
+              <span class="mut">Theme:</span>
+              <button class="btn btn-ghost" id="theme-dark">Dark</button>
+              <button class="btn btn-ghost" id="theme-light">Light</button>
+            </div>
+            <div class="config-row">
+              <span class="mut range-label">Font scale:</span>
+              <input type="range" id="font-scale" min="0.8" max="2.0" step="0.05" value="1.0" />
+              <span id="font-scale-label" class="mut mono">1.00x</span>
+            </div>
+            <div class="mut" style="margin-top:4px;">
+              These settings are stored locally in this browser and used by this page only.
+            </div>
+          </div>
+        </div>
+
+        <!-- 6.2 Maintenance Shortcuts ------------------------------------- -->
+        <div class="card">
+          <div class="card-title">Maintenance shortcuts</div>
+          <div class="card-body">
+            <ul style="padding-left:16px; margin-top:4px;">
+              <li><a class="mono" href="https://github.com/AJPnKW/my_TV_Movie" target="_blank" rel="noopener">GitHub repo</a></li>
+              <li><a cla
