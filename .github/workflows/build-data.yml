@@ -1,19 +1,21 @@
 # File: .github/workflows/build-data.yml
 # Project: my_TV_Movie
-# Version: v1.3.2 (2025-11-12 18:20 EST)
+# Version: v1.3.1 (2025-11-14 23:10 EST)
 #
 # Purpose:
-#   Build data/data.json, verify it exists & is non-empty, then copy it to web/data/data.json
-#   so the SPA can always fetch ./data/data.json on GitHub Pages.
+#   - Build data/data.json from tv_list.txt, movies_list.txt, live_tv_list.txt
+#   - Commit updated data (optional)
+#   - Deploy /web via GitHub Pages
 #
-# Repo settings:
+# Requirements:
 #   Settings → Pages → Build and deployment → Source: GitHub Actions
 #   Settings → Actions → General → Workflow permissions: Read and write
 #
 # Secrets (min):
 #   API_TMDB_KEY
+#
 # Optional:
-#   API_TMDB_TOKEN, API_TVMAZE_KEY, API_OMDB_KEY,
+#   API_TMDB_TOKEN, API_TVMAZE_KEY, API_OMDB_KEY
 #   API_TRAKT_CLIENT_ID, API_TRAKT_CLIENT_SECRET, TRAKT_PROFILES
 
 name: Build TV Data and Deploy
@@ -24,8 +26,8 @@ on:
     - cron: "0 */4 * * *"  # every 4 hours
 
 permissions:
-  contents: write
-  pages: write
+  contents: write   # commit data.json
+  pages: write      # deploy Pages
   id-token: write
 
 concurrency:
@@ -61,53 +63,38 @@ jobs:
           API_TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_CLIENT_SECRET }}
           TRAKT_PROFILES: ${{ secrets.TRAKT_PROFILES }}
         run: |
-          set -e
           mkdir -p data
           echo "[build] fetch_tmdb.py"
           python scripts/fetch_tmdb.py
-          echo "[build] fetch_tvmaze.py (soft-fail ok)"
-          python scripts/fetch_tvmaze.py || echo "[build] tvmaze skipped"
-          echo "[build] fetch_omdb.py (soft-fail ok)"
-          python scripts/fetch_omdb.py || echo "[build] omdb skipped"
-          echo "[build] sync_trakt.py (soft-fail ok)"
-          python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
 
-          # Sanity check + stamp
+          echo "[build] fetch_tvmaze.py (soft-fail ok)"
+          test -f scripts/fetch_tvmaze.py && python scripts/fetch_tvmaze.py || echo "[build] tvmaze skipped"
+
+          echo "[build] fetch_omdb.py (soft-fail ok)"
+          test -f scripts/fetch_omdb.py && python scripts/fetch_omdb.py || echo "[build] omdb skipped"
+
+          echo "[build] sync_trakt.py (soft-fail ok)"
+          test -f scripts/sync_trakt.py && python scripts/sync_trakt.py || echo "[build] trakt sync skipped"
+
+          echo "[build] final data.json:"
           python - << 'EOF'
-          import json, pathlib, datetime, sys
+          import json, pathlib
           p = pathlib.Path("data/data.json")
           if not p.exists():
-              sys.exit("FAIL: data/data.json missing after build.")
-          txt = p.read_text(encoding="utf-8").strip()
-          if not txt:
-              sys.exit("FAIL: data/data.json is empty.")
-          try:
-              data = json.loads(txt)
-          except Exception as e:
-              sys.exit(f"FAIL: data/data.json is invalid JSON: {e}")
-          meta = data.setdefault("meta", {})
-          meta.setdefault("shows", len(data.get("shows", [])))
-          meta.setdefault("movies", len(data.get("movies", [])))
-          meta["built"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-          p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-          print("[build] Shows:", meta["shows"], "Movies:", meta["movies"], "LiveTV:", meta.get("livetv", 0))
+              raise SystemExit("data/data.json missing after build.")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          meta = data.get("meta", {})
+          print(
+              "[build] Shows:",
+              meta.get("shows"),
+              "Movies:",
+              meta.get("movies"),
+              "LiveTV:",
+              meta.get("livetv", 0),
+              "Built:",
+              meta.get("built_at"),
+          )
           EOF
-
-          # Copy into /web so Pages always serves it next to index.html
-          mkdir -p web/data
-          cp data/data.json web/data/data.json
-          echo "[build] Copied data/data.json -> web/data/data.json"
-
-      - name: List important files (debug)
-        run: |
-          echo "== TREE (top) =="
-          ls -la
-          echo "== TREE (web) =="
-          ls -la web || true
-          echo "== TREE (web/data) =="
-          ls -la web/data || true
-          echo "== Head of web/data/data.json =="
-          head -n 20 web/data/data.json || true
 
       - name: Commit updated data (optional)
         if: github.ref == 'refs/heads/main'
