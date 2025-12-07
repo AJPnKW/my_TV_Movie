@@ -19,6 +19,10 @@ on:
       - "scripts/fetch_tmdb.py"
       - ".github/workflows/build-data.yml"
 
+# 👇 This is the missing piece: allow GITHUB_TOKEN to push commits
+permissions:
+  contents: write
+
 # Prevent overlapping runs on the same branch
 concurrency:
   group: build-tv-data-${{ github.ref }}
@@ -28,7 +32,7 @@ jobs:
   build-data:
     runs-on: ubuntu-latest
 
-    # 🔑 Make TMDB key available to fetch_tmdb.py
+    # TMDB key for the Python script
     env:
       API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
 
