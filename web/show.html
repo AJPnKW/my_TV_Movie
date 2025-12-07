@@ -391,7 +391,6 @@
       font-size: 0.8rem;
     }
 
-    /* Episode still image */
     .episode-still {
       border-radius: 8px;
       overflow: hidden;
@@ -407,7 +406,6 @@
       display: block;
     }
 
-    /* Episode status badge */
     .episode-status {
       font-size: 0.65rem;
       padding: 1px 6px;
@@ -428,7 +426,6 @@
       color: #ffe1af;
     }
 
-    /* Watch buttons inline in the summary row */
     .episode-actions-inline {
       display: flex;
       flex-wrap: wrap;
@@ -483,7 +480,6 @@
       text-align: center;
     }
 
-    /* Show list for no-slug case */
     .show-list {
       display: flex;
       flex-direction: column;
@@ -580,7 +576,7 @@
         </div>
       </section>
 
-      <!-- WATCH TIPS / ADS / CC / LOADING EXPLAINED (COLLAPSIBLE) -->
+      <!-- WATCH TIPS -->
       <section class="card" id="info-card">
         <details class="info-block">
           <summary class="info-summary">
@@ -612,7 +608,7 @@
         </details>
       </section>
 
-      <!-- SEASONS + EPISODES / OR SHOW LIST (NO SLUG) -->
+      <!-- SEASONS + EPISODES / OR SHOW LIST -->
       <section class="card">
         <div class="card-header">
           <span id="episodes-header-title">Season & episodes</span>
@@ -630,13 +626,11 @@
   </div>
 
   <script>
-    // Static config for this template.
     const STATIC_CONFIG = {
       dataUrl: "../data/data.json",
-      mapUrl: "./shows_map.json"
+      mapTxtUrl: "../show_pages.txt"
     };
 
-    // Mapping from JSON key → service labels (used in button text).
     const STREAMING_LABELS = {
       vidsrc: "VidSrc",
       videasy: "Videasy",
@@ -660,23 +654,102 @@
       });
     }
 
-    // Normalize streaming URLs to your chosen standards
+    function makeSlug(title) {
+      return String(title || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    }
+
+    /**
+     * NEW PARSER:
+     * - Reads whole file
+     * - Ignores blank lines
+     * - Ignores lines starting with '#'
+     * - Expects: Title|TMDB_ID|seasons
+     */
+    function parseShowPagesTxt(text) {
+      const lines = text.split(/\r?\n/);
+      const map = {}; // slug -> { title, tmdbId, seasons }
+
+      for (let raw of lines) {
+        let line = raw.trim();
+        if (!line) continue;             // ignore blank
+        if (line.startsWith("#")) continue; // ignore comments
+
+        const parts = line.split("|").map(p => p.trim());
+        if (!parts[0]) continue;
+
+        const title = parts[0];
+        let tmdbId = null;
+        let seasons = "*";
+
+        if (parts.length >= 2 && parts[1]) {
+          const n = parseInt(parts[1], 10);
+          if (Number.isFinite(n)) tmdbId = n;
+        }
+        if (parts.length >= 3 && parts[2]) {
+          seasons = parts[2];
+        }
+
+        if (!tmdbId) continue;
+
+        const slug = makeSlug(title);
+        map[slug] = { title, tmdbId, seasons };
+      }
+
+      return map;
+    }
+
+    function normalizeSeasonsConfig(seasonsCfg, show) {
+      const allSeasonNumbers = (show.seasons || [])
+        .map(s => s.season_number)
+        .filter(n => Number.isFinite(n));
+
+      if (seasonsCfg === undefined || seasonsCfg === null) {
+        return allSeasonNumbers;
+      }
+
+      if (typeof seasonsCfg === "number") {
+        return [seasonsCfg];
+      }
+
+      if (Array.isArray(seasonsCfg)) {
+        const nums = seasonsCfg
+          .map(n => Number(n))
+          .filter(n => Number.isFinite(n));
+        return nums.length ? nums : allSeasonNumbers;
+      }
+
+      if (typeof seasonsCfg === "string") {
+        const trimmed = seasonsCfg.trim();
+        if (trimmed === "*") {
+          return allSeasonNumbers;
+        }
+        const nums = trimmed
+          .split(",")
+          .map(p => parseInt(p.trim(), 10))
+          .filter(n => Number.isFinite(n));
+        return nums.length ? nums : allSeasonNumbers;
+      }
+
+      return allSeasonNumbers;
+    }
+
     function normalizeStreamingUrl(url, key) {
       if (!url) return url;
       const lowerKey = String(key || "").toLowerCase();
       let u = url;
 
       if (lowerKey === "vidsrc") {
-        // Standardize vidsrc host to vidsrc.net
         u = u.replace("vidsrc.to/", "vidsrc.net/");
       }
 
       if (lowerKey === "videasy") {
-        // Convert old videasy.org/embed/tv/... to player.videasy.net/tv/...
         const marker = "videasy.org/embed/tv/";
         const idx = u.indexOf(marker);
         if (idx !== -1) {
-          const rest = u.substring(idx + marker.length); // e.g. "301507/1/1"
+          const rest = u.substring(idx + marker.length);
           u = "https://player.videasy.net/tv/" + rest;
         }
       }
@@ -684,7 +757,7 @@
       return u;
     }
 
-    function buildHero(show, season, cfg) {
+    function buildHero(show, primarySeason, cfg) {
       const titleEl = document.getElementById("hero-title");
       const headerTitleEl = document.getElementById("header-title");
       const tagTmdbEl = document.getElementById("header-tag-tmdb");
@@ -692,15 +765,14 @@
       const extraEl = document.getElementById("hero-extra");
       const pillRowEl = document.getElementById("hero-pill-row");
       const posterEl = document.getElementById("hero-poster");
-      const seasonSummaryLabelEl = document.getElementById("season-summary-label");
 
       const year = show.first_air_date ? new Date(show.first_air_date).getFullYear() : "–";
-      const titleText = `${show.name || "Untitled"} (${year})`;
+      const titleText = `${show.name || cfg.title || "Untitled"} (${year})`;
 
       titleEl.textContent = titleText;
       headerTitleEl.textContent = titleText;
 
-      document.title = `${show.name || "Show"} · my_TV_Movie`;
+      document.title = `${show.name || cfg.title || "Show"} · my_TV_Movie`;
 
       tagTmdbEl.textContent = `TMDB: ${show.tmdb_id ?? cfg.tmdbId}`;
 
@@ -709,12 +781,13 @@
       const extraParts = [];
       if (show.status) extraParts.push(show.status);
       if (show.first_air_date) extraParts.push(`First aired: ${formatDate(show.first_air_date)}`);
-      if (season && season.air_date) {
-        extraParts.push(`Current season: ${season.season_number} (from ${formatDate(season.air_date)})`);
+      if (primarySeason && primarySeason.air_date) {
+        extraParts.push(
+          `Current view starts at Season ${primarySeason.season_number} (${formatDate(primarySeason.air_date)})`
+        );
       }
       extraEl.textContent = extraParts.join(" · ");
 
-      // Genres + networks pills
       pillRowEl.innerHTML = "";
       (show.genres || []).forEach(g => {
         const span = document.createElement("span");
@@ -729,7 +802,6 @@
         pillRowEl.appendChild(span);
       });
 
-      // Main poster
       posterEl.innerHTML = "";
       if (show.poster_path) {
         const img = document.createElement("img");
@@ -742,50 +814,25 @@
         div.textContent = "Poster not available.";
         posterEl.appendChild(div);
       }
-
-      const epCount = season ? season.episode_count ?? (season.episodes || []).length : 0;
-      if (season) {
-        seasonSummaryLabelEl.textContent = `Season ${season.season_number} · ${epCount || "0"} episodes`;
-      } else {
-        seasonSummaryLabelEl.textContent = "";
-      }
     }
 
     function handleWatchClick(event, url) {
-      // Simple QA: block if it doesn't look like a real URL at all
       if (!url || typeof url !== "string" || !/^https?:\/\//i.test(url)) {
         event.preventDefault();
-        alert(
-          "This streaming link does not look valid yet. Please try a different host or episode."
-        );
+        alert("This streaming link does not look valid yet. Please try a different host or episode.");
       }
-      // If it's a valid URL, we let the browser open it.
-      // We cannot reliably detect remote 404 / 'no video yet' from this page (CORS).
     }
 
-    function buildEpisodes(season, cfg) {
-      const container = document.getElementById("seasons-container");
-      container.innerHTML = ""; // clear "loading" msg
-
-      if (!season) {
-        const msg = document.createElement("div");
-        msg.className = "status-message";
-        msg.textContent = `No data found for season ${cfg.seasonNumber}.`;
-        container.appendChild(msg);
-        return;
-      }
-
+    function buildSeasonBlock(season, container) {
       const seasonDetails = document.createElement("details");
       seasonDetails.className = "season";
       seasonDetails.open = true;
 
       const summary = document.createElement("summary");
 
-      // Left side of season summary: season image + text
       const seasonMain = document.createElement("div");
       seasonMain.className = "season-summary-main";
 
-      // Season thumbnail
       const thumb = document.createElement("div");
       thumb.className = "season-thumb";
       if (season.poster_path) {
@@ -845,7 +892,6 @@
         epTitle.className = "episode-title";
         epTitle.textContent = `S${season.season_number}E${ep.episode_number} · ${ep.name || "Untitled"}`;
 
-        // Sub-row: date/time, status badge, and watch buttons inline
         const epSubRow = document.createElement("div");
         epSubRow.className = "episode-sub-row";
 
@@ -856,7 +902,6 @@
         if (ep.runtime) pieces.push(`${ep.runtime} min`);
         epSubText.textContent = pieces.length ? pieces.join(" · ") : "Details coming soon";
 
-        // Episode status badge (released vs upcoming)
         let status = "released";
         if (ep.air_date) {
           const airDate = new Date(ep.air_date);
@@ -865,14 +910,12 @@
           }
         }
         const statusBadge = document.createElement("span");
-        statusBadge.className =
-          "episode-status " + (status === "upcoming" ? "upcoming" : "released");
+        statusBadge.className = "episode-status " + (status === "upcoming" ? "upcoming" : "released");
         statusBadge.textContent = status === "upcoming" ? "UPCOMING" : "RELEASED";
 
         epSubRow.appendChild(epSubText);
         epSubRow.appendChild(statusBadge);
 
-        // Watch buttons inline with date/time row
         const links = (ep.links || {});
         const linkKeys = Object.keys(links).filter(k => links[k]);
         if (linkKeys.length) {
@@ -883,8 +926,9 @@
             let url = links[key];
             url = normalizeStreamingUrl(url, key);
             const label = STREAMING_LABELS[key] || key;
-            const buttonText =
-              key === "tmdb" ? `Info on ${label}` : `Watch on ${label}`;
+            const buttonText = key === "tmdb"
+              ? `Info on ${label}`
+              : `Watch on ${label}`;
             const a = document.createElement("a");
             a.href = url;
             a.target = "_blank";
@@ -897,7 +941,7 @@
             actionsSummary.appendChild(a);
           });
 
-        epSubRow.appendChild(actionsSummary);
+          epSubRow.appendChild(actionsSummary);
         }
 
         epMain.appendChild(epTitle);
@@ -913,7 +957,6 @@
         const epBody = document.createElement("div");
         epBody.className = "episode-body";
 
-        // Episode still image (if available)
         if (ep.still_path) {
           const stillWrap = document.createElement("div");
           stillWrap.className = "episode-still";
@@ -947,7 +990,49 @@
       container.appendChild(seasonDetails);
     }
 
-    async function renderShowList() {
+    function buildSeasons(show, seasonsToRender) {
+      const container = document.getElementById("seasons-container");
+      const labelEl = document.getElementById("season-summary-label");
+
+      container.innerHTML = "";
+
+      if (!seasonsToRender.length) {
+        const msg = document.createElement("div");
+        msg.className = "status-message";
+        msg.textContent = "No seasons found for this configuration.";
+        container.appendChild(msg);
+        labelEl.textContent = "";
+        return;
+      }
+
+      seasonsToRender.sort((a, b) => a.season_number - b.season_number);
+
+      let totalEpisodes = 0;
+      seasonsToRender.forEach(season => {
+        const epCount = season.episode_count ?? (season.episodes || []).length;
+        totalEpisodes += (epCount || 0);
+        buildSeasonBlock(season, container);
+      });
+
+      if (seasonsToRender.length === 1) {
+        const s = seasonsToRender[0];
+        const epCount = s.episode_count ?? (s.episodes || []).length;
+        labelEl.textContent = `Season ${s.season_number} · ${epCount || 0} episodes`;
+      } else {
+        const nums = seasonsToRender.map(s => s.season_number).join(", ");
+        labelEl.textContent = `${seasonsToRender.length} seasons (${nums}) · ${totalEpisodes} episodes`;
+      }
+    }
+
+    function describeSeasonsConfig(seasonsCfg) {
+      if (seasonsCfg === undefined || seasonsCfg === null) return "all";
+      if (typeof seasonsCfg === "number") return String(seasonsCfg);
+      if (Array.isArray(seasonsCfg)) return seasonsCfg.join(", ");
+      if (typeof seasonsCfg === "string") return seasonsCfg.trim() || "all";
+      return "all";
+    }
+
+    async function renderShowList(map) {
       const headerTitle = document.getElementById("header-title");
       const tagTmdb = document.getElementById("header-tag-tmdb");
       const heroCard = document.getElementById("hero-card");
@@ -957,24 +1042,17 @@
       const statusEl = document.getElementById("status-message");
       const container = document.getElementById("seasons-container");
 
-      // Update header for list mode
       headerTitle.textContent = "Available shows";
       document.title = "Available shows · my_TV_Movie";
       tagTmdb.textContent = "Show index";
 
-      // Hide hero & info cards in list mode
       heroCard.style.display = "none";
       infoCard.style.display = "none";
 
-      // Update episodes card header
       episodesHeaderTitle.textContent = "Available shows";
       seasonSummaryLabel.textContent = "";
 
       try {
-        const mapRes = await fetch(STATIC_CONFIG.mapUrl, { cache: "no-store" });
-        if (!mapRes.ok) throw new Error("shows_map.json HTTP " + mapRes.status);
-        const map = await mapRes.json();
-
         const dataRes = await fetch(STATIC_CONFIG.dataUrl, { cache: "no-store" });
         if (!dataRes.ok) throw new Error("data.json HTTP " + dataRes.status);
         const data = await dataRes.json();
@@ -989,7 +1067,7 @@
         if (!slugs.length) {
           const msg = document.createElement("div");
           msg.className = "status-message";
-          msg.textContent = "No shows are defined in shows_map.json yet.";
+          msg.textContent = "No shows are defined in show_pages.txt yet.";
           container.appendChild(msg);
           return;
         }
@@ -997,7 +1075,6 @@
         slugs.forEach(slugKey => {
           const cfg = map[slugKey];
           const tmdbId = cfg.tmdbId;
-          const seasonNumber = cfg.seasonNumber;
           const show = shows.find(
             s => s.tmdb_id === tmdbId || s.show_id === tmdbId
           );
@@ -1014,14 +1091,15 @@
             const year = show.first_air_date
               ? new Date(show.first_air_date).getFullYear()
               : "–";
-            title.textContent = `${show.name || "Untitled"} (${year})`;
+            title.textContent = `${show.name || cfg.title || "Untitled"} (${year})`;
           } else {
-            title.textContent = `Unknown title (TMDB ${tmdbId})`;
+            title.textContent = `${cfg.title || "Unknown title"} (TMDB ${tmdbId})`;
           }
 
           const sub = document.createElement("div");
           sub.className = "show-list-sub";
-          sub.textContent = `Slug: ${slugKey} · TMDB: ${tmdbId} · Season: ${seasonNumber}`;
+          const seasonsDesc = describeSeasonsConfig(cfg.seasons);
+          sub.textContent = `Slug: ${slugKey} · TMDB: ${tmdbId} · Seasons: ${seasonsDesc}`;
 
           main.appendChild(title);
           main.appendChild(sub);
@@ -1048,45 +1126,41 @@
       const statusEl = document.getElementById("status-message");
       const slug = getSlugFromUrl();
 
-      if (!slug) {
-        await renderShowList();
-        return;
-      }
-
       try {
-        // 1) Load the slug→config mapping.
-        const mapRes = await fetch(STATIC_CONFIG.mapUrl, { cache: "no-store" });
+        const mapRes = await fetch(STATIC_CONFIG.mapTxtUrl, { cache: "no-store" });
         if (!mapRes.ok) {
-          throw new Error("shows_map.json HTTP " + mapRes.status);
+          throw new Error("show_pages.txt HTTP " + mapRes.status);
         }
-        const map = await mapRes.json();
+        const txt = await mapRes.text();
+        const map = parseShowPagesTxt(txt);
+
+        if (!slug) {
+          await renderShowList(map);
+          return;
+        }
 
         let cfg = map[slug];
 
-        // If not found, but slug looks like a number, use numeric fallback.
         if (!cfg) {
           const asNumber = Number(slug);
           if (Number.isFinite(asNumber) && asNumber > 0) {
-            cfg = {
-              tmdbId: asNumber,
-              seasonNumber: 1 // fallback default season if not defined in map
-            };
+            cfg = { title: null, tmdbId: asNumber, seasons: "*" };
           }
         }
 
         if (!cfg) {
           statusEl.textContent =
-            `Show slug "${slug}" is not defined in shows_map.json and is not a numeric TMDB id.`;
+            `Show slug "${slug}" is not defined in show_pages.txt and is not a numeric TMDB id.`;
           return;
         }
 
         const effectiveCfg = {
+          title: cfg.title,
           tmdbId: cfg.tmdbId,
-          seasonNumber: cfg.seasonNumber,
+          seasons: cfg.seasons,
           dataUrl: STATIC_CONFIG.dataUrl
         };
 
-        // 2) Load the big data file.
         const res = await fetch(effectiveCfg.dataUrl, { cache: "no-store" });
         if (!res.ok) {
           throw new Error("data.json HTTP " + res.status);
@@ -1104,13 +1178,16 @@
           return;
         }
 
-        const season = (show.seasons || []).find(
-          s => s.season_number === effectiveCfg.seasonNumber
+        const seasonNumbers = normalizeSeasonsConfig(effectiveCfg.seasons, show);
+        const allSeasons = show.seasons || [];
+        const seasonsToRender = allSeasons.filter(s =>
+          seasonNumbers.includes(s.season_number)
         );
 
-        buildHero(show, season, effectiveCfg);
-        buildEpisodes(season, effectiveCfg);
+        const primarySeason = seasonsToRender[0] || allSeasons[0] || null;
 
+        buildHero(show, primarySeason, effectiveCfg);
+        buildSeasons(show, seasonsToRender);
       } catch (err) {
         console.error("Error loading show page:", err);
         statusEl.textContent =
