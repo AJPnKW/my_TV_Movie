@@ -1,14 +1,9 @@
 name: Build TV Data and Deploy
 
 on:
-  # Manual run from Actions tab
   workflow_dispatch:
-
-  # Hourly
   schedule:
-    - cron: "0 */4 * * *"  # every 4 hours    
-
-  # Run automatically when you change source config for the hub
+    - cron: "0 */4 * * *"
   push:
     branches: [ main ]
     paths:
@@ -18,6 +13,7 @@ on:
       - "web/index.html"
       - "fetch_tmdb.py"
       - ".github/workflows/build-data.yml"
+
 
 # Prevent overlapping runs on the same branch
 concurrency:
