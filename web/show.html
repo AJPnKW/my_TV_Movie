@@ -123,15 +123,9 @@
 
     .hero {
       display: grid;
-      grid-template-columns: 160px minmax(0, 1fr);
+      grid-template-columns: 140px minmax(0, 1fr);
       gap: 14px;
       align-items: stretch;
-    }
-
-    .hero-poster-column {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
     }
 
     .hero-poster {
@@ -160,35 +154,6 @@
       color: var(--text-muted);
       text-align: center;
       padding: 12px;
-      opacity: 0.8;
-    }
-
-    .season-poster {
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      background: #05070b;
-      border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-light);
-      min-height: 100px;
-      max-height: 120px; /* ~50–60% of main poster height visually */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .season-poster img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-      opacity: 0.95;
-    }
-
-    .season-poster-placeholder {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-align: center;
-      padding: 8px;
       opacity: 0.8;
     }
 
@@ -323,10 +288,36 @@
       display: none;
     }
 
-    .summary-left {
+    .season-summary-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .season-thumb {
+      width: 60px;
+      min-height: 40px;
+      max-height: 70px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #05070b;
+      flex-shrink: 0;
+    }
+
+    .season-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .season-summary-text {
       display: flex;
       flex-direction: column;
       gap: 2px;
+      min-width: 0;
     }
 
     .summary-title {
@@ -561,11 +552,8 @@
         grid-template-columns: minmax(0, 1fr);
       }
 
-      .hero-poster-column {
+      .hero-poster {
         max-width: 220px;
-      }
-
-      .hero-poster-column {
         margin: 0 auto;
       }
 
@@ -587,7 +575,6 @@
           <span class="tag" id="header-tag-slug">Slug: –</span>
         </div>
       </div>
-      <!-- Back button intentionally removed -->
     </header>
 
     <main>
@@ -597,14 +584,9 @@
           <span>Show overview</span>
         </div>
         <div class="hero">
-          <div class="hero-poster-column">
-            <div class="hero-poster" id="hero-poster">
-              <div class="hero-poster-placeholder">
-                Poster loading…
-              </div>
-            </div>
-            <div class="season-poster" id="season-poster">
-              <!-- Season poster or placeholder will appear here -->
+          <div class="hero-poster" id="hero-poster">
+            <div class="hero-poster-placeholder">
+              Poster loading…
             </div>
           </div>
           <div class="hero-meta">
@@ -627,7 +609,7 @@
           </summary>
           <div class="info-body">
             <ul class="watch-tips-list">
-              <li>Episode buttons like <strong>“Watch on VidSrc”</strong> open the video in a new tab.</li>
+              <li>Episode buttons like <strong>“Watch on VidSrc”</strong>, <strong>“Watch on Videasy”</strong>, etc. open the video in a new tab.</li>
               <li>Some sites will open 1–2 <strong>ad or redirect</strong> pages first. If this happens:
                 <ul>
                   <li>Close the ad/redirect tab or window.</li>
@@ -676,7 +658,7 @@
     const STREAMING_LABELS = {
       vidsrc: "VidSrc",
       videasy: "Videasy",
-      "2embed": "2Embed",
+      "2embed": "Embed",
       tmdb: "TMDB"
     };
 
@@ -696,6 +678,30 @@
       });
     }
 
+    // Normalize streaming URLs to your chosen standards
+    function normalizeStreamingUrl(url, key) {
+      if (!url) return url;
+      const lowerKey = String(key || "").toLowerCase();
+      let u = url;
+
+      if (lowerKey === "vidsrc") {
+        // Standardize vidsrc host to vidsrc.net
+        u = u.replace("vidsrc.to/", "vidsrc.net/");
+      }
+
+      if (lowerKey === "videasy") {
+        // Convert old videasy.org/embed/tv/... to player.videasy.net/tv/...
+        const marker = "videasy.org/embed/tv/";
+        const idx = u.indexOf(marker);
+        if (idx !== -1) {
+          const rest = u.substring(idx + marker.length); // e.g. "301507/1/1"
+          u = "https://player.videasy.net/tv/" + rest;
+        }
+      }
+
+      return u;
+    }
+
     function buildHero(show, season, cfg, slugUsed) {
       const titleEl = document.getElementById("hero-title");
       const headerTitleEl = document.getElementById("header-title");
@@ -706,7 +712,6 @@
       const extraEl = document.getElementById("hero-extra");
       const pillRowEl = document.getElementById("hero-pill-row");
       const posterEl = document.getElementById("hero-poster");
-      const seasonPosterEl = document.getElementById("season-poster");
       const seasonSummaryLabelEl = document.getElementById("season-summary-label");
 
       const year = show.first_air_date ? new Date(show.first_air_date).getFullYear() : "–";
@@ -760,33 +765,20 @@
         posterEl.appendChild(div);
       }
 
-      // Season poster (smaller)
-      seasonPosterEl.innerHTML = "";
-      if (season && season.poster_path) {
-        const img = document.createElement("img");
-        img.alt = `${season.name || "Season"} poster`;
-        img.src = `https://image.tmdb.org/t/p/w185${season.poster_path}`;
-        seasonPosterEl.appendChild(img);
-      } else {
-        const div = document.createElement("div");
-        div.className = "season-poster-placeholder";
-        div.textContent = "Season image not available.";
-        seasonPosterEl.appendChild(div);
-      }
-
       const epCount = season ? season.episode_count ?? (season.episodes || []).length : 0;
       seasonSummaryLabelEl.textContent = `Season ${cfg.seasonNumber} · ${epCount || "0"} episodes`;
     }
 
     function handleWatchClick(event, url) {
-      // Simple QA: block navigation if URL is obviously not valid.
+      // Simple QA: block navigation if URL is obviously not valid format.
       if (!url || typeof url !== "string" || !/^https?:\/\//i.test(url)) {
         event.preventDefault();
         alert(
           "This streaming link does not look valid yet. Please try a different host or episode."
         );
       }
-      // If it looks valid, allow the browser to open it in a new tab.
+      // If it looks like a valid URL, we allow the new tab to open.
+      // We cannot reliably detect a 404 or "no video" from this page due to browser security.
     }
 
     function buildEpisodes(season, cfg) {
@@ -806,8 +798,30 @@
       seasonDetails.open = true;
 
       const summary = document.createElement("summary");
-      const left = document.createElement("div");
-      left.className = "summary-left";
+
+      // Left side of season summary: season image + text
+      const seasonMain = document.createElement("div");
+      seasonMain.className = "season-summary-main";
+
+      // Season thumbnail
+      const thumb = document.createElement("div");
+      thumb.className = "season-thumb";
+      if (season.poster_path) {
+        const img = document.createElement("img");
+        img.alt = `${season.name || "Season"} poster`;
+        img.src = `https://image.tmdb.org/t/p/w185${season.poster_path}`;
+        thumb.appendChild(img);
+      } else {
+        const placeholder = document.createElement("div");
+        placeholder.style.fontSize = "0.65rem";
+        placeholder.style.color = "var(--text-muted)";
+        placeholder.style.padding = "4px";
+        placeholder.textContent = "No image";
+        thumb.appendChild(placeholder);
+      }
+
+      const seasonText = document.createElement("div");
+      seasonText.className = "season-summary-text";
 
       const title = document.createElement("div");
       title.className = "summary-title";
@@ -819,14 +833,17 @@
       const epCount = season.episode_count ?? (season.episodes || []).length;
       sub.textContent = `${epCount || 0} episodes · ${airText}`;
 
-      left.appendChild(title);
-      left.appendChild(sub);
+      seasonText.appendChild(title);
+      seasonText.appendChild(sub);
+
+      seasonMain.appendChild(thumb);
+      seasonMain.appendChild(seasonText);
 
       const chevron = document.createElement("div");
       chevron.className = "summary-chevron";
       chevron.textContent = "›";
 
-      summary.appendChild(left);
+      summary.appendChild(seasonMain);
       summary.appendChild(chevron);
 
       const body = document.createElement("div");
@@ -881,14 +898,15 @@
           actionsSummary.className = "episode-actions-inline";
 
           linkKeys.forEach(key => {
-            const url = links[key];
+            let url = links[key];
+            url = normalizeStreamingUrl(url, key);
             const label = STREAMING_LABELS[key] || key;
             const a = document.createElement("a");
             a.href = url;
             a.target = "_blank";
             a.rel = "noopener noreferrer";
             a.className = "btn-watch service-" + key.toLowerCase();
-            a.innerHTML = `<span class="icon">▶</span><span>${label}</span>`;
+            a.innerHTML = `<span class="icon">▶</span><span>Watch on ${label}</span>`;
             a.addEventListener("click", function (e) {
               handleWatchClick(e, url);
             });
