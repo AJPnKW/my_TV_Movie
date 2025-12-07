@@ -28,6 +28,10 @@ jobs:
   build-data:
     runs-on: ubuntu-latest
 
+    # 🔑 Make TMDB key available to fetch_tmdb.py
+    env:
+      API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
