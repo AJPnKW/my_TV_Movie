@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>My TV Hub – index.html v3.2.0</title>
+  <title>My TV Hub – index.html v3.3.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <style>
@@ -24,6 +24,8 @@
       --today-bg: rgba(76, 141, 255, 0.16);
       --today-border: #4c8dff;
       --today-header-bg: rgba(76, 141, 255, 0.28);
+      --weekend-bg: rgba(40, 40, 70, 0.3);
+      --weekend-header-bg: rgba(40, 40, 80, 0.6);
       --scrollbar-track: #0a0d12;
       --scrollbar-thumb: #2a3140;
       --card-radius: 14px;
@@ -53,7 +55,6 @@
       overflow: hidden;
     }
 
-    /* Scrollbars (for non-TV devices) */
     ::-webkit-scrollbar {
       width: 10px;
       height: 10px;
@@ -69,7 +70,7 @@
     header.app-header {
       position: sticky;
       top: 0;
-      z-index: 20;
+      z-index: 30;
       background: linear-gradient(to bottom, #05070a 0, rgba(5, 7, 10, 0.9) 70%, rgba(5, 7, 10, 0.4) 100%);
       border-bottom: 1px solid var(--border-subtle);
       padding: 0.75rem 1.25rem 0.5rem;
@@ -141,6 +142,12 @@
       outline-offset: 2px;
     }
 
+    .view-subtitle {
+      margin-top: 0.3rem;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
     main.app-main {
       flex: 1;
       overflow-y: auto;
@@ -174,11 +181,6 @@
       color: var(--text-main);
     }
 
-    .section-subtitle {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
     .pill {
       border-radius: 999px;
       padding: 0.1rem 0.5rem;
@@ -190,11 +192,20 @@
 
     /* Calendar */
 
+    .calendar-header-shell {
+      position: sticky;
+      top: 0;
+      z-index: 15;
+      background: linear-gradient(to bottom, rgba(5, 7, 10, 0.98), rgba(5, 7, 12, 0.96));
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 0.2rem;
+    }
+
     .calendar-header-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.15rem;
       gap: 0.5rem;
       flex-wrap: wrap;
     }
@@ -234,6 +245,7 @@
       align-items: center;
       gap: 0.2rem;
       transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+      white-space: nowrap;
     }
 
     .btn:hover {
@@ -248,11 +260,32 @@
       font-weight: 500;
     }
 
-    .calendar-grid {
-      margin-top: 0.5rem;
+    .calendar-dow-row {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
-      grid-auto-rows: minmax(6.2rem, auto);
+      gap: 0.35rem;
+      padding-top: 0.25rem;
+    }
+
+    .calendar-dow-cell {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+      padding: 0.18rem 0.35rem;
+      border-radius: 10px 10px 0 0;
+      border: 1px solid transparent;
+    }
+
+    .calendar-dow-cell.weekend {
+      background: var(--weekend-header-bg);
+      border-color: rgba(70, 70, 120, 0.55);
+    }
+
+    .calendar-grid {
+      margin-top: 0.2rem;
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 0.35rem;
     }
 
@@ -266,10 +299,14 @@
       overflow: hidden;
     }
 
+    .calendar-day.weekend {
+      background: var(--weekend-bg);
+    }
+
     .calendar-day.today {
       background: var(--today-bg);
       border-color: var(--today-border);
-      box-shadow: 0 0 0 1px rgba(76, 141, 255, 0.3);
+      box-shadow: 0 0 0 2px rgba(76, 141, 255, 0.35);
     }
 
     .day-header {
@@ -308,24 +345,25 @@
 
     .calendar-item {
       display: grid;
-      grid-template-columns: 0.65fr 1.5fr;
+      grid-template-columns: 0.8fr 1.5fr;
       column-gap: 0.35rem;
       padding: 0.15rem 0.2rem;
       border-radius: 10px;
       background: rgba(5, 7, 12, 0.88);
       border: 1px solid rgba(48, 54, 69, 0.85);
       align-items: center;
+      cursor: pointer;
+      transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+    }
+
+    .calendar-item:hover {
+      background: rgba(12, 15, 22, 0.96);
+      border-color: var(--border-strong);
+      transform: translateY(-1px);
     }
 
     .calendar-item.posterless {
       grid-template-columns: 1fr;
-    }
-
-    .calendar-item-kind-tag {
-      font-size: 0.68rem;
-      color: var(--text-soft);
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
     }
 
     .calendar-item-main {
@@ -338,9 +376,17 @@
     .calendar-item-title {
       font-size: 0.78rem;
       font-weight: 500;
-      white-space: nowrap;
+      line-height: 1.2;
       overflow: hidden;
       text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .calendar-item-id {
+      font-size: 0.68rem;
+      color: var(--text-soft);
     }
 
     .calendar-item-episode {
@@ -369,35 +415,65 @@
       white-space: nowrap;
     }
 
-    .badge-release {
-      border-color: #4caf50;
-      color: #96e89f;
-      background: rgba(76, 175, 80, 0.1);
-    }
-
     .badge-upcoming {
       border-color: var(--accent-strong);
       color: var(--accent-strong);
-      background: rgba(255, 204, 51, 0.1);
+      background: rgba(255, 204, 51, 0.08);
     }
 
     .calendar-item-poster {
       width: 100%;
-      padding-top: 150%;
+      padding-top: 180%; /* ~50% larger than before */
       background-size: cover;
       background-position: center;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid rgba(65, 72, 88, 0.9);
       overflow: hidden;
+    }
+
+    .calendar-item-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.15rem;
+      margin-top: 0.1rem;
+    }
+
+    .btn-watch-small {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(5, 7, 12, 0.95);
+      color: var(--text-soft);
+      font-size: 0.62rem;
+      padding: 0.1rem 0.35rem;
+      line-height: 1.05;
+      text-align: center;
+      min-width: 4.2rem;
+    }
+
+    .btn-watch-small span.label-top {
+      display: block;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+    }
+
+    .btn-watch-small span.label-bottom {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 500;
     }
 
     /* Shows */
 
     .shows-filters-row {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 0.35rem 0 0.45rem;
+      background: linear-gradient(to bottom, rgba(5, 7, 10, 0.98), rgba(5, 7, 12, 0.96));
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin-bottom: 0.6rem;
       align-items: center;
       justify-content: space-between;
     }
@@ -424,10 +500,35 @@
       min-width: 7rem;
     }
 
+    .genre-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      max-width: 640px;
+    }
+
+    .genre-chip {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(8, 11, 18, 0.95);
+      color: var(--text-soft);
+      font-size: 0.7rem;
+      padding: 0.14rem 0.6rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .genre-chip.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--text-main);
+    }
+
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
       gap: 0.55rem;
+      margin-top: 0.45rem;
     }
 
     .show-card {
@@ -451,10 +552,11 @@
     .show-poster {
       position: relative;
       width: 100%;
-      padding-top: 150%;
+      padding-top: 130%; /* Smaller poster */
       background-size: cover;
       background-position: center;
       border-bottom: 1px solid var(--border-subtle);
+      background-color: #05070a;
     }
 
     .show-status-chip {
@@ -470,7 +572,7 @@
     }
 
     .show-card-body {
-      padding: 0.35rem 0.4rem 0.4rem;
+      padding: 0.35rem 0.4rem 0.45rem;
       display: flex;
       flex-direction: column;
       gap: 0.15rem;
@@ -501,7 +603,7 @@
       gap: 0.25rem;
       font-size: 0.7rem;
       color: var(--text-muted);
-      margin-top: 0.15rem;
+      margin-top: 0.1rem;
     }
 
     .show-meta-pill {
@@ -516,10 +618,26 @@
     .show-current-season {
       font-size: 0.74rem;
       color: var(--accent-strong);
-      margin-top: 0.15rem;
+      margin-top: 0.12rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    .show-watch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.2rem;
+      margin-top: 0.18rem;
+    }
+
+    .btn-watch {
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      padding: 0.05rem 0.45rem;
+      font-size: 0.66rem;
+      background: rgba(5, 7, 12, 0.95);
+      color: var(--text-soft);
     }
 
     /* Modal (Show popup) */
@@ -574,6 +692,7 @@
       background-size: cover;
       background-position: center;
       border: 1px solid var(--border-strong);
+      background-color: #05070a;
     }
 
     .modal-title-text {
@@ -614,12 +733,13 @@
 
     .btn-close {
       border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(0, 0, 0, 0.4);
-      color: var(--text-soft);
-      padding: 0.15rem 0.45rem;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: #000;
+      padding: 0.18rem 0.6rem;
       font-size: 0.8rem;
       cursor: pointer;
+      font-weight: 600;
     }
 
     .modal-body {
@@ -658,7 +778,7 @@
       color: var(--text-muted);
     }
 
-    /* Season & Episode layout */
+    /* Series + Season accordions */
 
     details.season-details {
       border-radius: 10px;
@@ -694,6 +814,7 @@
       background-position: center;
       border: 1px solid var(--border-subtle);
       flex-shrink: 0;
+      background-color: #05070a;
     }
 
     .season-summary-main {
@@ -791,15 +912,6 @@
       gap: 0.2rem;
     }
 
-    .btn-watch {
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      padding: 0.05rem 0.4rem;
-      font-size: 0.66rem;
-      background: rgba(5, 7, 12, 0.95);
-      color: var(--text-soft);
-    }
-
     .episode-chevron {
       font-size: 0.9rem;
       transform: translateY(1px);
@@ -834,7 +946,7 @@
       color: var(--text-soft);
     }
 
-    /* Config stub, Movies, Live TV (P2+) kept minimal for now */
+    /* Movies / Live TV / Config shells */
 
     @media (max-width: 900px) {
       .modal {
@@ -862,15 +974,19 @@
       .calendar-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+
+      .calendar-dow-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
     }
   </style>
 </head>
 <body>
   <header class="app-header">
     <div class="header-top-row">
-      <div class="app-title">My TV Hub</div>
+      <div class="app-title">MY TV HUB</div>
       <div class="meta-line" id="meta-line">
-        index.html: <strong>v3.2.0</strong> • Data built: <span id="meta-data-built">n/a</span> • Shows:
+        index.html: <strong>v3.3.0</strong> • Data built: <span id="meta-data-built">n/a</span> • Shows:
         <span id="meta-shows-count">n/a</span> • Movies: <span id="meta-movies-count">n/a</span> • LiveTV:
         <span id="meta-livetv-count">0</span>
       </div>
@@ -892,54 +1008,49 @@
         <span class="index">5</span> Config
       </button>
     </nav>
+    <div class="view-subtitle" id="view-subtitle">
+      Episodes &amp; movie releases by air date.
+    </div>
   </header>
 
   <main class="app-main">
     <!-- Calendar Tab -->
     <section id="tab-calendar" class="tab active" aria-label="Calendar view">
       <div class="section-header">
-        <div>
-          <h2>Calendar</h2>
-          <div class="section-subtitle">Episodes & movie releases by air date.</div>
-        </div>
+        <h2>Calendar</h2>
         <span class="pill" id="calendar-summary-pill">Month: —</span>
       </div>
 
-      <div class="calendar-header-row">
-        <div class="calendar-title">
-          <div class="calendar-title-main" id="calendar-month-label">Loading…</div>
-          <div class="calendar-title-sub" id="calendar-range-label">—</div>
+      <div class="calendar-header-shell">
+        <div class="calendar-header-row">
+          <div class="calendar-title">
+            <div class="calendar-title-main" id="calendar-month-label">Loading…</div>
+            <div class="calendar-title-sub" id="calendar-range-label">—</div>
+          </div>
+          <div class="calendar-controls">
+            <button class="btn" data-cal-nav="prev" id="btn-cal-prev">« Prev</button>
+            <button class="btn btn-primary" data-cal-nav="today" id="btn-cal-today">Today</button>
+            <button class="btn" data-cal-nav="next" id="btn-cal-next">Next »</button>
+          </div>
         </div>
-        <div class="calendar-controls">
-          <button class="btn" data-cal-nav="prev">« Prev</button>
-          <button class="btn btn-primary" data-cal-nav="today">Today</button>
-          <button class="btn" data-cal-nav="next">Next »</button>
-        </div>
+        <div class="calendar-dow-row" id="calendar-dow-row"></div>
       </div>
 
       <div class="calendar-grid" id="calendar-grid"></div>
-      <div class="section-subtitle" style="margin-top:0.4rem;">
-        <span class="pill">Legend: SHOW = series episode • MOVIE = release date</span>
+      <div style="margin-top:0.35rem;font-size:0.8rem;color:var(--text-muted);">
+        <span class="pill">Legend: MOVIE = release date</span>
       </div>
     </section>
 
     <!-- Shows Tab -->
     <section id="tab-shows" class="tab" aria-label="Shows view">
       <div class="section-header">
-        <div>
-          <h2>Shows</h2>
-          <div class="section-subtitle">All tracked series.</div>
-        </div>
+        <h2>Shows</h2>
         <span class="pill" id="shows-count-pill">Shows: —</span>
       </div>
 
       <div class="shows-filters-row">
         <div class="shows-filters-group">
-          <span class="filter-label">Genre:</span>
-          <select id="shows-genre-filter" class="select">
-            <option value="all">All</option>
-          </select>
-
           <span class="filter-label">Status:</span>
           <select id="shows-status-filter" class="select">
             <option value="all">All</option>
@@ -960,44 +1071,42 @@
             <option value="upcoming">Next upcoming</option>
           </select>
         </div>
+
+        <div class="shows-filters-group" style="flex-basis:100%;margin-top:0.2rem;">
+          <span class="filter-label">Genres (multi-select):</span>
+          <div id="shows-genre-chips" class="genre-chips"></div>
+        </div>
       </div>
 
       <div class="card-grid" id="shows-grid"></div>
     </section>
 
-    <!-- Movies Tab (P2: kept minimal for now) -->
+    <!-- Movies Tab (P2 shell) -->
     <section id="tab-movies" class="tab" aria-label="Movies view">
       <div class="section-header">
-        <div>
-          <h2>Movies</h2>
-          <div class="section-subtitle">Tracked films from your list. (P2 polishing later)</div>
-        </div>
+        <h2>Movies</h2>
         <span class="pill" id="movies-count-pill">Movies: —</span>
       </div>
-      <div class="section-subtitle">Core Calendar + Shows are P1; Movies will be brought to parity in the next pass.</div>
-    </section>
-
-    <!-- Live TV Tab (skeleton) -->
-    <section id="tab-livetv" class="tab" aria-label="Live TV preview">
-      <div class="section-header">
-        <div>
-          <h2>Live TV (Preview)</h2>
-          <div class="section-subtitle">Channel grid skeleton (data sync to come).</div>
-        </div>
-      </div>
-      <p class="section-subtitle">
-        This version shows the basic Live TV section shell only. Channel lists, EPG data, and logo mapping will be wired in a
-        later phase, after the core Calendar/Shows/Movies flows are fully stable again.
+      <p style="font-size:0.85rem;color:var(--text-muted);">
+        Core Calendar + Shows behaviour has priority. Movies view will be brought to the same design language in the next
+        implementation pass.
       </p>
     </section>
 
-    <!-- Config Tab (minimal, P2+ for full features) -->
+    <!-- Live TV Tab (shell) -->
+    <section id="tab-livetv" class="tab" aria-label="Live TV preview">
+      <div class="section-header">
+        <h2>Live TV (Preview)</h2>
+      </div>
+      <p style="font-size:0.85rem;color:var(--text-muted);">
+        Shell only for now. Channel lists and EPG wiring will follow once the main flows are stable.
+      </p>
+    </section>
+
+    <!-- Config Tab -->
     <section id="tab-config" class="tab" aria-label="Config view">
       <div class="section-header">
-        <div>
-          <h2>Config</h2>
-          <div class="section-subtitle">Local display and quick links.</div>
-        </div>
+        <h2>Config</h2>
       </div>
 
       <div class="card" style="max-width:520px;">
@@ -1015,10 +1124,10 @@
             <span class="filter-label">Font scale:</span>
             <input id="font-scale-input" type="number" min="0.8" max="1.6" step="0.05" value="1.0"
               style="width:4rem;padding:0.15rem 0.35rem;border-radius:8px;border:1px solid var(--border-subtle);background:rgba(5,7,12,0.95);color:var(--text-main);font-size:0.8rem;" />
-            <span class="section-subtitle">Values between 0.8–1.6.</span>
+            <span style="font-size:0.78rem;color:var(--text-muted);">Values between 0.8–1.6.</span>
           </div>
-          <div class="section-subtitle">
-            These settings are stored locally in this browser and used by this page only.
+          <div style="font-size:0.78rem;color:var(--text-muted);">
+            Settings are stored locally in this browser and used by this page only.
           </div>
         </div>
       </div>
@@ -1038,7 +1147,7 @@
     </section>
   </main>
 
-  <!-- Show Popup Modal -->
+  <!-- Show Popup Modal (series + seasons accordions) -->
   <div class="modal-backdrop" id="show-modal-backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="show-modal-title">
       <div class="modal-header">
@@ -1050,7 +1159,7 @@
             <div class="modal-meta-badges" id="show-modal-meta"></div>
           </div>
         </div>
-        <button class="btn-close" type="button" id="show-modal-close">✕ Close</button>
+        <button class="btn-close" type="button" id="show-modal-close">Close ✕</button>
       </div>
       <div class="modal-body">
         <div class="card" id="show-modal-overview-card">
@@ -1074,10 +1183,15 @@
   <script>
     (function () {
       const DATA_URL = "../data/data.json"; // relative to /web/index.html
+      const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
 
       let tvData = null;
       let calendarMonthOffset = 0;
+      let calendarScrollToToday = false;
       let cachedShows = [];
+      let showsByTmdbId = {};
+      let activeGenres = new Set();
+      let originalBodyOverflow = "";
 
       const qs = (sel) => document.querySelector(sel);
       const qsa = (sel) => Array.from(document.querySelectorAll(sel));
@@ -1120,7 +1234,33 @@
         }
       }
 
+      function withTmdbImage(path) {
+        if (!path) return null;
+        if (typeof path !== "string") return null;
+        const trimmed = path.trim();
+        if (!trimmed) return null;
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        return TMDB_IMAGE_BASE + trimmed;
+      }
+
+      function normalizeUrl(url) {
+        if (!url || typeof url !== "string") return null;
+        const trimmed = url.trim();
+        if (!trimmed) return null;
+        if (/^https?:\/\//i.test(trimmed)) return trimmed;
+        return `https://${trimmed}`;
+      }
+
       function buildNav() {
+        const subtitleEl = qs("#view-subtitle");
+        const subtitleByTab = {
+          calendar: "Episodes & movie releases by air date.",
+          shows: "Browse series, seasons, and episodes.",
+          movies: "Your tracked films (release-centric view).",
+          livetv: "Later: live channels and EPG.",
+          config: "Local display and maintenance helpers.",
+        };
+
         qsa(".nav-button").forEach((btn) => {
           btn.addEventListener("click", () => {
             const tab = btn.getAttribute("data-tab");
@@ -1128,6 +1268,10 @@
             qsa("section.tab").forEach((sec) => {
               sec.classList.toggle("active", sec.id === `tab-${tab}`);
             });
+
+            if (subtitleEl && subtitleByTab[tab]) {
+              subtitleEl.textContent = subtitleByTab[tab];
+            }
           });
         });
       }
@@ -1192,7 +1336,7 @@
         const shows = normalizeArray(data.shows || data.tv || []);
         shows.forEach((show) => {
           const showName = show.name || show.title || show.ref_name || "Untitled show";
-          const poster = show.poster_path || show.poster || null;
+          const poster = withTmdbImage(show.poster_path || show.poster);
           const tmdbId = show.tmdb_id || show.id || null;
           const seasons = normalizeArray(show.seasons);
 
@@ -1202,6 +1346,7 @@
             episodes.forEach((ep) => {
               const d = parseDate(ep.air_date || ep.airDate);
               if (!d) return;
+              const links = safeGet(ep, "links", {});
               entries.push({
                 kind: "show",
                 date: d,
@@ -1213,6 +1358,7 @@
                 status: d > new Date() ? "upcoming" : "released",
                 poster,
                 tmdbId,
+                links,
               });
             });
           });
@@ -1223,11 +1369,11 @@
           const d = parseDate(movie.release_date || movie.air_date || movie.date);
           if (!d) return;
           const title = movie.title || movie.name || "Untitled movie";
-          const poster = movie.poster_path || movie.poster || null;
+          const poster = withTmdbImage(movie.poster_path || movie.poster);
           const tmdbId = movie.tmdb_id || movie.id || null;
           const runtime = movie.runtime || null;
           const status = d > new Date() ? "upcoming" : "released";
-
+          const links = safeGet(movie, "links", {});
           entries.push({
             kind: "movie",
             date: d,
@@ -1236,6 +1382,7 @@
             status,
             poster,
             tmdbId,
+            links,
           });
         });
 
@@ -1248,39 +1395,80 @@
         working.setDate(1);
         working.setMonth(working.getMonth() + calendarMonthOffset);
 
+        const monthIndex = working.getMonth();
+        const year = working.getFullYear();
+
         const monthLabel = working.toLocaleDateString(undefined, {
           month: "long",
           year: "numeric",
         });
 
         const gridEl = qs("#calendar-grid");
-        if (!gridEl) return;
+        const dowRow = qs("#calendar-dow-row");
+        if (!gridEl || !dowRow) return;
         gridEl.innerHTML = "";
+        dowRow.innerHTML = "";
 
         const calendarEntries = collectCalendarEntries(data);
 
-        const firstDayOfWeek = 0;
-        const firstOfMonth = new Date(working.getFullYear(), working.getMonth(), 1);
+        const firstDayOfWeek = 1; // Monday
+        const firstOfMonth = new Date(year, monthIndex, 1);
+        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
         const startOffset = (firstOfMonth.getDay() - firstDayOfWeek + 7) % 7;
-        const startDate = new Date(working.getFullYear(), working.getMonth(), 1 - startOffset);
+        const weeksCount = Math.ceil((startOffset + daysInMonth) / 7);
+        const totalCells = weeksCount * 7;
+        const startDate = new Date(year, monthIndex, 1 - startOffset);
 
-        const monthIndex = working.getMonth();
-        const year = working.getFullYear();
         const rangeStart = new Date(year, monthIndex, 1);
-        const rangeEnd = new Date(year, monthIndex + 1, 0);
+        const rangeEnd = new Date(year, monthIndex, daysInMonth);
 
-        const rangeLabel = `${formatDate(rangeStart)} – ${formatDate(rangeEnd)}`;
         qs("#calendar-month-label").textContent = monthLabel;
-        qs("#calendar-range-label").textContent = rangeLabel;
+        qs("#calendar-range-label").textContent = `${formatDate(rangeStart)} – ${formatDate(rangeEnd)}`;
         qs("#calendar-summary-pill").textContent = `Month: ${monthLabel}`;
 
-        for (let cell = 0; cell < 42; cell++) {
-          const cellDate = new Date(startDate);
-          cellDate.setDate(startDate.getDate() + cell);
+        // Update prev / next button labels with month names
+        const prevMonthDate = new Date(year, monthIndex - 1, 1);
+        const nextMonthDate = new Date(year, monthIndex + 1, 1);
+        const prevBtn = qs("#btn-cal-prev");
+        const nextBtn = qs("#btn-cal-next");
+        if (prevBtn) {
+          prevBtn.textContent = "« " + prevMonthDate.toLocaleDateString(undefined, { month: "short" });
+        }
+        if (nextBtn) {
+          nextBtn.textContent = nextMonthDate.toLocaleDateString(undefined, { month: "short" }) + " »";
+        }
 
+        // Day-of-week header row (Monday first)
+        const dowNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        dowNames.forEach((name, idx) => {
+          const cell = document.createElement("div");
+          cell.className = "calendar-dow-cell" + (idx >= 5 ? " weekend" : "");
+          cell.textContent = name.toUpperCase();
+          dowRow.appendChild(cell);
+        });
+
+        for (let cellIdx = 0; cellIdx < totalCells; cellIdx++) {
+          const cellDate = new Date(startDate);
+          cellDate.setDate(startDate.getDate() + cellIdx);
+
+          const isCurrentMonth = cellDate.getMonth() === monthIndex;
           const isToday = isSameDay(cellDate, now);
+          const colIndex = cellIdx % 7; // Monday=0
+
           const dayEl = document.createElement("div");
-          dayEl.className = "calendar-day" + (isToday ? " today" : "");
+          dayEl.className = "calendar-day";
+          if (!isCurrentMonth) {
+            dayEl.classList.add("other-month");
+          }
+          if (colIndex >= 5) {
+            dayEl.classList.add("weekend");
+          }
+          if (isCurrentMonth) {
+            dayEl.dataset.date = cellDate.toISOString().slice(0, 10);
+          }
+          if (isCurrentMonth && isToday) {
+            dayEl.classList.add("today");
+          }
 
           const headerEl = document.createElement("div");
           headerEl.className = "day-header";
@@ -1302,82 +1490,185 @@
           const bodyEl = document.createElement("div");
           bodyEl.className = "day-body";
 
-          const todaysEntries = calendarEntries.filter((e) => isSameDay(e.date, cellDate));
-          todaysEntries
-            .sort((a, b) => {
-              const at = a.kind === "show" ? (a.episodeNumber || 0) : 999;
-              const bt = b.kind === "show" ? (b.episodeNumber || 0) : 999;
-              return at - bt;
-            })
-            .forEach((entry) => {
-              const itemEl = document.createElement("article");
-              itemEl.className = "calendar-item";
+          if (isCurrentMonth) {
+            const todaysEntries = calendarEntries.filter((e) => isSameDay(e.date, cellDate));
+            todaysEntries
+              .sort((a, b) => {
+                const at = a.kind === "show" ? (a.episodeNumber || 0) : 999;
+                const bt = b.kind === "show" ? (b.episodeNumber || 0) : 999;
+                return at - bt;
+              })
+              .forEach((entry) => {
+                const itemEl = document.createElement("article");
+                itemEl.className = "calendar-item";
 
-              const hasPoster = !!entry.poster;
-              if (!hasPoster) {
-                itemEl.classList.add("posterless");
-              } else {
-                const posterEl = document.createElement("div");
-                posterEl.className = "calendar-item-poster";
-                posterEl.style.backgroundImage = `url(${entry.poster})`;
-                itemEl.appendChild(posterEl);
-              }
+                const hasPoster = !!entry.poster;
+                if (!hasPoster) {
+                  itemEl.classList.add("posterless");
+                } else {
+                  const posterEl = document.createElement("div");
+                  posterEl.className = "calendar-item-poster";
+                  posterEl.style.backgroundImage = `url(${entry.poster})`;
+                  posterEl.addEventListener("click", (ev) => {
+                    ev.stopPropagation();
+                    openShowFromCalendar(entry);
+                  });
+                  itemEl.appendChild(posterEl);
+                }
 
-              const mainEl = document.createElement("div");
-              mainEl.className = "calendar-item-main";
+                const mainEl = document.createElement("div");
+                mainEl.className = "calendar-item-main";
 
-              const kindEl = document.createElement("div");
-              kindEl.className = "calendar-item-kind-tag";
-              kindEl.textContent = entry.kind === "show" ? "SHOW" : "MOVIE";
-              mainEl.appendChild(kindEl);
+                const titleEl = document.createElement("div");
+                titleEl.className = "calendar-item-title";
+                if (entry.kind === "show") {
+                  titleEl.textContent = entry.showName || "Show";
+                } else {
+                  titleEl.textContent = entry.title || "Movie";
+                }
+                titleEl.addEventListener("click", (ev) => {
+                  ev.stopPropagation();
+                  openShowFromCalendar(entry);
+                });
+                mainEl.appendChild(titleEl);
 
-              const titleEl = document.createElement("div");
-              titleEl.className = "calendar-item-title";
-              if (entry.kind === "show") {
-                titleEl.textContent = entry.showName || "Show";
-              } else {
-                titleEl.textContent = entry.title || "Movie";
-              }
-              mainEl.appendChild(titleEl);
+                if (entry.tmdbId && entry.kind === "show") {
+                  const idEl = document.createElement("div");
+                  idEl.className = "calendar-item-id";
+                  idEl.textContent = `[${entry.tmdbId}]`;
+                  mainEl.appendChild(idEl);
+                }
 
-              const epLineEl = document.createElement("div");
-              epLineEl.className = "calendar-item-episode";
-              if (entry.kind === "show") {
-                const s = entry.seasonNumber != null ? `S${entry.seasonNumber}` : "";
-                const e = entry.episodeNumber != null ? `E${entry.episodeNumber}` : "";
-                const se = s || e ? `${s}${e ? e : ""}` : "";
-                epLineEl.textContent = se
-                  ? `${se} · ${entry.episodeName || ""}`.trim()
-                  : entry.episodeName || "";
-              } else {
-                epLineEl.textContent = entry.runtime ? `${entry.runtime} min` : "";
-              }
-              mainEl.appendChild(epLineEl);
+                const epLineEl = document.createElement("div");
+                epLineEl.className = "calendar-item-episode";
+                if (entry.kind === "show") {
+                  const s = entry.seasonNumber != null ? `S${entry.seasonNumber}` : "";
+                  const e = entry.episodeNumber != null ? `E${entry.episodeNumber}` : "";
+                  const se = s || e ? `${s}${e ? e : ""}` : "";
+                  epLineEl.textContent = se
+                    ? `${se} · ${entry.episodeName || ""}`.trim()
+                    : entry.episodeName || "";
+                } else {
+                  epLineEl.textContent = entry.runtime ? `${entry.runtime} min` : "";
+                }
+                epLineEl.addEventListener("click", (ev) => {
+                  ev.stopPropagation();
+                  openShowFromCalendar(entry);
+                });
+                mainEl.appendChild(epLineEl);
 
-              const metaRow = document.createElement("div");
-              metaRow.className = "calendar-item-meta";
+                const metaRow = document.createElement("div");
+                metaRow.className = "calendar-item-meta";
 
-              const badge = document.createElement("span");
-              badge.className = "badge " + (entry.status === "upcoming" ? "badge-upcoming" : "badge-release");
-              badge.textContent = entry.status === "upcoming" ? "UPCOMING" : "RELEASED";
-              metaRow.appendChild(badge);
+                // Only show UPCOMING badge; RELEASED is implied by the calendar.
+                if (entry.status === "upcoming") {
+                  const badge = document.createElement("span");
+                  badge.className = "badge badge-upcoming";
+                  badge.textContent = "UPCOMING";
+                  metaRow.appendChild(badge);
+                }
 
-              if (entry.runtime) {
-                const rt = document.createElement("span");
-                rt.className = "badge";
-                rt.textContent = `${entry.runtime} min`;
-                metaRow.appendChild(rt);
-              }
+                if (entry.runtime) {
+                  const rt = document.createElement("span");
+                  rt.className = "badge";
+                  rt.textContent = `${entry.runtime} min`;
+                  metaRow.appendChild(rt);
+                }
 
-              mainEl.appendChild(metaRow);
-              itemEl.appendChild(mainEl);
-              bodyEl.appendChild(itemEl);
-            });
+                mainEl.appendChild(metaRow);
+
+                // Watch buttons (TMDB / VidSRC / Videasy) if we have links/ids
+                const actions = document.createElement("div");
+                actions.className = "calendar-item-actions";
+
+                const links = entry.links || {};
+                const tmdbUrl =
+                  normalizeUrl(links.tmdb) ||
+                  (entry.tmdbId && entry.kind === "show"
+                    ? `https://www.themoviedb.org/tv/${entry.tmdbId}`
+                    : entry.tmdbId && entry.kind === "movie"
+                      ? `https://www.themoviedb.org/movie/${entry.tmdbId}`
+                      : null);
+                const vidsrcUrl =
+                  normalizeUrl(links.vidsrc) ||
+                  (entry.tmdbId && entry.kind === "show"
+                    ? `https://vidsrc.to/embed/tv/${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
+                    : entry.tmdbId && entry.kind === "movie"
+                      ? `https://vidsrc.to/embed/movie/${entry.tmdbId}`
+                      : null);
+                const videasyUrl =
+                  normalizeUrl(links.videasy) ||
+                  (entry.tmdbId && entry.kind === "show"
+                    ? `https://videasy.org/embed/tv/${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
+                    : entry.tmdbId && entry.kind === "movie"
+                      ? `https://videasy.org/embed/movie/${entry.tmdbId}`
+                      : null);
+
+                function addWatchButton(label) {
+                  const btn = document.createElement("button");
+                  btn.type = "button";
+                  btn.className = "btn-watch-small";
+                  const top = document.createElement("span");
+                  top.className = "label-top";
+                  top.textContent = "Watch on";
+                  const bottom = document.createElement("span");
+                  bottom.className = "label-bottom";
+                  bottom.textContent = label;
+                  btn.appendChild(top);
+                  btn.appendChild(bottom);
+                  return btn;
+                }
+
+                if (tmdbUrl) {
+                  const btn = addWatchButton("TMDB");
+                  btn.addEventListener("click", (ev) => {
+                    ev.stopPropagation();
+                    window.open(tmdbUrl, "_blank", "noopener,noreferrer");
+                  });
+                  actions.appendChild(btn);
+                }
+                if (vidsrcUrl) {
+                  const btn = addWatchButton("VidSRC");
+                  btn.addEventListener("click", (ev) => {
+                    ev.stopPropagation();
+                    window.open(vidsrcUrl, "_blank", "noopener,noreferrer");
+                  });
+                  actions.appendChild(btn);
+                }
+                if (videasyUrl) {
+                  const btn = addWatchButton("Videasy");
+                  btn.addEventListener("click", (ev) => {
+                    ev.stopPropagation();
+                    window.open(videasyUrl, "_blank", "noopener,noreferrer");
+                  });
+                  actions.appendChild(btn);
+                }
+
+                if (actions.childNodes.length) {
+                  mainEl.appendChild(actions);
+                }
+
+                itemEl.addEventListener("click", () => openShowFromCalendar(entry));
+                itemEl.appendChild(mainEl);
+                bodyEl.appendChild(itemEl);
+              });
+          }
 
           dayEl.appendChild(headerEl);
           dayEl.appendChild(bodyEl);
           gridEl.appendChild(dayEl);
         }
+
+        if (calendarScrollToToday) {
+          calendarScrollToToday = false;
+          scrollTodayIntoView();
+        }
+      }
+
+      function scrollTodayIntoView() {
+        const todayCell = qs(".calendar-day.today");
+        if (!todayCell) return;
+        todayCell.scrollIntoView({ block: "center", behavior: "smooth" });
       }
 
       function collectGenres(shows) {
@@ -1427,17 +1718,44 @@
       function buildShows(data) {
         const shows = normalizeArray(data.shows || data.tv || []);
         cachedShows = shows;
+        showsByTmdbId = {};
 
-        const genreSelect = qs("#shows-genre-filter");
-        if (genreSelect) {
+        shows.forEach((s) => {
+          const tmdbId = s.tmdb_id || s.id;
+          if (tmdbId) {
+            showsByTmdbId[tmdbId] = s;
+          }
+        });
+
+        // Genre chips
+        const chipsContainer = qs("#shows-genre-chips");
+        if (chipsContainer) {
+          chipsContainer.innerHTML = "";
           const genres = collectGenres(shows);
           genres.forEach((g) => {
-            const opt = document.createElement("option");
-            opt.value = g;
-            opt.textContent = g;
-            genreSelect.appendChild(opt);
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "genre-chip";
+            chip.textContent = g;
+            chip.addEventListener("click", () => {
+              if (activeGenres.has(g)) {
+                activeGenres.delete(g);
+                chip.classList.remove("active");
+              } else {
+                activeGenres.add(g);
+                chip.classList.add("active");
+              }
+              renderShowsGrid();
+            });
+            chipsContainer.appendChild(chip);
           });
         }
+
+        // Filters events
+        const statusSel = qs("#shows-status-filter");
+        const sortSel = qs("#shows-sort");
+        if (statusSel) statusSel.addEventListener("change", renderShowsGrid);
+        if (sortSel) sortSel.addEventListener("change", renderShowsGrid);
 
         renderShowsGrid();
       }
@@ -1447,20 +1765,22 @@
         if (!grid) return;
         grid.innerHTML = "";
 
-        const genreFilter = qs("#shows-genre-filter")?.value || "all";
         const statusFilter = qs("#shows-status-filter")?.value || "all";
         const sortMode = qs("#shows-sort")?.value || "title-asc";
 
         let shows = [...cachedShows];
 
+        // Status filter (using normalised values)
         shows = shows.filter((show) => {
-          const status = (show.status || "").trim();
+          const rawStatus = (show.status || "").trim();
+          const status = rawStatus || "Unknown";
           if (statusFilter !== "all" && status !== statusFilter) {
             return false;
           }
-          if (genreFilter !== "all") {
+          if (activeGenres.size > 0) {
             const genres = normalizeArray(show.genres).map((g) => (typeof g === "string" ? g : g.name));
-            if (!genres.includes(genreFilter)) return false;
+            const hasAny = genres.some((g) => activeGenres.has(g));
+            if (!hasAny) return false;
           }
           return true;
         });
@@ -1489,10 +1809,10 @@
 
           const poster = document.createElement("div");
           poster.className = "show-poster";
-          const posterPath = show.poster_path || show.poster || null;
+          const posterPath = withTmdbImage(show.poster_path || show.poster);
           if (posterPath) poster.style.backgroundImage = `url(${posterPath})`;
 
-          const status = show.status || "";
+          const status = (show.status || "").trim();
           if (status) {
             const chip = document.createElement("div");
             chip.className = "show-status-chip";
@@ -1515,21 +1835,13 @@
           if (tmdbId) {
             const idEl = document.createElement("div");
             idEl.className = "show-title-id";
-            idEl.textContent = `[tmdb:${tmdbId}]`;
+            idEl.textContent = `[${tmdbId}]`;
             titleRow.appendChild(idEl);
           }
           body.appendChild(titleRow);
 
           const metaRow = document.createElement("div");
           metaRow.className = "show-meta-row";
-
-          const statusLabel = status || "";
-          if (statusLabel) {
-            const pill = document.createElement("span");
-            pill.className = "show-meta-pill";
-            pill.textContent = statusLabel;
-            metaRow.appendChild(pill);
-          }
 
           const firstAir = parseDate(show.first_air_date || show.firstAirDate);
           if (firstAir) {
@@ -1577,20 +1889,74 @@
             body.appendChild(cs);
           }
 
+          // Watch buttons – consistent rules
+          const watchRow = document.createElement("div");
+          watchRow.className = "show-watch-row";
+          const tmdbUrl = tmdbId ? `https://www.themoviedb.org/tv/${tmdbId}` : null;
+          const vidsrcUrl = tmdbId ? `https://vidsrc.to/embed/tv/${tmdbId}` : null;
+          const videasyUrl = tmdbId ? `https://videasy.org/embed/tv/${tmdbId}` : null;
+
+          if (tmdbUrl) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "btn-watch";
+            b.textContent = "TMDB";
+            b.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              window.open(tmdbUrl, "_blank", "noopener,noreferrer");
+            });
+            watchRow.appendChild(b);
+          }
+          if (vidsrcUrl) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "btn-watch";
+            b.textContent = "VidSRC";
+            b.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              window.open(vidsrcUrl, "_blank", "noopener,noreferrer");
+            });
+            watchRow.appendChild(b);
+          }
+          if (videasyUrl) {
+            const b = document.createElement("button");
+            b.type = "button";
+            b.className = "btn-watch";
+            b.textContent = "Videasy";
+            b.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              window.open(videasyUrl, "_blank", "noopener,noreferrer");
+            });
+            watchRow.appendChild(b);
+          }
+
+          if (watchRow.childNodes.length) body.appendChild(watchRow);
+
           card.appendChild(poster);
           card.appendChild(body);
 
           card.addEventListener("click", () => openShowModal(show));
+
           grid.appendChild(card);
         });
       }
 
-      function openShowModal(show) {
+      function openShowFromCalendar(entry) {
+        if (!entry.tmdbId || entry.kind !== "show") return;
+        const show = showsByTmdbId[entry.tmdbId];
+        if (!show) return;
+        openShowModal(show, {
+          seasonNumber: entry.seasonNumber,
+          episodeNumber: entry.episodeNumber,
+        });
+      }
+
+      function openShowModal(show, focusEp) {
         const backdrop = qs("#show-modal-backdrop");
         if (!backdrop) return;
         const title = show.name || show.title || "Show";
         const tmdbId = show.tmdb_id || show.id || null;
-        const posterPath = show.poster_path || show.poster || null;
+        const posterPath = withTmdbImage(show.poster_path || show.poster);
 
         qs("#show-modal-title").textContent = title;
         const poster = qs("#show-modal-poster");
@@ -1601,7 +1967,7 @@
           poster.style.backgroundColor = "#0b0f18";
         }
 
-        const status = show.status || "";
+        const status = (show.status || "").trim();
         const firstAir = parseDate(show.first_air_date || show.firstAirDate);
         const seasons = normalizeArray(show.seasons);
         const totalEpisodes = seasons.reduce((acc, s) => acc + normalizeArray(s.episodes).length, 0);
@@ -1619,7 +1985,7 @@
         if (tmdbId) {
           const tmdbBadge = document.createElement("span");
           tmdbBadge.className = "badge";
-          tmdbBadge.textContent = `[tmdb:${tmdbId}]`;
+          tmdbBadge.textContent = `[${tmdbId}]`;
           metaHolder.appendChild(tmdbBadge);
         }
 
@@ -1678,7 +2044,10 @@
 
             const detailsEl = document.createElement("details");
             detailsEl.className = "season-details";
-            if (seasonNum === latestSeasonNumber) {
+            if (!focusEp && seasonNum === latestSeasonNumber) {
+              detailsEl.open = true;
+            }
+            if (focusEp && focusEp.seasonNumber === seasonNum) {
               detailsEl.open = true;
             }
 
@@ -1688,7 +2057,8 @@
             const thumb = document.createElement("div");
             thumb.className = "season-thumb";
             const seasonPoster =
-              season.poster_path || season.poster || season.still_path || season.still || show.poster_path || null;
+              withTmdbImage(season.poster_path || season.poster || season.still_path || season.still) ||
+              withTmdbImage(show.poster_path || show.poster);
             if (seasonPoster) {
               thumb.style.backgroundImage = `url(${seasonPoster})`;
             }
@@ -1753,8 +2123,7 @@
               subRow.appendChild(metaSpan);
 
               const statusBadge = document.createElement("span");
-              statusBadge.className =
-                "badge " + (airDate && airDate > new Date() ? "badge-upcoming" : "badge-release");
+              statusBadge.className = "badge " + (airDate && airDate > new Date() ? "badge-upcoming" : "");
               statusBadge.textContent = airDate && airDate > new Date() ? "UPCOMING" : "RELEASED";
               subRow.appendChild(statusBadge);
 
@@ -1764,7 +2133,12 @@
               const links = safeGet(ep, "links", {});
               const hosts = ["vidsrc", "videasy", "tmdb"];
               hosts.forEach((hostKey) => {
-                const url = links[hostKey];
+                let url = links[hostKey];
+                if (!url) {
+                  if (hostKey === "tmdb" && tmdbId) {
+                    url = `https://www.themoviedb.org/tv/${tmdbId}/season/${seasonNum}/episode/${ep.episode_number ?? ep.number ?? 1}`;
+                  }
+                }
                 if (!url) return;
                 const safe = normalizeUrl(url);
                 if (!safe) return;
@@ -1798,7 +2172,7 @@
 
               const stillContainer = document.createElement("div");
               stillContainer.className = "episode-still";
-              const stillPath = ep.still_path || ep.still || null;
+              const stillPath = withTmdbImage(ep.still_path || ep.still);
               if (stillPath) {
                 const img = document.createElement("img");
                 img.src = stillPath;
@@ -1821,6 +2195,15 @@
               epBody.appendChild(extra);
 
               epDetails.appendChild(epBody);
+
+              if (
+                focusEp &&
+                focusEp.seasonNumber === seasonNum &&
+                (focusEp.episodeNumber === (ep.episode_number ?? ep.number))
+              ) {
+                epDetails.open = true;
+              }
+
               body.appendChild(epDetails);
             });
 
@@ -1828,6 +2211,9 @@
             seasonsContainer.appendChild(detailsEl);
           });
 
+        // Lock background scroll while popup is open
+        originalBodyOverflow = document.body.style.overflow || "";
+        document.body.style.overflow = "hidden";
         backdrop.classList.add("open");
         backdrop.setAttribute("aria-hidden", "false");
       }
@@ -1837,14 +2223,7 @@
         if (!backdrop) return;
         backdrop.classList.remove("open");
         backdrop.setAttribute("aria-hidden", "true");
-      }
-
-      function normalizeUrl(url) {
-        if (!url || typeof url !== "string") return null;
-        const trimmed = url.trim();
-        if (!trimmed) return null;
-        if (/^https?:\/\//i.test(trimmed)) return trimmed;
-        return `https://${trimmed}`;
+        document.body.style.overflow = originalBodyOverflow || "";
       }
 
       function initModal() {
@@ -1867,7 +2246,10 @@
             const action = btn.getAttribute("data-cal-nav");
             if (action === "prev") calendarMonthOffset -= 1;
             else if (action === "next") calendarMonthOffset += 1;
-            else if (action === "today") calendarMonthOffset = 0;
+            else if (action === "today") {
+              calendarMonthOffset = 0;
+              calendarScrollToToday = true;
+            }
             if (tvData) buildCalendar(tvData);
           });
         });
