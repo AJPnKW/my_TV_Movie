@@ -22,9 +22,7 @@
       --shadow-light: 0 8px 20px rgba(0, 0, 0, 0.4);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -197,7 +195,7 @@
       color: var(--text-muted);
     }
 
-    /* Collapsible info block for "How this works" */
+    /* Collapsible info block */
     details.info-block {
       border-radius: var(--radius-md);
       border: 1px solid var(--border-subtle);
@@ -219,9 +217,7 @@
       font-weight: 600;
     }
 
-    summary.info-summary::-webkit-details-marker {
-      display: none;
-    }
+    summary.info-summary::-webkit-details-marker { display: none; }
 
     .info-summary-text {
       display: flex;
@@ -253,9 +249,7 @@
       color: var(--text-muted);
     }
 
-    .watch-tips-list li + li {
-      margin-top: 4px;
-    }
+    .watch-tips-list li + li { margin-top: 4px; }
 
     .seasons-container {
       display: flex;
@@ -284,9 +278,7 @@
       font-weight: 600;
     }
 
-    details.season > summary::-webkit-details-marker {
-      display: none;
-    }
+    details.season > summary::-webkit-details-marker { display: none; }
 
     .season-summary-main {
       display: flex;
@@ -367,9 +359,7 @@
       font-size: 0.8rem;
     }
 
-    details.episode > summary::-webkit-details-marker {
-      display: none;
-    }
+    details.episode > summary::-webkit-details-marker { display: none; }
 
     .episode-summary-main {
       display: flex;
@@ -378,9 +368,7 @@
       min-width: 0;
     }
 
-    .episode-title {
-      font-weight: 550;
-    }
+    .episode-title { font-weight: 550; }
 
     .episode-sub-row {
       display: flex;
@@ -461,9 +449,7 @@
       gap: 4px;
     }
 
-    .btn-watch span.icon {
-      font-size: 0.8rem;
-    }
+    .btn-watch span.icon { font-size: 0.8rem; }
 
     .btn-watch.service-vidsrc {
       border-color: rgba(0, 255, 133, 0.6);
@@ -557,9 +543,7 @@
         margin: 0 auto;
       }
 
-      .header-title {
-        white-space: normal;
-      }
+      .header-title { white-space: normal; }
     }
   </style>
 </head>
@@ -571,8 +555,6 @@
         <div class="header-title" id="header-title">Loading show…</div>
         <div class="header-sub">
           <span class="tag" id="header-tag-tmdb">TMDB: –</span>
-          <span class="tag" id="header-tag-season">Season –</span>
-          <span class="tag" id="header-tag-slug">Slug: –</span>
         </div>
       </div>
     </header>
@@ -654,7 +636,7 @@
       mapUrl: "./shows_map.json"
     };
 
-    // Optional mapping from JSON key → nice button label.
+    // Mapping from JSON key → service labels (used in button text).
     const STREAMING_LABELS = {
       vidsrc: "VidSrc",
       videasy: "Videasy",
@@ -702,12 +684,10 @@
       return u;
     }
 
-    function buildHero(show, season, cfg, slugUsed) {
+    function buildHero(show, season, cfg) {
       const titleEl = document.getElementById("hero-title");
       const headerTitleEl = document.getElementById("header-title");
       const tagTmdbEl = document.getElementById("header-tag-tmdb");
-      const tagSeasonEl = document.getElementById("header-tag-season");
-      const tagSlugEl = document.getElementById("header-tag-slug");
       const overviewEl = document.getElementById("hero-overview");
       const extraEl = document.getElementById("hero-extra");
       const pillRowEl = document.getElementById("hero-pill-row");
@@ -720,11 +700,9 @@
       titleEl.textContent = titleText;
       headerTitleEl.textContent = titleText;
 
-      document.title = `${show.name || "Show"} – Season ${cfg.seasonNumber} · my_TV_Movie`;
+      document.title = `${show.name || "Show"} · my_TV_Movie`;
 
       tagTmdbEl.textContent = `TMDB: ${show.tmdb_id ?? cfg.tmdbId}`;
-      tagSeasonEl.textContent = `Season ${cfg.seasonNumber}`;
-      tagSlugEl.textContent = `Slug: ${slugUsed}`;
 
       overviewEl.textContent = show.overview || "Overview not available yet.";
 
@@ -732,7 +710,7 @@
       if (show.status) extraParts.push(show.status);
       if (show.first_air_date) extraParts.push(`First aired: ${formatDate(show.first_air_date)}`);
       if (season && season.air_date) {
-        extraParts.push(`Season ${season.season_number} from ${formatDate(season.air_date)}`);
+        extraParts.push(`Current season: ${season.season_number} (from ${formatDate(season.air_date)})`);
       }
       extraEl.textContent = extraParts.join(" · ");
 
@@ -766,24 +744,28 @@
       }
 
       const epCount = season ? season.episode_count ?? (season.episodes || []).length : 0;
-      seasonSummaryLabelEl.textContent = `Season ${cfg.seasonNumber} · ${epCount || "0"} episodes`;
+      if (season) {
+        seasonSummaryLabelEl.textContent = `Season ${season.season_number} · ${epCount || "0"} episodes`;
+      } else {
+        seasonSummaryLabelEl.textContent = "";
+      }
     }
 
     function handleWatchClick(event, url) {
-      // Simple QA: block navigation if URL is obviously not valid format.
+      // Simple QA: block if it doesn't look like a real URL at all
       if (!url || typeof url !== "string" || !/^https?:\/\//i.test(url)) {
         event.preventDefault();
         alert(
           "This streaming link does not look valid yet. Please try a different host or episode."
         );
       }
-      // If it looks like a valid URL, we allow the new tab to open.
-      // We cannot reliably detect a 404 or "no video" from this page due to browser security.
+      // If it's a valid URL, we let the browser open it.
+      // We cannot reliably detect remote 404 / 'no video yet' from this page (CORS).
     }
 
     function buildEpisodes(season, cfg) {
       const container = document.getElementById("seasons-container");
-      container.innerHTML = ""; // clear "loading" message
+      container.innerHTML = ""; // clear "loading" msg
 
       if (!season) {
         const msg = document.createElement("div");
@@ -901,19 +883,21 @@
             let url = links[key];
             url = normalizeStreamingUrl(url, key);
             const label = STREAMING_LABELS[key] || key;
+            const buttonText =
+              key === "tmdb" ? `Info on ${label}` : `Watch on ${label}`;
             const a = document.createElement("a");
             a.href = url;
             a.target = "_blank";
             a.rel = "noopener noreferrer";
             a.className = "btn-watch service-" + key.toLowerCase();
-            a.innerHTML = `<span class="icon">▶</span><span>Watch on ${label}</span>`;
+            a.innerHTML = `<span class="icon">▶</span><span>${buttonText}</span>`;
             a.addEventListener("click", function (e) {
               handleWatchClick(e, url);
             });
             actionsSummary.appendChild(a);
           });
 
-          epSubRow.appendChild(actionsSummary);
+        epSubRow.appendChild(actionsSummary);
         }
 
         epMain.appendChild(epTitle);
@@ -966,8 +950,6 @@
     async function renderShowList() {
       const headerTitle = document.getElementById("header-title");
       const tagTmdb = document.getElementById("header-tag-tmdb");
-      const tagSeason = document.getElementById("header-tag-season");
-      const tagSlug = document.getElementById("header-tag-slug");
       const heroCard = document.getElementById("hero-card");
       const infoCard = document.getElementById("info-card");
       const episodesHeaderTitle = document.getElementById("episodes-header-title");
@@ -978,9 +960,7 @@
       // Update header for list mode
       headerTitle.textContent = "Available shows";
       document.title = "Available shows · my_TV_Movie";
-      tagTmdb.textContent = "TMDB: –";
-      tagSeason.textContent = "Season –";
-      tagSlug.textContent = "Slug: (none)";
+      tagTmdb.textContent = "Show index";
 
       // Hide hero & info cards in list mode
       heroCard.style.display = "none";
@@ -1066,15 +1046,12 @@
 
     async function init() {
       const statusEl = document.getElementById("status-message");
-      const tagSlugEl = document.getElementById("header-tag-slug");
       const slug = getSlugFromUrl();
 
       if (!slug) {
         await renderShowList();
         return;
       }
-
-      tagSlugEl.textContent = `Slug: ${slug}`;
 
       try {
         // 1) Load the slug→config mapping.
@@ -1131,7 +1108,7 @@
           s => s.season_number === effectiveCfg.seasonNumber
         );
 
-        buildHero(show, season, effectiveCfg, slug);
+        buildHero(show, season, effectiveCfg);
         buildEpisodes(season, effectiveCfg);
 
       } catch (err) {
