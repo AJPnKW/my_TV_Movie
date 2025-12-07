@@ -1,1354 +1,1283 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>My TV Hub – index.html v3.3.1</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- [HTML-1.0] External stylesheet reference -->
-  <link rel="stylesheet" href="./css/my_tv_hub.css?v=3.3.1" />
-</head>
-<body>
-  <!-- ================================================================
-       [HTML-2.0] App header + nav
-       ================================================================ -->
-  <header class="app-header">
-    <div class="header-top-row">
-      <div class="app-title">MY TV HUB</div>
-      <div class="meta-line" id="meta-line">
-        index.html: <strong>v3.3.1</strong> • Data built: <span id="meta-data-built">n/a</span> • Shows:
-        <span id="meta-shows-count">n/a</span> • Movies: <span id="meta-movies-count">n/a</span> • LiveTV:
-        <span id="meta-livetv-count">0</span>
-      </div>
-    </div>
-    <nav class="app-nav" aria-label="Main navigation">
-      <button class="nav-button active" data-tab="calendar">
-        <span class="nav-icon">📅</span> Calendar
-      </button>
-      <button class="nav-button" data-tab="shows">
-        <span class="nav-icon">📺</span> Shows
-      </button>
-      <button class="nav-button" data-tab="movies">
-        <span class="nav-icon">🎬</span> Movies
-      </button>
-      <button class="nav-button" data-tab="livetv">
-        <span class="nav-icon">📡</span> Live TV
-      </button>
-      <button class="nav-button" data-tab="config">
-        <span class="nav-icon">⚙️</span> Config
-      </button>
-    </nav>
-    <div class="view-subtitle" id="view-subtitle">
-      Episodes &amp; movie releases by air date.
-    </div>
-  </header>
+  <head>
+    <!-- [HTML-1.0] Document meta + version -->
+    <meta charset="UTF-8" />
+    <title>My TV Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Static TV + Movies + Live TV hub for Andrew & Brant" />
 
-  <!-- ================================================================
-       [HTML-3.0] Main tabbed content
-       ================================================================ -->
-  <main class="app-main">
-    <!-- [HTML-3.1] Calendar tab -->
-    <section id="tab-calendar" class="tab active" aria-label="Calendar view">
-      <div class="section-header">
-        <h2>Calendar</h2>
-        <span class="pill" id="calendar-summary-pill">Month: —</span>
+    <!-- External CSS (all styles moved out of index.html) -->
+    <link rel="stylesheet" href="my_tv_hub.css?v=3.3.2" />
+  </head>
+
+  <body>
+    <!-- [HTML-2.0] App shell header -->
+    <header class="app-header">
+      <div class="app-title-row">
+        <h1 class="app-title">MY TV HUB</h1>
+        <div id="meta-line" class="meta-line">
+          index.html: v3.3.2 • Data built: — • Shows: — • Movies: — • LiveTV: —
+        </div>
       </div>
 
-      <div class="calendar-header-shell">
-        <div class="calendar-header-row">
-          <div class="calendar-title">
-            <div class="calendar-title-main" id="calendar-month-label">Loading…</div>
-            <div class="calendar-title-sub" id="calendar-range-label">—</div>
+      <!-- [HTML-2.1] Main view tabs -->
+      <nav class="view-nav" aria-label="Primary views">
+        <button class="nav-button active" data-view="calendar" id="btn-view-calendar">
+          <span class="nav-icon" aria-hidden="true">📅</span>
+          <span class="nav-label">Calendar</span>
+        </button>
+        <button class="nav-button" data-view="shows" id="btn-view-shows">
+          <span class="nav-icon" aria-hidden="true">🎬</span>
+          <span class="nav-label">Shows</span>
+        </button>
+        <button class="nav-button" data-view="movies" id="btn-view-movies">
+          <span class="nav-icon" aria-hidden="true">🎞</span>
+          <span class="nav-label">Movies</span>
+        </button>
+        <button class="nav-button" data-view="live" id="btn-view-live">
+          <span class="nav-icon" aria-hidden="true">📺</span>
+          <span class="nav-label">Live TV</span>
+        </button>
+        <button class="nav-button" data-view="config" id="btn-view-config">
+          <span class="nav-icon" aria-hidden="true">⚙️</span>
+          <span class="nav-label">Config</span>
+        </button>
+      </nav>
+
+      <!-- [HTML-2.2] Global subtitle (moved out of calendar header) -->
+      <div class="view-subtitle" id="view-subtitle">
+        Episodes &amp; releases by date.
+      </div>
+    </header>
+
+    <!-- [HTML-3.0] Main content area -->
+    <main class="app-main">
+      <!-- ========== CALENDAR TAB ========== -->
+      <section id="tab-calendar" class="tab active" aria-label="Calendar view">
+        <!-- [HTML-3.1] Calendar header: month / range / nav -->
+        <div class="calendar-header-shell">
+          <div class="calendar-month-row">
+            <div>
+              <h2 id="calendar-month-label" class="calendar-month-label">Month</h2>
+              <div id="calendar-range-label" class="calendar-range-label">—</div>
+            </div>
+            <div class="calendar-nav-buttons">
+              <button class="pill-button" id="btn-cal-prev" type="button">&laquo; Prev</button>
+              <button class="pill-button pill-today" id="btn-cal-today" type="button">Today</button>
+              <button class="pill-button" id="btn-cal-next" type="button">Next &raquo;</button>
+            </div>
           </div>
-          <div class="calendar-controls">
-            <button class="btn" data-cal-nav="prev" id="btn-cal-prev">« Prev</button>
-            <button class="btn btn-primary" data-cal-nav="today" id="btn-cal-today">Today</button>
-            <button class="btn" data-cal-nav="next" id="btn-cal-next">Next »</button>
-          </div>
-        </div>
-        <div class="calendar-dow-row" id="calendar-dow-row"></div>
-      </div>
 
-      <div class="calendar-grid" id="calendar-grid"></div>
-      <div style="margin-top:0.35rem;font-size:0.8rem;color:var(--text-muted);">
-        <span class="pill">Legend: MOVIE = release date</span>
-      </div>
-    </section>
-
-    <!-- [HTML-3.2] Shows tab -->
-    <section id="tab-shows" class="tab" aria-label="Shows view">
-      <div class="section-header">
-        <h2>Shows</h2>
-        <span class="pill" id="shows-count-pill">Shows: —</span>
-      </div>
-
-      <div class="shows-filters-row">
-        <div class="shows-filters-group">
-          <span class="filter-label">Status:</span>
-          <select id="shows-status-filter" class="select">
-            <option value="all">All</option>
-            <option value="Running">Running</option>
-            <option value="Ended">Ended</option>
-            <option value="In Production">In Production</option>
-            <option value="Planned">Planned</option>
-            <option value="Canceled">Canceled</option>
-          </select>
-        </div>
-
-        <div class="shows-filters-group">
-          <span class="filter-label">Sort:</span>
-          <select id="shows-sort" class="select">
-            <option value="title-asc">Title A–Z</option>
-            <option value="title-desc">Title Z–A</option>
-            <option value="latest">Latest episode date</option>
-            <option value="upcoming">Next upcoming</option>
-          </select>
-        </div>
-
-        <div class="shows-filters-group" style="flex-basis:100%;margin-top:0.2rem;">
-          <span class="filter-label">Genres (multi-select):</span>
-          <div id="shows-genre-chips" class="genre-chips"></div>
-        </div>
-      </div>
-
-      <div class="card-grid" id="shows-grid"></div>
-    </section>
-
-    <!-- [HTML-3.3] Movies tab (code kept, design to be iterated) -->
-    <section id="tab-movies" class="tab" aria-label="Movies view">
-      <div class="section-header">
-        <h2>Movies</h2>
-        <span class="pill" id="movies-count-pill">Movies: —</span>
-      </div>
-      <p style="font-size:0.85rem;color:var(--text-muted);">
-        Movies data and playback links are fully wired. Visual layout will be aligned with Calendar/Shows styling in a later
-        pass without removing or resetting existing movie code.
-      </p>
-    </section>
-
-    <!-- [HTML-3.4] Live TV tab (shell) -->
-    <section id="tab-livetv" class="tab" aria-label="Live TV preview">
-      <div class="section-header">
-        <h2>Live TV (Preview)</h2>
-      </div>
-      <p style="font-size:0.85rem;color:var(--text-muted);">
-        Channel lists and EPG wiring will be layered on after the main Calendar/Shows/Movies flows are solid.
-      </p>
-    </section>
-
-    <!-- [HTML-3.5] Config tab -->
-    <section id="tab-config" class="tab" aria-label="Config view">
-      <div class="section-header">
-        <h2>Config</h2>
-      </div>
-
-      <div class="card" style="max-width:520px;">
-        <div class="card-header-row">
-          <div class="card-title">Display</div>
-          <div class="card-subtitle">Theme + font scale (local only)</div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          <div style="display:flex;align-items:center;gap:0.45rem;flex-wrap:wrap;">
-            <span class="filter-label">Theme:</span>
-            <button class="btn-ghost" data-theme="dark">Dark</button>
-            <button class="btn-ghost" data-theme="light">Light</button>
-          </div>
-          <div style="display:flex;align-items:center;gap:0.45rem;flex-wrap:wrap;">
-            <span class="filter-label">Font scale:</span>
-            <input id="font-scale-input" type="number" min="0.8" max="1.6" step="0.05" value="1.0"
-              class="config-number-input" />
-            <span style="font-size:0.78rem;color:var(--text-muted);">Values between 0.8–1.6.</span>
-          </div>
-          <div style="font-size:0.78rem;color:var(--text-muted);">
-            Settings are stored locally in this browser and used by this page only.
+          <!-- [HTML-3.2] Sticky day-of-week header -->
+          <div class="calendar-dow-row">
+            <div class="dow-cell">MON</div>
+            <div class="dow-cell">TUE</div>
+            <div class="dow-cell">WED</div>
+            <div class="dow-cell">THU</div>
+            <div class="dow-cell">FRI</div>
+            <div class="dow-cell weekend">SAT</div>
+            <div class="dow-cell weekend">SUN</div>
           </div>
         </div>
-      </div>
 
-      <div class="card" style="margin-top:0.6rem;">
-        <div class="card-header-row">
-          <div class="card-title">Maintenance shortcuts</div>
+        <!-- [HTML-3.3] Calendar grid container -->
+        <div id="calendar-grid" class="calendar-grid" aria-label="Episodes and movies by date">
+          <!-- JS populates day columns + cards -->
         </div>
-        <ul style="margin:0.1rem 0 0.1rem 1.2rem;font-size:0.82rem;">
-          <li><a href="https://github.com/AJPnKW/my_TV_Movie" target="_blank" rel="noopener noreferrer">GitHub repo</a></li>
-          <li><a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank"
-              rel="noopener noreferrer">Build TV Data &amp; Deploy workflow</a></li>
-          <li><a href="https://ajpnkw.github.io/my_TV_Movie/data/" target="_blank" rel="noopener noreferrer">data/ folder
-              listing</a></li>
-        </ul>
-      </div>
-    </section>
-  </main>
+      </section>
 
-  <!-- ================================================================
-       [HTML-4.0] Show popup modal (series + seasons accordions)
-       ================================================================ -->
-  <div class="modal-backdrop" id="show-modal-backdrop" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="show-modal-title">
-      <div class="modal-header">
-        <div class="modal-title-block">
-          <div class="modal-poster" id="show-modal-poster"></div>
-          <div class="modal-title-text">
-            <h3 id="show-modal-title">Show title</h3>
-            <div class="modal-subtitle-line" id="show-modal-subtitle"></div>
-            <div class="modal-meta-badges" id="show-modal-meta"></div>
+      <!-- ========== SHOWS TAB ========== -->
+      <section id="tab-shows" class="tab" aria-label="Shows view">
+        <!-- [HTML-4.0] Shows filters + sort (sticky) -->
+        <div class="shows-toolbar">
+          <div class="shows-filters">
+            <div class="toolbar-group">
+              <label for="shows-status-filter" class="toolbar-label">Status:</label>
+              <select id="shows-status-filter" class="select">
+                <option value="all">All</option>
+                <option value="Running">Running</option>
+                <option value="Ended">Ended</option>
+                <option value="In Production">In Production</option>
+                <option value="Planned">Planned</option>
+              </select>
+            </div>
+
+            <div class="toolbar-group">
+              <span class="toolbar-label">Genres (multi-select):</span>
+              <div id="shows-genre-chips" class="genre-chips-row">
+                <!-- JS builds All + chips -->
+              </div>
+            </div>
+          </div>
+
+          <div class="shows-sort">
+            <div class="toolbar-group">
+              <label for="shows-sort-select" class="toolbar-label">Sort:</label>
+              <select id="shows-sort-select" class="select">
+                <option value="title-az">Title A–Z</option>
+                <option value="title-za">Title Z–A</option>
+                <option value="latest">Latest</option>
+                <option value="upcoming">Upcoming</option>
+              </select>
+            </div>
           </div>
         </div>
-        <button class="btn-close" type="button" id="show-modal-close">Close ✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="card" id="show-modal-overview-card">
-          <div class="card-header-row">
-            <div class="card-title">Show overview</div>
-          </div>
-          <div class="card-subtitle" id="show-modal-overview"></div>
+
+        <!-- [HTML-4.1] Shows grid -->
+        <div id="shows-grid" class="card-grid" aria-label="Shows grid">
+          <!-- JS populates cards -->
+        </div>
+      </section>
+
+      <!-- ========== MOVIES TAB ========== -->
+      <section id="tab-movies" class="tab" aria-label="Movies view">
+        <div class="section-header">
+          <h2>Movies</h2>
+        </div>
+        <div id="movies-grid" class="card-grid" aria-label="Movies grid">
+          <!-- JS populates cards -->
+        </div>
+      </section>
+
+      <!-- ========== LIVE TV TAB (stub, kept) ========== -->
+      <section id="tab-live" class="tab" aria-label="Live TV view">
+        <div class="section-header">
+          <h2>Live TV</h2>
+        </div>
+        <p class="section-note">
+          Channels come from <code>live_tv_list.txt</code>. Visual layout matches the rest of the hub;
+          full EPG remains a later enhancement.
+        </p>
+        <div id="livetv-grid" class="card-grid" aria-label="Live TV channels grid">
+          <!-- JS can fill from data.live_tv if present -->
+        </div>
+      </section>
+
+      <!-- ========== CONFIG TAB (minimal) ========== -->
+      <section id="tab-config" class="tab" aria-label="Config view">
+        <div class="section-header">
+          <h2>Config &amp; Maintenance</h2>
         </div>
 
-        <div class="card">
-          <div class="card-header-row">
-            <div class="card-title">Season &amp; episodes</div>
-            <div class="card-subtitle" id="show-modal-season-summary"></div>
-          </div>
-          <div id="show-modal-seasons"></div>
+        <div class="config-section">
+          <h3>Build &amp; Data</h3>
+          <ul class="config-list">
+            <li>
+              <a href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank" rel="noopener noreferrer">
+                Open “Build TV Data and Deploy” workflow
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/AJPnKW/my_TV_Movie/blob/main/tv_list.txt" target="_blank" rel="noopener noreferrer">
+                Edit <code>tv_list.txt</code>
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/AJPnKW/my_TV_Movie/blob/main/movies_list.txt" target="_blank" rel="noopener noreferrer">
+                Edit <code>movies_list.txt</code>
+              </a>
+            </li>
+            <li>
+              <a href="https://github.com/AJPnKW/my_TV_Movie/blob/main/live_tv_list.txt" target="_blank" rel="noopener noreferrer">
+                Edit <code>live_tv_list.txt</code>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <!-- ========== MODAL FOR SHOW / EPISODE DETAILS ========== -->
+    <div id="modal-overlay" class="modal-overlay" hidden>
+      <div class="modal-shell" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <button type="button" class="modal-close" id="modal-close-btn" aria-label="Close">
+          ✕
+        </button>
+        <div id="modal-content" class="modal-content">
+          <!-- JS injects show / episode details -->
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ================================================================
-       [JS-1.0] App bootstrap + helpers
-       ================================================================ -->
-  <script>
-    (function () {
-      // ---------------------------------------------------------------
-      // [JS-1.1] Core constants and paths
-      // ---------------------------------------------------------------
-      const DATA_URL = "../data/data.json"; // relative to /web/index.html
-      const TMDB_BASE = "https://image.tmdb.org/t/p/";
+    <!-- ===================================================== -->
+    <!-- [JS-0.0] Application logic                             -->
+    <!-- ===================================================== -->
+    <script>
+      // [JS-0.1] Global constants & helpers
+      const DATA_URL = "../data/data.json";
+      const VERSION = "v3.3.2";
 
-      // TV embed baselines (shows + episodes)
+      // embed baselines
       const VID_EASY_TV_BASE = "https://player.videasy.net/embed/tv/";
-      const VIDSRC_TV_BASE = "https://vidsrc.net/embed/tv/";
-
-      // Movie embed baselines
       const VID_EASY_MOVIE_BASE = "https://player.videasy.net/embed/movie/";
+      const VIDSRC_TV_BASE = "https://vidsrc.net/embed/tv/";
       const VIDSRC_MOVIE_BASE = "https://vidsrc.net/embed/movie/";
 
-      let tvData = null;
-      let calendarMonthOffset = 0;
-      let calendarScrollToToday = false;
-      let cachedShows = [];
-      let showsByTmdbId = {};
-      let activeGenres = new Set();
-      let originalBodyOverflow = "";
+      // DOM helpers
+      const qs = (sel, root = document) => root.querySelector(sel);
+      const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-      const qs = (sel) => document.querySelector(sel);
-      const qsa = (sel) => Array.from(document.querySelectorAll(sel));
-
-      // ---------------------------------------------------------------
-      // [JS-1.2] Small utility helpers
-      // ---------------------------------------------------------------
-
-      function parseDate(d) {
-        if (!d) return null;
-        const t = Date.parse(d);
-        if (Number.isNaN(t)) return null;
-        return new Date(t);
+      function safeArray(val) {
+        if (!val) return [];
+        return Array.isArray(val) ? val : [val];
       }
 
-      function formatDate(date) {
-        if (!date) return "";
-        return date.toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        });
+      function parseISODate(str) {
+        if (!str) return null;
+        const d = new Date(str);
+        return isNaN(d.getTime()) ? null : d;
       }
 
-      function isSameDay(a, b) {
-        return (
-          a.getFullYear() === b.getFullYear() &&
-          a.getMonth() === b.getMonth() &&
-          a.getDate() === b.getDate()
-        );
-      }
-
-      function normalizeArray(x) {
-        if (!x) return [];
-        if (Array.isArray(x)) return x;
-        return [];
-      }
-
-      function safeGet(obj, path, fallback = undefined) {
-        try {
-          return path.split(".").reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj) ?? fallback;
-        } catch {
-          return fallback;
+      function formatDateRange(start, end) {
+        if (!start || !end) return "";
+        const opts = { month: "short", day: "numeric", year: "numeric" };
+        const sameMonth = start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear();
+        if (sameMonth) {
+          const monthName = start.toLocaleDateString(undefined, { month: "short" });
+          return `${monthName} ${start.getDate()}, ${start.getFullYear()} \u2013 ${end.getDate()}, ${end.getFullYear()}`;
         }
+        return `${start.toLocaleDateString(undefined, opts)} \u2013 ${end.toLocaleDateString(undefined, opts)}`;
       }
 
-      // [JS-1.3] TMDB image helpers (size-specific)
-      function withTmdbImage(path, size) {
-        if (!path || typeof path !== "string") return null;
-        const trimmed = path.trim();
-        if (!trimmed) return null;
-        if (/^https?:\/\//i.test(trimmed)) return trimmed;
-        const chosen = size || "w342";
-        return TMDB_BASE + chosen + trimmed;
+      function tmdbImageUrl(path, size) {
+        if (!path) return null;
+        const clean = path.startsWith("/") ? path : "/" + path;
+        return `https://image.tmdb.org/t/p/${size}${clean}`;
       }
 
-      function normalizeUrl(url) {
-        if (!url || typeof url !== "string") return null;
-        const trimmed = url.trim();
-        if (!trimmed) return null;
-        if (/^https?:\/\//i.test(trimmed)) return trimmed;
-        return `https://${trimmed}`;
+      function openInNewTab(url) {
+        if (!url) return;
+        window.open(url, "_blank", "noopener,noreferrer");
       }
 
-      // ===============================================================
-      // [JS-2.0] Layout wiring (nav, config, modal)
-      // ===============================================================
+      // [JS-1.0] App state
+      const appState = {
+        data: null,
+        currentView: "calendar",
+        // calendar state
+        calYear: null,
+        calMonthIndex: null, // 0-based
+        // shows filters
+        activeGenres: new Set(),
+        showsStatusFilter: "all",
+        showsSort: "title-az"
+      };
 
-      // [JS-2.1] Nav buttons + subtitle switching
-      function buildNav() {
-        const subtitleEl = qs("#view-subtitle");
-        const subtitleByTab = {
-          calendar: "Episodes & movie releases by air date.",
-          shows: "Browse series, seasons, and episodes.",
-          movies: "Track and watch your films.",
-          livetv: "Later: live channels and EPG.",
-          config: "Local display and maintenance helpers.",
-        };
+      // [JS-1.1] Init
+      document.addEventListener("DOMContentLoaded", () => {
+        wireViewTabs();
+        wireModal();
+        loadData();
+      });
 
+      // [JS-1.2] View tabs
+      function wireViewTabs() {
         qsa(".nav-button").forEach((btn) => {
           btn.addEventListener("click", () => {
-            const tab = btn.getAttribute("data-tab");
-            qsa(".nav-button").forEach((b) => b.classList.toggle("active", b === btn));
-            qsa("section.tab").forEach((sec) => {
-              sec.classList.toggle("active", sec.id === `tab-${tab}`);
-            });
-
-            if (subtitleEl && subtitleByTab[tab]) {
-              subtitleEl.textContent = subtitleByTab[tab];
-            }
+            const view = btn.dataset.view;
+            setActiveView(view);
           });
         });
       }
 
-      // [JS-2.2] Theme + font-scale config
-      function applyTheme(theme) {
-        if (theme === "light") {
-          document.body.classList.add("theme-light");
+      function setActiveView(view) {
+        if (!view || view === appState.currentView) return;
+        appState.currentView = view;
+
+        qsa(".nav-button").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.view === view);
+        });
+        qsa(".tab").forEach((tab) => {
+          tab.classList.toggle("active", tab.id === `tab-${view}`);
+        });
+
+        const subtitle = qs("#view-subtitle");
+        if (view === "calendar") {
+          subtitle.textContent = "Episodes & releases by date.";
+        } else if (view === "shows") {
+          subtitle.textContent = "Browse series, seasons, and episodes.";
+        } else if (view === "movies") {
+          subtitle.textContent = "Browse movies with direct playback links.";
+        } else if (view === "live") {
+          subtitle.textContent = "Live TV channel list (EPG later).";
+        } else if (view === "config") {
+          subtitle.textContent = "Maintenance helpers & quick links.";
         } else {
-          document.body.classList.remove("theme-light");
-        }
-        localStorage.setItem("mytv_theme", theme);
-      }
-
-      function applyFontScale(scale) {
-        const s = Math.min(1.6, Math.max(0.8, Number(scale) || 1.0));
-        document.documentElement.style.setProperty("--font-scale", s.toString());
-        localStorage.setItem("mytv_font_scale", s.toString());
-        const inp = qs("#font-scale-input");
-        if (inp) inp.value = s.toFixed(2);
-      }
-
-      function initConfigControls() {
-        const storedTheme = localStorage.getItem("mytv_theme") || "dark";
-        applyTheme(storedTheme);
-
-        const storedScale = localStorage.getItem("mytv_font_scale");
-        if (storedScale) applyFontScale(storedScale);
-
-        qsa("[data-theme]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            applyTheme(btn.getAttribute("data-theme") || "dark");
-          });
-        });
-
-        const fontInput = qs("#font-scale-input");
-        if (fontInput) {
-          fontInput.addEventListener("change", () => {
-            applyFontScale(fontInput.value);
-          });
+          subtitle.textContent = "";
         }
       }
 
-      // [JS-2.3] Modal open/close
-      function closeShowModal() {
-        const backdrop = qs("#show-modal-backdrop");
-        if (!backdrop) return;
-        backdrop.classList.remove("open");
-        backdrop.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = originalBodyOverflow || "";
-      }
-
-      function initModal() {
-        const backdrop = qs("#show-modal-backdrop");
-        const closeBtn = qs("#show-modal-close");
-        if (closeBtn) closeBtn.addEventListener("click", closeShowModal);
-        if (backdrop) {
-          backdrop.addEventListener("click", (ev) => {
-            if (ev.target === backdrop) closeShowModal();
-          });
-        }
-        window.addEventListener("keydown", (ev) => {
-          if (ev.key === "Escape") closeShowModal();
-        });
-      }
-
-      // [JS-2.4] Calendar nav controls
-      function initCalendarNav() {
-        qsa("[data-cal-nav]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const action = btn.getAttribute("data-cal-nav");
-            if (action === "prev") calendarMonthOffset -= 1;
-            else if (action === "next") calendarMonthOffset += 1;
-            else if (action === "today") {
-              calendarMonthOffset = 0;
-              calendarScrollToToday = true;
-            }
-            if (tvData) buildCalendar(tvData);
-          });
-        });
-      }
-
-      // ===============================================================
-      // [JS-3.0] Calendar: data transform + rendering
-      // ===============================================================
-
-      // [JS-3.1] Meta line counts
-      function updateMetaLine(data) {
-        const built = safeGet(data, "meta.built_at") || safeGet(data, "meta.builtAt") || "n/a";
-        const shows = normalizeArray(data.shows || data.tv || []).length;
-        const movies = normalizeArray(data.movies || []).length;
-        const live = normalizeArray(data.live_tv || data.liveTv || []).length;
-
-        qs("#meta-data-built").textContent = built;
-        qs("#meta-shows-count").textContent = shows || "0";
-        qs("#meta-movies-count").textContent = movies || "0";
-        qs("#meta-livetv-count").textContent = live || "0";
-
-        const scp = qs("#shows-count-pill");
-        if (scp) scp.textContent = `Shows: ${shows || 0}`;
-        const mcp = qs("#movies-count-pill");
-        if (mcp) mcp.textContent = `Movies: ${movies || 0}`;
-      }
-
-      // [JS-3.2] Build flat list of calendar entries (shows + movies)
-      function collectCalendarEntries(data) {
-        const entries = [];
-        const shows = normalizeArray(data.shows || data.tv || []);
-
-        shows.forEach((show) => {
-          const showName = show.name || show.title || show.ref_name || "Untitled show";
-          const tmdbId = show.tmdb_id || show.id || null;
-          const seasons = normalizeArray(show.seasons);
-
-          seasons.forEach((season) => {
-            const seasonNumber = season.season_number ?? season.number ?? season.season ?? null;
-            const episodes = normalizeArray(season.episodes);
-            episodes.forEach((ep) => {
-              const d = parseDate(ep.air_date || ep.airDate);
-              if (!d) return;
-              const links = safeGet(ep, "links", {});
-              const still =
-                withTmdbImage(ep.still_path || ep.still, "w300") ||
-                withTmdbImage(show.poster_path || show.poster, "w185");
-              entries.push({
-                kind: "show",
-                date: d,
-                showName,
-                seasonNumber,
-                episodeNumber: ep.episode_number ?? ep.number ?? null,
-                episodeName: ep.name || "Episode",
-                runtime: ep.runtime || show.runtime || null,
-                status: d > new Date() ? "upcoming" : "released",
-                still,
-                tmdbId,
-                links,
-              });
-            });
-          });
-        });
-
-        const movies = normalizeArray(data.movies || []);
-        movies.forEach((movie) => {
-          const d = parseDate(movie.release_date || movie.air_date || movie.date);
-          if (!d) return;
-          const title = movie.title || movie.name || "Untitled movie";
-          const poster = withTmdbImage(movie.poster_path || movie.poster, "w185");
-          const tmdbId = movie.tmdb_id || movie.id || null;
-          const runtime = movie.runtime || null;
-          const status = d > new Date() ? "upcoming" : "released";
-          const links = safeGet(movie, "links", {});
-          entries.push({
-            kind: "movie",
-            date: d,
-            title,
-            runtime,
-            status,
-            still: poster,
-            tmdbId,
-            links,
-          });
-        });
-
-        return entries;
-      }
-
-      // [JS-3.3] Scroll today's cell into view
-      function scrollTodayIntoView() {
-        const todayCell = qs(".calendar-day.today");
-        if (!todayCell) return;
-        todayCell.scrollIntoView({ block: "center", behavior: "smooth" });
-      }
-
-      // [JS-3.4] Render full calendar grid for current month offset
-      function buildCalendar(data) {
-        const now = new Date();
-        const working = new Date(now);
-        working.setDate(1);
-        working.setMonth(working.getMonth() + calendarMonthOffset);
-
-        const monthIndex = working.getMonth();
-        const year = working.getFullYear();
-
-        const monthLabel = working.toLocaleDateString(undefined, {
-          month: "long",
-          year: "numeric",
-        });
-
-        const gridEl = qs("#calendar-grid");
-        const dowRow = qs("#calendar-dow-row");
-        if (!gridEl || !dowRow) return;
-        gridEl.innerHTML = "";
-        dowRow.innerHTML = "";
-
-        const calendarEntries = collectCalendarEntries(data);
-
-        const firstDayOfWeek = 1; // Monday
-        const firstOfMonth = new Date(year, monthIndex, 1);
-        const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-        const startOffset = (firstOfMonth.getDay() - firstDayOfWeek + 7) % 7;
-        const weeksCount = Math.ceil((startOffset + daysInMonth) / 7);
-        const totalCells = weeksCount * 7;
-        const startDate = new Date(year, monthIndex, 1 - startOffset);
-
-        const rangeStart = new Date(year, monthIndex, 1);
-        const rangeEnd = new Date(year, monthIndex, daysInMonth);
-
-        qs("#calendar-month-label").textContent = monthLabel;
-        qs("#calendar-range-label").textContent = `${formatDate(rangeStart)} – ${formatDate(rangeEnd)}`;
-        qs("#calendar-summary-pill").textContent = `Month: ${monthLabel}`;
-
-        // Update Prev/Next with month names
-        const prevMonthDate = new Date(year, monthIndex - 1, 1);
-        const nextMonthDate = new Date(year, monthIndex + 1, 1);
-        const prevBtn = qs("#btn-cal-prev");
-        const nextBtn = qs("#btn-cal-next");
-        if (prevBtn) prevBtn.textContent = "« " + prevMonthDate.toLocaleDateString(undefined, { month: "short" });
-        if (nextBtn) nextBtn.textContent = nextMonthDate.toLocaleDateString(undefined, { month: "short" }) + " »";
-
-        // Day-of-week header row (Mon..Sun)
-        const dowNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-        dowNames.forEach((name, idx) => {
-          const cell = document.createElement("div");
-          cell.className = "calendar-dow-cell" + (idx >= 5 ? " weekend" : "");
-          cell.textContent = name.toUpperCase();
-          dowRow.appendChild(cell);
-        });
-
-        for (let cellIdx = 0; cellIdx < totalCells; cellIdx++) {
-          const cellDate = new Date(startDate);
-          cellDate.setDate(startDate.getDate() + cellIdx);
-
-          const isCurrentMonth = cellDate.getMonth() === monthIndex;
-          const isToday = isSameDay(cellDate, now);
-          const colIndex = cellIdx % 7; // Monday = 0
-
-          const dayEl = document.createElement("div");
-          dayEl.className = "calendar-day";
-          if (colIndex >= 5) dayEl.classList.add("weekend");
-          if (isCurrentMonth && isToday) dayEl.classList.add("today");
-
-          const headerEl = document.createElement("div");
-          headerEl.className = "day-header";
-
-          const dayName = cellDate.toLocaleDateString(undefined, { weekday: "short" });
-          const dayNum = cellDate.getDate();
-
-          const dayNameEl = document.createElement("span");
-          dayNameEl.className = "day-name";
-          dayNameEl.textContent = dayName;
-
-          const dayNumEl = document.createElement("span");
-          dayNumEl.className = "day-number";
-          dayNumEl.textContent = String(dayNum);
-
-          headerEl.appendChild(dayNameEl);
-          headerEl.appendChild(dayNumEl);
-
-          const bodyEl = document.createElement("div");
-          bodyEl.className = "day-body";
-
-          if (isCurrentMonth) {
-            const todaysEntries = calendarEntries.filter((e) => isSameDay(e.date, cellDate));
-            todaysEntries
-              .sort((a, b) => {
-                const at = a.kind === "show" ? (a.episodeNumber || 0) : 999;
-                const bt = b.kind === "show" ? (b.episodeNumber || 0) : 999;
-                return at - bt;
-              })
-              .forEach((entry) => {
-                const itemEl = document.createElement("article");
-                itemEl.className = "calendar-item";
-
-                // [JS-3.4.1] Info row
-                const infoEl = document.createElement("div");
-                infoEl.className = "calendar-item-info";
-
-                const titleEl = document.createElement("div");
-                titleEl.className = "calendar-item-title";
-                if (entry.kind === "show") {
-                  titleEl.textContent = entry.showName || "Show";
-                } else {
-                  titleEl.textContent = entry.title || "Movie";
-                }
-                titleEl.addEventListener("click", (ev) => {
-                  ev.stopPropagation();
-                  openShowFromCalendar(entry);
-                });
-                infoEl.appendChild(titleEl);
-
-                if (entry.tmdbId && entry.kind === "show") {
-                  const idEl = document.createElement("div");
-                  idEl.className = "calendar-item-id";
-                  idEl.textContent = `[${entry.tmdbId}]`;
-                  infoEl.appendChild(idEl);
-                }
-
-                const epLineEl = document.createElement("div");
-                epLineEl.className = "calendar-item-episode";
-                if (entry.kind === "show") {
-                  const s = entry.seasonNumber != null ? `S${entry.seasonNumber}` : "";
-                  const eNum = entry.episodeNumber != null ? `E${entry.episodeNumber}` : "";
-                  const se = s || eNum ? `${s}${eNum ? eNum : ""}` : "";
-                  epLineEl.textContent = se
-                    ? `${se} · ${entry.episodeName || ""}`.trim()
-                    : entry.episodeName || "";
-                } else {
-                  epLineEl.textContent = entry.runtime ? `${entry.runtime} min` : "";
-                }
-                epLineEl.addEventListener("click", (ev) => {
-                  ev.stopPropagation();
-                  openShowFromCalendar(entry);
-                });
-                infoEl.appendChild(epLineEl);
-
-                const metaRow = document.createElement("div");
-                metaRow.className = "calendar-item-meta";
-
-                if (entry.status === "upcoming") {
-                  const badge = document.createElement("span");
-                  badge.className = "badge badge-upcoming";
-                  badge.textContent = "UPCOMING";
-                  metaRow.appendChild(badge);
-                }
-
-                if (entry.runtime) {
-                  const rt = document.createElement("span");
-                  rt.className = "badge";
-                  rt.textContent = `${entry.runtime} min`;
-                  metaRow.appendChild(rt);
-                }
-
-                infoEl.appendChild(metaRow);
-                itemEl.appendChild(infoEl);
-
-                // [JS-3.4.2] Second row: still + stacked buttons
-                const stillEl = document.createElement("div");
-                stillEl.className = "calendar-item-still";
-                if (entry.still) stillEl.style.backgroundImage = `url(${entry.still})`;
-                stillEl.addEventListener("click", (ev) => {
-                  ev.stopPropagation();
-                  openShowFromCalendar(entry);
-                });
-                itemEl.appendChild(stillEl);
-
-                const actionsCol = document.createElement("div");
-                actionsCol.className = "calendar-item-actions-column";
-
-                const links = entry.links || {};
-                const tmdbUrl =
-                  normalizeUrl(links.tmdb) ||
-                  (entry.tmdbId && entry.kind === "show"
-                    ? `https://www.themoviedb.org/tv/${entry.tmdbId}`
-                    : entry.tmdbId && entry.kind === "movie"
-                      ? `https://www.themoviedb.org/movie/${entry.tmdbId}`
-                      : null);
-
-                const vidsrcUrl =
-                  normalizeUrl(links.vidsrc) ||
-                  (entry.tmdbId && entry.kind === "show"
-                    ? `${VIDSRC_TV_BASE}${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
-                    : entry.tmdbId && entry.kind === "movie"
-                      ? `${VIDSRC_MOVIE_BASE}${entry.tmdbId}`
-                      : null);
-
-                const videasyUrl =
-                  normalizeUrl(links.videasy) ||
-                  (entry.tmdbId && entry.kind === "show"
-                    ? `${VID_EASY_TV_BASE}${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
-                    : entry.tmdbId && entry.kind === "movie"
-                      ? `${VID_EASY_MOVIE_BASE}${entry.tmdbId}`
-                      : null);
-
-                function makeWatchButton(labelTop, labelBottom) {
-                  const btn = document.createElement("button");
-                  btn.type = "button";
-                  btn.className = "btn-watch-small";
-                  const top = document.createElement("span");
-                  top.className = "label-top";
-                  top.textContent = labelTop;
-                  const bottom = document.createElement("span");
-                  bottom.className = "label-bottom";
-                  bottom.textContent = labelBottom;
-                  btn.appendChild(top);
-                  btn.appendChild(bottom);
-                  return btn;
-                }
-
-                if (tmdbUrl) {
-                  const btn = makeWatchButton("Info at", "TMDB");
-                  btn.addEventListener("click", (ev) => {
-                    ev.stopPropagation();
-                    window.open(tmdbUrl, "_blank", "noopener,noreferrer");
-                  });
-                  actionsCol.appendChild(btn);
-                }
-                if (videasyUrl) {
-                  const btn = makeWatchButton("Watch on", "Videasy");
-                  btn.addEventListener("click", (ev) => {
-                    ev.stopPropagation();
-                    window.open(videasyUrl, "_blank", "noopener,noreferrer");
-                  });
-                  actionsCol.appendChild(btn);
-                }
-                if (vidsrcUrl) {
-                  const btn = makeWatchButton("Watch on", "VidSrc");
-                  btn.addEventListener("click", (ev) => {
-                    ev.stopPropagation();
-                    window.open(vidsrcUrl, "_blank", "noopener,noreferrer");
-                  });
-                  actionsCol.appendChild(btn);
-                }
-
-                itemEl.appendChild(actionsCol);
-
-                itemEl.addEventListener("click", () => openShowFromCalendar(entry));
-                bodyEl.appendChild(itemEl);
-              });
-          }
-
-          dayEl.appendChild(headerEl);
-          dayEl.appendChild(bodyEl);
-          gridEl.appendChild(dayEl);
-        }
-
-        if (calendarScrollToToday) {
-          calendarScrollToToday = false;
-          scrollTodayIntoView();
-        }
-      }
-
-      // ===============================================================
-      // [JS-4.0] Shows grid + filters
-      // ===============================================================
-
-      function collectGenres(shows) {
-        const set = new Set();
-        shows.forEach((s) => {
-          const genres = normalizeArray(s.genres).map((g) => (typeof g === "string" ? g : g.name));
-          genres.forEach((g) => {
-            if (g) set.add(g);
-          });
-        });
-        return Array.from(set).sort((a, b) => a.localeCompare(b));
-      }
-
-      function findLatestEpisodeForShow(show) {
-        const seasons = normalizeArray(show.seasons);
-        let latest = null;
-        seasons.forEach((season) => {
-          const episodes = normalizeArray(season.episodes);
-          episodes.forEach((ep) => {
-            const d = parseDate(ep.air_date || ep.airDate);
-            if (!d) return;
-            if (!latest || d > latest.date) {
-              latest = { date: d, ep };
-            }
-          });
-        });
-        return latest;
-      }
-
-      function findNextUpcomingEpisodeForShow(show) {
-        const seasons = normalizeArray(show.seasons);
-        const now = new Date();
-        let next = null;
-        seasons.forEach((season) => {
-          const episodes = normalizeArray(season.episodes);
-          episodes.forEach((ep) => {
-            const d = parseDate(ep.air_date || ep.airDate);
-            if (!d || d <= now) return;
-            if (!next || d < next.date) {
-              next = { date: d, ep };
-            }
-          });
-        });
-        return next;
-      }
-
-      // [JS-4.1] Build Shows filters + grid
-      function buildShows(data) {
-        const shows = normalizeArray(data.shows || data.tv || []);
-        cachedShows = shows;
-        showsByTmdbId = {};
-
-        shows.forEach((s) => {
-          const tmdbId = s.tmdb_id || s.id;
-          if (tmdbId) {
-            showsByTmdbId[tmdbId] = s;
-          }
-        });
-
-        const chipsContainer = qs("#shows-genre-chips");
-        if (chipsContainer) {
-          chipsContainer.innerHTML = "";
-          const genres = collectGenres(shows);
-          genres.forEach((g) => {
-            const chip = document.createElement("button");
-            chip.type = "button";
-            chip.className = "genre-chip";
-            chip.textContent = g;
-            chip.addEventListener("click", () => {
-              if (activeGenres.has(g)) {
-                activeGenres.delete(g);
-                chip.classList.remove("active");
-              } else {
-                activeGenres.add(g);
-                chip.classList.add("active");
-              }
-              renderShowsGrid();
-            });
-            chipsContainer.appendChild(chip);
-          });
-        }
-
-        const statusSel = qs("#shows-status-filter");
-        const sortSel = qs("#shows-sort");
-        if (statusSel) statusSel.addEventListener("change", renderShowsGrid);
-        if (sortSel) sortSel.addEventListener("change", renderShowsGrid);
-
-        renderShowsGrid();
-      }
-
-      // [JS-4.2] Render Shows grid based on filters
-      function renderShowsGrid() {
-        const grid = qs("#shows-grid");
-        if (!grid) return;
-        grid.innerHTML = "";
-
-        const statusFilter = qs("#shows-status-filter")?.value || "all";
-        const sortMode = qs("#shows-sort")?.value || "title-asc";
-
-        let shows = [...cachedShows];
-
-        shows = shows.filter((show) => {
-          const rawStatus = (show.status || "").trim();
-          const status = rawStatus || "Unknown";
-          if (statusFilter !== "all" && status !== statusFilter) {
-            return false;
-          }
-          if (activeGenres.size > 0) {
-            const genres = normalizeArray(show.genres).map((g) => (typeof g === "string" ? g : g.name));
-            const hasAny = genres.some((g) => activeGenres.has(g));
-            if (!hasAny) return false;
-          }
-          return true;
-        });
-
-        shows.sort((a, b) => {
-          const titleA = (a.name || a.title || "").toLowerCase();
-          const titleB = (b.name || b.title || "").toLowerCase();
-          if (sortMode === "title-asc") return titleA.localeCompare(titleB);
-          if (sortMode === "title-desc") return titleB.localeCompare(titleA);
-          if (sortMode === "latest") {
-            const la = findLatestEpisodeForShow(a)?.date?.getTime() || 0;
-            const lb = findLatestEpisodeForShow(b)?.date?.getTime() || 0;
-            return lb - la;
-          }
-          if (sortMode === "upcoming") {
-            const na = findNextUpcomingEpisodeForShow(a)?.date?.getTime() || Number.MAX_SAFE_INTEGER;
-            const nb = findNextUpcomingEpisodeForShow(b)?.date?.getTime() || Number.MAX_SAFE_INTEGER;
-            return na - nb;
-          }
-          return titleA.localeCompare(titleB);
-        });
-
-        shows.forEach((show) => {
-          const card = document.createElement("article");
-          card.className = "show-card";
-
-          const poster = document.createElement("div");
-          poster.className = "show-poster";
-          const posterPath = withTmdbImage(show.poster_path || show.poster, "w185");
-          if (posterPath) poster.style.backgroundImage = `url(${posterPath})`;
-
-          const status = (show.status || "").trim();
-          if (status) {
-            const chip = document.createElement("div");
-            chip.className = "show-status-chip";
-            chip.textContent = status;
-            poster.appendChild(chip);
-          }
-
-          const body = document.createElement("div");
-          body.className = "show-card-body";
-
-          const titleRow = document.createElement("div");
-          titleRow.className = "show-title-row";
-
-          const titleEl = document.createElement("div");
-          titleEl.className = "show-title";
-          titleEl.textContent = show.name || show.title || "Untitled show";
-          titleRow.appendChild(titleEl);
-
-          const tmdbId = show.tmdb_id || show.id || null;
-          if (tmdbId) {
-            const idEl = document.createElement("div");
-            idEl.className = "show-title-id";
-            idEl.textContent = `[${tmdbId}]`;
-            titleRow.appendChild(idEl);
-          }
-          body.appendChild(titleRow);
-
-          const metaRow = document.createElement("div");
-          metaRow.className = "show-meta-row";
-
-          const firstAir = parseDate(show.first_air_date || show.firstAirDate);
-          if (firstAir) {
-            const pill = document.createElement("span");
-            pill.className = "show-meta-pill";
-            pill.textContent = `Since ${firstAir.getFullYear()}`;
-            metaRow.appendChild(pill);
-          }
-
-          const genres = normalizeArray(show.genres).map((g) => (typeof g === "string" ? g : g.name));
-          if (genres.length) {
-            const pill = document.createElement("span");
-            pill.className = "show-meta-pill";
-            pill.textContent = genres.slice(0, 2).join(" / ");
-            metaRow.appendChild(pill);
-          }
-
-          body.appendChild(metaRow);
-
-          const latest = findLatestEpisodeForShow(show);
-          const next = findNextUpcomingEpisodeForShow(show);
-          const seasons = normalizeArray(show.seasons);
-          let currentSeasonLabel = "";
-          if (next) {
-            currentSeasonLabel = `Next: ${formatDate(next.date)} · S${next.ep.season_number || ""}E${
-              next.ep.episode_number || ""
-            }`;
-          } else if (latest) {
-            currentSeasonLabel = `Last: ${formatDate(latest.date)} · S${latest.ep.season_number || ""}E${
-              latest.ep.episode_number || ""
-            }`;
-          } else if (seasons.length) {
-            const maxSeasonNum = Math.max(
-              ...seasons.map((s) =>
-                s.season_number != null ? s.season_number : s.number != null ? s.number : 0
-              )
-            );
-            currentSeasonLabel = `Seasons: ${seasons.length} · Latest S${maxSeasonNum}`;
-          }
-
-          if (currentSeasonLabel) {
-            const cs = document.createElement("div");
-            cs.className = "show-current-season";
-            cs.textContent = currentSeasonLabel;
-            body.appendChild(cs);
-          }
-
-          const watchRow = document.createElement("div");
-          watchRow.className = "show-watch-row";
-
-          function makeWatch(labelTop, labelBottom, href) {
-            if (!href) return;
-            const btn = document.createElement("button");
-            btn.type = "button";
-            btn.className = "btn-watch";
-            const top = document.createElement("span");
-            top.className = "label-top";
-            top.textContent = labelTop;
-            const bottom = document.createElement("span");
-            bottom.className = "label-bottom";
-            bottom.textContent = labelBottom;
-            btn.appendChild(top);
-            btn.appendChild(bottom);
-            btn.addEventListener("click", (ev) => {
-              ev.stopPropagation();
-              window.open(href, "_blank", "noopener,noreferrer");
-            });
-            watchRow.appendChild(btn);
-          }
-
-          const tmdbUrl = tmdbId ? `https://www.themoviedb.org/tv/${tmdbId}` : null;
-          const vidsrcUrl = tmdbId ? `${VIDSRC_TV_BASE}${tmdbId}` : null;
-          const videasyUrl = tmdbId ? `${VID_EASY_TV_BASE}${tmdbId}` : null;
-
-          makeWatch("Info at", "TMDB", tmdbUrl);
-          makeWatch("Watch on", "Videasy", videasyUrl);
-          makeWatch("Watch on", "VidSrc", vidsrcUrl);
-
-          if (watchRow.childNodes.length) body.appendChild(watchRow);
-
-          card.appendChild(poster);
-          card.appendChild(body);
-          card.addEventListener("click", () => openShowModal(show));
-          grid.appendChild(card);
-        });
-      }
-
-      // ===============================================================
-      // [JS-5.0] Show modal wiring
-      // ===============================================================
-
-      function openShowFromCalendar(entry) {
-        if (!entry.tmdbId || entry.kind !== "show") return;
-        const show = showsByTmdbId[entry.tmdbId];
-        if (!show) return;
-        openShowModal(show, {
-          seasonNumber: entry.seasonNumber,
-          episodeNumber: entry.episodeNumber,
-        });
-      }
-
-      function openShowModal(show, focusEp) {
-        const backdrop = qs("#show-modal-backdrop");
-        if (!backdrop) return;
-        const title = show.name || show.title || "Show";
-        const tmdbId = show.tmdb_id || show.id || null;
-        const posterPath = withTmdbImage(show.poster_path || show.poster, "w185");
-
-        qs("#show-modal-title").textContent = title;
-        const poster = qs("#show-modal-poster");
-        if (posterPath) {
-          poster.style.backgroundImage = `url(${posterPath})`;
-        } else {
-          poster.style.backgroundImage = "none";
-          poster.style.backgroundColor = "#0b0f18";
-        }
-
-        const status = (show.status || "").trim();
-        const firstAir = parseDate(show.first_air_date || show.firstAirDate);
-        const seasons = normalizeArray(show.seasons);
-        const totalEpisodes = seasons.reduce((acc, s) => acc + normalizeArray(s.episodes).length, 0);
-
-        const subtitle = [];
-        if (status) subtitle.push(status);
-        if (firstAir) subtitle.push(`Since ${firstAir.getFullYear()}`);
-        if (seasons.length) subtitle.push(`${seasons.length} season${seasons.length > 1 ? "s" : ""}`);
-        if (totalEpisodes) subtitle.push(`${totalEpisodes} episodes`);
-
-        qs("#show-modal-subtitle").textContent = subtitle.join(" · ");
-
-        const metaHolder = qs("#show-modal-meta");
-        metaHolder.innerHTML = "";
-        if (tmdbId) {
-          const tmdbBadge = document.createElement("span");
-          tmdbBadge.className = "badge";
-          tmdbBadge.textContent = `[${tmdbId}]`;
-          metaHolder.appendChild(tmdbBadge);
-        }
-
-        const genres = normalizeArray(show.genres).map((g) => (typeof g === "string" ? g : g.name));
-        if (genres.length) {
-          const g = document.createElement("span");
-          g.className = "badge";
-          g.textContent = genres.join(" / ");
-          metaHolder.appendChild(g);
-        }
-
-        const networks = normalizeArray(show.networks).map((n) => (typeof n === "string" ? n : n.name));
-        if (networks.length) {
-          const n = document.createElement("span");
-          n.className = "badge";
-          n.textContent = networks.join(", ");
-          metaHolder.appendChild(n);
-        }
-
-        const overview = show.overview || "Overview not available yet.";
-        qs("#show-modal-overview").textContent = overview;
-
-        const seasonsContainer = qs("#show-modal-seasons");
-        seasonsContainer.innerHTML = "";
-
-        if (seasons.length) {
-          const summaryText = `${seasons.length} season${seasons.length > 1 ? "s" : ""} · ${totalEpisodes} episodes`;
-          qs("#show-modal-season-summary").textContent = summaryText;
-        } else {
-          qs("#show-modal-season-summary").textContent = "No season data available.";
-        }
-
-        let latestSeasonNumber = 0;
-        seasons.forEach((s) => {
-          const num = s.season_number ?? s.number ?? s.season ?? 0;
-          if (num > latestSeasonNumber) latestSeasonNumber = num;
-        });
-
-        seasons
-          .slice()
-          .sort((a, b) => {
-            const na = a.season_number ?? a.number ?? a.season ?? 0;
-            const nb = b.season_number ?? b.number ?? b.season ?? 0;
-            return na - nb;
-          })
-          .forEach((season) => {
-            const seasonNum = season.season_number ?? season.number ?? season.season ?? 0;
-            const epList = normalizeArray(season.episodes);
-            const seasonYear = (() => {
-              const firstEp = epList
-                .map((ep) => parseDate(ep.air_date || ep.airDate))
-                .filter(Boolean)
-                .sort((a, b) => a - b)[0];
-              return firstEp ? firstEp.getFullYear() : null;
-            })();
-
-            const detailsEl = document.createElement("details");
-            detailsEl.className = "season-details";
-            if (!focusEp && seasonNum === latestSeasonNumber) {
-              detailsEl.open = true;
-            }
-            if (focusEp && focusEp.seasonNumber === seasonNum) {
-              detailsEl.open = true;
-            }
-
-            const summaryEl = document.createElement("summary");
-            summaryEl.className = "season-summary";
-
-            const thumb = document.createElement("div");
-            thumb.className = "season-thumb";
-            const seasonPoster =
-              withTmdbImage(season.poster_path || season.poster || season.still_path || season.still, "w185") ||
-              withTmdbImage(show.poster_path || show.poster, "w185");
-            if (seasonPoster) {
-              thumb.style.backgroundImage = `url(${seasonPoster})`;
-            }
-            summaryEl.appendChild(thumb);
-
-            const main = document.createElement("div");
-            main.className = "season-summary-main";
-
-            const titleEl = document.createElement("div");
-            titleEl.className = "season-title";
-            titleEl.textContent = `Season ${seasonNum}`;
-            main.appendChild(titleEl);
-
-            const sub = document.createElement("div");
-            sub.className = "season-subline";
-            const pieces = [];
-            pieces.push(`${epList.length} episode${epList.length === 1 ? "" : "s"}`);
-            if (seasonYear) pieces.push(`Since ${seasonYear}`);
-            sub.textContent = pieces.join(" · ");
-            main.appendChild(sub);
-
-            summaryEl.appendChild(main);
-
-            const chev = document.createElement("div");
-            chev.className = "season-chevron";
-            chev.textContent = "›";
-            summaryEl.appendChild(chev);
-
-            detailsEl.appendChild(summaryEl);
-
-            const body = document.createElement("div");
-            body.className = "season-body";
-
-            epList.forEach((ep) => {
-              const epDetails = document.createElement("details");
-              epDetails.className = "episode-details";
-
-              const epSummary = document.createElement("summary");
-              epSummary.className = "episode-summary";
-
-              const epMain = document.createElement("div");
-              epMain.className = "episode-summary-main";
-
-              const epTitle = document.createElement("div");
-              epTitle.className = "episode-title";
-              const seLabel = `S${seasonNum}E${ep.episode_number ?? ep.number ?? ""}`;
-              epTitle.textContent = `${seLabel} · ${ep.name || "Episode"}`;
-              epMain.appendChild(epTitle);
-
-              const subRow = document.createElement("div");
-              subRow.className = "episode-sub-row";
-
-              const airDate = parseDate(ep.air_date || ep.airDate);
-              const rt = ep.runtime || show.runtime || null;
-              const metaPieces = [];
-              if (airDate) metaPieces.push(formatDate(airDate));
-              if (rt) metaPieces.push(`${rt} min`);
-
-              const metaSpan = document.createElement("span");
-              metaSpan.className = "episode-sub-meta";
-              metaSpan.textContent = metaPieces.join(" · ");
-              subRow.appendChild(metaSpan);
-
-              const statusBadge = document.createElement("span");
-              statusBadge.className = "badge " + (airDate && airDate > new Date() ? "badge-upcoming" : "");
-              statusBadge.textContent = airDate && airDate > new Date() ? "UPCOMING" : "RELEASED";
-              subRow.appendChild(statusBadge);
-
-              const watchRow = document.createElement("div");
-              watchRow.className = "episode-watch-buttons";
-
-              const links = safeGet(ep, "links", {});
-              const hosts = ["tmdb", "videasy", "vidsrc"];
-              hosts.forEach((hostKey) => {
-                let url = links[hostKey];
-                if (!url && tmdbId) {
-                  if (hostKey === "tmdb") {
-                    url = `https://www.themoviedb.org/tv/${tmdbId}/season/${seasonNum}/episode/${ep.episode_number ?? ep.number ?? 1}`;
-                  } else if (hostKey === "videasy") {
-                    url = `${VID_EASY_TV_BASE}${tmdbId}/${seasonNum}/${ep.episode_number ?? ep.number ?? 1}`;
-                  } else if (hostKey === "vidsrc") {
-                    url = `${VIDSRC_TV_BASE}${tmdbId}/${seasonNum}/${ep.episode_number ?? ep.number ?? 1}`;
-                  }
-                }
-                const safeUrl = normalizeUrl(url);
-                if (!safeUrl) return;
-                const btn = document.createElement("button");
-                btn.type = "button";
-                btn.className = "btn-watch";
-                const top = document.createElement("span");
-                top.className = "label-top";
-                top.textContent = hostKey === "tmdb" ? "Info at" : "Watch on";
-                const bottom = document.createElement("span");
-                bottom.className = "label-bottom";
-                bottom.textContent = hostKey === "tmdb" ? "TMDB" : hostKey === "videasy" ? "Videasy" : "VidSrc";
-                btn.appendChild(top);
-                btn.appendChild(bottom);
-                btn.addEventListener("click", (ev) => {
-                  ev.stopPropagation();
-                  window.open(safeUrl, "_blank", "noopener,noreferrer");
-                });
-                watchRow.appendChild(btn);
-              });
-
-              if (watchRow.childNodes.length) {
-                subRow.appendChild(watchRow);
-              }
-
-              epMain.appendChild(subRow);
-              epSummary.appendChild(epMain);
-
-              const epChev = document.createElement("div");
-              epChev.className = "episode-chevron";
-              epChev.textContent = "▾";
-              epSummary.appendChild(epChev);
-
-              epDetails.appendChild(epSummary);
-
-              const epBody = document.createElement("div");
-              epBody.className = "episode-body";
-
-              const stillContainer = document.createElement("div");
-              stillContainer.className = "episode-still";
-              const stillPath = withTmdbImage(ep.still_path || ep.still, "w300");
-              if (stillPath) {
-                const img = document.createElement("img");
-                img.src = stillPath;
-                img.alt = `Episode still for ${ep.name || "episode"}`;
-                stillContainer.appendChild(img);
-                epBody.appendChild(stillContainer);
-              }
-
-              const overviewTxt = document.createElement("div");
-              overviewTxt.textContent = ep.overview || "Overview not available yet.";
-              epBody.appendChild(overviewTxt);
-
-              const extra = document.createElement("div");
-              extra.className = "episode-meta-extra";
-              const extraPieces = [];
-              extraPieces.push(`Season ${seasonNum}, Episode ${ep.episode_number ?? ep.number ?? ""}`);
-              if (airDate) extraPieces.push(`Air date: ${formatDate(airDate)}`);
-              if (rt) extraPieces.push(`Runtime: ${rt} min`);
-              extra.textContent = extraPieces.join(" · ");
-              epBody.appendChild(extra);
-
-              epDetails.appendChild(epBody);
-
-              if (
-                focusEp &&
-                focusEp.seasonNumber === seasonNum &&
-                (focusEp.episodeNumber === (ep.episode_number ?? ep.number))
-              ) {
-                epDetails.open = true;
-              }
-
-              body.appendChild(epDetails);
-            });
-
-            detailsEl.appendChild(body);
-            seasonsContainer.appendChild(detailsEl);
-          });
-
-        originalBodyOverflow = document.body.style.overflow || "";
-        document.body.style.overflow = "hidden";
-        backdrop.classList.add("open");
-        backdrop.setAttribute("aria-hidden", "false");
-      }
-
-      // ===============================================================
-      // [JS-6.0] Data loading + init
-      // ===============================================================
-
+      // [JS-2.0] Data loading
       async function loadData() {
-        const fallbackMeta = {
-          meta: { built_at: "n/a" },
-          shows: [],
-          movies: [],
-          live_tv: [],
-        };
-
         try {
           const res = await fetch(DATA_URL, { cache: "no-store" });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const data = await res.json();
-          tvData = data;
+          appState.data = data;
+          updateMetaLine();
+          initCalendarState();
+          buildCalendar();
+          buildShows();
+          buildMovies();
         } catch (err) {
-          console.error("Failed to load data.json; falling back to empty shell.", err);
-          tvData = fallbackMeta;
+          console.error("Failed to load data.json:", err);
+          qs("#meta-line").textContent = `index.html: ${VERSION} • ERROR loading data.json`;
+        }
+      }
+
+      function updateMetaLine() {
+        const meta = (appState.data && appState.data.meta) || {};
+        const built = meta.built_at || meta.generated_at || "unknown";
+        const showsCount = safeArray(appState.data && appState.data.shows).length;
+        const moviesCount = safeArray(appState.data && appState.data.movies).length;
+        const liveCount = safeArray(appState.data && appState.data.live_tv).length;
+        qs("#meta-line").textContent = `index.html: ${VERSION} • Data built: ${built} • Shows: ${showsCount} • Movies: ${moviesCount} • LiveTV: ${liveCount}`;
+      }
+
+      // =====================================================
+      // [JS-3.0] Calendar view
+      // =====================================================
+
+      function initCalendarState() {
+        const today = new Date();
+        appState.calYear = today.getFullYear();
+        appState.calMonthIndex = today.getMonth();
+        wireCalendarHeader();
+      }
+
+      function wireCalendarHeader() {
+        qs("#btn-cal-prev").addEventListener("click", () => {
+          changeMonth(-1);
+        });
+        qs("#btn-cal-next").addEventListener("click", () => {
+          changeMonth(1);
+        });
+        qs("#btn-cal-today").addEventListener("click", () => {
+          const today = new Date();
+          appState.calYear = today.getFullYear();
+          appState.calMonthIndex = today.getMonth();
+          buildCalendar(true);
+        });
+      }
+
+      function changeMonth(delta) {
+        let m = appState.calMonthIndex + delta;
+        let y = appState.calYear;
+        if (m < 0) {
+          m = 11;
+          y -= 1;
+        } else if (m > 11) {
+          m = 0;
+          y += 1;
+        }
+        appState.calMonthIndex = m;
+        appState.calYear = y;
+        buildCalendar(false);
+      }
+
+      // [JS-3.1] Collect events by date (episodes + movies)
+      function collectEventsByDate() {
+        const map = new Map(); // key ISO date (yyyy-mm-dd) -> { episodes:[], movies:[] }
+
+        const shows = safeArray(appState.data && appState.data.shows);
+        for (const show of shows) {
+          const tmdbId = show.tmdb_id || show.tmdbId || show.id || show.show_id;
+          const showName = show.name || show.title || "Untitled show";
+          const seasons = safeArray(show.seasons);
+          for (const season of seasons) {
+            const seasonNumber = season.season_number ?? season.number ?? season.id;
+            const episodes = safeArray(season.episodes);
+            for (const ep of episodes) {
+              const airDate = ep.air_date || ep.date;
+              if (!airDate) continue;
+              const key = airDate;
+              if (!map.has(key)) map.set(key, { episodes: [], movies: [] });
+              map.get(key).episodes.push({
+                showName,
+                tmdbId,
+                seasonNumber,
+                episodeNumber: ep.episode_number ?? ep.number,
+                title: ep.name || ep.title || "",
+                overview: ep.overview || "",
+                runtime: ep.runtime || null,
+                stillPath: ep.still_path || ep.stillPath || null,
+                links: ep.links || {}
+              });
+            }
+          }
         }
 
-        updateMetaLine(tvData);
-        buildCalendar(tvData);
-        buildShows(tvData);
+        const movies = safeArray(appState.data && appState.data.movies);
+        for (const movie of movies) {
+          const date = movie.release_date || movie.air_date || movie.date;
+          if (!date) continue;
+          const key = date;
+          if (!map.has(key)) map.set(key, { episodes: [], movies: [] });
+          map.get(key).movies.push(movie);
+        }
+
+        return map;
       }
 
-      function init() {
-        buildNav();
-        initConfigControls();
-        initModal();
-        initCalendarNav();
-        loadData();
+      // [JS-3.2] Build calendar grid
+      function buildCalendar(scrollToToday = false) {
+        if (!appState.data) return;
+
+        const year = appState.calYear;
+        const monthIdx = appState.calMonthIndex;
+
+        const first = new Date(year, monthIdx, 1);
+        const last = new Date(year, monthIdx + 1, 0);
+
+        const monthNameLong = first.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+        const rangeText = formatDateRange(first, last);
+
+        qs("#calendar-month-label").textContent = monthNameLong;
+        qs("#calendar-range-label").textContent = rangeText;
+
+        const eventsByDate = collectEventsByDate();
+
+        // figure out grid start (Monday before/at first day) and end (Sunday after/at last)
+        const start = new Date(first);
+        let dayOfWeek = start.getDay(); // 0=Sun, 1=Mon, ...
+        const offsetToMonday = (dayOfWeek + 6) % 7; // convert so Monday=0
+        start.setDate(start.getDate() - offsetToMonday);
+
+        const end = new Date(last);
+        dayOfWeek = end.getDay();
+        const offsetToSunday = (7 - dayOfWeek) % 7; // move forward to Sunday
+        end.setDate(end.getDate() + offsetToSunday);
+
+        const grid = qs("#calendar-grid");
+        grid.innerHTML = "";
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        let columnIndex = 0;
+        const columns = [];
+
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const col = createCalendarDayColumn(new Date(d), first, last, eventsByDate, today);
+          grid.appendChild(col);
+          columns.push(col);
+          columnIndex++;
+        }
+
+        if (scrollToToday) {
+          const todayCol = columns.find((c) => c.classList.contains("is-today"));
+          if (todayCol) {
+            todayCol.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+          }
+        }
       }
 
-      document.addEventListener("DOMContentLoaded", init);
-    })();
-  </script>
-</body>
+      // [JS-3.3] Single day column
+      function createCalendarDayColumn(dateObj, monthFirst, monthLast, eventsByDate, today) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day-column";
+
+        const dateCopy = new Date(dateObj);
+        dateCopy.setHours(0, 0, 0, 0);
+
+        const inMonth =
+          dateCopy.getMonth() === monthFirst.getMonth() && dateCopy.getFullYear() === monthFirst.getFullYear();
+
+        if (!inMonth) {
+          cell.classList.add("out-of-month");
+        }
+
+        const isWeekend = [0, 6].includes(dateCopy.getDay());
+        if (isWeekend) {
+          cell.classList.add("weekend");
+        }
+
+        if (dateCopy.getTime() === today.getTime()) {
+          cell.classList.add("is-today");
+        }
+
+        // header: just day number (day-of-week is in sticky row)
+        const header = document.createElement("div");
+        header.className = "calendar-day-header";
+        const dayNum = document.createElement("span");
+        dayNum.className = "day-number";
+        dayNum.textContent = dateCopy.getDate();
+        header.appendChild(dayNum);
+        cell.appendChild(header);
+
+        // events
+        const key = dateCopy.toISOString().slice(0, 10);
+        const bucket = eventsByDate.get(key);
+        if (!bucket || (!bucket.episodes.length && !bucket.movies.length)) {
+          return cell;
+        }
+
+        const cardContainer = document.createElement("div");
+        cardContainer.className = "calendar-card-container";
+
+        for (const ep of bucket.episodes) {
+          const card = buildCalendarEpisodeCard(ep);
+          cardContainer.appendChild(card);
+        }
+
+        for (const movie of bucket.movies) {
+          const card = buildCalendarMovieCard(movie);
+          cardContainer.appendChild(card);
+        }
+
+        cell.appendChild(cardContainer);
+        return cell;
+      }
+
+      // [JS-3.4] Episode card (calendar)
+      function buildCalendarEpisodeCard(ep) {
+        const card = document.createElement("article");
+        card.className = "calendar-card episode-card";
+
+        // row 1: show + episode text
+        const row1 = document.createElement("div");
+        row1.className = "calendar-card-row1";
+
+        const titleLine1 = document.createElement("div");
+        titleLine1.className = "calendar-title-main";
+        const showNameText = ep.showName || "Untitled show";
+        const idSuffix = ep.tmdbId ? ` [${ep.tmdbId}]` : "";
+        titleLine1.textContent = showNameText + idSuffix;
+
+        const titleLine2 = document.createElement("div");
+        titleLine2.className = "calendar-title-episode";
+        const sNum = ep.seasonNumber ?? "?";
+        const eNum = ep.episodeNumber ?? "?";
+        const epName = ep.title || "";
+        titleLine2.textContent = `S${sNum}E${eNum} · ${epName}`;
+
+        row1.appendChild(titleLine1);
+        row1.appendChild(titleLine2);
+
+        // row 2: two columns (still + buttons)
+        const row2 = document.createElement("div");
+        row2.className = "calendar-card-row2";
+
+        const colImage = document.createElement("div");
+        colImage.className = "calendar-card-image-col";
+
+        const still = document.createElement("div");
+        still.className = "calendar-episode-still";
+        const stillUrl = tmdbImageUrl(ep.stillPath, "w300");
+        if (stillUrl) {
+          still.style.backgroundImage = `url(${stillUrl})`;
+        }
+        colImage.appendChild(still);
+
+        const colButtons = document.createElement("div");
+        colButtons.className = "calendar-card-buttons-col";
+
+        const links = ep.links || {};
+        const tmdbUrl =
+          links.tmdb || (ep.tmdbId ? `https://www.themoviedb.org/tv/${ep.tmdbId}/season/${ep.seasonNumber}/episode/${ep.episodeNumber}` : null);
+        const videasyUrl =
+          links.videasy ||
+          (ep.tmdbId ? `${VID_EASY_TV_BASE}${ep.tmdbId}/${ep.seasonNumber}/${ep.episodeNumber}` : null);
+        const vidsrcUrl =
+          links.vidsrc || (ep.tmdbId ? `${VIDSRC_TV_BASE}${ep.tmdbId}/${ep.seasonNumber}/${ep.episodeNumber}` : null);
+
+        const makeButton = (top, bottom, variant, url) => {
+          if (!url) return;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `btn-watch-small btn-watch-${variant}`;
+          const spanTop = document.createElement("span");
+          spanTop.className = "label-top";
+          spanTop.textContent = top;
+          const spanBottom = document.createElement("span");
+          spanBottom.className = "label-bottom";
+          spanBottom.textContent = bottom;
+          btn.appendChild(spanTop);
+          btn.appendChild(spanBottom);
+          btn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            openInNewTab(url);
+          });
+          colButtons.appendChild(btn);
+        };
+
+        makeButton("Info at", "TMDB", "tmdb", tmdbUrl);
+        makeButton("Watch on", "Videasy", "videasy", videasyUrl);
+        makeButton("Watch on", "VidSrc", "vidsrc", vidsrcUrl);
+
+        row2.appendChild(colImage);
+        row2.appendChild(colButtons);
+
+        card.appendChild(row1);
+        card.appendChild(row2);
+
+        // open modal on click
+        card.addEventListener("click", () => {
+          openEpisodeModal(ep);
+        });
+
+        return card;
+      }
+
+      // [JS-3.5] Movie card (calendar)
+      function buildCalendarMovieCard(movie) {
+        const card = document.createElement("article");
+        card.className = "calendar-card movie-card";
+
+        const titleLine1 = document.createElement("div");
+        titleLine1.className = "calendar-title-main";
+        const tmdbId = movie.tmdb_id || movie.id;
+        const title = movie.title || movie.name || "Untitled movie";
+        titleLine1.textContent = tmdbId ? `${title} [${tmdbId}]` : title;
+
+        const titleLine2 = document.createElement("div");
+        titleLine2.className = "calendar-title-episode";
+        if (movie.runtime) {
+          titleLine2.textContent = `${movie.runtime} min`;
+        } else {
+          titleLine2.textContent = "MOVIE";
+        }
+
+        const row2 = document.createElement("div");
+        row2.className = "calendar-card-row2";
+
+        const colImage = document.createElement("div");
+        colImage.className = "calendar-card-image-col";
+        const poster = document.createElement("div");
+        poster.className = "calendar-episode-still";
+        const posterUrl = tmdbImageUrl(movie.poster_path || movie.poster, "w185");
+        if (posterUrl) poster.style.backgroundImage = `url(${posterUrl})`;
+        colImage.appendChild(poster);
+
+        const colButtons = document.createElement("div");
+        colButtons.className = "calendar-card-buttons-col";
+
+        const links = movie.links || {};
+        const tmdbUrl =
+          links.tmdb || (tmdbId ? `https://www.themoviedb.org/movie/${tmdbId}` : null);
+        const videasyUrl = links.videasy || (tmdbId ? `${VID_EASY_MOVIE_BASE}${tmdbId}` : null);
+        const vidsrcUrl = links.vidsrc || (tmdbId ? `${VIDSRC_MOVIE_BASE}${tmdbId}` : null);
+
+        const makeButton = (top, bottom, variant, url) => {
+          if (!url) return;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `btn-watch-small btn-watch-${variant}`;
+          const spanTop = document.createElement("span");
+          spanTop.className = "label-top";
+          spanTop.textContent = top;
+          const spanBottom = document.createElement("span");
+          spanBottom.className = "label-bottom";
+          spanBottom.textContent = bottom;
+          btn.appendChild(spanTop);
+          btn.appendChild(spanBottom);
+          btn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            openInNewTab(url);
+          });
+          colButtons.appendChild(btn);
+        };
+
+        makeButton("Info at", "TMDB", "tmdb", tmdbUrl);
+        makeButton("Watch on", "Videasy", "videasy", videasyUrl);
+        makeButton("Watch on", "VidSrc", "vidsrc", vidsrcUrl);
+
+        row2.appendChild(colImage);
+        row2.appendChild(colButtons);
+
+        card.appendChild(titleLine1);
+        card.appendChild(titleLine2);
+        card.appendChild(row2);
+
+        card.addEventListener("click", () => {
+          openMovieModal(movie);
+        });
+
+        return card;
+      }
+
+      // =====================================================
+      // [JS-4.0] Shows view
+      // =====================================================
+
+      function computeDisplayStatus(show) {
+        if (show._displayStatus) return show._displayStatus;
+
+        const raw = (show.status || "").toLowerCase();
+        const latestEp = findLatestEpisodeForShow(show);
+        const now = new Date();
+
+        let base;
+        if (latestEp && latestEp.date && latestEp.date >= now) {
+          base = "Running";
+        } else if (["ended", "canceled", "cancelled"].some((s) => raw.includes(s))) {
+          base = "Ended";
+        } else if (["in production", "planned"].some((s) => raw.includes(s))) {
+          base = "In Production";
+        } else if (["returning series", "continuing", "running"].some((s) => raw.includes(s))) {
+          base = "Running";
+        } else if (!raw) {
+          base = "Unknown";
+        } else {
+          base = raw.charAt(0).toUpperCase() + raw.slice(1);
+        }
+        show._displayStatus = base;
+        return base;
+      }
+
+      function findLatestEpisodeForShow(show) {
+        let latest = null;
+        const seasons = safeArray(show.seasons);
+        for (const season of seasons) {
+          const episodes = safeArray(season.episodes);
+          for (const ep of episodes) {
+            const d = parseISODate(ep.air_date || ep.date);
+            if (!d) continue;
+            if (!latest || d > latest.date) {
+              latest = { episode: ep, date: d };
+            }
+          }
+        }
+        return latest;
+      }
+
+      function findNextEpisodeForShow(show) {
+        const now = new Date();
+        let best = null;
+        const seasons = safeArray(show.seasons);
+        for (const season of seasons) {
+          const episodes = safeArray(season.episodes);
+          for (const ep of episodes) {
+            const d = parseISODate(ep.air_date || ep.date);
+            if (!d || d < now) continue;
+            if (!best || d < best.date) {
+              best = { episode: ep, date: d };
+            }
+          }
+        }
+        return best;
+      }
+
+      function collectGenres(shows) {
+        const set = new Set();
+        for (const s of shows) {
+          safeArray(s.genres || s.genre).forEach((g) => {
+            if (g) set.add(g);
+          });
+        }
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+      }
+
+      function buildShows() {
+        const data = appState.data;
+        if (!data) return;
+
+        let shows = safeArray(data.shows);
+        shows.forEach((s) => computeDisplayStatus(s));
+
+        // wire filters once
+        const statusSel = qs("#shows-status-filter");
+        const sortSel = qs("#shows-sort-select");
+        if (!statusSel.dataset.wired) {
+          statusSel.dataset.wired = "1";
+          statusSel.addEventListener("change", () => {
+            appState.showsStatusFilter = statusSel.value;
+            renderShowsGrid();
+          });
+        }
+        if (!sortSel.dataset.wired) {
+          sortSel.dataset.wired = "1";
+          sortSel.addEventListener("change", () => {
+            appState.showsSort = sortSel.value;
+            renderShowsGrid();
+          });
+        }
+
+        // Genre chips
+        const chipsContainer = qs("#shows-genre-chips");
+        chipsContainer.innerHTML = "";
+
+        const allChip = document.createElement("button");
+        allChip.type = "button";
+        allChip.className = "genre-chip active";
+        allChip.textContent = "All";
+        allChip.addEventListener("click", () => {
+          appState.activeGenres.clear();
+          qsa(".genre-chip", chipsContainer).forEach((c) => c.classList.remove("active"));
+          allChip.classList.add("active");
+          renderShowsGrid();
+        });
+        chipsContainer.appendChild(allChip);
+
+        const genres = collectGenres(shows);
+        for (const g of genres) {
+          const chip = document.createElement("button");
+          chip.type = "button";
+          chip.className = "genre-chip";
+          chip.textContent = g;
+          chip.addEventListener("click", () => {
+            if (appState.activeGenres.has(g)) {
+              appState.activeGenres.delete(g);
+              chip.classList.remove("active");
+            } else {
+              appState.activeGenres.add(g);
+              chip.classList.add("active");
+            }
+            if (appState.activeGenres.size > 0) {
+              allChip.classList.remove("active");
+            } else {
+              allChip.classList.add("active");
+            }
+            renderShowsGrid();
+          });
+          chipsContainer.appendChild(chip);
+        }
+
+        renderShowsGrid();
+      }
+
+      function renderShowsGrid() {
+        const data = appState.data;
+        if (!data) return;
+
+        const grid = qs("#shows-grid");
+        grid.innerHTML = "";
+
+        let shows = safeArray(data.shows).slice();
+        shows.forEach((s) => computeDisplayStatus(s));
+
+        // status filter
+        if (appState.showsStatusFilter !== "all") {
+          shows = shows.filter(
+            (s) => (s._displayStatus || computeDisplayStatus(s)) === appState.showsStatusFilter
+          );
+        }
+
+        // genre filter
+        if (appState.activeGenres.size > 0) {
+          shows = shows.filter((s) => {
+            const genres = new Set(collectGenres([s]));
+            for (const g of appState.activeGenres) {
+              if (!genres.has(g)) return false;
+            }
+            return true;
+          });
+        }
+
+        // sort
+        const sort = appState.showsSort;
+        shows.sort((a, b) => {
+          if (sort === "title-az" || sort === "title-za") {
+            const aName = (a.name || a.title || "").toLowerCase();
+            const bName = (b.name || b.title || "").toLowerCase();
+            const cmp = aName.localeCompare(bName);
+            return sort === "title-az" ? cmp : -cmp;
+          } else if (sort === "latest") {
+            const aLatest = findLatestEpisodeForShow(a);
+            const bLatest = findLatestEpisodeForShow(b);
+            const aTime = aLatest?.date?.getTime() || 0;
+            const bTime = bLatest?.date?.getTime() || 0;
+            return bTime - aTime;
+          } else if (sort === "upcoming") {
+            const aNext = findNextEpisodeForShow(a);
+            const bNext = findNextEpisodeForShow(b);
+            const aTime = aNext?.date?.getTime() || Number.MAX_SAFE_INTEGER;
+            const bTime = bNext?.date?.getTime() || Number.MAX_SAFE_INTEGER;
+            return aTime - bTime;
+          }
+          return 0;
+        });
+
+        for (const show of shows) {
+          const card = buildShowCard(show);
+          grid.appendChild(card);
+        }
+      }
+
+      function buildShowCard(show) {
+        const card = document.createElement("article");
+        card.className = "show-card";
+
+        // poster
+        const poster = document.createElement("div");
+        poster.className = "show-poster";
+        const posterUrl = tmdbImageUrl(show.poster_path || show.poster, "w185");
+        if (posterUrl) poster.style.backgroundImage = `url(${posterUrl})`;
+        card.appendChild(poster);
+
+        const body = document.createElement("div");
+        body.className = "show-card-body";
+
+        // status chip
+        const status = computeDisplayStatus(show);
+        if (status && status !== "Unknown") {
+          const chip = document.createElement("div");
+          chip.className = "show-status-chip";
+          chip.textContent = status;
+          poster.appendChild(chip);
+        }
+
+        // title row
+        const titleRow = document.createElement("div");
+        titleRow.className = "show-title-row";
+
+        const titleEl = document.createElement("button");
+        titleEl.type = "button";
+        titleEl.className = "show-title";
+        const showName = show.name || show.title || "Untitled show";
+        titleEl.textContent = showName;
+        titleRow.appendChild(titleEl);
+
+        const tmdbId = show.tmdb_id || show.tmdbId || show.id || show.show_id;
+        if (tmdbId) {
+          const idEl = document.createElement("div");
+          idEl.className = "show-title-id";
+          idEl.textContent = `[${tmdbId}]`;
+          titleRow.appendChild(idEl);
+        }
+
+        body.appendChild(titleRow);
+
+        // meta row
+        const metaRow = document.createElement("div");
+        metaRow.className = "show-meta-row";
+
+        if (show.first_air_date) {
+          const d = parseISODate(show.first_air_date);
+          if (d) {
+            const pill = document.createElement("span");
+            pill.className = "show-meta-pill";
+            pill.textContent = `Since ${d.getFullYear()}`;
+            metaRow.appendChild(pill);
+          }
+        }
+
+        const genres = collectGenres([show]);
+        if (genres.length) {
+          const pill = document.createElement("span");
+          pill.className = "show-meta-pill";
+          pill.textContent = genres.join(" / ");
+          metaRow.appendChild(pill);
+        }
+
+        body.appendChild(metaRow);
+
+        // next / last episode summary
+        const next = findNextEpisodeForShow(show);
+        const latest = findLatestEpisodeForShow(show);
+        const summary = document.createElement("div");
+        summary.className = "show-episode-summary";
+
+        if (next) {
+          const dStr = next.date.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+          });
+          const sNum = next.episode.season_number ?? next.episode.seasonNumber;
+          const eNum = next.episode.episode_number ?? next.episode.episodeNumber;
+          summary.textContent = `Next: ${dStr} · S${sNum}E${eNum}`;
+        } else if (latest) {
+          const dStr = latest.date.toLocaleDateString(undefined, {
+            month: "short",
+            day: "numeric",
+            year: "numeric"
+          });
+          const sNum = latest.episode.season_number ?? latest.episode.seasonNumber;
+          const eNum = latest.episode.episode_number ?? latest.episode.episodeNumber;
+          summary.textContent = `Last: ${dStr} · S${sNum}E${eNum}`;
+        } else {
+          summary.textContent = "No episode schedule info.";
+        }
+
+        body.appendChild(summary);
+
+        // watch buttons (horizontal)
+        const watchRow = document.createElement("div");
+        watchRow.className = "show-watch-row";
+
+        const links = show.links || {};
+        const tmdbUrl = links.tmdb || (tmdbId ? `https://www.themoviedb.org/tv/${tmdbId}` : null);
+        const videasyUrl = links.videasy || (tmdbId ? `${VID_EASY_TV_BASE}${tmdbId}` : null);
+        const vidsrcUrl = links.vidsrc || (tmdbId ? `${VIDSRC_TV_BASE}${tmdbId}` : null);
+
+        const makeButton = (top, bottom, variant, url) => {
+          if (!url) return;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `btn-watch btn-watch-${variant}`;
+          const spanTop = document.createElement("span");
+          spanTop.className = "label-top";
+          spanTop.textContent = top;
+          const spanBottom = document.createElement("span");
+          spanBottom.className = "label-bottom";
+          spanBottom.textContent = bottom;
+          btn.appendChild(spanTop);
+          btn.appendChild(spanBottom);
+          btn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            openInNewTab(url);
+          });
+          watchRow.appendChild(btn);
+        };
+
+        makeButton("Info at", "TMDB", "tmdb", tmdbUrl);
+        makeButton("Watch on", "Videasy", "videasy", videasyUrl);
+        makeButton("Watch on", "VidSrc", "vidsrc", vidsrcUrl);
+
+        body.appendChild(watchRow);
+
+        card.appendChild(body);
+
+        // open modal on title/poster click
+        const openShow = () => openShowModal(show);
+        poster.addEventListener("click", openShow);
+        titleEl.addEventListener("click", openShow);
+        summary.addEventListener("click", openShow);
+
+        return card;
+      }
+
+      // =====================================================
+      // [JS-5.0] Movies view
+      // =====================================================
+
+      function buildMovies() {
+        const data = appState.data;
+        if (!data) return;
+        const grid = qs("#movies-grid");
+        grid.innerHTML = "";
+
+        const movies = safeArray(data.movies);
+        movies.forEach((m) => {
+          const card = buildMovieCard(m);
+          grid.appendChild(card);
+        });
+      }
+
+      function buildMovieCard(movie) {
+        const card = document.createElement("article");
+        card.className = "show-card";
+
+        const poster = document.createElement("div");
+        poster.className = "show-poster";
+        const posterUrl = tmdbImageUrl(movie.poster_path || movie.poster, "w185");
+        if (posterUrl) poster.style.backgroundImage = `url(${posterUrl})`;
+        card.appendChild(poster);
+
+        const body = document.createElement("div");
+        body.className = "show-card-body";
+
+        const titleRow = document.createElement("div");
+        titleRow.className = "show-title-row";
+
+        const titleEl = document.createElement("button");
+        titleEl.type = "button";
+        titleEl.className = "show-title";
+        const title = movie.title || movie.name || "Untitled movie";
+        const tmdbId = movie.tmdb_id || movie.id;
+        titleEl.textContent = title;
+        titleRow.appendChild(titleEl);
+
+        if (tmdbId) {
+          const idEl = document.createElement("div");
+          idEl.className = "show-title-id";
+          idEl.textContent = `[${tmdbId}]`;
+          titleRow.appendChild(idEl);
+        }
+
+        body.appendChild(titleRow);
+
+        const metaRow = document.createElement("div");
+        metaRow.className = "show-meta-row";
+
+        const release = parseISODate(movie.release_date || movie.air_date || movie.date);
+        if (release) {
+          const pill = document.createElement("span");
+          pill.className = "show-meta-pill";
+          pill.textContent = release.getFullYear();
+          metaRow.appendChild(pill);
+        }
+
+        if (movie.runtime) {
+          const pill = document.createElement("span");
+          pill.className = "show-meta-pill";
+          pill.textContent = `${movie.runtime} min`;
+          metaRow.appendChild(pill);
+        }
+
+        body.appendChild(metaRow);
+
+        const watchRow = document.createElement("div");
+        watchRow.className = "show-watch-row";
+
+        const links = movie.links || {};
+        const tmdbUrl = links.tmdb || (tmdbId ? `https://www.themoviedb.org/movie/${tmdbId}` : null);
+        const videasyUrl = links.videasy || (tmdbId ? `${VID_EASY_MOVIE_BASE}${tmdbId}` : null);
+        const vidsrcUrl = links.vidsrc || (tmdbId ? `${VIDSRC_MOVIE_BASE}${tmdbId}` : null);
+
+        const makeButton = (top, bottom, variant, url) => {
+          if (!url) return;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = `btn-watch btn-watch-${variant}`;
+          const spanTop = document.createElement("span");
+          spanTop.className = "label-top";
+          spanTop.textContent = top;
+          const spanBottom = document.createElement("span");
+          spanBottom.className = "label-bottom";
+          spanBottom.textContent = bottom;
+          btn.appendChild(spanTop);
+          btn.appendChild(spanBottom);
+          btn.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            openInNewTab(url);
+          });
+          watchRow.appendChild(btn);
+        };
+
+        makeButton("Info at", "TMDB", "tmdb", tmdbUrl);
+        makeButton("Watch on", "Videasy", "videasy", videasyUrl);
+        makeButton("Watch on", "VidSrc", "vidsrc", vidsrcUrl);
+
+        body.appendChild(watchRow);
+
+        card.appendChild(body);
+
+        const openMovie = () => openMovieModal(movie);
+        poster.addEventListener("click", openMovie);
+        titleEl.addEventListener("click", openMovie);
+
+        return card;
+      }
+
+      // =====================================================
+      // [JS-6.0] Modal (show / episode / movie details)
+      // =====================================================
+
+      function wireModal() {
+        qs("#modal-close-btn").addEventListener("click", closeModal);
+        qs("#modal-overlay").addEventListener("click", (ev) => {
+          if (ev.target === qs("#modal-overlay")) closeModal();
+        });
+        document.addEventListener("keydown", (ev) => {
+          if (ev.key === "Escape") closeModal();
+        });
+      }
+
+      function openModalWithContent(node) {
+        const overlay = qs("#modal-overlay");
+        const content = qs("#modal-content");
+        content.innerHTML = "";
+        content.appendChild(node);
+        overlay.hidden = false;
+        overlay.classList.add("open");
+      }
+
+      function closeModal() {
+        const overlay = qs("#modal-overlay");
+        overlay.classList.remove("open");
+        overlay.hidden = true;
+        qs("#modal-content").innerHTML = "";
+      }
+
+      function openEpisodeModal(ep) {
+        const shell = document.createElement("div");
+        shell.className = "modal-body";
+
+        const title = document.createElement("h2");
+        title.id = "modal-title";
+        const sNum = ep.seasonNumber ?? "?";
+        const eNum = ep.episodeNumber ?? "?";
+        title.textContent = `${ep.showName || "Untitled show"} · S${sNum}E${eNum}`;
+        shell.appendChild(title);
+
+        if (ep.overview) {
+          const p = document.createElement("p");
+          p.textContent = ep.overview;
+          shell.appendChild(p);
+        }
+
+        openModalWithContent(shell);
+      }
+
+      function openShowModal(show) {
+        const shell = document.createElement("div");
+        shell.className = "modal-body";
+
+        const title = document.createElement("h2");
+        title.id = "modal-title";
+        const name = show.name || show.title || "Untitled show";
+        const tmdbId = show.tmdb_id || show.tmdbId || show.id || show.show_id;
+        title.textContent = tmdbId ? `${name} [${tmdbId}]` : name;
+        shell.appendChild(title);
+
+        const seasons = safeArray(show.seasons);
+        for (const season of seasons) {
+          const sDiv = document.createElement("details");
+          sDiv.className = "season-accordion";
+          const summary = document.createElement("summary");
+          summary.textContent = `Season ${season.season_number ?? season.number ?? ""}`;
+          sDiv.appendChild(summary);
+
+          const epsList = document.createElement("div");
+          epsList.className = "episodes-list";
+
+          const episodes = safeArray(season.episodes);
+          for (const ep of episodes) {
+            const epRow = document.createElement("div");
+            epRow.className = "episode-row";
+
+            const label = document.createElement("div");
+            label.className = "episode-label";
+            const d = parseISODate(ep.air_date || ep.date);
+            const dateStr = d
+              ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+              : "";
+            const eNum = ep.episode_number ?? ep.number ?? "?";
+            label.textContent = `E${eNum} · ${ep.name || ep.title || ""} ${dateStr ? "· " + dateStr : ""}`;
+            epRow.appendChild(label);
+
+            epRow.addEventListener("click", () => {
+              openEpisodeModal({
+                ...ep,
+                showName: name,
+                tmdbId,
+                seasonNumber: season.season_number ?? season.number,
+                episodeNumber: eNum
+              });
+            });
+
+            epsList.appendChild(epRow);
+          }
+
+          sDiv.appendChild(epsList);
+          shell.appendChild(sDiv);
+        }
+
+        openModalWithContent(shell);
+      }
+
+      function openMovieModal(movie) {
+        const shell = document.createElement("div");
+        shell.className = "modal-body";
+
+        const title = document.createElement("h2");
+        title.id = "modal-title";
+        const name = movie.title || movie.name || "Untitled movie";
+        const tmdbId = movie.tmdb_id || movie.id;
+        title.textContent = tmdbId ? `${name} [${tmdbId}]` : name;
+        shell.appendChild(title);
+
+        if (movie.overview) {
+          const p = document.createElement("p");
+          p.textContent = movie.overview;
+          shell.appendChild(p);
+        }
+
+        openModalWithContent(shell);
+      }
+    </script>
+  </body>
 </html>
