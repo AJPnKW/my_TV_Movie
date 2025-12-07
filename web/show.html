@@ -228,6 +228,54 @@
       color: var(--text-muted);
     }
 
+    /* Collapsible info block for "How this works" */
+    details.info-block {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: linear-gradient(145deg, #0c0f19, #070811);
+      box-shadow: var(--shadow-light);
+      padding: 0;
+      overflow: hidden;
+    }
+
+    summary.info-summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    summary.info-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .info-summary-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-chevron {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      transition: transform 0.15s ease-out;
+    }
+
+    details.info-block[open] .info-chevron {
+      transform: rotate(90deg);
+    }
+
+    .info-body {
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 12px 10px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
     .watch-tips-list {
       font-size: 0.8rem;
       line-height: 1.5;
@@ -352,6 +400,44 @@
       font-size: 0.8rem;
     }
 
+    /* Episode still image */
+    .episode-still {
+      border-radius: 8px;
+      overflow: hidden;
+      max-height: 160px;
+      margin-bottom: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .episode-still img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Episode status badge */
+    .episode-status {
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      margin-left: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .episode-status.released {
+      background: rgba(0, 255, 133, 0.18);
+      border: 1px solid rgba(0, 255, 133, 0.6);
+      color: #c8ffe3;
+    }
+
+    .episode-status.upcoming {
+      background: rgba(255, 165, 0, 0.18);
+      border: 1px solid rgba(255, 165, 0, 0.7);
+      color: #ffe1af;
+    }
+
     .episode-actions {
       display: flex;
       flex-wrap: wrap;
@@ -436,10 +522,7 @@
           <span class="tag" id="header-tag-slug">Slug: –</span>
         </div>
       </div>
-      <a class="btn btn-primary" href="./index.html">
-        <span class="icon">←</span>
-        <span>Back to calendar/app</span>
-      </a>
+      <!-- Back button removed as requested -->
     </header>
 
     <main>
@@ -463,30 +546,36 @@
         </div>
       </section>
 
-      <!-- WATCH TIPS / ADS / CC / LOADING EXPLAINED -->
+      <!-- WATCH TIPS / ADS / CC / LOADING EXPLAINED (COLLAPSIBLE) -->
       <section class="card">
-        <div class="card-header">
-          <span>How this works (links, ads & subtitles)</span>
-        </div>
-        <ul class="watch-tips-list">
-          <li>Episode buttons like <strong>“Watch on VidSrc”</strong> open the video in a new tab.</li>
-          <li>Some sites will open 1–2 <strong>ad or redirect</strong> pages first.  
-              If this happens:
-            <ul>
-              <li>Close the ad/redirect tab or window.</li>
-              <li>Go back to this page and click the episode button again.</li>
-              <li>Usually after the second ad/redirect, the real player starts.</li>
+        <details class="info-block">
+          <summary class="info-summary">
+            <div class="info-summary-text">
+              <span>How this works (links, ads & subtitles)</span>
+            </div>
+            <span class="info-chevron">›</span>
+          </summary>
+          <div class="info-body">
+            <ul class="watch-tips-list">
+              <li>Episode buttons like <strong>“Watch on VidSrc”</strong> open the video in a new tab.</li>
+              <li>Some sites will open 1–2 <strong>ad or redirect</strong> pages first. If this happens:
+                <ul>
+                  <li>Close the ad/redirect tab or window.</li>
+                  <li>Go back to this page and click the episode button again.</li>
+                  <li>Usually after the second ad/redirect, the real player starts.</li>
+                </ul>
+              </li>
+              <li>On the video player, look for the <strong>settings / sprocket icon</strong> in the bottom-right:
+                <ul>
+                  <li>Change subtitles/closed captions to your language or set them to <strong>“None”</strong>.</li>
+                </ul>
+              </li>
+              <li>If the player just says <strong>“Loading”</strong> for a long time, that usually means this episode
+                has <strong>not been recorded/saved yet on that host</strong>. Try a <strong>backup link</strong> for that episode instead.</li>
+              <li>If things look wrong or confusing, just close the extra tabs/windows and return to this page.</li>
             </ul>
-          </li>
-          <li>On the video player, look for the <strong>settings / sprocket icon</strong> in the bottom-right:
-            <ul>
-              <li>Change subtitles/closed captions to your language or set them to <strong>“None”</strong>.</li>
-            </ul>
-          </li>
-          <li>If the player just says <strong>“Loading”</strong> for a long time, it usually means that episode
-              has <strong>not been recorded/saved yet on that host</strong>. Try a <strong>backup link</strong> for that episode instead.</li>
-          <li>If things look wrong or confusing, just use the <strong>Back to calendar/app</strong> button at the top of this page.</li>
-        </ul>
+          </div>
+        </details>
       </section>
 
       <!-- SEASONS + EPISODES -->
@@ -606,6 +695,17 @@
       seasonSummaryLabelEl.textContent = `Season ${cfg.seasonNumber} · ${epCount || "0"} episodes`;
     }
 
+    function handleWatchClick(event, url) {
+      // Simple QA: block navigation if URL is obviously not valid.
+      if (!url || typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+        event.preventDefault();
+        alert(
+          "This streaming link does not look valid yet. Please try a different host or episode."
+        );
+      }
+      // If valid-looking, let the browser open it in a new tab as normal.
+    }
+
     function buildEpisodes(season, cfg) {
       const container = document.getElementById("seasons-container");
       container.innerHTML = ""; // clear "loading" message
@@ -649,6 +749,8 @@
       const body = document.createElement("div");
       body.className = "season-body";
 
+      const now = new Date();
+
       (season.episodes || []).forEach(ep => {
         const epDetails = document.createElement("details");
         epDetails.className = "episode";
@@ -668,6 +770,20 @@
         if (ep.runtime) pieces.push(`${ep.runtime} min`);
         epSub.textContent = pieces.length ? pieces.join(" · ") : "Details coming soon";
 
+        // Episode status badge (released vs upcoming)
+        let status = "released";
+        if (ep.air_date) {
+          const airDate = new Date(ep.air_date);
+          if (!isNaN(airDate) && airDate > now) {
+            status = "upcoming";
+          }
+        }
+        const statusBadge = document.createElement("span");
+        statusBadge.className =
+          "episode-status " + (status === "upcoming" ? "upcoming" : "released");
+        statusBadge.textContent = status === "upcoming" ? "UPCOMING" : "RELEASED";
+        epSub.appendChild(statusBadge);
+
         epMain.appendChild(epTitle);
         epMain.appendChild(epSub);
 
@@ -680,6 +796,17 @@
 
         const epBody = document.createElement("div");
         epBody.className = "episode-body";
+
+        // Episode still image (if available)
+        if (ep.still_path) {
+          const stillWrap = document.createElement("div");
+          stillWrap.className = "episode-still";
+          const stillImg = document.createElement("img");
+          stillImg.src = `https://image.tmdb.org/t/p/w300${ep.still_path}`;
+          stillImg.alt = `${ep.name || "Episode"} still`;
+          stillWrap.appendChild(stillImg);
+          epBody.appendChild(stillWrap);
+        }
 
         const epOverview = document.createElement("div");
         epOverview.textContent = ep.overview || "Overview not available yet.";
@@ -709,6 +836,9 @@
             a.rel = "noopener noreferrer";
             a.className = "btn-watch service-" + key.toLowerCase();
             a.innerHTML = `<span>▶</span><span>Watch on ${label}</span>`;
+            a.addEventListener("click", function (e) {
+              handleWatchClick(e, url);
+            });
             actions.appendChild(a);
           });
 
@@ -800,7 +930,7 @@
       } catch (err) {
         console.error("Error loading show page:", err);
         statusEl.textContent =
-          "Could not load show data. Please try again later or return to the main app.";
+          "Could not load show data. Please try again later.";
       }
     }
 
