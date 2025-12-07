@@ -42,7 +42,7 @@
     header.page-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
       gap: 12px;
       padding: 10px 18px;
       margin-bottom: 16px;
@@ -53,6 +53,34 @@
       top: 0;
       z-index: 50;
       backdrop-filter: blur(12px);
+    }
+
+    .header-poster {
+      width: 60px;
+      min-height: 84px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #05070b;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .header-poster-placeholder {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 6px;
+      opacity: 0.8;
     }
 
     .header-main {
@@ -526,8 +554,12 @@
 
     @media (max-width: 720px) {
       header.page-header {
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .header-title {
+        white-space: normal;
       }
 
       .hero {
@@ -538,8 +570,6 @@
         max-width: 220px;
         margin: 0 auto;
       }
-
-      .header-title { white-space: normal; }
     }
   </style>
 </head>
@@ -547,6 +577,9 @@
 <body>
   <div class="page">
     <header class="page-header">
+      <div class="header-poster" id="header-poster">
+        <div class="header-poster-placeholder">Poster</div>
+      </div>
       <div class="header-main">
         <div class="header-title" id="header-title">Loading show…</div>
         <div class="header-sub">
@@ -661,13 +694,7 @@
         .replace(/^_+|_+$/g, "");
     }
 
-    /**
-     * NEW PARSER:
-     * - Reads whole file
-     * - Ignores blank lines
-     * - Ignores lines starting with '#'
-     * - Expects: Title|TMDB_ID|seasons
-     */
+    // Parser for show_pages.txt
     function parseShowPagesTxt(text) {
       const lines = text.split(/\r?\n/);
       const map = {}; // slug -> { title, tmdbId, seasons }
@@ -765,6 +792,7 @@
       const extraEl = document.getElementById("hero-extra");
       const pillRowEl = document.getElementById("hero-pill-row");
       const posterEl = document.getElementById("hero-poster");
+      const headerPosterEl = document.getElementById("header-poster");
 
       const year = show.first_air_date ? new Date(show.first_air_date).getFullYear() : "–";
       const titleText = `${show.name || cfg.title || "Untitled"} (${year})`;
@@ -802,17 +830,31 @@
         pillRowEl.appendChild(span);
       });
 
+      // Main hero poster
       posterEl.innerHTML = "";
+      // Header poster
+      headerPosterEl.innerHTML = "";
+
       if (show.poster_path) {
-        const img = document.createElement("img");
-        img.alt = `${show.name} poster`;
-        img.src = `https://image.tmdb.org/t/p/w342${show.poster_path}`;
-        posterEl.appendChild(img);
+        const imgMain = document.createElement("img");
+        imgMain.alt = `${show.name} poster`;
+        imgMain.src = `https://image.tmdb.org/t/p/w342${show.poster_path}`;
+        posterEl.appendChild(imgMain);
+
+        const imgHeader = document.createElement("img");
+        imgHeader.alt = `${show.name} poster`;
+        imgHeader.src = `https://image.tmdb.org/t/p/w185${show.poster_path}`;
+        headerPosterEl.appendChild(imgHeader);
       } else {
-        const div = document.createElement("div");
-        div.className = "hero-poster-placeholder";
-        div.textContent = "Poster not available.";
-        posterEl.appendChild(div);
+        const divMain = document.createElement("div");
+        divMain.className = "hero-poster-placeholder";
+        divMain.textContent = "Poster not available.";
+        posterEl.appendChild(divMain);
+
+        const divHeader = document.createElement("div");
+        divHeader.className = "header-poster-placeholder";
+        divHeader.textContent = "Poster";
+        headerPosterEl.appendChild(divHeader);
       }
     }
 
@@ -823,10 +865,11 @@
       }
     }
 
-    function buildSeasonBlock(season, container) {
+    // openByDefault ==> only latest season opened
+    function buildSeasonBlock(season, container, openByDefault) {
       const seasonDetails = document.createElement("details");
       seasonDetails.className = "season";
-      seasonDetails.open = true;
+      seasonDetails.open = !!openByDefault;
 
       const summary = document.createElement("summary");
 
@@ -1007,11 +1050,18 @@
 
       seasonsToRender.sort((a, b) => a.season_number - b.season_number);
 
+      // latest season number
+      const latestSeasonNumber = seasonsToRender.reduce(
+        (max, s) => Math.max(max, s.season_number),
+        0
+      );
+
       let totalEpisodes = 0;
       seasonsToRender.forEach(season => {
         const epCount = season.episode_count ?? (season.episodes || []).length;
         totalEpisodes += (epCount || 0);
-        buildSeasonBlock(season, container);
+        const openByDefault = season.season_number === latestSeasonNumber;
+        buildSeasonBlock(season, container, openByDefault);
       });
 
       if (seasonsToRender.length === 1) {
@@ -1045,6 +1095,9 @@
       headerTitle.textContent = "Available shows";
       document.title = "Available shows · my_TV_Movie";
       tagTmdb.textContent = "Show index";
+
+      const headerPosterEl = document.getElementById("header-poster");
+      headerPosterEl.innerHTML = '<div class="header-poster-placeholder">Shows</div>';
 
       heroCard.style.display = "none";
       infoCard.style.display = "none";
