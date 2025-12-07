@@ -119,7 +119,7 @@
       color: var(--text-muted);
     }
 
-    /* NEW: header button to show list */
+    /* Header "All shows" button */
     .btn-header-link {
       font-size: 0.75rem;
       padding: 4px 10px;
@@ -164,51 +164,22 @@
     }
 
     .hero {
-      display: grid;
-      grid-template-columns: 140px minmax(0, 1fr);
-      gap: 14px;
-      align-items: stretch;
-    }
-
-    .hero-poster {
-      border-radius: var(--radius-md);
-      overflow: hidden;
-      background: #05070b;
-      border: 1px solid var(--border-subtle);
-      box-shadow: var(--shadow-light);
-      min-height: 190px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      isolation: isolate;
-    }
-
-    .hero-poster img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
+      /* was a 2-column grid; now just a simple block for text */
       display: block;
     }
 
-    .hero-poster-placeholder {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      text-align: center;
-      padding: 12px;
-      opacity: 0.8;
+    /* hide duplicate poster + title inside SHOW OVERVIEW */
+    .hero-poster {
+      display: none;
+    }
+    .hero-title {
+      display: none;
     }
 
     .hero-meta {
       display: flex;
       flex-direction: column;
       gap: 8px;
-    }
-
-    .hero-title {
-      font-size: 1.35rem;
-      font-weight: 700;
-      letter-spacing: 0.02em;
     }
 
     .pill-row {
@@ -579,12 +550,7 @@
       }
 
       .hero {
-        grid-template-columns: minmax(0, 1fr);
-      }
-
-      .hero-poster {
-        max-width: 220px;
-        margin: 0 auto;
+        display: block;
       }
     }
   </style>
@@ -600,23 +566,20 @@
         <div class="header-title" id="header-title">Loading show…</div>
         <div class="header-sub">
           <span class="tag" id="header-tag-tmdb">TMDB: –</span>
-          <!-- NEW: button back to index -->
           <a class="btn-header-link" href="show.html">All shows</a>
         </div>
       </div>
     </header>
 
     <main>
-      <!-- HERO -->
+      <!-- SHOW OVERVIEW (text-only now) -->
       <section class="card" id="hero-card">
         <div class="card-header">
           <span>Show overview</span>
         </div>
         <div class="hero">
           <div class="hero-poster" id="hero-poster">
-            <div class="hero-poster-placeholder">
-              Poster loading…
-            </div>
+            <!-- hidden via CSS, kept for future if needed -->
           </div>
           <div class="hero-meta">
             <div class="hero-title" id="hero-title">Loading…</div>
@@ -651,8 +614,7 @@
                   <li>Change subtitles/closed captions to your language or set them to <strong>“None”</strong>.</li>
                 </ul>
               </li>
-              <li>If the player just says <strong>“Loading”</strong> for a long time, that usually means this episode
-                has <strong>not been recorded/saved yet on that host</strong>. Try a <strong>backup link</strong> for that episode instead.</li>
+              <li>If the player just says <strong>“Loading”</strong> for a long time, that usually means this episode has <strong>not been recorded/saved yet on that host</strong>. Try a <strong>backup link</strong> for that episode instead.</li>
               <li>If things look wrong or confusing, just close the extra tabs/windows and return to this page.</li>
             </ul>
           </div>
@@ -815,6 +777,7 @@
       const year = show.first_air_date ? new Date(show.first_air_date).getFullYear() : "–";
       const titleText = `${show.name || cfg.title || "Untitled"} (${year})`;
 
+      // visible title only in header
       titleEl.textContent = titleText;
       headerTitleEl.textContent = titleText;
 
@@ -848,27 +811,16 @@
         pillRowEl.appendChild(span);
       });
 
-      // Main hero poster
+      // header poster only (hero poster stays hidden)
       posterEl.innerHTML = "";
-      // Header poster
       headerPosterEl.innerHTML = "";
 
       if (show.poster_path) {
-        const imgMain = document.createElement("img");
-        imgMain.alt = `${show.name} poster`;
-        imgMain.src = `https://image.tmdb.org/t/p/w342${show.poster_path}`;
-        posterEl.appendChild(imgMain);
-
         const imgHeader = document.createElement("img");
         imgHeader.alt = `${show.name} poster`;
         imgHeader.src = `https://image.tmdb.org/t/p/w185${show.poster_path}`;
         headerPosterEl.appendChild(imgHeader);
       } else {
-        const divMain = document.createElement("div");
-        divMain.className = "hero-poster-placeholder";
-        divMain.textContent = "Poster not available.";
-        posterEl.appendChild(divMain);
-
         const divHeader = document.createElement("div");
         divHeader.className = "header-poster-placeholder";
         divHeader.textContent = "Poster";
@@ -883,7 +835,6 @@
       }
     }
 
-    // openByDefault ==> only latest season opened
     function buildSeasonBlock(season, container, openByDefault) {
       const seasonDetails = document.createElement("details");
       seasonDetails.className = "season";
@@ -1059,16 +1010,15 @@
 
       if (!seasonsToRender.length) {
         const msg = document.createElement("div");
-        msg.className = "status-message";
-        msg.textContent = "No seasons found for this configuration.";
-        container.appendChild(msg);
-        labelEl.textContent = "";
-        return;
+          msg.className = "status-message";
+          msg.textContent = "No seasons found for this configuration.";
+          container.appendChild(msg);
+          labelEl.textContent = "";
+          return;
       }
 
       seasonsToRender.sort((a, b) => a.season_number - b.season_number);
 
-      // latest season number
       const latestSeasonNumber = seasonsToRender.reduce(
         (max, s) => Math.max(max, s.season_number),
         0
