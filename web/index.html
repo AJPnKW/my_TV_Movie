@@ -2,1010 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>My TV Hub – index.html v3.3.0</title>
+  <title>My TV Hub – index.html v3.3.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <style>
-    :root {
-      --bg: #05070a;
-      --bg-elevated: #10131a;
-      --bg-elevated-soft: #171b24;
-      --border-subtle: #262b36;
-      --border-strong: #3b4252;
-      --accent: #4c8dff;
-      --accent-soft: rgba(76, 141, 255, 0.15);
-      --accent-strong: #ffcc33;
-      --accent-danger: #ff4c6a;
-      --text-main: #e5e9f0;
-      --text-muted: #a0a7b6;
-      --text-soft: #7a8190;
-      --badge-bg: #1a202e;
-      --badge-border: #3b4252;
-      --today-bg: rgba(76, 141, 255, 0.16);
-      --today-border: #4c8dff;
-      --today-header-bg: rgba(76, 141, 255, 0.28);
-      --weekend-bg: rgba(40, 40, 70, 0.3);
-      --weekend-header-bg: rgba(40, 40, 80, 0.6);
-      --scrollbar-track: #0a0d12;
-      --scrollbar-thumb: #2a3140;
-      --card-radius: 14px;
-      --transition-fast: 0.15s ease-out;
-      --font-scale: 1.0;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      background: radial-gradient(circle at top, #141824 0, #05070a 55%, #020308 100%);
-      color: var(--text-main);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: calc(16px * var(--font-scale));
-      -webkit-font-smoothing: antialiased;
-    }
-
-    body {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
-    ::-webkit-scrollbar-track {
-      background: var(--scrollbar-track);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--scrollbar-thumb);
-      border-radius: 999px;
-    }
-
-    header.app-header {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      background: linear-gradient(to bottom, #05070a 0, rgba(5, 7, 10, 0.9) 70%, rgba(5, 7, 10, 0.4) 100%);
-      border-bottom: 1px solid var(--border-subtle);
-      padding: 0.75rem 1.25rem 0.5rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.4rem;
-    }
-
-    .header-top-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      column-gap: 1rem;
-    }
-
-    .app-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-    }
-
-    .meta-line {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .meta-line strong {
-      color: var(--accent-strong);
-      font-weight: 500;
-    }
-
-    nav.app-nav {
-      display: flex;
-      flex-wrap: nowrap;
-      gap: 0.4rem;
-      margin-top: 0.25rem;
-    }
-
-    .nav-button {
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(10, 13, 20, 0.92);
-      padding: 0.4rem 0.85rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-      white-space: nowrap;
-    }
-
-    .nav-button span.index {
-      font-weight: 600;
-      color: var(--accent-soft);
-    }
-
-    .nav-button.active {
-      background: var(--accent-soft);
-      border-color: var(--accent);
-      color: var(--text-main);
-      transform: translateY(-1px);
-    }
-
-    .nav-button:focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 2px;
-    }
-
-    .view-subtitle {
-      margin-top: 0.3rem;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-    }
-
-    main.app-main {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0.75rem 1rem 1.25rem;
-      max-width: 1320px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    section.tab {
-      display: none;
-    }
-
-    section.tab.active {
-      display: block;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.5rem;
-      gap: 0.5rem;
-    }
-
-    .section-header h2 {
-      font-size: 1.05rem;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin: 0;
-      color: var(--text-main);
-    }
-
-    .pill {
-      border-radius: 999px;
-      padding: 0.1rem 0.5rem;
-      border: 1px solid var(--border-subtle);
-      font-size: 0.75rem;
-      color: var(--text-soft);
-      background: rgba(10, 13, 20, 0.75);
-    }
-
-    /* Calendar */
-
-    .calendar-header-shell {
-      position: sticky;
-      top: 0;
-      z-index: 15;
-      background: linear-gradient(to bottom, rgba(5, 7, 10, 0.98), rgba(5, 7, 12, 0.96));
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 0.2rem;
-    }
-
-    .calendar-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.15rem;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .calendar-title {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
-
-    .calendar-title-main {
-      font-size: 1.1rem;
-      font-weight: 600;
-    }
-
-    .calendar-title-sub {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-    }
-
-    .calendar-controls {
-      display: inline-flex;
-      gap: 0.25rem;
-      align-items: center;
-      flex-wrap: nowrap;
-    }
-
-    .btn {
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(10, 13, 20, 0.95);
-      color: var(--text-main);
-      padding: 0.28rem 0.7rem;
-      font-size: 0.8rem;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.2rem;
-      transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-      white-space: nowrap;
-    }
-
-    .btn:hover {
-      background: rgba(15, 19, 27, 0.98);
-      border-color: var(--border-strong);
-    }
-
-    .btn-primary {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      color: var(--accent-strong);
-      font-weight: 500;
-    }
-
-    .calendar-dow-row {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 0.35rem;
-      padding-top: 0.25rem;
-    }
-
-    .calendar-dow-cell {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--text-soft);
-      padding: 0.18rem 0.35rem;
-      border-radius: 10px 10px 0 0;
-      border: 1px solid transparent;
-    }
-
-    .calendar-dow-cell.weekend {
-      background: var(--weekend-header-bg);
-      border-color: rgba(70, 70, 120, 0.55);
-    }
-
-    .calendar-grid {
-      margin-top: 0.2rem;
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 0.35rem;
-    }
-
-    .calendar-day {
-      border-radius: var(--card-radius);
-      border: 1px solid var(--border-subtle);
-      background: rgba(9, 12, 18, 0.96);
-      display: flex;
-      flex-direction: column;
-      min-height: 6.2rem;
-      overflow: hidden;
-    }
-
-    .calendar-day.weekend {
-      background: var(--weekend-bg);
-    }
-
-    .calendar-day.today {
-      background: var(--today-bg);
-      border-color: var(--today-border);
-      box-shadow: 0 0 0 2px rgba(76, 141, 255, 0.35);
-    }
-
-    .day-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 0.25rem 0.35rem 0.2rem;
-      border-bottom: 1px solid var(--border-subtle);
-      background: linear-gradient(to bottom, rgba(20, 25, 40, 0.9), rgba(10, 12, 20, 0.8));
-    }
-
-    .calendar-day.today .day-header {
-      background: var(--today-header-bg);
-    }
-
-    .day-name {
-      font-size: 0.68rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--text-soft);
-    }
-
-    .day-number {
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: var(--text-main);
-    }
-
-    .day-body {
-      padding: 0.25rem 0.25rem 0.3rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      overflow-y: auto;
-    }
-
-    .calendar-item {
-      display: grid;
-      grid-template-columns: 0.8fr 1.5fr;
-      column-gap: 0.35rem;
-      padding: 0.15rem 0.2rem;
-      border-radius: 10px;
-      background: rgba(5, 7, 12, 0.88);
-      border: 1px solid rgba(48, 54, 69, 0.85);
-      align-items: center;
-      cursor: pointer;
-      transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-    }
-
-    .calendar-item:hover {
-      background: rgba(12, 15, 22, 0.96);
-      border-color: var(--border-strong);
-      transform: translateY(-1px);
-    }
-
-    .calendar-item.posterless {
-      grid-template-columns: 1fr;
-    }
-
-    .calendar-item-main {
-      display: flex;
-      flex-direction: column;
-      gap: 0.05rem;
-      min-width: 0;
-    }
-
-    .calendar-item-title {
-      font-size: 0.78rem;
-      font-weight: 500;
-      line-height: 1.2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-    }
-
-    .calendar-item-id {
-      font-size: 0.68rem;
-      color: var(--text-soft);
-    }
-
-    .calendar-item-episode {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .calendar-item-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.15rem;
-      align-items: center;
-      margin-top: 0.08rem;
-    }
-
-    .badge {
-      border-radius: 999px;
-      padding: 0.05rem 0.45rem;
-      font-size: 0.65rem;
-      border: 1px solid var(--badge-border);
-      background: var(--badge-bg);
-      color: var(--text-soft);
-      white-space: nowrap;
-    }
-
-    .badge-upcoming {
-      border-color: var(--accent-strong);
-      color: var(--accent-strong);
-      background: rgba(255, 204, 51, 0.08);
-    }
-
-    .calendar-item-poster {
-      width: 100%;
-      padding-top: 180%; /* ~50% larger than before */
-      background-size: cover;
-      background-position: center;
-      border-radius: 10px;
-      border: 1px solid rgba(65, 72, 88, 0.9);
-      overflow: hidden;
-    }
-
-    .calendar-item-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.15rem;
-      margin-top: 0.1rem;
-    }
-
-    .btn-watch-small {
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(5, 7, 12, 0.95);
-      color: var(--text-soft);
-      font-size: 0.62rem;
-      padding: 0.1rem 0.35rem;
-      line-height: 1.05;
-      text-align: center;
-      min-width: 4.2rem;
-    }
-
-    .btn-watch-small span.label-top {
-      display: block;
-      font-size: 0.6rem;
-      text-transform: uppercase;
-    }
-
-    .btn-watch-small span.label-bottom {
-      display: block;
-      font-size: 0.7rem;
-      font-weight: 500;
-    }
-
-    /* Shows */
-
-    .shows-filters-row {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      padding: 0.35rem 0 0.45rem;
-      background: linear-gradient(to bottom, rgba(5, 7, 10, 0.98), rgba(5, 7, 12, 0.96));
-      border-bottom: 1px solid var(--border-subtle);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .shows-filters-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-      align-items: center;
-    }
-
-    .filter-label {
-      font-size: 0.8rem;
-      color: var(--text-soft);
-    }
-
-    .select {
-      background: rgba(9, 12, 18, 0.96);
-      color: var(--text-main);
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      padding: 0.22rem 0.7rem;
-      font-size: 0.78rem;
-      min-width: 7rem;
-    }
-
-    .genre-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.25rem;
-      max-width: 640px;
-    }
-
-    .genre-chip {
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(8, 11, 18, 0.95);
-      color: var(--text-soft);
-      font-size: 0.7rem;
-      padding: 0.14rem 0.6rem;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .genre-chip.active {
-      border-color: var(--accent);
-      background: var(--accent-soft);
-      color: var(--text-main);
-    }
-
-    .card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-      gap: 0.55rem;
-      margin-top: 0.45rem;
-    }
-
-    .show-card {
-      border-radius: var(--card-radius);
-      border: 1px solid var(--border-subtle);
-      background: rgba(9, 12, 18, 0.96);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
-    }
-
-    .show-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
-      border-color: var(--border-strong);
-      background: rgba(12, 15, 22, 0.98);
-    }
-
-    .show-poster {
-      position: relative;
-      width: 100%;
-      padding-top: 130%; /* Smaller poster */
-      background-size: cover;
-      background-position: center;
-      border-bottom: 1px solid var(--border-subtle);
-      background-color: #05070a;
-    }
-
-    .show-status-chip {
-      position: absolute;
-      bottom: 0.35rem;
-      left: 0.4rem;
-      padding: 0.12rem 0.45rem;
-      font-size: 0.68rem;
-      border-radius: 999px;
-      background: rgba(5, 7, 10, 0.9);
-      border: 1px solid rgba(160, 167, 182, 0.7);
-      color: var(--text-soft);
-    }
-
-    .show-card-body {
-      padding: 0.35rem 0.4rem 0.45rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
-
-    .show-title-row {
-      display: flex;
-      flex-direction: column;
-      gap: 0.05rem;
-    }
-
-    .show-title {
-      font-size: 0.82rem;
-      font-weight: 600;
-      line-height: 1.2;
-      max-height: 2.4em;
-      overflow: hidden;
-    }
-
-    .show-title-id {
-      font-size: 0.7rem;
-      color: var(--text-soft);
-    }
-
-    .show-meta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.25rem;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      margin-top: 0.1rem;
-    }
-
-    .show-meta-pill {
-      border-radius: 999px;
-      padding: 0.05rem 0.4rem;
-      border: 1px solid var(--border-subtle);
-      font-size: 0.68rem;
-      color: var(--text-soft);
-      background: rgba(5, 7, 12, 0.9);
-    }
-
-    .show-current-season {
-      font-size: 0.74rem;
-      color: var(--accent-strong);
-      margin-top: 0.12rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .show-watch-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.2rem;
-      margin-top: 0.18rem;
-    }
-
-    .btn-watch {
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      padding: 0.05rem 0.45rem;
-      font-size: 0.66rem;
-      background: rgba(5, 7, 12, 0.95);
-      color: var(--text-soft);
-    }
-
-    /* Modal (Show popup) */
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: radial-gradient(circle at top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.96));
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-    }
-
-    .modal-backdrop.open {
-      display: flex;
-    }
-
-    .modal {
-      width: min(100%, 1100px);
-      max-height: 90vh;
-      background: radial-gradient(circle at top left, #151a24 0, #05070a 55%, #020307 100%);
-      border-radius: 20px;
-      border: 1px solid var(--border-strong);
-      box-shadow: 0 24px 40px rgba(0, 0, 0, 0.85);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding: 0.7rem 0.9rem;
-      border-bottom: 1px solid var(--border-subtle);
-      gap: 0.6rem;
-      background: linear-gradient(to right, rgba(10, 14, 22, 0.98), rgba(10, 16, 30, 0.98));
-    }
-
-    .modal-title-block {
-      display: flex;
-      gap: 0.6rem;
-      align-items: flex-start;
-    }
-
-    .modal-poster {
-      width: 100px;
-      min-width: 100px;
-      height: 150px;
-      border-radius: 10px;
-      background-size: cover;
-      background-position: center;
-      border: 1px solid var(--border-strong);
-      background-color: #05070a;
-    }
-
-    .modal-title-text {
-      display: flex;
-      flex-direction: column;
-      gap: 0.15rem;
-    }
-
-    .modal-title-text h3 {
-      margin: 0;
-      font-size: 1rem;
-    }
-
-    .modal-subtitle-line {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-    }
-
-    .modal-meta-badges {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.25rem;
-      margin-top: 0.15rem;
-    }
-
-    .btn-ghost {
-      border-radius: 999px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(5, 7, 12, 0.9);
-      color: var(--text-soft);
-      padding: 0.2rem 0.55rem;
-      font-size: 0.72rem;
-      cursor: pointer;
-    }
-
-    .btn-close {
-      border-radius: 999px;
-      border: 1px solid var(--accent);
-      background: var(--accent);
-      color: #000;
-      padding: 0.18rem 0.6rem;
-      font-size: 0.8rem;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .modal-body {
-      padding: 0.6rem 0.9rem 0.8rem;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: 0.7rem;
-    }
-
-    .card {
-      border-radius: var(--card-radius);
-      border: 1px solid var(--border-subtle);
-      background: rgba(9, 12, 18, 0.97);
-      padding: 0.55rem 0.6rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .card-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.4rem;
-      margin-bottom: 0.1rem;
-    }
-
-    .card-title {
-      font-size: 0.9rem;
-      font-weight: 600;
-    }
-
-    .card-subtitle {
-      font-size: 0.76rem;
-      color: var(--text-muted);
-    }
-
-    /* Series + Season accordions */
-
-    details.season-details {
-      border-radius: 10px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(7, 9, 15, 0.9);
-      margin-bottom: 0.3rem;
-      overflow: hidden;
-    }
-
-    details.season-details[open] {
-      background: rgba(13, 17, 26, 0.97);
-      border-color: var(--border-strong);
-    }
-
-    summary.season-summary {
-      list-style: none;
-      display: flex;
-      align-items: center;
-      gap: 0.45rem;
-      padding: 0.35rem 0.5rem;
-      cursor: pointer;
-    }
-
-    summary.season-summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .season-thumb {
-      width: 40px;
-      height: 40px;
-      border-radius: 7px;
-      background-size: cover;
-      background-position: center;
-      border: 1px solid var(--border-subtle);
-      flex-shrink: 0;
-      background-color: #05070a;
-    }
-
-    .season-summary-main {
-      display: flex;
-      flex-direction: column;
-      gap: 0.05rem;
-      flex: 1 1 auto;
-      min-width: 0;
-    }
-
-    .season-title {
-      font-size: 0.8rem;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .season-subline {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-
-    .season-chevron {
-      font-size: 0.9rem;
-      transform: translateY(1px);
-      transition: transform var(--transition-fast);
-      flex-shrink: 0;
-    }
-
-    details[open] > summary .season-chevron {
-      transform: rotate(90deg) translateY(0);
-    }
-
-    .season-body {
-      padding: 0.35rem 0.5rem 0.45rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    details.episode-details {
-      border-radius: 8px;
-      border: 1px solid rgba(48, 54, 69, 0.7);
-      background: rgba(5, 7, 12, 0.9);
-      overflow: hidden;
-    }
-
-    summary.episode-summary {
-      list-style: none;
-      padding: 0.3rem 0.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 0.4rem;
-      cursor: pointer;
-    }
-
-    summary.episode-summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .episode-summary-main {
-      display: flex;
-      flex-direction: column;
-      gap: 0.07rem;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .episode-title {
-      font-size: 0.78rem;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .episode-sub-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.25rem;
-      align-items: center;
-      font-size: 0.7rem;
-      color: var(--text-muted);
-    }
-
-    .episode-sub-meta {
-      font-size: 0.7rem;
-    }
-
-    .episode-watch-buttons {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 0.2rem;
-    }
-
-    .episode-chevron {
-      font-size: 0.9rem;
-      transform: translateY(1px);
-      flex-shrink: 0;
-    }
-
-    .episode-body {
-      padding: 0.3rem 0.5rem 0.4rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      font-size: 0.78rem;
-      color: var(--text-muted);
-    }
-
-    .episode-still {
-      width: 100%;
-      max-width: 260px;
-      border-radius: 10px;
-      overflow: hidden;
-      border: 1px solid var(--border-subtle);
-    }
-
-    .episode-still img {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    .episode-meta-extra {
-      font-size: 0.7rem;
-      color: var(--text-soft);
-    }
-
-    /* Movies / Live TV / Config shells */
-
-    @media (max-width: 900px) {
-      .modal {
-        width: 96%;
-      }
-
-      .modal-header {
-        flex-direction: column;
-      }
-
-      .modal-title-block {
-        width: 100%;
-      }
-    }
-
-    @media (max-width: 720px) {
-      header.app-header {
-        padding-inline: 0.75rem;
-      }
-
-      main.app-main {
-        padding-inline: 0.5rem;
-      }
-
-      .calendar-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .calendar-dow-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-  </style>
+  <!-- [HTML-1.0] External stylesheet reference -->
+  <link rel="stylesheet" href="./css/my_tv_hub.css?v=3.3.1" />
 </head>
 <body>
+  <!-- ================================================================
+       [HTML-2.0] App header + nav
+       ================================================================ -->
   <header class="app-header">
     <div class="header-top-row">
       <div class="app-title">MY TV HUB</div>
       <div class="meta-line" id="meta-line">
-        index.html: <strong>v3.3.0</strong> • Data built: <span id="meta-data-built">n/a</span> • Shows:
+        index.html: <strong>v3.3.1</strong> • Data built: <span id="meta-data-built">n/a</span> • Shows:
         <span id="meta-shows-count">n/a</span> • Movies: <span id="meta-movies-count">n/a</span> • LiveTV:
         <span id="meta-livetv-count">0</span>
       </div>
     </div>
     <nav class="app-nav" aria-label="Main navigation">
       <button class="nav-button active" data-tab="calendar">
-        <span class="index">1</span> Calendar
+        <span class="nav-icon">📅</span> Calendar
       </button>
       <button class="nav-button" data-tab="shows">
-        <span class="index">2</span> Shows
+        <span class="nav-icon">📺</span> Shows
       </button>
       <button class="nav-button" data-tab="movies">
-        <span class="index">3</span> Movies
+        <span class="nav-icon">🎬</span> Movies
       </button>
       <button class="nav-button" data-tab="livetv">
-        <span class="index">4</span> Live TV
+        <span class="nav-icon">📡</span> Live TV
       </button>
       <button class="nav-button" data-tab="config">
-        <span class="index">5</span> Config
+        <span class="nav-icon">⚙️</span> Config
       </button>
     </nav>
     <div class="view-subtitle" id="view-subtitle">
@@ -1013,8 +42,11 @@
     </div>
   </header>
 
+  <!-- ================================================================
+       [HTML-3.0] Main tabbed content
+       ================================================================ -->
   <main class="app-main">
-    <!-- Calendar Tab -->
+    <!-- [HTML-3.1] Calendar tab -->
     <section id="tab-calendar" class="tab active" aria-label="Calendar view">
       <div class="section-header">
         <h2>Calendar</h2>
@@ -1042,7 +74,7 @@
       </div>
     </section>
 
-    <!-- Shows Tab -->
+    <!-- [HTML-3.2] Shows tab -->
     <section id="tab-shows" class="tab" aria-label="Shows view">
       <div class="section-header">
         <h2>Shows</h2>
@@ -1081,29 +113,29 @@
       <div class="card-grid" id="shows-grid"></div>
     </section>
 
-    <!-- Movies Tab (P2 shell) -->
+    <!-- [HTML-3.3] Movies tab (code kept, design to be iterated) -->
     <section id="tab-movies" class="tab" aria-label="Movies view">
       <div class="section-header">
         <h2>Movies</h2>
         <span class="pill" id="movies-count-pill">Movies: —</span>
       </div>
       <p style="font-size:0.85rem;color:var(--text-muted);">
-        Core Calendar + Shows behaviour has priority. Movies view will be brought to the same design language in the next
-        implementation pass.
+        Movies data and playback links are fully wired. Visual layout will be aligned with Calendar/Shows styling in a later
+        pass without removing or resetting existing movie code.
       </p>
     </section>
 
-    <!-- Live TV Tab (shell) -->
+    <!-- [HTML-3.4] Live TV tab (shell) -->
     <section id="tab-livetv" class="tab" aria-label="Live TV preview">
       <div class="section-header">
         <h2>Live TV (Preview)</h2>
       </div>
       <p style="font-size:0.85rem;color:var(--text-muted);">
-        Shell only for now. Channel lists and EPG wiring will follow once the main flows are stable.
+        Channel lists and EPG wiring will be layered on after the main Calendar/Shows/Movies flows are solid.
       </p>
     </section>
 
-    <!-- Config Tab -->
+    <!-- [HTML-3.5] Config tab -->
     <section id="tab-config" class="tab" aria-label="Config view">
       <div class="section-header">
         <h2>Config</h2>
@@ -1123,7 +155,7 @@
           <div style="display:flex;align-items:center;gap:0.45rem;flex-wrap:wrap;">
             <span class="filter-label">Font scale:</span>
             <input id="font-scale-input" type="number" min="0.8" max="1.6" step="0.05" value="1.0"
-              style="width:4rem;padding:0.15rem 0.35rem;border-radius:8px;border:1px solid var(--border-subtle);background:rgba(5,7,12,0.95);color:var(--text-main);font-size:0.8rem;" />
+              class="config-number-input" />
             <span style="font-size:0.78rem;color:var(--text-muted);">Values between 0.8–1.6.</span>
           </div>
           <div style="font-size:0.78rem;color:var(--text-muted);">
@@ -1147,7 +179,9 @@
     </section>
   </main>
 
-  <!-- Show Popup Modal (series + seasons accordions) -->
+  <!-- ================================================================
+       [HTML-4.0] Show popup modal (series + seasons accordions)
+       ================================================================ -->
   <div class="modal-backdrop" id="show-modal-backdrop" aria-hidden="true">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="show-modal-title">
       <div class="modal-header">
@@ -1180,10 +214,24 @@
     </div>
   </div>
 
+  <!-- ================================================================
+       [JS-1.0] App bootstrap + helpers
+       ================================================================ -->
   <script>
     (function () {
+      // ---------------------------------------------------------------
+      // [JS-1.1] Core constants and paths
+      // ---------------------------------------------------------------
       const DATA_URL = "../data/data.json"; // relative to /web/index.html
-      const TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/w342";
+      const TMDB_BASE = "https://image.tmdb.org/t/p/";
+
+      // TV embed baselines (shows + episodes)
+      const VID_EASY_TV_BASE = "https://player.videasy.net/embed/tv/";
+      const VIDSRC_TV_BASE = "https://vidsrc.net/embed/tv/";
+
+      // Movie embed baselines
+      const VID_EASY_MOVIE_BASE = "https://player.videasy.net/embed/movie/";
+      const VIDSRC_MOVIE_BASE = "https://vidsrc.net/embed/movie/";
 
       let tvData = null;
       let calendarMonthOffset = 0;
@@ -1195,6 +243,10 @@
 
       const qs = (sel) => document.querySelector(sel);
       const qsa = (sel) => Array.from(document.querySelectorAll(sel));
+
+      // ---------------------------------------------------------------
+      // [JS-1.2] Small utility helpers
+      // ---------------------------------------------------------------
 
       function parseDate(d) {
         if (!d) return null;
@@ -1234,13 +286,14 @@
         }
       }
 
-      function withTmdbImage(path) {
-        if (!path) return null;
-        if (typeof path !== "string") return null;
+      // [JS-1.3] TMDB image helpers (size-specific)
+      function withTmdbImage(path, size) {
+        if (!path || typeof path !== "string") return null;
         const trimmed = path.trim();
         if (!trimmed) return null;
         if (/^https?:\/\//i.test(trimmed)) return trimmed;
-        return TMDB_IMAGE_BASE + trimmed;
+        const chosen = size || "w342";
+        return TMDB_BASE + chosen + trimmed;
       }
 
       function normalizeUrl(url) {
@@ -1251,12 +304,17 @@
         return `https://${trimmed}`;
       }
 
+      // ===============================================================
+      // [JS-2.0] Layout wiring (nav, config, modal)
+      // ===============================================================
+
+      // [JS-2.1] Nav buttons + subtitle switching
       function buildNav() {
         const subtitleEl = qs("#view-subtitle");
         const subtitleByTab = {
           calendar: "Episodes & movie releases by air date.",
           shows: "Browse series, seasons, and episodes.",
-          movies: "Your tracked films (release-centric view).",
+          movies: "Track and watch your films.",
           livetv: "Later: live channels and EPG.",
           config: "Local display and maintenance helpers.",
         };
@@ -1276,6 +334,7 @@
         });
       }
 
+      // [JS-2.2] Theme + font-scale config
       function applyTheme(theme) {
         if (theme === "light") {
           document.body.classList.add("theme-light");
@@ -1314,6 +373,50 @@
         }
       }
 
+      // [JS-2.3] Modal open/close
+      function closeShowModal() {
+        const backdrop = qs("#show-modal-backdrop");
+        if (!backdrop) return;
+        backdrop.classList.remove("open");
+        backdrop.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = originalBodyOverflow || "";
+      }
+
+      function initModal() {
+        const backdrop = qs("#show-modal-backdrop");
+        const closeBtn = qs("#show-modal-close");
+        if (closeBtn) closeBtn.addEventListener("click", closeShowModal);
+        if (backdrop) {
+          backdrop.addEventListener("click", (ev) => {
+            if (ev.target === backdrop) closeShowModal();
+          });
+        }
+        window.addEventListener("keydown", (ev) => {
+          if (ev.key === "Escape") closeShowModal();
+        });
+      }
+
+      // [JS-2.4] Calendar nav controls
+      function initCalendarNav() {
+        qsa("[data-cal-nav]").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const action = btn.getAttribute("data-cal-nav");
+            if (action === "prev") calendarMonthOffset -= 1;
+            else if (action === "next") calendarMonthOffset += 1;
+            else if (action === "today") {
+              calendarMonthOffset = 0;
+              calendarScrollToToday = true;
+            }
+            if (tvData) buildCalendar(tvData);
+          });
+        });
+      }
+
+      // ===============================================================
+      // [JS-3.0] Calendar: data transform + rendering
+      // ===============================================================
+
+      // [JS-3.1] Meta line counts
       function updateMetaLine(data) {
         const built = safeGet(data, "meta.built_at") || safeGet(data, "meta.builtAt") || "n/a";
         const shows = normalizeArray(data.shows || data.tv || []).length;
@@ -1324,19 +427,20 @@
         qs("#meta-shows-count").textContent = shows || "0";
         qs("#meta-movies-count").textContent = movies || "0";
         qs("#meta-livetv-count").textContent = live || "0";
+
         const scp = qs("#shows-count-pill");
         if (scp) scp.textContent = `Shows: ${shows || 0}`;
         const mcp = qs("#movies-count-pill");
         if (mcp) mcp.textContent = `Movies: ${movies || 0}`;
       }
 
+      // [JS-3.2] Build flat list of calendar entries (shows + movies)
       function collectCalendarEntries(data) {
         const entries = [];
-
         const shows = normalizeArray(data.shows || data.tv || []);
+
         shows.forEach((show) => {
           const showName = show.name || show.title || show.ref_name || "Untitled show";
-          const poster = withTmdbImage(show.poster_path || show.poster);
           const tmdbId = show.tmdb_id || show.id || null;
           const seasons = normalizeArray(show.seasons);
 
@@ -1347,6 +451,9 @@
               const d = parseDate(ep.air_date || ep.airDate);
               if (!d) return;
               const links = safeGet(ep, "links", {});
+              const still =
+                withTmdbImage(ep.still_path || ep.still, "w300") ||
+                withTmdbImage(show.poster_path || show.poster, "w185");
               entries.push({
                 kind: "show",
                 date: d,
@@ -1356,7 +463,7 @@
                 episodeName: ep.name || "Episode",
                 runtime: ep.runtime || show.runtime || null,
                 status: d > new Date() ? "upcoming" : "released",
-                poster,
+                still,
                 tmdbId,
                 links,
               });
@@ -1369,7 +476,7 @@
           const d = parseDate(movie.release_date || movie.air_date || movie.date);
           if (!d) return;
           const title = movie.title || movie.name || "Untitled movie";
-          const poster = withTmdbImage(movie.poster_path || movie.poster);
+          const poster = withTmdbImage(movie.poster_path || movie.poster, "w185");
           const tmdbId = movie.tmdb_id || movie.id || null;
           const runtime = movie.runtime || null;
           const status = d > new Date() ? "upcoming" : "released";
@@ -1380,7 +487,7 @@
             title,
             runtime,
             status,
-            poster,
+            still: poster,
             tmdbId,
             links,
           });
@@ -1389,6 +496,14 @@
         return entries;
       }
 
+      // [JS-3.3] Scroll today's cell into view
+      function scrollTodayIntoView() {
+        const todayCell = qs(".calendar-day.today");
+        if (!todayCell) return;
+        todayCell.scrollIntoView({ block: "center", behavior: "smooth" });
+      }
+
+      // [JS-3.4] Render full calendar grid for current month offset
       function buildCalendar(data) {
         const now = new Date();
         const working = new Date(now);
@@ -1426,19 +541,15 @@
         qs("#calendar-range-label").textContent = `${formatDate(rangeStart)} – ${formatDate(rangeEnd)}`;
         qs("#calendar-summary-pill").textContent = `Month: ${monthLabel}`;
 
-        // Update prev / next button labels with month names
+        // Update Prev/Next with month names
         const prevMonthDate = new Date(year, monthIndex - 1, 1);
         const nextMonthDate = new Date(year, monthIndex + 1, 1);
         const prevBtn = qs("#btn-cal-prev");
         const nextBtn = qs("#btn-cal-next");
-        if (prevBtn) {
-          prevBtn.textContent = "« " + prevMonthDate.toLocaleDateString(undefined, { month: "short" });
-        }
-        if (nextBtn) {
-          nextBtn.textContent = nextMonthDate.toLocaleDateString(undefined, { month: "short" }) + " »";
-        }
+        if (prevBtn) prevBtn.textContent = "« " + prevMonthDate.toLocaleDateString(undefined, { month: "short" });
+        if (nextBtn) nextBtn.textContent = nextMonthDate.toLocaleDateString(undefined, { month: "short" }) + " »";
 
-        // Day-of-week header row (Monday first)
+        // Day-of-week header row (Mon..Sun)
         const dowNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         dowNames.forEach((name, idx) => {
           const cell = document.createElement("div");
@@ -1453,22 +564,12 @@
 
           const isCurrentMonth = cellDate.getMonth() === monthIndex;
           const isToday = isSameDay(cellDate, now);
-          const colIndex = cellIdx % 7; // Monday=0
+          const colIndex = cellIdx % 7; // Monday = 0
 
           const dayEl = document.createElement("div");
           dayEl.className = "calendar-day";
-          if (!isCurrentMonth) {
-            dayEl.classList.add("other-month");
-          }
-          if (colIndex >= 5) {
-            dayEl.classList.add("weekend");
-          }
-          if (isCurrentMonth) {
-            dayEl.dataset.date = cellDate.toISOString().slice(0, 10);
-          }
-          if (isCurrentMonth && isToday) {
-            dayEl.classList.add("today");
-          }
+          if (colIndex >= 5) dayEl.classList.add("weekend");
+          if (isCurrentMonth && isToday) dayEl.classList.add("today");
 
           const headerEl = document.createElement("div");
           headerEl.className = "day-header";
@@ -1502,22 +603,9 @@
                 const itemEl = document.createElement("article");
                 itemEl.className = "calendar-item";
 
-                const hasPoster = !!entry.poster;
-                if (!hasPoster) {
-                  itemEl.classList.add("posterless");
-                } else {
-                  const posterEl = document.createElement("div");
-                  posterEl.className = "calendar-item-poster";
-                  posterEl.style.backgroundImage = `url(${entry.poster})`;
-                  posterEl.addEventListener("click", (ev) => {
-                    ev.stopPropagation();
-                    openShowFromCalendar(entry);
-                  });
-                  itemEl.appendChild(posterEl);
-                }
-
-                const mainEl = document.createElement("div");
-                mainEl.className = "calendar-item-main";
+                // [JS-3.4.1] Info row
+                const infoEl = document.createElement("div");
+                infoEl.className = "calendar-item-info";
 
                 const titleEl = document.createElement("div");
                 titleEl.className = "calendar-item-title";
@@ -1530,21 +618,21 @@
                   ev.stopPropagation();
                   openShowFromCalendar(entry);
                 });
-                mainEl.appendChild(titleEl);
+                infoEl.appendChild(titleEl);
 
                 if (entry.tmdbId && entry.kind === "show") {
                   const idEl = document.createElement("div");
                   idEl.className = "calendar-item-id";
                   idEl.textContent = `[${entry.tmdbId}]`;
-                  mainEl.appendChild(idEl);
+                  infoEl.appendChild(idEl);
                 }
 
                 const epLineEl = document.createElement("div");
                 epLineEl.className = "calendar-item-episode";
                 if (entry.kind === "show") {
                   const s = entry.seasonNumber != null ? `S${entry.seasonNumber}` : "";
-                  const e = entry.episodeNumber != null ? `E${entry.episodeNumber}` : "";
-                  const se = s || e ? `${s}${e ? e : ""}` : "";
+                  const eNum = entry.episodeNumber != null ? `E${entry.episodeNumber}` : "";
+                  const se = s || eNum ? `${s}${eNum ? eNum : ""}` : "";
                   epLineEl.textContent = se
                     ? `${se} · ${entry.episodeName || ""}`.trim()
                     : entry.episodeName || "";
@@ -1555,12 +643,11 @@
                   ev.stopPropagation();
                   openShowFromCalendar(entry);
                 });
-                mainEl.appendChild(epLineEl);
+                infoEl.appendChild(epLineEl);
 
                 const metaRow = document.createElement("div");
                 metaRow.className = "calendar-item-meta";
 
-                // Only show UPCOMING badge; RELEASED is implied by the calendar.
                 if (entry.status === "upcoming") {
                   const badge = document.createElement("span");
                   badge.className = "badge badge-upcoming";
@@ -1575,11 +662,21 @@
                   metaRow.appendChild(rt);
                 }
 
-                mainEl.appendChild(metaRow);
+                infoEl.appendChild(metaRow);
+                itemEl.appendChild(infoEl);
 
-                // Watch buttons (TMDB / VidSRC / Videasy) if we have links/ids
-                const actions = document.createElement("div");
-                actions.className = "calendar-item-actions";
+                // [JS-3.4.2] Second row: still + stacked buttons
+                const stillEl = document.createElement("div");
+                stillEl.className = "calendar-item-still";
+                if (entry.still) stillEl.style.backgroundImage = `url(${entry.still})`;
+                stillEl.addEventListener("click", (ev) => {
+                  ev.stopPropagation();
+                  openShowFromCalendar(entry);
+                });
+                itemEl.appendChild(stillEl);
+
+                const actionsCol = document.createElement("div");
+                actionsCol.className = "calendar-item-actions-column";
 
                 const links = entry.links || {};
                 const tmdbUrl =
@@ -1589,67 +686,66 @@
                     : entry.tmdbId && entry.kind === "movie"
                       ? `https://www.themoviedb.org/movie/${entry.tmdbId}`
                       : null);
+
                 const vidsrcUrl =
                   normalizeUrl(links.vidsrc) ||
                   (entry.tmdbId && entry.kind === "show"
-                    ? `https://vidsrc.to/embed/tv/${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
+                    ? `${VIDSRC_TV_BASE}${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
                     : entry.tmdbId && entry.kind === "movie"
-                      ? `https://vidsrc.to/embed/movie/${entry.tmdbId}`
+                      ? `${VIDSRC_MOVIE_BASE}${entry.tmdbId}`
                       : null);
+
                 const videasyUrl =
                   normalizeUrl(links.videasy) ||
                   (entry.tmdbId && entry.kind === "show"
-                    ? `https://videasy.org/embed/tv/${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
+                    ? `${VID_EASY_TV_BASE}${entry.tmdbId}/${entry.seasonNumber || 1}/${entry.episodeNumber || 1}`
                     : entry.tmdbId && entry.kind === "movie"
-                      ? `https://videasy.org/embed/movie/${entry.tmdbId}`
+                      ? `${VID_EASY_MOVIE_BASE}${entry.tmdbId}`
                       : null);
 
-                function addWatchButton(label) {
+                function makeWatchButton(labelTop, labelBottom) {
                   const btn = document.createElement("button");
                   btn.type = "button";
                   btn.className = "btn-watch-small";
                   const top = document.createElement("span");
                   top.className = "label-top";
-                  top.textContent = "Watch on";
+                  top.textContent = labelTop;
                   const bottom = document.createElement("span");
                   bottom.className = "label-bottom";
-                  bottom.textContent = label;
+                  bottom.textContent = labelBottom;
                   btn.appendChild(top);
                   btn.appendChild(bottom);
                   return btn;
                 }
 
                 if (tmdbUrl) {
-                  const btn = addWatchButton("TMDB");
+                  const btn = makeWatchButton("Info at", "TMDB");
                   btn.addEventListener("click", (ev) => {
                     ev.stopPropagation();
                     window.open(tmdbUrl, "_blank", "noopener,noreferrer");
                   });
-                  actions.appendChild(btn);
-                }
-                if (vidsrcUrl) {
-                  const btn = addWatchButton("VidSRC");
-                  btn.addEventListener("click", (ev) => {
-                    ev.stopPropagation();
-                    window.open(vidsrcUrl, "_blank", "noopener,noreferrer");
-                  });
-                  actions.appendChild(btn);
+                  actionsCol.appendChild(btn);
                 }
                 if (videasyUrl) {
-                  const btn = addWatchButton("Videasy");
+                  const btn = makeWatchButton("Watch on", "Videasy");
                   btn.addEventListener("click", (ev) => {
                     ev.stopPropagation();
                     window.open(videasyUrl, "_blank", "noopener,noreferrer");
                   });
-                  actions.appendChild(btn);
+                  actionsCol.appendChild(btn);
+                }
+                if (vidsrcUrl) {
+                  const btn = makeWatchButton("Watch on", "VidSrc");
+                  btn.addEventListener("click", (ev) => {
+                    ev.stopPropagation();
+                    window.open(vidsrcUrl, "_blank", "noopener,noreferrer");
+                  });
+                  actionsCol.appendChild(btn);
                 }
 
-                if (actions.childNodes.length) {
-                  mainEl.appendChild(actions);
-                }
+                itemEl.appendChild(actionsCol);
 
                 itemEl.addEventListener("click", () => openShowFromCalendar(entry));
-                itemEl.appendChild(mainEl);
                 bodyEl.appendChild(itemEl);
               });
           }
@@ -1665,11 +761,9 @@
         }
       }
 
-      function scrollTodayIntoView() {
-        const todayCell = qs(".calendar-day.today");
-        if (!todayCell) return;
-        todayCell.scrollIntoView({ block: "center", behavior: "smooth" });
-      }
+      // ===============================================================
+      // [JS-4.0] Shows grid + filters
+      // ===============================================================
 
       function collectGenres(shows) {
         const set = new Set();
@@ -1715,6 +809,7 @@
         return next;
       }
 
+      // [JS-4.1] Build Shows filters + grid
       function buildShows(data) {
         const shows = normalizeArray(data.shows || data.tv || []);
         cachedShows = shows;
@@ -1727,7 +822,6 @@
           }
         });
 
-        // Genre chips
         const chipsContainer = qs("#shows-genre-chips");
         if (chipsContainer) {
           chipsContainer.innerHTML = "";
@@ -1751,7 +845,6 @@
           });
         }
 
-        // Filters events
         const statusSel = qs("#shows-status-filter");
         const sortSel = qs("#shows-sort");
         if (statusSel) statusSel.addEventListener("change", renderShowsGrid);
@@ -1760,6 +853,7 @@
         renderShowsGrid();
       }
 
+      // [JS-4.2] Render Shows grid based on filters
       function renderShowsGrid() {
         const grid = qs("#shows-grid");
         if (!grid) return;
@@ -1770,7 +864,6 @@
 
         let shows = [...cachedShows];
 
-        // Status filter (using normalised values)
         shows = shows.filter((show) => {
           const rawStatus = (show.status || "").trim();
           const status = rawStatus || "Unknown";
@@ -1809,7 +902,7 @@
 
           const poster = document.createElement("div");
           poster.className = "show-poster";
-          const posterPath = withTmdbImage(show.poster_path || show.poster);
+          const posterPath = withTmdbImage(show.poster_path || show.poster, "w185");
           if (posterPath) poster.style.backgroundImage = `url(${posterPath})`;
 
           const status = (show.status || "").trim();
@@ -1889,57 +982,49 @@
             body.appendChild(cs);
           }
 
-          // Watch buttons – consistent rules
           const watchRow = document.createElement("div");
           watchRow.className = "show-watch-row";
-          const tmdbUrl = tmdbId ? `https://www.themoviedb.org/tv/${tmdbId}` : null;
-          const vidsrcUrl = tmdbId ? `https://vidsrc.to/embed/tv/${tmdbId}` : null;
-          const videasyUrl = tmdbId ? `https://videasy.org/embed/tv/${tmdbId}` : null;
 
-          if (tmdbUrl) {
-            const b = document.createElement("button");
-            b.type = "button";
-            b.className = "btn-watch";
-            b.textContent = "TMDB";
-            b.addEventListener("click", (ev) => {
+          function makeWatch(labelTop, labelBottom, href) {
+            if (!href) return;
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "btn-watch";
+            const top = document.createElement("span");
+            top.className = "label-top";
+            top.textContent = labelTop;
+            const bottom = document.createElement("span");
+            bottom.className = "label-bottom";
+            bottom.textContent = labelBottom;
+            btn.appendChild(top);
+            btn.appendChild(bottom);
+            btn.addEventListener("click", (ev) => {
               ev.stopPropagation();
-              window.open(tmdbUrl, "_blank", "noopener,noreferrer");
+              window.open(href, "_blank", "noopener,noreferrer");
             });
-            watchRow.appendChild(b);
+            watchRow.appendChild(btn);
           }
-          if (vidsrcUrl) {
-            const b = document.createElement("button");
-            b.type = "button";
-            b.className = "btn-watch";
-            b.textContent = "VidSRC";
-            b.addEventListener("click", (ev) => {
-              ev.stopPropagation();
-              window.open(vidsrcUrl, "_blank", "noopener,noreferrer");
-            });
-            watchRow.appendChild(b);
-          }
-          if (videasyUrl) {
-            const b = document.createElement("button");
-            b.type = "button";
-            b.className = "btn-watch";
-            b.textContent = "Videasy";
-            b.addEventListener("click", (ev) => {
-              ev.stopPropagation();
-              window.open(videasyUrl, "_blank", "noopener,noreferrer");
-            });
-            watchRow.appendChild(b);
-          }
+
+          const tmdbUrl = tmdbId ? `https://www.themoviedb.org/tv/${tmdbId}` : null;
+          const vidsrcUrl = tmdbId ? `${VIDSRC_TV_BASE}${tmdbId}` : null;
+          const videasyUrl = tmdbId ? `${VID_EASY_TV_BASE}${tmdbId}` : null;
+
+          makeWatch("Info at", "TMDB", tmdbUrl);
+          makeWatch("Watch on", "Videasy", videasyUrl);
+          makeWatch("Watch on", "VidSrc", vidsrcUrl);
 
           if (watchRow.childNodes.length) body.appendChild(watchRow);
 
           card.appendChild(poster);
           card.appendChild(body);
-
           card.addEventListener("click", () => openShowModal(show));
-
           grid.appendChild(card);
         });
       }
+
+      // ===============================================================
+      // [JS-5.0] Show modal wiring
+      // ===============================================================
 
       function openShowFromCalendar(entry) {
         if (!entry.tmdbId || entry.kind !== "show") return;
@@ -1956,7 +1041,7 @@
         if (!backdrop) return;
         const title = show.name || show.title || "Show";
         const tmdbId = show.tmdb_id || show.id || null;
-        const posterPath = withTmdbImage(show.poster_path || show.poster);
+        const posterPath = withTmdbImage(show.poster_path || show.poster, "w185");
 
         qs("#show-modal-title").textContent = title;
         const poster = qs("#show-modal-poster");
@@ -2057,8 +1142,8 @@
             const thumb = document.createElement("div");
             thumb.className = "season-thumb";
             const seasonPoster =
-              withTmdbImage(season.poster_path || season.poster || season.still_path || season.still) ||
-              withTmdbImage(show.poster_path || show.poster);
+              withTmdbImage(season.poster_path || season.poster || season.still_path || season.still, "w185") ||
+              withTmdbImage(show.poster_path || show.poster, "w185");
             if (seasonPoster) {
               thumb.style.backgroundImage = `url(${seasonPoster})`;
             }
@@ -2131,24 +1216,34 @@
               watchRow.className = "episode-watch-buttons";
 
               const links = safeGet(ep, "links", {});
-              const hosts = ["vidsrc", "videasy", "tmdb"];
+              const hosts = ["tmdb", "videasy", "vidsrc"];
               hosts.forEach((hostKey) => {
                 let url = links[hostKey];
-                if (!url) {
-                  if (hostKey === "tmdb" && tmdbId) {
+                if (!url && tmdbId) {
+                  if (hostKey === "tmdb") {
                     url = `https://www.themoviedb.org/tv/${tmdbId}/season/${seasonNum}/episode/${ep.episode_number ?? ep.number ?? 1}`;
+                  } else if (hostKey === "videasy") {
+                    url = `${VID_EASY_TV_BASE}${tmdbId}/${seasonNum}/${ep.episode_number ?? ep.number ?? 1}`;
+                  } else if (hostKey === "vidsrc") {
+                    url = `${VIDSRC_TV_BASE}${tmdbId}/${seasonNum}/${ep.episode_number ?? ep.number ?? 1}`;
                   }
                 }
-                if (!url) return;
-                const safe = normalizeUrl(url);
-                if (!safe) return;
+                const safeUrl = normalizeUrl(url);
+                if (!safeUrl) return;
                 const btn = document.createElement("button");
                 btn.type = "button";
                 btn.className = "btn-watch";
-                btn.textContent = hostKey.toUpperCase();
+                const top = document.createElement("span");
+                top.className = "label-top";
+                top.textContent = hostKey === "tmdb" ? "Info at" : "Watch on";
+                const bottom = document.createElement("span");
+                bottom.className = "label-bottom";
+                bottom.textContent = hostKey === "tmdb" ? "TMDB" : hostKey === "videasy" ? "Videasy" : "VidSrc";
+                btn.appendChild(top);
+                btn.appendChild(bottom);
                 btn.addEventListener("click", (ev) => {
                   ev.stopPropagation();
-                  window.open(safe, "_blank", "noopener,noreferrer");
+                  window.open(safeUrl, "_blank", "noopener,noreferrer");
                 });
                 watchRow.appendChild(btn);
               });
@@ -2172,7 +1267,7 @@
 
               const stillContainer = document.createElement("div");
               stillContainer.className = "episode-still";
-              const stillPath = withTmdbImage(ep.still_path || ep.still);
+              const stillPath = withTmdbImage(ep.still_path || ep.still, "w300");
               if (stillPath) {
                 const img = document.createElement("img");
                 img.src = stillPath;
@@ -2181,9 +1276,9 @@
                 epBody.appendChild(stillContainer);
               }
 
-              const overview = document.createElement("div");
-              overview.textContent = ep.overview || "Overview not available yet.";
-              epBody.appendChild(overview);
+              const overviewTxt = document.createElement("div");
+              overviewTxt.textContent = ep.overview || "Overview not available yet.";
+              epBody.appendChild(overviewTxt);
 
               const extra = document.createElement("div");
               extra.className = "episode-meta-extra";
@@ -2211,49 +1306,15 @@
             seasonsContainer.appendChild(detailsEl);
           });
 
-        // Lock background scroll while popup is open
         originalBodyOverflow = document.body.style.overflow || "";
         document.body.style.overflow = "hidden";
         backdrop.classList.add("open");
         backdrop.setAttribute("aria-hidden", "false");
       }
 
-      function closeShowModal() {
-        const backdrop = qs("#show-modal-backdrop");
-        if (!backdrop) return;
-        backdrop.classList.remove("open");
-        backdrop.setAttribute("aria-hidden", "true");
-        document.body.style.overflow = originalBodyOverflow || "";
-      }
-
-      function initModal() {
-        const backdrop = qs("#show-modal-backdrop");
-        const closeBtn = qs("#show-modal-close");
-        if (closeBtn) closeBtn.addEventListener("click", closeShowModal);
-        if (backdrop) {
-          backdrop.addEventListener("click", (ev) => {
-            if (ev.target === backdrop) closeShowModal();
-          });
-        }
-        window.addEventListener("keydown", (ev) => {
-          if (ev.key === "Escape") closeShowModal();
-        });
-      }
-
-      function initCalendarNav() {
-        qsa("[data-cal-nav]").forEach((btn) => {
-          btn.addEventListener("click", () => {
-            const action = btn.getAttribute("data-cal-nav");
-            if (action === "prev") calendarMonthOffset -= 1;
-            else if (action === "next") calendarMonthOffset += 1;
-            else if (action === "today") {
-              calendarMonthOffset = 0;
-              calendarScrollToToday = true;
-            }
-            if (tvData) buildCalendar(tvData);
-          });
-        });
-      }
+      // ===============================================================
+      // [JS-6.0] Data loading + init
+      // ===============================================================
 
       async function loadData() {
         const fallbackMeta = {
