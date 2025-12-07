@@ -93,37 +93,6 @@
       color: var(--text-muted);
     }
 
-    .btn {
-      border: none;
-      border-radius: 999px;
-      padding: 8px 14px;
-      font-size: 0.8rem;
-      font-weight: 550;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      cursor: pointer;
-      background: rgba(15, 22, 45, 0.9);
-      color: var(--text-main);
-      box-shadow: var(--shadow-light);
-      text-decoration: none;
-      white-space: nowrap;
-    }
-
-    .btn span.icon {
-      font-size: 1.1rem;
-      opacity: 0.9;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, var(--accent), #5c8bff);
-      color: #f9fbff;
-    }
-
-    .btn-primary:hover {
-      filter: brightness(1.05);
-    }
-
     main {
       display: flex;
       flex-direction: column;
@@ -154,9 +123,15 @@
 
     .hero {
       display: grid;
-      grid-template-columns: 130px minmax(0, 1fr);
+      grid-template-columns: 160px minmax(0, 1fr);
       gap: 14px;
       align-items: stretch;
+    }
+
+    .hero-poster-column {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .hero-poster {
@@ -185,6 +160,35 @@
       color: var(--text-muted);
       text-align: center;
       padding: 12px;
+      opacity: 0.8;
+    }
+
+    .season-poster {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: #05070b;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-light);
+      min-height: 100px;
+      max-height: 120px; /* ~50–60% of main poster height visually */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .season-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      opacity: 0.95;
+    }
+
+    .season-poster-placeholder {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 8px;
       opacity: 0.8;
     }
 
@@ -380,10 +384,18 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      min-width: 0;
     }
 
     .episode-title {
       font-weight: 550;
+    }
+
+    .episode-sub-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
     }
 
     .episode-sub {
@@ -421,7 +433,6 @@
       font-size: 0.65rem;
       padding: 1px 6px;
       border-radius: 999px;
-      margin-left: 6px;
       text-transform: uppercase;
       letter-spacing: 0.06em;
     }
@@ -438,15 +449,17 @@
       color: #ffe1af;
     }
 
-    .episode-actions {
+    /* Watch buttons inline in the summary row */
+    .episode-actions-inline {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 4px;
+      margin-top: 4px;
     }
 
     .btn-watch {
       font-size: 0.75rem;
-      padding: 6px 10px;
+      padding: 4px 8px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(16, 24, 52, 0.95);
@@ -455,6 +468,10 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
+    }
+
+    .btn-watch span.icon {
+      font-size: 0.8rem;
     }
 
     .btn-watch.service-vidsrc {
@@ -489,6 +506,51 @@
       text-align: center;
     }
 
+    /* Show list for no-slug case */
+    .show-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .show-list-item {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: rgba(8, 11, 24, 0.9);
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .show-list-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.8rem;
+    }
+
+    .show-list-title {
+      font-weight: 600;
+    }
+
+    .show-list-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .btn-open-show {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(16, 24, 52, 0.95);
+      color: #e9efff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
     @media (max-width: 720px) {
       header.page-header {
         flex-direction: column;
@@ -499,8 +561,11 @@
         grid-template-columns: minmax(0, 1fr);
       }
 
-      .hero-poster {
-        max-width: 210px;
+      .hero-poster-column {
+        max-width: 220px;
+      }
+
+      .hero-poster-column {
         margin: 0 auto;
       }
 
@@ -522,19 +587,24 @@
           <span class="tag" id="header-tag-slug">Slug: –</span>
         </div>
       </div>
-      <!-- Back button removed as requested -->
+      <!-- Back button intentionally removed -->
     </header>
 
     <main>
       <!-- HERO -->
-      <section class="card">
+      <section class="card" id="hero-card">
         <div class="card-header">
           <span>Show overview</span>
         </div>
         <div class="hero">
-          <div class="hero-poster" id="hero-poster">
-            <div class="hero-poster-placeholder">
-              Poster loading…
+          <div class="hero-poster-column">
+            <div class="hero-poster" id="hero-poster">
+              <div class="hero-poster-placeholder">
+                Poster loading…
+              </div>
+            </div>
+            <div class="season-poster" id="season-poster">
+              <!-- Season poster or placeholder will appear here -->
             </div>
           </div>
           <div class="hero-meta">
@@ -547,7 +617,7 @@
       </section>
 
       <!-- WATCH TIPS / ADS / CC / LOADING EXPLAINED (COLLAPSIBLE) -->
-      <section class="card">
+      <section class="card" id="info-card">
         <details class="info-block">
           <summary class="info-summary">
             <div class="info-summary-text">
@@ -578,10 +648,10 @@
         </details>
       </section>
 
-      <!-- SEASONS + EPISODES -->
+      <!-- SEASONS + EPISODES / OR SHOW LIST (NO SLUG) -->
       <section class="card">
         <div class="card-header">
-          <span>Season & episodes</span>
+          <span id="episodes-header-title">Season & episodes</span>
           <span class="text-muted" id="season-summary-label"></span>
         </div>
         <div class="seasons-container" id="seasons-container">
@@ -612,9 +682,7 @@
 
     function getSlugFromUrl() {
       const params = new URLSearchParams(window.location.search);
-      // Primary: ?slug=...
-      const slug = params.get("slug");
-      return slug;
+      return params.get("slug");
     }
 
     function formatDate(iso) {
@@ -638,6 +706,7 @@
       const extraEl = document.getElementById("hero-extra");
       const pillRowEl = document.getElementById("hero-pill-row");
       const posterEl = document.getElementById("hero-poster");
+      const seasonPosterEl = document.getElementById("season-poster");
       const seasonSummaryLabelEl = document.getElementById("season-summary-label");
 
       const year = show.first_air_date ? new Date(show.first_air_date).getFullYear() : "–";
@@ -677,7 +746,7 @@
         pillRowEl.appendChild(span);
       });
 
-      // Poster
+      // Main poster
       posterEl.innerHTML = "";
       if (show.poster_path) {
         const img = document.createElement("img");
@@ -689,6 +758,20 @@
         div.className = "hero-poster-placeholder";
         div.textContent = "Poster not available.";
         posterEl.appendChild(div);
+      }
+
+      // Season poster (smaller)
+      seasonPosterEl.innerHTML = "";
+      if (season && season.poster_path) {
+        const img = document.createElement("img");
+        img.alt = `${season.name || "Season"} poster`;
+        img.src = `https://image.tmdb.org/t/p/w185${season.poster_path}`;
+        seasonPosterEl.appendChild(img);
+      } else {
+        const div = document.createElement("div");
+        div.className = "season-poster-placeholder";
+        div.textContent = "Season image not available.";
+        seasonPosterEl.appendChild(div);
       }
 
       const epCount = season ? season.episode_count ?? (season.episodes || []).length : 0;
@@ -703,7 +786,7 @@
           "This streaming link does not look valid yet. Please try a different host or episode."
         );
       }
-      // If valid-looking, let the browser open it in a new tab as normal.
+      // If it looks valid, allow the browser to open it in a new tab.
     }
 
     function buildEpisodes(season, cfg) {
@@ -763,12 +846,16 @@
         epTitle.className = "episode-title";
         epTitle.textContent = `S${season.season_number}E${ep.episode_number} · ${ep.name || "Untitled"}`;
 
-        const epSub = document.createElement("div");
-        epSub.className = "episode-sub";
+        // Sub-row: date/time, status badge, and watch buttons inline
+        const epSubRow = document.createElement("div");
+        epSubRow.className = "episode-sub-row";
+
+        const epSubText = document.createElement("div");
+        epSubText.className = "episode-sub";
         const pieces = [];
         if (ep.air_date) pieces.push(formatDate(ep.air_date));
         if (ep.runtime) pieces.push(`${ep.runtime} min`);
-        epSub.textContent = pieces.length ? pieces.join(" · ") : "Details coming soon";
+        epSubText.textContent = pieces.length ? pieces.join(" · ") : "Details coming soon";
 
         // Episode status badge (released vs upcoming)
         let status = "released";
@@ -782,10 +869,37 @@
         statusBadge.className =
           "episode-status " + (status === "upcoming" ? "upcoming" : "released");
         statusBadge.textContent = status === "upcoming" ? "UPCOMING" : "RELEASED";
-        epSub.appendChild(statusBadge);
+
+        epSubRow.appendChild(epSubText);
+        epSubRow.appendChild(statusBadge);
+
+        // Watch buttons inline with date/time row
+        const links = (ep.links || {});
+        const linkKeys = Object.keys(links).filter(k => links[k]);
+        if (linkKeys.length) {
+          const actionsSummary = document.createElement("div");
+          actionsSummary.className = "episode-actions-inline";
+
+          linkKeys.forEach(key => {
+            const url = links[key];
+            const label = STREAMING_LABELS[key] || key;
+            const a = document.createElement("a");
+            a.href = url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.className = "btn-watch service-" + key.toLowerCase();
+            a.innerHTML = `<span class="icon">▶</span><span>${label}</span>`;
+            a.addEventListener("click", function (e) {
+              handleWatchClick(e, url);
+            });
+            actionsSummary.appendChild(a);
+          });
+
+          epSubRow.appendChild(actionsSummary);
+        }
 
         epMain.appendChild(epTitle);
-        epMain.appendChild(epSub);
+        epMain.appendChild(epSubRow);
 
         const epChevron = document.createElement("div");
         epChevron.className = "summary-chevron";
@@ -821,30 +935,6 @@
         epMeta.textContent = epMetaParts.join(" · ");
         epBody.appendChild(epMeta);
 
-        const links = (ep.links || {});
-        const linkKeys = Object.keys(links).filter(k => links[k]);
-        if (linkKeys.length) {
-          const actions = document.createElement("div");
-          actions.className = "episode-actions";
-
-          linkKeys.forEach(key => {
-            const url = links[key];
-            const label = STREAMING_LABELS[key] || key;
-            const a = document.createElement("a");
-            a.href = url;
-            a.target = "_blank";
-            a.rel = "noopener noreferrer";
-            a.className = "btn-watch service-" + key.toLowerCase();
-            a.innerHTML = `<span>▶</span><span>Watch on ${label}</span>`;
-            a.addEventListener("click", function (e) {
-              handleWatchClick(e, url);
-            });
-            actions.appendChild(a);
-          });
-
-          epBody.appendChild(actions);
-        }
-
         epDetails.appendChild(epSummary);
         epDetails.appendChild(epBody);
         body.appendChild(epDetails);
@@ -855,15 +945,114 @@
       container.appendChild(seasonDetails);
     }
 
+    async function renderShowList() {
+      const headerTitle = document.getElementById("header-title");
+      const tagTmdb = document.getElementById("header-tag-tmdb");
+      const tagSeason = document.getElementById("header-tag-season");
+      const tagSlug = document.getElementById("header-tag-slug");
+      const heroCard = document.getElementById("hero-card");
+      const infoCard = document.getElementById("info-card");
+      const episodesHeaderTitle = document.getElementById("episodes-header-title");
+      const seasonSummaryLabel = document.getElementById("season-summary-label");
+      const statusEl = document.getElementById("status-message");
+      const container = document.getElementById("seasons-container");
+
+      // Update header for list mode
+      headerTitle.textContent = "Available shows";
+      document.title = "Available shows · my_TV_Movie";
+      tagTmdb.textContent = "TMDB: –";
+      tagSeason.textContent = "Season –";
+      tagSlug.textContent = "Slug: (none)";
+
+      // Hide hero & info cards in list mode
+      heroCard.style.display = "none";
+      infoCard.style.display = "none";
+
+      // Update episodes card header
+      episodesHeaderTitle.textContent = "Available shows";
+      seasonSummaryLabel.textContent = "";
+
+      try {
+        const mapRes = await fetch(STATIC_CONFIG.mapUrl, { cache: "no-store" });
+        if (!mapRes.ok) throw new Error("shows_map.json HTTP " + mapRes.status);
+        const map = await mapRes.json();
+
+        const dataRes = await fetch(STATIC_CONFIG.dataUrl, { cache: "no-store" });
+        if (!dataRes.ok) throw new Error("data.json HTTP " + dataRes.status);
+        const data = await dataRes.json();
+        const shows = data.shows || [];
+
+        container.innerHTML = "";
+
+        const list = document.createElement("div");
+        list.className = "show-list";
+
+        const slugs = Object.keys(map);
+        if (!slugs.length) {
+          const msg = document.createElement("div");
+          msg.className = "status-message";
+          msg.textContent = "No shows are defined in shows_map.json yet.";
+          container.appendChild(msg);
+          return;
+        }
+
+        slugs.forEach(slugKey => {
+          const cfg = map[slugKey];
+          const tmdbId = cfg.tmdbId;
+          const seasonNumber = cfg.seasonNumber;
+          const show = shows.find(
+            s => s.tmdb_id === tmdbId || s.show_id === tmdbId
+          );
+
+          const item = document.createElement("div");
+          item.className = "show-list-item";
+
+          const main = document.createElement("div");
+          main.className = "show-list-main";
+
+          const title = document.createElement("div");
+          title.className = "show-list-title";
+          if (show) {
+            const year = show.first_air_date
+              ? new Date(show.first_air_date).getFullYear()
+              : "–";
+            title.textContent = `${show.name || "Untitled"} (${year})`;
+          } else {
+            title.textContent = `Unknown title (TMDB ${tmdbId})`;
+          }
+
+          const sub = document.createElement("div");
+          sub.className = "show-list-sub";
+          sub.textContent = `Slug: ${slugKey} · TMDB: ${tmdbId} · Season: ${seasonNumber}`;
+
+          main.appendChild(title);
+          main.appendChild(sub);
+
+          const link = document.createElement("a");
+          link.className = "btn-open-show";
+          link.href = `./show.html?slug=${encodeURIComponent(slugKey)}`;
+          link.textContent = "Open show page";
+
+          item.appendChild(main);
+          item.appendChild(link);
+          list.appendChild(item);
+        });
+
+        container.appendChild(list);
+      } catch (err) {
+        console.error("Error loading show list:", err);
+        statusEl.textContent =
+          "Could not load the list of shows. Please try again later.";
+      }
+    }
+
     async function init() {
       const statusEl = document.getElementById("status-message");
       const tagSlugEl = document.getElementById("header-tag-slug");
       const slug = getSlugFromUrl();
 
       if (!slug) {
-        statusEl.textContent =
-          "No show selected. This page must be opened with a ?slug= in the URL (e.g. ?slug=heated_rivalry).";
-        tagSlugEl.textContent = "Slug: (missing)";
+        await renderShowList();
         return;
       }
 
