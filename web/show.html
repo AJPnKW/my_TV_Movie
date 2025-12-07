@@ -104,7 +104,7 @@
       color: var(--text-muted);
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
     }
 
@@ -117,6 +117,22 @@
       border: 1px solid rgba(255, 255, 255, 0.14);
       background: rgba(0, 0, 0, 0.3);
       color: var(--text-muted);
+    }
+
+    /* NEW: header button to show list */
+    .btn-header-link {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(16, 24, 52, 0.95);
+      color: #e9efff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-header-link:hover {
+      filter: brightness(1.08);
     }
 
     main {
@@ -584,6 +600,8 @@
         <div class="header-title" id="header-title">Loading show…</div>
         <div class="header-sub">
           <span class="tag" id="header-tag-tmdb">TMDB: –</span>
+          <!-- NEW: button back to index -->
+          <a class="btn-header-link" href="show.html">All shows</a>
         </div>
       </div>
     </header>
