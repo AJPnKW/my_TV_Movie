@@ -1,255 +1,301 @@
-/* ======================================================================
- * [CSS-1.0] Root variables, resets, base typography
- * ==================================================================== */
-
+/* [CSS-1.0] Root + theme */
 :root {
-  --bg: #05070a;
-  --bg-elevated: #10131a;
-  --bg-elevated-soft: #171b24;
-  --border-subtle: #262b36;
-  --border-strong: #3b4252;
-  --accent: #4c8dff;
-  --accent-soft: rgba(76, 141, 255, 0.15);
-  --accent-strong: #ffcc33;
-  --accent-danger: #ff4c6a;
-  --text-main: #e5e9f0;
-  --text-muted: #a0a7b6;
-  --text-soft: #7a8190;
-  --badge-bg: #1a202e;
-  --badge-border: #3b4252;
-  --today-bg: rgba(76, 141, 255, 0.16);
-  --today-border: #4c8dff;
-  --today-header-bg: rgba(76, 141, 255, 0.28);
-  --weekend-bg: rgba(40, 40, 70, 0.3);
-  --weekend-header-bg: rgba(40, 40, 80, 0.6);
-  --scrollbar-track: #0a0d12;
-  --scrollbar-thumb: #2a3140;
-  --card-radius: 14px;
-  --transition-fast: 0.15s ease-out;
-  --font-scale: 1.0;
+  --bg-main: #02040a;
+  --bg-elevated: #050814;
+  --bg-card: #090d1c;
+  --bg-card-soft: #0f1324;
+  --accent-soft: #273656;
+  --border-subtle: #262b3a;
+  --text-main: #f5f7ff;
+  --text-muted: #9ca3c8;
+  --text-soft: #c9cdee;
 }
 
-* {
+/* generic reset-ish */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  background: radial-gradient(circle at top, #141824 0, #05070a 55%, #020308 100%);
-  color: var(--text-main);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: calc(16px * var(--font-scale));
-  -webkit-font-smoothing: antialiased;
+  background: radial-gradient(circle at top, #101428 0, #050814 45%, #02040a 100%);
+  color: var(--text-main);
 }
 
-body {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 999px;
-}
-
-/* ======================================================================
- * [CSS-2.0] Layout shell (header, main)
- * ==================================================================== */
-
-header.app-header {
+/* [CSS-2.0] Layout */
+.app-header {
   position: sticky;
   top: 0;
-  z-index: 30;
-  background: linear-gradient(to bottom, #05070a 0, rgba(5, 7, 10, 0.9) 70%, rgba(5, 7, 10, 0.4) 100%);
-  border-bottom: 1px solid var(--border-subtle);
-  padding: 0.75rem 1.25rem 0.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  z-index: 40;
+  background: linear-gradient(to bottom, rgba(2, 4, 10, 0.98), rgba(2, 4, 10, 0.96));
+  backdrop-filter: blur(16px);
+  padding: 0.9rem 1.5rem 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
-.header-top-row {
+.app-title-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  column-gap: 1rem;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
 }
 
 .app-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
 }
 
 .meta-line {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-}
-
-.meta-line strong {
-  color: var(--accent-strong);
-  font-weight: 500;
-}
-
-main.app-main {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.75rem 1rem 1.25rem;
-  max-width: 1320px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-/* ======================================================================
- * [CSS-3.0] Nav bar / tab strip
- * ==================================================================== */
-
-nav.app-nav {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 0.4rem;
-  margin-top: 0.25rem;
-}
-
-.nav-button {
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(10, 13, 20, 0.92);
-  padding: 0.4rem 0.85rem;
-  font-size: 0.85rem;
-  color: var(--text-muted);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  transition: background var(--transition-fast), border-color var(--transition-fast),
-    color var(--transition-fast), transform var(--transition-fast);
   white-space: nowrap;
 }
 
-.nav-icon {
-  font-size: 1rem;
-  opacity: 0.9;
+.view-nav {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(10, 13, 20, 0.92);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease, color 120ms ease;
+}
+
+.nav-button .nav-icon {
+  font-size: 0.9rem;
 }
 
 .nav-button.active {
   background: var(--accent-soft);
-  border-color: var(--accent);
+  border-color: #ffffff;
   color: var(--text-main);
   transform: translateY(-1px);
 }
 
-.nav-button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+.nav-button:hover {
+  border-color: #ffffff;
 }
 
 .view-subtitle {
-  margin-top: 0.3rem;
-  font-size: 0.82rem;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
   color: var(--text-muted);
 }
 
-/* ======================================================================
- * [CSS-4.0] Shared section + cards + buttons
- * ==================================================================== */
+.app-main {
+  padding: 0.6rem 1.25rem 1.5rem;
+}
 
-section.tab {
+/* [CSS-2.1] Tabs */
+.tab {
   display: none;
 }
 
-section.tab.active {
+.tab.active {
   display: block;
 }
 
-.section-header {
+/* [CSS-3.0] Calendar layout */
+.calendar-header-shell {
+  position: sticky;
+  top: 3.3rem; /* below header bar */
+  z-index: 30;
+  background: #05070a;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.4rem 0 0.25rem;
+}
+
+.calendar-month-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  gap: 0.5rem;
+  gap: 1rem;
+  padding-right: 0.25rem;
 }
 
-.section-header h2 {
-  font-size: 1.05rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.calendar-month-label {
   margin: 0;
-  color: var(--text-main);
+  font-size: 1.05rem;
 }
 
-.pill {
-  border-radius: 999px;
-  padding: 0.1rem 0.5rem;
-  border: 1px solid var(--border-subtle);
-  font-size: 0.75rem;
-  color: var(--text-soft);
-  background: rgba(10, 13, 20, 0.75);
+.calendar-range-label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
 }
 
-/* Shared button styles */
-
-.btn,
-.btn-ghost,
-.btn-close {
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(10, 13, 20, 0.95);
-  color: var(--text-main);
-  padding: 0.28rem 0.7rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  display: inline-flex;
+.calendar-nav-buttons {
+  display: flex;
   align-items: center;
-  gap: 0.2rem;
-  transition: background var(--transition-fast), border-color var(--transition-fast),
-    transform var(--transition-fast);
-  white-space: nowrap;
+  gap: 0.4rem;
 }
 
-.btn:hover,
-.btn-ghost:hover {
-  background: rgba(15, 19, 27, 0.98);
-  border-color: var(--border-strong);
+.pill-button {
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: #0a0f24;
+  color: var(--text-main);
+  font-size: 0.74rem;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
 }
 
-.btn-primary {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent-strong);
-  font-weight: 500;
+.pill-button:hover {
+  border-color: #ffffff;
 }
 
-.btn-close {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: #000;
+.pill-today {
+  background: #273656;
+  border-color: #ffffff;
+}
+
+.calendar-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+}
+
+.dow-cell {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.dow-cell.weekend {
+  color: #ffb347;
+}
+
+/* calendar grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+}
+
+.calendar-day-column {
+  min-height: 8rem;
+  background: #050814;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0.25rem 0.22rem 0.3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-day-column.weekend {
+  background: #0a0f24;
+}
+
+.calendar-day-column.out-of-month {
+  visibility: hidden; /* keep spacing but hide days outside month */
+}
+
+.calendar-day-column.is-today {
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.calendar-day-header {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.day-number {
   font-weight: 600;
 }
 
-/* High-contrast watch/info buttons (global) */
+/* card container */
+.calendar-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* unified calendar card */
+.calendar-card {
+  border-radius: 0.8rem;
+  background: linear-gradient(135deg, #090d1c 0, #12162b 60%, #171a32 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.25rem 0.3rem 0.3rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.calendar-card-row1 {
+  margin-bottom: 0.18rem;
+}
+
+.calendar-title-main {
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.calendar-title-episode {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* 2-row layout for episode/movie card details */
+.calendar-card-row2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0.3rem;
+  align-items: stretch;
+}
+
+.calendar-card-image-col {
+  min-width: 0;
+}
+
+.calendar-episode-still {
+  width: 100%;
+  padding-top: 145%;
+  border-radius: 0.6rem;
+  background-color: #02040a;
+  background-size: cover;
+  background-position: center;
+}
+
+.calendar-card-buttons-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+/* [CSS-3.1] Neon watch buttons (global) */
 
 .btn-watch,
 .btn-watch-small {
   border-radius: 999px;
-  border: 1px solid var(--accent);
-  background: linear-gradient(135deg, #4c8dff 0, #ff82cc 40%, #ffcc33 100%);
+  border: 1px solid transparent;
+  background: #11141f;
   color: #000;
   font-size: 0.66rem;
-  padding: 0.14rem 0.45rem;
+  padding: 0.18rem 0.55rem;
   text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 .btn-watch-small {
@@ -262,7 +308,6 @@ section.tab.active {
 .btn-watch-small span.label-top {
   display: block;
   font-size: 0.62rem;
-  text-transform: none;
 }
 
 .btn-watch span.label-bottom,
@@ -272,750 +317,340 @@ section.tab.active {
   font-weight: 600;
 }
 
-/* Generic cards */
-
-.card {
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-subtle);
-  background: rgba(9, 12, 18, 0.97);
-  padding: 0.55rem 0.6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+/* Neon Candy Pop colour mapping */
+.btn-watch-tmdb {
+  background: #00aaff;
+  border-color: #00aaff;
+  color: #001322;
 }
 
-.card-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.4rem;
-  margin-bottom: 0.1rem;
+.btn-watch-videasy {
+  background: #ff00aa;
+  border-color: #ff00aa;
+  color: #220010;
 }
 
-.card-title {
-  font-size: 0.9rem;
-  font-weight: 600;
+.btn-watch-vidsrc {
+  background: #aaff00;
+  border-color: #aaff00;
+  color: #111f00;
 }
 
-.card-subtitle {
-  font-size: 0.76rem;
-  color: var(--text-muted);
-}
-
-/* ======================================================================
- * [CSS-5.0] Calendar view
- * ==================================================================== */
-
-.calendar-header-shell {
-  position: sticky;
-  top: 0;
-  z-index: 15;
-  background: linear-gradient(to bottom, rgba(5, 7, 10, 0.98), rgba(5, 7, 12, 0.96));
-  border-bottom: 1px solid var(--border-subtle);
-  padding-bottom: 0.2rem;
-}
-
-.calendar-header-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.15rem;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.calendar-title {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-.calendar-title-main {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.calendar-title-sub {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
-
-.calendar-controls {
-  display: inline-flex;
-  gap: 0.25rem;
-  align-items: center;
-  flex-wrap: nowrap;
-}
-
-.calendar-dow-row {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.35rem;
-  padding-top: 0.25rem;
-}
-
-.calendar-dow-cell {
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-soft);
-  padding: 0.18rem 0.35rem;
-  border-radius: 10px 10px 0 0;
-  border: 1px solid transparent;
-}
-
-.calendar-dow-cell.weekend {
-  background: var(--weekend-header-bg);
-  border-color: rgba(70, 70, 120, 0.55);
-}
-
-.calendar-grid {
-  margin-top: 0.2rem;
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.35rem;
-}
-
-.calendar-day {
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-subtle);
-  background: rgba(9, 12, 18, 0.96);
-  display: flex;
-  flex-direction: column;
-  min-height: 6.2rem;
-  overflow: hidden;
-}
-
-.calendar-day.weekend {
-  background: var(--weekend-bg);
-}
-
-.calendar-day.today {
-  background: var(--today-bg);
-  border-color: var(--today-border);
-  box-shadow: 0 0 0 2px rgba(76, 141, 255, 0.35);
-}
-
-.day-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 0.25rem 0.35rem 0.2rem;
-  border-bottom: 1px solid var(--border-subtle);
-  background: linear-gradient(to bottom, rgba(20, 25, 40, 0.9), rgba(10, 12, 20, 0.8));
-}
-
-.calendar-day.today .day-header {
-  background: var(--today-header-bg);
-}
-
-.day-name {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-soft);
-}
-
-.day-number {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.day-body {
-  padding: 0.25rem 0.25rem 0.3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  overflow-y: auto;
-}
-
-/* [CSS-5.1] Calendar item: 2-row layout (info + [image+buttons]) */
-
-.calendar-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  grid-template-rows: auto auto;
-  grid-template-areas:
-    "info info"
-    "image buttons";
-  column-gap: 0.35rem;
-  row-gap: 0.18rem;
-  padding: 0.18rem 0.2rem 0.22rem;
-  border-radius: 10px;
-  background: rgba(5, 7, 12, 0.88);
-  border: 1px solid rgba(48, 54, 69, 0.85);
-  cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast),
-    transform var(--transition-fast);
-}
-
-.calendar-item:hover {
-  background: rgba(12, 15, 22, 0.96);
-  border-color: var(--border-strong);
-  transform: translateY(-1px);
-}
-
-.calendar-item-info {
-  grid-area: info;
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-  min-width: 0;
-}
-
-.calendar-item-title {
-  font-size: 0.8rem;
-  font-weight: 500;
-  line-height: 1.25;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.calendar-item-id {
-  font-size: 0.68rem;
-  color: var(--text-soft);
-}
-
-.calendar-item-episode {
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.calendar-item-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.15rem;
-  align-items: center;
-  margin-top: 0.08rem;
-}
-
-.badge {
-  border-radius: 999px;
-  padding: 0.05rem 0.45rem;
-  font-size: 0.65rem;
-  border: 1px solid var(--badge-border);
-  background: var(--badge-bg);
-  color: var(--text-soft);
-  white-space: nowrap;
-}
-
-.badge-upcoming {
-  border-color: var(--accent-strong);
-  color: var(--accent-strong);
-  background: rgba(255, 204, 51, 0.08);
-}
-
-.calendar-item-still {
-  grid-area: image;
-  width: 100%;
-  padding-top: 210%; /* taller still image (~25% bigger than before) */
-  background-size: cover;
-  background-position: center;
-  border-radius: 10px;
-  border: 1px solid rgba(65, 72, 88, 0.9);
-  overflow: hidden;
-  background-color: #05070a;
-}
-
-.calendar-item-actions-column {
-  grid-area: buttons;
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-}
-
-/* ======================================================================
- * [CSS-6.0] Shows view
- * ==================================================================== */
-
-.shows-filters-row {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  padding: 0.35rem 0 0.45rem;
-  background: linear-gradient(to bottom, rgba(5, 7, 10, 0.98), rgba(5, 7, 12, 0.96));
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.shows-filters-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  align-items: center;
-}
-
-.filter-label {
-  font-size: 0.8rem;
-  color: var(--text-soft);
-}
-
-.select {
-  background: rgba(9, 12, 18, 0.96);
-  color: var(--text-main);
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  padding: 0.22rem 0.7rem;
-  font-size: 0.78rem;
-  min-width: 7rem;
-}
-
-.genre-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  max-width: 640px;
-}
-
-.genre-chip {
-  border-radius: 999px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(8, 11, 18, 0.95);
-  color: var(--text-soft);
-  font-size: 0.7rem;
-  padding: 0.14rem 0.6rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.genre-chip.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--text-main);
-}
+/* [CSS-4.0] Shows / Movies grid cards */
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-  gap: 0.55rem;
-  margin-top: 0.45rem;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.6rem;
 }
 
 .show-card {
-  border-radius: var(--card-radius);
-  border: 1px solid var(--border-subtle);
-  background: rgba(9, 12, 18, 0.96);
+  background: var(--bg-card);
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  cursor: pointer;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast),
-    border-color var(--transition-fast), background var(--transition-fast);
 }
-
-.show-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
-  border-color: var(--border-strong);
-  background: rgba(12, 15, 22, 0.98);
-}
-
-/* 25% reduction vs last pass: from ~130% to ~100% */
 
 .show-poster {
   position: relative;
   width: 100%;
-  padding-top: 100%; /* square, smaller */
+  padding-top: 150%; /* tall poster */
   background-size: cover;
   background-position: center;
+  background-color: #05070f;
   border-bottom: 1px solid var(--border-subtle);
-  background-color: #05070a;
 }
 
 .show-status-chip {
   position: absolute;
-  bottom: 0.35rem;
+  top: 0.4rem;
   left: 0.4rem;
-  padding: 0.12rem 0.45rem;
-  font-size: 0.68rem;
+  padding: 0.1rem 0.4rem;
   border-radius: 999px;
-  background: rgba(5, 7, 10, 0.9);
-  border: 1px solid rgba(160, 167, 182, 0.7);
-  color: var(--text-soft);
+  font-size: 0.62rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffeb7f;
+  border: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 .show-card-body {
-  padding: 0.35rem 0.4rem 0.45rem;
+  padding: 0.45rem 0.45rem 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.22rem;
 }
 
 .show-title-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.3rem;
 }
 
 .show-title {
-  font-size: 0.82rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: var(--text-main);
+  font-size: 0.86rem;
   font-weight: 600;
-  line-height: 1.2;
-  max-height: 2.4em;
-  overflow: hidden;
+  text-align: left;
+  cursor: pointer;
 }
 
 .show-title-id {
-  font-size: 0.7rem;
-  color: var(--text-soft);
+  font-size: 0.65rem;
+  color: var(--text-muted);
 }
 
 .show-meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 0.1rem;
+  gap: 0.24rem;
+  font-size: 0.65rem;
 }
 
 .show-meta-pill {
+  padding: 0.1rem 0.35rem;
   border-radius: 999px;
-  padding: 0.05rem 0.4rem;
-  border: 1px solid var(--border-subtle);
-  font-size: 0.68rem;
-  color: var(--text-soft);
-  background: rgba(5, 7, 12, 0.9);
+  background: #14182b;
+  color: var(--text-muted);
 }
 
-.show-current-season {
-  font-size: 0.74rem;
-  color: var(--accent-strong);
-  margin-top: 0.12rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.show-episode-summary {
+  font-size: 0.7rem;
+  color: #f7f2c0;
 }
 
 .show-watch-row {
   display: flex;
-  flex-direction: column;
-  gap: 0.18rem;
-  margin-top: 0.18rem;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin-top: 0.12rem;
 }
 
-/* ======================================================================
- * [CSS-7.0] Modal (series + seasons)
- * ==================================================================== */
+/* [CSS-4.1] Shows toolbar */
 
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.96));
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-}
-
-.modal-backdrop.open {
-  display: flex;
-}
-
-.modal {
-  width: min(100%, 1100px);
-  max-height: 90vh;
-  background: radial-gradient(circle at top left, #151a24 0, #05070a 55%, #020307 100%);
-  border-radius: 20px;
-  border: 1px solid var(--border-strong);
-  box-shadow: 0 24px 40px rgba(0, 0, 0, 0.85);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.modal-header {
+.shows-toolbar {
+  position: sticky;
+  top: 3.3rem;
+  z-index: 30;
+  background: #05070a;
+  padding: 0.35rem 0 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 0.7rem 0.9rem;
-  border-bottom: 1px solid var(--border-subtle);
-  gap: 0.6rem;
-  background: linear-gradient(to right, rgba(10, 14, 22, 0.98), rgba(10, 16, 30, 0.98));
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
-.modal-title-block {
-  display: flex;
-  gap: 0.6rem;
-  align-items: flex-start;
-}
-
-.modal-poster {
-  width: 100px;
-  min-width: 100px;
-  height: 150px;
-  border-radius: 10px;
-  background-size: cover;
-  background-position: center;
-  border: 1px solid var(--border-strong);
-  background-color: #05070a;
-}
-
-.modal-title-text {
+.shows-filters {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.25rem;
 }
 
-.modal-title-text h3 {
-  margin: 0;
-  font-size: 1rem;
-}
-
-.modal-subtitle-line {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+.shows-sort {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  align-items: flex-start;
 }
 
-.modal-meta-badges {
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.select {
+  background: #050814;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  padding: 0.2rem 0.75rem 0.22rem;
+  color: var(--text-main);
+  font-size: 0.74rem;
+}
+
+/* genre chips */
+.genre-chips-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.25rem;
+  max-width: 32rem;
+}
+
+.genre-chip {
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: #050814;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  padding: 0.16rem 0.6rem;
+  cursor: pointer;
+}
+
+.genre-chip.active {
+  background: #273656;
+  border-color: #ffffff;
+  color: var(--text-main);
+}
+
+/* [CSS-5.0] Sections / config */
+
+.section-header h2 {
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.section-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.config-section {
+  margin-top: 0.6rem;
+}
+
+.config-section h3 {
+  margin-bottom: 0.2rem;
+}
+
+.config-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.config-list li + li {
   margin-top: 0.15rem;
 }
 
-.modal-body {
-  padding: 0.6rem 0.9rem 0.8rem;
+.config-list a {
+  color: #8bbcff;
+  text-decoration: none;
+}
+
+.config-list a:hover {
+  text-decoration: underline;
+}
+
+/* [CSS-6.0] Modal */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-shell {
+  position: relative;
+  max-width: 720px;
+  width: 95%;
+  max-height: 80vh;
+  background: #050814;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+  padding: 0.8rem 0.9rem 0.8rem;
+  overflow: hidden;
+}
+
+.modal-content {
+  max-height: 70vh;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
 }
 
-/* Seasons + episodes accordions */
-
-details.season-details {
-  border-radius: 10px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(7, 9, 15, 0.9);
-  margin-bottom: 0.3rem;
-  overflow: hidden;
-}
-
-details.season-details[open] {
-  background: rgba(13, 17, 26, 0.97);
-  border-color: var(--border-strong);
-}
-
-summary.season-summary {
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.5rem;
-  cursor: pointer;
-}
-
-summary.season-summary::-webkit-details-marker {
-  display: none;
-}
-
-.season-thumb {
-  width: 40px;
-  height: 40px;
-  border-radius: 7px;
-  background-size: cover;
-  background-position: center;
-  border: 1px solid var(--border-subtle);
-  flex-shrink: 0;
-  background-color: #05070a;
-}
-
-.season-summary-main {
-  display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.season-title {
+.modal-body {
   font-size: 0.8rem;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.season-subline {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+.modal-body h2 {
+  margin-top: 0;
 }
 
-.season-chevron {
-  font-size: 0.9rem;
-  transform: translateY(1px);
-  transition: transform var(--transition-fast);
-  flex-shrink: 0;
-}
-
-details[open] > summary .season-chevron {
-  transform: rotate(90deg) translateY(0);
-}
-
-.season-body {
-  padding: 0.35rem 0.5rem 0.45rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-details.episode-details {
-  border-radius: 8px;
-  border: 1px solid rgba(48, 54, 69, 0.7);
-  background: rgba(5, 7, 12, 0.9);
-  overflow: hidden;
-}
-
-summary.episode-summary {
-  list-style: none;
-  padding: 0.3rem 0.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.4rem;
-  cursor: pointer;
-}
-
-summary.episode-summary::-webkit-details-marker {
-  display: none;
-}
-
-.episode-summary-main {
-  display: flex;
-  flex-direction: column;
-  gap: 0.07rem;
-  flex: 1;
-  min-width: 0;
-}
-
-.episode-title {
-  font-size: 0.78rem;
-  font-weight: 500;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.episode-sub-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  align-items: center;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-}
-
-.episode-sub-meta {
-  font-size: 0.7rem;
-}
-
-.episode-watch-buttons {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.2rem;
-}
-
-.episode-chevron {
-  font-size: 0.9rem;
-  transform: translateY(1px);
-  flex-shrink: 0;
-}
-
-.episode-body {
-  padding: 0.3rem 0.5rem 0.4rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.78rem;
-  color: var(--text-muted);
-}
-
-.episode-still {
-  width: 100%;
-  max-width: 260px;
-  border-radius: 10px;
-  overflow: hidden;
+.modal-close {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.4rem;
+  border-radius: 999px;
   border: 1px solid var(--border-subtle);
-}
-
-.episode-still img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
-.episode-meta-extra {
-  font-size: 0.7rem;
-  color: var(--text-soft);
-}
-
-/* ======================================================================
- * [CSS-8.0] Other tabs (Movies / Live TV / Config)
- * ==================================================================== */
-
-.theme-light body {
-  background: #f7f7fa;
-}
-
-/* Config inputs */
-
-.config-number-input {
-  width: 4rem;
-  padding: 0.15rem 0.35rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(5, 7, 12, 0.95);
+  background: #11141f;
   color: var(--text-main);
+  font-size: 0.75rem;
+  padding: 0.1rem 0.45rem;
+  cursor: pointer;
+}
+
+/* season + episodes inside modal */
+.season-accordion {
+  margin-top: 0.3rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border-subtle);
+  background: #050814;
+  padding: 0.25rem 0.4rem 0.3rem;
+}
+
+.season-accordion summary {
+  cursor: pointer;
+  font-weight: 600;
   font-size: 0.8rem;
 }
 
-/* ======================================================================
- * [CSS-9.0] Responsive tweaks
- * ==================================================================== */
-
-@media (max-width: 900px) {
-  .modal {
-    width: 96%;
-  }
-
-  .modal-header {
-    flex-direction: column;
-  }
-
-  .modal-title-block {
-    width: 100%;
-  }
+.episodes-list {
+  margin-top: 0.2rem;
 }
 
-@media (max-width: 720px) {
-  header.app-header {
-    padding-inline: 0.75rem;
+.episode-row {
+  padding: 0.18rem 0.1rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.episode-row:hover {
+  background: #11141f;
+}
+
+.episode-label {
+  color: var(--text-main);
+}
+
+/* [CSS-7.0] Live TV cards (re-use show-card style) */
+
+#tab-live .card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+/* [CSS-8.0] Responsive tweaks */
+
+@media (max-width: 960px) {
+  .calendar-header-shell {
+    top: 4.2rem;
   }
 
-  main.app-main {
-    padding-inline: 0.5rem;
+  .shows-toolbar {
+    top: 4.2rem;
   }
 
-  .calendar-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .calendar-dow-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .meta-line {
+    display: none;
   }
 }
