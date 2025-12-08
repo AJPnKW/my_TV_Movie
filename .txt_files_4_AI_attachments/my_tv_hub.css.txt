@@ -1,0 +1,656 @@
+/* [CSS-1.0] Root + theme */
+:root {
+  --bg-main: #02040a;
+  --bg-elevated: #050814;
+  --bg-card: #090d1c;
+  --bg-card-soft: #0f1324;
+  --accent-soft: #273656;
+  --border-subtle: #262b3a;
+  --text-main: #f5f7ff;
+  --text-muted: #9ca3c8;
+  --text-soft: #c9cdee;
+}
+
+/* generic reset-ish */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #101428 0, #050814 45%, #02040a 100%);
+  color: var(--text-main);
+}
+
+/* [CSS-2.0] Layout */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: linear-gradient(to bottom, rgba(2, 4, 10, 0.98), rgba(2, 4, 10, 0.96));
+  backdrop-filter: blur(16px);
+  padding: 0.9rem 1.5rem 0.4rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.app-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 0.4rem;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+}
+
+.meta-line {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.view-nav {
+  display: flex;
+  gap: 0.35rem;
+  margin-bottom: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.nav-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(10, 13, 20, 0.92);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 80ms ease, color 120ms ease;
+}
+
+.nav-button .nav-icon {
+  font-size: 0.9rem;
+}
+
+.nav-button.active {
+  background: var(--accent-soft);
+  border-color: #ffffff;
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.nav-button:hover {
+  border-color: #ffffff;
+}
+
+.view-subtitle {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.app-main {
+  padding: 0.6rem 1.25rem 1.5rem;
+}
+
+/* [CSS-2.1] Tabs */
+.tab {
+  display: none;
+}
+
+.tab.active {
+  display: block;
+}
+
+/* [CSS-3.0] Calendar layout */
+.calendar-header-shell {
+  position: sticky;
+  top: 3.3rem; /* below header bar */
+  z-index: 30;
+  background: #05070a;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0.4rem 0 0.25rem;
+}
+
+.calendar-month-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-right: 0.25rem;
+}
+
+.calendar-month-label {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.calendar-range-label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.calendar-nav-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pill-button {
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: #0a0f24;
+  color: var(--text-main);
+  font-size: 0.74rem;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+}
+
+.pill-button:hover {
+  border-color: #ffffff;
+}
+
+.pill-today {
+  background: #273656;
+  border-color: #ffffff;
+}
+
+.calendar-dow-row {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+}
+
+.dow-cell {
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.dow-cell.weekend {
+  color: #ffb347;
+}
+
+/* calendar grid */
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+  margin-top: 0.4rem;
+}
+
+.calendar-day-column {
+  min-height: 8rem;
+  background: #050814;
+  border-radius: 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 0.25rem 0.22rem 0.3rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-day-column.weekend {
+  background: #0a0f24;
+}
+
+.calendar-day-column.out-of-month {
+  visibility: hidden; /* keep spacing but hide days outside month */
+}
+
+.calendar-day-column.is-today {
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.calendar-day-header {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.day-number {
+  font-weight: 600;
+}
+
+/* card container */
+.calendar-card-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* unified calendar card */
+.calendar-card {
+  border-radius: 0.8rem;
+  background: linear-gradient(135deg, #090d1c 0, #12162b 60%, #171a32 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.25rem 0.3rem 0.3rem;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+
+.calendar-card-row1 {
+  margin-bottom: 0.18rem;
+}
+
+.calendar-title-main {
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+.calendar-title-episode {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+}
+
+/* 2-row layout for episode/movie card details */
+.calendar-card-row2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 0.3rem;
+  align-items: stretch;
+}
+
+.calendar-card-image-col {
+  min-width: 0;
+}
+
+.calendar-episode-still {
+  width: 100%;
+  padding-top: 145%;
+  border-radius: 0.6rem;
+  background-color: #02040a;
+  background-size: cover;
+  background-position: center;
+}
+
+.calendar-card-buttons-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+/* [CSS-3.1] Neon watch buttons (global) */
+
+.btn-watch,
+.btn-watch-small {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: #11141f;
+  color: #000;
+  font-size: 0.66rem;
+  padding: 0.18rem 0.55rem;
+  text-align: center;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-watch-small {
+  font-size: 0.62rem;
+  padding: 0.15rem 0.45rem;
+  width: 100%;
+}
+
+.btn-watch span.label-top,
+.btn-watch-small span.label-top {
+  display: block;
+  font-size: 0.62rem;
+}
+
+.btn-watch span.label-bottom,
+.btn-watch-small span.label-bottom {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* Neon Candy Pop colour mapping */
+.btn-watch-tmdb {
+  background: #00aaff;
+  border-color: #00aaff;
+  color: #001322;
+}
+
+.btn-watch-videasy {
+  background: #ff00aa;
+  border-color: #ff00aa;
+  color: #220010;
+}
+
+.btn-watch-vidsrc {
+  background: #aaff00;
+  border-color: #aaff00;
+  color: #111f00;
+}
+
+/* [CSS-4.0] Shows / Movies grid cards */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+}
+
+.show-card {
+  background: var(--bg-card);
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.show-poster {
+  position: relative;
+  width: 100%;
+  padding-top: 150%; /* tall poster */
+  background-size: cover;
+  background-position: center;
+  background-color: #05070f;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.show-status-chip {
+  position: absolute;
+  top: 0.4rem;
+  left: 0.4rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: #ffeb7f;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.show-card-body {
+  padding: 0.45rem 0.45rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.show-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.show-title {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  color: var(--text-main);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.show-title-id {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.show-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.24rem;
+  font-size: 0.65rem;
+}
+
+.show-meta-pill {
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: #14182b;
+  color: var(--text-muted);
+}
+
+.show-episode-summary {
+  font-size: 0.7rem;
+  color: #f7f2c0;
+}
+
+.show-watch-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  margin-top: 0.12rem;
+}
+
+/* [CSS-4.1] Shows toolbar */
+
+.shows-toolbar {
+  position: sticky;
+  top: 3.3rem;
+  z-index: 30;
+  background: #05070a;
+  padding: 0.35rem 0 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.shows-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.shows-sort {
+  display: flex;
+  align-items: flex-start;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.toolbar-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.select {
+  background: #050814;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  padding: 0.2rem 0.75rem 0.22rem;
+  color: var(--text-main);
+  font-size: 0.74rem;
+}
+
+/* genre chips */
+.genre-chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 32rem;
+}
+
+.genre-chip {
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: #050814;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  padding: 0.16rem 0.6rem;
+  cursor: pointer;
+}
+
+.genre-chip.active {
+  background: #273656;
+  border-color: #ffffff;
+  color: var(--text-main);
+}
+
+/* [CSS-5.0] Sections / config */
+
+.section-header h2 {
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+}
+
+.section-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.config-section {
+  margin-top: 0.6rem;
+}
+
+.config-section h3 {
+  margin-bottom: 0.2rem;
+}
+
+.config-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.config-list li + li {
+  margin-top: 0.15rem;
+}
+
+.config-list a {
+  color: #8bbcff;
+  text-decoration: none;
+}
+
+.config-list a:hover {
+  text-decoration: underline;
+}
+
+/* [CSS-6.0] Modal */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-overlay[hidden] {
+  display: none;
+}
+
+.modal-shell {
+  position: relative;
+  max-width: 720px;
+  width: 95%;
+  max-height: 80vh;
+  background: #050814;
+  border-radius: 1.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.8);
+  padding: 0.8rem 0.9rem 0.8rem;
+  overflow: hidden;
+}
+
+.modal-content {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.modal-body {
+  font-size: 0.8rem;
+}
+
+.modal-body h2 {
+  margin-top: 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: #11141f;
+  color: var(--text-main);
+  font-size: 0.75rem;
+  padding: 0.1rem 0.45rem;
+  cursor: pointer;
+}
+
+/* season + episodes inside modal */
+.season-accordion {
+  margin-top: 0.3rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--border-subtle);
+  background: #050814;
+  padding: 0.25rem 0.4rem 0.3rem;
+}
+
+.season-accordion summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.8rem;
+}
+
+.episodes-list {
+  margin-top: 0.2rem;
+}
+
+.episode-row {
+  padding: 0.18rem 0.1rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-size: 0.78rem;
+}
+
+.episode-row:hover {
+  background: #11141f;
+}
+
+.episode-label {
+  color: var(--text-main);
+}
+
+/* [CSS-7.0] Live TV cards (re-use show-card style) */
+
+#tab-live .card-grid {
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+}
+
+/* [CSS-8.0] Responsive tweaks */
+
+@media (max-width: 960px) {
+  .calendar-header-shell {
+    top: 4.2rem;
+  }
+
+  .shows-toolbar {
+    top: 4.2rem;
+  }
+
+  .meta-line {
+    display: none;
+  }
+}
