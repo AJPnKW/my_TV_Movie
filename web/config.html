@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuration</title>
+</head>
+<body>
+
+    <h1>Configuration Panel</h1>
+
+    <h2>Streaming Service URLs</h2>
+    <form id="configForm">
+        <div>
+            <label for="vidsrcTvUrl">VidSrc TV Base URL:</label>
+            <input type="text" id="vidsrcTvUrl" name="vidsrcTvUrl" value="https://vidsrc.net/embed/tv/">
+        </div>
+        <div>
+            <label for="vidsrcMovieUrl">VidSrc Movie Base URL:</label>
+            <input type="text" id="vidsrcMovieUrl" name="vidsrcMovieUrl" value="https://vidsrc.net/embed/movie/">
+        </div>
+        <div>
+            <label for="videasyTvUrl">Videasy TV Base URL:</label>
+            <input type="text" id="videasyTvUrl" name="videasyTvUrl" value="https://player.videasy.net/tv/">
+        </div>
+        <div>
+            <label for="videasyMovieUrl">Videasy Movie Base URL:</label>
+            <input type="text" id="videasyMovieUrl" name="videasyMovieUrl" value="https://player.videasy.net/movie/">
+        </div>
+
+        <h2>Image Size Configuration</h2>
+        <div>
+            <label for="showImageWidth">Show Image Width (px):</label>
+            <input type="number" id="showImageWidth" name="showImageWidth" value="185">
+        </div>
+        <div>
+            <label for="movieImageWidth">Movie Image Width (px):</label>
+            <input type="number" id="movieImageWidth" name="movieImageWidth" value="185">
+        </div>
+
+        <button type="submit">Save Configuration</button>
+    </form>
+
+    <script src="config.js"></script>
+</body>
+</html>
