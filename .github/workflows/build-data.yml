@@ -1,14 +1,11 @@
 name: Build TV Data and Deploy
 
 on:
-  # Manual run from Actions tab
   workflow_dispatch:
 
-  # Every 4 hours
   schedule:
-    - cron: "0 */4 * * *"
+    - cron: "0 */4 * * *"  # every 4 hours
 
-  # Run automatically when you change source config for the hub
   push:
     branches: [ main ]
     paths:
@@ -16,14 +13,17 @@ on:
       - "movies_list.txt"
       - "live_tv_list.txt"
       - "web/index.html"
+      - "web/show.html"
+      - "web/config.json"
+      - "web/config.html"
+      - "web/config.js"
+      - "web/css/**"
       - "scripts/fetch_tmdb.py"
       - ".github/workflows/build-data.yml"
 
-# 👇 This is the missing piece: allow GITHUB_TOKEN to push commits
 permissions:
   contents: write
 
-# Prevent overlapping runs on the same branch
 concurrency:
   group: build-tv-data-${{ github.ref }}
   cancel-in-progress: true
@@ -32,48 +32,44 @@ jobs:
   build-data:
     runs-on: ubuntu-latest
 
-    # TMDB key for the Python script
     env:
       API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
 
     steps:
-      - name: Check out repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
+      - name: Install Python deps
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           else
-            # Fallback if you don't have a requirements file
-            pip install requests tmdbsimple
+            pip install requests
           fi
 
-      - name: Build TV data (data/data.json, etc.)
+      - name: Build data + cache missing images
         run: |
           python scripts/fetch_tmdb.py
 
-      - name: Commit & push updated data
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Commit & push updated data/images (only if changed)
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Only commit if data actually changed
-          if git diff --quiet -- data/; then
-            echo "No changes in data/ – nothing to commit."
+          # Only commit if data/ or image/ changed
+          if git diff --quiet -- data/ image/; then
+            echo "No changes in data/ or image/ – nothing to commit."
             exit 0
           fi
 
-          git add data/
-          git commit -m "chore: refresh TV/Movie data [skip ci]"
+          git add data/ image/
+          git commit -m "chore: refresh data + image cache [skip ci]"
           git push
