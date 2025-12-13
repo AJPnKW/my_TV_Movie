@@ -2,39 +2,38 @@
 # =============================================================================
 # File:        scripts/fetch_tmdb.py
 # Project:     my_TV_Movie
-# Version:     v2.5.0 (2025-12-13)
+# Version:     v2.6.0 (2025-12-13)
 #
 # [PURPOSE]
-# - Read:
-#     - tv_list.txt
-#     - movies_list.txt
-#     - web/config.json   (authoritative for streaming bases + image sizing)
-# - Fetch metadata from TMDB (shows, seasons, episodes, movies)
-# - Write:
-#     - data/data.json (links generated from config, NOT hard-coded domains)
-# - Cache TMDB images locally (download missing only):
-#     - image/shows/poster/
-#     - image/shows/backdrop/
-#     - image/shows/seasons/poster/
-#     - image/shows/episodes/stills/
-#     - image/movies/poster/
-#     - image/movies/backdrop/
+# - Authoritative config-driven generation:
+#     - Read web/config.json for:
+#         - streaming_services (VIDSRC/VIDEASY base URLs)
+#         - image_sizes (show/movie/season/episode/backdrop widths)
+#         - ui_tuning (calendar_button_scale, calendar_card_density)
+#     - Generate ALL links into data/data.json using ONLY config bases.
+#       -> eliminates mixed-domain drift.
 #
-# [DESIGN RULES]
-# - Config drives everything:
-#     - Streaming base URLs come from web/config.json
-#     - Image widths come from web/config.json
-# - No mixed domains:
-#     - links.* are generated fresh every run, from config only
-# - Image caching:
-#     - Download only if file does NOT exist
-#     - Save using TMDB filename (poster_path/still_path/backdrop_path basename)
-# - Output stability:
-#     - Keep existing JSON fields; add local_*_path fields (UI can use directly)
+# - Image caching (download missing only):
+#     - Save TMDB images locally under repo root /image/...
+#     - Adds local_* fields into data.json so UI can use local images directly.
+#
+# [INPUTS]
+#   - tv_list.txt
+#   - movies_list.txt
+#   - web/config.json
+#
+# [OUTPUTS]
+#   - data/data.json
+#   - image/shows/poster/
+#   - image/shows/backdrop/
+#   - image/shows/seasons/poster/
+#   - image/shows/episodes/stills/
+#   - image/movies/poster/
+#   - image/movies/backdrop/
 #
 # [REQUIRES]
-# - Env var: API_TMDB_KEY
-#
+#   - Environment variable: API_TMDB_KEY
+#   - Python packages: requests
 # =============================================================================
 
 from __future__ import annotations
@@ -66,7 +65,7 @@ CONFIG_JSON_PATH = WEB_DIR / "config.json"
 DATA_DIR = ROOT / "data"
 DATA_JSON_PATH = DATA_DIR / "data.json"
 
-IMAGE_DIR = ROOT / "image"  # repo-root image cache
+IMAGE_DIR = ROOT / "image"
 
 LOG_FMT = "[fetch_tmdb] %(levelname)s: %(message)s"
 logging.basicConfig(level=logging.INFO, format=LOG_FMT, stream=sys.stdout)
@@ -88,11 +87,11 @@ class StreamingConfig:
 
 @dataclass(frozen=True)
 class ImageSizeConfig:
-    show_width: int          # posters for shows
-    movie_width: int         # posters for movies
-    season_width: int        # season posters
-    episode_still_w: int     # episode stills
-    backdrop_w: int          # backdrops
+    show_width: int
+    movie_width: int
+    season_width: int
+    episode_still_w: int
+    backdrop_w: int
 
 
 @dataclass(frozen=True)
@@ -117,10 +116,9 @@ def _ensure_trailing_slash(url: str) -> str:
 
 def load_app_config() -> AppConfig:
     """
-    [S-2.1] Load web/config.json.
-    If missing or partial, apply safe defaults that match your current correct bases.
+    [S-2.1] Load web/config.json (authoritative).
+    If missing/partial, apply safe defaults that match your confirmed correct bases.
     """
-    # Defaults (your confirmed correct bases)
     default_streaming = StreamingConfig(
         vidsrc_tv=_ensure_trailing_slash("https://vidsrc.net/embed/tv/"),
         vidsrc_movie=_ensure_trailing_slash("https://vidsrc.net/embed/movie/"),
@@ -149,6 +147,7 @@ def load_app_config() -> AppConfig:
         logging.warning("Failed to parse web/config.json (%s) — using defaults", e)
         return AppConfig(default_streaming, default_img, default_ui)
 
+    # --- streaming_services
     s = raw.get("streaming_services", {}) if isinstance(raw, dict) else {}
     streaming = StreamingConfig(
         vidsrc_tv=_ensure_trailing_slash(s.get("vidsrc_tv", default_streaming.vidsrc_tv)),
@@ -157,6 +156,7 @@ def load_app_config() -> AppConfig:
         videasy_movie=_ensure_trailing_slash(s.get("videasy_movie", default_streaming.videasy_movie)),
     )
 
+    # --- image_sizes
     i = raw.get("image_sizes", {}) if isinstance(raw, dict) else {}
     img = ImageSizeConfig(
         show_width=int(i.get("show_width", default_img.show_width)),
@@ -166,6 +166,7 @@ def load_app_config() -> AppConfig:
         backdrop_w=int(i.get("backdrop_w", default_img.backdrop_w)),
     )
 
+    # --- ui_tuning
     u = raw.get("ui_tuning", {}) if isinstance(raw, dict) else {}
     ui = UiTuningConfig(
         calendar_button_scale=float(u.get("calendar_button_scale", default_ui.calendar_button_scale)),
@@ -176,7 +177,7 @@ def load_app_config() -> AppConfig:
 
 
 # =============================================================================
-# [S-3.0] TMDB client
+# [S-3.0] TMDB client + env guard
 # =============================================================================
 
 TMDB_API_KEY = os.environ.get("API_TMDB_KEY", "").strip()
@@ -190,7 +191,7 @@ TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p"
 
 def tmdb_get(path: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
-    [S-3.1] TMDB GET with retry.
+    [S-3.1] TMDB GET with retry (deterministic).
     """
     url = f"{TMDB_BASE}{path}"
     params = dict(params or {})
@@ -325,7 +326,7 @@ def expand_season_spec(spec: str, show_json: Dict[str, Any]) -> List[int]:
 
 
 # =============================================================================
-# [S-5.0] Link builders (CONFIG-DRIVEN)
+# [S-5.0] Link builders (CONFIG-DRIVEN, NO MIXED DOMAINS)
 # =============================================================================
 
 TMDB_TV_URL = "https://www.themoviedb.org/tv/{tmdb_id}"
@@ -339,9 +340,12 @@ def build_tv_show_links(tmdb_id: int) -> Dict[str, str]:
 
 def build_tv_episode_links(cfg: AppConfig, tmdb_id: int, season_number: int, episode_number: int) -> Dict[str, str]:
     """
-    [S-5.1] Correct patterns (your confirmed rule):
-      vidsrc:  https://vidsrc.net/embed/tv/{id}/{season}/{ep}
-      videasy: https://player.videasy.net/tv/{id}/{season}/{ep}
+    [S-5.1] Correct patterns (CONFIG-DRIVEN):
+      vidsrc:  {vidsrc_tv}{id}/{season}/{ep}
+      videasy: {videasy_tv}{id}/{season}/{ep}
+    Examples:
+      https://vidsrc.net/embed/tv/153657/1/2
+      https://player.videasy.net/tv/84910/12/1
     """
     return {
         "tmdb": TMDB_EP_URL.format(tmdb_id=tmdb_id, season_number=season_number, episode_number=episode_number),
@@ -352,7 +356,7 @@ def build_tv_episode_links(cfg: AppConfig, tmdb_id: int, season_number: int, epi
 
 def build_movie_links(cfg: AppConfig, tmdb_id: int) -> Dict[str, str]:
     """
-    [S-5.2] Movie patterns (config-driven):
+    [S-5.2] Movie patterns (CONFIG-DRIVEN):
       vidsrc:  {vidsrc_movie}{id}
       videasy: {videasy_movie}{id}
     """
@@ -368,7 +372,6 @@ def build_movie_links(cfg: AppConfig, tmdb_id: int) -> Dict[str, str]:
 # =============================================================================
 
 def _tmdb_image_url(width: int, tmdb_path: str) -> str:
-    # tmdb_path includes leading "/"
     return f"{TMDB_IMAGE_BASE}/w{width}{tmdb_path}"
 
 
@@ -378,13 +381,13 @@ def _safe_basename(tmdb_path: Optional[str]) -> Optional[str]:
     p = tmdb_path.strip()
     if not p:
         return None
-    return pathlib.Path(p).name  # strips leading dirs and "/"
+    return pathlib.Path(p).name
 
 
 def _download_file(url: str, dest: pathlib.Path) -> bool:
     """
     [S-6.1] Download with retry.
-    Returns True if downloaded, False if already existed or failed.
+    True if downloaded now; False if already present or failed.
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
 
@@ -409,16 +412,15 @@ def _download_file(url: str, dest: pathlib.Path) -> bool:
 
 def cache_show_images(cfg: AppConfig, show: Dict[str, Any]) -> None:
     """
-    [S-6.2] Cache:
-      - show poster + backdrop
-      - season posters
-      - episode stills
-    Also add local_*_path fields to show/seasons/episodes.
+    [S-6.2] Adds local_* fields:
+      show.local_poster_path, show.local_backdrop_path
+      season.local_poster_path
+      episode.local_still_path
+    NOTE: web pages live under /web/, so we use ../image/... as the client-facing relative.
     """
-    # NOTE: web/index.html is under /web/, so local paths should be "../image/..."
     rel_prefix = "../image"
 
-    # --- Show poster/backdrop
+    # --- Show poster
     poster_name = _safe_basename(show.get("poster_path"))
     if poster_name:
         dest = IMAGE_DIR / "shows" / "poster" / poster_name
@@ -426,6 +428,7 @@ def cache_show_images(cfg: AppConfig, show: Dict[str, Any]) -> None:
         _download_file(url, dest)
         show["local_poster_path"] = f"{rel_prefix}/shows/poster/{poster_name}"
 
+    # --- Show backdrop
     backdrop_name = _safe_basename(show.get("backdrop_path"))
     if backdrop_name:
         dest = IMAGE_DIR / "shows" / "backdrop" / backdrop_name
@@ -453,7 +456,8 @@ def cache_show_images(cfg: AppConfig, show: Dict[str, Any]) -> None:
 
 def cache_movie_images(cfg: AppConfig, movie: Dict[str, Any]) -> None:
     """
-    [S-6.3] Cache movie poster + backdrop, add local_* fields.
+    [S-6.3] Adds local_* fields:
+      movie.local_poster_path, movie.local_backdrop_path
     """
     rel_prefix = "../image"
 
@@ -506,7 +510,7 @@ def build_show_entry(cfg: AppConfig, source: Dict[str, Any]) -> Optional[Dict[st
                     "name": ep.get("name") or "",
                     "air_date": ep.get("air_date"),
                     "overview": ep.get("overview") or "",
-                    "runtime": ep.get("runtime"),  # may be None
+                    "runtime": ep.get("runtime"),
                     "still_path": ep.get("still_path"),
                     "links": build_tv_episode_links(cfg, tmdb_id, sn, ep_num),
                 }
@@ -543,9 +547,7 @@ def build_show_entry(cfg: AppConfig, source: Dict[str, Any]) -> Optional[Dict[st
         "seasons": seasons_out,
     }
 
-    # Cache images and annotate local paths
     cache_show_images(cfg, entry)
-
     return entry
 
 
@@ -576,7 +578,6 @@ def build_movie_entry(cfg: AppConfig, source: Dict[str, Any]) -> Optional[Dict[s
     }
 
     cache_movie_images(cfg, entry)
-
     return entry
 
 
@@ -586,14 +587,11 @@ def build_movie_entry(cfg: AppConfig, source: Dict[str, Any]) -> Optional[Dict[s
 
 def qa_validate_links(cfg: AppConfig, data: Dict[str, Any]) -> Tuple[bool, List[str]]:
     """
-    [S-8.1] Validate we are NOT mixing domains.
+    [S-8.1] Validate no mixed-domain drift:
+      - Every episode vidsrc/videasy must start with config bases
+      - Every movie vidsrc/videasy must start with config bases
     """
     errors: List[str] = []
-
-    vidsrc_tv_base = cfg.streaming.vidsrc_tv
-    videasy_tv_base = cfg.streaming.videasy_tv
-    vidsrc_movie_base = cfg.streaming.vidsrc_movie
-    videasy_movie_base = cfg.streaming.videasy_movie
 
     for s in data.get("shows", []) or []:
         for season in s.get("seasons", []) or []:
@@ -601,18 +599,18 @@ def qa_validate_links(cfg: AppConfig, data: Dict[str, Any]) -> Tuple[bool, List[
                 links = ep.get("links") or {}
                 v1 = (links.get("vidsrc") or "").strip()
                 v2 = (links.get("videasy") or "").strip()
-                if v1 and not v1.startswith(vidsrc_tv_base):
+                if v1 and not v1.startswith(cfg.streaming.vidsrc_tv):
                     errors.append(f"Show ep vidsrc base mismatch: {v1}")
-                if v2 and not v2.startswith(videasy_tv_base):
+                if v2 and not v2.startswith(cfg.streaming.videasy_tv):
                     errors.append(f"Show ep videasy base mismatch: {v2}")
 
     for m in data.get("movies", []) or []:
         links = m.get("links") or {}
         v1 = (links.get("vidsrc") or "").strip()
         v2 = (links.get("videasy") or "").strip()
-        if v1 and not v1.startswith(vidsrc_movie_base):
+        if v1 and not v1.startswith(cfg.streaming.vidsrc_movie):
             errors.append(f"Movie vidsrc base mismatch: {v1}")
-        if v2 and not v2.startswith(videasy_movie_base):
+        if v2 and not v2.startswith(cfg.streaming.videasy_movie):
             errors.append(f"Movie videasy base mismatch: {v2}")
 
     return (len(errors) == 0, errors)
@@ -651,7 +649,6 @@ def main() -> None:
             "movies": len(movies_out),
             "livetv": 0,
             "built_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            # Snapshot key config bits to make debugging deterministic:
             "config": {
                 "streaming_services": {
                     "vidsrc_tv": cfg.streaming.vidsrc_tv,
