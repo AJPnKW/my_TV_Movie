@@ -1,10 +1,16 @@
 name: Build TV Data and Deploy
 
+# ======================================================================================
+# [WF-1.0] Triggers
+# - Manual run
+# - Scheduled run
+# - Auto-run when inputs/config change (NOT when data/ or image/ change, to avoid loops)
+# ======================================================================================
 on:
   workflow_dispatch:
 
   schedule:
-    - cron: "0 */4 * * *"  # every 4 hours
+    - cron: "0 */4 * * *" # every 4 hours
 
   push:
     branches: [ main ]
@@ -12,18 +18,22 @@ on:
       - "tv_list.txt"
       - "movies_list.txt"
       - "live_tv_list.txt"
+      - "web/config.json"
+      - "scripts/fetch_tmdb.py"
       - "web/index.html"
       - "web/show.html"
-      - "web/config.json"
-      - "web/config.html"
-      - "web/config.js"
-      - "web/css/**"
-      - "scripts/fetch_tmdb.py"
+      - "web/css/my_tv_hub.css"
       - ".github/workflows/build-data.yml"
 
+# ======================================================================================
+# [WF-2.0] Required for committing back to the repo using GITHUB_TOKEN (fixes 403)
+# ======================================================================================
 permissions:
   contents: write
 
+# ======================================================================================
+# [WF-3.0] Prevent overlapping runs per branch
+# ======================================================================================
 concurrency:
   group: build-tv-data-${{ github.ref }}
   cancel-in-progress: true
@@ -32,44 +42,70 @@ jobs:
   build-data:
     runs-on: ubuntu-latest
 
+    # ==================================================================================
+    # [WF-4.0] Job-level env (TMDB API key required by scripts/fetch_tmdb.py)
+    # ==================================================================================
     env:
       API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
 
     steps:
-      - name: Checkout
+      # ------------------------------------------------------------------------------
+      # [WF-5.0] Checkout (persist credentials so git push works)
+      # ------------------------------------------------------------------------------
+      - name: Check out repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: true
 
-      - name: Setup Python
+      # ------------------------------------------------------------------------------
+      # [WF-6.0] Python runtime
+      # ------------------------------------------------------------------------------
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install Python deps
+      # ------------------------------------------------------------------------------
+      # [WF-7.0] Preflight (fail early if secret missing)
+      # ------------------------------------------------------------------------------
+      - name: Preflight - confirm TMDB secret is present
+        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          else
-            pip install requests
+          if [ -z "${API_TMDB_KEY}" ]; then
+            echo "[WF] ERROR: secrets.API_TMDB_KEY is missing or empty."
+            exit 1
           fi
+          echo "[WF] OK: API_TMDB_KEY present."
 
-      - name: Build data + cache missing images
+      # ------------------------------------------------------------------------------
+      # [WF-8.0] Build data + cache missing images only
+      # - scripts/fetch_tmdb.py writes: data/data.json
+      # - and downloads missing images into: image/** (never overwrites existing)
+      # ------------------------------------------------------------------------------
+      - name: Build data (data/data.json) + cache missing images (image/**)
+        shell: bash
         run: |
           python scripts/fetch_tmdb.py
 
+      # ------------------------------------------------------------------------------
+      # [WF-9.0] Commit/push only if data/ or image/ changed
+      # - IMPORTANT: push trigger paths exclude data/** and image/**, so no loop.
+      # ------------------------------------------------------------------------------
       - name: Commit & push updated data/images (only if changed)
+        shell: bash
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Only commit if data/ or image/ changed
-          if git diff --quiet -- data/ image/; then
-            echo "No changes in data/ or image/ – nothing to commit."
+          # Stage only generated artifacts
+          git add data/ image/ || true
+
+          # If nothing staged, exit clean
+          if git diff --cached --quiet; then
+            echo "[WF] No changes in data/ or image/ – nothing to commit."
             exit 0
           fi
 
-          git add data/ image/
-          git commit -m "chore: refresh data + image cache [skip ci]"
+          git commit -m "chore: refresh data + cache images [skip ci]"
           git push
