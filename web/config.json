@@ -1,4 +1,10 @@
 {
+  "_meta": {
+    "file": "web/config.json",
+    "version": "v1.2.0",
+    "updated_utc": "2025-12-14T00:00:00Z",
+    "notes": "Authoritative config for streaming base URLs, image sizes, and UI tuning. Workflow + fetch script read this file."
+  },
   "streaming_services": {
     "vidsrc_tv": "https://vidsrc.net/embed/tv/",
     "vidsrc_movie": "https://vidsrc.net/embed/movie/",
@@ -15,5 +21,18 @@
   "ui_tuning": {
     "calendar_button_scale": 0.75,
     "calendar_card_density": 1.0
+  },
+  "image_cache": {
+    "enabled": true,
+    "download_missing_only": true,
+    "tmdb_image_base": "https://image.tmdb.org/t/p",
+    "folders": {
+      "shows_poster": "/image/shows/poster",
+      "shows_backdrop": "/image/shows/backdrop",
+      "seasons_poster": "/image/shows/seasons/poster",
+      "episodes_stills": "/image/shows/episodes/stills",
+      "movies_poster": "/image/movies/poster",
+      "movies_backdrop": "/image/movies/backdrop"
+    }
   }
 }
