@@ -1,3 +1,18 @@
+/* ======================================================================================
+[FILE]        web/config.js
+[PROJECT]     my_TV_Movie (My TV Hub)
+[ROLE]        Config UI logic: load defaults, validate, apply, save (client-side)
+[VERSION]     v1.2.0
+[UPDATED]     2025-12-14
+[OWNER]       Andrew & Brant (internal)
+[DEPENDS ON]  web/config.html (form + controls)
+              web/config.json (schema defaults)
+[NOTES]
+- Must NOT assume a server-side "saveConfig()" endpoint (GitHub Pages is static).
+- Store user edits in browser localStorage; web/config.json remains the workflow baseline.
+====================================================================================== */
+
+
 // Save config values to config.json
 document.getElementById('configForm').addEventListener('submit', function (e) {
     e.preventDefault();
