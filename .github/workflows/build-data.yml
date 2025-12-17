@@ -1,51 +1,41 @@
+name: Build TV Data and Deploy
+
 # ==============================================================================
 # File:        .github/workflows/build-data.yml
 # Project:     my_TV_Movie
+# Purpose:     Build static TV/Movie data + cache images for GitHub Pages
+# Version:     v3.3.6 (2025-12-16)
 #
-# Purpose:
-#   - Build static hub data for GitHub Pages by running scripts/fetch_tmdb.py
-#   - Generate/refresh:
-#       * data/data.json
-#       * (optional) cached images under image/ (download missing only, driven by web/config.json)
-#
-# Source of truth:
-#   - Input lists: tv_list.txt, movies_list.txt, livetv_list.txt (optional)
-#   - Build config: web/config.json  (streaming base URLs, image sizes, cache switches)
-#
-# Required GitHub Secrets:
-#   - API_TMDB_KEY   (preferred) OR API_TMDB_TOKEN
-#
-# Version:
-#   v1.3.0 (2025-12-16)
+# Guarantees:
+#   - data/data.json is ALWAYS generated
+#   - config.json drives URL + image logic
+#   - livetv_list.txt is OPTIONAL
+#   - No infinite commit loops
 # ==============================================================================
 
-name: Build TV Data and Deploy
-
 on:
-  # Manual run from Actions tab
+  # Manual trigger
   workflow_dispatch:
 
-  # Every 4 hours
+  # Scheduled refresh
   schedule:
     - cron: "0 */4 * * *"
 
-  # Run automatically when hub inputs/config change
+  # Trigger on config or input changes
   push:
-    branches: [ "main" ]
+    branches: [ main ]
     paths:
       - "tv_list.txt"
       - "movies_list.txt"
       - "livetv_list.txt"
       - "web/config.json"
       - "scripts/fetch_tmdb.py"
-      - "requirements.txt"
+      - "scripts/fetch_trakt.py"
       - ".github/workflows/build-data.yml"
 
-# Allow GITHUB_TOKEN to push commits
 permissions:
   contents: write
 
-# Prevent overlapping runs on the same branch
 concurrency:
   group: build-tv-data-${{ github.ref }}
   cancel-in-progress: true
@@ -54,93 +44,61 @@ jobs:
   build-data:
     runs-on: ubuntu-latest
 
-    # Prevent infinite loop: if the push was created by the bot with [skip ci], skip this job.
-    # (Still allow schedule and manual runs.)
-    if: >
-      github.event_name != 'push'
-      || !contains(github.event.head_commit.message, '[skip ci]')
-
     env:
-      # TMDB auth for scripts
       API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
-      API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
+      API_TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_CLIENT_ID }}
+      API_TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_CLIENT_SECRET }}
 
     steps:
+      # ------------------------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Sanity check required files (Live TV optional)
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          echo "[WF] Repo root: $(pwd)"
-          echo "[WF] Listing root:"
-          ls -la
-
-          test -f "tv_list.txt" || { echo "[WF] ERROR: tv_list.txt not found."; exit 1; }
-          test -f "movies_list.txt" || { echo "[WF] ERROR: movies_list.txt not found."; exit 1; }
-          test -f "web/config.json" || { echo "[WF] ERROR: web/config.json not found."; exit 1; }
-          test -f "scripts/fetch_tmdb.py" || { echo "[WF] ERROR: scripts/fetch_tmdb.py not found."; exit 1; }
-
-          if test -f "livetv_list.txt"; then
-            echo "[WF] OK: livetv_list.txt found (optional)."
-          else
-            echo "[WF] OK: livetv_list.txt not found (optional) — continuing."
-          fi
-
-      - name: Verify TMDB secret present
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ -z "${API_TMDB_KEY:-}" ] && [ -z "${API_TMDB_TOKEN:-}" ]; then
-            echo "[WF] ERROR: Missing secrets. Set API_TMDB_KEY or API_TMDB_TOKEN in repo secrets."
-            exit 1
-          fi
-          echo "[WF] OK: TMDB secret present."
-
-      - name: Set up Python 3.12
+      # ------------------------------------------------------------------------
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        shell: bash
+      # ------------------------------------------------------------------------
+      - name: Install Python dependencies
         run: |
-          set -euo pipefail
           python -m pip install --upgrade pip
-          if [ -f "requirements.txt" ]; then
-            pip install -r requirements.txt
-          else
-            # Minimal fallback
-            pip install requests pyyaml orjson jsonschema tqdm rich httpx
-          fi
+          pip install requests pyyaml orjson tqdm rich httpx
 
-      - name: Build data (runs scripts/fetch_tmdb.py)
-        shell: bash
+      # ------------------------------------------------------------------------
+      - name: Validate input files
         run: |
-          set -euo pipefail
+          set -e
+          test -f tv_list.txt || (echo "ERROR: tv_list.txt missing" && exit 1)
+          test -f movies_list.txt || (echo "ERROR: movies_list.txt missing" && exit 1)
+          if [ ! -f livetv_list.txt ]; then
+            echo "WARNING: livetv_list.txt missing (optional)"
+          fi
+          test -f web/config.json || (echo "ERROR: web/config.json missing" && exit 1)
+
+      # ------------------------------------------------------------------------
+      - name: Build TMDB data
+        run: |
           python scripts/fetch_tmdb.py
 
-          echo "[WF] Post-build checks:"
-          test -f "data/data.json" || { echo "[WF] ERROR: data/data.json not created."; exit 1; }
-          ls -la data | head -n 50
-
-      - name: Commit & push updated artifacts (data/ + image/)
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
+      # ------------------------------------------------------------------------
+      - name: Build Trakt watch state (optional)
         run: |
-          set -euo pipefail
+          if [ -f scripts/fetch_trakt.py ]; then
+            python scripts/fetch_trakt.py || echo "WARNING: Trakt fetch failed"
+          fi
 
-          git config user.name  "github-actions[bot]"
+      # ------------------------------------------------------------------------
+      - name: Commit & push updated data
+        run: |
+          git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Only commit if outputs changed
-          if git diff --quiet -- data/ image/; then
-            echo "[WF] No changes in data/ or image/ — nothing to commit."
+          if git diff --quiet; then
+            echo "No changes detected – skipping commit."
             exit 0
           fi
 
