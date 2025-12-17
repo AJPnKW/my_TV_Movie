@@ -16,12 +16,20 @@ Pinned outputs:
   - Logs:               <repo>\.txt_files_4_AI_attachments\logs\
   - Zips:               <repo>\.txt_files_4_AI_attachments\archieves\
 
-Key exclusions:
-  - Exclude entire <repo>\image\ folder from scanning (noise reduction)
-  - Exclude binaries by extension (jpg/png/etc.)
-  - Exclude .git, node_modules, venv/.venv, __pycache__, .txt_files_4_AI_attachments
+Key exclusions (folders):
+  - <repo>\image\
+  - <repo>\logs\                (NEW)
+  - <repo>\.git\
+  - <repo>\node_modules\
+  - <repo>\.venv\ and <repo>\venv\
+  - <repo>\__pycache__\
+  - <repo>\.txt_files_4_AI_attachments\
 
-Version: 1.3.0 (2025-12-17)
+Key exclusions (extensions):
+  - binaries/media/docs/fonts/db/etc
+  - .bak (NEW)
+
+Version: 1.3.1 (2025-12-17)
 ============================================================================ #>
 
 [CmdletBinding()]
@@ -34,7 +42,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 # -----------------------------------------------------------------------------
-# Helpers: time + folders
+# Helpers
 # -----------------------------------------------------------------------------
 function Get-Stamp { Get-Date -Format 'yyyy-MM-dd_HHmmss' }
 
@@ -53,10 +61,9 @@ function Is-UnderPath {
 }
 
 # -----------------------------------------------------------------------------
-# Logging: ONE writer (prevents file-lock / Add-Content collisions)
+# Logging: ONE writer
 # -----------------------------------------------------------------------------
 $script:LogWriter = $null
-$script:LogPath   = $null
 
 function Start-LogWriter {
     param([Parameter(Mandatory)][string]$Path)
@@ -72,9 +79,7 @@ function Start-LogWriter {
 
     $sw = New-Object System.IO.StreamWriter($fs, (New-Object System.Text.UTF8Encoding($false)))
     $sw.AutoFlush = $true
-
     $script:LogWriter = $sw
-    $script:LogPath   = $Path
 }
 
 function Stop-LogWriter {
@@ -92,7 +97,6 @@ function Write-Log {
         [Parameter(Mandatory)][string]$Message,
         [ValidateSet('INFO','WARN','ERROR')][string]$Level = 'INFO'
     )
-
     $line = "{0} | {1,-5} | {2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $Message
     Write-Host $line
     if ($null -ne $script:LogWriter) { $script:LogWriter.WriteLine($line) }
@@ -113,7 +117,6 @@ function Get-VersionFromText {
     $ext = ""
     try { $ext = [System.IO.Path]::GetExtension($SourcePath).ToLowerInvariant() } catch { $ext = "" }
 
-    # 1) HTML/JS/CSS priority: prefer const VERSION = "vX.Y.Z"
     if ($ext -in @(".html",".htm",".js",".ts",".css")) {
         $p_const = '(?im)^\s*(?:const|let|var)?\s*version\s*=\s*["'']v?(\d+(?:\.\d+){0,3})["'']\s*;?\s*$'
         $m = [regex]::Match($t, $p_const)
@@ -126,11 +129,8 @@ function Get-VersionFromText {
         $p_meta = '(?im)\b(?:app\s+)?version\b\s*[:=]\s*v?(\d+(?:\.\d+){0,3})\b'
         $m = [regex]::Match($t, $p_meta)
         if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
-
-        # No broad “bare vX” matches for these file types.
     }
 
-    # 2) General explicit labels / keys
     $patterns = @(
         '(?im)^\s*(?:#|//|/\*+|\*|<!--)?\s*version\s*[:=]\s*v?(\d+(?:\.\d+){0,3})\b',
         '(?im)^\s*version\s+\:\s*v?(\d+(?:\.\d+){0,3})\b',
@@ -143,7 +143,6 @@ function Get-VersionFromText {
         if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
     }
 
-    # 3) Safe fallback: only when preceded by the word "version"
     $p_safe = '(?im)\bversion\b[^\n]{0,40}\bv(\d+(?:\.\d+){1,3})\b'
     $m = [regex]::Match($t, $p_safe)
     if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
@@ -178,7 +177,9 @@ function Has-ExcludedExtension {
     param([Parameter(Mandatory)][string]$Path)
 
     $ext = [System.IO.Path]::GetExtension($Path).ToLowerInvariant()
+
     $excluded = @(
+        '.bak',  # NEW
         '.jpg','.jpeg','.png','.gif','.webp','.bmp','.ico','.svg',
         '.mp3','.wav','.flac',
         '.mp4','.mkv','.avi','.mov',
@@ -204,17 +205,8 @@ function Should-NormalizeUtf8 {
     return ($normalize -contains $ext)
 }
 
-function Normalize-ToUtf8NoBom {
-    param(
-        [Parameter(Mandatory)][string]$SourcePath,
-        [Parameter(Mandatory)][string]$DestPath
-    )
-    $raw = Get-Content -LiteralPath $SourcePath -Raw -ErrorAction Stop
-    [System.IO.File]::WriteAllText($DestPath, $raw, (New-Object System.Text.UTF8Encoding($false)))
-}
-
 # -----------------------------------------------------------------------------
-# Attachment file naming (direct output to attach_root)
+# Attachment naming + zip helper
 # -----------------------------------------------------------------------------
 function Get-AttachmentFileName {
     param(
@@ -235,16 +227,13 @@ function Get-AttachmentFileName {
     return "{0}.txt" -f $flat
 }
 
-# -----------------------------------------------------------------------------
-# Zip helper: zip only attachment root files (exclude logs/archieves folders)
-# -----------------------------------------------------------------------------
 function Zip-AttachmentsSnapshot {
     param(
         [Parameter(Mandatory)][string]$AttachRoot,
         [Parameter(Mandatory)][string]$ZipPath
     )
 
-    # Only include files directly under attach_root (not logs/archieves)
+    # Only include files directly under attach_root (exclude logs/archieves)
     $files = Get-ChildItem -LiteralPath $AttachRoot -File -ErrorAction Stop
     if ($files.Count -eq 0) { throw "No attachment files found in $AttachRoot" }
 
@@ -257,7 +246,6 @@ function Zip-AttachmentsSnapshot {
 # Main
 # -----------------------------------------------------------------------------
 $stamp = Get-Stamp
-
 $RepoRoot = [System.IO.Path]::GetFullPath($RepoRoot)
 
 $attach_root = Join-Path $RepoRoot '.txt_files_4_AI_attachments'
@@ -292,10 +280,11 @@ $exclude_folders = @(
     (Join-Path $RepoRoot 'venv'),
     (Join-Path $RepoRoot '__pycache__'),
     (Join-Path $RepoRoot '.txt_files_4_AI_attachments'),
-    (Join-Path $RepoRoot 'image')  # requested: exclude entire image folder
+    (Join-Path $RepoRoot 'image'),
+    (Join-Path $RepoRoot 'logs')   # NEW
 )
 
-# Snapshot ZIP BEFORE generation (existing attachment files)
+# Snapshot ZIP BEFORE generation
 try {
     $zip_before = Join-Path $zip_dir "my_TV_Movie_AI_attachments_BEFORE_$stamp.zip"
     Write-Log "ZIPPING BEFORE generation -> $zip_before"
@@ -335,7 +324,7 @@ foreach ($f in $all) {
     }
     if ($skip) { $excluded++; continue }
 
-    # Exclude binary extensions
+    # Exclude by extension (includes .bak now)
     if (Has-ExcludedExtension -Path $path) { $excluded++; continue }
 
     # Skip current run logs/transcript and BAT log
@@ -365,7 +354,7 @@ foreach ($f in $all) {
     }
 }
 
-# Snapshot ZIP AFTER generation (fresh attachment files)
+# Snapshot ZIP AFTER generation
 try {
     $zip_after = Join-Path $zip_dir "my_TV_Movie_AI_attachments_AFTER_$stamp.zip"
     Write-Log "ZIPPING AFTER generation -> $zip_after"
@@ -377,7 +366,6 @@ try {
 }
 
 Write-Progress -Activity "Prep AI Attachments" -Completed
-
 Write-Log ("SUMMARY scanned={0} written={1} excluded={2} errors={3}" -f $scanned, $written, $excluded, $errors)
 
 Write-Host ""
