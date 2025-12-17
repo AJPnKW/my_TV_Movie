@@ -1,29 +1,36 @@
-/* [CSS-0.0] File: web/css/my_tv_hub.css | Version: v3.3.3 (2025-12-12) */
+/* =============================================================================
+   File:        web/css/my_tv_hub.css
+   Project:     my_TV_Movie
+   Purpose:     Global styling for Calendar, Shows, Movies, Show Page
+   Version:     v3.3.6 (2025-12-16)
 
-/* [CSS-1.0] Root + theme */
+   Design Rules:
+   - One stylesheet, no duplication
+   - Config-driven image sizing
+   - Dense TV-friendly layout
+   - D-pad / keyboard safe
+   - High contrast, neon-accent buttons
+   ========================================================================== */
+
+/* ============================================================================
+   [CSS-1.0] Root Theme
+   ========================================================================== */
 :root {
   --bg-main: #02040a;
   --bg-elevated: #050814;
-  --bg-card: #090d1c;
-  --bg-card-soft: #0f1324;
-  --accent-soft: #273656;
-  --border-subtle: #262b3a;
-  --text-main: #e9efff;
-  --text-muted: #9fb0d6;
-  --focus-ring: rgba(0, 170, 255, 0.25);
+  --bg-card: #0b1020;
+  --bg-card-soft: #10162b;
 
+  --text-main: #f2f6ff;
+  --text-muted: #9fb0d6;
+
+  --border-subtle: #1f2742;
   --radius-lg: 16px;
   --radius-md: 12px;
 
-  --shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+  --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
 
-  /* Button palette (existing) */
-  --btn-bg: #0b1230;
-  --btn-bg-hover: #0f1a45;
-  --btn-border: #2a3a68;
-  --btn-text: #e9efff;
-
-  /* Neon Candy Pop (for your “3 buttons” if used elsewhere) */
+  /* Neon Candy Pop palette */
   --neon-blue: #00aaff;
   --neon-purple: #aa00ff;
   --neon-pink: #ff00aa;
@@ -31,344 +38,297 @@
   --neon-lime: #aaff00;
 }
 
-/* [CSS-1.1] Base layout */
+/* ============================================================================
+   [CSS-1.1] Base
+   ========================================================================== */
+* { box-sizing: border-box; }
+
 html, body {
-  height: 100%;
-}
-body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  padding: 0;
   background: var(--bg-main);
   color: var(--text-main);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 
-/* [CSS-1.2] Links */
-a {
-  color: var(--neon-blue);
-  text-decoration: none;
-}
-a:hover {
-  text-decoration: underline;
+img {
+  max-width: 100%;
+  display: block;
+  border-radius: var(--radius-md);
 }
 
-/* [CSS-2.0] Top header */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  background: rgba(2, 4, 10, 0.92);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-subtle);
-}
-.app-header-inner {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.app-title {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-}
-.app-title h1 {
-  margin: 0;
-  font-size: 1.1rem;
-  letter-spacing: 0.2px;
-}
-.app-meta {
-  color: var(--text-muted);
-  font-size: 0.82rem;
-  white-space: nowrap;
-}
+a { color: inherit; text-decoration: none; }
 
-/* [CSS-2.1] View buttons */
-.view-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.view-btn {
-  cursor: pointer;
-  border: 1px solid var(--btn-border);
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  padding: 8px 10px;
-  border-radius: 12px;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-.view-btn:hover {
-  background: var(--btn-bg-hover);
-}
-.view-btn.active {
-  outline: 2px solid #ffffff;
-}
-
-/* [CSS-3.0] Main content container */
-.main {
-  max-width: 1500px;
-  margin: 0 auto;
-  padding: 14px 12px 50px 12px;
-}
-
-/* [CSS-4.0] Cards */
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-}
-.card-soft {
-  background: var(--bg-card-soft);
-}
-
-/* [CSS-5.0] Generic buttons */
+/* ============================================================================
+   [CSS-2.0] Buttons (GLOBAL)
+   ========================================================================== */
 .btn {
-  cursor: pointer;
-  border: 1px solid var(--btn-border);
-  background: var(--btn-bg);
-  color: var(--btn-text);
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-weight: 700;
-}
-.btn:hover {
-  background: var(--btn-bg-hover);
-}
-.btn:focus {
-  outline: 2px solid var(--neon-blue);
-  box-shadow: 0 0 0 6px var(--focus-ring);
-}
-
-/* [CSS-6.0] “Watch” button styles */
-.btn-watch {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  min-width: 120px;
-  text-align: center;
-  line-height: 1.05;
-}
-.btn-watch span.label-top {
-  display: block;
-  font-size: 0.72rem;
-  opacity: 0.9;
-}
-.btn-watch span.label-bottom {
-  display: block;
-  font-size: 0.86rem;
-  font-weight: 800;
+  gap: 4px;
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  line-height: 1.1;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
 }
 
-/* [CSS-6.1] Small/tight buttons (Calendar “3 buttons”) */
-.btn-watch-small {
-  font-size: 0.56rem;
-  padding: 0.11rem 0.38rem;
-  width: 100%;
-}
-.btn-watch-small span.label-top {
-  display: block;
-  font-size: 0.54rem;
-}
-.btn-watch-small span.label-bottom {
-  display: block;
-  font-size: 0.64rem;
-  font-weight: 700;
+.btn:focus-visible {
+  outline: 2px solid var(--neon-blue);
 }
 
-/* [CSS-6.2] Optional neon variants (use by applying these classes in HTML/JS) */
+.btn-outline {
+  background: transparent;
+  border-color: var(--border-subtle);
+}
+
 .btn-tmdb {
+  background: rgba(0,170,255,0.15);
   border-color: var(--neon-blue);
-  box-shadow: 0 0 0 1px rgba(0, 170, 255, 0.25) inset;
-}
-.btn-videasy {
-  border-color: var(--neon-purple);
-  box-shadow: 0 0 0 1px rgba(170, 0, 255, 0.25) inset;
-}
-.btn-vidsrc {
-  border-color: var(--neon-pink);
-  box-shadow: 0 0 0 1px rgba(255, 0, 170, 0.25) inset;
+  color: var(--neon-blue);
 }
 
-/* [CSS-7.0] Calendar */
+.btn-watch {
+  background: rgba(170,0,255,0.18);
+  border-color: var(--neon-purple);
+  color: var(--neon-purple);
+}
+
+.btn-watch-alt {
+  background: rgba(255,0,170,0.18);
+  border-color: var(--neon-pink);
+  color: var(--neon-pink);
+}
+
+/* ============================================================================
+   [CSS-3.0] Top Bar / Header
+   ========================================================================== */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(to bottom, #02040a 80%, transparent);
+}
+
+.top-bar h1 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* ============================================================================
+   [CSS-4.0] Calendar
+   ========================================================================== */
+.calendar-wrapper {
+  padding: 8px;
+}
+
 .calendar-header {
   position: sticky;
-  top: 64px; /* below app header; adjust if header height changes */
-  z-index: 500;
-  background: rgba(5, 8, 20, 0.92);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 10px 12px;
-  margin-bottom: 12px;
-}
-.calendar-header .subtext {
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  margin-top: 6px;
+  top: 56px;
+  z-index: 40;
+  background: var(--bg-main);
+  padding-bottom: 6px;
 }
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.day-name {
-  position: sticky;
-  top: 134px; /* below calendar header */
-  z-index: 450;
-  background: rgba(2, 4, 10, 0.92);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--border-subtle);
-  border-radius: 12px;
-  padding: 8px 10px;
-  font-weight: 800;
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.day-cell {
-  min-height: 140px;
-  padding: 10px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  background: var(--bg-card);
-  overflow: hidden;
-  position: relative;
-}
-.day-cell.today {
-  outline: 2px solid var(--neon-blue);
-  box-shadow: 0 0 0 6px rgba(0, 170, 255, 0.12);
-}
-.day-cell.weekend {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.day-number {
-  position: sticky; /* “sticky until next week header” effect is typically handled in JS; keep this safe */
-  top: 0;
-  z-index: 5;
-  font-weight: 900;
-  color: var(--text-main);
-  margin-bottom: 8px;
-}
-
-/* [CSS-8.0] Calendar show card (compact) */
-.cal-item {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: 10px;
-  padding: 8px;
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(15, 19, 36, 0.55);
-  margin-bottom: 8px;
-}
-.cal-item img {
-  width: 64px;
-  height: 96px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-}
-.cal-item .cal-text {
-  min-width: 0;
-}
-.cal-item .cal-title {
-  font-weight: 900;
-  font-size: 0.86rem;
-  line-height: 1.15;
-  white-space: normal;
-  word-break: break-word;
-}
-.cal-item .cal-sub {
-  margin-top: 4px;
-  color: var(--text-muted);
-  font-size: 0.78rem;
-  line-height: 1.15;
-}
-.cal-item .cal-buttons {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(7, 1fr);
   gap: 6px;
 }
 
-/* [CSS-9.0] Shows grid/cards (kept minimal here; index.html drives layout) */
+.calendar-day {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  min-height: 110px;
+}
+
+.calendar-day.weekend {
+  background: rgba(255,170,0,0.05);
+}
+
+.calendar-day.today {
+  outline: 2px solid var(--neon-blue);
+}
+
+.calendar-day-number {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.calendar-card {
+  background: var(--bg-card-soft);
+  border-radius: var(--radius-md);
+  padding: 6px;
+  margin-top: 6px;
+  box-shadow: var(--shadow-soft);
+}
+
+/* Calendar card layout (requested redesign) */
+.calendar-card-grid {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 6px;
+}
+
+.calendar-card-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.calendar-card-episode {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.calendar-card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.calendar-episode-still {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.calendar-card-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ============================================================================
+   [CSS-5.0] Shows Grid
+   ========================================================================== */
 .shows-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
-}
-.show-card {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
   padding: 12px;
 }
-.show-card img {
+
+.show-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-soft);
+}
+
+.show-poster {
   width: 100%;
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
+  aspect-ratio: 2 / 3;
   object-fit: cover;
 }
 
-/* [CSS-10.0] Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  z-index: 2000;
+.show-card-body {
+  padding: 10px;
 }
-.modal-overlay.open {
+
+.show-card-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.show-card-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.show-card-buttons {
   display: flex;
+  gap: 6px;
+  margin-top: 8px;
 }
-.modal {
-  width: min(1200px, 100%);
-  max-height: 92vh;
-  overflow: auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+
+/* ============================================================================
+   [CSS-6.0] Show Page
+   ========================================================================== */
+.page-show .show-hero {
+  position: relative;
 }
-.modal-header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: rgba(9, 13, 28, 0.92);
-  backdrop-filter: blur(10px);
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
+
+.show-hero-backdrop {
+  height: 220px;
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.5);
 }
-.modal-title {
-  font-weight: 900;
+
+.show-hero-content {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 16px;
+  padding: 16px;
+  margin-top: -120px;
 }
-.modal-close {
-  cursor: pointer;
-  border: 2px solid #ffffff;
-  background: transparent;
-  color: #ffffff;
-  border-radius: 12px;
-  padding: 6px 10px;
-  font-weight: 900;
+
+.show-poster {
+  box-shadow: var(--shadow-soft);
 }
-.modal-body {
+
+.show-meta .badge {
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.seasons-container {
   padding: 12px;
 }
 
-/* [CSS-11.0] Utility */
-.muted {
+.season-card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+}
+
+.season-header {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.episode-list {
+  padding: 8px;
+}
+
+.episode-card {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.episode-card.watched {
+  opacity: 0.6;
+}
+
+.episode-info {
+  font-size: 0.8rem;
+}
+
+.ep-buttons {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* ============================================================================
+   [CSS-7.0] Footer
+   ========================================================================== */
+.page-footer {
+  text-align: center;
+  padding: 12px;
+  font-size: 0.7rem;
   color: var(--text-muted);
 }
