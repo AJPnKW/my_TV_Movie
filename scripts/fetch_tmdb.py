@@ -1,60 +1,68 @@
 #!/usr/bin/env python3
 # ======================================================================================
-# File: scripts/fetch_tmdb.py
-# Project: my_TV_Movie
+# File:        scripts/fetch_tmdb.py
+# Project:     my_TV_Movie
 #
-# Purpose
-#   - Read input lists (tv_list.txt, movies_list.txt, livetv_list.txt)
-#   - Read config (web/config.json)
-#   - Fetch metadata from TMDB and build static outputs (data/data.json)
-#   - Generate streaming URLs from config (no hard-coded domains)
-#   - Optionally cache TMDB images locally (download missing only) into /image/...
+# Purpose:
+#   - Read input lists:
+#       - tv_list.txt
+#       - movies_list.txt
+#       - livetv_list.txt   (OPTIONAL; do not fail build if missing/empty)
+#   - Read config:
+#       - web/config.json   (streaming base URLs + image sizes + UI tuning + cache options)
+#   - Fetch metadata from TMDB and build static outputs:
+#       - data/data.json
+#       - data/last_refresh.txt
+#   - Generate streaming URLs from config (NO hard-coded domains)
+#   - Optional: cache TMDB images locally (download missing only) under:
+#       - image/shows/poster
+#       - image/shows/backdrop
+#       - image/shows/seasons/poster
+#       - image/shows/episodes/stills
+#       - image/movies/poster
+#       - image/movies/backdrop
 #
-# Version
-#   v2.6.0 (2025-12-16)
+# Version:
+#   v2.6.1 (2025-12-16)
 #
-# Compatibility
+# Compatibility:
 #   - Windows / Linux
 #   - Python 3.12+
 #
-# Required env
+# Required env:
 #   - API_TMDB_KEY   (TMDB v3 key)  OR
 #   - API_TMDB_TOKEN (TMDB v4 read access token)
 #
-# Outputs
-#   - data/data.json
-#   - data/last_refresh.txt
-#   - images under /image/ (if enabled in config.json)
+# Logging:
+#   - logs/fetch_tmdb.log.txt (append)
 #
-# Conventions
-#   - No snippets: whole-file replacement only.
-#   - Logging: logs/fetch_tmdb.log.txt (append).
+# Design rules:
+#   - Source of truth for streaming base URLs is web/config.json.
+#   - data/data.json should contain link fields generated from config (consistent domains).
+#   - Never hard-fail for missing Live TV list (optional feature).
 # ======================================================================================
 
 from __future__ import annotations
 
+import dataclasses
+import datetime as _dt
+import hashlib
 import json
 import os
+import re
 import sys
 import time
-import hashlib
-from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-import requests
-from tqdm import tqdm
-
-
 # -----------------------------
-# Paths (repo-relative)
+# [TMDB-0.0] Repo paths
 # -----------------------------
 REPO_ROOT = Path(__file__).resolve().parents[1]
 
 PATH_TV_LIST = REPO_ROOT / "tv_list.txt"
 PATH_MOVIES_LIST = REPO_ROOT / "movies_list.txt"
-PATH_LIVETV_LIST = REPO_ROOT / "livetv_list.txt"
+PATH_LIVETV_LIST = REPO_ROOT / "livetv_list.txt"  # NOTE: OPTIONAL (do not fail if missing)
 
 PATH_CONFIG_JSON = REPO_ROOT / "web" / "config.json"
 
@@ -65,18 +73,51 @@ PATH_LAST_REFRESH = PATH_DATA_DIR / "last_refresh.txt"
 PATH_LOG_DIR = REPO_ROOT / "logs"
 PATH_LOG_FILE = PATH_LOG_DIR / "fetch_tmdb.log.txt"
 
-# image cache root: repo_root/image/...
 PATH_IMAGE_ROOT = REPO_ROOT / "image"
 
-
+# -----------------------------
+# [TMDB-0.1] TMDB endpoints
+# -----------------------------
 TMDB_API_BASE = "https://api.themoviedb.org/3"
-TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/original"
-
+TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/"
 
 # -----------------------------
-# Config model
+# [TMDB-0.2] Optional progress bar
 # -----------------------------
-@dataclass(frozen=True)
+try:
+    from tqdm import tqdm  # type: ignore
+except Exception:
+    tqdm = None  # type: ignore
+
+
+# ======================================================================================
+# [UTIL-1.0] Logging + exits
+# ======================================================================================
+def _now_utc_iso() -> str:
+    return _dt.datetime.now(tz=_dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def log(msg: str) -> None:
+    PATH_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    line = f"{_now_utc_iso()} {msg}"
+    print(line)
+    with PATH_LOG_FILE.open("a", encoding="utf-8") as f:
+        f.write(line + "\n")
+
+
+def die(msg: str, code: int = 1) -> None:
+    log(f"[fetch_tmdb] ERROR: {msg}")
+    raise SystemExit(code)
+
+
+def warn(msg: str) -> None:
+    log(f"[fetch_tmdb] WARN: {msg}")
+
+
+# ======================================================================================
+# [CFG-2.0] Config schema + load/validate
+# ======================================================================================
+@dataclasses.dataclass
 class StreamingServices:
     vidsrc_tv: str
     vidsrc_movie: str
@@ -84,118 +125,59 @@ class StreamingServices:
     videasy_movie: str
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass
 class ImageSizes:
-    show_width: int
-    movie_width: int
-    season_width: int
-    episode_still_w: int
-    backdrop_w: int
+    show_width: int = 185
+    movie_width: int = 185
+    season_width: int = 185
+    episode_still_w: int = 300
+    backdrop_w: int = 780
 
 
-@dataclass(frozen=True)
+@dataclasses.dataclass
 class UiTuning:
-    calendar_button_scale: float
-    calendar_card_density: float
+    calendar_button_scale: float = 0.75
+    calendar_card_density: float = 1.0
 
 
-@dataclass(frozen=True)
-class CacheImages:
-    enabled: bool
-    download_missing_only: bool
-    timeout_seconds: int
-    retries: int
-    sleep_seconds_between_retries: float
+@dataclasses.dataclass
+class ImageCache:
+    enabled: bool = False
+    # if True, UI can prefer local_*_path; if False, local_* may still be written but empty
+    write_local_paths: bool = True
 
 
-@dataclass(frozen=True)
-class Config:
+@dataclasses.dataclass
+class AppConfig:
     streaming_services: StreamingServices
     image_sizes: ImageSizes
     ui_tuning: UiTuning
-    cache_images: CacheImages
-
-    @property
-    def sha256(self) -> str:
-        raw = json.dumps(
-            {
-                "streaming_services": self.streaming_services.__dict__,
-                "image_sizes": self.image_sizes.__dict__,
-                "ui_tuning": self.ui_tuning.__dict__,
-                "cache_images": self.cache_images.__dict__,
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-        return hashlib.sha256(raw).hexdigest()
+    image_cache: ImageCache
 
 
-# -----------------------------
-# Logging
-# -----------------------------
-def _now_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+def load_config() -> AppConfig:
+    if not PATH_CONFIG_JSON.exists():
+        die(f"Missing config: {PATH_CONFIG_JSON}")
 
+    try:
+        raw = json.loads(PATH_CONFIG_JSON.read_text(encoding="utf-8"))
+    except Exception as e:
+        die(f"Invalid JSON in {PATH_CONFIG_JSON}: {e}")
 
-def log(msg: str) -> None:
-    PATH_LOG_DIR.mkdir(parents=True, exist_ok=True)
-    line = f"{_now_iso()} | fetch_tmdb | {msg}"
-    print(line)
-    with PATH_LOG_FILE.open("a", encoding="utf-8") as f:
-        f.write(line + "\n")
-
-
-# -----------------------------
-# Helpers
-# -----------------------------
-def die(msg: str, exit_code: int = 1) -> None:
-    log(f"ERROR: {msg}")
-    raise SystemExit(exit_code)
-
-
-def read_text_lines(path: Path) -> List[str]:
-    if not path.exists():
-        return []
-    out: List[str] = []
-    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        s = raw.strip()
-        if not s or s.startswith("#"):
-            continue
-        out.append(s)
-    return out
-
-
-def normalize_base_url(url: str) -> str:
-    # ensure trailing slash for safe concatenation
-    url = (url or "").strip()
-    if not url:
-        return url
-    return url if url.endswith("/") else (url + "/")
-
-
-def load_config(path: Path) -> Config:
-    if not path.exists():
-        die(f"Missing config file: {path}")
-
-    cfg_raw = json.loads(path.read_text(encoding="utf-8"))
-
-    ss = cfg_raw.get("streaming_services", {})
-    img = cfg_raw.get("image_sizes", {})
-    ui = cfg_raw.get("ui_tuning", {})
-    cache = cfg_raw.get("cache_images", {})
-
-    def req(d: Dict[str, Any], k: str) -> Any:
-        if k not in d or d[k] in (None, ""):
-            die(f"config.json missing required key: {k}")
-        return d[k]
+    ss = raw.get("streaming_services", {}) or {}
+    required = ["vidsrc_tv", "vidsrc_movie", "videasy_tv", "videasy_movie"]
+    missing = [k for k in required if not str(ss.get(k, "")).strip()]
+    if missing:
+        die(f"config.json missing required streaming_services keys: {', '.join(missing)}")
 
     streaming = StreamingServices(
-        vidsrc_tv=normalize_base_url(req(ss, "vidsrc_tv")),
-        vidsrc_movie=normalize_base_url(req(ss, "vidsrc_movie")),
-        videasy_tv=normalize_base_url(req(ss, "videasy_tv")),
-        videasy_movie=normalize_base_url(req(ss, "videasy_movie")),
+        vidsrc_tv=str(ss["vidsrc_tv"]).strip(),
+        vidsrc_movie=str(ss["vidsrc_movie"]).strip(),
+        videasy_tv=str(ss["videasy_tv"]).strip(),
+        videasy_movie=str(ss["videasy_movie"]).strip(),
     )
 
+    img = raw.get("image_sizes", {}) or {}
     image_sizes = ImageSizes(
         show_width=int(img.get("show_width", 185)),
         movie_width=int(img.get("movie_width", 185)),
@@ -204,467 +186,452 @@ def load_config(path: Path) -> Config:
         backdrop_w=int(img.get("backdrop_w", 780)),
     )
 
+    ui = raw.get("ui_tuning", {}) or {}
     ui_tuning = UiTuning(
         calendar_button_scale=float(ui.get("calendar_button_scale", 0.75)),
         calendar_card_density=float(ui.get("calendar_card_density", 1.0)),
     )
 
-    cache_images = CacheImages(
-        enabled=bool(cache.get("enabled", True)),
-        download_missing_only=bool(cache.get("download_missing_only", True)),
-        timeout_seconds=int(cache.get("timeout_seconds", 30)),
-        retries=int(cache.get("retries", 2)),
-        sleep_seconds_between_retries=float(cache.get("sleep_seconds_between_retries", 0.7)),
+    cache = raw.get("image_cache", {}) or {}
+    image_cache = ImageCache(
+        enabled=bool(cache.get("enabled", False)),
+        write_local_paths=bool(cache.get("write_local_paths", True)),
     )
 
-    return Config(
+    return AppConfig(
         streaming_services=streaming,
         image_sizes=image_sizes,
         ui_tuning=ui_tuning,
-        cache_images=cache_images,
+        image_cache=image_cache,
     )
 
 
-def tmdb_session() -> requests.Session:
-    key = os.environ.get("API_TMDB_KEY", "").strip()
-    token = os.environ.get("API_TMDB_TOKEN", "").strip()
-
-    if not key and not token:
-        die("API_TMDB_KEY or API_TMDB_TOKEN is required in environment")
-
-    s = requests.Session()
-    s.headers.update({"Accept": "application/json"})
-    if token:
-        s.headers.update({"Authorization": f"Bearer {token}"})
-    return s
+# ======================================================================================
+# [LIST-3.0] Input list parsing
+# ======================================================================================
+_ID_RE = re.compile(r"(\d+)")
 
 
-def tmdb_get(session: requests.Session, url: str, params: Optional[Dict[str, Any]] = None, *, cfg: Config) -> Dict[str, Any]:
-    params = dict(params or {})
-    if "API_TMDB_TOKEN" not in os.environ or not os.environ.get("API_TMDB_TOKEN", "").strip():
-        # v3 key style
-        params.setdefault("api_key", os.environ.get("API_TMDB_KEY", "").strip())
+def parse_list_file(path: Path) -> List[Tuple[str, int]]:
+    """
+    Accepts flexible formats, examples:
+      - Abbott Elementary | 125935
+      - 125935 | Abbott Elementary
+      - 125935
+      - Abbott Elementary (125935)
+    Ignores blank lines and # comments.
+    Returns: [(ref_name, tmdb_id), ...]
+    """
+    if not path.exists():
+        die(f"Missing required list file: {path}")
 
-    for attempt in range(1, cfg.cache_images.retries + 2):
+    out: List[Tuple[str, int]] = []
+    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+
+        # normalize separators
+        parts = [p.strip() for p in re.split(r"[|,;\t]", line) if p.strip()]
+        joined = " ".join(parts) if parts else line
+
+        m = _ID_RE.search(joined)
+        if not m:
+            warn(f"Skipping line without TMDB id in {path.name}: {raw}")
+            continue
+        tmdb_id = int(m.group(1))
+
+        # name: prefer non-numeric text
+        name = re.sub(r"\b\d+\b", "", joined).strip(" -|,;()[]\t") or str(tmdb_id)
+        out.append((name, tmdb_id))
+
+    # de-dupe by id, keep first name
+    seen: set[int] = set()
+    deduped: List[Tuple[str, int]] = []
+    for name, tid in out:
+        if tid in seen:
+            continue
+        seen.add(tid)
+        deduped.append((name, tid))
+    return deduped
+
+
+def parse_livetv_optional(path: Path) -> List[str]:
+    """
+    OPTIONAL input.
+    If missing, return [] and do not fail.
+    """
+    if not path.exists():
+        warn(f"Live TV list not found (optional): {path.name}")
+        return []
+    items: List[str] = []
+    for raw in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        items.append(line)
+    return items
+
+
+# ======================================================================================
+# [HTTP-4.0] TMDB client
+# ======================================================================================
+class TmdbClient:
+    def __init__(self) -> None:
+        self.api_key = os.getenv("API_TMDB_KEY", "").strip()
+        self.api_token = os.getenv("API_TMDB_TOKEN", "").strip()
+
+        if not self.api_key and not self.api_token:
+            die("API_TMDB_KEY or API_TMDB_TOKEN is required in env.")
+
+        import requests  # local import so error is obvious if missing
+        self._requests = requests
+        self._session = requests.Session()
+
+        self._headers = {"Accept": "application/json"}
+        if self.api_token:
+            # v4 token for v3 endpoints works via Authorization bearer
+            self._headers["Authorization"] = f"Bearer {self.api_token}"
+
+    def get_json(self, path: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+        params = dict(params or {})
+        if self.api_key and "api_key" not in params:
+            params["api_key"] = self.api_key
+
+        url = f"{TMDB_API_BASE}{path}"
+        r = self._session.get(url, headers=self._headers, params=params, timeout=60)
+        if r.status_code >= 400:
+            raise RuntimeError(f"TMDB {r.status_code} for {url}: {r.text[:200]}")
+        return r.json()
+
+    def download(self, url: str, dest: Path) -> bool:
+        """
+        Download only if missing. Returns True if downloaded, False if already existed.
+        """
+        if dest.exists() and dest.stat().st_size > 0:
+            return False
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        r = self._session.get(url, headers=self._headers, timeout=90)
+        if r.status_code >= 400:
+            raise RuntimeError(f"TMDB image {r.status_code} for {url}")
+        dest.write_bytes(r.content)
+        return True
+
+
+# ======================================================================================
+# [URL-5.0] Streaming URLs (config-driven only)
+# ======================================================================================
+def _join_base(base: str, suffix: str) -> str:
+    base = base.strip()
+    if not base.endswith("/"):
+        base += "/"
+    return base + suffix.lstrip("/")
+
+
+def build_tv_links(cfg: AppConfig, tmdb_id: int, season_number: int, episode_number: int) -> Dict[str, str]:
+    # Required format (user-confirmed):
+    #   vidsrc.net/embed/tv/ID/season/ep
+    #   player.videasy.net/tv/ID/season/ep
+    suffix = f"{tmdb_id}/{season_number}/{episode_number}"
+    return {
+        "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}/season/{season_number}/episode/{episode_number}",
+        "vidsrc": _join_base(cfg.streaming_services.vidsrc_tv, suffix),
+        "videasy": _join_base(cfg.streaming_services.videasy_tv, suffix),
+    }
+
+
+def build_movie_links(cfg: AppConfig, tmdb_id: int) -> Dict[str, str]:
+    # Expected format:
+    #   vidsrc.net/embed/movie/ID
+    #   player.videasy.net/movie/ID
+    suffix = f"{tmdb_id}"
+    return {
+        "tmdb": f"https://www.themoviedb.org/movie/{tmdb_id}",
+        "vidsrc": _join_base(cfg.streaming_services.vidsrc_movie, suffix),
+        "videasy": _join_base(cfg.streaming_services.videasy_movie, suffix),
+    }
+
+
+# ======================================================================================
+# [IMG-6.0] Image caching + local paths
+# ======================================================================================
+def _img_url(width: int, tmdb_path: str) -> str:
+    # width -> "w185", "w300", "w780", etc.
+    key = f"w{int(width)}"
+    return f"{TMDB_IMAGE_BASE}{key}{tmdb_path}"
+
+
+def _safe_filename(tmdb_path: str) -> str:
+    # tmdb_path already includes leading "/", keep basename only
+    name = Path(tmdb_path).name
+    if not name:
+        name = hashlib.sha1(tmdb_path.encode("utf-8")).hexdigest() + ".jpg"
+    return name
+
+
+def rel_path_from_web_to_repo_image(rel_under_image: Path) -> str:
+    """
+    web/* files need to reference images using relative path up to repo root.
+    From web/index.html => ../image/...
+    """
+    return str(Path("..") / "image" / rel_under_image).replace("\\", "/")
+
+
+def cache_show_images(client: TmdbClient, cfg: AppConfig, show: Dict[str, Any]) -> None:
+    if not cfg.image_cache.write_local_paths:
+        return
+
+    def _cache(subdir: Path, tmdb_path: Optional[str], out_key: str, width: int) -> None:
+        if not tmdb_path:
+            return
+        fn = _safe_filename(tmdb_path)
+        rel_under_image = subdir / fn
+        show[out_key] = rel_path_from_web_to_repo_image(rel_under_image)
+
+        if not cfg.image_cache.enabled:
+            return
+
+        dest = PATH_IMAGE_ROOT / rel_under_image
+        url = _img_url(width, tmdb_path)
         try:
-            r = session.get(url, params=params, timeout=cfg.cache_images.timeout_seconds)
-            r.raise_for_status()
-            return r.json()
-        except Exception:
-            if attempt >= (cfg.cache_images.retries + 1):
-                raise
-            time.sleep(cfg.cache_images.sleep_seconds_between_retries)
+            downloaded = client.download(url, dest)
+            if downloaded:
+                log(f"[cache] + {dest.as_posix()}")
+        except Exception as e:
+            warn(f"Image download failed (show): {url} -> {e}")
 
-
-def safe_filename(name: str) -> str:
-    # keep it simple: not used for paths that come from TMDB (they already safe),
-    # but handy for any future caching by title.
-    return "".join(ch for ch in name if ch.isalnum() or ch in ("-", "_", ".")).strip("._")
-
-
-def ensure_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-
-
-def download_file(session: requests.Session, url: str, dest: Path, *, cfg: Config) -> bool:
-    """
-    Returns True if downloaded in this run, False if skipped.
-    Skips when:
-      - download_missing_only enabled AND file already exists AND size > 0
-    """
-    if cfg.cache_images.download_missing_only and dest.exists() and dest.stat().st_size > 0:
-        return False
-
-    ensure_dir(dest.parent)
-
-    for attempt in range(1, cfg.cache_images.retries + 2):
-        try:
-            with session.get(url, stream=True, timeout=cfg.cache_images.timeout_seconds) as r:
-                r.raise_for_status()
-                tmp = dest.with_suffix(dest.suffix + ".tmp")
-                with tmp.open("wb") as f:
-                    for chunk in r.iter_content(chunk_size=1024 * 64):
-                        if chunk:
-                            f.write(chunk)
-                tmp.replace(dest)
-            return True
-        except Exception:
-            if attempt >= (cfg.cache_images.retries + 1):
-                raise
-            time.sleep(cfg.cache_images.sleep_seconds_between_retries)
-
-    return False
-
-
-def tmdb_image_url(path_fragment: Optional[str]) -> Optional[str]:
-    if not path_fragment:
-        return None
-    if not path_fragment.startswith("/"):
-        path_fragment = "/" + path_fragment
-    return TMDB_IMAGE_BASE + path_fragment
-
-
-def rel_path_from_web_to_repo_image(path_under_image: Path) -> str:
-    # Pages live under /web/*.html. Images live under /image/... at repo root.
-    # So from /web/index.html, the relative path is ../image/...
-    rel = Path("..") / "image" / path_under_image.as_posix()
-    return rel.as_posix()
-
-
-# -----------------------------
-# Input parsing
-# -----------------------------
-def parse_tv_list(lines: List[str]) -> List[Dict[str, Any]]:
-    """
-    Accepted formats per line:
-      - Title | 12345
-      - Title | 12345 | S01-S05
-      - Title | 12345 | S01
-      - 12345 (TMDB id only)
-    """
-    out: List[Dict[str, Any]] = []
-    for s in lines:
-        parts = [p.strip() for p in s.split("|")]
-        if len(parts) == 1:
-            # id-only
-            if parts[0].isdigit():
-                out.append({"tmdb_id": int(parts[0]), "title": None, "season_hint": None})
-            else:
-                # title-only not supported; force deterministic id usage
-                die(f"tv_list.txt line must include TMDB id: {s}")
-            continue
-
-        title = parts[0] or None
-        tmdb_id = parts[1]
-        if not tmdb_id.isdigit():
-            die(f"tv_list.txt invalid TMDB id: {s}")
-
-        season_hint = parts[2] if len(parts) >= 3 and parts[2] else None
-        out.append({"tmdb_id": int(tmdb_id), "title": title, "season_hint": season_hint})
-    return out
-
-
-def parse_movies_list(lines: List[str]) -> List[Dict[str, Any]]:
-    """
-    Accepted formats per line:
-      - Title | 12345
-      - 12345
-    """
-    out: List[Dict[str, Any]] = []
-    for s in lines:
-        parts = [p.strip() for p in s.split("|")]
-        if len(parts) == 1:
-            if parts[0].isdigit():
-                out.append({"tmdb_id": int(parts[0]), "title": None})
-            else:
-                die(f"movies_list.txt line must include TMDB id: {s}")
-            continue
-        title = parts[0] or None
-        tmdb_id = parts[1]
-        if not tmdb_id.isdigit():
-            die(f"movies_list.txt invalid TMDB id: {s}")
-        out.append({"tmdb_id": int(tmdb_id), "title": title})
-    return out
-
-
-# -----------------------------
-# Streaming URLs (config-driven)
-# -----------------------------
-def build_tv_episode_links(cfg: Config, show_tmdb_id: int, season_number: int, episode_number: int) -> Dict[str, str]:
-    # REQUIRED patterns (validated by user):
-    #   vidsrc:  https://vidsrc.net/embed/tv/ID/season/ep
-    #   videasy: https://player.videasy.net/tv/ID/season/ep
-    ss = cfg.streaming_services
-    return {
-        "vidsrc": f"{ss.vidsrc_tv}{show_tmdb_id}/{season_number}/{episode_number}",
-        "videasy": f"{ss.videasy_tv}{show_tmdb_id}/{season_number}/{episode_number}",
-    }
-
-
-def build_movie_links(cfg: Config, movie_tmdb_id: int) -> Dict[str, str]:
-    # REQUIRED patterns:
-    #   vidsrc:  https://vidsrc.net/embed/movie/ID
-    #   videasy: https://player.videasy.net/movie/ID
-    ss = cfg.streaming_services
-    return {
-        "vidsrc": f"{ss.vidsrc_movie}{movie_tmdb_id}",
-        "videasy": f"{ss.videasy_movie}{movie_tmdb_id}",
-    }
-
-
-# -----------------------------
-# TMDB Fetch
-# -----------------------------
-def fetch_show(session: requests.Session, cfg: Config, tmdb_id: int) -> Dict[str, Any]:
-    show = tmdb_get(session, f"{TMDB_API_BASE}/tv/{tmdb_id}", {"append_to_response": "external_ids"}, cfg=cfg)
-
-    seasons_out: List[Dict[str, Any]] = []
-    for s in show.get("seasons", []) or []:
-        season_number = s.get("season_number")
-        if season_number is None:
-            continue
-
-        season = tmdb_get(session, f"{TMDB_API_BASE}/tv/{tmdb_id}/season/{season_number}", {}, cfg=cfg)
-
-        episodes_out: List[Dict[str, Any]] = []
-        for ep in season.get("episodes", []) or []:
-            ep_num = ep.get("episode_number")
-            if ep_num is None:
-                continue
-
-            # links generated from config ONLY
-            links = build_tv_episode_links(cfg, tmdb_id, int(season_number), int(ep_num))
-
-            episodes_out.append(
-                {
-                    "season_number": int(season_number),
-                    "episode_number": int(ep_num),
-                    "name": ep.get("name"),
-                    "air_date": ep.get("air_date"),
-                    "overview": ep.get("overview"),
-                    "runtime": ep.get("runtime"),
-                    "still_path": ep.get("still_path"),
-                    "links": links,
-                    # local path filled later (if caching enabled)
-                }
-            )
-
-        seasons_out.append(
-            {
-                "season_number": int(season_number),
-                "name": season.get("name"),
-                "air_date": season.get("air_date"),
-                "overview": season.get("overview"),
-                "poster_path": season.get("poster_path"),
-                "episodes": episodes_out,
-                # local path filled later (if caching enabled)
-            }
-        )
-
-    out = {
-        "tmdb_id": int(tmdb_id),
-        "name": show.get("name"),
-        "first_air_date": show.get("first_air_date"),
-        "last_air_date": show.get("last_air_date"),
-        "number_of_seasons": show.get("number_of_seasons"),
-        "number_of_episodes": show.get("number_of_episodes"),
-        "status": show.get("status"),
-        "genres": [g.get("name") for g in (show.get("genres") or []) if g.get("name")],
-        "poster_path": show.get("poster_path"),
-        "backdrop_path": show.get("backdrop_path"),
-        "external_ids": show.get("external_ids", {}),
-        "seasons": seasons_out,
-        # links for show-level buttons (optional use)
-        "links": {
-            "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}",
-        },
-    }
-    return out
-
-
-def fetch_movie(session: requests.Session, cfg: Config, tmdb_id: int) -> Dict[str, Any]:
-    movie = tmdb_get(session, f"{TMDB_API_BASE}/movie/{tmdb_id}", {"append_to_response": "external_ids"}, cfg=cfg)
-    links = build_movie_links(cfg, tmdb_id)
-
-    return {
-        "tmdb_id": int(tmdb_id),
-        "title": movie.get("title"),
-        "release_date": movie.get("release_date"),
-        "runtime": movie.get("runtime"),
-        "status": movie.get("status"),
-        "genres": [g.get("name") for g in (movie.get("genres") or []) if g.get("name")],
-        "overview": movie.get("overview"),
-        "poster_path": movie.get("poster_path"),
-        "backdrop_path": movie.get("backdrop_path"),
-        "external_ids": movie.get("external_ids", {}),
-        "links": links,
-        "tmdb_url": f"https://www.themoviedb.org/movie/{tmdb_id}",
-        # local paths filled later (if caching enabled)
-    }
-
-
-# -----------------------------
-# Image caching + local path fields
-# -----------------------------
-def attach_local_paths_and_cache_images(session: requests.Session, cfg: Config, show: Dict[str, Any]) -> Tuple[int, int]:
-    """
-    Adds local_* fields and optionally caches images.
-    Returns (downloaded_count, skipped_count).
-    """
-    downloaded = 0
-    skipped = 0
-
-    def _cache(kind_dir: Path, tmdb_path_fragment: Optional[str], local_key: str) -> None:
-        nonlocal downloaded, skipped
-        if not tmdb_path_fragment:
-            return
-
-        filename = tmdb_path_fragment.lstrip("/")
-        dest = PATH_IMAGE_ROOT / kind_dir / filename
-
-        show[local_key] = rel_path_from_web_to_repo_image(kind_dir / filename)
-
-        if not cfg.cache_images.enabled:
-            return
-
-        url = tmdb_image_url(tmdb_path_fragment)
-        if not url:
-            return
-
-        did = download_file(session, url, dest, cfg=cfg)
-        if did:
-            downloaded += 1
-        else:
-            skipped += 1
-
-    _cache(Path("shows/poster"), show.get("poster_path"), "local_poster_path")
-    _cache(Path("shows/backdrop"), show.get("backdrop_path"), "local_backdrop_path")
+    _cache(Path("shows/poster"), show.get("poster_path"), "local_poster_path", cfg.image_sizes.show_width)
+    _cache(Path("shows/backdrop"), show.get("backdrop_path"), "local_backdrop_path", cfg.image_sizes.backdrop_w)
 
     for season in show.get("seasons", []) or []:
         sp = season.get("poster_path")
         if sp:
-            fn = sp.lstrip("/")
-            season["local_poster_path"] = rel_path_from_web_to_repo_image(Path("shows/seasons/poster") / fn)
-            if cfg.cache_images.enabled:
-                url = tmdb_image_url(sp)
-                dest = PATH_IMAGE_ROOT / "shows" / "seasons" / "poster" / fn
-                did = download_file(session, url, dest, cfg=cfg)
-                downloaded += 1 if did else 0
-                skipped += 0 if did else 1
+            fn = _safe_filename(sp)
+            rel_under_image = Path("shows/seasons/poster") / fn
+            season["local_poster_path"] = rel_path_from_web_to_repo_image(rel_under_image)
+            if cfg.image_cache.enabled:
+                dest = PATH_IMAGE_ROOT / rel_under_image
+                url = _img_url(cfg.image_sizes.season_width, sp)
+                try:
+                    downloaded = client.download(url, dest)
+                    if downloaded:
+                        log(f"[cache] + {dest.as_posix()}")
+                except Exception as e:
+                    warn(f"Image download failed (season): {url} -> {e}")
 
         for ep in season.get("episodes", []) or []:
             st = ep.get("still_path")
             if not st:
                 continue
-            fn = st.lstrip("/")
-            ep["local_still_path"] = rel_path_from_web_to_repo_image(Path("shows/episodes/stills") / fn)
-            if cfg.cache_images.enabled:
-                url = tmdb_image_url(st)
-                dest = PATH_IMAGE_ROOT / "shows" / "episodes" / "stills" / fn
-                did = download_file(session, url, dest, cfg=cfg)
-                downloaded += 1 if did else 0
-                skipped += 0 if did else 1
+            fn = _safe_filename(st)
+            rel_under_image = Path("shows/episodes/stills") / fn
+            ep["local_still_path"] = rel_path_from_web_to_repo_image(rel_under_image)
+            if cfg.image_cache.enabled:
+                dest = PATH_IMAGE_ROOT / rel_under_image
+                url = _img_url(cfg.image_sizes.episode_still_w, st)
+                try:
+                    downloaded = client.download(url, dest)
+                    if downloaded:
+                        log(f"[cache] + {dest.as_posix()}")
+                except Exception as e:
+                    warn(f"Image download failed (episode): {url} -> {e}")
 
-    return downloaded, skipped
 
+def cache_movie_images(client: TmdbClient, cfg: AppConfig, movie: Dict[str, Any]) -> None:
+    if not cfg.image_cache.write_local_paths:
+        return
 
-def attach_local_paths_and_cache_images_movie(session: requests.Session, cfg: Config, movie: Dict[str, Any]) -> Tuple[int, int]:
-    downloaded = 0
-    skipped = 0
-
-    def _cache(kind_dir: Path, tmdb_path_fragment: Optional[str], local_key: str) -> None:
-        nonlocal downloaded, skipped
-        if not tmdb_path_fragment:
+    def _cache(subdir: Path, tmdb_path: Optional[str], out_key: str, width: int) -> None:
+        if not tmdb_path:
             return
-        filename = tmdb_path_fragment.lstrip("/")
-        dest = PATH_IMAGE_ROOT / kind_dir / filename
-        movie[local_key] = rel_path_from_web_to_repo_image(kind_dir / filename)
+        fn = _safe_filename(tmdb_path)
+        rel_under_image = subdir / fn
+        movie[out_key] = rel_path_from_web_to_repo_image(rel_under_image)
 
-        if not cfg.cache_images.enabled:
+        if not cfg.image_cache.enabled:
             return
 
-        url = tmdb_image_url(tmdb_path_fragment)
-        if not url:
-            return
-        did = download_file(session, url, dest, cfg=cfg)
-        if did:
-            downloaded += 1
-        else:
-            skipped += 1
+        dest = PATH_IMAGE_ROOT / rel_under_image
+        url = _img_url(width, tmdb_path)
+        try:
+            downloaded = client.download(url, dest)
+            if downloaded:
+                log(f"[cache] + {dest.as_posix()}")
+        except Exception as e:
+            warn(f"Image download failed (movie): {url} -> {e}")
 
-    _cache(Path("movies/poster"), movie.get("poster_path"), "local_poster_path")
-    _cache(Path("movies/backdrop"), movie.get("backdrop_path"), "local_backdrop_path")
-
-    return downloaded, skipped
+    _cache(Path("movies/poster"), movie.get("poster_path"), "local_poster_path", cfg.image_sizes.movie_width)
+    _cache(Path("movies/backdrop"), movie.get("backdrop_path"), "local_backdrop_path", cfg.image_sizes.backdrop_w)
 
 
-# -----------------------------
-# Main
-# -----------------------------
+# ======================================================================================
+# [BUILD-7.0] Build show + seasons + episodes
+# ======================================================================================
+def fetch_show(client: TmdbClient, cfg: AppConfig, ref_name: str, tmdb_id: int) -> Dict[str, Any]:
+    show = client.get_json(f"/tv/{tmdb_id}", params={"language": "en-US"})
+
+    out: Dict[str, Any] = {
+        "ref_name": ref_name,
+        "tmdb_id": tmdb_id,
+        "show_id": tmdb_id,
+        "name": show.get("name") or ref_name,
+        "original_name": show.get("original_name"),
+        "overview": show.get("overview"),
+        "first_air_date": show.get("first_air_date"),
+        "last_air_date": show.get("last_air_date"),
+        "status": show.get("status"),
+        "in_production": show.get("in_production"),
+        "number_of_seasons": show.get("number_of_seasons"),
+        "number_of_episodes": show.get("number_of_episodes"),
+        "genres": [g.get("name") for g in (show.get("genres") or []) if g.get("name")],
+        "poster_path": show.get("poster_path"),
+        "backdrop_path": show.get("backdrop_path"),
+        "networks": [n.get("name") for n in (show.get("networks") or []) if n.get("name")],
+        "seasons": [],
+    }
+
+    seasons = show.get("seasons") or []
+    seasons_out: List[Dict[str, Any]] = []
+
+    for s in seasons:
+        season_number = int(s.get("season_number") or 0)
+        if season_number <= 0:
+            continue
+
+        season = client.get_json(f"/tv/{tmdb_id}/season/{season_number}", params={"language": "en-US"})
+        season_out: Dict[str, Any] = {
+            "season_number": season_number,
+            "name": season.get("name"),
+            "overview": season.get("overview"),
+            "air_date": season.get("air_date"),
+            "poster_path": season.get("poster_path") or s.get("poster_path"),
+            "episodes": [],
+        }
+
+        episodes_out: List[Dict[str, Any]] = []
+        for ep in (season.get("episodes") or []):
+            ep_num = int(ep.get("episode_number") or 0)
+            if ep_num <= 0:
+                continue
+
+            ep_out: Dict[str, Any] = {
+                "season_number": season_number,
+                "episode_number": ep_num,
+                "name": ep.get("name"),
+                "air_date": ep.get("air_date"),
+                "overview": ep.get("overview"),
+                "runtime": ep.get("runtime"),  # often None in season payload; kept for schema continuity
+                "still_path": ep.get("still_path"),
+                "links": build_tv_links(cfg, tmdb_id, season_number, ep_num),
+            }
+            episodes_out.append(ep_out)
+
+        season_out["episodes"] = episodes_out
+        seasons_out.append(season_out)
+
+    out["seasons"] = seasons_out
+
+    # local cache paths (and optionally download)
+    cache_show_images(client, cfg, out)
+    return out
+
+
+def fetch_movie(client: TmdbClient, cfg: AppConfig, ref_name: str, tmdb_id: int) -> Dict[str, Any]:
+    m = client.get_json(f"/movie/{tmdb_id}", params={"language": "en-US"})
+
+    out: Dict[str, Any] = {
+        "ref_name": ref_name,
+        "tmdb_id": tmdb_id,
+        "movie_id": tmdb_id,
+        "name": m.get("title") or ref_name,
+        "original_title": m.get("original_title"),
+        "overview": m.get("overview"),
+        "release_date": m.get("release_date"),
+        "status": m.get("status"),
+        "runtime": m.get("runtime"),
+        "genres": [g.get("name") for g in (m.get("genres") or []) if g.get("name")],
+        "poster_path": m.get("poster_path"),
+        "backdrop_path": m.get("backdrop_path"),
+        "links": build_movie_links(cfg, tmdb_id),
+    }
+
+    cache_movie_images(client, cfg, out)
+    return out
+
+
+# ======================================================================================
+# [OUT-8.0] Write outputs
+# ======================================================================================
+def write_json(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.replace(path)
+
+
 def main() -> int:
     t0 = time.time()
+    log("[fetch_tmdb] START")
 
-    log("START")
+    cfg = load_config()
+    log(f"[fetch_tmdb] config: web/config.json loaded (image_cache.enabled={cfg.image_cache.enabled})")
 
-    cfg = load_config(PATH_CONFIG_JSON)
-    log(f"config: {PATH_CONFIG_JSON} sha256={cfg.sha256[:12]} cache_images.enabled={cfg.cache_images.enabled}")
+    tv_items = parse_list_file(PATH_TV_LIST)
+    movie_items = parse_list_file(PATH_MOVIES_LIST)
+    livetv_items = parse_livetv_optional(PATH_LIVETV_LIST)
 
-    tv_lines = read_text_lines(PATH_TV_LIST)
-    mv_lines = read_text_lines(PATH_MOVIES_LIST)
-    lv_lines = read_text_lines(PATH_LIVETV_LIST)
-
-    tv_items = parse_tv_list(tv_lines)
-    mv_items = parse_movies_list(mv_lines)
-
-    log(f"inputs: tv={len(tv_items)} movies={len(mv_items)} livetv={len(lv_lines)}")
-
-    s = tmdb_session()
+    client = TmdbClient()
 
     shows_out: List[Dict[str, Any]] = []
     movies_out: List[Dict[str, Any]] = []
 
-    img_downloaded = 0
-    img_skipped = 0
+    # progress helper
+    def _iter(items: List[Tuple[str, int]], label: str):
+        if tqdm:
+            return tqdm(items, desc=label)
+        return items
 
-    for item in tqdm(tv_items, desc="TMDB TV", unit="show"):
-        tmdb_id = int(item["tmdb_id"])
+    # build shows
+    for ref_name, tmdb_id in _iter(tv_items, "TMDB Shows"):
         try:
-            show = fetch_show(s, cfg, tmdb_id)
-            d, k = attach_local_paths_and_cache_images(s, cfg, show)
-            img_downloaded += d
-            img_skipped += k
-            shows_out.append(show)
+            shows_out.append(fetch_show(client, cfg, ref_name, tmdb_id))
         except Exception as e:
-            log(f"WARN: TV {tmdb_id} failed: {e}")
+            warn(f"Show fetch failed tmdb_id={tmdb_id} ({ref_name}): {e}")
 
-    for item in tqdm(mv_items, desc="TMDB Movies", unit="movie"):
-        tmdb_id = int(item["tmdb_id"])
+    # build movies
+    for ref_name, tmdb_id in _iter(movie_items, "TMDB Movies"):
         try:
-            movie = fetch_movie(s, cfg, tmdb_id)
-            d, k = attach_local_paths_and_cache_images_movie(s, cfg, movie)
-            img_downloaded += d
-            img_skipped += k
-            movies_out.append(movie)
+            movies_out.append(fetch_movie(client, cfg, ref_name, tmdb_id))
         except Exception as e:
-            log(f"WARN: Movie {tmdb_id} failed: {e}")
+            warn(f"Movie fetch failed tmdb_id={tmdb_id} ({ref_name}): {e}")
 
-    shows_out.sort(key=lambda x: (x.get("name") or "").lower())
-    movies_out.sort(key=lambda x: (x.get("title") or "").lower())
-
-    build_ts = _now_iso()
-
-    payload = {
-        "meta": {
-            "data_version": "v3.3.x",
-            "built_utc": build_ts,
-            "config_sha256": cfg.sha256,
-            "counts": {
-                "shows": len(shows_out),
-                "movies": len(movies_out),
-                "livetv": len(lv_lines),
-            },
-            "image_cache": {
-                "enabled": cfg.cache_images.enabled,
-                "downloaded": img_downloaded,
-                "skipped": img_skipped,
-            },
-            "streaming_services": cfg.streaming_services.__dict__,
-            "image_sizes": cfg.image_sizes.__dict__,
-            "ui_tuning": cfg.ui_tuning.__dict__,
+    built_at = _now_utc_iso()
+    meta = {
+        "builder": "scripts/fetch_tmdb.py",
+        "version": "v2.6.1",
+        "built_at": built_at,
+        "counts": {"shows": len(shows_out), "movies": len(movies_out), "livetv": len(livetv_items)},
+        "config_snapshot": {
+            "streaming_services": dataclasses.asdict(cfg.streaming_services),
+            "image_sizes": dataclasses.asdict(cfg.image_sizes),
+            "ui_tuning": dataclasses.asdict(cfg.ui_tuning),
+            "image_cache": dataclasses.asdict(cfg.image_cache),
         },
-        "shows": shows_out,
-        "movies": movies_out,
-        "livetv": [],  # reserved
     }
 
+    payload = {
+        "meta": meta,
+        "shows": shows_out,
+        "movies": movies_out,
+        "livetv": livetv_items,
+    }
+
+    write_json(PATH_DATA_JSON, payload)
     PATH_DATA_DIR.mkdir(parents=True, exist_ok=True)
-    PATH_DATA_JSON.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
-    PATH_LAST_REFRESH.write_text(build_ts + "\n", encoding="utf-8")
+    PATH_LAST_REFRESH.write_text(built_at + "\n", encoding="utf-8")
 
     dt = time.time() - t0
-    log(f"WRITE: {PATH_DATA_JSON} bytes={PATH_DATA_JSON.stat().st_size}")
-    log(f"DONE: shows={len(shows_out)} movies={len(movies_out)} img_downloaded={img_downloaded} img_skipped={img_skipped} sec={dt:.2f}")
-
+    log(f"[fetch_tmdb] DONE in {dt:.1f}s -> data/data.json ({PATH_DATA_JSON.stat().st_size} bytes)")
     return 0
 
 
@@ -672,4 +639,4 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except KeyboardInterrupt:
-        die("Interrupted", exit_code=130)
+        die("Interrupted by user", 130)
