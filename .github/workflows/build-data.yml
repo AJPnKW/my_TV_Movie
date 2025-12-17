@@ -1,44 +1,40 @@
-# ======================================================================================
-# [FILE]        .github/workflows/build-data.yml
-# [PROJECT]     my_TV_Movie (My TV Hub)
-# [ROLE]        Build TMDB dataset + (optional) cache missing images + commit results
-# [VERSION]     v3.3.5-wf1
-# [UPDATED]     2025-12-14
-# [OWNER]       Andrew & Brant (internal)
-# [DEPENDS ON]  scripts/fetch_tmdb.py
-#              web/config.json
-#              tv_list.txt, movies_list.txt, live_tv_list.txt
-# [OUTPUTS]     data/data.json
-#              image/** (download missing only; never overwrites)
-# [RULES]
-# - Config-driven: workflow reads web/config.json (authoritative bases/sizes) and rebuilds data
-# - No loop: workflow commits data/ + image/ but push trigger paths exclude them
-# - Requires secrets.API_TMDB_KEY
-# ======================================================================================
+# =====================================================================================
+# File:        .github/workflows/build-data.yml
+# Project:     my_TV_Movie
+#
+# Purpose:
+#   - Build static TV/Movie data (data/data.json) using scripts/fetch_tmdb.py
+#   - Optionally pull Trakt watched state (data/trakt_watched.json) using scripts/fetch_trakt.py
+#   - Optional image caching is controlled by web/config.json (image_cache.enabled)
+#   - Commit/push generated outputs (data/* and image/*) back to main
+#
+# Version:
+#   v2.6.1 (2025-12-16)
+#
+# Notes:
+#   - livetv_list.txt is OPTIONAL. Do not fail if missing.
+#   - Trigger includes web/config.json so config changes rebuild link bases + image sizes.
+#   - Push trigger watches only source inputs; generated outputs (data/, image/) do not re-trigger.
+# =====================================================================================
 
 name: Build TV Data and Deploy
 
 on:
   workflow_dispatch:
 
-  # Scheduled refresh
   schedule:
-    - cron: "0 */4 * * *" # every 4 hours
+    - cron: "0 */4 * * *"
 
-  # Run automatically when hub inputs/config change (NOT on data/ or image/ changes)
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
       - "tv_list.txt"
       - "movies_list.txt"
-      - "live_tv_list.txt"
+      - "livetv_list.txt"
       - "web/config.json"
       - "scripts/fetch_tmdb.py"
-      - "web/index.html"
-      - "web/show.html"
-      - "web/config.html"
-      - "web/config.js"
-      - "web/css/my_tv_hub.css"
+      - "scripts/fetch_trakt.py"
+      - "requirements.txt"
       - ".github/workflows/build-data.yml"
 
 permissions:
@@ -53,76 +49,87 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
+      # TMDB (fetch_tmdb.py requires at least one of these)
       API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
+      API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
+
+      # Trakt (fetch_trakt.py will skip gracefully if not set)
+      API_TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_CLIENT_ID }}
+      API_TRAKT_ACCESS_TOKEN: ${{ secrets.API_TRAKT_ACCESS_TOKEN }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: true
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Preflight - required inputs present
+      - name: Install dependencies
         shell: bash
         run: |
           set -euo pipefail
-
-          # Secret required
-          if [ -z "${API_TMDB_KEY:-}" ]; then
-            echo "[WF] ERROR: secrets.API_TMDB_KEY is missing/empty."
-            exit 1
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          else
+            pip install requests tqdm
           fi
 
-          # Config required
-          if [ ! -f "web/config.json" ]; then
-            echo "[WF] ERROR: web/config.json not found."
-            exit 1
+      - name: Validate required inputs (LiveTV optional)
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f tv_list.txt || { echo "[WF] ERROR: tv_list.txt not found."; exit 1; }
+          test -f movies_list.txt || { echo "[WF] ERROR: movies_list.txt not found."; exit 1; }
+          if [ ! -f livetv_list.txt ]; then
+            echo "[WF] WARN: livetv_list.txt not found (optional). Continuing."
           fi
+          test -f web/config.json || { echo "[WF] ERROR: web/config.json not found."; exit 1; }
+          test -f scripts/fetch_tmdb.py || { echo "[WF] ERROR: scripts/fetch_tmdb.py not found."; exit 1; }
 
-          # Script required
-          if [ ! -f "scripts/fetch_tmdb.py" ]; then
-            echo "[WF] ERROR: scripts/fetch_tmdb.py not found."
-            exit 1
-          fi
-
-          # Lists can be empty, but must exist (keeps behavior predictable)
-          for f in tv_list.txt movies_list.txt live_tv_list.txt; do
-            if [ ! -f "$f" ]; then
-              echo "[WF] ERROR: $f not found."
-              exit 1
-            fi
-          done
-
-          echo "[WF] OK: preflight complete."
-
-      - name: Build data + cache missing images
+      - name: Build TMDB data (writes data/data.json + optional image/* cache)
         shell: bash
         run: |
           set -euo pipefail
           python scripts/fetch_tmdb.py
 
-      - name: Commit & push generated artifacts (data/ + image/) only if changed
+      - name: Build Trakt watched map (writes data/trakt_watched.json; non-blocking if not configured)
         shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f scripts/fetch_trakt.py ]; then
+            python scripts/fetch_trakt.py
+          else
+            echo "[WF] WARN: scripts/fetch_trakt.py not present; skipping."
+          fi
+
+      - name: Commit & push generated outputs (data/*, image/*)
+        shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
 
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Stage only generated artifacts
-          git add data/ image/ || true
+          # Stage outputs if they exist
+          if [ -d data ]; then
+            git add data/
+          fi
+          if [ -d image ]; then
+            git add image/
+          fi
 
-          # Exit clean if nothing staged
+          # Only commit if something changed
           if git diff --cached --quiet; then
-            echo "[WF] No changes in data/ or image/ – nothing to commit."
+            echo "[WF] No generated changes to commit."
             exit 0
           fi
 
-          git commit -m "chore: refresh data + cache images [skip ci]"
+          git commit -m "chore: refresh hub data/images [skip ci]"
           git push
-          

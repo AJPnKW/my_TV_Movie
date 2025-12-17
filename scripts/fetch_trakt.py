@@ -1,255 +1,168 @@
 #!/usr/bin/env python3
-# =====================================================================================
-# [PY-HEADER]
+# ======================================================================================
 # File:        scripts/fetch_trakt.py
 # Project:     my_TV_Movie
-# Purpose:     Enrich data/data.json with Trakt watched status (shows + movies)
-# Version:     v14.01.03
-# Date:        2025-12-16
-# Author:      AJPnKW (maintained with ChatGPT)
 #
-# Key Behaviours / Non-Negotiables:
-# - Does NOT hard-fail if Trakt credentials are missing (warn + exit 0).
-# - Reads:  data/data.json
-# - Writes: data/data.json (in-place update) + data/trakt_state.json (raw snapshot)
-# - Adds watched fields:
-#     - movies[].trakt.watched (bool)
-#     - movies[].trakt.last_watched_at (iso str | null)
-#     - shows[].trakt.watched_episodes (set count)
-#     - shows[].trakt.last_watched_at
-#     - shows[].seasons_full[].episodes[].trakt.watched (bool)
+# Purpose:
+#   - Pull watched state from Trakt (optional feature; do NOT break builds if not configured)
+#   - Produce static watched maps that the UI can consume later:
+#       - data/trakt_watched.json
+#       - data/trakt_last_refresh.txt
 #
-# Expected ENV:
-# - TRAKT_CLIENT_ID      (required)
-# - TRAKT_ACCESS_TOKEN   (required; "Bearer" token value)
+# Version:
+#   v1.2.0 (2025-12-16)
+#
+# Required env (one of the following modes):
+#   Mode A (recommended):
+#     - API_TRAKT_CLIENT_ID
+#     - API_TRAKT_ACCESS_TOKEN
+#
+#   Mode B (fallback – if you manage refresh yourself):
+#     - API_TRAKT_CLIENT_ID
+#     - API_TRAKT_ACCESS_TOKEN
 #
 # Notes:
-# - This uses Trakt v2 API with OAuth bearer token:
-#   Authorization: Bearer <token>
-#   trakt-api-version: 2
-#   trakt-api-key: <client_id>
-# =====================================================================================
+#   - If Trakt env is missing, script writes an EMPTY watched map and exits 0 (non-blocking).
+#   - This script does NOT mutate data/data.json (keeps responsibilities clean).
+# ======================================================================================
 
 from __future__ import annotations
 
 import datetime as _dt
 import json
 import os
-import sys
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-
-import requests
+from typing import Any, Dict
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = REPO_ROOT / "data"
-LOGS_DIR = REPO_ROOT / "logs"
 
-DATA_JSON = DATA_DIR / "data.json"
-TRAKT_STATE_JSON = DATA_DIR / "trakt_state.json"
+PATH_DATA_DIR = REPO_ROOT / "data"
+PATH_WATCHED_JSON = PATH_DATA_DIR / "trakt_watched.json"
+PATH_LAST_REFRESH = PATH_DATA_DIR / "trakt_last_refresh.txt"
+
+PATH_LOG_DIR = REPO_ROOT / "logs"
+PATH_LOG_FILE = PATH_LOG_DIR / "fetch_trakt.log.txt"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
-SESSION = requests.Session()
-SESSION.headers.update({"Accept": "application/json"})
 
 
-def _now_iso_utc() -> str:
-    return _dt.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+def _now_utc_iso() -> str:
+    return _dt.datetime.now(tz=_dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
-def _log_path() -> Path:
-    ts = _dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-    return LOGS_DIR / f"fetch_trakt_v14.01.03_{ts}.log.txt"
+def log(msg: str) -> None:
+    PATH_LOG_DIR.mkdir(parents=True, exist_ok=True)
+    line = f"{_now_utc_iso()} {msg}"
+    print(line)
+    with PATH_LOG_FILE.open("a", encoding="utf-8") as f:
+        f.write(line + "\n")
 
 
-def _write_log_line(fp: Path, line: str) -> None:
-    fp.parent.mkdir(parents=True, exist_ok=True)
-    with fp.open("a", encoding="utf-8") as f:
-        f.write(line.rstrip("\n") + "\n")
-
-
-def _print_and_log(log_fp: Path, msg: str) -> None:
-    print(msg)
-    _write_log_line(log_fp, msg)
-
-
-def _safe_write_json(path: Path, obj: Any) -> None:
+def write_json(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding="utf-8")
+    tmp.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     tmp.replace(path)
 
 
-def _trakt_headers(client_id: str, access_token: str) -> Dict[str, str]:
+def empty_payload(reason: str) -> Dict[str, Any]:
     return {
+        "meta": {
+            "builder": "scripts/fetch_trakt.py",
+            "version": "v1.2.0",
+            "built_at": _now_utc_iso(),
+            "configured": False,
+            "reason": reason,
+        },
+        "watched": {
+            "shows": {},   # tmdb_id -> { "episodes": { "SxEy": true, ... } }
+            "movies": {},  # tmdb_id -> true
+        },
+    }
+
+
+def main() -> int:
+    t0 = time.time()
+    log("[fetch_trakt] START")
+
+    client_id = os.getenv("API_TRAKT_CLIENT_ID", "").strip()
+    access_token = os.getenv("API_TRAKT_ACCESS_TOKEN", "").strip()
+
+    if not client_id or not access_token:
+        payload = empty_payload("Missing API_TRAKT_CLIENT_ID and/or API_TRAKT_ACCESS_TOKEN in env (non-blocking).")
+        write_json(PATH_WATCHED_JSON, payload)
+        PATH_DATA_DIR.mkdir(parents=True, exist_ok=True)
+        PATH_LAST_REFRESH.write_text(payload["meta"]["built_at"] + "\n", encoding="utf-8")
+        log("[fetch_trakt] SKIP (not configured) -> wrote empty watched map")
+        return 0
+
+    import requests  # local import to make missing dep obvious
+    s = requests.Session()
+    headers = {
+        "Content-Type": "application/json",
         "trakt-api-version": "2",
         "trakt-api-key": client_id,
         "Authorization": f"Bearer {access_token}",
     }
 
-
-def _trakt_get(log_fp: Path, headers: Dict[str, str], path: str, params: Optional[Dict[str, Any]] = None) -> Any:
-    url = f"{TRAKT_API_BASE}{path}"
-    try:
-        r = SESSION.get(url, headers=headers, params=params or {}, timeout=30)
-        if r.status_code != 200:
-            _print_and_log(log_fp, f"[fetch_trakt] WARN: GET {path} failed: {r.status_code} {r.text[:200]}")
-            return None
+    def get_json(path: str):
+        url = f"{TRAKT_API_BASE}{path}"
+        r = s.get(url, headers=headers, timeout=60)
+        if r.status_code >= 400:
+            raise RuntimeError(f"Trakt {r.status_code} for {url}: {r.text[:200]}")
         return r.json()
-    except Exception as e:
-        _print_and_log(log_fp, f"[fetch_trakt] WARN: GET {path} exception: {e}")
-        return None
 
+    watched_shows = get_json("/sync/watched/shows?extended=full")
+    watched_movies = get_json("/sync/watched/movies?extended=full")
 
-def _index_movie_history(history_items: List[Dict[str, Any]]) -> Dict[int, str]:
-    """
-    Returns {tmdb_id: last_watched_at_iso}
-    """
-    out: Dict[int, str] = {}
-    for item in history_items or []:
-        if item.get("type") != "movie":
-            continue
-        movie = item.get("movie") or {}
-        ids = movie.get("ids") or {}
-        tmdb = ids.get("tmdb")
-        watched_at = item.get("watched_at")
-        if isinstance(tmdb, int) and isinstance(watched_at, str):
-            # history is newest-first; first seen is latest
-            if tmdb not in out:
-                out[tmdb] = watched_at
-    return out
-
-
-def _index_episode_history(history_items: List[Dict[str, Any]]) -> Tuple[Dict[Tuple[int, int, int], str], Dict[int, str]]:
-    """
-    Returns:
-      - episode_key -> watched_at  where key = (show_tmdb, season, episode)
-      - show_tmdb -> last_watched_at
-    """
-    ep_map: Dict[Tuple[int, int, int], str] = {}
-    show_last: Dict[int, str] = {}
-
-    for item in history_items or []:
-        if item.get("type") != "episode":
-            continue
-        ep = item.get("episode") or {}
-        show = item.get("show") or {}
-
-        show_ids = (show.get("ids") or {})
-        ep_ids = (ep.get("ids") or {})
-
-        show_tmdb = show_ids.get("tmdb")
-        season = ep.get("season")
-        number = ep.get("number")
-        watched_at = item.get("watched_at")
-
-        if not (isinstance(show_tmdb, int) and isinstance(season, int) and isinstance(number, int) and isinstance(watched_at, str)):
+    shows_map: Dict[str, Any] = {}
+    for item in watched_shows or []:
+        show = (item or {}).get("show") or {}
+        ids = show.get("ids") or {}
+        tmdb_id = ids.get("tmdb")
+        if not tmdb_id:
             continue
 
-        key = (show_tmdb, season, number)
-        if key not in ep_map:
-            ep_map[key] = watched_at
-
-        if show_tmdb not in show_last:
-            show_last[show_tmdb] = watched_at
-
-    return ep_map, show_last
-
-
-def main() -> int:
-    log_fp = _log_path()
-    start = time.time()
-
-    if not DATA_JSON.exists():
-        _print_and_log(log_fp, f"[fetch_trakt] WARN: Missing {DATA_JSON}. Nothing to enrich.")
-        return 0
-
-    client_id = os.environ.get("TRAKT_CLIENT_ID", "").strip()
-    access_token = os.environ.get("TRAKT_ACCESS_TOKEN", "").strip()
-
-    if not client_id or not access_token:
-        _print_and_log(
-            log_fp,
-            "[fetch_trakt] WARN: TRAKT_CLIENT_ID and/or TRAKT_ACCESS_TOKEN not set. Skipping Trakt enrichment (non-fatal).",
-        )
-        return 0
-
-    headers = _trakt_headers(client_id, access_token)
-
-    data = json.loads(DATA_JSON.read_text(encoding="utf-8"))
-
-    # Pull recent history; this is the most reliable way to mark watched without multiple endpoints.
-    # Increase limit if needed later.
-    history = _trakt_get(log_fp, headers, "/users/me/history", params={"limit": 500})
-    if not isinstance(history, list):
-        _print_and_log(log_fp, "[fetch_trakt] WARN: No usable history returned; leaving data.json unchanged.")
-        return 0
-
-    movie_last = _index_movie_history(history)
-    ep_map, show_last = _index_episode_history(history)
-
-    # Snapshot raw trakt-derived indexes (debuggable + auditable)
-    trakt_state = {
-        "meta": {"version": "v14.01.03", "built_utc": _now_iso_utc()},
-        "movie_last_watched": movie_last,
-        "episode_watched": {f"{k[0]}:{k[1]}:{k[2]}": v for k, v in ep_map.items()},
-        "show_last_watched": show_last,
-    }
-    _safe_write_json(TRAKT_STATE_JSON, trakt_state)
-
-    # Enrich movies
-    for m in data.get("movies") or []:
-        tmdb_id = m.get("tmdb_id") or m.get("id") or (m.get("ids") or {}).get("tmdb")
-        watched_at = None
-        if isinstance(tmdb_id, int):
-            watched_at = movie_last.get(tmdb_id)
-
-        m.setdefault("trakt", {})
-        m["trakt"]["watched"] = bool(watched_at)
-        m["trakt"]["last_watched_at"] = watched_at
-
-    # Enrich shows + episodes
-    for s in data.get("shows") or []:
-        show_tmdb = s.get("tmdb_id") or s.get("id") or (s.get("ids") or {}).get("tmdb")
-        if not isinstance(show_tmdb, int):
-            continue
-
-        watched_count = 0
-        seasons_full = s.get("seasons_full") or []
-        for season in seasons_full:
-            season_number = season.get("season_number")
-            eps = season.get("episodes") or []
-            if not isinstance(season_number, int):
-                continue
-            for ep in eps:
-                ep_num = ep.get("episode_number") or ep.get("number")
-                if not isinstance(ep_num, int):
+        episodes = {}
+        for season in (item.get("seasons") or []):
+            s_num = season.get("number")
+            for ep in (season.get("episodes") or []):
+                e_num = ep.get("number")
+                if s_num is None or e_num is None:
                     continue
-                key = (show_tmdb, season_number, ep_num)
-                w_at = ep_map.get(key)
-                ep.setdefault("trakt", {})
-                ep["trakt"]["watched"] = bool(w_at)
-                ep["trakt"]["watched_at"] = w_at
-                if w_at:
-                    watched_count += 1
+                key = f"S{s_num}E{e_num}"
+                episodes[key] = True
 
-        s.setdefault("trakt", {})
-        s["trakt"]["watched_episodes"] = watched_count
-        s["trakt"]["last_watched_at"] = show_last.get(show_tmdb)
+        shows_map[str(tmdb_id)] = {"episodes": episodes}
 
-    # Stamp meta
-    data.setdefault("meta", {})
-    data["meta"]["trakt_enriched_utc"] = _now_iso_utc()
-    data["meta"]["trakt_enriched_version"] = "v14.01.03"
+    movies_map: Dict[str, Any] = {}
+    for item in watched_movies or []:
+        movie = (item or {}).get("movie") or {}
+        ids = movie.get("ids") or {}
+        tmdb_id = ids.get("tmdb")
+        if not tmdb_id:
+            continue
+        movies_map[str(tmdb_id)] = True
 
-    _safe_write_json(DATA_JSON, data)
+    built_at = _now_utc_iso()
+    payload = {
+        "meta": {
+            "builder": "scripts/fetch_trakt.py",
+            "version": "v1.2.0",
+            "built_at": built_at,
+            "configured": True,
+            "counts": {"shows": len(shows_map), "movies": len(movies_map)},
+        },
+        "watched": {"shows": shows_map, "movies": movies_map},
+    }
 
-    elapsed = time.time() - start
-    _print_and_log(log_fp, f"[fetch_trakt] OK: wrote {TRAKT_STATE_JSON}")
-    _print_and_log(log_fp, f"[fetch_trakt] OK: updated {DATA_JSON}")
-    _print_and_log(log_fp, f"[fetch_trakt] DONE in {elapsed:.1f}s")
-    _print_and_log(log_fp, f"[fetch_trakt] log={log_fp}")
+    write_json(PATH_WATCHED_JSON, payload)
+    PATH_DATA_DIR.mkdir(parents=True, exist_ok=True)
+    PATH_LAST_REFRESH.write_text(built_at + "\n", encoding="utf-8")
 
+    dt = time.time() - t0
+    log(f"[fetch_trakt] DONE in {dt:.1f}s -> data/trakt_watched.json ({PATH_WATCHED_JSON.stat().st_size} bytes)")
     return 0
 
 
