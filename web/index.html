@@ -1,231 +1,784 @@
+<!--
+========================================================================================
+[FILE]        web/index.html
+[PROJECT]     my_TV_Movie (My TV Hub)
+[ROLE]        Main hub UI (Calendar + Shows + Movies)
+[VERSION]     v3.3.7
+[UPDATED]     2025-12-17_17-45-00
+[BUILD]       14.02.01
+[DEPENDS ON]  web/css/my_tv_hub.css
+              web/config.json (streaming + image sizes + UI tuning)
+              data/data.json (TMDB dataset + local_*_path + links)
+              data/trakt_state.json (optional; watch-state overlay)
+[NOTES]
+- No inline <style>. All styling lives in web/css/my_tv_hub.css.
+- Streaming links are config-driven and stored in data/data.json (do not hard-code domains here).
+- Image preference order: local_*_path first, else TMDB remote URLs.
+========================================================================================
+-->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <!-- =========================================================================
-       File:        web/index.html
-       Project:     my_TV_Movie
-       Purpose:     Main TV / Movies / Calendar hub
-       Version:     v3.3.6 (2025-12-16)
-       Source:      data/data.json (static, generated)
-       ========================================================================= -->
+  <head>
+    <!-- [HTML-1.0] Document meta + version -->
+    <meta charset="UTF-8" />
+    <title>My TV Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Static TV + Movies + Live TV hub for Andrew & Brant" />
 
-  <meta charset="UTF-8" />
-  <title>My TV Hub</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="TV & Movie hub for Andrew & Brant" />
+    <!-- [HTML-1.1] External CSS (keep filename EXACT) -->
+    <link rel="stylesheet" href="css/my_tv_hub.css?v=3.3.7" />
+  </head>
 
-  <link rel="stylesheet" href="web/css/my_tv_hub.css?v=3.3.6" />
-</head>
+  <body>
+    <!-- [UI-0.0] App shell -->
+    <div class="app-shell">
+      <!-- [UI-0.1] Top header -->
+      <header class="top-header">
+        <div class="brand">
+          <div class="brand-title">My TV Hub</div>
+          <div class="brand-sub muted">Calendar • Shows • Movies</div>
+        </div>
 
-<body>
+        <nav class="nav-links">
+          <a class="nav-link" href="config.html">⚙️ Config</a>
+        <a class="nav-link" href="show.html">📺 Show Page</a>
+        </nav>
+      </header>
 
-<header class="top-header">
-  <h1>📺 My TV Hub</h1>
-  <nav class="top-nav">
-    <button onclick="showSection('calendar')">Calendar</button>
-    <button onclick="showSection('shows')">Shows</button>
-    <button onclick="showSection('movies')">Movies</button>
-    <button onclick="showSection('livetv')">Live TV</button>
-  </nav>
-</header>
+      <!-- [UI-0.2] View switch -->
+      <section class="view-switch">
+        <button class="view-btn active" data-view="calendar">Calendar</button>
+        <button class="view-btn" data-view="shows">Shows</button>
+        <button class="view-btn" data-view="movies">Movies</button>
+      </section>
 
-<main>
+      <!-- [UI-0.3] Status strip -->
+      <section class="status-strip">
+        <div class="status-item">
+          <span class="status-label">Data:</span>
+          <span id="status-data" class="status-value">loading…</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Config:</span>
+          <span id="status-config" class="status-value">loading…</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Trakt:</span>
+          <span id="status-trakt" class="status-value">optional</span>
+        </div>
+      </section>
 
-  <!-- ====================== CALENDAR ====================== -->
-  <section id="calendar" class="content-section active">
-    <h2>📅 Upcoming Episodes</h2>
-    <div id="calendarContainer" class="calendar-grid"></div>
-  </section>
+      <!-- [UI-1.0] Views -->
+      <main class="views">
+        <!-- =========================================================
+             CALENDAR VIEW
+        ========================================================== -->
+        <section id="view-calendar" class="view-panel active">
+          <!-- [UI-2.0] Calendar controls -->
+          <div class="calendar-controls">
+            <div class="calendar-row">
+              <div class="calendar-left">
+                <div class="calendar-title">Upcoming Episodes</div>
+                <div class="calendar-sub muted" id="cal-subtitle">Loading…</div>
+              </div>
 
-  <!-- ====================== SHOWS ====================== -->
-  <section id="shows" class="content-section">
-    <h2>📺 TV Shows</h2>
-    <div id="showsContainer" class="card-grid"></div>
-  </section>
+              <div class="calendar-right">
+                <input
+                  id="cal-filter"
+                  class="calendar-filter"
+                  type="text"
+                  placeholder="Filter (show / episode)…"
+                  autocomplete="off"
+                />
+              </div>
+            </div>
 
-  <!-- ====================== MOVIES ====================== -->
-  <section id="movies" class="content-section">
-    <h2>🎬 Movies</h2>
-    <div id="moviesContainer" class="card-grid"></div>
-  </section>
-
-  <!-- ====================== LIVE TV ====================== -->
-  <section id="livetv" class="content-section">
-    <h2>📡 Live TV</h2>
-    <div id="livetvContainer" class="card-grid"></div>
-  </section>
-
-</main>
-
-<footer class="footer">
-  <p>Static data generated automatically · TMDB · Trakt</p>
-</footer>
-
-<script>
-/* ============================================================================
-   GLOBAL STATE
-============================================================================ */
-
-let DATA = null;
-
-/* ============================================================================
-   INIT
-============================================================================ */
-
-fetch("data/data.json")
-  .then(r => r.json())
-  .then(json => {
-    DATA = json;
-    renderCalendar();
-    renderShows();
-    renderMovies();
-    renderLiveTV();
-  })
-  .catch(err => {
-    console.error("Failed to load data.json", err);
-  });
-
-/* ============================================================================
-   NAVIGATION
-============================================================================ */
-
-function showSection(id) {
-  document.querySelectorAll(".content-section").forEach(sec => {
-    sec.classList.remove("active");
-  });
-  document.getElementById(id).classList.add("active");
-}
-
-/* ============================================================================
-   HELPERS
-============================================================================ */
-
-function img(path, fallback = "") {
-  return path && path.length ? path : fallback;
-}
-
-function watchedBadge(item) {
-  if (!item.trakt || !item.trakt.watched) return "";
-  return `<span class="badge watched">✔ Watched</span>`;
-}
-
-/* ============================================================================
-   CALENDAR
-============================================================================ */
-
-function renderCalendar() {
-  const container = document.getElementById("calendarContainer");
-  container.innerHTML = "";
-
-  if (!DATA.calendar || !DATA.calendar.length) {
-    container.innerHTML = "<p>No upcoming episodes.</p>";
-    return;
-  }
-
-  let lastMonth = "";
-
-  DATA.calendar.forEach(ep => {
-    const month = ep.air_date.substring(0,7);
-    if (month !== lastMonth) {
-      container.insertAdjacentHTML(
-        "beforeend",
-        `<h3 class="calendar-month">${month}</h3>`
-      );
-      lastMonth = month;
-    }
-
-    container.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="calendar-card">
-        <img src="${img(ep.local_episode_still, ep.episode_still)}" />
-        <div>
-          <strong>${ep.show_name}</strong><br/>
-          S${ep.season}E${ep.episode} – ${ep.title}
-          ${watchedBadge(ep)}
+            <!-- [UI-2.2] Month selector -->
+            <div class="calendar-month-wrap">
+              <div class="calendar-month-bar">
+          <button id="cal-prev" class="calendar-month-btn" title="Previous month">◀</button>
+          <div class="cal-month-title" id="cal-month-title">December 2025</div>
+          <button id="cal-next" class="calendar-month-btn" title="Next month">▶</button>
         </div>
       </div>
-      `
-    );
-  });
-}
 
-/* ============================================================================
-   SHOWS
-============================================================================ */
+      <!-- [UI-2.3] Episodes list -->
+            <div id="calendar-days" class="calendar-days"></div>
 
-function renderShows() {
-  const container = document.getElementById("showsContainer");
-  container.innerHTML = "";
+            <!-- [UI-2.4] Empty state -->
+            <div id="calendar-empty" class="empty-state hidden">
+              <div class="empty-title">No episodes found</div>
+              <div class="empty-sub muted">Try clearing your filter.</div>
+            </div>
+          </div>
+        </section>
 
-  DATA.shows.forEach(show => {
-    container.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="card">
-        <img src="${img(show.local_poster, show.poster)}" />
-        <h4>${show.name}</h4>
-        ${watchedBadge(show)}
-        <button onclick="openShow('${show.id}')">View</button>
-      </div>
-      `
-    );
-  });
-}
+        <!-- =========================================================
+             SHOWS VIEW
+        ========================================================== -->
+        <section id="view-shows" class="view-panel">
+          <div class="panel-header">
+            <div class="panel-title">Shows</div>
+            <div class="panel-sub muted" id="shows-subtitle">Loading…</div>
+          </div>
 
-function openShow(id) {
-  window.location.href = `web/show.html?id=${id}`;
-}
+          <div class="grid-wrap">
+            <div id="shows-grid" class="cards-grid"></div>
+            <div id="shows-empty" class="empty-state hidden">
+              <div class="empty-title">No shows found</div>
+              <div class="empty-sub muted">Check your tv_list.txt or data build.</div>
+            </div>
+          </div>
+        </section>
 
-/* ============================================================================
-   MOVIES
-============================================================================ */
+        <!-- =========================================================
+             MOVIES VIEW
+        ========================================================== -->
+        <section id="view-movies" class="view-panel">
+          <div class="panel-header">
+            <div class="panel-title">Movies</div>
+            <div class="panel-sub muted" id="movies-subtitle">Loading…</div>
+          </div>
 
-function renderMovies() {
-  const container = document.getElementById("moviesContainer");
-  container.innerHTML = "";
+          <div class="grid-wrap">
+            <div id="movies-grid" class="cards-grid"></div>
+            <div id="movies-empty" class="empty-state hidden">
+              <div class="empty-title">No movies found</div>
+              <div class="empty-sub muted">Check your movies_list.txt or data build.</div>
+            </div>
+          </div>
+        </section>
+      </main>
 
-  DATA.movies.forEach(movie => {
-    container.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="card">
-        <img src="${img(movie.local_poster, movie.poster)}" />
-        <h4>${movie.title}</h4>
-        ${watchedBadge(movie)}
-      </div>
-      `
-    );
-  });
-}
+      <!-- [UI-9.0] Footer -->
+      <footer class="footer">
+        <div class="footer-left muted">
+          Data is generated by GitHub Actions → stored in <code>data/data.json</code>
+        </div>
+        <div class="footer-right muted" id="footer-refresh">Last refresh: …</div>
+      </footer>
+    </div>
 
-/* ============================================================================
-   LIVE TV
-============================================================================ */
+    <!-- =========================================================
+         APP SCRIPT
+    ========================================================== -->
+    <script>
+      /***********************************************************************
+       * [JS-0.0] Globals
+       **********************************************************************/
+      const STATE = {
+        config: null,
+        data: null,
+        trakt: null,
+        currentView: "calendar",
+        calendarMonth: null, // Date at first day of month
+        filterText: "",
+      };
 
-function renderLiveTV() {
-  const container = document.getElementById("livetvContainer");
-  container.innerHTML = "";
+      const qs = (sel, root = document) => root.querySelector(sel);
+      const qsa = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  if (!DATA.live_tv || !DATA.live_tv.length) {
-    container.innerHTML = "<p>No live channels configured.</p>";
-    return;
-  }
+      function setStatus(id, txt, ok = true) {
+        const el = qs(id);
+        if (!el) return;
+        el.textContent = txt;
+        el.classList.toggle("status-bad", !ok);
+      }
 
-  DATA.live_tv.forEach(ch => {
-    container.insertAdjacentHTML(
-      "beforeend",
-      `
-      <div class="card">
-        <img src="${img(ch.logo)}" />
-        <h4>${ch.name}</h4>
-        <a href="${ch.url}" target="_blank">Watch</a>
-      </div>
-      `
-    );
-  });
-}
-</script>
+      function safeText(s) {
+        return (s ?? "").toString();
+      }
 
-</body>
+      function clamp(n, min, max) {
+        return Math.max(min, Math.min(max, n));
+      }
+
+      function pad2(n) {
+        return n.toString().padStart(2, "0");
+      }
+
+      function fmtDateISO(d) {
+        const yyyy = d.getFullYear();
+        const mm = pad2(d.getMonth() + 1);
+        const dd = pad2(d.getDate());
+        return `${yyyy}-${mm}-${dd}`;
+      }
+
+      function fmtMonthTitle(d) {
+        const month = d.toLocaleString(undefined, { month: "long" });
+        return `${month} ${d.getFullYear()}`;
+      }
+
+      function setView(view) {
+        STATE.currentView = view;
+        qsa(".view-btn").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+        qsa(".view-panel").forEach((p) => p.classList.toggle("active", p.id === `view-${view}`));
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+
+      /***********************************************************************
+       * [JS-1.0] Config load
+       **********************************************************************/
+      async function loadConfig() {
+        try {
+          const r = await fetch("config.json", { cache: "no-store" });
+          if (!r.ok) throw new Error(`config.json HTTP ${r.status}`);
+          const cfg = await r.json();
+          STATE.config = cfg;
+          setStatus("#status-config", "OK", true);
+          return cfg;
+        } catch (e) {
+          console.error("[CONFIG] load failed:", e);
+          setStatus("#status-config", "MISSING/ERROR", false);
+          // Safe defaults (do not hardcode domains elsewhere)
+          STATE.config = {
+            streaming_services: {
+              vidsrc_tv: "https://vidsrc.net/embed/tv/",
+              vidsrc_movie: "https://vidsrc.net/embed/movie/",
+              videasy_tv: "https://player.videasy.net/tv/",
+              videasy_movie: "https://player.videasy.net/movie/",
+            },
+            image_sizes: {
+              show_width: 185,
+              movie_width: 185,
+              season_width: 185,
+              episode_still_w: 300,
+              backdrop_w: 780,
+            },
+            ui_tuning: {
+              calendar_button_scale: 0.75,
+              calendar_card_density: 1.0,
+            },
+          };
+          return STATE.config;
+        }
+      }
+
+      /***********************************************************************
+       * [JS-2.0] Data load
+       **********************************************************************/
+      async function loadData() {
+        try {
+          const r = await fetch("../data/data.json", { cache: "no-store" });
+          if (!r.ok) throw new Error(`data.json HTTP ${r.status}`);
+          const data = await r.json();
+          STATE.data = data;
+          setStatus("#status-data", "OK", true);
+
+          // last refresh
+          try {
+            const t = await fetch("../data/last_refresh.txt", { cache: "no-store" });
+            if (t.ok) {
+              const s = (await t.text()).trim();
+              qs("#footer-refresh").textContent = `Last refresh: ${s || "unknown"}`;
+            }
+          } catch {}
+
+          return data;
+        } catch (e) {
+          console.error("[DATA] load failed:", e);
+          setStatus("#status-data", "MISSING/ERROR", false);
+          STATE.data = { shows: [], movies: [], calendar: [] };
+          return STATE.data;
+        }
+      }
+
+      /***********************************************************************
+       * [JS-3.0] Optional Trakt state load
+       **********************************************************************/
+      async function loadTrakt() {
+        try {
+          const r = await fetch("../data/trakt_state.json", { cache: "no-store" });
+          if (!r.ok) {
+            setStatus("#status-trakt", "not found", true);
+            STATE.trakt = null;
+            return null;
+          }
+          const t = await r.json();
+          STATE.trakt = t;
+          setStatus("#status-trakt", "OK", true);
+          return t;
+        } catch (e) {
+          console.warn("[TRAKT] not loaded:", e);
+          setStatus("#status-trakt", "not loaded", true);
+          STATE.trakt = null;
+          return null;
+        }
+      }
+
+      /***********************************************************************
+       * [JS-4.0] Image helpers
+       **********************************************************************/
+      function tmdbImg(path, width) {
+        if (!path) return "";
+        const w = width || 300;
+        return `https://image.tmdb.org/t/p/w${w}${path}`;
+      }
+
+      function bestImageUrl(obj, candidates) {
+        // candidates: [{local:"local_poster_path", remote:"poster_path", w:185}, ...]
+        for (const c of candidates) {
+          const local = c.local && obj && obj[c.local];
+          if (local) return local.startsWith("/") ? `..${local}` : local;
+          const remote = c.remote && obj && obj[c.remote];
+          if (remote) return tmdbImg(remote, c.w);
+        }
+        return "";
+      }
+
+      /***********************************************************************
+       * [JS-5.0] Calendar render
+       **********************************************************************/
+      function getCalendarItems() {
+        const cal = (STATE.data && STATE.data.calendar) || [];
+        // each item expected: { date, show_name, season_number, episode_number, episode_name, air_date, still_path, links, local_*_path }
+        return cal.slice();
+      }
+
+      function normalizeFilter(s) {
+        return safeText(s).trim().toLowerCase();
+      }
+
+      function passesFilter(item) {
+        const f = normalizeFilter(STATE.filterText);
+        if (!f) return true;
+        const hay = [
+          item.show_name,
+          item.episode_name,
+          item.name,
+          item.title,
+          `s${item.season_number}e${item.episode_number}`,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        return hay.includes(f);
+      }
+
+      function groupByDate(items) {
+        const m = new Map();
+        for (const it of items) {
+          const d = it.date || it.air_date || "";
+          if (!d) continue;
+          if (!m.has(d)) m.set(d, []);
+          m.get(d).push(it);
+        }
+        // sort each day by show then episode
+        for (const [k, arr] of m.entries()) {
+          arr.sort((a, b) => {
+            const as = safeText(a.show_name).localeCompare(safeText(b.show_name));
+            if (as !== 0) return as;
+            const an = (a.season_number || 0) - (b.season_number || 0);
+            if (an !== 0) return an;
+            return (a.episode_number || 0) - (b.episode_number || 0);
+          });
+        }
+        return m;
+      }
+
+      function monthStart(d) {
+        return new Date(d.getFullYear(), d.getMonth(), 1);
+      }
+
+      function addMonths(d, delta) {
+        return new Date(d.getFullYear(), d.getMonth() + delta, 1);
+      }
+
+      function withinMonth(dateISO, monthDate) {
+        const d = new Date(dateISO + "T00:00:00");
+        return d.getFullYear() === monthDate.getFullYear() && d.getMonth() === monthDate.getMonth();
+      }
+
+      function makeButton(label1, label2, href, kind) {
+        const a = document.createElement("a");
+        a.className = `calendar-link-btn btn-${kind}`;
+        a.href = href || "#";
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.innerHTML = `<div class="btn-line1">${label1}</div><div class="btn-line2">${label2}</div>`;
+        if (!href) {
+          a.classList.add("disabled");
+          a.removeAttribute("target");
+        }
+        return a;
+      }
+
+      function renderCalendar() {
+        const items = getCalendarItems().filter(passesFilter);
+
+        const emptyEl = qs("#calendar-empty");
+        const daysEl = qs("#calendar-days");
+        daysEl.innerHTML = "";
+
+        if (!STATE.calendarMonth) {
+          // default to month of first item, else current month
+          if (items.length && items[0].date) {
+            STATE.calendarMonth = monthStart(new Date(items[0].date + "T00:00:00"));
+          } else {
+            STATE.calendarMonth = monthStart(new Date());
+          }
+        }
+
+        // subtitle + month title
+        qs("#cal-subtitle").textContent = `${items.length} episode(s)`;
+        qs("#cal-month-title").textContent = fmtMonthTitle(STATE.calendarMonth);
+
+        if (!items.length) {
+          emptyEl.classList.remove("hidden");
+          return;
+        }
+        emptyEl.classList.add("hidden");
+
+        const grouped = groupByDate(items);
+        const dateKeys = Array.from(grouped.keys())
+          .filter((k) => withinMonth(k, STATE.calendarMonth))
+          .sort((a, b) => a.localeCompare(b));
+
+        if (!dateKeys.length) {
+          daysEl.innerHTML = `<div class="empty-inline muted">No episodes in ${fmtMonthTitle(
+            STATE.calendarMonth
+          )}.</div>`;
+          return;
+        }
+
+        for (const dateISO of dateKeys) {
+          const dayWrap = document.createElement("div");
+          dayWrap.className = "calendar-day";
+
+          const d = new Date(dateISO + "T00:00:00");
+          const dow = d.toLocaleString(undefined, { weekday: "short" });
+          const month = d.toLocaleString(undefined, { month: "short" });
+          const day = d.getDate();
+
+          const dayHeader = document.createElement("div");
+          dayHeader.className = "calendar-day-header";
+          dayHeader.innerHTML = `
+            <div class="calendar-day-left">
+              <div class="calendar-day-date">${dow} • ${month} ${day}</div>
+              <div class="calendar-day-iso muted">${dateISO}</div>
+            </div>
+            <div class="calendar-day-right muted">
+              ${grouped.get(dateISO).length} item(s)
+            </div>
+          `;
+          dayWrap.appendChild(dayHeader);
+
+          const cards = document.createElement("div");
+          cards.className = "calendar-cards";
+
+          for (const ep of grouped.get(dateISO)) {
+            const card = document.createElement("div");
+            card.className = "calendar-card";
+
+            // row 1: show + episode + s/e
+            const showName = ep.show_name || ep.name || "Show";
+            const epName = ep.episode_name || ep.title || "Episode";
+            const s = ep.season_number ?? ep.season ?? 0;
+            const e = ep.episode_number ?? ep.episode ?? 0;
+
+            const se = `S${pad2(s)} • E${pad2(e)}`;
+
+            const row1 = document.createElement("div");
+            row1.className = "calendar-card-row1";
+            row1.innerHTML = `
+              <div class="calendar-card-title">${safeText(showName)}</div>
+              <div class="calendar-card-ep muted">${safeText(epName)}</div>
+              <div class="calendar-card-se">${se}</div>
+            `;
+            card.appendChild(row1);
+
+            // row 2: still + stacked buttons
+            const row2 = document.createElement("div");
+            row2.className = "calendar-card-row2";
+
+            const stillWrap = document.createElement("div");
+            stillWrap.className = "calendar-still-wrap";
+
+            const stillUrl = bestImageUrl(ep, [
+              { local: "local_still_path", remote: "still_path", w: STATE.config?.image_sizes?.episode_still_w || 300 },
+            ]);
+
+            if (stillUrl) {
+              stillWrap.innerHTML = `
+                <div class="calendar-episode-still" style="background-image:url('${stillUrl.replace(/'/g, "%27")}');"></div>
+              `;
+            } else {
+              stillWrap.innerHTML = `<div class="calendar-episode-still placeholder"></div>`;
+            }
+
+            const btnCol = document.createElement("div");
+            btnCol.className = "calendar-btn-col";
+
+            const tmdbHref = ep.links && ep.links.tmdb ? ep.links.tmdb : "";
+            const vidsrcHref = ep.links && ep.links.vidsrc ? ep.links.vidsrc : "";
+            const videasyHref = ep.links && ep.links.videasy ? ep.links.videasy : "";
+
+            btnCol.appendChild(makeButton("INFO at", "TMDB", tmdbHref, "tmdb"));
+            btnCol.appendChild(makeButton("Watch on", "VidSrc", vidsrcHref, "vidsrc"));
+            btnCol.appendChild(makeButton("Watch on", "Videasy", videasyHref, "videasy"));
+
+            row2.appendChild(stillWrap);
+            row2.appendChild(btnCol);
+
+            card.appendChild(row2);
+            cards.appendChild(card);
+          }
+
+          dayWrap.appendChild(cards);
+          daysEl.appendChild(dayWrap);
+        }
+      }
+
+      /***********************************************************************
+       * [JS-6.0] Shows render
+       **********************************************************************/
+      function getShows() {
+        return ((STATE.data && STATE.data.shows) || []).slice();
+      }
+
+      function showHref(show) {
+        // show.html uses query param id
+        const id = show.tmdb_id || show.id;
+        return `show.html?id=${encodeURIComponent(id)}`;
+      }
+
+      function renderShows() {
+        const grid = qs("#shows-grid");
+        const empty = qs("#shows-empty");
+        grid.innerHTML = "";
+
+        const shows = getShows();
+        qs("#shows-subtitle").textContent = `${shows.length} show(s)`;
+
+        if (!shows.length) {
+          empty.classList.remove("hidden");
+          return;
+        }
+        empty.classList.add("hidden");
+
+        for (const show of shows) {
+          const card = document.createElement("div");
+          card.className = "show-card";
+
+          const posterUrl = bestImageUrl(show, [
+            { local: "local_poster_path", remote: "poster_path", w: STATE.config?.image_sizes?.show_width || 185 },
+          ]);
+
+          const backdropUrl = bestImageUrl(show, [
+            { local: "local_backdrop_path", remote: "backdrop_path", w: STATE.config?.image_sizes?.backdrop_w || 780 },
+          ]);
+
+          if (backdropUrl) {
+            card.style.backgroundImage = `linear-gradient(rgba(0,0,0,.65), rgba(0,0,0,.85)), url('${backdropUrl.replace(
+              /'/g,
+              "%27"
+            )}')`;
+          }
+
+          const title = show.name || "Show";
+          const next = show.next_episode ? safeText(show.next_episode.air_date || "") : "";
+          const nextText = next ? `Next: ${next}` : "Next: unknown";
+
+          const links = show.links || {};
+          const tmdbHref = links.tmdb || "";
+          const vidsrcHref = links.vidsrc || "";
+          const videasyHref = links.videasy || "";
+
+          card.innerHTML = `
+            <div class="show-card-top">
+              <a class="show-poster-link" href="${showHref(show)}">
+                <div class="show-poster" ${
+                  posterUrl
+                    ? `style="background-image:url('${posterUrl.replace(/'/g, "%27")}');"`
+                    : ""
+                }></div>
+              </a>
+
+              <div class="show-info">
+                <div class="show-title-row">
+                  <a class="show-title" href="${showHref(show)}">${safeText(title)}</a>
+                </div>
+                <div class="show-sub muted">${safeText(nextText)}</div>
+                <div class="show-meta muted">
+                  ${show.first_air_date ? `First: ${safeText(show.first_air_date)} • ` : ""}${show.status ? safeText(show.status) : ""}
+                </div>
+              </div>
+            </div>
+
+            <div class="show-actions">
+              <div class="show-actions-row">
+                <a class="show-link-btn btn-tmdb" href="${tmdbHref || "#"}" target="_blank" rel="noopener noreferrer">
+                  <div class="btn-line1">INFO at</div><div class="btn-line2">TMDB</div>
+                </a>
+                <a class="show-link-btn btn-vidsrc" href="${vidsrcHref || "#"}" target="_blank" rel="noopener noreferrer">
+                  <div class="btn-line1">Watch on</div><div class="btn-line2">VidSrc</div>
+                </a>
+                <a class="show-link-btn btn-videasy" href="${videasyHref || "#"}" target="_blank" rel="noopener noreferrer">
+                  <div class="btn-line1">Watch on</div><div class="btn-line2">Videasy</div>
+                </a>
+              </div>
+
+              <div class="show-actions-row secondary">
+                <a class="show-secondary-btn" href="${showHref(show)}">
+                  Open Details
+                </a>
+              </div>
+            </div>
+          `;
+
+          // disable if missing
+          qsa("a.show-link-btn", card).forEach((a) => {
+            if (a.getAttribute("href") === "#") {
+              a.classList.add("disabled");
+              a.removeAttribute("target");
+            }
+          });
+
+          grid.appendChild(card);
+        }
+      }
+
+      /***********************************************************************
+       * [JS-7.0] Movies render
+       **********************************************************************/
+      function getMovies() {
+        return ((STATE.data && STATE.data.movies) || []).slice();
+      }
+
+      function renderMovies() {
+        const grid = qs("#movies-grid");
+        const empty = qs("#movies-empty");
+        grid.innerHTML = "";
+
+        const movies = getMovies();
+        qs("#movies-subtitle").textContent = `${movies.length} movie(s)`;
+
+        if (!movies.length) {
+          empty.classList.remove("hidden");
+          return;
+        }
+        empty.classList.add("hidden");
+
+        for (const mv of movies) {
+          const card = document.createElement("div");
+          card.className = "movie-card";
+
+          const posterUrl = bestImageUrl(mv, [
+            { local: "local_poster_path", remote: "poster_path", w: STATE.config?.image_sizes?.movie_width || 185 },
+          ]);
+
+          const backdropUrl = bestImageUrl(mv, [
+            { local: "local_backdrop_path", remote: "backdrop_path", w: STATE.config?.image_sizes?.backdrop_w || 780 },
+          ]);
+
+          if (backdropUrl) {
+            card.style.backgroundImage = `linear-gradient(rgba(0,0,0,.65), rgba(0,0,0,.85)), url('${backdropUrl.replace(
+              /'/g,
+              "%27"
+            )}')`;
+          }
+
+          const title = mv.title || mv.name || "Movie";
+          const year = mv.release_date ? safeText(mv.release_date).slice(0, 4) : "";
+          const links = mv.links || {};
+          const tmdbHref = links.tmdb || "";
+          const vidsrcHref = links.vidsrc || "";
+          const videasyHref = links.videasy || "";
+
+          card.innerHTML = `
+            <div class="movie-card-top">
+              <div class="movie-poster" ${
+                posterUrl ? `style="background-image:url('${posterUrl.replace(/'/g, "%27")}');"` : ""
+              }></div>
+
+              <div class="movie-info">
+                <div class="movie-title-row">
+                  <div class="movie-title">${safeText(title)}</div>
+                  ${year ? `<div class="movie-year muted">${year}</div>` : ""}
+                </div>
+
+                <div class="movie-meta muted">
+                  ${mv.release_date ? `Release: ${safeText(mv.release_date)}` : "Release: unknown"}
+                </div>
+              </div>
+            </div>
+
+            <div class="movie-actions">
+              <a class="movie-link-btn btn-tmdb" href="${tmdbHref || "#"}" target="_blank" rel="noopener noreferrer">
+                <div class="btn-line1">INFO at</div><div class="btn-line2">TMDB</div>
+              </a>
+              <a class="movie-link-btn btn-vidsrc" href="${vidsrcHref || "#"}" target="_blank" rel="noopener noreferrer">
+                <div class="btn-line1">Watch on</div><div class="btn-line2">VidSrc</div>
+              </a>
+              <a class="movie-link-btn btn-videasy" href="${videasyHref || "#"}" target="_blank" rel="noopener noreferrer">
+                <div class="btn-line1">Watch on</div><div class="btn-line2">Videasy</div>
+              </a>
+            </div>
+          `;
+
+          qsa("a.movie-link-btn", card).forEach((a) => {
+            if (a.getAttribute("href") === "#") {
+              a.classList.add("disabled");
+              a.removeAttribute("target");
+            }
+          });
+
+          grid.appendChild(card);
+        }
+      }
+
+      /***********************************************************************
+       * [JS-8.0] UI wiring
+       **********************************************************************/
+      function wireUI() {
+        // view buttons
+        qsa(".view-btn").forEach((b) => {
+          b.addEventListener("click", () => setView(b.dataset.view));
+        });
+
+        // calendar month nav
+        qs("#cal-prev").addEventListener("click", () => {
+          STATE.calendarMonth = addMonths(STATE.calendarMonth, -1);
+          renderCalendar();
+        });
+        qs("#cal-next").addEventListener("click", () => {
+          STATE.calendarMonth = addMonths(STATE.calendarMonth, +1);
+          renderCalendar();
+        });
+
+        // filter
+        qs("#cal-filter").addEventListener("input", (e) => {
+          STATE.filterText = e.target.value || "";
+          renderCalendar();
+          // show/hide empty state
+          const items = getCalendarItems().filter(passesFilter);
+          qs("#calendar-empty").classList.toggle("hidden", items.length > 0);
+        });
+      }
+
+      /***********************************************************************
+       * [JS-9.0] Boot
+       **********************************************************************/
+      async function boot() {
+        wireUI();
+        setView("calendar");
+
+        await loadConfig();
+        await Promise.all([loadData(), loadTrakt()]);
+
+        // apply UI tuning
+        const ui = STATE.config?.ui_tuning || {};
+        const scale = clamp(Number(ui.calendar_button_scale ?? 0.75), 0.5, 1.2);
+        const density = clamp(Number(ui.calendar_card_density ?? 1.0), 0.7, 1.4);
+        document.documentElement.style.setProperty("--calendar-btn-scale", scale);
+        document.documentElement.style.setProperty("--calendar-density", density);
+
+        renderCalendar();
+        renderShows();
+        renderMovies();
+      }
+
+      boot();
+    </script>
+  </body>
 </html>
