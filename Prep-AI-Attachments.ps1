@@ -1,50 +1,97 @@
 <# ============================================================================
-Project : my_TV_Movie
-File    : Prep-AI-Attachments.ps1
-Purpose : Build AI-attachment .txt files directly into:
-            <repo>\.txt_files_4_AI_attachments\
-          then zip that folder into:
-            <repo>\.txt_files_4_AI_attachments\archieves\
+FILE:        Prep-AI-Attachments.ps1
+PROJECT:     my_TV_Movie
+PURPOSE:
+  Prepare curated "AI attachment" files from the repo into:
+    <RepoRoot>\.txt_files_4_AI_attachments
 
-Design (per your expectation):
-  1) Zip existing attachment files FIRST (snapshot)
-  2) Generate/overwrite attachment files into .txt_files_4_AI_attachments\
-  3) Zip again AFTER generation (fresh snapshot)
+WORKFLOW (expected):
+  1) PRE-ZIP current top-level attachments -> <AttachRoot>\archieves
+  2) CLEAR current top-level attachments (leave logs/archieves folders)
+  3) GATHER in-scope repo files -> write renamed copies into <AttachRoot>
+  4) ZIP the new attachment set -> <AttachRoot>\archieves
+     (attachments remain in place after zip)
 
-Pinned outputs:
-  - Attachments (files): <repo>\.txt_files_4_AI_attachments\
-  - Logs:               <repo>\.txt_files_4_AI_attachments\logs\
-  - Zips:               <repo>\.txt_files_4_AI_attachments\archieves\
+OUTPUT LOCATIONS:
+  Attachments : <RepoRoot>\.txt_files_4_AI_attachments
+  Logs        : <RepoRoot>\.txt_files_4_AI_attachments\logs
+  Archives    : <RepoRoot>\.txt_files_4_AI_attachments\archieves
 
-Key exclusions (folders):
-  - <repo>\image\
-  - <repo>\logs\                (NEW)
-  - <repo>\.git\
-  - <repo>\node_modules\
-  - <repo>\.venv\ and <repo>\venv\
-  - <repo>\__pycache__\
-  - <repo>\.txt_files_4_AI_attachments\
+FILENAME RULES (deterministic):
+  Non-.txt sources:
+    - wrapper .txt always added
+      web\index.html -> web__index.html.txt
+    - if version detected, append before wrapper:
+      web__index.html__v3.3.6.txt
 
-Key exclusions (extensions):
-  - binaries/media/docs/fonts/db/etc
-  - .bak (NEW)
+  .txt sources (special rule per your clarification):
+    - if NO version detected: keep name as-is (no rename, no .txt.txt)
+      tv_list.txt -> tv_list.txt
+    - if version detected: inject version BEFORE .txt
+      tv_list.txt + v1.0.0 -> tv_list__v1.0.0.txt
+    (never tv_list.txt__v1.0.0 and never tv_list.txt__v1.0.0.txt)
 
-Version: 1.3.1 (2025-12-17)
+VERSION DETECTION (additive; does NOT replace other styles):
+  - [VERSION]     v3.3.5
+  - Version: 1.2.3 / Version : v2.8.02
+  - [UPDATED]     2025-12-14
+  - [Build/Iteration Tag]   14.01.03  (captured, not used in filename)
+
+EXCLUSIONS (repo scan):
+  Directory SEGMENT excludes (exact segment match, case-insensitive):
+    .git, .github, .venv, .env, .my_notes, .archive, .archieve,
+    image, logs, reports, .txt_files_4_AI_attachments
+
+  Filename substring excludes (case-insensitive):
+    audit, report, compare, copy
+
+  Extension excludes:
+    .bak, .tws, plus common binaries/media/archives
+
+LOGGING:
+  - One UTF-8 log per run in <LogsDir> + console output
+  - Uses single StreamWriter to avoid file-lock / Add-Content contention
+
+VERSION CONTROL:
+  Script Version : 2.2.0
+  Build Stamp    : 2025-12-17_180500
 ============================================================================ #>
 
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$false)]
-    [string]$RepoRoot = (Split-Path -Parent $PSCommandPath)
+    [string]$RepoRoot = ""
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
+# =============================================================================
+# SECTION: TIME + PATH RESOLUTION
+# =============================================================================
 function Get-Stamp { Get-Date -Format 'yyyy-MM-dd_HHmmss' }
+
+if ([string]::IsNullOrWhiteSpace($RepoRoot)) {
+    if (-not [string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+        $RepoRoot = $PSScriptRoot
+    } elseif ($MyInvocation.MyCommand.Path) {
+        $RepoRoot = Split-Path -Path $MyInvocation.MyCommand.Path -Parent
+    } else {
+        $RepoRoot = (Get-Location).Path
+    }
+}
+$RepoRoot = [System.IO.Path]::GetFullPath($RepoRoot)
+
+$AttachRoot = Join-Path $RepoRoot ".txt_files_4_AI_attachments"
+$LogsDir    = Join-Path $AttachRoot "logs"
+$ArchiveDir = Join-Path $AttachRoot "archieves"   # keep spelling
+$RunStamp   = Get-Stamp
+$PsLogPath  = Join-Path $LogsDir ("Prep-AI-Attachments_{0}.log.txt" -f $RunStamp)
+
+# =============================================================================
+# SECTION: LOGGING (single writer)
+# =============================================================================
+$script:LogWriter = $null
 
 function Ensure-Dir {
     param([Parameter(Mandatory)][string]$Path)
@@ -53,332 +100,306 @@ function Ensure-Dir {
     }
 }
 
-function Is-UnderPath {
-    param([Parameter(Mandatory)][string]$Child, [Parameter(Mandatory)][string]$Parent)
-    $c = [System.IO.Path]::GetFullPath($Child)
-    $p = [System.IO.Path]::GetFullPath($Parent)
-    return $c.StartsWith($p, [System.StringComparison]::OrdinalIgnoreCase)
+function Start-Log {
+    Ensure-Dir -Path $LogsDir
+    $fs = [System.IO.File]::Open($PsLogPath, [System.IO.FileMode]::CreateNew, [System.IO.FileAccess]::Write, [System.IO.FileShare]::ReadWrite)
+    $script:LogWriter = New-Object System.IO.StreamWriter($fs, (New-Object System.Text.UTF8Encoding($false)))
+    $script:LogWriter.AutoFlush = $true
 }
 
-# -----------------------------------------------------------------------------
-# Logging: ONE writer
-# -----------------------------------------------------------------------------
-$script:LogWriter = $null
-
-function Start-LogWriter {
-    param([Parameter(Mandatory)][string]$Path)
-
-    Ensure-Dir -Path (Split-Path -Parent $Path)
-
-    $fs = [System.IO.File]::Open(
-        $Path,
-        [System.IO.FileMode]::Append,
-        [System.IO.FileAccess]::Write,
-        [System.IO.FileShare]::ReadWrite
-    )
-
-    $sw = New-Object System.IO.StreamWriter($fs, (New-Object System.Text.UTF8Encoding($false)))
-    $sw.AutoFlush = $true
-    $script:LogWriter = $sw
-}
-
-function Stop-LogWriter {
-    try {
-        if ($null -ne $script:LogWriter) {
-            $script:LogWriter.Flush()
-            $script:LogWriter.Dispose()
-        }
-    } catch { }
-    $script:LogWriter = $null
-}
+function Stop-Log { try { if ($script:LogWriter) { $script:LogWriter.Dispose() } } catch { } }
 
 function Write-Log {
     param(
         [Parameter(Mandatory)][string]$Message,
-        [ValidateSet('INFO','WARN','ERROR')][string]$Level = 'INFO'
+        [ValidateSet('INFO','WARN','ERROR','DEBUG')]
+        [string]$Level = 'INFO'
     )
     $line = "{0} | {1,-5} | {2}" -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Level, $Message
     Write-Host $line
-    if ($null -ne $script:LogWriter) { $script:LogWriter.WriteLine($line) }
+    if ($script:LogWriter) { $script:LogWriter.WriteLine($line) }
 }
 
-# -----------------------------------------------------------------------------
-# Version detection (patched)
-# -----------------------------------------------------------------------------
-function Get-VersionFromText {
-    param(
-        [Parameter(Mandatory = $true)][string]$Text,
-        [Parameter(Mandatory = $false)][string]$SourcePath = ""
-    )
+# =============================================================================
+# SECTION: EXCLUSION CONFIG
+# =============================================================================
+$ExcludedDirNames = @(
+    '.git', '.github', '.venv', '.env', '.my_notes',
+    '.archive', '.archieve',
+    'image', 'logs', 'reports',
+    '.txt_files_4_AI_attachments'
+)
 
-    if ([string]::IsNullOrWhiteSpace($Text)) { return $null }
+$ExcludedNameContains = @(
+    'audit', 'report', 'compare', 'copy'
+)
 
-    $t = $Text -replace "`r`n", "`n"
-    $ext = ""
-    try { $ext = [System.IO.Path]::GetExtension($SourcePath).ToLowerInvariant() } catch { $ext = "" }
+$ExcludedExtensions = @(
+    '.bak', '.tws',
+    '.zip','.7z','.rar','.gz','.tar',
+    '.exe','.dll','.sys','.msi','.iso',
+    '.jpg','.jpeg','.png','.gif','.webp','.bmp','.ico','.svg',
+    '.mp3','.wav','.flac',
+    '.mp4','.mkv','.avi','.mov',
+    '.ttf','.otf','.woff','.woff2',
+    '.db','.sqlite','.bin'
+)
 
-    if ($ext -in @(".html",".htm",".js",".ts",".css")) {
-        $p_const = '(?im)^\s*(?:const|let|var)?\s*version\s*=\s*["'']v?(\d+(?:\.\d+){0,3})["'']\s*;?\s*$'
-        $m = [regex]::Match($t, $p_const)
-        if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
+function Is-ExcludedPath {
+    <#
+      Correct segment-based directory exclusion (prevents over-matching).
+    #>
+    param([Parameter(Mandatory)][string]$FullPath)
 
-        $p_html_label = '(?im)^\s*<!--\s*version\s*[:=]\s*v?(\d+(?:\.\d+){0,3})\s*-->\s*$'
-        $m = [regex]::Match($t, $p_html_label)
-        if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
+    $full = [System.IO.Path]::GetFullPath($FullPath)
 
-        $p_meta = '(?im)\b(?:app\s+)?version\b\s*[:=]\s*v?(\d+(?:\.\d+){0,3})\b'
-        $m = [regex]::Match($t, $p_meta)
-        if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
+    # A) Directory segment exclusion
+    $dir = [System.IO.Path]::GetDirectoryName($full)
+    $segments = @()
+    if (-not [string]::IsNullOrWhiteSpace($dir)) { $segments = $dir -split '[\\/]'}
+    foreach ($seg in $segments) {
+        foreach ($d in $ExcludedDirNames) {
+            if ($seg.Equals($d, [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+        }
     }
 
-    $patterns = @(
-        '(?im)^\s*(?:#|//|/\*+|\*|<!--)?\s*version\s*[:=]\s*v?(\d+(?:\.\d+){0,3})\b',
-        '(?im)^\s*version\s+\:\s*v?(\d+(?:\.\d+){0,3})\b',
-        '(?im)"version"\s*:\s*"?v?(\d+(?:\.\d+){0,3})"?',
-        '(?im)^\s*version\s*:\s*v?(\d+(?:\.\d+){0,3})\b'
-    )
-
-    foreach ($p in $patterns) {
-        $m = [regex]::Match($t, $p)
-        if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
+    # B) Filename contains exclusion
+    $name = [System.IO.Path]::GetFileName($full)
+    foreach ($sub in $ExcludedNameContains) {
+        if ($name.IndexOf($sub, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) { return $true }
     }
 
-    $p_safe = '(?im)\bversion\b[^\n]{0,40}\bv(\d+(?:\.\d+){1,3})\b'
-    $m = [regex]::Match($t, $p_safe)
-    if ($m.Success) { return ("v{0}" -f $m.Groups[1].Value) }
+    # C) Extension exclusion
+    $ext = [System.IO.Path]::GetExtension($full)
+    foreach ($x in $ExcludedExtensions) {
+        if ($ext.Equals($x, [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+    }
 
-    return $null
+    return $false
 }
 
-function Get-VersionForFile {
-    param(
-        [Parameter(Mandatory)][string]$Path,
-        [int]$MaxLines = 80
-    )
-
-    try {
-        if (-not (Test-Path -LiteralPath $Path)) { return $null }
-        $lines = Get-Content -LiteralPath $Path -TotalCount $MaxLines -ErrorAction Stop
-        if ($null -eq $lines) { return $null }
-        $arr = @()
-        if ($lines -is [string]) { $arr = @($lines) } else { $arr = @($lines) }
-        if ($arr.Count -eq 0) { return $null }
-        $text = ($arr -join "`n")
-        return Get-VersionFromText -Text $text -SourcePath $Path
-    } catch {
-        return $null
-    }
-}
-
-# -----------------------------------------------------------------------------
-# Filtering rules
-# -----------------------------------------------------------------------------
-function Has-ExcludedExtension {
+# =============================================================================
+# SECTION: VERSION DETECTION (additive)
+# =============================================================================
+function Get-VersionInfoFromFile {
     param([Parameter(Mandatory)][string]$Path)
 
-    $ext = [System.IO.Path]::GetExtension($Path).ToLowerInvariant()
+    $version  = ""
+    $updated  = ""
+    $buildtag = ""
 
-    $excluded = @(
-        '.bak',  # NEW
-        '.jpg','.jpeg','.png','.gif','.webp','.bmp','.ico','.svg',
-        '.mp3','.wav','.flac',
-        '.mp4','.mkv','.avi','.mov',
-        '.zip','.7z','.rar','.gz','.tar',
-        '.exe','.dll','.sys','.msi','.iso',
-        '.pdf','.doc','.docx','.ppt','.pptx','.xls','.xlsx',
-        '.ttf','.otf','.woff','.woff2',
-        '.db','.sqlite','.bin'
-    )
-    return ($excluded -contains $ext)
+    try { $lines = Get-Content -LiteralPath $Path -TotalCount 200 -ErrorAction Stop }
+    catch { return [pscustomobject]@{ version=""; updated=""; buildtag="" } }
+
+    foreach ($line in $lines) {
+        $t = ($line + "").Trim()
+
+        # [VERSION] v3.3.5
+        if (-not $version) {
+            $m = [regex]::Match($t, '^\[VERSION\]\s*(v?\d+(?:\.\d+){0,3})\s*$', 'IgnoreCase')
+            if ($m.Success) {
+                $version = $m.Groups[1].Value
+                if ($version -notmatch '^(?i)v') { $version = "v$version" }
+                continue
+            }
+        }
+
+        # Version: 1.2.3 / Version : v2.8.02
+        if (-not $version -and $t -match '(?i)\bversion\b') {
+            $m = [regex]::Match($t, '(?i)\bversion\b\s*[:=]\s*(v?\d+(?:\.\d+){0,3})')
+            if ($m.Success) {
+                $version = $m.Groups[1].Value
+                if ($version -notmatch '^(?i)v') { $version = "v$version" }
+                continue
+            }
+        }
+
+        # [UPDATED] 2025-12-14
+        if (-not $updated) {
+            $m = [regex]::Match($t, '^\[UPDATED\]\s*([0-9]{4}-[0-9]{2}-[0-9]{2})\s*$')
+            if ($m.Success) { $updated = $m.Groups[1].Value; continue }
+        }
+
+        # [Build/Iteration Tag] 14.01.03
+        if (-not $buildtag) {
+            $m = [regex]::Match($t, '^\[Build/Iteration Tag\]\s*([0-9]{1,3}(?:\.[0-9]{1,3}){1,4})\s*$', 'IgnoreCase')
+            if ($m.Success) { $buildtag = $m.Groups[1].Value; continue }
+        }
+    }
+
+    [pscustomobject]@{ version=$version; updated=$updated; buildtag=$buildtag }
 }
 
-function Should-NormalizeUtf8 {
-    param([Parameter(Mandatory)][string]$Path)
-    $ext = [System.IO.Path]::GetExtension($Path).ToLowerInvariant()
-    $normalize = @(
-        '.txt','.md','.csv','.tsv',
-        '.py','.ps1','.bat','.cmd',
-        '.html','.htm','.css','.js','.ts',
-        '.json','.yml','.yaml',
-        '.xml','.ini','.cfg','.conf'
-    )
-    return ($normalize -contains $ext)
+# =============================================================================
+# SECTION: ATTACHMENT FILE NAMING
+# =============================================================================
+function Get-RepoRelativePath {
+    param([Parameter(Mandatory)][string]$Base, [Parameter(Mandatory)][string]$FullPath)
+    $b = [System.IO.Path]::GetFullPath($Base).TrimEnd('\')
+    $f = [System.IO.Path]::GetFullPath($FullPath)
+    if ($f.Length -le $b.Length) { return "" }
+    return $f.Substring($b.Length).TrimStart('\')
 }
 
-# -----------------------------------------------------------------------------
-# Attachment naming + zip helper
-# -----------------------------------------------------------------------------
-function Get-AttachmentFileName {
+function Make-AttachmentFileName {
+    <#
+      Implements your clarified .txt rule:
+        tv_list.txt (no version) -> tv_list.txt
+        tv_list.txt (version)    -> tv_list__v1.0.0.txt
+
+      Non-.txt rule:
+        scripts\fetch_tmdb.py (version) -> scripts__fetch_tmdb.py__vX.Y.Z.txt
+    #>
     param(
         [Parameter(Mandatory)][string]$RepoRoot,
-        [Parameter(Mandatory)][string]$SourcePath
+        [Parameter(Mandatory)][string]$SourcePath,
+        [Parameter(Mandatory=$false)][AllowEmptyString()][string]$Version = ""
     )
 
-    $rel  = [System.IO.Path]::GetRelativePath($RepoRoot, $SourcePath)
-    $flat = ($rel -replace '[\\/]', '__')
+    $rel = Get-RepoRelativePath -Base $RepoRoot -FullPath $SourcePath
+    if ([string]::IsNullOrWhiteSpace($rel)) { return "" }
 
-    $ver = Get-VersionForFile -Path $SourcePath
-    if ($ver) {
-        Write-Log ("VERSION_FOUND | {0} | {1}" -f $SourcePath, $ver)
-        return "{0}__{1}.txt" -f $flat, $ver
+    $encoded = $rel -replace '\\', '__'
+
+    $ext = [System.IO.Path]::GetExtension($SourcePath)
+    $isTxt = $ext.Equals('.txt', [System.StringComparison]::OrdinalIgnoreCase)
+
+    $v = ($Version + "").Trim()
+
+    if ($isTxt) {
+        if ([string]::IsNullOrWhiteSpace($v)) {
+            # keep original .txt name as-is
+            return $encoded
+        }
+
+        # inject version before .txt
+        if ($encoded.ToLowerInvariant().EndsWith(".txt")) {
+            $base = $encoded.Substring(0, $encoded.Length - 4)
+            return ("{0}__{1}.txt" -f $base, $v)
+        }
+
+        # safety fallback
+        return ("{0}__{1}.txt" -f $encoded, $v)
     }
 
-    Write-Log ("VERSION_NONE  | {0}" -f $SourcePath)
-    return "{0}.txt" -f $flat
+    # non-.txt: append version (if any) then wrap with .txt
+    if (-not [string]::IsNullOrWhiteSpace($v) -and ($encoded -notmatch '(?i)__v\d')) {
+        $encoded = "{0}__{1}" -f $encoded, $v
+    }
+    return ($encoded + ".txt")
 }
 
-function Zip-AttachmentsSnapshot {
+# =============================================================================
+# SECTION: ZIP + CLEAR (top-level only)
+# =============================================================================
+function Get-AttachmentsTopLevelFiles {
+    param([Parameter(Mandatory)][string]$AttachRoot)
+    Get-ChildItem -LiteralPath $AttachRoot -File -ErrorAction Stop
+}
+
+function Compress-AttachmentsTopLevel {
     param(
         [Parameter(Mandatory)][string]$AttachRoot,
         [Parameter(Mandatory)][string]$ZipPath
     )
 
-    # Only include files directly under attach_root (exclude logs/archieves)
-    $files = Get-ChildItem -LiteralPath $AttachRoot -File -ErrorAction Stop
-    if ($files.Count -eq 0) { throw "No attachment files found in $AttachRoot" }
+    $topFiles = Get-AttachmentsTopLevelFiles -AttachRoot $AttachRoot
+    if (-not $topFiles -or $topFiles.Count -eq 0) {
+        Write-Log "No top-level attachment files to zip in: $AttachRoot" "INFO"
+        return $false
+    }
 
-    if (Test-Path -LiteralPath $ZipPath) { Remove-Item -LiteralPath $ZipPath -Force }
-
-    Compress-Archive -LiteralPath ($files.FullName) -DestinationPath $ZipPath -Force -ErrorAction Stop
+    $paths = $topFiles | Select-Object -ExpandProperty FullName
+    Compress-Archive -LiteralPath $paths -DestinationPath $ZipPath -Force
+    Write-Log "ZIP created: $ZipPath" "INFO"
+    return $true
 }
 
-# -----------------------------------------------------------------------------
-# Main
-# -----------------------------------------------------------------------------
-$stamp = Get-Stamp
-$RepoRoot = [System.IO.Path]::GetFullPath($RepoRoot)
+function Clear-AttachmentsTopLevel {
+    param([Parameter(Mandatory)][string]$AttachRoot)
 
-$attach_root = Join-Path $RepoRoot '.txt_files_4_AI_attachments'
-$logs_dir    = Join-Path $attach_root 'logs'
-$zip_dir     = Join-Path $attach_root 'archieves'   # spelling retained
-Ensure-Dir -Path $attach_root
-Ensure-Dir -Path $logs_dir
-Ensure-Dir -Path $zip_dir
+    $topFiles = Get-AttachmentsTopLevelFiles -AttachRoot $AttachRoot
+    foreach ($f in $topFiles) {
+        Remove-Item -LiteralPath $f.FullName -Force
+    }
+    Write-Log "Cleared top-level attachment files from: $AttachRoot" "INFO"
+}
 
-$ps_log_path     = Join-Path $logs_dir "Prep-AI-Attachments_$stamp.log.txt"
-$transcript_path = Join-Path $logs_dir "Prep-AI-Attachments_$stamp.transcript.txt"
-
-Start-LogWriter -Path $ps_log_path
-
-$transcript_started = $false
-try { Start-Transcript -LiteralPath $transcript_path -Force | Out-Null; $transcript_started = $true } catch { $transcript_started = $false }
-
-Write-Log "START prep_ai_attachments_$stamp"
-Write-Log "repo_root=$RepoRoot"
-Write-Log "attach_root=$attach_root"
-Write-Log "logs_dir=$logs_dir"
-Write-Log "zip_dir=$zip_dir"
-Write-Log "log_path=$ps_log_path"
-Write-Log "transcript_path=$transcript_path"
-Write-Log "transcript_started=$transcript_started"
-
-# Excluded folders (absolute)
-$exclude_folders = @(
-    (Join-Path $RepoRoot '.git'),
-    (Join-Path $RepoRoot 'node_modules'),
-    (Join-Path $RepoRoot '.venv'),
-    (Join-Path $RepoRoot 'venv'),
-    (Join-Path $RepoRoot '__pycache__'),
-    (Join-Path $RepoRoot '.txt_files_4_AI_attachments'),
-    (Join-Path $RepoRoot 'image'),
-    (Join-Path $RepoRoot 'logs')   # NEW
-)
-
-# Snapshot ZIP BEFORE generation
+# =============================================================================
+# SECTION: MAIN
+# =============================================================================
 try {
-    $zip_before = Join-Path $zip_dir "my_TV_Movie_AI_attachments_BEFORE_$stamp.zip"
-    Write-Log "ZIPPING BEFORE generation -> $zip_before"
-    Zip-AttachmentsSnapshot -AttachRoot $attach_root -ZipPath $zip_before
-    Write-Log "ZIP BEFORE created: $zip_before"
-} catch {
-    Write-Log ("ZIP BEFORE skipped/failed: {0}" -f $_.Exception.Message) 'WARN'
-}
+    Ensure-Dir -Path $AttachRoot
+    Ensure-Dir -Path $LogsDir
+    Ensure-Dir -Path $ArchiveDir
+    Start-Log
 
-# Generate/overwrite attachment files directly in attach_root
-[int]$scanned  = 0
-[int]$written  = 0
-[int]$excluded = 0
-[int]$errors   = 0
+    Write-Log "START Prep-AI-Attachments run=$RunStamp" "INFO"
+    Write-Log "RepoRoot=$RepoRoot" "INFO"
+    Write-Log "AttachRoot=$AttachRoot" "INFO"
+    Write-Log "LogsDir=$LogsDir" "INFO"
+    Write-Log "ArchiveDir=$ArchiveDir" "INFO"
+    Write-Log "PsLogPath=$PsLogPath" "INFO"
 
-$all = Get-ChildItem -LiteralPath $RepoRoot -Recurse -File -Force -ErrorAction Stop
-$idx = 0
-$total = $all.Count
-
-foreach ($f in $all) {
-    $idx++
-    $scanned++
-
-    if ($total -gt 0) {
-        $pct = [math]::Floor(($idx / $total) * 100)
-        Write-Progress -Activity "Prep AI Attachments" -Status "$idx / $total" -PercentComplete $pct
+    # STEP 1: PRE-ZIP existing attachments then clear them
+    $preZip = Join-Path $ArchiveDir ("AI_Attachments_PRE_{0}.zip" -f $RunStamp)
+    if (Compress-AttachmentsTopLevel -AttachRoot $AttachRoot -ZipPath $preZip) {
+        Clear-AttachmentsTopLevel -AttachRoot $AttachRoot
+    } else {
+        Write-Log "PRE-ZIP skipped (no existing attachments)." "INFO"
     }
 
-    $path = $f.FullName
+    # STEP 2: GATHER
+    Write-Log "Scanning repo files (recursive)..." "INFO"
+    $scanned = 0; $excluded = 0; $written = 0; $versioned = 0
 
-    # Exclude folder trees
-    $skip = $false
-    foreach ($xf in $exclude_folders) {
-        if (Test-Path -LiteralPath $xf) {
-            if (Is-UnderPath -Child $path -Parent $xf) { $skip = $true; break }
-        }
-    }
-    if ($skip) { $excluded++; continue }
+    $repoFiles = Get-ChildItem -LiteralPath $RepoRoot -Recurse -File -Force -ErrorAction Stop
 
-    # Exclude by extension (includes .bak now)
-    if (Has-ExcludedExtension -Path $path) { $excluded++; continue }
+    foreach ($rf in $repoFiles) {
+        $scanned++
 
-    # Skip current run logs/transcript and BAT log
-    if ($path -ieq $ps_log_path) { $excluded++; continue }
-    if ($path -ieq $transcript_path) { $excluded++; continue }
-    if ($env:BATLOG -and $env:BATLOG.Trim() -ne '' -and ($path -ieq $env:BATLOG)) { $excluded++; continue }
+        if (Is-ExcludedPath -FullPath $rf.FullName) { $excluded++; continue }
 
-    # Skip the attachment tool scripts themselves
-    $ln = $f.Name.ToLowerInvariant()
-    if ($ln -eq 'prep-ai-attachments.ps1' -or $ln -eq 'prep_ai_attachments.bat') { $excluded++; continue }
+        $vi = Get-VersionInfoFromFile -Path $rf.FullName
+        $v  = ($vi.version + "")
+        if (-not [string]::IsNullOrWhiteSpace($v)) { $versioned++ }
 
-    try {
-        $out_name = Get-AttachmentFileName -RepoRoot $RepoRoot -SourcePath $path
-        $out_path = Join-Path $attach_root $out_name
+        $destName = Make-AttachmentFileName -RepoRoot $RepoRoot -SourcePath $rf.FullName -Version $v
+        if ([string]::IsNullOrWhiteSpace($destName)) { $excluded++; continue }
 
-        if (Should-NormalizeUtf8 -Path $path) {
-            $raw = Get-Content -LiteralPath $path -Raw -ErrorAction Stop
-            [System.IO.File]::WriteAllText($out_path, $raw, (New-Object System.Text.UTF8Encoding($false)))
-        } else {
-            Copy-Item -LiteralPath $path -Destination $out_path -Force
-        }
-
+        $destPath = Join-Path $AttachRoot $destName
+        Copy-Item -LiteralPath $rf.FullName -Destination $destPath -Force
         $written++
-    } catch {
-        $errors++
-        Write-Log ("WRITE error: {0} :: {1}" -f $path, $_.Exception.Message) 'ERROR'
     }
-}
 
-# Snapshot ZIP AFTER generation
-try {
-    $zip_after = Join-Path $zip_dir "my_TV_Movie_AI_attachments_AFTER_$stamp.zip"
-    Write-Log "ZIPPING AFTER generation -> $zip_after"
-    Zip-AttachmentsSnapshot -AttachRoot $attach_root -ZipPath $zip_after
-    Write-Log "ZIP AFTER created: $zip_after"
+    Write-Log "Scan summary: scanned=$scanned written=$written excluded=$excluded versioned=$versioned" "INFO"
+
+    # STEP 3: ZIP new attachments (do NOT clear them)
+    $runZip = Join-Path $ArchiveDir ("AI_Attachments_{0}.zip" -f $RunStamp)
+    if (Compress-AttachmentsTopLevel -AttachRoot $AttachRoot -ZipPath $runZip) {
+        Write-Log "Run ZIP ready: $runZip" "INFO"
+    } else {
+        Write-Log "Run ZIP NOT created (no attachments found after gather)." "WARN"
+    }
+
+    Write-Log "DONE" "INFO"
+    Write-Host ""
+    Write-Host "OUTPUTS:"
+    Write-Host "  LOG : $PsLogPath"
+    Write-Host "  ZIP : $runZip"
+    Write-Host ""
+    Write-Host "Press ENTER to close..."
+    [void](Read-Host)
+
 } catch {
-    $errors++
-    Write-Log ("ZIP AFTER failed: {0}" -f $_.Exception.Message) 'ERROR'
+    try { Write-Log ("ERROR: {0}" -f $_.Exception.Message) "ERROR" } catch { }
+    Write-Host ""
+    Write-Host "FAILED. See log:"
+    Write-Host "  $PsLogPath"
+    Write-Host ""
+    Write-Host "Press ENTER to close..."
+    [void](Read-Host)
+    exit 1
+} finally {
+    Stop-Log
 }
-
-Write-Progress -Activity "Prep AI Attachments" -Completed
-Write-Log ("SUMMARY scanned={0} written={1} excluded={2} errors={3}" -f $scanned, $written, $excluded, $errors)
-
-Write-Host ""
-Write-Host "DONE."
-Write-Host "Attachments folder:"
-Write-Host "  $attach_root"
-Write-Host "Zips folder:"
-Write-Host "  $zip_dir"
-Write-Host "Log:"
-Write-Host "  $ps_log_path"
-Write-Host "Transcript:"
-Write-Host "  $transcript_path"
-Write-Host ""
-
-try { if ($transcript_started) { Stop-Transcript | Out-Null } } catch { }
-Stop-LogWriter

@@ -1,0 +1,83 @@
+<!--
+File: web/config.html
+Project: my_TV_Movie
+Version: v1.5.0 (2025-11-11 22:15 EST)
+Simple helper that mirrors the Config tab for desktop use.
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Config · My TV Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      padding: 14px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #05070b;
+      color: #f5f5f5;
+      -webkit-font-smoothing: antialiased;
+      font-size: 14px;
+    }
+    a { color: #3da9ff; text-decoration: none; }
+    .card {
+      background: #11141a;
+      border-radius: 14px;
+      padding: 10px;
+      border: 1px solid #272b36;
+      margin-bottom: 10px;
+    }
+    .title { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+    .h { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+    .mut { font-size: 11px; color: #9ba0b0; }
+    .row { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-top:4px; }
+    .pill { padding:4px 10px; border-radius:999px; border:1px solid #272b36; background:#05070b; font-size:11px; color:#9ba0b0; }
+  </style>
+</head>
+<body>
+  <div class="title">Config · My TV Hub</div>
+  <div class="mut">index.html: v2.9.0 • config.html: v1.5.0</div>
+
+  <div class="card">
+    <div class="h">Display</div>
+    <div class="mut">
+      Theme and font size are controlled client-side in <code>web/index.html</code>.
+      Use the on-screen Config tab on your TV.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="h">Maintenance shortcuts</div>
+    <div class="row">
+      <a class="pill" href="https://ajpnkw.github.io/my_TV_Movie/web/index.html" target="_blank">Open Hub</a>
+      <a class="pill" href="https://github.com/AJPnKW/my_TV_Movie/actions/workflows/build-data.yml" target="_blank">Run “Build TV Data and Deploy”</a>
+      <a class="pill" href="https://github.com/AJPnKW/my_TV_Movie/settings/secrets/actions" target="_blank">Secrets & variables</a>
+      <a class="pill" href="https://github.com/AJPnKW/my_TV_Movie" target="_blank">Repository</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="h">Edit lists</div>
+    <div class="mut">Edit files in GitHub, then run the workflow.</div>
+    <div class="row">
+      <a class="pill" href="https://github.com/AJPnKW/my_TV_Movie/edit/main/tv_list.txt" target="_blank">tv_list.txt</a>
+      <a class="pill" href="https://github.com/AJPnKW/my_TV_Movie/edit/main/movies_list.txt" target="_blank">movies_list.txt</a>
+      <a class="pill" href="https://github.com/AJPnKW/my_TV_Movie/edit/main/livetv_list.txt" target="_blank">live_tv_list.txt</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="h">Integrations</div>
+    <div class="mut">
+      TMDB required. TVMaze / OMDB / Trakt / Live TV enrichers are optional and run server-side via scripts.
+      No API keys are exposed to the browser.
+    </div>
+  </div>
+
+  <div class="mut">
+    Return to <a href="./index.html">My TV Hub</a>.
+  </div>
+</body>
+</html>
