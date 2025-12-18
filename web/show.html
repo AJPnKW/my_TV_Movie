@@ -1,292 +1,373 @@
+<!DOCTYPE html>
 <!--
 ========================================================================================
 [FILE]        web/show.html
 [PROJECT]     my_TV_Movie (My TV Hub)
 [ROLE]        Dedicated Show Page (Series → Seasons → Episodes)
 [VERSION]     v3.3.7
-[UPDATED]     2025-12-17_18-05-00
-[BUILD]       14.02.02
-[DEPENDS ON]  web/css/my_tv_hub.css
-              web/config.json (streaming + image sizes + UI tuning)
-              data/data.json (TMDB dataset + local_*_path + links)
-              data/trakt_state.json (optional; watch-state overlay)
-[NOTES]
-- NO inline <style>. All styling must live in web/css/my_tv_hub.css.
-- Image preference order: local_*_path → TMDB remote paths.
-- Streaming links must come from data.json (config-driven).
+[UPDATED]     2025-12-17_17-22-30
+[BUILD]       14.02.05
+[OWNER]       Andrew & Brant (internal)
+
+[DEPENDS ON]
+  - data/data.json                 (TMDB dataset + local_*_path + links)
+  - data/trakt_state.json          (optional; watch state)
+  - web/config.json                (streaming bases + image sizes + UI tuning)
+  - web/css/my_tv_hub.css          (ALL styling must live here)
+
+[DESIGN RULES]
+- NO hard-coded streaming domains here; use data.json links first; else config bases.
+- Image preference order: local_*_path → remote TMDB URL.
 ========================================================================================
 -->
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Show Details – My TV Hub</title>
+  <title>Show – My TV Hub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="description" content="Show details page for My TV Hub" />
   <link rel="stylesheet" href="css/my_tv_hub.css?v=3.3.7" />
 </head>
 
 <body>
-  <div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <h1 id="page_title">Show</h1>
+      <div class="meta" id="page_meta">Series · Seasons · Episodes</div>
+    </div>
 
-    <!-- =========================================================
-         HEADER
-    ========================================================== -->
-    <header class="top-header">
-      <div class="brand">
-        <div class="brand-title">My TV Hub</div>
-        <div class="brand-sub muted">Show Details</div>
-      </div>
+    <div class="view-buttons">
+      <a class="view-btn" href="./index.html">⬅ Back</a>
+      <a class="view-btn" href="./index.html#shows">📺 Shows</a>
+      <a class="view-btn" href="./config.html">⚙️ Config</a>
+    </div>
+  </header>
 
-      <nav class="nav-links">
-        <a class="nav-link" href="index.html">⬅ Back to Hub</a>
-        <a class="nav-link" href="config.html">⚙️ Config</a>
-      </nav>
-    </header>
+  <main class="container">
+    <!-- Series Hero -->
+    <section id="hero" class="card hero-card hidden"></section>
 
-    <!-- =========================================================
-         SHOW HERO
-    ========================================================== -->
-    <section id="show-hero" class="show-hero">
-      <div id="show-hero-bg" class="show-hero-bg"></div>
-
-      <div class="show-hero-content">
-        <div id="show-poster" class="show-hero-poster"></div>
-
-        <div class="show-hero-info">
-          <h1 id="show-title">Loading…</h1>
-          <div id="show-meta" class="muted"></div>
-          <div id="show-overview" class="show-overview"></div>
-
-          <div class="show-hero-actions">
-            <a id="show-link-tmdb" class="show-link-btn btn-tmdb" target="_blank" rel="noopener noreferrer">
-              <div class="btn-line1">INFO at</div><div class="btn-line2">TMDB</div>
-            </a>
-            <a id="show-link-vidsrc" class="show-link-btn btn-vidsrc" target="_blank" rel="noopener noreferrer">
-              <div class="btn-line1">Watch on</div><div class="btn-line2">VidSrc</div>
-            </a>
-            <a id="show-link-videasy" class="show-link-btn btn-videasy" target="_blank" rel="noopener noreferrer">
-              <div class="btn-line1">Watch on</div><div class="btn-line2">Videasy</div>
-            </a>
-          </div>
-        </div>
-      </div>
+    <!-- Seasons -->
+    <section class="card soft">
+      <h2 class="section-title">Seasons</h2>
+      <div id="seasons_root" class="accordion"></div>
     </section>
 
-    <!-- =========================================================
-         SEASONS
-    ========================================================== -->
-    <main class="show-main">
-      <section class="seasons-wrap">
-        <h2 class="section-title">Seasons</h2>
-        <div id="seasons-list" class="seasons-list"></div>
-      </section>
-    </main>
+    <!-- Errors -->
+    <section id="errors" class="card soft hidden"></section>
+  </main>
 
-    <!-- =========================================================
-         FOOTER
-    ========================================================== -->
-    <footer class="footer">
-      <div class="footer-left muted">
-        Data source: <code>data/data.json</code>
-      </div>
-      <div class="footer-right muted" id="footer-refresh">Last refresh: …</div>
-    </footer>
-  </div>
+<script>
+/* =====================================================================
+   web/show.html runtime
+   ===================================================================== */
 
-  <!-- =========================================================
-       SCRIPT
-  ========================================================== -->
-  <script>
-    /*****************************************************************
-     * Globals
-     *****************************************************************/
-    const qs = (s, r=document) => r.querySelector(s);
-    const qsa = (s, r=document) => Array.from(r.querySelectorAll(s));
+const DATA_URL   = '../data/data.json';
+const TRAKT_URL  = '../data/trakt_state.json';
+const CONFIG_URL = './config.json';
 
-    const STATE = {
-      config: null,
-      data: null,
-      trakt: null,
-      show: null
+let DATA = null;
+let TRAKT = {};
+let CONFIG = {};
+
+/* --------------------------------------------------
+   Small helpers
+-------------------------------------------------- */
+function $(sel){ return document.querySelector(sel); }
+function el(tag, cls, html){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (html !== undefined) n.innerHTML = html;
+  return n;
+}
+function qs(name){
+  const u = new URL(location.href);
+  return u.searchParams.get(name);
+}
+async function loadJSON(url, fallback=null){
+  try{
+    const r = await fetch(url, { cache: 'no-store' });
+    if(!r.ok) throw new Error(url);
+    return await r.json();
+  }catch{
+    return fallback;
+  }
+}
+
+/* --------------------------------------------------
+   Image URL rules
+-------------------------------------------------- */
+function tmdbImage(path, width){
+  if(!path) return '';
+  return `https://image.tmdb.org/t/p/w${width}${path}`;
+}
+function pickImage(obj, kind, tmdbWidth){
+  // kind: poster | backdrop | still
+  const localKey = `local_${kind}_path`;
+  if(obj && obj[localKey]) return obj[localKey];
+  const rawKey = (kind === 'still') ? 'still_path' : `${kind}_path`;
+  if(obj && obj[rawKey]) return tmdbImage(obj[rawKey], tmdbWidth);
+  // Some structures precompute URLs
+  const urlKey = `${kind}_url`;
+  if(obj && obj[urlKey]) return obj[urlKey];
+  return '';
+}
+
+/* --------------------------------------------------
+   Streaming URL rules (prefer data.json links; else config bases)
+-------------------------------------------------- */
+function buildTvUrl(base, showId, seasonNum, epNum){
+  if(!base) return '';
+  // Base should end with "/"
+  const b = base.endsWith('/') ? base : (base + '/');
+  return `${b}${showId}/${seasonNum}/${epNum}`;
+}
+function buildMovieUrl(base, movieId){
+  if(!base) return '';
+  const b = base.endsWith('/') ? base : (base + '/');
+  return `${b}${movieId}`;
+}
+function episodeLinks(ep, showId, seasonNum, epNum){
+  // 1) exact links if workflow generated them
+  if(ep && ep.links){
+    return {
+      videasy: ep.links.videasy || '',
+      vidsrc:  ep.links.vidsrc  || ''
     };
+  }
 
-    function getParam(name){
-      return new URLSearchParams(window.location.search).get(name);
+  // 2) fallback to config bases (should be rare)
+  const svc = (CONFIG && CONFIG.streaming_services) ? CONFIG.streaming_services : {};
+  return {
+    videasy: buildTvUrl(svc.videasy_tv, showId, seasonNum, epNum),
+    vidsrc:  buildTvUrl(svc.vidsrc_tv,  showId, seasonNum, epNum)
+  };
+}
+
+/* --------------------------------------------------
+   Trakt watch state (best-effort; tolerate schema drift)
+-------------------------------------------------- */
+function isEpisodeWatched(showId, seasonNum, epNum){
+  // Accepted shapes (best-effort):
+  //  - TRAKT.watched_episodes["<showId>-<s>-<e>"] = true
+  //  - TRAKT.watched_episodes[showId][seasonNum][epNum] = true
+  //  - TRAKT.shows[showId].watched["sxe"] = true
+  try{
+    const keyA = `${showId}-${seasonNum}-${epNum}`;
+    if(TRAKT?.watched_episodes?.[keyA]) return true;
+
+    const byShow = TRAKT?.watched_episodes?.[String(showId)];
+    if(byShow?.[String(seasonNum)]?.[String(epNum)]) return true;
+
+    const sxe = `S${String(seasonNum).padStart(2,'0')}E${String(epNum).padStart(2,'0')}`;
+    if(TRAKT?.shows?.[String(showId)]?.watched?.[sxe]) return true;
+  }catch{}
+  return false;
+}
+
+/* --------------------------------------------------
+   Render
+-------------------------------------------------- */
+function renderError(msg){
+  const box = $('#errors');
+  box.classList.remove('hidden');
+  box.innerHTML = '';
+  box.appendChild(el('h3', null, 'Error'));
+  box.appendChild(el('div','muted', msg));
+}
+
+function renderHero(show){
+  const hero = $('#hero');
+  hero.classList.remove('hidden');
+  hero.innerHTML = '';
+
+  const backdropW = CONFIG?.image_sizes?.backdrop_w || 780;
+  const posterW   = CONFIG?.image_sizes?.show_width  || 185;
+
+  const backdropUrl = pickImage(show, 'backdrop', backdropW);
+  const posterUrl   = pickImage(show, 'poster', posterW);
+
+  if(backdropUrl){
+    hero.style.backgroundImage = `linear-gradient(to bottom, rgba(0,0,0,.25), rgba(0,0,0,.92)), url('${backdropUrl}')`;
+    hero.style.backgroundSize = 'cover';
+    hero.style.backgroundPosition = 'center';
+  }else{
+    hero.style.backgroundImage = '';
+  }
+
+  const row = el('div','hero-row');
+
+  const poster = el('img','hero-poster');
+  poster.alt = show.title || 'Poster';
+  poster.src = posterUrl || '';
+
+  const info = el('div','hero-info');
+  info.appendChild(el('h2','hero-title', `${show.title || 'Unknown'} <span class="muted">[${show.id}]</span>`));
+  if(show.overview) info.appendChild(el('div','hero-overview', show.overview));
+
+  const meta = el('div','hero-meta muted');
+  const bits = [];
+  if(show.year) bits.push(String(show.year));
+  if(show.status) bits.push(String(show.status));
+  if(show.network) bits.push(String(show.network));
+  meta.textContent = bits.filter(Boolean).join(' · ');
+  info.appendChild(meta);
+
+  const tmdb = el('a','link-btn btn-tmdb');
+  tmdb.target = '_blank';
+  tmdb.href = `https://www.themoviedb.org/tv/${show.id}`;
+  tmdb.innerHTML = '<span class="stack"><span class="top">INFO at</span><span class="bottom">TMDB</span></span>';
+
+  const openInHub = el('a','link-btn btn-neutral');
+  openInHub.href = `./index.html`;
+  openInHub.innerHTML = '<span class="stack"><span class="top">BACK</span><span class="bottom">Hub</span></span>';
+
+  const btnRow = el('div','hero-buttons');
+  btnRow.appendChild(tmdb);
+  btnRow.appendChild(openInHub);
+  info.appendChild(btnRow);
+
+  row.appendChild(poster);
+  row.appendChild(info);
+  hero.appendChild(row);
+
+  $('#page_title').textContent = show.title || 'Show';
+}
+
+function renderSeasons(show){
+  const root = $('#seasons_root');
+  root.innerHTML = '';
+
+  const seasonW = CONFIG?.image_sizes?.season_width || 185;
+  const stillW  = CONFIG?.image_sizes?.episode_still_w || 300;
+
+  const seasons = (show.seasons || []).slice().sort((a,b)=>(a.season_number||0)-(b.season_number||0));
+  if(!seasons.length){
+    root.appendChild(el('div','muted','No seasons found.'));
+    return;
+  }
+
+  seasons.forEach(season => {
+    const sNum = season.season_number || 0;
+
+    const wrap = el('div','acc-item');
+    const head = el('button','acc-head');
+    head.type = 'button';
+
+    const sPosterUrl = pickImage(season,'poster',seasonW);
+    const sp = el('img','season-poster');
+    sp.alt = `Season ${sNum}`;
+    sp.src = sPosterUrl || '';
+
+    const headText = el('div','acc-head-text');
+    headText.appendChild(el('div','acc-title', `Season ${sNum} <span class="muted">· ${season.episode_count || (season.episodes?.length||0)} eps</span>`));
+    if(season.name && season.name !== `Season ${sNum}`){
+      headText.appendChild(el('div','acc-sub muted', season.name));
     }
 
-    function tmdbImg(path, w){
-      if(!path) return "";
-      return `https://image.tmdb.org/t/p/w${w}${path}`;
-    }
+    head.appendChild(sp);
+    head.appendChild(headText);
 
-    function bestImage(obj, pref){
-      for(const p of pref){
-        if(p.local && obj[p.local]) return ".." + obj[p.local];
-        if(p.remote && obj[p.remote]) return tmdbImg(obj[p.remote], p.w);
-      }
-      return "";
-    }
+    const body = el('div','acc-body hidden');
 
-    /*****************************************************************
-     * Loaders
-     *****************************************************************/
-    async function loadConfig(){
-      try{
-        const r = await fetch("config.json",{cache:"no-store"});
-        STATE.config = await r.json();
-      }catch{
-        STATE.config = {
-          image_sizes:{show_width:185,season_width:185,episode_still_w:300,backdrop_w:780}
-        };
-      }
-    }
+    const eps = (season.episodes || []).slice().sort((a,b)=>(a.episode_number||0)-(b.episode_number||0));
+    if(!eps.length){
+      body.appendChild(el('div','muted','No episodes found.'));
+    }else{
+      eps.forEach(ep => {
+        const eNum = ep.episode_number || 0;
 
-    async function loadData(){
-      const r = await fetch("../data/data.json",{cache:"no-store"});
-      STATE.data = await r.json();
+        const row = el('div','ep-row');
 
-      try{
-        const t = await fetch("../data/last_refresh.txt",{cache:"no-store"});
-        if(t.ok) qs("#footer-refresh").textContent = "Last refresh: " + (await t.text()).trim();
-      }catch{}
-    }
+        const stillUrl = pickImage(ep,'still',stillW);
+        const still = el('img','ep-still');
+        still.alt = `S${sNum}E${eNum}`;
+        still.src = stillUrl || '';
 
-    async function loadTrakt(){
-      try{
-        const r = await fetch("../data/trakt_state.json",{cache:"no-store"});
-        if(r.ok) STATE.trakt = await r.json();
-      }catch{}
-    }
+        const mid = el('div','ep-mid');
+        const title = ep.name ? ep.name : '(no title)';
+        mid.appendChild(el('div','ep-title', `${show.title} <span class="muted">[${show.id}]</span>`));
+        mid.appendChild(el('div','ep-sub', `S${sNum}E${eNum} · ${title}`));
+        if(ep.air_date) mid.appendChild(el('div','muted', ep.air_date));
 
-    /*****************************************************************
-     * Render Show
-     *****************************************************************/
-    function renderShow(){
-      const id = getParam("id");
-      if(!id) return;
+        const watched = isEpisodeWatched(show.id, sNum, eNum);
+        if(watched){
+          const w = el('div','badge-watched','WATCHED');
+          mid.appendChild(w);
+        }
 
-      const show = (STATE.data.shows||[]).find(s => String(s.tmdb_id||s.id) === String(id));
-      if(!show) return;
+        const links = episodeLinks(ep, show.id, sNum, eNum);
 
-      STATE.show = show;
+        const right = el('div','ep-actions');
 
-      qs("#show-title").textContent = show.name || "Show";
-      qs("#show-meta").textContent =
-        `${show.first_air_date || "?"} • ${show.status || "?"} • ${show.number_of_seasons||0} seasons`;
+        const tmdb = el('a','link-btn btn-tmdb');
+        tmdb.target = '_blank';
+        tmdb.href = `https://www.themoviedb.org/tv/${show.id}/season/${sNum}/episode/${eNum}`;
+        tmdb.innerHTML = '<span class="stack"><span class="top">INFO at</span><span class="bottom">TMDB</span></span>';
 
-      qs("#show-overview").textContent = show.overview || "";
+        const b1 = el('a','link-btn btn-watch-videasy');
+        b1.target = '_blank';
+        b1.href = links.videasy || '#';
+        b1.innerHTML = '<span class="stack"><span class="top">Watch on</span><span class="bottom">Videasy</span></span>';
 
-      const poster = bestImage(show,[
-        {local:"local_poster_path",remote:"poster_path",w:STATE.config.image_sizes.show_width}
-      ]);
-      if(poster){
-        qs("#show-poster").style.backgroundImage = `url('${poster}')`;
-      }
+        const b2 = el('a','link-btn btn-watch-vidsrc');
+        b2.target = '_blank';
+        b2.href = links.vidsrc || '#';
+        b2.innerHTML = '<span class="stack"><span class="top">Watch on</span><span class="bottom">VidSrc</span></span>';
 
-      const bg = bestImage(show,[
-        {local:"local_backdrop_path",remote:"backdrop_path",w:STATE.config.image_sizes.backdrop_w}
-      ]);
-      if(bg){
-        qs("#show-hero-bg").style.backgroundImage =
-          `linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,.9)),url('${bg}')`;
-      }
+        right.appendChild(tmdb);
+        right.appendChild(b1);
+        right.appendChild(b2);
 
-      const links = show.links||{};
-      setLink("#show-link-tmdb",links.tmdb);
-      setLink("#show-link-vidsrc",links.vidsrc);
-      setLink("#show-link-videasy",links.videasy);
-
-      renderSeasons(show);
-    }
-
-    function setLink(sel,href){
-      const a = qs(sel);
-      if(href){
-        a.href = href;
-      }else{
-        a.classList.add("disabled");
-        a.removeAttribute("href");
-      }
-    }
-
-    /*****************************************************************
-     * Render Seasons + Episodes
-     *****************************************************************/
-    function renderSeasons(show){
-      const wrap = qs("#seasons-list");
-      wrap.innerHTML = "";
-
-      (show.seasons||[]).forEach(season=>{
-        const sec = document.createElement("div");
-        sec.className = "season-card";
-
-        const poster = bestImage(season,[
-          {local:"local_poster_path",remote:"poster_path",w:STATE.config.image_sizes.season_width}
-        ]);
-
-        sec.innerHTML = `
-          <div class="season-header">
-            <div class="season-poster" ${poster?`style="background-image:url('${poster}')"`:""}></div>
-            <div class="season-info">
-              <div class="season-title">Season ${season.season_number}</div>
-              <div class="muted">${season.episode_count||0} episodes</div>
-            </div>
-          </div>
-          <div class="episodes-list"></div>
-        `;
-
-        const list = qs(".episodes-list",sec);
-
-        (season.episodes||[]).forEach(ep=>{
-          const still = bestImage(ep,[
-            {local:"local_still_path",remote:"still_path",w:STATE.config.image_sizes.episode_still_w}
-          ]);
-
-          const epRow = document.createElement("div");
-          epRow.className = "episode-row";
-
-          epRow.innerHTML = `
-            <div class="episode-still" ${still?`style="background-image:url('${still}')"`:""}></div>
-            <div class="episode-info">
-              <div class="episode-title">
-                S${String(season.season_number).padStart(2,"0")}E${String(ep.episode_number).padStart(2,"0")}
-                • ${ep.name||"Episode"}
-              </div>
-              <div class="muted">${ep.air_date||""}</div>
-              <div class="episode-actions">
-                ${makeEpBtn(ep,"tmdb","INFO","TMDB")}
-                ${makeEpBtn(ep,"vidsrc","Watch","VidSrc")}
-                ${makeEpBtn(ep,"videasy","Watch","Videasy")}
-              </div>
-            </div>
-          `;
-          list.appendChild(epRow);
-        });
-
-        wrap.appendChild(sec);
+        row.appendChild(still);
+        row.appendChild(mid);
+        row.appendChild(right);
+        body.appendChild(row);
       });
     }
 
-    function makeEpBtn(ep,key,l1,l2){
-      const href = ep.links && ep.links[key];
-      if(!href) return "";
-      return `<a class="episode-link-btn btn-${key}" href="${href}" target="_blank">
-                <div class="btn-line1">${l1}</div><div class="btn-line2">${l2}</div>
-              </a>`;
-    }
+    head.addEventListener('click', () => {
+      body.classList.toggle('hidden');
+      wrap.classList.toggle('open');
+    });
 
-    /*****************************************************************
-     * Boot
-     *****************************************************************/
-    async function boot(){
-      await loadConfig();
-      await loadData();
-      await loadTrakt();
-      renderShow();
-    }
+    wrap.appendChild(head);
+    wrap.appendChild(body);
+    root.appendChild(wrap);
+  });
+}
 
-    boot();
-  </script>
+/* --------------------------------------------------
+   Boot
+-------------------------------------------------- */
+async function boot(){
+  const id = qs('id');
+  if(!id){
+    renderError('Missing show id. Use show.html?id=<TMDB_SHOW_ID>');
+    return;
+  }
+
+  CONFIG = await loadJSON(CONFIG_URL, {});
+  DATA   = await loadJSON(DATA_URL);
+  TRAKT  = await loadJSON(TRAKT_URL, {});
+
+  if(!DATA){
+    renderError('data/data.json not found or invalid.');
+    return;
+  }
+
+  const show = (DATA.shows || []).find(s => String(s.id) === String(id));
+  if(!show){
+    renderError(`Show id ${id} not found in data.json.`);
+    return;
+  }
+
+  renderHero(show);
+  renderSeasons(show);
+}
+
+boot();
+</script>
+
 </body>
 </html>
