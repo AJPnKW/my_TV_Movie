@@ -1,151 +1,298 @@
-# =============================================================================
-# File:        scripts/fetch_trakt.py
-# Purpose:     Sync watch status from Trakt.tv into existing data.json
-# Repo:        my_TV_Movie
+#!/usr/bin/env python3
+# ==============================================================================
+# [FILE]        scripts/fetch_trakt.py
+# [PROJECT]     my_TV_Movie
+# [ROLE]        Pull Trakt watch-state and export static trakt_state.json for UI
+# [VERSION]     v1.5.0
+# [UPDATED]     2025-12-17_16-30-00
+# [BUILD]       14.01.06
 #
-# Version:     v1.3.0
-# Date:        2025-12-17
-# Build tag:   v14.01.04
+# [DEPENDS ON]
+#   - Environment variables:
+#       API_TRAKT_CLIENT_ID          (required)
+#       API_TRAKT_CLIENT_SECRET      (required for token refresh)
+#       API_TRAKT_ACCESS_TOKEN       (optional; if missing, script tries refresh)
+#       API_TRAKT_REFRESH_TOKEN      (optional; if missing, script cannot refresh)
+#   - data/data.json                 (optional; used for quick integrity checks)
 #
-# Notes:
-# - Optional integration (never hard-fails)
-# - Preserves all existing data.json content
-# - Annotates shows/seasons/episodes with watch status
-# - Designed to run AFTER fetch_tmdb.py
-# - Safe to re-run multiple times
-# =============================================================================
+# [OUTPUTS]
+#   - data/trakt_state.json
+#   - logs/fetch_trakt_YYYY-MM-DD_HHMMSS.log.txt
+#
+# [NOTES]
+#   - This script is READ-ONLY against Trakt (no scrobble, no sync writes).
+#   - UI uses trakt_state.json to mark watched/unwatched.
+#   - If tokens are missing/invalid, script fails gracefully without touching existing state file.
+# ==============================================================================
 
-import os
+from __future__ import annotations
+
+import datetime as _dt
+import hashlib
 import json
-import time
-import requests
+import logging
+import os
+import sys
 from pathlib import Path
-from typing import Dict, Any
+from typing import Any, Dict, List, Optional, Tuple
 
-# -----------------------------------------------------------------------------
+try:
+    import requests  # type: ignore
+except Exception:
+    print("ERROR: Missing dependency 'requests'. Install it inside your venv:", file=sys.stderr)
+    print("  python -m pip install requests", file=sys.stderr)
+    raise
+
+
+# -------------------------
 # Paths
-# -----------------------------------------------------------------------------
-ROOT_DIR = Path(__file__).resolve().parents[1]
-DATA_FILE = ROOT_DIR / "data" / "data.json"
-LOG_DIR = ROOT_DIR / "logs"
-LOG_DIR.mkdir(exist_ok=True)
+# -------------------------
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
-# -----------------------------------------------------------------------------
-# Trakt configuration (ENV)
-# -----------------------------------------------------------------------------
-TRAKT_CLIENT_ID = os.getenv("API_TRAKT_CLIENT_ID")
-TRAKT_ACCESS_TOKEN = os.getenv("API_TRAKT_ACCESS_TOKEN")
+DATA_DIR = REPO_ROOT / "data"
+DATA_JSON_PATH = DATA_DIR / "data.json"  # optional read
+TRAKT_STATE_PATH = DATA_DIR / "trakt_state.json"
 
-TRAKT_API_BASE = "https://api.trakt.tv"
+LOGS_DIR = REPO_ROOT / "logs"
 
-HEADERS = {
-    "Content-Type": "application/json",
-    "trakt-api-version": "2",
-}
 
-if TRAKT_CLIENT_ID:
-    HEADERS["trakt-api-key"] = TRAKT_CLIENT_ID
-if TRAKT_ACCESS_TOKEN:
-    HEADERS["Authorization"] = f"Bearer {TRAKT_ACCESS_TOKEN}"
+# -------------------------
+# Constants
+# -------------------------
+TRAKT_API = "https://api.trakt.tv"
+TRAKT_OAUTH_TOKEN = "https://trakt.tv/oauth/token"
+USER_AGENT = "my_TV_Movie fetch_trakt.py (static state builder)"
+TIMEOUT = 30
 
-# -----------------------------------------------------------------------------
-# Helpers
-# -----------------------------------------------------------------------------
-def log(msg: str) -> None:
-    ts = time.strftime("%Y-%m-%d %H:%M:%S")
-    print(f"[fetch_trakt] {ts} | {msg}")
 
-def load_data() -> Dict[str, Any]:
-    if not DATA_FILE.exists():
-        log("WARN: data.json not found — skipping Trakt sync.")
-        return {}
+def _now_stamp() -> str:
+    return _dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
-    with DATA_FILE.open("r", encoding="utf-8") as f:
-        return json.load(f)
 
-def save_data(data: Dict[str, Any]) -> None:
-    with DATA_FILE.open("w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+def setup_logging() -> Path:
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    log_path = LOGS_DIR / f"fetch_trakt_{_now_stamp()}.log.txt"
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(message)s",
+        handlers=[logging.FileHandler(log_path, encoding="utf-8"), logging.StreamHandler(sys.stdout)],
+    )
+    logging.info("[fetch_trakt] log=%s", log_path)
+    return log_path
 
-def trakt_get(endpoint: str):
-    url = f"{TRAKT_API_BASE}{endpoint}"
-    r = requests.get(url, headers=HEADERS, timeout=30)
+
+def env(name: str) -> Optional[str]:
+    v = os.getenv(name)
+    return v.strip() if v and v.strip() else None
+
+
+def sha256_text(s: str) -> str:
+    return hashlib.sha256(s.encode("utf-8")).hexdigest()
+
+
+def load_json_if_exists(path: Path) -> Optional[Dict[str, Any]]:
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8", errors="ignore"))
+    except Exception:
+        return None
+
+
+def trakt_headers(client_id: str, access_token: str) -> Dict[str, str]:
+    return {
+        "Content-Type": "application/json",
+        "User-Agent": USER_AGENT,
+        "trakt-api-version": "2",
+        "trakt-api-key": client_id,
+        "Authorization": f"Bearer {access_token}",
+    }
+
+
+def refresh_access_token(client_id: str, client_secret: str, refresh_token: str) -> Optional[Dict[str, Any]]:
+    payload = {
+        "refresh_token": refresh_token,
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+        "grant_type": "refresh_token",
+    }
+    r = requests.post(TRAKT_OAUTH_TOKEN, json=payload, timeout=TIMEOUT, headers={"User-Agent": USER_AGENT})
     if r.status_code != 200:
-        log(f"WARN: Trakt GET failed {r.status_code} {endpoint}")
+        logging.error("[fetch_trakt] refresh failed: %s %s", r.status_code, r.text[:200])
         return None
     return r.json()
 
-# -----------------------------------------------------------------------------
-# Core Logic
-# -----------------------------------------------------------------------------
-def fetch_trakt_watch_history():
-    if not TRAKT_CLIENT_ID or not TRAKT_ACCESS_TOKEN:
-        log("INFO: Trakt credentials not set — skipping.")
-        return None
 
-    log("Fetching Trakt watched history...")
-    return trakt_get("/sync/watched/shows")
+def trakt_get(path: str, client_id: str, access_token: str, params: Optional[Dict[str, Any]] = None) -> Any:
+    url = f"{TRAKT_API}{path}"
+    r = requests.get(url, headers=trakt_headers(client_id, access_token), params=params, timeout=TIMEOUT)
+    if r.status_code != 200:
+        raise RuntimeError(f"Trakt GET {path} failed: {r.status_code} {r.text[:200]}")
+    return r.json()
 
-def apply_watch_status(data: Dict[str, Any], watched_payload: Any) -> None:
-    if not watched_payload:
-        return
 
-    shows_by_tmdb = {}
+def safe_write_json(path: Path, obj: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    payload = json.dumps(obj, ensure_ascii=False, indent=2)
 
-    for show in watched_payload:
-        ids = show.get("show", {}).get("ids", {})
-        tmdb_id = ids.get("tmdb")
-        if tmdb_id:
-            shows_by_tmdb[str(tmdb_id)] = show
+    if len(payload.strip()) < 10:
+        raise RuntimeError("Refusing to write suspiciously small JSON payload")
 
-    for show in data.get("shows", []):
-        tmdb_id = str(show.get("tmdb_id"))
-        watched = shows_by_tmdb.get(tmdb_id)
+    # parse-back validation
+    _ = json.loads(payload)
 
-        if not watched:
+    tmp.write_text(payload, encoding="utf-8")
+    tmp.replace(path)
+
+
+def extract_watched_state(
+    watched_shows: List[Dict[str, Any]],
+    watched_movies: List[Dict[str, Any]],
+) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Output structures optimized for O(1) checks in UI by TMDB id.
+    """
+    shows_by_tmdb: Dict[str, Any] = {}
+    movies_by_tmdb: Dict[str, Any] = {}
+
+    # watched shows: /sync/watched/shows returns seasons + episodes with numbers
+    for s in watched_shows:
+        ids = (s.get("show") or {}).get("ids") or {}
+        tmdb = ids.get("tmdb")
+        if not tmdb:
             continue
+        tmdb_str = str(tmdb)
 
-        show["watch_status"] = "watched"
-        show["last_watched_at"] = watched.get("last_watched_at")
+        seasons_state: Dict[str, Any] = {}
+        for season in (s.get("seasons") or []):
+            sn = season.get("number")
+            if sn is None:
+                continue
+            sn_str = str(int(sn))
+            eps = set()
+            for ep in (season.get("episodes") or []):
+                en = ep.get("number")
+                if en is None:
+                    continue
+                eps.add(int(en))
+            seasons_state[sn_str] = sorted(eps)
 
-        seasons_map = {
-            s["number"]: s for s in watched.get("seasons", [])
+        shows_by_tmdb[tmdb_str] = {
+            "type": "show",
+            "tmdb_id": int(tmdb),
+            "seasons": seasons_state,
         }
 
-        for season in show.get("seasons", []):
-            season_num = season.get("season_number")
-            watched_season = seasons_map.get(season_num)
+    # watched movies: /sync/watched/movies
+    for m in watched_movies:
+        ids = (m.get("movie") or {}).get("ids") or {}
+        tmdb = ids.get("tmdb")
+        if not tmdb:
+            continue
+        tmdb_str = str(tmdb)
+        movies_by_tmdb[tmdb_str] = {
+            "type": "movie",
+            "tmdb_id": int(tmdb),
+            "watched": True,
+        }
 
-            if not watched_season:
-                continue
+    return shows_by_tmdb, movies_by_tmdb
 
-            season["watch_status"] = "watched"
 
-            eps_map = {
-                e["number"]: e for e in watched_season.get("episodes", [])
+def main() -> int:
+    setup_logging()
+
+    client_id = env("API_TRAKT_CLIENT_ID")
+    client_secret = env("API_TRAKT_CLIENT_SECRET")
+    access_token = env("API_TRAKT_ACCESS_TOKEN")
+    refresh_token = env("API_TRAKT_REFRESH_TOKEN")
+
+    if not client_id:
+        logging.error("Missing API_TRAKT_CLIENT_ID")
+        return 2
+    if not client_secret:
+        logging.error("Missing API_TRAKT_CLIENT_SECRET")
+        return 2
+
+    # Access token strategy:
+    # 1) Use access token if present
+    # 2) Else try refresh if refresh_token present
+    token_meta: Dict[str, Any] = {"refreshed": False}
+
+    if not access_token:
+        if not refresh_token:
+            logging.error("Missing API_TRAKT_ACCESS_TOKEN and API_TRAKT_REFRESH_TOKEN (cannot authenticate).")
+            return 2
+        logging.info("[fetch_trakt] No access token; attempting refresh...")
+        tok = refresh_access_token(client_id, client_secret, refresh_token)
+        if not tok:
+            logging.error("[fetch_trakt] Token refresh failed.")
+            return 3
+        access_token = tok.get("access_token")
+        refresh_token_new = tok.get("refresh_token")
+        expires_in = tok.get("expires_in")
+        token_meta = {
+            "refreshed": True,
+            "expires_in": expires_in,
+            "received_at_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        }
+        if refresh_token_new:
+            token_meta["refresh_token_rotated"] = True
+        if not access_token:
+            logging.error("[fetch_trakt] Refresh response did not contain access_token.")
+            return 3
+
+    # Pull watched state (minimal calls; deterministic)
+    try:
+        watched_shows = trakt_get("/sync/watched/shows", client_id, access_token, params={"extended": "full"})
+        watched_movies = trakt_get("/sync/watched/movies", client_id, access_token, params={"extended": "full"})
+    except Exception as e:
+        logging.exception("[fetch_trakt] Fetch failed: %s", e)
+        return 4
+
+    shows_by_tmdb, movies_by_tmdb = extract_watched_state(watched_shows, watched_movies)
+
+    # Optional integrity snapshot vs local data.json (helps catch mismatched TMDB ids)
+    local_data = load_json_if_exists(DATA_JSON_PATH)
+    local_meta: Dict[str, Any] = {}
+    if local_data and isinstance(local_data, dict):
+        try:
+            local_meta = {
+                "data_json_present": True,
+                "data_json_generated_at": (local_data.get("meta") or {}).get("generated_at"),
+                "data_json_config_sha256": (local_data.get("meta") or {}).get("config_sha256"),
+                "shows_count": len(local_data.get("shows") or []),
+                "movies_count": len(local_data.get("movies") or []),
             }
+        except Exception:
+            local_meta = {"data_json_present": True}
+    else:
+        local_meta = {"data_json_present": False}
 
-            for ep in season.get("episodes", []):
-                ep_num = ep.get("episode_number")
-                if ep_num in eps_map:
-                    ep["watch_status"] = "watched"
-                    ep["last_watched_at"] = eps_map[ep_num].get("last_watched_at")
+    state = {
+        "meta": {
+            "generated_at": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "script_version": "v1.5.0",
+            "build": "14.01.06",
+            "token_meta": token_meta,
+            "local_data_snapshot": local_meta,
+        },
+        "shows_by_tmdb": shows_by_tmdb,
+        "movies_by_tmdb": movies_by_tmdb,
+    }
 
-# -----------------------------------------------------------------------------
-# Entry
-# -----------------------------------------------------------------------------
-def main():
-    log("Starting Trakt sync")
+    # Guardrails: do not overwrite with empty if prior file exists (unless truly empty library)
+    prior = load_json_if_exists(TRAKT_STATE_PATH)
+    if prior and (len(shows_by_tmdb) == 0 and len(movies_by_tmdb) == 0):
+        logging.error("[fetch_trakt] Refusing to overwrite existing trakt_state.json with empty state.")
+        return 5
 
-    data = load_data()
-    if not data:
-        return
+    safe_write_json(TRAKT_STATE_PATH, state)
+    logging.info("[fetch_trakt] Wrote: %s (shows=%s movies=%s)", TRAKT_STATE_PATH, len(shows_by_tmdb), len(movies_by_tmdb))
+    return 0
 
-    watched = fetch_trakt_watch_history()
-    apply_watch_status(data, watched)
-
-    save_data(data)
-    log("Trakt sync complete")
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
