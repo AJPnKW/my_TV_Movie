@@ -1,334 +1,619 @@
-/* =============================================================================
-   File:        web/css/my_tv_hub.css
-   Project:     my_TV_Movie
-   Purpose:     Global styling for Calendar, Shows, Movies, Show Page
-   Version:     v3.3.6 (2025-12-16)
+/*
+========================================================================================
+[FILE]        web/css/my_tv_hub.css
+[PROJECT]     my_TV_Movie (My TV Hub)
+[ROLE]        Global styling (Index hub + Show page + Config page)
+[VERSION]     v3.3.7
+[UPDATED]     2025-12-17_17-12-00
+[BUILD]       14.02.03
+[OWNER]       Andrew & Brant (internal)
 
-   Design Rules:
-   - One stylesheet, no duplication
-   - Config-driven image sizing
-   - Dense TV-friendly layout
-   - D-pad / keyboard safe
-   - High contrast, neon-accent buttons
-   ========================================================================== */
+[DEPENDS ON]  web/index.html
+              web/show.html
+              web/config.html
+              web/config.js
 
-/* ============================================================================
-   [CSS-1.0] Root Theme
-   ========================================================================== */
+[NOTES]
+- Neon Candy Pop palette (button colors):
+    neon_blue   #00aaff
+    neon_purple #aa00ff
+    neon_pink   #ff00aa
+    neon_orange #ffaa00
+    neon_lime   #aaff00
+- Calendar button sizing is controlled by CSS vars:
+    --calendar-button-scale (default 0.75)
+    --calendar-card-density (default 1.00)
+  These can be overridden at runtime by setting :root style (via config.js/index.js).
+========================================================================================
+*/
+
+/* [CSS-1.0] Root + theme */
 :root {
   --bg-main: #02040a;
   --bg-elevated: #050814;
-  --bg-card: #0b1020;
-  --bg-card-soft: #10162b;
+  --bg-card: #090d1c;
+  --bg-card-soft: #0f1324;
 
-  --text-main: #f2f6ff;
+  --border-subtle: #262b3a;
+
+  --text-main: #e9efff;
   --text-muted: #9fb0d6;
 
-  --border-subtle: #1f2742;
   --radius-lg: 16px;
   --radius-md: 12px;
 
-  --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
+  --shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
 
-  /* Neon Candy Pop palette */
+  /* Neon Candy Pop */
   --neon-blue: #00aaff;
   --neon-purple: #aa00ff;
   --neon-pink: #ff00aa;
   --neon-orange: #ffaa00;
   --neon-lime: #aaff00;
+
+  /* Focus ring */
+  --focus-ring: rgba(0, 170, 255, 0.25);
+
+  /* Calendar tuning (config-driven) */
+  --calendar-button-scale: 0.75;
+  --calendar-card-density: 1.0;
 }
 
-/* ============================================================================
-   [CSS-1.1] Base
-   ========================================================================== */
+/* [CSS-2.0] Reset + base */
 * { box-sizing: border-box; }
-
-html, body {
+html, body { height: 100%; }
+body {
   margin: 0;
-  padding: 0;
-  background: var(--bg-main);
+  background: radial-gradient(1200px 600px at 30% 0%, #07102a 0%, var(--bg-main) 55%, #010208 100%);
   color: var(--text-main);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
-img {
-  max-width: 100%;
-  display: block;
-  border-radius: var(--radius-md);
-}
-
+/* [CSS-3.0] Common UI primitives */
 a { color: inherit; text-decoration: none; }
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
 
-/* ============================================================================
-   [CSS-2.0] Buttons (GLOBAL)
-   ========================================================================== */
-.btn {
-  display: inline-flex;
+.container {
+  width: min(1320px, calc(100% - 20px));
+  margin: 0 auto;
+  padding: 10px 0 28px;
+}
+
+.card {
+  background: rgba(9, 13, 28, 0.78);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.card.soft {
+  background: rgba(15, 19, 36, 0.65);
+}
+
+/* [CSS-4.0] Top header + view buttons */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 6px 10px;
-  font-size: 0.8rem;
-  line-height: 1.1;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
-  cursor: pointer;
-  user-select: none;
-}
-
-.btn:focus-visible {
-  outline: 2px solid var(--neon-blue);
-}
-
-.btn-outline {
-  background: transparent;
-  border-color: var(--border-subtle);
-}
-
-.btn-tmdb {
-  background: rgba(0,170,255,0.15);
-  border-color: var(--neon-blue);
-  color: var(--neon-blue);
-}
-
-.btn-watch {
-  background: rgba(170,0,255,0.18);
-  border-color: var(--neon-purple);
-  color: var(--neon-purple);
-}
-
-.btn-watch-alt {
-  background: rgba(255,0,170,0.18);
-  border-color: var(--neon-pink);
-  color: var(--neon-pink);
-}
-
-/* ============================================================================
-   [CSS-3.0] Top Bar / Header
-   ========================================================================== */
-.top-bar {
+  justify-content: space-between;
+  padding: 10px 12px;
   position: sticky;
   top: 0;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: linear-gradient(to bottom, #02040a 80%, transparent);
-}
+  z-index: 1200;
 
-.top-bar h1 {
-  font-size: 1.1rem;
-  margin: 0;
-}
-
-/* ============================================================================
-   [CSS-4.0] Calendar
-   ========================================================================== */
-.calendar-wrapper {
-  padding: 8px;
-}
-
-.calendar-header {
-  position: sticky;
-  top: 56px;
-  z-index: 40;
-  background: var(--bg-main);
-  padding-bottom: 6px;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-}
-
-.calendar-day {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 6px;
-  min-height: 110px;
-}
-
-.calendar-day.weekend {
-  background: rgba(255,170,0,0.05);
-}
-
-.calendar-day.today {
-  outline: 2px solid var(--neon-blue);
-}
-
-.calendar-day-number {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.calendar-card {
-  background: var(--bg-card-soft);
-  border-radius: var(--radius-md);
-  padding: 6px;
-  margin-top: 6px;
-  box-shadow: var(--shadow-soft);
-}
-
-/* Calendar card layout (requested redesign) */
-.calendar-card-grid {
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: 6px;
-}
-
-.calendar-card-title {
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.calendar-card-episode {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.calendar-card-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.calendar-episode-still {
-  aspect-ratio: 16 / 9;
-  overflow: hidden;
-}
-
-.calendar-card-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-/* ============================================================================
-   [CSS-5.0] Shows Grid
-   ========================================================================== */
-.shows-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  padding: 12px;
-}
-
-.show-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-soft);
-}
-
-.show-poster {
-  width: 100%;
-  aspect-ratio: 2 / 3;
-  object-fit: cover;
-}
-
-.show-card-body {
-  padding: 10px;
-}
-
-.show-card-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-.show-card-meta {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-}
-
-.show-card-buttons {
-  display: flex;
-  gap: 6px;
-  margin-top: 8px;
-}
-
-/* ============================================================================
-   [CSS-6.0] Show Page
-   ========================================================================== */
-.page-show .show-hero {
-  position: relative;
-}
-
-.show-hero-backdrop {
-  height: 220px;
-  background-size: cover;
-  background-position: center;
-  filter: brightness(0.5);
-}
-
-.show-hero-content {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 16px;
-  padding: 16px;
-  margin-top: -120px;
-}
-
-.show-poster {
-  box-shadow: var(--shadow-soft);
-}
-
-.show-meta .badge {
-  display: inline-block;
-  margin-bottom: 6px;
-}
-
-.seasons-container {
-  padding: 12px;
-}
-
-.season-card {
-  background: var(--bg-card);
-  border-radius: var(--radius-lg);
-  margin-bottom: 12px;
-}
-
-.season-header {
-  padding: 10px 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  /* Solid, non-weird transparency when scrolling */
+  background: rgba(5, 8, 20, 0.94);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.episode-list {
-  padding: 8px;
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.brand h1 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 950;
+  letter-spacing: 0.3px;
+}
+.brand .meta {
+  color: var(--text-muted);
+  font-size: 0.80rem;
+  font-weight: 700;
 }
 
-.episode-card {
+.view-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.view-btn {
+  border: 2px solid var(--border-subtle);
+  background: rgba(11, 18, 48, 0.65);
+  color: var(--text-main);
+  padding: 8px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  user-select: none;
+}
+
+.view-btn:hover {
+  background: rgba(15, 26, 69, 0.75);
+  border-color: rgba(159, 176, 214, 0.35);
+}
+
+/* Active view: background matches active “outline color” and outline is white */
+.view-btn.active {
+  background: var(--neon-blue);
+  color: #021018;
+  border-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+}
+
+.view-btn .ico {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+}
+
+/* [CSS-5.0] Buttons / links (unified) */
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 2px solid var(--border-subtle);
+
+  background: rgba(11, 18, 48, 0.65);
+  color: var(--text-main);
+  cursor: pointer;
+
+  font-weight: 950;
+  letter-spacing: 0.2px;
+  user-select: none;
+  line-height: 1.05;
+}
+
+.link-btn:hover {
+  filter: brightness(1.08);
+}
+
+.link-btn .stack {
+  display: grid;
+  grid-template-rows: auto auto;
+  gap: 2px;
+  text-align: center;
+}
+.link-btn .stack .top {
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+.link-btn .stack .bottom {
+  font-size: 0.86rem;
+  font-weight: 980;
+}
+
+/* Neon button variants (high-contrast filled) */
+.btn-tmdb {
+  border-color: rgba(255,255,255,0.22);
+  background: var(--neon-blue);
+  color: #021018;
+}
+.btn-videasy {
+  border-color: rgba(255,255,255,0.22);
+  background: var(--neon-purple);
+  color: #0b0012;
+}
+.btn-vidsrc {
+  border-color: rgba(255,255,255,0.22);
+  background: var(--neon-pink);
+  color: #12000a;
+}
+
+/* Disabled state (if used) */
+.link-btn[aria-disabled="true"],
+.link-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* [CSS-6.0] Calendar layout primitives */
+.calendar-wrap {
+  margin-top: 12px;
+}
+
+.calendar-section-title {
+  margin: 10px 0 8px;
+  font-weight: 950;
+  letter-spacing: 0.3px;
+  font-size: 1.02rem;
+}
+
+.calendar-subtitle {
+  margin: 0 0 10px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+/* Sticky day header (fix bleed / weird transparency) */
+.day-sticky {
+  position: sticky;
+  top: 58px; /* just under topbar */
+  z-index: 900;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(9, 13, 28, 0.92);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
+}
+
+.day-sticky .day-title {
+  margin: 0;
+  font-weight: 980;
+  letter-spacing: 0.25px;
+  font-size: 0.98rem;
+}
+
+/* [CSS-7.0] Calendar show card (compact, config-scaled) */
+.cal-item {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: calc(10px * var(--calendar-card-density));
+  padding: calc(8px * var(--calendar-card-density));
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(15, 19, 36, 0.55);
+  margin-bottom: calc(8px * var(--calendar-card-density));
+}
+
+.cal-item img {
+  width: 64px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+}
+
+.cal-item .cal-text { min-width: 0; }
+
+.cal-item .cal-title {
+  font-weight: 980;
+  font-size: 0.84rem;
+  line-height: 1.15;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.cal-item .cal-sub {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  line-height: 1.15;
+}
+
+.cal-item .cal-buttons {
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+}
+
+/* Make Calendar buttons smaller/tighter + scaled (25% less high) */
+.cal-item .cal-buttons .link-btn {
+  transform-origin: top left;
+  transform: scale(var(--calendar-button-scale));
+  padding: 6px 8px;
+  border-radius: 11px;
+}
+.cal-item .cal-buttons .link-btn .stack .top { font-size: 0.70rem; }
+.cal-item .cal-buttons .link-btn .stack .bottom { font-size: 0.78rem; }
+.cal-item .cal-buttons .link-btn .stack { gap: 1px; }
+
+/* [CSS-8.0] Shows grid/cards */
+.shows-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.show-card {
+  padding: 12px;
+}
+
+/* Reduce show image size in Shows view (targeted selectors; safe fallbacks) */
+.show-card .show-poster,
+.show-card .poster,
+.show-card img {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  object-fit: cover;
+
+  /* Smaller than before (about 25% more reduction vs typical tall posters) */
+  max-height: 240px;
+}
+
+/* If index.html uses aspect-ratio wrappers */
+.poster-frame {
+  width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0,0,0,0.25);
+}
+.poster-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* [CSS-9.0] Inline filter controls grouping (used by index.html if present) */
+.filters-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.filters-group {
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(15,19,36,0.45);
+}
+
+.filters-group h3 {
+  margin: 0 0 8px;
+  font-size: 0.90rem;
+  font-weight: 980;
+  letter-spacing: 0.2px;
+}
+
+.pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  border: 2px solid var(--border-subtle);
+  background: rgba(11, 18, 48, 0.55);
+  color: var(--text-main);
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.pill.active {
+  background: var(--neon-lime);
+  color: #0b1200;
+  border-color: #ffffff;
+}
+
+/* [CSS-10.0] Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  z-index: 2000;
+}
+
+.modal-overlay.open { display: flex; }
+
+.modal {
+  width: min(1200px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.modal-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(9, 13, 28, 0.92);
+  backdrop-filter: blur(10px);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-title { font-weight: 980; }
+
+.modal-close {
+  cursor: pointer;
+  border: 2px solid #ffffff;
+  background: transparent;
+  color: #ffffff;
+  border-radius: 12px;
+  padding: 6px 10px;
+  font-weight: 950;
+}
+
+.modal-body { padding: 12px; }
+
+/* [CSS-11.0] Show Page support (no inline styles; shared classes) */
+.show-shell {
+  width: min(1320px, calc(100% - 20px));
+  margin: 0 auto;
+  padding: 12px 0 28px;
+}
+
+.show-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: rgba(9, 13, 28, 0.78);
+  box-shadow: var(--shadow);
+}
+
+.show-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  filter: blur(0px);
+  opacity: 0.35;
+}
+
+.show-hero-content {
+  position: relative;
+  z-index: 2;
   display: grid;
   grid-template-columns: 160px 1fr;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.episode-card.watched {
-  opacity: 0.6;
-}
-
-.episode-info {
-  font-size: 0.8rem;
-}
-
-.ep-buttons {
-  display: flex;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-/* ============================================================================
-   [CSS-7.0] Footer
-   ========================================================================== */
-.page-footer {
-  text-align: center;
+  gap: 14px;
   padding: 12px;
-  font-size: 0.7rem;
+}
+
+.show-hero-poster {
+  width: 160px;
+  height: 240px;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0,0,0,0.25);
+}
+
+.show-hero-title {
+  margin: 0;
+  font-weight: 980;
+  letter-spacing: 0.3px;
+}
+
+.show-hero-meta {
+  margin-top: 6px;
   color: var(--text-muted);
+  font-weight: 750;
+  font-size: 0.88rem;
+}
+
+.show-hero-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.section-title {
+  margin: 16px 0 10px;
+  font-weight: 980;
+  letter-spacing: 0.25px;
+}
+
+.season-card {
+  margin-bottom: 10px;
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  background: rgba(15, 19, 36, 0.55);
+}
+
+.season-head {
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 12px;
+  align-items: start;
+}
+
+.season-poster {
+  width: 92px;
+  height: 138px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0,0,0,0.25);
+}
+
+.episode-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(38, 43, 58, 0.75);
+}
+
+.episode-row:first-child { border-top: none; }
+
+.episode-still {
+  width: 120px;
+  height: 68px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(0,0,0,0.25);
+}
+
+.episode-title {
+  margin: 0;
+  font-weight: 950;
+}
+
+.episode-meta {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 750;
+}
+
+.episode-actions {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* [CSS-12.0] Utility */
+.muted { color: var(--text-muted); }
+.hidden { display: none !important; }
+
+/* [CSS-13.0] Small screens */
+@media (max-width: 720px) {
+  .show-hero-content {
+    grid-template-columns: 1fr;
+  }
+  .show-hero-poster {
+    width: 100%;
+    height: 260px;
+  }
+  .episode-row {
+    grid-template-columns: 1fr;
+  }
+  .episode-still {
+    width: 100%;
+    height: 180px;
+  }
 }
