@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Watchlist – my_TV_Movie</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #05070b;
+      --bg-card: #12141c;
+      --bg-card-alt: #171a23;
+      --accent: #1e90ff;
+      --accent-soft: rgba(30, 144, 255, 0.15);
+      --text-main: #f7f9ff;
+      --text-muted: #a5adc4;
+      --border-subtle: #262a36;
+      --danger: #ff5c7a;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.6);
+      --shadow-light: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #15192a 0, #05070b 50%, #020308 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    .page {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 16px 16px 32px;
+    }
+
+    header.page-header {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 10px 18px;
+      margin-bottom: 16px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(90deg, rgba(11, 18, 40, 0.95), rgba(11, 27, 60, 0.95));
+      box-shadow: var(--shadow-soft);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+    }
+
+    .header-poster {
+      width: 60px;
+      min-height: 84px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: #05070b;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .header-poster img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .header-poster-placeholder {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 6px;
+      opacity: 0.8;
+    }
+
+    .header-main {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .header-title {
+      font-size: 1.15rem;
+      font-weight: 650;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(0, 0, 0, 0.3);
+      color: var(--text-muted);
+    }
+
+    /* Header "All watchlists" button */
+    .btn-header-link {
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      background: rgba(16, 24, 52, 0.95);
+      color: #e9efff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-header-link:hover {
+      filter: brightness(1.08);
+    }
+
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .card {
+      border-radius: var(--radius-lg);
+      background: radial-gradient(circle at top left, rgba(30, 144, 255, 0.18), transparent 50%),
+                  linear-gradient(145deg, var(--bg-card), var(--bg-card-alt));
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: var(--shadow-soft);
+      padding: 14px 16px 16px;
+    }
+
+    .card-header {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero {
+      /* was a 2-column grid; now just a simple block for text */
+      display: block;
+    }
+
+    /* hide duplicate poster + title inside SHOW OVERVIEW */
+    .hero-poster {
+      display: none;
+    }
+    .hero-title {
+      display: none;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .pill {
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(6, 10, 26, 0.9);
+    }
+
+    .text-main {
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: #dde3ff;
+      max-height: 8.5em;
+      overflow-y: auto;
+    }
+
+    .text-muted {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Collapsible info block */
+    details.info-block {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: linear-gradient(145deg, #0c0f19, #070811);
+      box-shadow: var(--shadow-light);
+      padding: 0;
+      overflow: hidden;
+    }
+
+    summary.info-summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    summary.info-summary::-webkit-details-marker { display: none; }
+
+    .info-summary-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .info-chevron {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      transition: transform 0.15s ease-out;
+    }
+
+    details.info-block[open] .info-chevron {
+      transform: rotate(90deg);
+    }
+
+    .info-body {
+      border-top: 1px solid var(--border-subtle);
+      padding: 8px 12px 10px;
+      background: rgba(0, 0, 0, 0.6);
+    }
+
+    .watch-tips-list {
+      font-size: 0.8rem;
+      line-height: 1.5;
+      padding-left: 18px;
+      margin: 0;
+      color: var(--text-muted);
+    }
+
+    .watch-tips-list li + li { margin-top: 4px; }
+
+    .seasons-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    details.season {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: radial-gradient(circle at top left, var(--accent-soft), transparent 55%),
+                  linear-gradient(145deg, #0c0f19, #070811);
+      overflow: hidden;
+      box-shadow: var(--shadow-light);
+    }
+
+    details.season > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    details.season > summary::-webkit-details-marker { display: none; }
+
+    .season-summary-main {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .season-thumb {
+      width: 60px;
+      min-height: 40px;
+      max-height: 70px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: #05070b;
+      flex-shrink: 0;
+    }
+
+    .season-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .season-summary-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .summary-title {
+      font-size: 0.9rem;
+    }
+
+    .summary-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .summary-chevron {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      transition: transform 0.15s ease-out;
+    }
+
+    details[open] .summary-chevron {
+      transform: rotate(90deg);
+    }
+
+    .season-body {
+      padding: 8px 10px 10px;
+      background: linear-gradient(180deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.9));
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    details.episode {
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(8, 11, 24, 0.9);
+    }
+
+    details.episode > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 7px 9px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+
+    details.episode > summary::-webkit-details-marker { display: none; }
+
+    .episode-summary-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .episode-title { font-weight: 550; }
+
+    .episode-sub-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .episode-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .episode-body {
+      padding: 8px 9px 9px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.8rem;
+    }
+
+    .episode-still {
+      border-radius: 8px;
+      overflow: hidden;
+      max-height: 160px;
+      margin-bottom: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .episode-still img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .episode-status {
+      font-size: 0.65rem;
+      padding: 1px 6px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .episode-status.released {
+      background: rgba(0, 255, 133, 0.18);
+      border: 1px solid rgba(0, 255, 133, 0.6);
+      color: #c8ffe3;
+    }
+
+    .episode-status.upcoming {
+      background: rgba(255, 165, 0, 0.18);
+      border: 1px solid rgba(255, 165, 0, 0.7);
+      color: #ffe1af;
+    }
+
+    .episode-actions-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .btn-watch {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(16, 24, 52, 0.95);
+      color: #e9efff;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .btn-watch span.icon { font-size: 0.8rem; }
+
+    .btn-watch.service-vidsrc {
+      border-color: rgba(0, 255, 133, 0.6);
+    }
+
+    .btn-watch.service-videasy {
+      border-color: rgba(255, 0, 153, 0.6);
+    }
+
+    .btn-watch.service-2embed {
+      border-color: rgba(255, 215, 0, 0.7);
+    }
+
+    .btn-watch.service-tmdb {
+      border-color: rgba(135, 206, 250, 0.7);
+    }
+
+    .status-message {
+      font-size: 0.8rem;
+      padding: 8px 10px;
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      color: var(--text-muted);
+    }
+
+    footer.page-footer {
+      margin-top: 10px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    .watchlist-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .watchlist-list-item {
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      background: rgba(8, 11, 24, 0.9);
+      padding: 8px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .watchlist-list-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.8rem;
+    }
+
+    .watchlist-list-title {
+      font-weight: 600;
+    }
+
+    .watchlist-list-sub {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .btn-open-watchlist {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: rgba(16, 24, 52, 0.95);
+      color: #e9efff;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 720px) {
+      header.page-header {
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .header-title {
+        white-space: normal;
+      }
+
+      .hero {
+        display: block;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header class="page-header">
+      <div class="header-poster" id="header-poster">
+        <div class="header-poster-placeholder">Poster</div>
+      </div>
+      <div class="header-main">
+        <div class="header-title" id="header-title">Loading watchlist…</div>
+        <div class="header-sub">
+          <span class="tag" id="header-tag-tmdb">TMDB: –</span>
+          <a class="btn-header-link" href="watchlist.html">All watchlists</a>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- SHOW OVERVIEW (text-only now) -->
+      <section class="card" id="hero-card">
+        <div class="card-header">
+          <span>Show overview</span>
+        </div>
+        <div class="hero">
+          <div class="hero-poster" id="hero-poster">
+            <!-- hidden via CSS, kept for future if needed -->
+          </div>
+          <div class="hero-meta">
+            <div class="hero-title" id="hero-title">Loading…</div>
+            <div class="pill-row" id="hero-pill-row"></div>
+            <div class="text-main" id="hero-overview"></div>
+            <div class="text-muted" id="hero-extra"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- WATCH TIPS -->
+      <section class="card" id="info-card">
+        <details class="info-block">
+          <summary class="info-summary">
+            <div class="info-summary-text">
+              <span>How this works (links, ads & subtitles)</span>
+            </div>
+            <span class="info-chevron">›</span>
+          </summary>
+          <div class="info-body">
+            <ul class="watch-tips-list">
+              <li>Episode buttons like <strong>“Watch on VidSrc”</strong>, <strong>“Watch on Videasy”</strong>, etc. open the video in a new tab.</li>
+              <li>Some sites will open 1–2 <strong>ad or redirect</strong> pages first. If this happens:
+                <ul>
+                  <li>Close the ad/redirect tab or window.</li>
+                  <li>Go back to this page and click the episode button again.</li>
+                  <li>Usually after the second ad/redirect, the real player starts.</li>
+                </ul>
+              </li>
+              <li>On the video player, look for the <strong>settings / sprocket icon</strong> in the bottom-right:
+                <ul>
+                  <li>Change subtitles/closed captions to your language or set them to <strong>“None”</strong>.</li>
+                </ul>
+              </li>
+              <li>If the player just says <strong>“Loading”</strong> for a long time, that usually means this episode has <strong>not been recorded/saved yet on that host</strong>. Try a <strong>backup link</strong> for that episode instead.</li>
+              <li>If things look wrong or confusing, just close the extra tabs/windows and return to this page.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- SEASONS + EPISODES / OR SHOW LIST -->
+      <section class="card">
+        <div class="card-header">
+          <span id="episodes-header-title">Season & episodes</span>
+          <span class="text-muted" id="season-summary-label"></span>
+        </div>
+        <div class="seasons-container" id="seasons-container">
+          <div class="status-message" id="status-message">Loading watchlist data…</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      Built with <span aria-hidden="true">📺</span> my_TV_Movie · Data from pre-built TMDB JSON
+    </footer>
+  </div>
+
+  <script>
+    const STATIC_CONFIG = {
+      dataUrl: "../data/data.json",
+      mapTxtUrl: "../watchlist_pages.txt"
+    };
+
+    const STREAMING_LABELS = {
+      vidsrc: "VidSrc",
+      videasy: "Videasy",
+      "2embed": "Embed",
+      tmdb: "TMDB"
+    };
+
+    function getSlugFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("slug");
+    }
+
+    function formatDate(iso) {
+      if (!iso) return "TBA";
+      const d = new Date(iso);
+      if (isNaN(d)) return iso;
+      return d.toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "short",
+        day: "numeric"
+      });
+    }
+
+    function makeSlug(title) {
+      return String(title || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "_")
+        .replace(/^_+|_+$/g, "");
+    }
+
+    // Parser for watchlist_pages.txt
+    function parseShowPagesTxt(text) {
+      const lines = text.split(/\r?\n/);
+      const map = {}; // slug -> { title, tmdbId, seasons }
+
+      for (let raw of lines) {
+        let line = raw.trim();
+        if (!line) continue;             // ignore blank
+        if (line.startsWith("#")) continue; // ignore comments
+
+        const parts = line.split("|").map(p => p.trim());
+        if (!parts[0]) continue;
+
+        const title = parts[0];
+        let tmdbId = null;
+        let seasons = "*";
+
+        if (parts.length >= 2 && parts[1]) {
+          const n = parseInt(parts[1], 10);
+          if (Number.isFinite(n)) tmdbId = n;
+        }
+        if (parts.length >= 3 && parts[2]) {
+          seasons = parts[2];
+        }
+
+        if (!tmdbId) continue;
+
+        const slug = makeSlug(title);
+        map[slug] = { title, tmdbId, seasons };
+      }
+
+      return map;
+    }
+
+    function normalizeSeasonsConfig(seasonsCfg, watchlist) {
+      const allSeasonNumbers = (watchlist.seasons || [])
+        .map(s => s.season_number)
+        .filter(n => Number.isFinite(n));
+
+      if (seasonsCfg === undefined || seasonsCfg === null) {
+        return allSeasonNumbers;
+      }
+
+      if (typeof seasonsCfg === "number") {
+        return [seasonsCfg];
+      }
+
+      if (Array.isArray(seasonsCfg)) {
+        const nums = seasonsCfg
+          .map(n => Number(n))
+          .filter(n => Number.isFinite(n));
+        return nums.length ? nums : allSeasonNumbers;
+      }
+
+      if (typeof seasonsCfg === "string") {
+        const trimmed = seasonsCfg.trim();
+        if (trimmed === "*") {
+          return allSeasonNumbers;
+        }
+        const nums = trimmed
+          .split(",")
+          .map(p => parseInt(p.trim(), 10))
+          .filter(n => Number.isFinite(n));
+        return nums.length ? nums : allSeasonNumbers;
+      }
+
+      return allSeasonNumbers;
+    }
+
+    function normalizeStreamingUrl(url, key) {
+      if (!url) return url;
+      const lowerKey = String(key || "").toLowerCase();
+      let u = url;
+
+      if (lowerKey === "vidsrc") {
+        u = u.replace("vidsrc.to/", "vidsrc.net/");
+      }
+
+      if (lowerKey === "videasy") {
+        const marker = "videasy.org/embed/tv/";
+        const idx = u.indexOf(marker);
+        if (idx !== -1) {
+          const rest = u.substring(idx + marker.length);
+          u = "https://player.videasy.net/tv/" + rest;
+        }
+      }
+
+      return u;
+    }
+
+    function buildHero(watchlist, primarySeason, cfg) {
+      const titleEl = document.getElementById("hero-title");
+      const headerTitleEl = document.getElementById("header-title");
+      const tagTmdbEl = document.getElementById("header-tag-tmdb");
+      const overviewEl = document.getElementById("hero-overview");
+      const extraEl = document.getElementById("hero-extra");
+      const pillRowEl = document.getElementById("hero-pill-row");
+      const posterEl = document.getElementById("hero-poster");
+      const headerPosterEl = document.getElementById("header-poster");
+
+      const year = watchlist.first_air_date ? new Date(watchlist.first_air_date).getFullYear() : "–";
+      const titleText = `${watchlist.name || cfg.title || "Untitled"} (${year})`;
+
+      // visible title only in header
+      titleEl.textContent = titleText;
+      headerTitleEl.textContent = titleText;
+
+      document.title = `${watchlist.name || cfg.title || "Show"} · my_TV_Movie`;
+
+      tagTmdbEl.textContent = `TMDB: ${watchlist.tmdb_id ?? cfg.tmdbId}`;
+
+      overviewEl.textContent = watchlist.overview || "Overview not available yet.";
+
+      const extraParts = [];
+      if (watchlist.status) extraParts.push(watchlist.status);
+      if (watchlist.first_air_date) extraParts.push(`First aired: ${formatDate(watchlist.first_air_date)}`);
+      if (primarySeason && primarySeason.air_date) {
+        extraParts.push(
+          `Current view starts at Season ${primarySeason.season_number} (${formatDate(primarySeason.air_date)})`
+        );
+      }
+      extraEl.textContent = extraParts.join(" · ");
+
+      pillRowEl.innerHTML = "";
+      (watchlist.genres || []).forEach(g => {
+        const span = document.createElement("span");
+        span.className = "pill";
+        span.textContent = g;
+        pillRowEl.appendChild(span);
+      });
+      (watchlist.networks || []).forEach(nw => {
+        const span = document.createElement("span");
+        span.className = "pill";
+        span.textContent = nw;
+        pillRowEl.appendChild(span);
+      });
+
+      // header poster only (hero poster stays hidden)
+      posterEl.innerHTML = "";
+      headerPosterEl.innerHTML = "";
+
+      if (watchlist.poster_path) {
+        const imgHeader = document.createElement("img");
+        imgHeader.alt = `${watchlist.name} poster`;
+        imgHeader.src = `https://image.tmdb.org/t/p/w185${watchlist.poster_path}`;
+        headerPosterEl.appendChild(imgHeader);
+      } else {
+        const divHeader = document.createElement("div");
+        divHeader.className = "header-poster-placeholder";
+        divHeader.textContent = "Poster";
+        headerPosterEl.appendChild(divHeader);
+      }
+    }
+
+    function handleWatchClick(event, url) {
+      if (!url || typeof url !== "string" || !/^https?:\/\//i.test(url)) {
+        event.preventDefault();
+        alert("This streaming link does not look valid yet. Please try a different host or episode.");
+      }
+    }
+
+    function buildSeasonBlock(season, container, openByDefault) {
+      const seasonDetails = document.createElement("details");
+      seasonDetails.className = "season";
+      seasonDetails.open = !!openByDefault;
+
+      const summary = document.createElement("summary");
+
+      const seasonMain = document.createElement("div");
+      seasonMain.className = "season-summary-main";
+
+      const thumb = document.createElement("div");
+      thumb.className = "season-thumb";
+      if (season.poster_path) {
+        const img = document.createElement("img");
+        img.alt = `${season.name || "Season"} poster`;
+        img.src = `https://image.tmdb.org/t/p/w185${season.poster_path}`;
+        thumb.appendChild(img);
+      } else {
+        const placeholder = document.createElement("div");
+        placeholder.style.fontSize = "0.65rem";
+        placeholder.style.color = "var(--text-muted)";
+        placeholder.style.padding = "4px";
+        placeholder.textContent = "No image";
+        thumb.appendChild(placeholder);
+      }
+
+      const seasonText = document.createElement("div");
+      seasonText.className = "season-summary-text";
+
+      const title = document.createElement("div");
+      title.className = "summary-title";
+      title.textContent = season.name || `Season ${season.season_number}`;
+
+      const sub = document.createElement("div");
+      sub.className = "summary-sub";
+      const airText = season.air_date ? `Since ${formatDate(season.air_date)}` : "Air date TBA";
+      const epCount = season.episode_count ?? (season.episodes || []).length;
+      sub.textContent = `${epCount || 0} episodes · ${airText}`;
+
+      seasonText.appendChild(title);
+      seasonText.appendChild(sub);
+
+      seasonMain.appendChild(thumb);
+      seasonMain.appendChild(seasonText);
+
+      const chevron = document.createElement("div");
+      chevron.className = "summary-chevron";
+      chevron.textContent = "›";
+
+      summary.appendChild(seasonMain);
+      summary.appendChild(chevron);
+
+      const body = document.createElement("div");
+      body.className = "season-body";
+
+      const now = new Date();
+
+      (season.episodes || []).forEach(ep => {
+        const epDetails = document.createElement("details");
+        epDetails.className = "episode";
+
+        const epSummary = document.createElement("summary");
+        const epMain = document.createElement("div");
+        epMain.className = "episode-summary-main";
+
+        const epTitle = document.createElement("div");
+        epTitle.className = "episode-title";
+        epTitle.textContent = `S${season.season_number}E${ep.episode_number} · ${ep.name || "Untitled"}`;
+
+        const epSubRow = document.createElement("div");
+        epSubRow.className = "episode-sub-row";
+
+        const epSubText = document.createElement("div");
+        epSubText.className = "episode-sub";
+        const pieces = [];
+        if (ep.air_date) pieces.push(formatDate(ep.air_date));
+        if (ep.runtime) pieces.push(`${ep.runtime} min`);
+        epSubText.textContent = pieces.length ? pieces.join(" · ") : "Details coming soon";
+
+        let status = "released";
+        if (ep.air_date) {
+          const airDate = new Date(ep.air_date);
+          if (!isNaN(airDate) && airDate > now) {
+            status = "upcoming";
+          }
+        }
+        const statusBadge = document.createElement("span");
+        statusBadge.className = "episode-status " + (status === "upcoming" ? "upcoming" : "released");
+        statusBadge.textContent = status === "upcoming" ? "UPCOMING" : "RELEASED";
+
+        epSubRow.appendChild(epSubText);
+        epSubRow.appendChild(statusBadge);
+
+        const links = (ep.links || {});
+        const linkKeys = Object.keys(links).filter(k => links[k]);
+        if (linkKeys.length) {
+          const actionsSummary = document.createElement("div");
+          actionsSummary.className = "episode-actions-inline";
+
+          linkKeys.forEach(key => {
+            let url = links[key];
+            url = normalizeStreamingUrl(url, key);
+            const label = STREAMING_LABELS[key] || key;
+            const buttonText = key === "tmdb"
+              ? `Info on ${label}`
+              : `Watch on ${label}`;
+            const a = document.createElement("a");
+            a.href = url;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.className = "btn-watch service-" + key.toLowerCase();
+            a.innerHTML = `<span class="icon">▶</span><span>${buttonText}</span>`;
+            a.addEventListener("click", function (e) {
+              handleWatchClick(e, url);
+            });
+            actionsSummary.appendChild(a);
+          });
+
+          epSubRow.appendChild(actionsSummary);
+        }
+
+        epMain.appendChild(epTitle);
+        epMain.appendChild(epSubRow);
+
+        const epChevron = document.createElement("div");
+        epChevron.className = "summary-chevron";
+        epChevron.textContent = "›";
+
+        epSummary.appendChild(epMain);
+        epSummary.appendChild(epChevron);
+
+        const epBody = document.createElement("div");
+        epBody.className = "episode-body";
+
+        if (ep.still_path) {
+          const stillWrap = document.createElement("div");
+          stillWrap.className = "episode-still";
+          const stillImg = document.createElement("img");
+          stillImg.src = `https://image.tmdb.org/t/p/w300${ep.still_path}`;
+          stillImg.alt = `${ep.name || "Episode"} still`;
+          stillWrap.appendChild(stillImg);
+          epBody.appendChild(stillWrap);
+        }
+
+        const epOverview = document.createElement("div");
+        epOverview.textContent = ep.overview || "Overview not available yet.";
+        epBody.appendChild(epOverview);
+
+        const epMeta = document.createElement("div");
+        epMeta.className = "text-muted";
+        const epMetaParts = [];
+        epMetaParts.push(`Season ${season.season_number}, Episode ${ep.episode_number}`);
+        if (ep.air_date) epMetaParts.push(`Air date: ${formatDate(ep.air_date)}`);
+        if (ep.runtime) epMetaParts.push(`Runtime: ${ep.runtime} min`);
+        epMeta.textContent = epMetaParts.join(" · ");
+        epBody.appendChild(epMeta);
+
+        epDetails.appendChild(epSummary);
+        epDetails.appendChild(epBody);
+        body.appendChild(epDetails);
+      });
+
+      seasonDetails.appendChild(summary);
+      seasonDetails.appendChild(body);
+      container.appendChild(seasonDetails);
+    }
+
+    function buildSeasons(watchlist, seasonsToRender) {
+      const container = document.getElementById("seasons-container");
+      const labelEl = document.getElementById("season-summary-label");
+
+      container.innerHTML = "";
+
+      if (!seasonsToRender.length) {
+        const msg = document.createElement("div");
+          msg.className = "status-message";
+          msg.textContent = "No seasons found for this configuration.";
+          container.appendChild(msg);
+          labelEl.textContent = "";
+          return;
+      }
+
+      seasonsToRender.sort((a, b) => a.season_number - b.season_number);
+
+      const latestSeasonNumber = seasonsToRender.reduce(
+        (max, s) => Math.max(max, s.season_number),
+        0
+      );
+
+      let totalEpisodes = 0;
+      seasonsToRender.forEach(season => {
+        const epCount = season.episode_count ?? (season.episodes || []).length;
+        totalEpisodes += (epCount || 0);
+        const openByDefault = season.season_number === latestSeasonNumber;
+        buildSeasonBlock(season, container, openByDefault);
+      });
+
+      if (seasonsToRender.length === 1) {
+        const s = seasonsToRender[0];
+        const epCount = s.episode_count ?? (s.episodes || []).length;
+        labelEl.textContent = `Season ${s.season_number} · ${epCount || 0} episodes`;
+      } else {
+        const nums = seasonsToRender.map(s => s.season_number).join(", ");
+        labelEl.textContent = `${seasonsToRender.length} seasons (${nums}) · ${totalEpisodes} episodes`;
+      }
+    }
+
+    function describeSeasonsConfig(seasonsCfg) {
+      if (seasonsCfg === undefined || seasonsCfg === null) return "all";
+      if (typeof seasonsCfg === "number") return String(seasonsCfg);
+      if (Array.isArray(seasonsCfg)) return seasonsCfg.join(", ");
+      if (typeof seasonsCfg === "string") return seasonsCfg.trim() || "all";
+      return "all";
+    }
+
+    async function renderShowList(map) {
+      const headerTitle = document.getElementById("header-title");
+      const tagTmdb = document.getElementById("header-tag-tmdb");
+      const heroCard = document.getElementById("hero-card");
+      const infoCard = document.getElementById("info-card");
+      const episodesHeaderTitle = document.getElementById("episodes-header-title");
+      const seasonSummaryLabel = document.getElementById("season-summary-label");
+      const statusEl = document.getElementById("status-message");
+      const container = document.getElementById("seasons-container");
+
+      headerTitle.textContent = "Available watchlists";
+      document.title = "Available watchlists · my_TV_Movie";
+      tagTmdb.textContent = "Show index";
+
+      const headerPosterEl = document.getElementById("header-poster");
+      headerPosterEl.innerHTML = '<div class="header-poster-placeholder">Shows</div>';
+
+      heroCard.style.display = "none";
+      infoCard.style.display = "none";
+
+      episodesHeaderTitle.textContent = "Available watchlists";
+      seasonSummaryLabel.textContent = "";
+
+      try {
+        const dataRes = await fetch(STATIC_CONFIG.dataUrl, { cache: "no-store" });
+        if (!dataRes.ok) throw new Error("data.json HTTP " + dataRes.status);
+        const data = await dataRes.json();
+        const watchlists = data.watchlists || [];
+
+        container.innerHTML = "";
+
+        const list = document.createElement("div");
+        list.className = "watchlist-list";
+
+        const slugs = Object.keys(map);
+        if (!slugs.length) {
+          const msg = document.createElement("div");
+          msg.className = "status-message";
+          msg.textContent = "No watchlists are defined in watchlist_pages.txt yet.";
+          container.appendChild(msg);
+          return;
+        }
+
+        slugs.forEach(slugKey => {
+          const cfg = map[slugKey];
+          const tmdbId = cfg.tmdbId;
+          const watchlist = watchlists.find(
+            s => s.tmdb_id === tmdbId || s.watchlist_id === tmdbId
+          );
+
+          const item = document.createElement("div");
+          item.className = "watchlist-list-item";
+
+          const main = document.createElement("div");
+          main.className = "watchlist-list-main";
+
+          const title = document.createElement("div");
+          title.className = "watchlist-list-title";
+          if (watchlist) {
+            const year = watchlist.first_air_date
+              ? new Date(watchlist.first_air_date).getFullYear()
+              : "–";
+            title.textContent = `${watchlist.name || cfg.title || "Untitled"} (${year})`;
+          } else {
+            title.textContent = `${cfg.title || "Unknown title"} (TMDB ${tmdbId})`;
+          }
+
+          const sub = document.createElement("div");
+          sub.className = "watchlist-list-sub";
+          const seasonsDesc = describeSeasonsConfig(cfg.seasons);
+          sub.textContent = `Slug: ${slugKey} · TMDB: ${tmdbId} · Seasons: ${seasonsDesc}`;
+
+          main.appendChild(title);
+          main.appendChild(sub);
+
+          const link = document.createElement("a");
+          link.className = "btn-open-watchlist";
+          link.href = `./watchlist.html?slug=${encodeURIComponent(slugKey)}`;
+          link.textContent = "Open watchlist page";
+
+          item.appendChild(main);
+          item.appendChild(link);
+          list.appendChild(item);
+        });
+
+        container.appendChild(list);
+      } catch (err) {
+        console.error("Error loading watchlist list:", err);
+        statusEl.textContent =
+          "Could not load the list of watchlists. Please try again later.";
+      }
+    }
+
+    async function init() {
+      const statusEl = document.getElementById("status-message");
+      const slug = getSlugFromUrl();
+
+      try {
+        const mapRes = await fetch(STATIC_CONFIG.mapTxtUrl, { cache: "no-store" });
+        if (!mapRes.ok) {
+          throw new Error("watchlist_pages.txt HTTP " + mapRes.status);
+        }
+        const txt = await mapRes.text();
+        const map = parseShowPagesTxt(txt);
+
+        if (!slug) {
+          await renderShowList(map);
+          return;
+        }
+
+        let cfg = map[slug];
+
+        if (!cfg) {
+          const asNumber = Number(slug);
+          if (Number.isFinite(asNumber) && asNumber > 0) {
+            cfg = { title: null, tmdbId: asNumber, seasons: "*" };
+          }
+        }
+
+        if (!cfg) {
+          statusEl.textContent =
+            `Show slug "${slug}" is not defined in watchlist_pages.txt and is not a numeric TMDB id.`;
+          return;
+        }
+
+        const effectiveCfg = {
+          title: cfg.title,
+          tmdbId: cfg.tmdbId,
+          seasons: cfg.seasons,
+          dataUrl: STATIC_CONFIG.dataUrl
+        };
+
+        const res = await fetch(effectiveCfg.dataUrl, { cache: "no-store" });
+        if (!res.ok) {
+          throw new Error("data.json HTTP " + res.status);
+        }
+        const data = await res.json();
+
+        const watchlists = data.watchlists || [];
+        const watchlist = watchlists.find(
+          s => s.tmdb_id === effectiveCfg.tmdbId || s.watchlist_id === effectiveCfg.tmdbId
+        );
+
+        if (!watchlist) {
+          statusEl.textContent =
+            `Show with TMDB ID ${effectiveCfg.tmdbId} was not found in data.json.`;
+          return;
+        }
+
+        const seasonNumbers = normalizeSeasonsConfig(effectiveCfg.seasons, watchlist);
+        const allSeasons = watchlist.seasons || [];
+        const seasonsToRender = allSeasons.filter(s =>
+          seasonNumbers.includes(s.season_number)
+        );
+
+        const primarySeason = seasonsToRender[0] || allSeasons[0] || null;
+
+        buildHero(watchlist, primarySeason, effectiveCfg);
+        buildSeasons(watchlist, seasonsToRender);
+      } catch (err) {
+        console.error("Error loading watchlist page:", err);
+        statusEl.textContent =
+          "Could not load watchlist data. Please try again later.";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>
