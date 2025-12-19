@@ -1,0 +1,843 @@
+ DO NOT TREAT AS A FILE
+ 
+ Here are the prompt reponse to the provided prompts:
+i finally got it done, as it was sloe to reponde and teh browser kept hanging.
+✅ PROMPT 1 — Extract ALL Missing Requirements (High Precision)
+Below is a strict, exhaustive BULLET LIST of EVERY requirement, rule, constraint, behavior, data field, UI element, UX rule, popup rule, rendering rule, workflow rule, script rule, versioning rule, metadata rule, file-integrity rule, and non-negotiable constraint that appears anywhere in this thread but was NOT included in the previous GAP ANALYSIS.
+No merging. No paraphrasing. No summarizing. No re-ordering for elegance.
+Each bullet represents a distinct missing item.
+ Mandatory confirmation phrase must be stated verbatim before any code generation:
+  “Confirmed. I will follow the strict development protocol.”
+ Assistant must wait for explicit user instruction after confirmation before producing code.
+ Assistant must never proceed autonomously, even if the next step seems obvious.
+ GLOBAL / PROCESS / CONTROL
+ User-driven sequencing via explicit “Next” command is mandatory.
+ Assistant must stop output immediately after one file and wait for “Next”.
+ Assistant must never assume permission to continue.
+ Assistant must never “chain” file outputs in one response.
+ Assistant must never pre-emptively analyze future files while outputting a current file.
+ Assistant must never output advisory commentary alongside files.
+ Assistant must never output summaries or explanations unless explicitly asked.
+ Assistant must never justify design decisions unless explicitly asked.
+ Assistant must never argue constraints or attempt negotiation.
+ FILE INTEGRITY (ADDITIONAL DETAILS OMITTED)
+ Assistant must never output partial files even temporarily.
+ Assistant must never output placeholder logic.
+ Assistant must never output TODO markers.
+ Assistant must never output stub functions.
+ Assistant must never output commented-out functional blocks as replacements.
+ Assistant must never delete or collapse whitespace that affects DPAD focus order.
+ Assistant must never reorder functions unless explicitly instructed.
+ Assistant must preserve original ordering of script sections.
+ Assistant must preserve original ordering of HTML sections.
+ Assistant must preserve original ordering of CSS blocks.
+ VERSIONING & METADATA (ADDITIONAL DETAILS OMITTED)
+ Header must exist before any code, not after imports or tags.
+ Header must be the first content in the file.
+ Header must use consistent casing for all tags.
+ Header must use square-bracket tag format exactly as specified.
+ Header must include [FILE] absolute repo-relative path.
+ Header must include [PROJECT] literal string: “my_TV_Movie (My TV Hub)”.
+ Header must include [ROLE] written in functional terms, not generic.
+ Header must include [VERSION] semantic version only.
+ Header must include [UPDATED] timestamp including seconds.
+ Header must include [BUILD] monotonically increasing tag.
+ Header must include [NOTES] section even if empty.
+ Header must never be duplicated elsewhere in the file.
+ Header must never be altered without incrementing BUILD.
+ Header must never be copied between files without modification.
+ ARCHIVE / RECOVERY
+ Manual archiving of prior file versions is now a required mitigation strategy.
+ Assistant must assume archived files may be used for rollback.
+ Assistant must never dismiss archived versions as obsolete.
+ Assistant must treat archived versions as authoritative references if newer versions regress.
+ ARCHITECTURE / RENDERING PIPELINE (ADDITIONAL)
+ Static-site limitation of GitHub Pages is a hard architectural constraint.
+ All dynamic behavior must be pre-computed.
+ No runtime API calls from the browser are allowed.
+ No runtime mutation of data.json is allowed.
+ Rendering pipeline must be deterministic.
+ Rendering pipeline must be single-source-of-truth driven by data.json.
+ UI must never infer missing data fields.
+ UI must never compute fallback links.
+ UI must never compute fallback image paths.
+ UI must never compute fallback IDs.
+ DATA MODEL (ADDITIONAL)
+ data.json must never be empty after a successful workflow.
+ data.json must never be overwritten with partial content.
+ data.json must preserve existing valid entries on partial script failure.
+ data.json schema must be forward-compatible.
+ data.json must include both remote and local image paths.
+ data.json must include normalized streaming links only.
+ data.json must include explicit flags for missing assets.
+ data.json must include stable IDs used by UI routing.
+ data.json must preserve ordering used by calendar rendering.
+ CALENDAR VIEW (ADDITIONAL)
+ Calendar month header must appear exactly once.
+ Calendar duplication is a regression condition.
+ Calendar cards must never render without images.
+ Calendar cards must respect calendar-specific sizing rules.
+ Calendar cards must include icon strip.
+ Calendar cards must include runtime where available.
+ Calendar cards must support DPAD navigation.
+ Calendar cards must not collapse spacing dynamically.
+ SHOWS VIEW (ADDITIONAL)
+ Shows view must preserve alphabetical ordering rules.
+ Shows view must preserve filter state across navigation.
+ Shows view must reuse season/episode card components.
+ Shows view must not duplicate layout logic.
+ Shows view must display TMDB ID suffix.
+ Shows view must display runtime.
+ Shows view must display streaming icons consistently.
+ MOVIES VIEW (ADDITIONAL)
+ Movies view must preserve poster aspect ratios.
+ Movies view must not reuse show-specific layouts.
+ Movies view must include icon strip.
+ Movies view must include runtime.
+ Movies view must include streaming links from data.json only.
+ Movies view must support DPAD navigation identically to Shows view.
+ LIVE TV VIEW (ADDITIONAL)
+ Live TV tab must always exist even if data source is empty.
+ Live TV tab must never hard-fail workflow.
+ Live TV view must render placeholder state.
+ Live TV data source is optional but UI surface is mandatory.
+ Live TV list filename is fixed and standardized.
+ Live TV missing file must log warning, not error.
+ CONFIG VIEW (ADDITIONAL)
+ Config tab must exist in navigation.
+ Config tab must expose current data build metadata.
+ Config tab must expose configuration values.
+ Config tab must not mutate data.json directly.
+ Config tab must be read-only unless explicitly enabled.
+ Config tab must expose image sizing parameters.
+ Config tab must expose streaming base URLs.
+ Config tab must expose service names.
+ Config tab must expose cache settings.
+ Config tab must not break static-site constraints.
+ POPUPS (ADDITIONAL)
+ Popups must reuse card layouts from parent views.
+ Popups must include icon strip.
+ Popups must include runtime.
+ Popups must include TMDB ID suffix.
+ Popups must preserve focus when opened.
+ Popups must restore focus when closed.
+ Popups must isolate scroll context.
+ Popups must not affect background layout.
+ Popups must not re-render underlying views.
+ ICON STRIPS / LOGOS (ADDITIONAL)
+ Icon strip ordering is fixed and universal.
+ Icon strip must appear on cards and popups.
+ Icon strip must never be conditionally omitted.
+ Logo mapping must be config-driven.
+ Logo mapping must be deterministic.
+ Missing logos must render fallback placeholder.
+ Logo resolution must not vary by view.
+ POSTER / BACKDROP / IMAGE CACHING (ADDITIONAL)
+ Local image caching is mandatory.
+ Scripts must download only missing images.
+ Scripts must not re-download existing images.
+ Scripts must preserve previously cached images.
+ UI must always prefer local images.
+ Remote images are fallback only.
+ Image paths must be written to data.json explicitly.
+ Image sizing rules differ by view and must be preserved.
+ STREAMING LINKS (ADDITIONAL)
+ No hard-coded streaming domains in UI.
+ Streaming base URLs must be configurable.
+ Streaming links must be normalized in scripts.
+ Streaming links must be per-episode where applicable.
+ Streaming links must be written to data.json.
+ UI must not construct streaming URLs.
+ SCRIPTS (ADDITIONAL)
+ Scripts must validate input lists before execution.
+ Scripts must not exit hard on optional inputs.
+ Scripts must log structured errors.
+ Scripts must perform atomic writes.
+ Scripts must schema-validate output before overwrite.
+ Scripts must not delete prior valid data on failure.
+ Scripts must coordinate with workflow expectations.
+ WORKFLOW (ADDITIONAL)
+ Workflow must validate presence of required input files.
+ Workflow must tolerate optional input files.
+ Workflow must fail on empty data.json.
+ Workflow must fail on schema mismatch.
+ Workflow must prevent silent success.
+ Workflow must log explicit failure reasons.
+ Workflow must trigger on config changes.
+ Workflow must guard against regression commits.
+ DPAD / ACCESSIBILITY (ADDITIONAL)
+ Explicit DPAD focus order is mandatory.
+ No focus traps allowed.
+ DPAD behavior must match keyboard behavior.
+ DPAD navigation must work on TV remotes.
+ Focus must never be lost on popup open/close.
+ Focus must be predictable and stable.
+ NEURODIVERGENT-FRIENDLY UX (ADDITIONAL)
+ Dense but readable layouts are mandatory.
+ Spacing must be consistent and predictable.
+ No surprise UI changes allowed.
+ No disappearing controls allowed.
+ No context loss allowed during navigation.
+ No animation-induced confusion allowed.
+ ERROR HANDLING (ADDITIONAL)
+ Errors must be user-readable.
+ Errors must reference specific missing data.
+ Errors must never be generic.
+ Errors must not crash UI.
+ Errors must not break navigation.
+ Errors must not hide other UI elements.
+ NON-NEGOTIABLE CONSTRAINTS (ADDITIONAL)
+ Design documents always override assistant assumptions.
+ Any regression is a failure condition.
+ Fixes must always be maximal, never minimal.
+ Dropping features is forbidden.
+ Restoring dropped features is mandatory.
+ Assistant must never “improve” architecture.
+ Assistant must never invent new structures.
+ Assistant must never change routing model.
+This list contains only items that were omitted from the previous GAP ANALYSIS and that explicitly appear somewhere in this thread.
+✅ PROMPT 2 — Extract ALL Implicit Rules (Things ChatGPT Often Ignores)
+Below is a strict BULLET LIST of implicit rules, expectations, and constraints stated or enforced by the user that were NOT included in the prior GAP ANALYSIS, but are clearly present throughout this thread.
+Only implicit rules. No summaries. No merging. No paraphrasing beyond clarity. No omissions.
+ No feature drops are ever acceptable, even temporarily.
+ No partial files are ever acceptable at any stage.
+ No “minimum fix” mindset is acceptable; fixes must be maximal and complete.
+ No speculative fixes are acceptable.
+ No “best effort” or “good enough” outputs are acceptable.
+ No architectural invention is allowed under any circumstances.
+ No architectural simplification is allowed.
+ No refactoring for cleanliness or elegance is allowed unless explicitly requested.
+ No renaming of files, functions, variables, IDs, or keys is allowed.
+ No reordering of logic blocks is allowed.
+ No removal of legacy logic is allowed unless explicitly instructed.
+ No overwriting of working code is allowed.
+ No replacing large files with shorter “clean” versions is allowed.
+ No collapsing multi-hundred-line files into smaller ones is allowed.
+ No loss of previously working behavior is acceptable.
+ No regression, even cosmetic, is acceptable.
+ No assumptions about “unused” code being safe to remove are allowed.
+ No guessing about user intent is allowed.
+ No extrapolation beyond explicit instructions is allowed.
+ No cross-contamination between files is allowed.
+ No shared logic moved between files unless instructed.
+ No inline CSS replacing existing CSS files is allowed.
+ No moving logic between JS, HTML, and Python layers unless instructed.
+ No UI resets are allowed.
+ No layout resets are allowed.
+ No loss of spacing, density, or card sizing is allowed.
+ No removal of sticky headers is allowed.
+ No removal of filters is allowed.
+ No removal of tabs (Calendar, Shows, Movies, Live TV, Config) is allowed.
+ No hiding of tabs based on data presence is allowed.
+ No removal of Live TV tab even if data is missing.
+ No removal of Config tab under any condition.
+ No missing popups are allowed (Show, Season, Episode, Movie).
+ No popup behavior changes are allowed.
+ No popup layout changes are allowed.
+ No popup navigation regressions are allowed.
+ No popup focus regressions are allowed.
+ No missing icon strips are allowed anywhere.
+ No icon strip inconsistencies across views are allowed.
+ No hard-coded streaming domains are allowed in UI files.
+ No streaming URL construction in UI code is allowed.
+ No missing streaming links where they previously existed is allowed.
+ No missing TMDB ID suffixes is allowed.
+ No missing runtime display is allowed.
+ No missing service logos is allowed.
+ No missing logo mappings is allowed.
+ No silent fallback behavior is allowed.
+ No missing poster images is allowed when previously present.
+ No missing backdrop usage when previously present is allowed.
+ No remote image preference over local cached images is allowed.
+ No re-downloading images that already exist is allowed.
+ No missing local__path fields in data.json is allowed.
+ No UI guessing of image paths is allowed.
+ No UI guessing of data fields is allowed.
+ No schema drift in data.json is allowed.
+ No data.json overwrites with empty or partial content is allowed.
+ No scripts exiting hard on optional inputs is allowed.
+ No scripts failing silently is allowed.
+ No scripts deleting prior valid data on failure is allowed.
+ No workflows failing without explicit error messaging is allowed.
+ No workflows exiting due to optional file absence is allowed.
+ No workflows producing empty outputs is allowed.
+ No workflows committing broken data is allowed.
+ No workflows running without guardrails is allowed.
+ No workflows ignoring config changes is allowed.
+ No workflows masking script failures is allowed.
+ No missing version headers is allowed.
+ No missing UPDATED timestamps is allowed.
+ No missing BUILD tags is allowed.
+ No reuse of the same (VERSION + UPDATED + BUILD) triple is allowed.
+ No version number reuse across divergent files is allowed.
+ No headers that do not match file contents are allowed.
+ No ambiguity about which version is authoritative is allowed.
+ No inconsistent header formats across files is allowed.
+ No deviation from the approved header structure is allowed.
+ No DPAD navigation regressions are allowed.
+ No loss of DPAD focus order is allowed.
+ No unpredictable focus behavior is allowed.
+ No neurodivergent-hostile UI changes are allowed.
+ No surprise UI behavior is allowed.
+ No sudden layout changes are allowed.
+ No context loss during navigation is allowed.
+ No explanations instead of code when code is requested is allowed.
+ No analysis instead of deliverables is allowed when deliverables are requested.
+ No delays caused by “discussion phases” are allowed once execution is requested.
+ No deviation from the user-defined process control (“Next”) is allowed.
+ No batching of multiple files in one response is allowed.
+ No continuing without explicit permission is allowed.
+ No ignoring user frustration signals is allowed.
+ No repeating already-failed approaches is allowed.
+ No circular iteration is acceptable.
+ No erosion of trust through inconsistent outputs is acceptable.
+ No failure to treat this as a production-grade system is acceptable.
+This list reflects implicit, enforced behavioral constraints the user has applied repeatedly throughout the thread and expects to be honored without needing to restate them again.
+✅ PROMPT 3 — Extract ALL Data Model Fields Mentioned in the Thread
+Below is a strict, exhaustive BULLET LIST of EVERY UI component, element, widget, filter, popup, card, header, footer, icon, logo, or layout element mentioned ANYWHERE in this thread.
+No summarization.
+No merging.
+No simplification.
+No inferred components beyond what is explicitly referenced.
+Duplicates are preserved if referenced in different contexts.
+ App shell
+ Single Page Application (SPA) shell
+ Main application container
+ Root layout container
+ Global header
+ Sticky global header
+ Sticky sub-header
+ Header title block
+ Header navigation bar
+ Header icon strip
+ Header runtime display
+ Header metadata display
+ Global navigation
+ Tab navigation
+ Calendar tab
+ Shows tab
+ Movies tab
+ Live TV tab
+ Config tab
+ Active tab highlight
+ Navigation focus indicator
+ DPAD navigation focus ring
+ DPAD focus zones
+ DPAD up/down navigation
+ DPAD left/right navigation
+ DPAD select/enter action
+ DPAD back action
+ Calendar view
+ Calendar layout grid
+ Calendar day cards
+ Calendar episode cards
+ Calendar month header
+ Calendar duplicated month header (bug reference)
+ Calendar date labels
+ Calendar episode title text
+ Calendar episode metadata
+ Calendar episode still image
+ Calendar episode poster image
+ Calendar episode card background
+ Calendar card density control
+ Calendar button strip
+ Calendar view buttons
+ Calendar buttons (smaller font requirement)
+ Calendar button height reduction
+ Calendar button scale control
+ Calendar card click target
+ Calendar card hover state
+ Calendar card focus state
+ Shows view
+ Shows list grid
+ Shows poster cards
+ Show poster image
+ Show poster sizing rules
+ Show backdrop usage
+ Show title overlay
+ Show metadata overlay
+ Show status indicator
+ Show runtime indicator
+ Show network badge
+ Show service logo
+ Show icon strip
+ Show card focus state
+ Show card hover state
+ Movies view
+ Movies list grid
+ Movie poster cards
+ Movie poster image
+ Movie backdrop usage
+ Movie poster sizing rules
+ Movie title overlay
+ Movie metadata overlay
+ Movie runtime display
+ Movie icon strip
+ Movie service logo
+ Movie card focus state
+ Movie card hover state
+ Live TV view
+ Live TV channel list
+ Live TV channel cards
+ Live TV channel logo
+ Live TV service logo
+ Live TV group/category filter
+ Live TV EPG reference
+ Live TV stream button
+ Live TV focus navigation
+ Config view
+ Config panel
+ Config form
+ Config form fields
+ Streaming service base URL inputs
+ VidSrc TV base URL input
+ VidSrc Movie base URL input
+ Videasy TV base URL input
+ Videasy Movie base URL input
+ Streaming service name fields
+ Image size configuration inputs
+ Show image width input
+ Movie image width input
+ Season image width input
+ Episode still width input
+ Backdrop width input
+ UI tuning inputs
+ Calendar button scale input
+ Calendar card density input
+ Config save button
+ Config validation messages
+ Config error messages
+ Config load behavior
+ Config persistence behavior
+ Show popup
+ Show details popup
+ Show popup header
+ Show popup backdrop
+ Show popup poster
+ Show popup metadata block
+ Show popup overview text
+ Show popup runtime display
+ Show popup icon strip
+ Show popup network logos
+ Show popup season list
+ Season popup
+ Season details popup
+ Season popup header
+ Season poster image
+ Season backdrop image
+ Season metadata block
+ Season episode list
+ Season accordion
+ Season expand/collapse control
+ Episode popup
+ Episode details popup
+ Episode popup header
+ Episode still image
+ Episode metadata block
+ Episode overview text
+ Episode runtime display
+ Episode streaming link buttons
+ Episode icon strip
+ Episode watch status indicator
+ Movie popup
+ Movie details popup
+ Movie popup header
+ Movie poster image
+ Movie backdrop image
+ Movie metadata block
+ Movie overview text
+ Movie runtime display
+ Movie streaming link buttons
+ Movie icon strip
+ Movie collection reference
+ Popup close button
+ Popup back navigation
+ Popup scroll container
+ Popup sticky header
+ Popup focus trapping
+ Popup DPAD navigation
+ Icon strip
+ Global icon strip
+ Show icon strip
+ Season icon strip
+ Episode icon strip
+ Movie icon strip
+ TMDB icon
+ VidSrc icon
+ Videasy icon
+ Streaming service icon strip unification
+ Logo elements
+ Network logos
+ Service logos
+ Streaming service logos
+ Logo chips
+ Logo mapping rules
+ Logo hover state
+ Logo focus state
+ Filters
+ Genre filters
+ Network filters
+ Service filters
+ Status filters
+ Watched/unwatched filters
+ Live TV group filters
+ Cards
+ Poster cards
+ Episode cards
+ Season cards
+ Movie cards
+ Live TV cards
+ Card hover state
+ Card focus state
+ Card active state
+ Buttons
+ Streaming buttons
+ VidSrc buttons
+ Videasy buttons
+ Config save button
+ Navigation buttons
+ Popup action buttons
+ Scroll containers
+ Vertical scroll containers
+ Horizontal scroll containers
+ Focus-aware scroll behavior
+ Error UI
+ Error message banners
+ Error message blocks
+ Inline error indicators
+ Workflow error indicators
+ Missing image placeholders
+ Metadata UI
+ Runtime display blocks
+ Vote average display
+ Vote count display
+ Status badges
+ Air date display
+ Release date display
+ Accessibility UI
+ Neurodivergent-friendly spacing
+ Reduced visual clutter rules
+ Clear focus outlines
+ Consistent spacing rules
+ Predictable navigation zones
+This list contains only UI components explicitly mentioned in this thread, with no omissions, no consolidation, and no reinterpretation.
+✅ PROMPT 4 — Extract ALL UI Components Mentioned in the Thread
+Below is a strict, exhaustive BULLET LIST of EVERY UI component, element, widget, filter, popup, card, header, footer, icon, logo, or layout element mentioned ANYWHERE in this thread.
+No summarization.
+No merging.
+No simplification.
+No inferred components beyond what is explicitly referenced.
+Duplicates are preserved if referenced in different contexts.
+ App shell
+ Single Page Application (SPA) shell
+ Main application container
+ Root layout container
+ Global header
+ Sticky global header
+ Sticky sub-header
+ Header title block
+ Header navigation bar
+ Header icon strip
+ Header runtime display
+ Header metadata display
+ Global navigation
+ Tab navigation
+ Calendar tab
+ Shows tab
+ Movies tab
+ Live TV tab
+ Config tab
+ Active tab highlight
+ Navigation focus indicator
+ DPAD navigation focus ring
+ DPAD focus zones
+ DPAD up/down navigation
+ DPAD left/right navigation
+ DPAD select/enter action
+ DPAD back action
+ Calendar view
+ Calendar layout grid
+ Calendar day cards
+ Calendar episode cards
+ Calendar month header
+ Calendar duplicated month header (bug reference)
+ Calendar date labels
+ Calendar episode title text
+ Calendar episode metadata
+ Calendar episode still image
+ Calendar episode poster image
+ Calendar episode card background
+ Calendar card density control
+ Calendar button strip
+ Calendar view buttons
+ Calendar buttons (smaller font requirement)
+ Calendar button height reduction
+ Calendar button scale control
+ Calendar card click target
+ Calendar card hover state
+ Calendar card focus state
+ Shows view
+ Shows list grid
+ Shows poster cards
+ Show poster image
+ Show poster sizing rules
+ Show backdrop usage
+ Show title overlay
+ Show metadata overlay
+ Show status indicator
+ Show runtime indicator
+ Show network badge
+ Show service logo
+ Show icon strip
+ Show card focus state
+ Show card hover state
+ Movies view
+ Movies list grid
+ Movie poster cards
+ Movie poster image
+ Movie backdrop usage
+ Movie poster sizing rules
+ Movie title overlay
+ Movie metadata overlay
+ Movie runtime display
+ Movie icon strip
+ Movie service logo
+ Movie card focus state
+ Movie card hover state
+ Live TV view
+ Live TV channel list
+ Live TV channel cards
+ Live TV channel logo
+ Live TV service logo
+ Live TV group/category filter
+ Live TV EPG reference
+ Live TV stream button
+ Live TV focus navigation
+ Config view
+ Config panel
+ Config form
+ Config form fields
+ Streaming service base URL inputs
+ VidSrc TV base URL input
+ VidSrc Movie base URL input
+ Videasy TV base URL input
+ Videasy Movie base URL input
+ Streaming service name fields
+ Image size configuration inputs
+ Show image width input
+ Movie image width input
+ Season image width input
+ Episode still width input
+ Backdrop width input
+ UI tuning inputs
+ Calendar button scale input
+ Calendar card density input
+ Config save button
+ Config validation messages
+ Config error messages
+ Config load behavior
+ Config persistence behavior
+ Show popup
+ Show details popup
+ Show popup header
+ Show popup backdrop
+ Show popup poster
+ Show popup metadata block
+ Show popup overview text
+ Show popup runtime display
+ Show popup icon strip
+ Show popup network logos
+ Show popup season list
+ Season popup
+ Season details popup
+ Season popup header
+ Season poster image
+ Season backdrop image
+ Season metadata block
+ Season episode list
+ Season accordion
+ Season expand/collapse control
+ Episode popup
+ Episode details popup
+ Episode popup header
+ Episode still image
+ Episode metadata block
+ Episode overview text
+ Episode runtime display
+ Episode streaming link buttons
+ Episode icon strip
+ Episode watch status indicator
+ Movie popup
+ Movie details popup
+ Movie popup header
+ Movie poster image
+ Movie backdrop image
+ Movie metadata block
+ Movie overview text
+ Movie runtime display
+ Movie streaming link buttons
+ Movie icon strip
+ Movie collection reference
+ Popup close button
+ Popup back navigation
+ Popup scroll container
+ Popup sticky header
+ Popup focus trapping
+ Popup DPAD navigation
+ Icon strip
+ Global icon strip
+ Show icon strip
+ Season icon strip
+ Episode icon strip
+ Movie icon strip
+ TMDB icon
+ VidSrc icon
+ Videasy icon
+ Streaming service icon strip unification
+ Logo elements
+ Network logos
+ Service logos
+ Streaming service logos
+ Logo chips
+ Logo mapping rules
+ Logo hover state
+ Logo focus state
+ Filters
+ Genre filters
+ Network filters
+ Service filters
+ Status filters
+ Watched/unwatched filters
+ Live TV group filters
+ Cards
+ Poster cards
+ Episode cards
+ Season cards
+ Movie cards
+ Live TV cards
+ Card hover state
+ Card focus state
+ Card active state
+ Buttons
+ Streaming buttons
+ VidSrc buttons
+ Videasy buttons
+ Config save button
+ Navigation buttons
+ Popup action buttons
+ Scroll containers
+ Vertical scroll containers
+ Horizontal scroll containers
+ Focus-aware scroll behavior
+ Error UI
+ Error message banners
+ Error message blocks
+ Inline error indicators
+ Workflow error indicators
+ Missing image placeholders
+ Metadata UI
+ Runtime display blocks
+ Vote average display
+ Vote count display
+ Status badges
+ Air date display
+ Release date display
+ Accessibility UI
+ Neurodivergent-friendly spacing
+ Reduced visual clutter rules
+ Clear focus outlines
+ Consistent spacing rules
+ Predictable navigation zones
+This list contains only UI components explicitly mentioned in this thread, with no omissions, no consolidation, and no reinterpretation.
+✅ PROMPT 5 — Extract ALL Workflow & Script Requirements
+ build-data.yml must run fetch scripts and generate static data for GitHub Pages–compatible hosting
+ build-data.yml must NOT invent new architecture or steps beyond existing workflow intent
+ build-data.yml must not overwrite working data with partial or empty outputs
+ build-data.yml must treat `livetv_list.txt` as optional and must NOT hard-fail if missing
+ build-data.yml must error only on true fatal conditions (schema break, write failure)
+ build-data.yml must include guardrails to prevent empty `data.json` from being committed
+ build-data.yml must validate that input list files exist before processing:
+   `tv_list.txt`
+   `movies_list.txt`
+   `livetv_list.txt` (optional)
+ build-data.yml must run schema validation after data generation
+ build-data.yml must fail the workflow if schema validation fails
+ build-data.yml must include a workflow trigger when `web/config.json` changes
+ build-data.yml must support scheduled runs AND manual runs
+ build-data.yml must commit generated artifacts only when valid
+ build-data.yml must preserve existing data if generation fails
+ build-data.yml must log clear, readable errors (not silent failures)
+ build-data.yml must NOT silently downgrade or skip steps
+ fetch_tmdb.py must be the authoritative generator of `data/data.json`
+ fetch_tmdb.py must create `data.json` itself (not the workflow)
+ fetch_tmdb.py must never leave `data.json` empty or partially written
+ fetch_tmdb.py must use atomic writes (write temp → validate → replace)
+ fetch_tmdb.py must validate required environment variables before running
+ fetch_tmdb.py must support both `API_TMDB_KEY` and `API_TMDB_TOKEN`
+ fetch_tmdb.py must read base streaming URLs from `web/config.json`
+ fetch_tmdb.py must NOT hard-code streaming domains
+ fetch_tmdb.py must normalize all streaming URLs using config-defined bases
+ fetch_tmdb.py must generate streaming links for:
+   shows
+   seasons
+   episodes
+   movies
+ fetch_tmdb.py must generate BOTH primary (VidSrc) and backup (Videasy) links
+ fetch_tmdb.py must regenerate streaming links when config base URLs change
+ fetch_tmdb.py must not require re-editing front-end files when URLs change
+ fetch_tmdb.py must read:
+   `tv_list.txt`
+   `movies_list.txt`
+   `livetv_list.txt` (optional)
+ fetch_tmdb.py must not exit hard if Live TV list is missing
+ fetch_tmdb.py must log warnings for optional missing inputs
+ fetch_tmdb.py must preserve all previously supported fields unless explicitly removed
+ fetch_tmdb.py must populate runtime fields for shows, seasons, episodes, movies
+ fetch_tmdb.py must populate network/service metadata from TMDB
+ fetch_tmdb.py must populate poster and backdrop paths from TMDB
+ fetch_tmdb.py must support local image caching
+ fetch_trakt.py must fetch watch-state data (watched, unwatched, progress)
+ fetch_trakt.py must authenticate using Trakt credentials previously used
+ fetch_trakt.py must not overwrite TMDB-derived data
+ fetch_trakt.py must merge Trakt watch state into existing data model
+ fetch_trakt.py must support syncing watch state both directions (pull/push intent)
+ fetch_trakt.py must generate a persistent Trakt state artifact
+ fetch_trakt.py must not break UI rendering if Trakt data is unavailable
+ fetch_trakt.py must log failures without destroying core data
+ image caching scripts must download images ONLY if missing
+ image caching scripts must NOT re-download existing images
+ image caching must store images in structured local folders:
+   `image/movies/poster`
+   `image/movies/backdrop`
+   `image/shows/poster`
+   `image/shows/backdrop`
+   `image/shows/seasons/poster`
+   `image/shows/episodes/stills`
+ image caching must support posters, backdrops, season posters, episode stills
+ image caching must be driven by TMDB paths already present in data
+ image caching must create corresponding `local__path` fields in `data.json`
+ image caching must not guess paths at render time
+ image caching must not block data generation if an image fails to download
+ image caching must log missing or failed downloads
+ workflow must ensure `data.json` schema matches what the UI expects
+ workflow must prevent committing malformed JSON
+ workflow must prevent committing empty arrays where data previously existed
+ workflow must preserve backward compatibility with existing UI fields
+ workflow must ensure deterministic output across runs
+ streaming link normalization rules must ensure:
+   no mixed domains
+   no legacy hard-coded URLs
+   no UI-generated streaming links
+ streaming links must always come from `data.json`, never from index.html logic
+ error reporting must:
+   clearly state which file failed
+   clearly state which step failed
+   never silently succeed on partial failure
+ scripts must surface actionable error messages
+ scripts must preserve all existing features and data fields
+ scripts must never drop fields without explicit instruction
+ scripts must not rename fields without instruction
+ scripts must not invent new schema elements without approval
+ scripts must align with static-site constraints (no runtime server dependency)
+ scripts must assume front-end is read-only at runtime
+ scripts and workflows must work together as a single pipeline:
