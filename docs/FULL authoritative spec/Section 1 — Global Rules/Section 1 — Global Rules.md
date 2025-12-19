@@ -228,5 +228,3 @@ The following rules must never change:
 These invariants are permanent.
 ---
 # **1.13 End of Section 1 — Global Rules**
----
-If you want, I can generate **Section 2 — Architecture** next.
