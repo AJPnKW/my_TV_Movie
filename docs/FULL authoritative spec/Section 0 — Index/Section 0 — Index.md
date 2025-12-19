@@ -1,133 +1,230 @@
-# **SECTION 0 — INDEX**  
-**Authoritative Specification — Full Scope (Including Future‑Phase Features)**  
-**Document ID:** Section 0 — Index  
-**Version:** V0.00  
+# FULL Authoritative Specification — Index
+
+## Section 0 — Index
+
+## Section 1 — Global Rules
+
+## Section 2 — Architecture
+
+## Section 3 — Data Model
+
+## Section 4 — UI (each view separately)
+- 4.1 — Calendar View
+- 4.2 — Shows View
+- 4.3 — Movies View
+- 4.4 — Live TV View
+- 4.5 — Config View
+- 4.6 — Explore View *(future phase)*
+- 4.7 — Profiles View *(future phase)*
+- 4.8 — Watchlist / Watched Filters *(future phase)*
+
+## Section 5 — Popups
+- 5.1 — Show Popup (P1)
+- 5.2 — Season Popup (P2)
+- 5.3 — Episode Popup (P3)
+- 5.4 — Movie Popup (P4)
+- 5.5 — Collection Popup *(future phase)*
+- 5.6 — Person Popup *(future phase)*
+
+## Section 6 — UX
+
+## Section 7 — Assets
+
+## Section 8 — Scripts
+
+## Section 9 — Workflow
+
+## Section 10 — Versioning
+
+## Section 11 — Errors
+
+## Section 12 — Future‑Phase
+
+## Section 13 — Invariants
+
 ---
-# **0.1 Purpose of This Index**
-This Index defines the **complete structural map** of the FULL AUTHORITATIVE SPECIFICATION for the *my_TV_Movie (My TV Hub)* system.  
-It establishes the **canonical ordering**, **document boundaries**, **scope definitions**, and **cross‑sectional relationships** required for deterministic navigation, versioning, and governance.
-This Index is itself a **binding part of the authoritative specification**.  
-All sections listed here are mandatory, non‑optional, and must exist exactly as defined.
+
+# Appendix A — Functional Details
+
+This appendix provides functional descriptions for all user‑facing components, including UI views, popups, workflows, and interaction patterns. Each subsection corresponds directly to a numbered section in the main specification.
+
 ---
-# **0.2 Canonical Section Ordering**
-The authoritative specification consists of **14 sections**, numbered **0 through 13**, in strict ascending order.  
-This ordering is **immutable** and must never be altered, reordered, merged, split, or renamed.
-1. **Section 0 — Index**  
-2. **Section 1 — Global Rules**  
-3. **Section 2 — Architecture**  
-4. **Section 3 — Data Model**  
-5. **Section 4 — UI (Each View Separately)**  
-6. **Section 5 — Popups**  
-7. **Section 6 — UX & Accessibility**  
-8. **Section 7 — Assets & Media**  
-9. **Section 8 — Scripts (TMDB, Trakt, Image Caching)**  
-10. **Section 9 — Workflow (GitHub Actions)**  
-11. **Section 10 — Versioning & Metadata**  
-12. **Section 11 — Error Handling & Diagnostics**  
-13. **Section 12 — Future‑Phase Features**  
-14. **Section 13 — Invariants (Must Never Change)**  
-All sections are required for the specification to be considered complete.
+
+## A.1 — UI Views (Section 4)
+
+### 4.1 — Calendar View
+- Primary purpose: Display scheduled content (episodes, movies, live events) in a calendar layout.
+- Core interactions:
+  - Navigate by day/week/month.
+  - Select an item to open its corresponding popup.
+  - Filter by profile, service, or content type.
+- Functional constraints:
+  - Must support both grid and list modes.
+  - Must show indicators for watched/unwatched.
+
+### 4.2 — Shows View
+- Purpose: Browse all TV shows.
+- Interactions:
+  - Search, filter, sort.
+  - Open Show Popup (P1).
+  - Navigate to Seasons/Episodes.
+
+### 4.3 — Movies View
+- Purpose: Browse all movies.
+- Interactions:
+  - Search, filter, sort.
+  - Open Movie Popup (P4).
+
+### 4.4 — Live TV View
+- Purpose: Display live channels and current programming.
+- Interactions:
+  - Channel list navigation.
+  - Program details popup.
+  - Quick‑tune actions.
+
+### 4.5 — Config View
+- Purpose: User and system configuration.
+- Interactions:
+  - Profile management.
+  - Service integration.
+  - UI/UX preferences.
+
+### 4.6 — Explore View *(future phase)*
+- Purpose: Discovery‑focused browsing.
+- Interactions:
+  - Trending, recommended, curated lists.
+
+### 4.7 — Profiles View *(future phase)*
+- Purpose: Dedicated profile management UI.
+
+### 4.8 — Watchlist / Watched Filters *(future phase)*
+- Purpose: Manage watchlist and watched‑status filters.
+
 ---
-# **0.3 Section Scope Definitions**
-Each section has a **strict, non‑overlapping scope**.  
-No section may contain material belonging to another section.
-### **0.3.1 Section 0 — Index**  
-Defines the structure, ordering, and governance of the entire specification.
-### **0.3.2 Section 1 — Global Rules**  
-Defines all non‑negotiable constraints, system laws, prohibitions, and mandatory behaviors.
-### **0.3.3 Section 2 — Architecture**  
-Defines the full system architecture, including SPA structure, pipelines, modules, and future‑phase architectural extensions.
-### **0.3.4 Section 3 — Data Model**  
-Defines the complete schema for `data.json`, including all fields, metadata, relationships, and future‑phase extensions.
-### **0.3.5 Section 4 — UI (Each View Separately)**  
-Defines the UI specification for all views, including Calendar, Shows, Movies, Live TV, Config, Explore, Profiles, and Watchlist/Watched Filters.
-### **0.3.6 Section 5 — Popups**  
-Defines the popup hierarchy (Show → Season → Episode → Movie) and future‑phase popups (Collection, Person).
-### **0.3.7 Section 6 — UX & Accessibility**  
-Defines DPAD rules, focus behavior, scroll trapping, neurodivergent‑friendly rules, contrast, spacing, and predictability.
-### **0.3.8 Section 7 — Assets & Media**  
-Defines poster/backdrop rules, local caching, logo mapping, icon strip rules, and future‑phase asset types.
-### **0.3.9 Section 8 — Scripts**  
-Defines TMDB, Trakt, image caching, streaming link normalization, atomic writes, validation, and future‑phase script extensions.
-### **0.3.10 Section 9 — Workflow**  
-Defines GitHub Actions pipelines, validation gates, fail‑fast rules, file naming rules, and future‑phase workflow extensions.
-### **0.3.11 Section 10 — Versioning & Metadata**  
-Defines file headers, version triples, monotonic versioning, metadata blocks, and future‑phase versioning rules.
-### **0.3.12 Section 11 — Error Handling & Diagnostics**  
-Defines UI errors, script errors, workflow errors, debug panels, and future‑phase diagnostic systems.
-### **0.3.13 Section 12 — Future‑Phase Features**  
-Defines all planned future features, including profiles, explore tab, full EPG, universal sort framework, cross‑service sync, and more.
-### **0.3.14 Section 13 — Invariants**  
-Defines all system invariants that must never change under any circumstances.
+
+## A.2 — Popups (Section 5)
+
+### 5.1 — Show Popup (P1)
+- Displays show metadata, seasons, and actions.
+- Interactions:
+  - Add/remove from watchlist.
+  - Navigate to Season Popup (P2).
+
+### 5.2 — Season Popup (P2)
+- Displays season‑level metadata.
+- Interactions:
+  - Episode list.
+  - Navigate to Episode Popup (P3).
+
+### 5.3 — Episode Popup (P3)
+- Displays episode metadata.
+- Interactions:
+  - Mark watched/unwatched.
+  - Play episode.
+
+### 5.4 — Movie Popup (P4)
+- Displays movie metadata.
+- Interactions:
+  - Play movie.
+  - Add/remove from watchlist.
+
+### 5.5 — Collection Popup *(future phase)*
+- Displays grouped content (collections, bundles).
+
+### 5.6 — Person Popup *(future phase)*
+- Displays actor/crew metadata.
+
 ---
-# **0.4 Document Boundaries**
-Each section must exist as a **standalone Markdown file** stored under:
-```
-docs/FULL authoritative spec/Section {NUMBER} — {NAME}/
-```
-Each file must follow:
-- strict naming  
-- strict versioning  
-- strict metadata header rules  
-- strict immutability of retired versions  
-Each section must be versioned independently.
+
+## A.3 — Workflows (Section 9)
+
+### Example workflows:
+- Content discovery → popup → playback.
+- Calendar navigation → item selection → popup.
+- Profile switching → UI refresh.
+- Watchlist management → filtering → playback.
+
 ---
-# **0.5 Cross‑Sectional Rules**
-The following rules apply to all sections:
-### **0.5.1 No Implicit Dependencies**  
-Each section must restate any requirement it depends on.  
-No section may rely on “see Section X” to define a rule.
-### **0.5.2 No Contradictions**  
-No section may contradict another section.  
-If a contradiction is found, Section 1 (Global Rules) overrides all others.
-### **0.5.3 No Overlap**  
-Each requirement must appear in exactly one section unless explicitly required to appear in multiple.
-### **0.5.4 No Missing Material**  
-All extracted details (Q1–Q5) must be incorporated across the relevant sections.
-### **0.5.5 Full Scope**  
-All future‑phase features must be included in the relevant sections.
+
+## A.4 — User Interaction Patterns (Global)
+
+- Consistent popup behavior across all content types.
+- Unified search and filtering model.
+- Predictable navigation hierarchy.
+- Accessibility requirements (keyboard, screen reader, contrast).
+
+
+# Appendix B — Technical Details
+
+This appendix contains the technical underpinnings of the system, including architecture, data models, API contracts, and implementation constraints.
+
 ---
-# **0.6 Versioning Requirements for This Section**
-This section must be saved as:
-```
-Section 0 — Index_V0.00.md
-```
-Future versions must follow:
-- `_V0.01`, `_V0.02`, etc.  
-- old versions retired but preserved  
-- inventory updated accordingly  
-Versioning rules are binding and defined in Section 10.
+
+## B.1 — Architecture (Section 2)
+
+### System Architecture Overview
+- Modular, component‑based UI.
+- Data layer abstracted behind unified API gateway.
+- Caching layer for performance and offline tolerance.
+- Event‑driven updates for UI refresh.
+
+### Key Architectural Constraints
+- All UI components must be stateless where possible.
+- Popups must be lazy‑loaded.
+- Views must support incremental rendering.
+
 ---
-# **0.7 Governance Requirements**
-This Index is the **authoritative map** of the specification.  
-Any modification to:
-- section ordering  
-- section naming  
-- section scope  
-- section existence  
-…requires a **major version increment** across the entire specification.
-No section may be added, removed, renamed, or reordered without explicit governance approval.
+
+## B.2 — Data Model (Section 3)
+
+### Core Entities
+- Show
+- Season
+- Episode
+- Movie
+- Person
+- Collection
+- Profile
+- Service
+
+### Relationships
+- Show → Seasons → Episodes
+- Movie → Standalone
+- Person → Appears in (shows, movies)
+- Profile → Watch history, preferences
+
+### Data Integrity Rules
+- IDs must be globally unique.
+- Timestamps must be UTC.
+- Watch status must be atomic.
+
 ---
-# **0.8 Completion Requirements**
-The specification is considered **complete** only when:
-- all 14 sections exist  
-- all sections are fully populated  
-- all sections follow the rules defined here  
-- all sections are versioned  
-- all sections are included in the inventory  
-- no section contains placeholders  
-- no section contains TODOs  
-- no section violates any global rule  
+
+## B.3 — API Contracts
+
+### Required Endpoints
+- `/shows`, `/shows/{id}`
+- `/movies`, `/movies/{id}`
+- `/episodes/{id}`
+- `/calendar`
+- `/profiles`
+- `/search?q=`
+
+### Response Requirements
+- JSON only.
+- All responses must include:
+  - `id`
+  - `type`
+  - `attributes`
+  - `relationships`
+
 ---
-# **0.9 Index Invariants**
-The following invariants must never change:
-- The number of sections (14).  
-- The section numbering (0–13).  
-- The section names.  
-- The ordering.  
-- The requirement that each section is standalone.  
-- The requirement that each section is versioned independently.  
-- The requirement that this Index governs the entire specification.  
-These invariants are binding and permanent.
----
-# **0.10 End of Section 0 — Index**
+
+## B.4 — Implementation Constraints
+
+- UI must remain responsive under high data volume.
+- All popups must load in < 200ms (cached).
+- Views must support pagination or infinite scroll.
+- Versioning must be applied to all spec files.
+- Inventory tracking must remain consistent across updates.
+
