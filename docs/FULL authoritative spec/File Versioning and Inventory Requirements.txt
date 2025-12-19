@@ -1,5 +1,5 @@
 TITLE: File Versioning and Inventory Requirements
-
+*
 1. All specification files are Markdown (.md) stored under:
    C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie\docs\FULL authoritative spec
 
@@ -23,6 +23,22 @@ TITLE: File Versioning and Inventory Requirements
    - Replacement/Retired Date (blank for active version)
 
 7. Inventory must always reflect the latest state after each versioning operation.
+*
+TITLE: Sub‑Section File Structure Requirements
+*
+1. Sections with multiple views or popups must generate sub‑section files.
+2. Each sub‑section has:
+   - A SECTION_NUMBER using decimal notation (e.g., 4.1, 4.2, 5.1).
+   - A SECTION_NAME matching the view or popup name.
+3. Each sub‑section must have its own Markdown file:
+   Section X — Name/
+       Section X.Y — Subsection Name_V0.00.md
+4. Future‑phase items are included but marked as future‑phase in the file header.
+5. Scripts must:
+   - Auto‑generate missing sub‑section folders and placeholder .md files.
+   - Apply versioning rules (_V0.00, _V0.01, etc.).
+   - Update the inventory file.
+6. Documentation must reference all sub‑sections consistently.
 
 
 🧠 NOTES ABOUT THE IMPLEMENTATION
