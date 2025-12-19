@@ -131,5 +131,3 @@ The following invariants must never change:
 These invariants are binding and permanent.
 ---
 # **0.10 End of Section 0 — Index**
----
-If you want, I can generate **Section 1 — Global Rules** next.
