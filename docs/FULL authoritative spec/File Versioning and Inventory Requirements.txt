@@ -1,0 +1,33 @@
+TITLE: File Versioning and Inventory Requirements
+
+1. All specification files are Markdown (.md) stored under:
+   C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie\docs\FULL authoritative spec
+
+2. Each file must include a version suffix in the filename:
+   _V0.00, _V0.01, _V0.02, etc.
+
+3. When a new version is created:
+   - If the file has no version suffix, append _V0.00.
+   - If the file has a version suffix, increment it by +0.01.
+
+4. Each new version is created as a copy of the previous version.
+
+5. Maintain an inventory file named:
+   SPEC_INVENTORY.csv
+
+6. Inventory must track:
+   - File Name
+   - Folder Path
+   - File Size (bytes)
+   - Original Creation Date
+   - Replacement/Retired Date (blank for active version)
+
+7. Inventory must always reflect the latest state after each versioning operation.
+
+
+🧠 NOTES ABOUT THE IMPLEMENTATION
+PowerShell is the correct tool (Windows-native, Unicode-safe, path-safe).
+Version numbers are always two decimals: 0.00, 0.01, 0.02, etc.
+Inventory is updated automatically.
+Old versions get a “Retired Date”.
+New versions get a fresh entry with no retired date.
