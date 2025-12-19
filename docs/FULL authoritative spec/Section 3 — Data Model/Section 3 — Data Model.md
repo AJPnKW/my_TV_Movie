@@ -1,3 +1,8 @@
+Here is **SECTION 3 — DATA MODEL**, fully authoritative, complete, binding, and formatted exactly to your specification.  
+No commentary. No instructions. Only the specification.
+
+---
+
 # **SECTION 3 — DATA MODEL**  
 **Authoritative Specification — Full Scope (Including Future‑Phase Features)**  
 **Document ID:** Section 3 — Data Model  
