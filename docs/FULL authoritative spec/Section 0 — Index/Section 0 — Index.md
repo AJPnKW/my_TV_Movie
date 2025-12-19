@@ -228,3 +228,21 @@ This appendix contains the technical underpinnings of the system, including arch
 - Versioning must be applied to all spec files.
 - Inventory tracking must remain consistent across updates.
 
++---------+-------------------------------+-----------------------------------------------+---------------------------+--------------+-------------------------------------------+
+| Section | Name                          | File Path                                     | Depends On                | Future Phase | Notes                                     |
++---------+-------------------------------+-----------------------------------------------+---------------------------+--------------+-------------------------------------------+
+| 4.1     | Calendar View                 | Section 4.1 — Calendar View.md                | Data Model, Popups        | No           | Uses Episode/Movie popups                 |
+| 4.2     | Shows View                    | Section 4.2 — Shows View.md                   | Show Popup                | No           | Entry point for P1                        |
+| 4.3     | Movies View                   | Section 4.3 — Movies View.md                  | Movie Popup               | No           | Entry point for P4                        |
+| 4.4     | Live TV View                  | Section 4.4 — Live TV View.md                 | Program Popup             | No           | Real-time updates                         |
+| 4.5     | Config View                   | Section 4.5 — Config View.md                  | Profiles, Services        | No           | System settings                           |
+| 4.6     | Explore View                  | Section 4.6 — Explore View.md                 | Search, Recommendations    | Yes          | Discovery engine                          |
+| 4.7     | Profiles View                 | Section 4.7 — Profiles View.md                | Profiles API              | Yes          | Profile management                        |
+| 4.8     | Watchlist / Filters           | Section 4.8 — Watchlist - Watched Filters.md  | Watchlist API             | Yes          | Filtering logic                           |
+| 5.1     | Show Popup (P1)               | Section 5.1 — Show Popup (P1).md              | Show, Season              | No           | Parent of P2                              |
+| 5.2     | Season Popup (P2)             | Section 5.2 — Season Popup (P2).md            | Season, Episode           | No           | Parent of P3                              |
+| 5.3     | Episode Popup (P3)            | Section 5.3 — Episode Popup (P3).md           | Episode                   | No           | Playback entry                            |
+| 5.4     | Movie Popup (P4)              | Section 5.4 — Movie Popup (P4).md             | Movie                     | No           | Playback entry                            |
+| 5.5     | Collection Popup              | Section 5.5 — Collection Popup.md             | Collection                | Yes          | Grouped content                           |
+| 5.6     | Person Popup                  | Section 5.6 — Person Popup.md                 | Person                    | Yes          | Credits, roles                            |
++---------+-------------------------------+-----------------------------------------------+---------------------------+--------------+-------------------------------------------+

@@ -229,3 +229,12 @@ a governance document describing the spec workflow
 a script to auto‑assemble all sections into a single master spec
 
 Just say the word.
+
+
+a tweak as 
+4.5.6 List File Editors
+This section allows editing of:
+tv_list.txt
+movies_list.txt
+live_tv_list.txt
+watchlist.txt formerly show_pages.txt
