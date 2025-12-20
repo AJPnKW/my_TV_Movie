@@ -1,619 +1,655 @@
-/*
-========================================================================================
-[FILE]        web/css/my_tv_hub.css
-[PROJECT]     my_TV_Movie (My TV Hub)
-[ROLE]        Global styling (Index hub + Show page + Config page)
-[VERSION]     v3.3.7
-[UPDATED]     2025-12-17_17-12-00
-[BUILD]       14.02.03
-[OWNER]       Andrew & Brant (internal)
+/* =========================================================================================
+[FILE] web/css/my_tv_hub.css
+[PROJECT] my_TV_Movie (My TV Hub)
+[ROLE] Global UI stylesheet (SPA shell + shared components)
+[VERSION] v4.5.0
+[UPDATED] 2025-12-19_00-00-00
+[BUILD] 00.00.00
+[OWNER] Andrew & Brant (internal)
 
-[DEPENDS ON]  web/index.html
-              web/show.html
-              web/config.html
-              web/config.js
+[PHASE 4.x MASTER OVERRIDE APPLIED]
+- TRUE SPA: index.html is the ONLY entry point.
+- View renderers live inside existing RAW-listed files (no new files).
+- Canonical asset hierarchy ONLY (assets/...); never reference deprecated image/ folder.
+- Errors must surface visually; no silent failures.
+- Popup system: stacked overlays, trapped scroll, Escape/Back closes top.
 
 [NOTES]
-- Neon Candy Pop palette (button colors):
-    neon_blue   #00aaff
-    neon_purple #aa00ff
-    neon_pink   #ff00aa
-    neon_orange #ffaa00
-    neon_lime   #aaff00
-- Calendar button sizing is controlled by CSS vars:
-    --calendar-button-scale (default 0.75)
-    --calendar-card-density (default 1.00)
-  These can be overridden at runtime by setting :root style (via config.js/index.js).
-========================================================================================
-*/
+- This file is intentionally comprehensive and deterministic.
+- No references to deprecated "image/" folder.
+========================================================================================= */
 
-/* [CSS-1.0] Root + theme */
-:root {
-  --bg-main: #02040a;
-  --bg-elevated: #050814;
-  --bg-card: #090d1c;
-  --bg-card-soft: #0f1324;
+/* =========================
+   0) Reset + defaults
+   ========================= */
 
-  --border-subtle: #262b3a;
+:root{
+  --bg:#0b0d12;
+  --fg:#e8ecf3;
+  --muted:#a8b0c0;
 
-  --text-main: #e9efff;
-  --text-muted: #9fb0d6;
+  --panel:#121725;
+  --panel2:#0f1420;
 
-  --radius-lg: 16px;
-  --radius-md: 12px;
+  --border:rgba(255,255,255,0.10);
+  --border2:rgba(255,255,255,0.16);
 
-  --shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+  --focus:#ffffff;
 
-  /* Neon Candy Pop */
-  --neon-blue: #00aaff;
-  --neon-purple: #aa00ff;
-  --neon-pink: #ff00aa;
-  --neon-orange: #ffaa00;
-  --neon-lime: #aaff00;
+  --danger:#ff5b5b;
+  --warn:#ffd56b;
+  --ok:#35d07f;
 
-  /* Focus ring */
-  --focus-ring: rgba(0, 170, 255, 0.25);
+  --radius:14px;
+  --radius2:18px;
 
-  /* Calendar tuning (config-driven) */
-  --calendar-button-scale: 0.75;
-  --calendar-card-density: 1.0;
+  --header-h:64px;
+  --nav-h:56px;
+
+  --pad:14px;
+  --gap:12px;
+
+  --font:system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --mono:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  --shadow-1:0 12px 40px rgba(0,0,0,0.50);
+  --shadow-2:0 20px 80px rgba(0,0,0,0.60);
 }
 
-/* [CSS-2.0] Reset + base */
-* { box-sizing: border-box; }
-html, body { height: 100%; }
-body {
-  margin: 0;
-  background: radial-gradient(1200px 600px at 30% 0%, #07102a 0%, var(--bg-main) 55%, #010208 100%);
-  color: var(--text-main);
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+*,
+*::before,
+*::after{ box-sizing:border-box; }
+
+html, body{ height:100%; }
+
+body{
+  margin:0;
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--fg);
+  overflow:hidden; /* SPA controls scrolling inside view roots/popup bodies */
 }
 
-/* [CSS-3.0] Common UI primitives */
-a { color: inherit; text-decoration: none; }
-a:focus-visible,
-button:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
-  border-radius: 10px;
+img{ max-width:100%; height:auto; }
+
+a{ color:inherit; }
+
+button{ font-family:inherit; }
+
+:focus{
+  outline: none;
 }
 
-.container {
-  width: min(1320px, calc(100% - 20px));
-  margin: 0 auto;
-  padding: 10px 0 28px;
+:focus-visible{
+  outline:3px solid var(--focus);
+  outline-offset:2px;
 }
 
-.card {
-  background: rgba(9, 13, 28, 0.78);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-}
+/* =========================
+   1) App shell structure
+   ========================= */
 
-.card.soft {
-  background: rgba(15, 19, 36, 0.65);
-}
-
-/* [CSS-4.0] Top header + view buttons */
-.topbar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 12px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  position: sticky;
-  top: 0;
-  z-index: 1200;
-
-  /* Solid, non-weird transparency when scrolling */
-  background: rgba(5, 8, 20, 0.94);
+#global-header{
+  position:sticky;
+  top:0;
+  z-index:30;
+  height:var(--header-h);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 14px;
+  background:linear-gradient(180deg, rgba(18,23,37,0.96), rgba(18,23,37,0.88));
+  border-bottom:1px solid var(--border);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border-subtle);
 }
 
-.brand {
-  display: flex;
-  gap: 10px;
-  align-items: baseline;
-}
-.brand h1 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 950;
-  letter-spacing: 0.3px;
-}
-.brand .meta {
-  color: var(--text-muted);
-  font-size: 0.80rem;
-  font-weight: 700;
-}
-
-.view-buttons {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.view-btn {
-  border: 2px solid var(--border-subtle);
-  background: rgba(11, 18, 48, 0.65);
-  color: var(--text-main);
-  padding: 8px 12px;
-  border-radius: 14px;
-  cursor: pointer;
-  font-weight: 900;
-  letter-spacing: 0.2px;
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  user-select: none;
-}
-
-.view-btn:hover {
-  background: rgba(15, 26, 69, 0.75);
-  border-color: rgba(159, 176, 214, 0.35);
-}
-
-/* Active view: background matches active “outline color” and outline is white */
-.view-btn.active {
-  background: var(--neon-blue);
-  color: #021018;
-  border-color: #ffffff;
-  box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
-}
-
-.view-btn .ico {
-  width: 16px;
-  height: 16px;
-  display: inline-block;
-}
-
-/* [CSS-5.0] Buttons / links (unified) */
-.link-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  padding: 8px 10px;
-  border-radius: 12px;
-  border: 2px solid var(--border-subtle);
-
-  background: rgba(11, 18, 48, 0.65);
-  color: var(--text-main);
-  cursor: pointer;
-
-  font-weight: 950;
-  letter-spacing: 0.2px;
-  user-select: none;
-  line-height: 1.05;
-}
-
-.link-btn:hover {
-  filter: brightness(1.08);
-}
-
-.link-btn .stack {
-  display: grid;
-  grid-template-rows: auto auto;
-  gap: 2px;
-  text-align: center;
-}
-.link-btn .stack .top {
-  font-size: 0.78rem;
-  font-weight: 950;
-}
-.link-btn .stack .bottom {
-  font-size: 0.86rem;
-  font-weight: 980;
-}
-
-/* Neon button variants (high-contrast filled) */
-.btn-tmdb {
-  border-color: rgba(255,255,255,0.22);
-  background: var(--neon-blue);
-  color: #021018;
-}
-.btn-videasy {
-  border-color: rgba(255,255,255,0.22);
-  background: var(--neon-purple);
-  color: #0b0012;
-}
-.btn-vidsrc {
-  border-color: rgba(255,255,255,0.22);
-  background: var(--neon-pink);
-  color: #12000a;
-}
-
-/* Disabled state (if used) */
-.link-btn[aria-disabled="true"],
-.link-btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-/* [CSS-6.0] Calendar layout primitives */
-.calendar-wrap {
-  margin-top: 12px;
-}
-
-.calendar-section-title {
-  margin: 10px 0 8px;
-  font-weight: 950;
-  letter-spacing: 0.3px;
-  font-size: 1.02rem;
-}
-
-.calendar-subtitle {
-  margin: 0 0 10px;
-  color: var(--text-muted);
-  font-size: 0.84rem;
-  font-weight: 700;
-}
-
-/* Sticky day header (fix bleed / weird transparency) */
-.day-sticky {
-  position: sticky;
-  top: 58px; /* just under topbar */
-  z-index: 900;
-  padding: 8px 10px;
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(9, 13, 28, 0.92);
+#main-nav{
+  height:var(--nav-h);
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:8px 14px;
+  background:rgba(15,20,32,0.92);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:var(--header-h);
+  z-index:25;
   backdrop-filter: blur(10px);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.45);
 }
 
-.day-sticky .day-title {
-  margin: 0;
-  font-weight: 980;
-  letter-spacing: 0.25px;
-  font-size: 0.98rem;
+#app-shell{
+  height:calc(100% - var(--header-h) - var(--nav-h));
+  display:flex;
+  flex-direction:column;
 }
 
-/* [CSS-7.0] Calendar show card (compact, config-scaled) */
-.cal-item {
-  display: grid;
-  grid-template-columns: 64px 1fr;
-  gap: calc(10px * var(--calendar-card-density));
-  padding: calc(8px * var(--calendar-card-density));
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(15, 19, 36, 0.55);
-  margin-bottom: calc(8px * var(--calendar-card-density));
+#content-root{
+  flex:1 1 auto;
+  overflow:auto;
+  padding:14px;
+  scroll-behavior:smooth;
 }
 
-.cal-item img {
-  width: 64px;
-  height: 96px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
+/* Optional (if used) */
+#content-root:focus{
+  outline:none;
 }
 
-.cal-item .cal-text { min-width: 0; }
+/* =========================
+   2) Brand + header elements
+   ========================= */
 
-.cal-item .cal-title {
-  font-weight: 980;
-  font-size: 0.84rem;
-  line-height: 1.15;
-  white-space: normal;
-  word-break: break-word;
+#brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:220px;
 }
 
-.cal-item .cal-sub {
-  margin-top: 4px;
-  color: var(--text-muted);
-  font-size: 0.76rem;
-  line-height: 1.15;
+#brand .logo-chip{
+  width:36px;
+  height:36px;
+  border-radius:10px;
+  background:rgba(255,255,255,0.10);
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(255,255,255,0.10);
 }
 
-.cal-item .cal-buttons {
-  margin-top: 8px;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 6px;
+#brand .title{
+  display:flex;
+  flex-direction:column;
+  line-height:1.1;
 }
 
-/* Make Calendar buttons smaller/tighter + scaled (25% less high) */
-.cal-item .cal-buttons .link-btn {
-  transform-origin: top left;
-  transform: scale(var(--calendar-button-scale));
-  padding: 6px 8px;
-  border-radius: 11px;
-}
-.cal-item .cal-buttons .link-btn .stack .top { font-size: 0.70rem; }
-.cal-item .cal-buttons .link-btn .stack .bottom { font-size: 0.78rem; }
-.cal-item .cal-buttons .link-btn .stack { gap: 1px; }
-
-/* [CSS-8.0] Shows grid/cards */
-.shows-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 14px;
+#brand .title .name{
+  font-size:16px;
+  font-weight:650;
+  letter-spacing:0.2px;
 }
 
-.show-card {
-  padding: 12px;
+#brand .title .sub{
+  font-size:12px;
+  color:var(--muted);
 }
 
-/* Reduce show image size in Shows view (targeted selectors; safe fallbacks) */
-.show-card .show-poster,
-.show-card .poster,
-.show-card img {
-  width: 100%;
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  object-fit: cover;
-
-  /* Smaller than before (about 25% more reduction vs typical tall posters) */
-  max-height: 240px;
+#header-right{
+  margin-left:auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:260px;
+  justify-content:flex-end;
 }
 
-/* If index.html uses aspect-ratio wrappers */
-.poster-frame {
-  width: 100%;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid var(--border-subtle);
-  background: rgba(0,0,0,0.25);
-}
-.poster-frame img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* [CSS-9.0] Inline filter controls grouping (used by index.html if present) */
-.filters-bar {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin: 12px 0;
+#status-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:7px 10px;
+  background:rgba(255,255,255,0.06);
+  font-size:12px;
+  color:var(--muted);
+  user-select:none;
 }
 
-.filters-group {
-  padding: 10px;
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(15,19,36,0.45);
+#status-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.25);
+  box-shadow:0 0 0 2px rgba(255,255,255,0.06) inset;
 }
 
-.filters-group h3 {
-  margin: 0 0 8px;
-  font-size: 0.90rem;
-  font-weight: 980;
-  letter-spacing: 0.2px;
+#status-pill[data-kind="ok"] #status-dot{ background:var(--ok); }
+#status-pill[data-kind="warn"] #status-dot{ background:var(--warn); }
+#status-pill[data-kind="error"] #status-dot{ background:var(--danger); }
+
+/* =========================
+   3) Error surfacing
+   ========================= */
+
+#error-surface{
+  max-width:520px;
+  display:none;
+  align-items:center;
+  gap:10px;
+  border:1px solid rgba(255, 91, 91, 0.35);
+  background:rgba(255, 91, 91, 0.10);
+  color:#ffd7d7;
+  border-radius:12px;
+  padding:8px 10px;
+  font-size:12px;
 }
 
-.pill-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+#error-surface .label{ font-weight:650; }
+
+#error-surface .msg{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  max-width:380px;
 }
 
-.pill {
-  border: 2px solid var(--border-subtle);
-  background: rgba(11, 18, 48, 0.55);
-  color: var(--text-main);
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-weight: 900;
-  cursor: pointer;
-  font-size: 0.82rem;
+#error-surface button{
+  margin-left:auto;
+  border:1px solid rgba(255,255,255,0.25);
+  background:rgba(255,255,255,0.08);
+  color:var(--fg);
+  border-radius:10px;
+  padding:6px 10px;
+  cursor:pointer;
 }
 
-.pill.active {
-  background: var(--neon-lime);
-  color: #0b1200;
-  border-color: #ffffff;
+/* Inline errors (if used in view bodies) */
+.inline-error{
+  border:1px solid rgba(255, 91, 91, 0.35);
+  background:rgba(255, 91, 91, 0.10);
+  color:#ffd7d7;
+  border-radius:12px;
+  padding:10px 12px;
+  font-size:13px;
 }
 
-/* [CSS-10.0] Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.65);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 12px;
-  z-index: 2000;
+/* =========================
+   4) Nav tabs
+   ========================= */
+
+.nav-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  height:40px;
+  min-width:118px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.06);
+  color:var(--fg);
+  font-size:14px;
+  font-weight:600;
+  letter-spacing:0.2px;
+  cursor:pointer;
+  user-select:none;
 }
 
-.modal-overlay.open { display: flex; }
-
-.modal {
-  width: min(1200px, 100%);
-  max-height: 92vh;
-  overflow: auto;
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
+.nav-btn[aria-selected="true"]{
+  background:rgba(255,255,255,0.14);
+  border-color:rgba(255,255,255,0.22);
 }
 
-.modal-header {
-  position: sticky;
-  top: 0;
-  z-index: 5;
-  background: rgba(9, 13, 28, 0.92);
-  backdrop-filter: blur(10px);
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--border-subtle);
+/* =========================
+   5) Shared panels + headings
+   ========================= */
+
+.view-panel{
+  background:rgba(18,23,37,0.78);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:14px;
+  min-height:calc(100% - 2px);
 }
 
-.modal-title { font-weight: 980; }
-
-.modal-close {
-  cursor: pointer;
-  border: 2px solid #ffffff;
-  background: transparent;
-  color: #ffffff;
-  border-radius: 12px;
-  padding: 6px 10px;
-  font-weight: 950;
+.view-title{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  margin:0 0 10px 0;
 }
 
-.modal-body { padding: 12px; }
-
-/* [CSS-11.0] Show Page support (no inline styles; shared classes) */
-.show-shell {
-  width: min(1320px, calc(100% - 20px));
-  margin: 0 auto;
-  padding: 12px 0 28px;
+.view-title h1{
+  margin:0;
+  font-size:18px;
+  font-weight:750;
 }
 
-.show-hero {
-  position: relative;
-  overflow: hidden;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  background: rgba(9, 13, 28, 0.78);
-  box-shadow: var(--shadow);
+.view-title .meta{
+  color:var(--muted);
+  font-size:12px;
+  font-family:var(--mono);
 }
 
-.show-hero-bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  filter: blur(0px);
-  opacity: 0.35;
+.hint{
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.45;
 }
 
-.show-hero-content {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 160px 1fr;
-  gap: 14px;
-  padding: 12px;
+/* =========================
+   6) Buttons + chips
+   ========================= */
+
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  height:40px;
+  padding:0 14px;
+  border-radius:999px;
+  border:1px solid var(--border);
+  background:rgba(255,255,255,0.08);
+  color:var(--fg);
+  text-decoration:none;
+  font-weight:750;
+  cursor:pointer;
+  user-select:none;
 }
 
-.show-hero-poster {
-  width: 160px;
-  height: 240px;
-  object-fit: cover;
-  border-radius: 14px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(0,0,0,0.25);
+.btn--sm{
+  height:32px;
+  padding:0 10px;
+  border-radius:12px;
+  font-size:12px;
 }
 
-.show-hero-title {
-  margin: 0;
-  font-weight: 980;
-  letter-spacing: 0.3px;
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:6px 10px;
+  background:rgba(255,255,255,0.06);
+  font-size:12px;
+  color:var(--muted);
+  user-select:none;
 }
 
-.show-hero-meta {
-  margin-top: 6px;
-  color: var(--text-muted);
-  font-weight: 750;
-  font-size: 0.88rem;
+.badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:3px 8px;
+  background:rgba(255,255,255,0.06);
+  font-size:11px;
+  color:var(--muted);
+  font-family:var(--mono);
+  user-select:none;
 }
 
-.show-hero-actions {
-  margin-top: 10px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* Status badges */
+.badge--ok{
+  border-color:rgba(53, 208, 127, 0.35);
+  background:rgba(53, 208, 127, 0.10);
+  color:#d6ffe9;
+}
+.badge--warn{
+  border-color:rgba(255, 213, 107, 0.35);
+  background:rgba(255, 213, 107, 0.10);
+  color:#ffeacc;
+}
+.badge--danger{
+  border-color:rgba(255, 91, 91, 0.35);
+  background:rgba(255, 91, 91, 0.10);
+  color:#ffd7d7;
 }
 
-.section-title {
-  margin: 16px 0 10px;
-  font-weight: 980;
-  letter-spacing: 0.25px;
+/* =========================
+   7) Card components
+   ========================= */
+
+.card{
+  border:1px solid var(--border);
+  background:rgba(0,0,0,0.18);
+  border-radius:var(--radius);
+  padding:12px;
 }
 
-.season-card {
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-subtle);
-  background: rgba(15, 19, 36, 0.55);
+.card--hoverable{
+  cursor:pointer;
 }
 
-.season-head {
-  display: grid;
-  grid-template-columns: 92px 1fr;
-  gap: 12px;
-  align-items: start;
+.card--hoverable:hover{
+  border-color:rgba(255,255,255,0.16);
+  background:rgba(255,255,255,0.06);
 }
 
-.season-poster {
-  width: 92px;
-  height: 138px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(0,0,0,0.25);
+.card-title{
+  font-weight:850;
+  font-size:14px;
+  margin:0;
 }
 
-.episode-row {
-  display: grid;
-  grid-template-columns: 120px 1fr;
-  gap: 12px;
-  padding: 10px 0;
-  border-top: 1px solid rgba(38, 43, 58, 0.75);
+.card-sub{
+  margin:4px 0 0 0;
+  color:var(--muted);
+  font-size:12px;
+  font-family:var(--mono);
 }
 
-.episode-row:first-child { border-top: none; }
-
-.episode-still {
-  width: 120px;
-  height: 68px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid var(--border-subtle);
-  background: rgba(0,0,0,0.25);
+/* Poster thumbnail */
+.thumb{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  overflow:hidden;
+  display:grid;
+  place-items:center;
 }
 
-.episode-title {
-  margin: 0;
-  font-weight: 950;
+.thumb img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
 }
 
-.episode-meta {
-  margin-top: 4px;
-  color: var(--text-muted);
-  font-size: 0.84rem;
-  font-weight: 750;
+.thumb .noimg{
+  font-size:11px;
+  font-weight:850;
+  color:rgba(255,255,255,0.65);
+  user-select:none;
 }
 
-.episode-actions {
-  margin-top: 8px;
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+/* Logo thumbnail */
+.logo{
+  width:24px;
+  height:24px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.06);
+  overflow:hidden;
+  display:grid;
+  place-items:center;
 }
 
-/* [CSS-12.0] Utility */
-.muted { color: var(--text-muted); }
-.hidden { display: none !important; }
+.logo img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
 
-/* [CSS-13.0] Small screens */
-@media (max-width: 720px) {
-  .show-hero-content {
-    grid-template-columns: 1fr;
+/* =========================
+   8) Icon strip
+   ========================= */
+
+.icon-strip{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+
+.icon-strip button{
+  width:28px;
+  height:28px;
+  border-radius:10px;
+  border:1px solid rgba(255,255,255,0.14);
+  background:rgba(255,255,255,0.06);
+  padding:0;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+}
+
+.icon-strip img{
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  display:block;
+}
+
+/* =========================
+   9) Popup system (global)
+   ========================= */
+
+#popup-overlay{
+  position:fixed;
+  inset:0;
+  z-index:80;
+  display:none;
+  background:rgba(0,0,0,0.72);
+  backdrop-filter:blur(6px);
+}
+
+#popup-container{
+  position:fixed;
+  inset:0;
+  z-index:90;
+  display:none;
+  pointer-events:none;
+}
+
+.popup{
+  pointer-events:auto;
+  position:absolute;
+  inset:6% 6%;
+  background:rgba(18,23,37,0.98);
+  border:1px solid rgba(255,255,255,0.16);
+  border-radius:var(--radius2);
+  box-shadow:var(--shadow-2);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden; /* trapped scroll in .popup-body */
+}
+
+.popup-header{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 14px;
+  border-bottom:1px solid var(--border);
+  background:rgba(15,20,32,0.96);
+}
+
+.popup-header .title{
+  font-weight:900;
+  font-size:15px;
+}
+
+.popup-header .spacer{ margin-left:auto; }
+
+.popup-header .btn{
+  height:34px;
+  padding:0 10px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.popup-body{
+  flex:1 1 auto;
+  overflow:auto;
+  padding:14px;
+}
+
+/* Popup stacked dimming hint (optional) */
+.popup[data-depth="0"]{ opacity:1; }
+.popup[data-depth="1"]{ opacity:0.98; }
+.popup[data-depth="2"]{ opacity:0.96; }
+
+/* =========================
+   10) Tables / key-value lists
+   ========================= */
+
+.kv{
+  display:grid;
+  grid-template-columns: 180px 1fr;
+  gap:10px 12px;
+  align-items:start;
+}
+
+.kv .k{
+  color:var(--muted);
+  font-size:12px;
+  font-family:var(--mono);
+}
+
+.kv .v{
+  color:var(--fg);
+  font-size:13px;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+/* =========================
+   11) Scrollbar (non-critical)
+   ========================= */
+
+*::-webkit-scrollbar{ width:10px; height:10px; }
+*::-webkit-scrollbar-track{ background:rgba(255,255,255,0.04); }
+*::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,0.16);
+  border-radius:999px;
+  border:2px solid rgba(0,0,0,0.20);
+}
+*::-webkit-scrollbar-thumb:hover{
+  background:rgba(255,255,255,0.22);
+}
+
+/* =========================
+   12) Accessibility helpers
+   ========================= */
+
+.sr-only{
+  position:absolute !important;
+  width:1px !important;
+  height:1px !important;
+  padding:0 !important;
+  margin:-1px !important;
+  overflow:hidden !important;
+  clip:rect(0,0,0,0) !important;
+  white-space:nowrap !important;
+  border:0 !important;
+}
+
+/* =========================
+   13) Responsive
+   ========================= */
+
+@media (max-width: 900px){
+  #brand{ min-width: 0; }
+  #header-right{ min-width: 0; }
+  .nav-btn{ min-width: 96px; }
+}
+
+@media (max-width: 720px){
+  #main-nav{
+    overflow:auto;
+    -webkit-overflow-scrolling:touch;
   }
-  .show-hero-poster {
-    width: 100%;
-    height: 260px;
+  .nav-btn{
+    min-width: 104px;
+    flex: 0 0 auto;
   }
-  .episode-row {
-    grid-template-columns: 1fr;
+  .popup{
+    inset: 4% 4%;
   }
-  .episode-still {
-    width: 100%;
-    height: 180px;
-  }
+}
+
+@media (max-width: 520px){
+  #global-header{ padding:0 10px; }
+  #main-nav{ padding:8px 10px; }
+  #content-root{ padding:10px; }
+  .popup{ inset: 3% 3%; }
 }
