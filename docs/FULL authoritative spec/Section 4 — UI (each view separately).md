@@ -1,60 +1,85 @@
+/* =========================================================================================
+[SECTION] 4.0 — UI (Each View Separately)
+[PROJECT] my_TV_Movie (My TV Hub)
+[ROLE] Global UI rules for all SPA views (parent section for 4.1–4.8)
+[VERSION] v4.5.0
+[UPDATED] 2025‑12‑19_00‑00‑00
+[OWNER] Andrew & Brant (internal)
+
+[PHASE 4.x CONTEXT]
+- This section defines the global UI rules for **SPA views only**.
+- SPA views are rendered inside `index.html` and follow the SPA navigation model.
+- The new `watchlist.html` is a **standalone, non‑SPA page** and is documented
+  separately in Section 4.9. It does NOT follow the rules in this section.
+- The deprecated `show.html` (v3.3.5 single‑show page) is removed and replaced
+  by Section 4.9.
+
+[NOTES]
+- This section defines the invariants that all SPA views must follow.
+- Individual SPA views are defined in Sections 4.1–4.8.
+- Standalone pages (currently only watchlist.html) are explicitly excluded.
+========================================================================================= */
+
 # Section 4.0 — UI (Each View Separately)
 
 ## Purpose
-This section defines the global UI requirements for My TV Hub and serves as the
-parent document for all individual UI view specifications. Each view is defined
-in its own subsection (4.1–4.8), but all views must comply with the global rules
-and invariants described here.
+This section defines the **global UI requirements for all SPA views** in My TV Hub.
+It serves as the parent document for the SPA view specifications in Sections 4.1–4.8.
 
-The UI is a deterministic, non‑reactive, non‑fetching interface that renders
-exclusively from the locally‑built `data.json` file. All views must follow the
-same rendering pipeline, navigation model, and interaction rules.
+SPA views are rendered **inside `index.html`**, use the shared navigation model,
+and must comply with the global rules and invariants defined here.
 
-## Global UI Principles
-All UI views must adhere to the following principles:
+**Important Architectural Note (Phase 4.x):**  
+`watchlist.html` is a **standalone, non‑SPA page** and is therefore documented
+separately in **Section 4.9**. It does not follow the SPA navigation model,
+popup system, or rendering pipeline described in this section.
 
-1. **Local‑Only Rendering**  
-   No view may fetch remote data at runtime. All content must come from the
-   canonical `data.json` file produced by the build pipeline.
+## Global UI Principles (SPA Views Only)
 
-2. **Deterministic Layout**  
-   Layouts must not shift, animate, or reflow unpredictably. All UI elements
-   must have fixed, spec‑defined positions and sizes.
+### 1. Local‑Only Rendering
+SPA views must render exclusively from the canonical `data.json` file produced by
+the build pipeline. No SPA view may fetch remote data at runtime.
 
-3. **Consistent Navigation Model**  
-   All views must support:
-   - DPAD navigation (Up/Down/Left/Right)
-   - Deterministic focus order
-   - Escape/back behavior
-   - No scroll‑jank or focus loss
+### 2. Deterministic Layout
+SPA layouts must not shift, animate, or reflow unpredictably. All UI elements
+must have fixed, spec‑defined positions and sizes.
 
-4. **Shared Styling and Components**  
-   All views must use:
-   - the global stylesheet (`my_tv_hub.css`)
-   - the shared header bar
-   - the shared footer/status area
-   - the shared iconography and asset rules (Section 7)
+### 3. Consistent Navigation Model
+All SPA views must support:
+- DPAD navigation (Up/Down/Left/Right)
+- Deterministic focus order
+- Escape/back behavior
+- No scroll‑jank or focus loss
 
-5. **Popup Compatibility**  
-   All views must support the popup chain defined in Section 5:
-   - Show Popup (P1)
-   - Season Popup (P2)
-   - Episode Popup (P3)
-   - Movie Popup (P4)
-   - Collection Popup (future phase)
-   - Person Popup (Removed; see Section 5.6)
+### 4. Shared Styling and Components
+All SPA views must use:
+- the global stylesheet (`my_tv_hub.css`)
+- the shared header bar
+- the shared footer/status area
+- the shared iconography and asset rules (Section 7)
 
-6. **Error Visibility**  
-   All views must surface errors from the `errors[]` array in `data.json` using
-   the global error viewer defined in Section 6.
+### 5. Popup Compatibility
+All SPA views must support the popup chain defined in Section 5:
+- Show Popup (P1)
+- Season Popup (P2)
+- Episode Popup (P3)
+- Movie Popup (P4)
+- Collection Popup (future phase)
+- Person Popup (Removed; see Section 5.6)
 
-7. **Accessibility and Appearance Controls**  
-   All views must respect the global appearance and accessibility settings
-   defined in the Config View (Section 4.5).
+### 6. Error Visibility
+SPA views must surface errors from the `errors[]` array in `data.json` using the
+global error viewer defined in Section 6.
+
+### 7. Accessibility and Appearance Controls
+SPA views must respect the global appearance and accessibility settings defined
+in the Config View (Section 4.5).
+
+---
 
 ## View Subsections
-Each view has its own dedicated specification:
 
+### SPA Views (inside index.html)
 - **4.1 — Calendar View**  
 - **4.2 — Shows View**  
 - **4.3 — Movies View**  
@@ -62,24 +87,42 @@ Each view has its own dedicated specification:
 - **4.5 — Config View**  
 - **4.6 — Explore View (future phase)**  
 - **4.7 — Profiles View (future phase)**  
-- **4.8 — Watchlist — Watched Filters (future phase)**
+- **4.8 — Watchlist — Watched Filters (future phase)**  
+
+### Standalone (non‑SPA) View
+- **4.9 — Watchlist (Standalone Page)**  
+  *(Replaces the deprecated `show.html` and uses the v3.3.5 Show Details UI.)*
 
 Each subsection defines:
-- required layout
-- required components
-- required navigation behavior
-- required data bindings
-- required popup triggers
-- required invariants
+- required layout  
+- required components  
+- required navigation behavior (SPA views only)  
+- required data bindings  
+- required popup triggers (SPA views only)  
+- required invariants  
+
+---
 
 ## Implementation Notes
-- All views must be implemented as static HTML files.
+
+### SPA Views
+- Implemented as static HTML fragments rendered inside `index.html`.
 - All dynamic behavior must be implemented in deterministic JavaScript modules.
-- No view may include inline scripts or inline styles.
-- All views must load the same core UI framework and rendering pipeline.
+- SPA views must **not** include inline scripts or inline styles.
+- SPA views must load the same core UI framework and rendering pipeline.
+
+### Standalone Exception — Section 4.9
+`watchlist.html` is intentionally allowed to use:
+- inline CSS  
+- inline JavaScript  
+- standalone rendering  
+- non‑SPA expand/collapse logic  
+
+This exception is documented fully in Section 4.9.
+
+---
 
 ## Versioning
 This section is versioned according to the global rules in Section 10. Any
-changes to UI structure, navigation, or rendering must increment the appropriate
-version fields.
-
+changes to SPA UI structure, navigation, or rendering must increment the
+appropriate version fields.
