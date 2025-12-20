@@ -1,0 +1,60 @@
+rel_path,header_file,project,role,version,updated,build,missing_header_fields,deprecated_image_ref
+.github/workflows/build-data.yml,.github/workflows/build-data.yml,my_TV_Movie,"Build data.json + assets via scripts, then publish to repo",v2.4.0,2025-12-19_00-00-00,14.01.05,,NO
+.github/workflows/compare1-build-data.yml,.github/workflows/build-data.yml,my_TV_Movie,"Build static datasets + optional image caching, then deploy (GitHub Pages)",v3.3.7,2025-12-17_15-40-00,14.02.01,,YES
+docs/actual text of the ChatGPT responsesQ1-Q5.txt,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",YES
+docs/FULL authoritative spec/..NOTES for the FULL authoritative spec+plan.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/File Versioning and Inventory Requirements.txt,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/FULL outline of the authoritative specV0.01.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/NOTES for the FULL authoritative spec+plan.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 0 — Index.md,,my_TV_Movie (My TV Hub),Master index of all SPEC sections,v4.5.0,2025‑12‑19_00‑00‑00,,"FILE,BUILD",NO
+docs/FULL authoritative spec/Section 1 — Global Rules.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 10 — Versioning.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 11 — Errors.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 12 — Future‑Phase.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 13 — Invariants.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 2 — Architecture.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 3 — Data Model.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4 — UI (each view separately).md,,my_TV_Movie (My TV Hub),Global UI rules for all SPA views (parent section for 4.1–4.8),v4.5.0,2025‑12‑19_00‑00‑00,,"FILE,BUILD",NO
+docs/FULL authoritative spec/Section 4.1 — Calendar View.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.2 — Shows View.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.3 — Movies View.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.4 — Live TV View.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.5 — Config View.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.6 — Explore View (future phase).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.7 — Profiles View (future phase).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.8 — Watchlist - Watched Filters (future phase).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 4.9 — Watchlist (Standalone Page).md,,my_TV_Movie (My TV Hub),Standalone Watchlist Page (non‑SPA),v4.5.0,2025‑12‑19_00‑00‑00,,"FILE,BUILD",YES
+docs/FULL authoritative spec/Section 5 — Popups.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 5.1 — Show Popup (P1).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 5.2 — Season Popup (P2).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 5.3 — Episode Popup (P3).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 5.4 — Movie Popup (P4).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 5.5 — Collection Popup (future phase).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 5.6 — Person Popup (future phase).md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 6 — UX.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 7 — Assets.md,,my_TV_Movie (My TV Hub),"Canonical asset hierarchy, naming rules, and required asset sets",v4.5.0,2025‑12‑19_00‑00‑00,,"FILE,BUILD",YES
+docs/FULL authoritative spec/Section 8 — Scripts.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/Section 9 — Workflow.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/FULL authoritative spec/version_and_inventory.ps1,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+docs/Network + Service Logo Spec.md,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",YES
+scripts/audit_versions.py,[PROJECT] [ROLE] [VERSION] [UPDATED] [BUILD],my_TV_Movie (My TV Hub),Version/header inventory + validation across repo (deterministic),v1.6.0,2025-12-19_00-00-00,14.01.05,,YES
+scripts/download_service_logos.py,scripts/download_service_logos.py,my_TV_Movie (My TV Hub),Download/update streaming service logos into canonical assets hierarchy,v1.8.0,2025-12-19_00-00-00,14.01.05,,YES
+scripts/fetch_live_tv.py,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+scripts/fetch_omdb.py,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+scripts/fetch_tmdb.py,scripts/fetch_tmdb.py,my_TV_Movie,Build static dataset (data/data.json) from TMDB + web/config.json,v2.6.3,2025-12-19_00-00-00,14.01.05,,YES
+scripts/fetch_trakt.py,scripts/fetch_trakt.py,my_TV_Movie,Enrich/Sync Trakt metadata into canonical data/data.json (watchlist + IDs),v2.2.0,2025-12-19_00-00-00,14.01.05,,YES
+scripts/fetch_tvmaze.py,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+scripts/find_asset_references.ps1,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",YES
+scripts/migrate_assets.ps1,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+scripts/sync_trakt.py,scripts/sync_trakt.py,my_TV_Movie,Deterministic orchestration wrapper for Trakt sync (invokes fetch_trakt.py),v1.4.0,2025-12-19_00-00-00,14.01.05,,YES
+web/.archive/config.html,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+web/.archive/shows_map.json,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+web/config.html,web/config.html,my_TV_Movie (My TV Hub),Legacy compatibility page (NOT an entry point; SPA entry is index.html only),v4.4.0,2025-12-19_00-00-00,00.00.00,,YES
+web/config.js,web/config.js,my_TV_Movie (My TV Hub),Config loader + Config View renderer helpers (for SPA integration),v4.6.0,2025-12-19_00-00-00,00.00.00,,YES
+web/config.json,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",YES
+web/css/my_tv_hub.css,web/css/my_tv_hub.css,my_TV_Movie (My TV Hub),Global UI stylesheet (SPA shell + shared components),v4.5.0,2025-12-19_00-00-00,00.00.00,,YES
+web/index.html,web/index.html,my_TV_Movie (My TV Hub),Single-Page Application shell (single entry point; dynamic views + popup root),v4.1.1,2025-12-19_00-00-00,00.00.00,,YES
+web/old.orignal.show.html.txt,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+web/show.html,,,,,,,"FILE,PROJECT,ROLE,VERSION,UPDATED,BUILD",NO
+web/watchlist.html,web/watchlist.html,my_TV_Movie (My TV Hub),Standalone Watchlist Page (non‑SPA),v4.5.0,2025-12-19_00-00-00,00.00.00,,YES
+web/web__show.html__v3.3.5.txt,web/show.html,my_TV_Movie (My TV Hub),Show details page (series accordion + season accordion + episode list),v3.3.5,2025-12-14,,BUILD,NO
