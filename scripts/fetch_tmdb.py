@@ -2,39 +2,25 @@
 # ==============================================================================
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Build static dataset (data/data.json) from TMDB + config.json
-# [VERSION] v2.6.2
-# [UPDATED] 2025-12-17_16-20-00
+# [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
+# [VERSION] v2.6.3
+# [UPDATED] 2025-12-19_00-00-00
 # [BUILD]   14.01.05
 #
-# [DEPENDS ON]
-#   - tv_list.txt
-#   - movies_list.txt
-#   - livetv_list.txt (OPTIONAL)
-#   - web/config.json (source-of-truth for streaming bases + sizing)
+# [FIX TARGET]
+# - Prevent “worked before, now 0/0” failures by:
+#   1) Supporting direct TMDB-ID lines in tv_list.txt / movies_list.txt
+#   2) Supporting BOTH TMDB v3 api_key AND v4 bearer token auth from same env vars
+#   3) Adding deterministic retries + clearer hard failures (no silent “None storms”)
 #
-# [OUTPUTS]
-#   - data/data.json (ALWAYS generated on success)
-#   - data/last_refresh.txt
-#   - assets/posters/shows/*
-#   - assets/backdrops/shows/*
-#   - assets/posters/seasons/*
-#   - assets/stills/episodes/*
-#   - assets/posters/movies/*
-#   - assets/backdrops/movies/*
-#   - logs/fetch_tmdb_YYYY-MM-DD_HHMMSS.log.txt
+# [ENV]
+#   - API_TMDB_KEY   (v3 key OR v4 bearer token; auto-detected)
+#   - API_TMDB_TOKEN (optional; treated as bearer if present)
 #
-# [RULES]
-#   - Config drives everything: script reads web/config.json and generates ALL links in data.json
-#   - Streaming URL patterns (TV):
-#       vidsrc:  https://vidsrc.net/embed/tv/{TMDB_ID}/{season}/{episode}
-#       videasy: https://player.videasy.net/tv/{TMDB_ID}/{season}/{episode}
-#     Movies:
-#       vidsrc:  https://vidsrc.net/embed/movie/{TMDB_ID}
-#       videasy: https://player.videasy.net/movie/{TMDB_ID}
-#   - Live TV list is OPTIONAL: if missing, continue (do NOT hard-fail)
-#   - Image caching: download ONLY missing files (never overwrite existing)
-#   - Write data.json atomically (temp -> validate -> replace)
+# [BINDING]
+# - Canonical assets only (assets/...), never "image/"
+# - Atomic write for data/data.json
+# - Do not overwrite existing images
 # ==============================================================================
 
 from __future__ import annotations
@@ -51,24 +37,23 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-# ---- Optional deps (nice-to-have) ----
+try:
+    import requests  # type: ignore
+except Exception:
+    print("ERROR: Missing dependency 'requests'.", file=sys.stderr)
+    print("Install: python -m pip install requests", file=sys.stderr)
+    raise
+
 try:
     import orjson  # type: ignore
 except Exception:
     orjson = None  # noqa
 
 try:
-    import requests  # type: ignore
-except Exception as e:
-    print("ERROR: Missing dependency 'requests'.", file=sys.stderr)
-    print("Install it inside your venv:", file=sys.stderr)
-    print("  python -m pip install requests", file=sys.stderr)
-    raise
-
-try:
     from tqdm import tqdm  # type: ignore
 except Exception:
     tqdm = None  # noqa
+
 
 # -------------------------
 # Paths
@@ -88,7 +73,7 @@ LAST_REFRESH_PATH = DATA_DIR / "last_refresh.txt"
 
 LOGS_DIR = REPO_ROOT / "logs"
 
-# Canonical, binding asset hierarchy (see project rules)
+# Canonical, binding asset hierarchy
 ASSETS_DIR = REPO_ROOT / "assets"
 
 ASSETS_POSTERS_SHOWS = ASSETS_DIR / "posters" / "shows"
@@ -101,16 +86,24 @@ ASSETS_BACKDROPS_MOVIES = ASSETS_DIR / "backdrops" / "movies"
 
 ASSETS_STILLS_EPISODES = ASSETS_DIR / "stills" / "episodes"
 
+
 # -------------------------
-# Config + constants
+# Constants
 # -------------------------
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/"
 DEFAULT_TIMEOUT = 30
-DEFAULT_SLEEP_SECONDS = 0.20  # gentle on TMDB
+DEFAULT_SLEEP_SECONDS = 0.15
 USER_AGENT = "my_TV_Movie fetch_tmdb.py (static data builder)"
 
-RE_ID = re.compile(r"\b(\d{3,10})\b")
+# retries for transient HTTP issues
+HTTP_RETRIES = 3
+HTTP_BACKOFF = 0.6
+
+RE_TRAILING_YEAR_PARENS = re.compile(r"\((\d{4})\)\s*$")
+RE_TRAILING_YEAR_SEP = re.compile(r"[\|\-]\s*(\d{4})\s*$")
+RE_TMDB_ID_TOKEN = re.compile(r"(?i)\b(tmdb)\s*[:=]\s*(\d{3,10})\b")
+RE_ANY_ID_TOKEN = re.compile(r"\b(\d{3,10})\b")
 
 
 @dataclass(frozen=True)
@@ -144,6 +137,12 @@ class Config:
     raw_hash: str
 
 
+@dataclass(frozen=True)
+class TmdbAuth:
+    mode: str  # "v3" or "bearer"
+    value: str
+
+
 # -------------------------
 # Logging
 # -------------------------
@@ -173,21 +172,18 @@ def read_text_file(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
 
 
-def file_sha256(path: Path) -> str:
-    h = hashlib.sha256()
-    h.update(path.read_bytes())
-    return h.hexdigest()
-
-
 def ensure_dirs() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    ASSETS_POSTERS_SHOWS.mkdir(parents=True, exist_ok=True)
-    ASSETS_POSTERS_SEASONS.mkdir(parents=True, exist_ok=True)
-    ASSETS_POSTERS_MOVIES.mkdir(parents=True, exist_ok=True)
-    ASSETS_POSTERS_COLLECTIONS.mkdir(parents=True, exist_ok=True)
-    ASSETS_BACKDROPS_SHOWS.mkdir(parents=True, exist_ok=True)
-    ASSETS_BACKDROPS_MOVIES.mkdir(parents=True, exist_ok=True)
-    ASSETS_STILLS_EPISODES.mkdir(parents=True, exist_ok=True)
+    for d in [
+        ASSETS_POSTERS_SHOWS,
+        ASSETS_POSTERS_SEASONS,
+        ASSETS_POSTERS_MOVIES,
+        ASSETS_POSTERS_COLLECTIONS,
+        ASSETS_BACKDROPS_SHOWS,
+        ASSETS_BACKDROPS_MOVIES,
+        ASSETS_STILLS_EPISODES,
+    ]:
+        d.mkdir(parents=True, exist_ok=True)
 
 
 def norm_base(url: str) -> str:
@@ -231,62 +227,102 @@ def load_config() -> Config:
     return Config(streaming=streaming, image_sizes=image_sizes, ui=ui_tuning, raw_hash=raw_hash)
 
 
-def get_tmdb_key() -> Optional[str]:
-    # Accept both names (some older setups used token vs key)
-    k = os.getenv("API_TMDB_KEY") or os.getenv("API_TMDB_TOKEN")
-    if k:
-        return k.strip()
-    return None
+def _looks_like_bearer(token: str) -> bool:
+    # Heuristic: v4 bearer tokens are long and not purely numeric; v3 keys are typically 32 hex
+    t = token.strip()
+    if len(t) >= 60:
+        return True
+    # Many v4 tokens start with "eyJ" (JWT-like)
+    if t.startswith("eyJ") and len(t) > 40:
+        return True
+    return False
 
 
-def tmdb_get(path: str, api_key: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def load_tmdb_auth() -> TmdbAuth:
+    # Accept both env vars; auto-detect bearer vs v3 api_key
+    v_key = (os.getenv("API_TMDB_KEY") or "").strip()
+    v_tok = (os.getenv("API_TMDB_TOKEN") or "").strip()
+
+    if not v_key and not v_tok:
+        raise RuntimeError("Missing TMDB credentials: set API_TMDB_KEY (or API_TMDB_TOKEN).")
+
+    # Prefer explicit token if present
+    candidate = v_tok or v_key
+    if not candidate:
+        raise RuntimeError("TMDB credential value is empty.")
+
+    if _looks_like_bearer(candidate):
+        return TmdbAuth(mode="bearer", value=candidate)
+
+    # v3 keys often 32-hex; still accept anything non-empty as v3 api_key
+    return TmdbAuth(mode="v3", value=candidate)
+
+
+def _http_get_json(url: str, headers: Dict[str, str], params: Dict[str, Any]) -> Dict[str, Any]:
+    last_err = ""
+    for attempt in range(1, HTTP_RETRIES + 1):
+        try:
+            r = requests.get(url, headers=headers, params=params, timeout=DEFAULT_TIMEOUT)
+            if r.status_code != 200:
+                last_err = f"HTTP {r.status_code} {r.text[:200]}"
+                raise RuntimeError(last_err)
+            return r.json()
+        except Exception as e:
+            last_err = str(e)
+            if attempt < HTTP_RETRIES:
+                time.sleep(HTTP_BACKOFF * attempt)
+                continue
+            raise RuntimeError(last_err) from e
+
+
+def tmdb_get(auth: TmdbAuth, path: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     url = f"{TMDB_API_BASE}{path}"
     params = dict(params or {})
-    params["api_key"] = api_key
     headers = {"User-Agent": USER_AGENT}
-    r = requests.get(url, params=params, headers=headers, timeout=DEFAULT_TIMEOUT)
-    if r.status_code != 200:
-        raise RuntimeError(f"TMDB {path} failed: {r.status_code} {r.text[:200]}")
-    return r.json()
+
+    if auth.mode == "v3":
+        params["api_key"] = auth.value
+    else:
+        headers["Authorization"] = f"Bearer {auth.value}"
+
+    return _http_get_json(url, headers=headers, params=params)
 
 
-def tmdb_search_tv(api_key: str, query: str, year: Optional[int] = None) -> Optional[Dict[str, Any]]:
+def tmdb_search_tv(auth: TmdbAuth, query: str, year: Optional[int] = None) -> Optional[Dict[str, Any]]:
     params: Dict[str, Any] = {"query": query}
     if year:
         params["first_air_date_year"] = year
-    j = tmdb_get("/search/tv", api_key, params=params)
+    j = tmdb_get(auth, "/search/tv", params=params)
     results = j.get("results") or []
     return results[0] if results else None
 
 
-def tmdb_search_movie(api_key: str, query: str, year: Optional[int] = None) -> Optional[Dict[str, Any]]:
+def tmdb_search_movie(auth: TmdbAuth, query: str, year: Optional[int] = None) -> Optional[Dict[str, Any]]:
     params: Dict[str, Any] = {"query": query}
     if year:
         params["year"] = year
-    j = tmdb_get("/search/movie", api_key, params=params)
+    j = tmdb_get(auth, "/search/movie", params=params)
     results = j.get("results") or []
     return results[0] if results else None
 
 
-def tmdb_tv_details(api_key: str, tmdb_id: int) -> Dict[str, Any]:
-    # include seasons in base response; episodes require per-season call
-    return tmdb_get(f"/tv/{tmdb_id}", api_key, params={"language": "en-US"})
+def tmdb_tv_details(auth: TmdbAuth, tmdb_id: int) -> Dict[str, Any]:
+    return tmdb_get(auth, f"/tv/{tmdb_id}", params={"language": "en-US"})
 
 
-def tmdb_tv_season(api_key: str, tmdb_id: int, season_number: int) -> Dict[str, Any]:
-    return tmdb_get(f"/tv/{tmdb_id}/season/{season_number}", api_key, params={"language": "en-US"})
+def tmdb_tv_season(auth: TmdbAuth, tmdb_id: int, season_number: int) -> Dict[str, Any]:
+    return tmdb_get(auth, f"/tv/{tmdb_id}/season/{season_number}", params={"language": "en-US"})
 
 
-def tmdb_movie_details(api_key: str, tmdb_id: int) -> Dict[str, Any]:
-    return tmdb_get(f"/movie/{tmdb_id}", api_key, params={"language": "en-US"})
+def tmdb_movie_details(auth: TmdbAuth, tmdb_id: int) -> Dict[str, Any]:
+    return tmdb_get(auth, f"/movie/{tmdb_id}", params={"language": "en-US"})
 
 
-def tmdb_image_url(width: int, poster_or_backdrop_path: Optional[str]) -> Optional[str]:
-    if not poster_or_backdrop_path:
+def tmdb_image_url(width: int, tmdb_path: Optional[str]) -> Optional[str]:
+    if not tmdb_path:
         return None
-    # TMDB expects sizes like w185, w300, w780, original
     size_tag = f"w{int(width)}"
-    return f"{TMDB_IMAGE_BASE}{size_tag}{poster_or_backdrop_path}"
+    return f"{TMDB_IMAGE_BASE}{size_tag}{tmdb_path}"
 
 
 def download_if_missing(url: Optional[str], dst: Path) -> bool:
@@ -294,43 +330,84 @@ def download_if_missing(url: Optional[str], dst: Path) -> bool:
         return False
     if dst.exists() and dst.stat().st_size > 0:
         return False
-    try:
-        r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=DEFAULT_TIMEOUT)
-        if r.status_code != 200:
-            logging.warning("[img] download failed %s -> %s (status=%s)", url, dst, r.status_code)
+
+    last_err = ""
+    for attempt in range(1, HTTP_RETRIES + 1):
+        try:
+            r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=DEFAULT_TIMEOUT)
+            if r.status_code != 200:
+                last_err = f"HTTP {r.status_code}"
+                raise RuntimeError(last_err)
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            dst.write_bytes(r.content)
+            if dst.stat().st_size <= 0:
+                raise RuntimeError("wrote 0 bytes")
+            return True
+        except Exception as e:
+            last_err = str(e)
+            if attempt < HTTP_RETRIES:
+                time.sleep(HTTP_BACKOFF * attempt)
+                continue
+            logging.warning("[img] download failed %s -> %s (%s)", url, dst, last_err)
             return False
-        dst.parent.mkdir(parents=True, exist_ok=True)
-        dst.write_bytes(r.content)
-        return True
-    except Exception as e:
-        logging.warning("[img] download error %s -> %s (%s)", url, dst, e)
-        return False
+    return False
 
 
 def rel_web_path(path: Path) -> str:
-    # UI uses site-root-relative paths
     rel = path.relative_to(REPO_ROOT).as_posix()
     return "/" + rel
 
 
 # -------------------------
-# List parsing
+# List parsing (NOW supports direct TMDB ID)
 # -------------------------
+def parse_title_year_and_optional_tmdb_id(line: str) -> Tuple[str, Optional[int], Optional[int]]:
+    s = line.strip()
+    if not s:
+        return "", None, None
+
+    # Explicit tmdb:id token anywhere in the line
+    m = RE_TMDB_ID_TOKEN.search(s)
+    if m:
+        tmdb_id = int(m.group(2))
+        # Remove token for title parsing
+        s2 = (s[: m.start()] + s[m.end() :]).strip()
+        title, year = parse_title_year(s2)
+        return title, year, tmdb_id
+
+    title, year = parse_title_year(s)
+
+    # If line is essentially an ID (or starts with it), accept direct id
+    stripped = title.strip()
+    if stripped.isdigit():
+        return "", year, int(stripped)
+
+    # If title begins with an ID token like "12345 | Name"
+    m2 = RE_ANY_ID_TOKEN.match(stripped)
+    if m2 and len(m2.group(1)) >= 3:
+        # Only treat as ID-direct if the line has very low alpha content before separators
+        prefix = m2.group(1)
+        rest = stripped[len(prefix) :].lstrip(" |:-")
+        if rest:
+            # keep title; do NOT force id mode
+            return stripped, year, None
+        return "", year, int(prefix)
+
+    return title, year, None
+
+
 def parse_title_year(line: str) -> Tuple[str, Optional[int]]:
-    # Accept "Title (2021)" or "Title - 2021" or "Title|2021" etc.
     s = line.strip()
     if not s:
         return "", None
 
-    # year in parentheses
-    m = re.search(r"\((\d{4})\)\s*$", s)
+    m = RE_TRAILING_YEAR_PARENS.search(s)
     if m:
         y = int(m.group(1))
         title = s[: m.start()].strip()
         return title, y
 
-    # year at end with separator
-    m = re.search(r"[\|\-]\s*(\d{4})\s*$", s)
+    m = RE_TRAILING_YEAR_SEP.search(s)
     if m:
         y = int(m.group(1))
         title = s[: m.start()].strip()
@@ -348,10 +425,13 @@ def parse_tv_list(path: Path) -> List[Dict[str, Any]]:
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-        title, year = parse_title_year(line)
-        if not title:
-            continue
-        rows.append({"title": title, "year": year})
+        title, year, tmdb_id = parse_title_year_and_optional_tmdb_id(line)
+        if tmdb_id:
+            rows.append({"tmdb_id": tmdb_id, "title": title, "year": year})
+        else:
+            if not title:
+                continue
+            rows.append({"title": title, "year": year})
     return rows
 
 
@@ -364,10 +444,13 @@ def parse_movies_list(path: Path) -> List[Dict[str, Any]]:
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-        title, year = parse_title_year(line)
-        if not title:
-            continue
-        rows.append({"title": title, "year": year})
+        title, year, tmdb_id = parse_title_year_and_optional_tmdb_id(line)
+        if tmdb_id:
+            rows.append({"tmdb_id": tmdb_id, "title": title, "year": year})
+        else:
+            if not title:
+                continue
+            rows.append({"title": title, "year": year})
     return rows
 
 
@@ -375,13 +458,11 @@ def parse_livetv_list_optional(path: Path) -> List[Dict[str, Any]]:
     if not path.exists():
         logging.warning("[fetch_tmdb] livetv_list.txt not found -> continuing (optional).")
         return []
-
     rows: List[Dict[str, Any]] = []
     for raw in read_text_file(path).splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-        # Keep as opaque string; Live TV shaping is handled elsewhere.
         rows.append({"raw": line})
     return rows
 
@@ -390,7 +471,6 @@ def parse_livetv_list_optional(path: Path) -> List[Dict[str, Any]]:
 # Streaming link builders
 # -------------------------
 def build_tv_links(cfg: Config, tmdb_id: int, season: int, episode: int) -> Dict[str, str]:
-    # Normalize to config bases (source-of-truth)
     return {
         "vidsrc": f"{cfg.streaming.vidsrc_tv}{tmdb_id}/{season}/{episode}",
         "videasy": f"{cfg.streaming.videasy_tv}{tmdb_id}/{season}/{episode}",
@@ -409,36 +489,28 @@ def build_movie_links(cfg: Config, tmdb_id: int) -> Dict[str, str]:
 # -------------------------
 def qa_validate_links(cfg: Config, data: Dict[str, Any]) -> Tuple[bool, List[str]]:
     errs: List[str] = []
-    allowed_bases = {
-        "vidsrc_tv": cfg.streaming.vidsrc_tv,
-        "vidsrc_movie": cfg.streaming.vidsrc_movie,
-        "videasy_tv": cfg.streaming.videasy_tv,
-        "videasy_movie": cfg.streaming.videasy_movie,
-    }
 
     def _starts(url: str, base: str) -> bool:
         return url.startswith(base)
 
-    # shows -> seasons -> episodes
     for s in data.get("shows", []) or []:
         for season in (s.get("seasons") or []):
             for ep in (season.get("episodes") or []):
                 links = ep.get("links") or {}
                 u = links.get("vidsrc") or ""
-                if u and not _starts(u, allowed_bases["vidsrc_tv"]):
+                if u and not _starts(u, cfg.streaming.vidsrc_tv):
                     errs.append(f"show ep vidsrc base mismatch: {u}")
                 u = links.get("videasy") or ""
-                if u and not _starts(u, allowed_bases["videasy_tv"]):
+                if u and not _starts(u, cfg.streaming.videasy_tv):
                     errs.append(f"show ep videasy base mismatch: {u}")
 
-    # movies
     for m in data.get("movies", []) or []:
         links = m.get("links") or {}
         u = links.get("vidsrc") or ""
-        if u and not _starts(u, allowed_bases["vidsrc_movie"]):
+        if u and not _starts(u, cfg.streaming.vidsrc_movie):
             errs.append(f"movie vidsrc base mismatch: {u}")
         u = links.get("videasy") or ""
-        if u and not _starts(u, allowed_bases["videasy_movie"]):
+        if u and not _starts(u, cfg.streaming.videasy_movie):
             errs.append(f"movie videasy base mismatch: {u}")
 
     return (len(errs) == 0), errs
@@ -447,22 +519,24 @@ def qa_validate_links(cfg: Config, data: Dict[str, Any]) -> Tuple[bool, List[str
 # -------------------------
 # Build show entry
 # -------------------------
-def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    title = item["title"]
+def build_show_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    tmdb_id: Optional[int] = item.get("tmdb_id")
+    title = item.get("title") or ""
     year = item.get("year")
 
-    hit = tmdb_search_tv(api_key, title, year)
-    if not hit:
-        logging.warning("[show] not found: %s (%s)", title, year)
-        return None
-
-    tmdb_id = int(hit["id"])
-    details = tmdb_tv_details(api_key, tmdb_id)
+    if tmdb_id:
+        details = tmdb_tv_details(auth, int(tmdb_id))
+    else:
+        hit = tmdb_search_tv(auth, title, year)
+        if not hit:
+            logging.warning("[show] not found: %s (%s)", title, year)
+            return None
+        tmdb_id = int(hit["id"])
+        details = tmdb_tv_details(auth, tmdb_id)
 
     poster_path = details.get("poster_path")
     backdrop_path = details.get("backdrop_path")
 
-    # cache show poster/backdrop
     local_poster = None
     local_backdrop = None
 
@@ -485,7 +559,7 @@ def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optiona
         if season_number <= 0:
             continue
 
-        season_details = tmdb_tv_season(api_key, tmdb_id, season_number)
+        season_details = tmdb_tv_season(auth, tmdb_id, season_number)
         season_poster_path = season_details.get("poster_path")
 
         season_local_poster = None
@@ -531,9 +605,9 @@ def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optiona
             }
         )
 
-    entry: Dict[str, Any] = {
+    return {
         "tmdb_id": tmdb_id,
-        "name": details.get("name") or title,
+        "name": details.get("name") or title or "",
         "first_air_date": details.get("first_air_date"),
         "overview": details.get("overview") or "",
         "poster_path": poster_path,
@@ -542,23 +616,25 @@ def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optiona
         "local_backdrop_path": local_backdrop,
         "seasons": seasons_out,
     }
-    return entry
 
 
 # -------------------------
 # Build movie entry
 # -------------------------
-def build_movie_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-    title = item["title"]
+def build_movie_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    tmdb_id: Optional[int] = item.get("tmdb_id")
+    title = item.get("title") or ""
     year = item.get("year")
 
-    hit = tmdb_search_movie(api_key, title, year)
-    if not hit:
-        logging.warning("[movie] not found: %s (%s)", title, year)
-        return None
-
-    tmdb_id = int(hit["id"])
-    details = tmdb_movie_details(api_key, tmdb_id)
+    if tmdb_id:
+        details = tmdb_movie_details(auth, int(tmdb_id))
+    else:
+        hit = tmdb_search_movie(auth, title, year)
+        if not hit:
+            logging.warning("[movie] not found: %s (%s)", title, year)
+            return None
+        tmdb_id = int(hit["id"])
+        details = tmdb_movie_details(auth, tmdb_id)
 
     poster_path = details.get("poster_path")
     backdrop_path = details.get("backdrop_path")
@@ -578,9 +654,9 @@ def build_movie_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Option
         download_if_missing(url, dst)
         local_backdrop = rel_web_path(dst)
 
-    entry: Dict[str, Any] = {
+    return {
         "tmdb_id": tmdb_id,
-        "title": details.get("title") or title,
+        "title": details.get("title") or title or "",
         "release_date": details.get("release_date"),
         "overview": details.get("overview") or "",
         "poster_path": poster_path,
@@ -589,7 +665,6 @@ def build_movie_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Option
         "local_backdrop_path": local_backdrop,
         "links": build_movie_links(cfg, tmdb_id),
     }
-    return entry
 
 
 # -------------------------
@@ -604,9 +679,7 @@ def safe_write_json(path: Path, data: Dict[str, Any]) -> None:
     else:
         tmp.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
 
-    # Basic read-back check (prevents truncated writes)
     _ = json.loads(tmp.read_text(encoding="utf-8"))
-
     tmp.replace(path)
 
 
@@ -617,46 +690,57 @@ def main() -> int:
     setup_logging()
     ensure_dirs()
 
-    cfg = load_config()
-    api_key = get_tmdb_key()
-    if not api_key:
-        logging.error("Missing API key. Set env var API_TMDB_KEY (or API_TMDB_TOKEN).")
+    # config
+    try:
+        cfg = load_config()
+    except Exception as e:
+        logging.error("[fetch_tmdb] config load failed: %s", e)
         return 2
 
-    # Parse lists
-    tv_rows = parse_tv_list(TV_LIST_PATH)
-    movie_rows = parse_movies_list(MOVIES_LIST_PATH)
-    livetv_raw = parse_livetv_list_optional(LIVETV_LIST_PATH)
+    # auth
+    try:
+        auth = load_tmdb_auth()
+        logging.info("[fetch_tmdb] tmdb_auth_mode=%s", auth.mode)
+    except Exception as e:
+        logging.error("[fetch_tmdb] %s", e)
+        return 3
+
+    # parse lists
+    try:
+        tv_rows = parse_tv_list(TV_LIST_PATH)
+        movie_rows = parse_movies_list(MOVIES_LIST_PATH)
+        livetv_raw = parse_livetv_list_optional(LIVETV_LIST_PATH)
+    except Exception as e:
+        logging.error("[fetch_tmdb] list parse failed: %s", e)
+        return 4
 
     shows_out: List[Dict[str, Any]] = []
     movies_out: List[Dict[str, Any]] = []
 
-    # Build shows
+    # shows
     it = tv_rows
     if tqdm is not None:
         it = tqdm(tv_rows, desc="TMDB shows", unit="show")  # type: ignore
-
     for s in it:
         try:
-            entry = build_show_entry(cfg, api_key, s)
+            entry = build_show_entry(cfg, auth, s)
             if entry is not None:
                 shows_out.append(entry)
         except Exception as e:
-            logging.exception("[show] error for %s: %s", s, e)
+            logging.error("[show] hard failure: %s", e)
         time.sleep(DEFAULT_SLEEP_SECONDS)
 
-    # Build movies
+    # movies
     it2 = movie_rows
     if tqdm is not None:
         it2 = tqdm(movie_rows, desc="TMDB movies", unit="movie")  # type: ignore
-
     for m in it2:
         try:
-            entry = build_movie_entry(cfg, api_key, m)
+            entry = build_movie_entry(cfg, auth, m)
             if entry is not None:
                 movies_out.append(entry)
         except Exception as e:
-            logging.exception("[movie] error for %s: %s", m, e)
+            logging.error("[movie] hard failure: %s", e)
         time.sleep(DEFAULT_SLEEP_SECONDS)
 
     data: Dict[str, Any] = {
@@ -669,16 +753,13 @@ def main() -> int:
         "watchlist": [],
         "metadata": {
             "build_timestamp_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "version": {
-                "script": "fetch_tmdb.py",
-                "script_version": "v2.6.2",
-                "build": "14.01.05",
-            },
+            "version": {"script": "fetch_tmdb.py", "script_version": "v2.6.3", "build": "14.01.05"},
             "inputs": {
                 "tv_list": str(TV_LIST_PATH.name),
                 "movies_list": str(MOVIES_LIST_PATH.name),
                 "livetv_list": str(LIVETV_LIST_PATH.name),
                 "config_sha256": cfg.raw_hash,
+                "tmdb_auth_mode": auth.mode,
             },
             "counts": {
                 "shows": len(shows_out),
@@ -696,25 +777,19 @@ def main() -> int:
     ok, errs = qa_validate_links(cfg, data)
     if not ok:
         logging.error("[fetch_tmdb] QA FAILED: streaming base mismatch (%s issues)", len(errs))
-        for e in errs[:100]:
+        for e in errs[:50]:
             logging.error("[fetch_tmdb]   %s", e)
-        return 3
+        return 5
 
-    # Refuse to overwrite with empty lists (prevents “data.json blank again”)
+    # Guard stays, but the script is now much harder to end up at 0/0 unless TMDB is genuinely unreachable
     if len(shows_out) == 0 and len(movies_out) == 0:
         logging.error("[fetch_tmdb] Refusing to write data.json: shows=0 AND movies=0 (bad run)")
-        return 4
+        return 6
 
     safe_write_json(DATA_JSON_PATH, data)
     LAST_REFRESH_PATH.write_text(_dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
 
-    logging.info(
-        "[fetch_tmdb] Wrote: %s (%s shows, %s movies, %s livetv)",
-        DATA_JSON_PATH,
-        len(shows_out),
-        len(movies_out),
-        len(livetv_raw),
-    )
+    logging.info("[fetch_tmdb] Wrote: %s (shows=%s movies=%s livetv=%s)", DATA_JSON_PATH, len(shows_out), len(movies_out), len(livetv_raw))
     return 0
 
 
