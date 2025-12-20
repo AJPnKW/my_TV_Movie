@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 # ==============================================================================
-# [FILE]        scripts/fetch_tmdb.py
-# [PROJECT]     my_TV_Movie
-# [ROLE]        Build static dataset (data/data.json) from TMDB + config.json
-# [VERSION]     v2.6.2
-# [UPDATED]     2025-12-17_16-20-00
-# [BUILD]       14.01.05
+# [FILE]    scripts/fetch_tmdb.py
+# [PROJECT] my_TV_Movie
+# [ROLE]    Build static dataset (data/data.json) from TMDB + config.json
+# [VERSION] v2.6.2
+# [UPDATED] 2025-12-17_16-20-00
+# [BUILD]   14.01.05
 #
 # [DEPENDS ON]
 #   - tv_list.txt
 #   - movies_list.txt
-#   - livetv_list.txt                 (OPTIONAL)
-#   - web/config.json                 (source-of-truth for streaming bases + sizing)
+#   - livetv_list.txt (OPTIONAL)
+#   - web/config.json (source-of-truth for streaming bases + sizing)
 #
 # [OUTPUTS]
-#   - data/data.json                  (ALWAYS generated on success)
+#   - data/data.json (ALWAYS generated on success)
 #   - data/last_refresh.txt
-#   - image/shows/poster/*.jpg
-#   - image/shows/backdrop/*.jpg
-#   - image/shows/seasons/poster/*.jpg
-#   - image/shows/episodes/stills/*.jpg
-#   - image/movies/poster/*.jpg
-#   - image/movies/backdrop/*.jpg
+#   - assets/posters/shows/*
+#   - assets/backdrops/shows/*
+#   - assets/posters/seasons/*
+#   - assets/stills/episodes/*
+#   - assets/posters/movies/*
+#   - assets/backdrops/movies/*
 #   - logs/fetch_tmdb_YYYY-MM-DD_HHMMSS.log.txt
 #
 # [RULES]
@@ -60,7 +60,8 @@ except Exception:
 try:
     import requests  # type: ignore
 except Exception as e:
-    print("ERROR: Missing dependency 'requests'. Install it inside your venv:", file=sys.stderr)
+    print("ERROR: Missing dependency 'requests'.", file=sys.stderr)
+    print("Install it inside your venv:", file=sys.stderr)
     print("  python -m pip install requests", file=sys.stderr)
     raise
 
@@ -68,7 +69,6 @@ try:
     from tqdm import tqdm  # type: ignore
 except Exception:
     tqdm = None  # noqa
-
 
 # -------------------------
 # Paths
@@ -88,25 +88,24 @@ LAST_REFRESH_PATH = DATA_DIR / "last_refresh.txt"
 
 LOGS_DIR = REPO_ROOT / "logs"
 
-IMAGE_DIR = REPO_ROOT / "image"
-IMG_SHOWS = IMAGE_DIR / "shows"
-IMG_MOVIES = IMAGE_DIR / "movies"
+# Canonical, binding asset hierarchy (see project rules)
+ASSETS_DIR = REPO_ROOT / "assets"
 
-IMG_SHOWS_POSTER = IMG_SHOWS / "poster"
-IMG_SHOWS_BACKDROP = IMG_SHOWS / "backdrop"
-IMG_SHOWS_SEASON_POSTER = IMG_SHOWS / "seasons" / "poster"
-IMG_SHOWS_EP_STILLS = IMG_SHOWS / "episodes" / "stills"
+ASSETS_POSTERS_SHOWS = ASSETS_DIR / "posters" / "shows"
+ASSETS_POSTERS_SEASONS = ASSETS_DIR / "posters" / "seasons"
+ASSETS_POSTERS_MOVIES = ASSETS_DIR / "posters" / "movies"
+ASSETS_POSTERS_COLLECTIONS = ASSETS_DIR / "posters" / "collections"
 
-IMG_MOVIES_POSTER = IMG_MOVIES / "poster"
-IMG_MOVIES_BACKDROP = IMG_MOVIES / "backdrop"
+ASSETS_BACKDROPS_SHOWS = ASSETS_DIR / "backdrops" / "shows"
+ASSETS_BACKDROPS_MOVIES = ASSETS_DIR / "backdrops" / "movies"
 
+ASSETS_STILLS_EPISODES = ASSETS_DIR / "stills" / "episodes"
 
 # -------------------------
 # Config + constants
 # -------------------------
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/"
-
 DEFAULT_TIMEOUT = 30
 DEFAULT_SLEEP_SECONDS = 0.20  # gentle on TMDB
 USER_AGENT = "my_TV_Movie fetch_tmdb.py (static data builder)"
@@ -155,7 +154,6 @@ def _now_stamp() -> str:
 def setup_logging() -> Path:
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
     log_path = LOGS_DIR / f"fetch_tmdb_{_now_stamp()}.log.txt"
-
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s | %(levelname)s | %(message)s",
@@ -183,14 +181,13 @@ def file_sha256(path: Path) -> str:
 
 def ensure_dirs() -> None:
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-    IMG_SHOWS_POSTER.mkdir(parents=True, exist_ok=True)
-    IMG_SHOWS_BACKDROP.mkdir(parents=True, exist_ok=True)
-    IMG_SHOWS_SEASON_POSTER.mkdir(parents=True, exist_ok=True)
-    IMG_SHOWS_EP_STILLS.mkdir(parents=True, exist_ok=True)
-
-    IMG_MOVIES_POSTER.mkdir(parents=True, exist_ok=True)
-    IMG_MOVIES_BACKDROP.mkdir(parents=True, exist_ok=True)
+    ASSETS_POSTERS_SHOWS.mkdir(parents=True, exist_ok=True)
+    ASSETS_POSTERS_SEASONS.mkdir(parents=True, exist_ok=True)
+    ASSETS_POSTERS_MOVIES.mkdir(parents=True, exist_ok=True)
+    ASSETS_POSTERS_COLLECTIONS.mkdir(parents=True, exist_ok=True)
+    ASSETS_BACKDROPS_SHOWS.mkdir(parents=True, exist_ok=True)
+    ASSETS_BACKDROPS_MOVIES.mkdir(parents=True, exist_ok=True)
+    ASSETS_STILLS_EPISODES.mkdir(parents=True, exist_ok=True)
 
 
 def norm_base(url: str) -> str:
@@ -206,7 +203,6 @@ def load_config() -> Config:
 
     raw = read_text_file(CONFIG_JSON_PATH)
     raw_hash = hashlib.sha256(raw.encode("utf-8")).hexdigest()
-
     cfg = json.loads(raw)
 
     ss = cfg.get("streaming_services", {}) or {}
@@ -247,7 +243,6 @@ def tmdb_get(path: str, api_key: str, params: Optional[Dict[str, Any]] = None) -
     url = f"{TMDB_API_BASE}{path}"
     params = dict(params or {})
     params["api_key"] = api_key
-
     headers = {"User-Agent": USER_AGENT}
     r = requests.get(url, params=params, headers=headers, timeout=DEFAULT_TIMEOUT)
     if r.status_code != 200:
@@ -299,7 +294,6 @@ def download_if_missing(url: Optional[str], dst: Path) -> bool:
         return False
     if dst.exists() and dst.stat().st_size > 0:
         return False
-
     try:
         r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=DEFAULT_TIMEOUT)
         if r.status_code != 200:
@@ -348,6 +342,7 @@ def parse_title_year(line: str) -> Tuple[str, Optional[int]]:
 def parse_tv_list(path: Path) -> List[Dict[str, Any]]:
     if not path.exists():
         raise FileNotFoundError(f"Missing required file: {path}")
+
     rows: List[Dict[str, Any]] = []
     for raw in read_text_file(path).splitlines():
         line = raw.strip()
@@ -363,6 +358,7 @@ def parse_tv_list(path: Path) -> List[Dict[str, Any]]:
 def parse_movies_list(path: Path) -> List[Dict[str, Any]]:
     if not path.exists():
         raise FileNotFoundError(f"Missing required file: {path}")
+
     rows: List[Dict[str, Any]] = []
     for raw in read_text_file(path).splitlines():
         line = raw.strip()
@@ -377,21 +373,24 @@ def parse_movies_list(path: Path) -> List[Dict[str, Any]]:
 
 def parse_livetv_list_optional(path: Path) -> List[Dict[str, Any]]:
     if not path.exists():
-        logging.warning("[fetch_tmdb] livetv_list.txt not found -> continuing (optional). expected=%s", path)
+        logging.warning("[fetch_tmdb] livetv_list.txt not found -> continuing (optional).")
         return []
+
     rows: List[Dict[str, Any]] = []
     for raw in read_text_file(path).splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-        rows.append({"name": line})
+        # Keep as opaque string; Live TV shaping is handled elsewhere.
+        rows.append({"raw": line})
     return rows
 
 
 # -------------------------
-# Link generation + QA
+# Streaming link builders
 # -------------------------
 def build_tv_links(cfg: Config, tmdb_id: int, season: int, episode: int) -> Dict[str, str]:
+    # Normalize to config bases (source-of-truth)
     return {
         "vidsrc": f"{cfg.streaming.vidsrc_tv}{tmdb_id}/{season}/{episode}",
         "videasy": f"{cfg.streaming.videasy_tv}{tmdb_id}/{season}/{episode}",
@@ -405,6 +404,9 @@ def build_movie_links(cfg: Config, tmdb_id: int) -> Dict[str, str]:
     }
 
 
+# -------------------------
+# QA: link base validation
+# -------------------------
 def qa_validate_links(cfg: Config, data: Dict[str, Any]) -> Tuple[bool, List[str]]:
     errs: List[str] = []
     allowed_bases = {
@@ -422,27 +424,28 @@ def qa_validate_links(cfg: Config, data: Dict[str, Any]) -> Tuple[bool, List[str
         for season in (s.get("seasons") or []):
             for ep in (season.get("episodes") or []):
                 links = ep.get("links") or {}
-                v1 = links.get("vidsrc") or ""
-                v2 = links.get("videasy") or ""
-                if v1 and not _starts(v1, allowed_bases["vidsrc_tv"]):
-                    errs.append(f"TV vidsrc base mismatch: {v1}")
-                if v2 and not _starts(v2, allowed_bases["videasy_tv"]):
-                    errs.append(f"TV videasy base mismatch: {v2}")
+                u = links.get("vidsrc") or ""
+                if u and not _starts(u, allowed_bases["vidsrc_tv"]):
+                    errs.append(f"show ep vidsrc base mismatch: {u}")
+                u = links.get("videasy") or ""
+                if u and not _starts(u, allowed_bases["videasy_tv"]):
+                    errs.append(f"show ep videasy base mismatch: {u}")
 
+    # movies
     for m in data.get("movies", []) or []:
         links = m.get("links") or {}
-        v1 = links.get("vidsrc") or ""
-        v2 = links.get("videasy") or ""
-        if v1 and not _starts(v1, allowed_bases["vidsrc_movie"]):
-            errs.append(f"Movie vidsrc base mismatch: {v1}")
-        if v2 and not _starts(v2, allowed_bases["videasy_movie"]):
-            errs.append(f"Movie videasy base mismatch: {v2}")
+        u = links.get("vidsrc") or ""
+        if u and not _starts(u, allowed_bases["vidsrc_movie"]):
+            errs.append(f"movie vidsrc base mismatch: {u}")
+        u = links.get("videasy") or ""
+        if u and not _starts(u, allowed_bases["videasy_movie"]):
+            errs.append(f"movie videasy base mismatch: {u}")
 
     return (len(errs) == 0), errs
 
 
 # -------------------------
-# Builders
+# Build show entry
 # -------------------------
 def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     title = item["title"]
@@ -464,13 +467,13 @@ def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optiona
     local_backdrop = None
 
     if poster_path:
-        dst = IMG_SHOWS_POSTER / poster_path.lstrip("/")
+        dst = ASSETS_POSTERS_SHOWS / poster_path.lstrip("/")
         url = tmdb_image_url(cfg.image_sizes.show_width, poster_path)
         download_if_missing(url, dst)
         local_poster = rel_web_path(dst)
 
     if backdrop_path:
-        dst = IMG_SHOWS_BACKDROP / backdrop_path.lstrip("/")
+        dst = ASSETS_BACKDROPS_SHOWS / backdrop_path.lstrip("/")
         url = tmdb_image_url(cfg.image_sizes.backdrop_w, backdrop_path)
         download_if_missing(url, dst)
         local_backdrop = rel_web_path(dst)
@@ -487,24 +490,24 @@ def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optiona
 
         season_local_poster = None
         if season_poster_path:
-            dst = IMG_SHOWS_SEASON_POSTER / season_poster_path.lstrip("/")
+            dst = ASSETS_POSTERS_SEASONS / season_poster_path.lstrip("/")
             url = tmdb_image_url(cfg.image_sizes.season_width, season_poster_path)
             download_if_missing(url, dst)
             season_local_poster = rel_web_path(dst)
 
-        eps_out: List[Dict[str, Any]] = []
+        episodes_out: List[Dict[str, Any]] = []
         for ep in (season_details.get("episodes") or []):
             ep_num = int(ep.get("episode_number") or 0)
             still_path = ep.get("still_path")
-
             ep_local_still = None
+
             if still_path:
-                dst = IMG_SHOWS_EP_STILLS / still_path.lstrip("/")
+                dst = ASSETS_STILLS_EPISODES / still_path.lstrip("/")
                 url = tmdb_image_url(cfg.image_sizes.episode_still_w, still_path)
                 download_if_missing(url, dst)
                 ep_local_still = rel_web_path(dst)
 
-            eps_out.append(
+            episodes_out.append(
                 {
                     "episode_number": ep_num,
                     "name": ep.get("name") or "",
@@ -524,26 +527,27 @@ def build_show_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optiona
                 "overview": season_details.get("overview") or "",
                 "poster_path": season_poster_path,
                 "local_poster_path": season_local_poster,
-                "episodes": eps_out,
+                "episodes": episodes_out,
             }
         )
 
-        time.sleep(DEFAULT_SLEEP_SECONDS)
-
-    return {
-        "title": details.get("name") or title,
+    entry: Dict[str, Any] = {
         "tmdb_id": tmdb_id,
+        "name": details.get("name") or title,
         "first_air_date": details.get("first_air_date"),
-        "genres": [g.get("name") for g in (details.get("genres") or []) if g.get("name")],
         "overview": details.get("overview") or "",
         "poster_path": poster_path,
-        "backdrop_path": backdrop_path,
         "local_poster_path": local_poster,
+        "backdrop_path": backdrop_path,
         "local_backdrop_path": local_backdrop,
         "seasons": seasons_out,
     }
+    return entry
 
 
+# -------------------------
+# Build movie entry
+# -------------------------
 def build_movie_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     title = item["title"]
     year = item.get("year")
@@ -563,52 +567,46 @@ def build_movie_entry(cfg: Config, api_key: str, item: Dict[str, Any]) -> Option
     local_backdrop = None
 
     if poster_path:
-        dst = IMG_MOVIES_POSTER / poster_path.lstrip("/")
+        dst = ASSETS_POSTERS_MOVIES / poster_path.lstrip("/")
         url = tmdb_image_url(cfg.image_sizes.movie_width, poster_path)
         download_if_missing(url, dst)
         local_poster = rel_web_path(dst)
 
     if backdrop_path:
-        dst = IMG_MOVIES_BACKDROP / backdrop_path.lstrip("/")
+        dst = ASSETS_BACKDROPS_MOVIES / backdrop_path.lstrip("/")
         url = tmdb_image_url(cfg.image_sizes.backdrop_w, backdrop_path)
         download_if_missing(url, dst)
         local_backdrop = rel_web_path(dst)
 
-    return {
-        "title": details.get("title") or title,
+    entry: Dict[str, Any] = {
         "tmdb_id": tmdb_id,
+        "title": details.get("title") or title,
         "release_date": details.get("release_date"),
-        "genres": [g.get("name") for g in (details.get("genres") or []) if g.get("name")],
         "overview": details.get("overview") or "",
         "poster_path": poster_path,
-        "backdrop_path": backdrop_path,
         "local_poster_path": local_poster,
+        "backdrop_path": backdrop_path,
         "local_backdrop_path": local_backdrop,
         "links": build_movie_links(cfg, tmdb_id),
     }
+    return entry
 
 
 # -------------------------
-# Output write (safe)
+# Safe write
 # -------------------------
-def dumps_json(obj: Any) -> str:
-    if orjson:
-        return orjson.dumps(obj, option=orjson.OPT_INDENT_2).decode("utf-8")
-    return json.dumps(obj, ensure_ascii=False, indent=2)
+def safe_write_json(path: Path, data: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
 
+    if orjson is not None:
+        tmp.write_bytes(orjson.dumps(data, option=orjson.OPT_INDENT_2 | orjson.OPT_SORT_KEYS))
+    else:
+        tmp.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
 
-def safe_write_json(path: Path, obj: Dict[str, Any]) -> None:
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    payload = dumps_json(obj)
+    # Basic read-back check (prevents truncated writes)
+    _ = json.loads(tmp.read_text(encoding="utf-8"))
 
-    # Validate not empty / not trivially broken before replacing
-    if len(payload.strip()) < 10:
-        raise RuntimeError("Refusing to write suspiciously small JSON payload")
-
-    # parse back
-    _ = json.loads(payload)
-
-    tmp.write_text(payload, encoding="utf-8")
     tmp.replace(path)
 
 
@@ -625,76 +623,74 @@ def main() -> int:
         logging.error("Missing API key. Set env var API_TMDB_KEY (or API_TMDB_TOKEN).")
         return 2
 
-    tv_raw = parse_tv_list(TV_LIST_PATH)
-    movies_raw = parse_movies_list(MOVIES_LIST_PATH)
+    # Parse lists
+    tv_rows = parse_tv_list(TV_LIST_PATH)
+    movie_rows = parse_movies_list(MOVIES_LIST_PATH)
     livetv_raw = parse_livetv_list_optional(LIVETV_LIST_PATH)
-
-    logging.info("[fetch_tmdb] Inputs: tv=%s movies=%s livetv=%s", len(tv_raw), len(movies_raw), len(livetv_raw))
-    logging.info(
-        "[fetch_tmdb] Streaming bases: vidsrc_tv=%s videasy_tv=%s vidsrc_movie=%s videasy_movie=%s",
-        cfg.streaming.vidsrc_tv,
-        cfg.streaming.videasy_tv,
-        cfg.streaming.vidsrc_movie,
-        cfg.streaming.videasy_movie,
-    )
 
     shows_out: List[Dict[str, Any]] = []
     movies_out: List[Dict[str, Any]] = []
 
-    show_iter = tqdm(tv_raw, desc="Shows", unit="show") if tqdm else tv_raw
-    for s in show_iter:
+    # Build shows
+    it = tv_rows
+    if tqdm is not None:
+        it = tqdm(tv_rows, desc="TMDB shows", unit="show")  # type: ignore
+
+    for s in it:
         try:
             entry = build_show_entry(cfg, api_key, s)
-            if entry:
+            if entry is not None:
                 shows_out.append(entry)
         except Exception as e:
             logging.exception("[show] error for %s: %s", s, e)
         time.sleep(DEFAULT_SLEEP_SECONDS)
 
-    movie_iter = tqdm(movies_raw, desc="Movies", unit="movie") if tqdm else movies_raw
-    for m in movie_iter:
+    # Build movies
+    it2 = movie_rows
+    if tqdm is not None:
+        it2 = tqdm(movie_rows, desc="TMDB movies", unit="movie")  # type: ignore
+
+    for m in it2:
         try:
             entry = build_movie_entry(cfg, api_key, m)
-            if entry:
+            if entry is not None:
                 movies_out.append(entry)
         except Exception as e:
             logging.exception("[movie] error for %s: %s", m, e)
         time.sleep(DEFAULT_SLEEP_SECONDS)
 
     data: Dict[str, Any] = {
-        "meta": {
-            "generated_at": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "config_sha256": cfg.raw_hash,
-            "script_version": "v2.6.2",
-            "build": "14.01.05",
+        "shows": shows_out,
+        "movies": movies_out,
+        "live_tv": livetv_raw,
+        "collections": [],
+        "people": [],
+        "profiles": [],
+        "watchlist": [],
+        "metadata": {
+            "build_timestamp_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "version": {
+                "script": "fetch_tmdb.py",
+                "script_version": "v2.6.2",
+                "build": "14.01.05",
+            },
             "inputs": {
                 "tv_list": str(TV_LIST_PATH.name),
                 "movies_list": str(MOVIES_LIST_PATH.name),
                 "livetv_list": str(LIVETV_LIST_PATH.name),
+                "config_sha256": cfg.raw_hash,
+            },
+            "counts": {
+                "shows": len(shows_out),
+                "movies": len(movies_out),
+                "live_tv": len(livetv_raw),
+                "collections": 0,
+                "people": 0,
+                "profiles": 0,
+                "watchlist": 0,
             },
         },
-        "config_echo": {
-            "streaming_services": {
-                "vidsrc_tv": cfg.streaming.vidsrc_tv,
-                "vidsrc_movie": cfg.streaming.vidsrc_movie,
-                "videasy_tv": cfg.streaming.videasy_tv,
-                "videasy_movie": cfg.streaming.videasy_movie,
-            },
-            "image_sizes": {
-                "show_width": cfg.image_sizes.show_width,
-                "movie_width": cfg.image_sizes.movie_width,
-                "season_width": cfg.image_sizes.season_width,
-                "episode_still_w": cfg.image_sizes.episode_still_w,
-                "backdrop_w": cfg.image_sizes.backdrop_w,
-            },
-            "ui_tuning": {
-                "calendar_button_scale": cfg.ui.calendar_button_scale,
-                "calendar_card_density": cfg.ui.calendar_card_density,
-            },
-        },
-        "shows": shows_out,
-        "movies": movies_out,
-        "live_tv": livetv_raw,
+        "errors": [],
     }
 
     ok, errs = qa_validate_links(cfg, data)
@@ -712,8 +708,13 @@ def main() -> int:
     safe_write_json(DATA_JSON_PATH, data)
     LAST_REFRESH_PATH.write_text(_dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
 
-    logging.info("[fetch_tmdb] Wrote: %s (%s shows, %s movies, %s livetv)",
-                 DATA_JSON_PATH, len(shows_out), len(movies_out), len(livetv_raw))
+    logging.info(
+        "[fetch_tmdb] Wrote: %s (%s shows, %s movies, %s livetv)",
+        DATA_JSON_PATH,
+        len(shows_out),
+        len(movies_out),
+        len(livetv_raw),
+    )
     return 0
 
 
