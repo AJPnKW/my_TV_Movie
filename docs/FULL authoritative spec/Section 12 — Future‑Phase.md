@@ -95,10 +95,6 @@ Future‑phase sync expands beyond Trakt to include:
 ### **Invariants:**  
 - Local data must remain consistent  
 - No destructive overwrites  
-- Sync must be deterministic  
-
----
-
 # **12.6 Enhanced UX & Accessibility**  
 Future‑phase UX expands accessibility and personalization.
 
