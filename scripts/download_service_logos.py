@@ -1,563 +1,409 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-"""
-Script Name : download_service_logos.py
-Version     : 3.2.0
-Purpose     :
-    Use tv-logo/tv-logos mosaic index files to map your curated channel list
-    to actual logo image URLs, download them, and save normalized assets.
+#!/usr/bin/env python3
+# ==============================================================================
+# [FILE]    scripts/download_service_logos.py
+# [PROJECT] my_TV_Movie (My TV Hub)
+# [ROLE]    Download/update streaming service logos into canonical assets hierarchy
+# [VERSION] v1.8.0
+# [UPDATED] 2025-12-19_00-00-00
+# [BUILD]   14.01.05
+#
+# [BINDING RULES APPLIED]
+# - Canonical asset hierarchy ONLY:
+#     assets/logos/services/
+#     assets/logos/services/archive/
+# - Never reference deprecated "image/" folder.
+# - No silent failures: all errors logged + surfaced in console.
+# - No invented project files: this script requires an explicit input file path.
+#
+# [INPUT]
+# - REQUIRED: --input <path> to a CSV or JSON file defining logo sources
+#
+#   CSV format (header required):
+#     service_slug,url,filename
+#   - service_slug : stable key/slug for the service (e.g., vidsrc, videasy, tmdb)
+#   - url          : direct download URL for the logo image
+#   - filename     : optional; if blank, derived from service_slug + URL extension
+#
+#   JSON format:
+#   [
+#     {"service_slug":"vidsrc","url":"https://.../vidsrc.png","filename":"vidsrc.png"},
+#     ...
+#   ]
+#
+# [OUTPUT]
+# - Downloads into: assets/logos/services/<filename>
+# - If --archive-existing is set and a destination file exists and will be replaced,
+#   it is moved to: assets/logos/services/archive/<YYYY-MM-DD_HHMMSS>/<filename>
+# - Log file: logs/download_service_logos_YYYY-MM-DD_HHMMSS.log.txt
+#
+# [USAGE]
+#   python scripts/download_service_logos.py --input C:\path\service_logos.csv
+#   python scripts/download_service_logos.py --input service_logos.json --force
+#   python scripts/download_service_logos.py --input service_logos.csv --archive-existing
+#
+# ==============================================================================
 
-Improvements vs 3.1.0:
-    - Adds deterministic heuristic matching for cases like:
-        CBS             -> cbs-logo-white-us.png
-        CTV Sci-Fi      -> ctv-sci-fi-channel-ca.png
-        MTV Canada      -> mtv-ca.png
-    - Uses filename-based logic with uniqueness checks, no wild guessing.
+from __future__ import annotations
 
-Outputs:
-    - image/services_logos/<service_id>.png
-    - image/services_logos/<service_id>.svg
-    - reports/service_logo_report_YYYYMMDD_HHMMSS.csv
-"""
-
-import os
-import sys
-import re
+import argparse
 import csv
-import logging
-from datetime import datetime
+import datetime as _dt
+import json
+import os
+import re
+import sys
+import time
+from dataclasses import dataclass
 from pathlib import Path
-from io import BytesIO
+from typing import Any, Dict, List, Optional, Tuple
 
-import requests
-from PIL import Image
+try:
+    import requests  # type: ignore
+except Exception:
+    print("ERROR: Missing dependency 'requests'. Install with:", file=sys.stderr)
+    print("  python -m pip install requests", file=sys.stderr)
+    raise
 
-# ===== CONFIG ==============================================================
+try:
+    from tqdm import tqdm  # type: ignore
+except Exception:
+    tqdm = None  # noqa
 
-BASE_DIR = Path(r"C:\Users\Lenovo\Documents\Projects\my_TV_Movie\my_TV_Movie")
 
-LOGO_DIR = BASE_DIR / "image" / "services_logos"
-LOG_DIR = BASE_DIR / "logs"
-REPORT_DIR = BASE_DIR / "reports"
+# -------------------------
+# Paths (repo-relative)
+# -------------------------
+REPO_ROOT = Path(__file__).resolve().parents[1]
+LOGS_DIR = REPO_ROOT / "logs"
 
-TARGET_HEIGHT = 96          # px
-HTTP_TIMEOUT = 20           # seconds
+ASSETS_DIR = REPO_ROOT / "assets"
+ASSETS_LOGOS_SERVICES = ASSETS_DIR / "logos" / "services"
+ASSETS_LOGOS_SERVICES_ARCHIVE = ASSETS_LOGOS_SERVICES / "archive"
 
-HTTP_HEADERS = {
-    "User-Agent": "my_TV_Movie-logo-fetcher/3.2.0"
-}
 
-GITHUB_RAW_BASE = "https://raw.githubusercontent.com/tv-logo/tv-logos/main/"
+# -------------------------
+# Logging (deterministic)
+# -------------------------
+def _now_stamp() -> str:
+    return _dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
-MOSAIC_URLS = [
-    "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/united-states/0_all_logos_mosaic.md",
-    "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/canada/0_all_logos_mosaic.md",
-    "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/united-kingdom/0_all_logos_mosaic.md",
-    "https://raw.githubusercontent.com/tv-logo/tv-logos/refs/heads/main/countries/australia/0_all_logos_mosaic.md",
-]
 
-# Your curated list
-TARGET_CHANNELS = {
-    # US
-    "abc": "ABC",
-    "cbs": "CBS",
-    "nbc": "NBC",
-    "fox": "Fox",
-    "cw": "CW",
-    "pbs": "PBS",
-    "ion": "Ion",
-    "amc": "AMC",
-    "tnt": "TNT",
-    "tbs": "TBS",
-    "usa": "USA Network",
-    "fx": "FX",
-    "fxx": "FXX",
-    "syfy": "Syfy",
-    "bravo": "Bravo",
-    "e": "E!",
-    "lifetime": "Lifetime",
-    "ae": "A&E",
-    "discovery": "Discovery Channel",
-    "tlc": "TLC",
-    "history": "History",
-    "food_network": "Food Network",
-    "hgtv": "HGTV",
-    "animal_planet": "Animal Planet",
-    "natgeo": "National Geographic",
-    "mtv": "MTV",
-    "vh1": "VH1",
-    "comedy_central": "Comedy Central",
-    "paramount_network": "Paramount Network",
-    "disney_channel": "Disney Channel",
-    "nickelodeon": "Nickelodeon",
-    "cartoon_network": "Cartoon Network",
-    "adult_swim": "Adult Swim",
-    "trutv": "TruTV",
-    "investigation_discovery": "Investigation Discovery",
-    "own": "OWN",
-    "hallmark": "Hallmark Channel",
-    "showtime": "Showtime",
-    "hbo": "HBO",
-    "starz": "Starz",
-    "vice_tv": "VICE TV",
+def _log_path() -> Path:
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    return LOGS_DIR / f"download_service_logos_{_now_stamp()}.log.txt"
 
-    # Canada
-    "cbc": "CBC",
-    "ctv": "CTV",
-    "global": "Global",
-    "citytv": "Citytv",
-    "much": "Much",
-    "slice": "Slice",
-    "showcase_ca": "Showcase",
-    "ctv_scifi": "CTV Sci-Fi",
-    "outtv": "OutTV",
-    "hgtv_ca": "HGTV Canada",
-    "discovery_ca": "Discovery Channel Canada",
-    "mtv_ca": "MTV Canada",
 
-    # UK
-    "bbc": "BBC",
-    "itv": "ITV",
-    "channel4": "Channel 4",
-    "e4": "E4",
-    "more4": "More4",
-    "film4": "Film4",
-    "channel5": "Channel 5",
-    "fiveusa": "5USA",
-    "fivestar": "5Star",
-    "sky": "Sky",
-    "sky_scifi": "Sky Sci-Fi",
+def _write_log(fp, msg: str) -> None:
+    line = f"{_dt.datetime.now().strftime('%Y-%m-%d %H:%M:%S')} | {msg}"
+    fp.write(line + "\n")
+    fp.flush()
+    print(line)
 
-    # Australia
-    "abc_au": "ABC (AU)",
-    "nitv": "NITV",
-    "seven_au": "7 (AU)",
-    "nine_au": "9 (AU)",
-    "ten_au": "10 (AU)",
-    "sky_news_au": "Sky News Australia",
 
-    # Streaming / apps (some present, some not)
-    "netflix": "Netflix",
-    "prime_video": "Prime Video",
-    "disney_plus": "Disney+",
-    "hulu": "Hulu",
-    "max": "Max",
-    "peacock": "Peacock",
-    "paramount_plus": "Paramount+",
-    "apple_tv_plus": "Apple TV+",
-    "crave": "Crave",
-    "britbox": "BritBox",
-    "dazn": "DAZN",
-    "stacktv": "StackTV",
-    "now": "NOW",
-    "itvx": "ITVX",
-    "my5": "My5",
-    "uktv_play": "UKTV Play",
-    "stan": "Stan",
-    "ten_play": "10 Play",
-    "nine_now": "9Now",
-    "seven_plus": "7plus",
-}
+# -------------------------
+# Data model
+# -------------------------
+@dataclass(frozen=True)
+class LogoSource:
+    service_slug: str
+    url: str
+    filename: str
 
-# Optional explicit overrides for stubborn cases where we know the exact file
-FALLBACK_PATHS = {
-    # explicit paths derived from tv-logos repo
-    "cbs": "countries/united-states/cbs-logo-white-us.png",
-    "ctv_scifi": "countries/canada/ctv-sci-fi-channel-ca.png",
-    "mtv_ca": "countries/canada/mtv-ca.png",
-    # leave OutTV unset: appears missing / not in repo
-}
 
-# ===== LOGGING =============================================================
+# -------------------------
+# Helpers
+# -------------------------
+_SAFE_NAME_RE = re.compile(r"[^a-zA-Z0-9._-]+")
 
-def setup_logging() -> logging.Logger:
-    LOG_DIR.mkdir(parents=True, exist_ok=True)
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    log_path = LOG_DIR / f"download_service_logos_{ts}.log"
 
-    logger = logging.getLogger("service_logo_downloader")
-    if logger.handlers:
-        logger.handlers.clear()
-    logger.setLevel(logging.DEBUG)
+def _safe_filename(name: str) -> str:
+    s = (name or "").strip()
+    s = _SAFE_NAME_RE.sub("_", s)
+    s = s.strip("._-")
+    return s or "logo"
 
-    fh = logging.FileHandler(log_path, encoding="utf-8")
-    fh.setLevel(logging.DEBUG)
-    fh.setFormatter(logging.Formatter(
-        "%(asctime)s [%(levelname)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-    ))
-    logger.addHandler(fh)
 
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.INFO)
-    ch.setFormatter(logging.Formatter("%(message)s"))
-    logger.addHandler(ch)
+def _ext_from_url(url: str) -> str:
+    u = (url or "").strip()
+    # strip query
+    u = u.split("?", 1)[0]
+    # last segment
+    seg = u.rsplit("/", 1)[-1]
+    if "." in seg:
+        ext = "." + seg.rsplit(".", 1)[-1].lower()
+        if len(ext) <= 6:  # .webp .jpeg etc
+            return ext
+    return ""
 
-    logger.info("============================================================")
-    logger.info(" my_TV_Movie Service Logo Downloader v3.2.0 (mosaic-based)")
-    logger.info("============================================================")
-    logger.info(f"Log file : {log_path}")
-    logger.info(f"Base dir : {BASE_DIR}")
-    logger.info(f"Logo dir : {LOGO_DIR}")
-    logger.info("")
-    return logger
 
-def ensure_directories(logger: logging.Logger):
-    LOGO_DIR.mkdir(parents=True, exist_ok=True)
-    REPORT_DIR.mkdir(parents=True, exist_ok=True)
-    logger.info(f"[OK] Ensured directory exists: {LOGO_DIR}")
-    logger.info(f"[OK] Ensured directory exists: {REPORT_DIR}")
+def _ensure_dirs() -> None:
+    ASSETS_LOGOS_SERVICES.mkdir(parents=True, exist_ok=True)
+    ASSETS_LOGOS_SERVICES_ARCHIVE.mkdir(parents=True, exist_ok=True)
 
-# ===== UTILITIES ===========================================================
 
-def normalize_name(name: str) -> str:
-    return "".join(ch.lower() for ch in name if ch.isalnum())
-
-def http_get(url: str, logger: logging.Logger) -> str:
-    resp = requests.get(url, headers=HTTP_HEADERS, timeout=HTTP_TIMEOUT)
-    if resp.status_code != 200:
-        raise RuntimeError(f"HTTP {resp.status_code} for {url}")
-    return resp.text
-
-def http_get_bytes(url: str, logger: logging.Logger) -> bytes:
-    resp = requests.get(url, headers=HTTP_HEADERS, timeout=HTTP_TIMEOUT)
-    if resp.status_code != 200:
-        raise RuntimeError(f"HTTP {resp.status_code} for {url}")
-    return resp.content
-
-# ===== MOSAIC PARSING ======================================================
-
-IMG_INLINE_RE = re.compile(r'!\[(.*?)\]\((.*?)\)')
-REF_DEF_RE = re.compile(r'^\s*\[([^\]]+)\]\s*:\s*(\S+)\s*$')
-
-def parse_mosaic(url: str, logger: logging.Logger):
-    """
-    Parse one 0_all_logos_mosaic.md:
-      - Inline images:    ![Alt](path.png)
-      - Reference defs:   [key]:path.png
-
-    Returns:
-        dict: norm_key -> {display_name, url, filename, base_norm}
-    """
-    logger.info(f"[INFO] Loading mosaic: {url}")
-    text = http_get(url, logger)
-    base_dir = url.rsplit("/", 1)[0]
-
-    mapping = {}
-
-    for line in text.splitlines():
-        line = line.strip()
-        if not line:
-            continue
-
-        # 1) Inline: ![Alt](src)
-        m_img = IMG_INLINE_RE.search(line)
-        if m_img:
-            alt = m_img.group(1).strip()
-            src = m_img.group(2).strip()
-            if not src:
+def _read_csv_sources(path: Path) -> List[LogoSource]:
+    out: List[LogoSource] = []
+    with path.open("r", encoding="utf-8", errors="ignore", newline="") as f:
+        reader = csv.DictReader(f)
+        if not reader.fieldnames:
+            raise ValueError("CSV has no header row.")
+        required = {"service_slug", "url"}
+        missing = required - set(x.strip() for x in reader.fieldnames if x)
+        if missing:
+            raise ValueError(f"CSV missing required columns: {sorted(missing)}")
+        for row in reader:
+            slug = (row.get("service_slug") or "").strip()
+            url = (row.get("url") or "").strip()
+            fn = (row.get("filename") or "").strip()
+            if not slug or not url:
                 continue
-            if src.startswith("http://") or src.startswith("https://"):
-                full_url = src
-            else:
-                src_clean = src.lstrip("./")
-                full_url = f"{base_dir}/{src_clean}"
-            filename = src.split("/")[-1]
-            key_norm = normalize_name(alt)
-            base_norm = normalize_name(filename.rsplit(".", 1)[0])
-            if key_norm and key_norm not in mapping:
-                mapping[key_norm] = {
-                    "display_name": alt,
-                    "url": full_url,
-                    "filename": filename,
-                    "base_norm": base_norm,
-                }
+            out.append(_normalize_source(slug, url, fn))
+    return out
+
+
+def _read_json_sources(path: Path) -> List[LogoSource]:
+    raw = path.read_text(encoding="utf-8", errors="ignore")
+    try:
+        j = json.loads(raw)
+    except Exception as e:
+        raise ValueError(f"Invalid JSON: {e}") from e
+    if not isinstance(j, list):
+        raise ValueError("JSON must be an array of objects.")
+    out: List[LogoSource] = []
+    for obj in j:
+        if not isinstance(obj, dict):
             continue
-
-        # 2) Reference-style: [key]: src
-        m_ref = REF_DEF_RE.match(line)
-        if m_ref:
-            key = m_ref.group(1).strip()
-            src = m_ref.group(2).strip()
-            if not src:
-                continue
-            if src.startswith("http://") or src.startswith("https://"):
-                full_url = src
-            else:
-                src_clean = src.lstrip("./")
-                full_url = f"{base_dir}/{src_clean}"
-            filename = src.split("/")[-1]
-            key_norm = normalize_name(key)
-            base_norm = normalize_name(filename.rsplit(".", 1)[0])
-            if key_norm and key_norm not in mapping:
-                mapping[key_norm] = {
-                    "display_name": key,
-                    "url": full_url,
-                    "filename": filename,
-                    "base_norm": base_norm,
-                }
-
-    logger.info(f"[INFO] Parsed {len(mapping)} logo entries from mosaic.")
-    return mapping
-
-def build_global_mosaic_index(logger: logging.Logger):
-    combined = {}
-    for url in MOSAIC_URLS:
-        try:
-            m = parse_mosaic(url, logger)
-        except Exception as e:
-            logger.error(f"[ERROR] Failed to parse mosaic {url}: {e}")
+        slug = str(obj.get("service_slug") or "").strip()
+        url = str(obj.get("url") or "").strip()
+        fn = str(obj.get("filename") or "").strip()
+        if not slug or not url:
             continue
-        for norm, data in m.items():
-            combined.setdefault(norm, data)
-    logger.info(f"[INFO] Global mosaic index size: {len(combined)}")
-    return combined
+        out.append(_normalize_source(slug, url, fn))
+    return out
 
-# ===== MATCHING LOGIC ======================================================
 
-def heuristic_match(label: str, mosaic_index: dict, logger: logging.Logger):
-    """
-    Fallback when direct normalized-name match fails.
-
-    Strategy:
-      - Compare against base_norm (from filename without extension).
-      - Allow:
-          * base_norm == target_norm
-          * base_norm startswith(target_norm)
-          * target_norm startswith(base_norm)
-      - Handle 'canada' -> 'ca' style for region-specific logos.
-      - Only accept if exactly ONE candidate matches (no ambiguity).
-    """
-    target_norm = normalize_name(label)
-    candidates = []
-
-    for entry in mosaic_index.values():
-        base_norm = entry.get("base_norm") or normalize_name(
-            entry["filename"].rsplit(".", 1)[0]
-        )
-
-        # direct / prefix relationships
-        if base_norm == target_norm:
-            candidates.append(entry)
-            continue
-        if base_norm.startswith(target_norm):
-            candidates.append(entry)
-            continue
-        if target_norm.startswith(base_norm) and len(base_norm) >= 3:
-            candidates.append(entry)
-            continue
-
-        # special-case: canada vs ca
-        if "canada" in target_norm:
-            t2 = target_norm.replace("canada", "ca")
-            if base_norm == t2 or base_norm.startswith(t2):
-                candidates.append(entry)
-                continue
-
-    # If unique, trust it. If ambiguous or none, bail.
-    if len(candidates) == 1:
-        c = candidates[0]
-        logger.info(
-            f"[HEURISTIC] Matched '{label}' via filename '{c['filename']}'"
-        )
-        return c
-
-    if len(candidates) > 1:
-        logger.warning(
-            f"[HEURISTIC] Ambiguous matches for '{label}' ({len(candidates)} candidates), skipping."
-        )
-
-    return None
-
-def get_entry_for_service(service_id: str, label: str, mosaic_index: dict, logger: logging.Logger):
-    """
-    Unified resolver:
-      1. Direct normalized label lookup.
-      2. Heuristic filename-based lookup.
-      3. Explicit FALLBACK_PATHS (service_id-based).
-    """
-    target_norm = normalize_name(label)
-
-    # 1) Direct
-    entry = mosaic_index.get(target_norm)
-    if entry:
-        return entry
-
-    # 2) Heuristic based on filenames / keys
-    entry = heuristic_match(label, mosaic_index, logger)
-    if entry:
-        return entry
-
-    # 3) Explicit fallback path if configured
-    fb_rel = FALLBACK_PATHS.get(service_id)
-    if fb_rel:
-        url = GITHUB_RAW_BASE + fb_rel.lstrip("/")
-        filename = fb_rel.split("/")[-1]
-        base_norm = normalize_name(filename.rsplit(".", 1)[0])
-        logger.info(
-            f"[FALLBACK] Using explicit path for '{label}' -> {fb_rel}"
-        )
-        return {
-            "display_name": label,
-            "url": url,
-            "filename": filename,
-            "base_norm": base_norm,
-        }
-
-    return None
-
-# ===== IMAGE SAVE & WRAPPER ===============================================
-
-def save_png_normalized(content: bytes, service_id: str, logger: logging.Logger):
-    img = Image.open(BytesIO(content)).convert("RGBA")
-    w, h = img.size
-    if h != TARGET_HEIGHT:
-        new_w = int(TARGET_HEIGHT * (w / float(h)))
-        img = img.resize((new_w, TARGET_HEIGHT), Image.LANCZOS)
-    out_path = LOGO_DIR / f"{service_id}.png"
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    img.save(out_path, format="PNG")
-    logger.info(f"[PNG] Saved: {out_path}")
-    return out_path
-
-def save_svg_wrapper(service_id: str, png_path: Path, logger: logging.Logger):
-    svg_path = LOGO_DIR / f"{service_id}.svg"
-    img = Image.open(png_path)
-    w, h = img.size
-    rel_png = png_path.name
-    svg = f"""<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}">
-  <image href="{rel_png}" width="{w}" height="{h}"/>
-</svg>
-"""
-    svg_path.write_text(svg, encoding="utf-8")
-    logger.info(f"[SVG] Wrapper created: {svg_path}")
-    return svg_path
-
-def download_and_save_logo(service_id: str, entry: dict, logger: logging.Logger):
-    url = entry["url"]
-    filename = entry["filename"]
-    ext = filename.split(".")[-1].lower()
-
-    content = http_get_bytes(url, logger)
-
-    if ext in ("png", "jpg", "jpeg"):
-        png_path = save_png_normalized(content, service_id, logger)
-        svg_path = save_svg_wrapper(service_id, png_path, logger)
-        status = "OK" if png_path.exists() and svg_path.exists() else "PARTIAL"
-        return status, png_path.name, svg_path.name, str(png_path), str(svg_path)
-
-    # Unexpected: treat as image anyway
-    png_path = save_png_normalized(content, service_id, logger)
-    svg_path = save_svg_wrapper(service_id, png_path, logger)
-    return "PARTIAL", png_path.name, svg_path.name, str(png_path), str(svg_path)
-
-# ===== MAIN ================================================================
-
-def main():
-    logger = setup_logging()
-    ensure_directories(logger)
-
-    # Log env var presence (just for your sanity)
-    api_vars = ["API_TMDB_KEY", "API_TVMAZE_KEY", "API_OMDB_KEY"]
-    detected = [v for v in api_vars if os.getenv(v)]
-    if detected:
-        logger.info("[INFO] Detected API env vars (values hidden): " + ", ".join(detected))
+def _normalize_source(service_slug: str, url: str, filename: str) -> LogoSource:
+    slug = _safe_filename(service_slug.lower())
+    ext = _ext_from_url(url)
+    if filename:
+        fn = _safe_filename(filename)
+        # if caller omitted extension, attempt to apply from URL
+        if "." not in fn and ext:
+            fn = fn + ext
     else:
-        logger.info("[INFO] No related API keys detected in environment.")
+        fn = slug + (ext if ext else ".png")
+    return LogoSource(service_slug=slug, url=url.strip(), filename=fn)
 
-    mosaic_index = build_global_mosaic_index(logger)
 
-    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    report_path = REPORT_DIR / f"service_logo_report_{ts}.csv"
+def _download_with_retries(
+    url: str,
+    timeout: int,
+    retries: int,
+    backoff_seconds: float,
+    user_agent: str,
+) -> Tuple[bool, Optional[bytes], str]:
+    last_err = ""
+    for attempt in range(1, retries + 1):
+        try:
+            r = requests.get(
+                url,
+                headers={"User-Agent": user_agent},
+                timeout=timeout,
+                stream=True,
+            )
+            if r.status_code != 200:
+                last_err = f"HTTP {r.status_code}"
+                raise RuntimeError(last_err)
+            content = r.content
+            if not content or len(content) == 0:
+                last_err = "Empty body"
+                raise RuntimeError(last_err)
+            return True, content, ""
+        except Exception as e:
+            last_err = str(e)
+            if attempt < retries:
+                time.sleep(backoff_seconds * attempt)
+            continue
+    return False, None, last_err
 
-    total = len(TARGET_CHANNELS)
-    ok_count = 0
-    partial_count = 0
-    miss_count = 0
 
-    logger.info("")
-    logger.info("Starting channel logo resolution & download...")
-    logger.info("")
+def _atomic_write_bytes(dst: Path, data: bytes) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    tmp = dst.with_suffix(dst.suffix + ".tmp")
+    tmp.write_bytes(data)
+    # basic verification
+    if tmp.stat().st_size <= 0:
+        raise RuntimeError("Temporary file write produced empty file.")
+    tmp.replace(dst)
 
-    with open(report_path, "w", newline="", encoding="utf-8") as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([
-            "service_id",
-            "channel_name",
-            "matched_display_name",
-            "source_url",
-            "png_file",
-            "svg_file",
-            "png_path",
-            "svg_path",
-            "status",
-            "timestamp",
-        ])
 
-        for service_id, label in TARGET_CHANNELS.items():
-            ts_row = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            logger.info(f"--- {label} ({service_id}) ---")
+def _archive_existing(dst: Path, archive_root: Path, stamp: str, log_fp) -> Optional[Path]:
+    if not dst.exists():
+        return None
+    target_dir = archive_root / stamp
+    target_dir.mkdir(parents=True, exist_ok=True)
+    archived = target_dir / dst.name
+    try:
+        dst.replace(archived)
+        _write_log(log_fp, f"ARCHIVE moved existing -> {archived.as_posix()}")
+        return archived
+    except Exception as e:
+        _write_log(log_fp, f"ARCHIVE FAIL {dst.as_posix()} -> {archived.as_posix()} :: {e}")
+        return None
 
-            entry = get_entry_for_service(service_id, label, mosaic_index, logger)
 
-            if not entry:
-                logger.warning(
-                    f"[MISS] No match for '{label}' (norm='{normalize_name(label)}')"
-                )
-                status = "NOT_FOUND_IN_MOSAIC"
-                miss_count += 1
-                writer.writerow([
-                    service_id, label, "", "", "", "", "", "", status, ts_row
-                ])
+# -------------------------
+# Main
+# -------------------------
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        prog="download_service_logos.py",
+        description="Download/update streaming service logos into assets/logos/services/ (canonical).",
+    )
+    parser.add_argument("--input", required=True, help="Path to CSV or JSON logo source list.")
+    parser.add_argument("--force", action="store_true", help="Overwrite existing files.")
+    parser.add_argument(
+        "--archive-existing",
+        action="store_true",
+        help="If overwriting, move existing logos to assets/logos/services/archive/<timestamp>/",
+    )
+    parser.add_argument("--timeout", type=int, default=30, help="HTTP timeout seconds.")
+    parser.add_argument("--retries", type=int, default=3, help="HTTP retries per logo.")
+    parser.add_argument("--backoff", type=float, default=0.6, help="Backoff multiplier for retries.")
+    args = parser.parse_args()
+
+    lp = _log_path()
+    stamp = _now_stamp()
+
+    with lp.open("w", encoding="utf-8") as log_fp:
+        _write_log(log_fp, f"[download_service_logos] START {stamp}")
+        _write_log(log_fp, f"repo_root={REPO_ROOT.as_posix()}")
+        _write_log(log_fp, f"input={args.input}")
+        _write_log(log_fp, f"force={args.force} archive_existing={args.archive_existing}")
+        _write_log(log_fp, f"timeout={args.timeout} retries={args.retries} backoff={args.backoff}")
+
+        try:
+            _ensure_dirs()
+        except Exception as e:
+            _write_log(log_fp, f"FAIL ensure_dirs :: {e}")
+            try:
+                input("Press Enter to close...")
+            except Exception:
+                pass
+            return 2
+
+        src_path = Path(args.input).expanduser()
+        if not src_path.is_absolute():
+            src_path = (Path.cwd() / src_path).resolve()
+
+        if not src_path.exists():
+            _write_log(log_fp, f"FAIL input file not found: {src_path.as_posix()}")
+            try:
+                input("Press Enter to close...")
+            except Exception:
+                pass
+            return 3
+
+        # Load sources
+        try:
+            if src_path.suffix.lower() == ".csv":
+                sources = _read_csv_sources(src_path)
+            elif src_path.suffix.lower() == ".json":
+                sources = _read_json_sources(src_path)
+            else:
+                raise ValueError("Input file must be .csv or .json")
+        except Exception as e:
+            _write_log(log_fp, f"FAIL parse input :: {e}")
+            try:
+                input("Press Enter to close...")
+            except Exception:
+                pass
+            return 4
+
+        if not sources:
+            _write_log(log_fp, "FAIL input list parsed but contained 0 valid rows.")
+            try:
+                input("Press Enter to close...")
+            except Exception:
+                pass
+            return 5
+
+        # Deduplicate by (service_slug, filename) deterministically (first wins)
+        seen = set()
+        deduped: List[LogoSource] = []
+        for s in sources:
+            k = (s.service_slug, s.filename)
+            if k in seen:
+                continue
+            seen.add(k)
+            deduped.append(s)
+
+        _write_log(log_fp, f"loaded_sources={len(sources)} deduped_sources={len(deduped)}")
+
+        # Progress
+        iterator = deduped
+        if tqdm is not None:
+            iterator = tqdm(deduped, desc="Service logos", unit="logo")  # type: ignore
+
+        ok_count = 0
+        skip_count = 0
+        fail_count = 0
+        wrote_count = 0
+        archived_count = 0
+
+        for src in iterator:
+            dst = ASSETS_LOGOS_SERVICES / src.filename
+
+            # Never allow deprecated "image/" anywhere
+            if "image/" in dst.as_posix():
+                _write_log(log_fp, f"FAIL deprecated path detected (image/): {dst.as_posix()}")
+                fail_count += 1
+                continue
+
+            if dst.exists() and dst.stat().st_size > 0 and not args.force:
+                _write_log(log_fp, f"SKIP exists: {dst.as_posix()}")
+                skip_count += 1
+                ok_count += 1
+                continue
+
+            if dst.exists() and dst.stat().st_size > 0 and args.force and args.archive_existing:
+                archived = _archive_existing(dst, ASSETS_LOGOS_SERVICES_ARCHIVE, stamp, log_fp)
+                if archived:
+                    archived_count += 1
+
+            _write_log(log_fp, f"GET {src.service_slug} -> {src.url}")
+            success, content, err = _download_with_retries(
+                url=src.url,
+                timeout=int(args.timeout),
+                retries=int(args.retries),
+                backoff_seconds=float(args.backoff),
+                user_agent="my_TV_Movie download_service_logos.py",
+            )
+            if not success or content is None:
+                _write_log(log_fp, f"FAIL download {src.service_slug} :: {err}")
+                fail_count += 1
                 continue
 
             try:
-                status, png_name, svg_name, png_path, svg_path = download_and_save_logo(
-                    service_id, entry, logger
-                )
-            except Exception as e:
-                logger.error(f"[ERROR] Failed to process {label}: {e}")
-                status = "ERROR"
-                writer.writerow([
-                    service_id,
-                    label,
-                    entry.get("display_name", ""),
-                    entry.get("url", ""),
-                    "", "", "", "",
-                    status,
-                    ts_row,
-                ])
-                continue
-
-            if status == "OK":
+                _atomic_write_bytes(dst, content)
+                _write_log(log_fp, f"WROTE {dst.as_posix()} bytes={len(content)}")
+                wrote_count += 1
                 ok_count += 1
-            else:
-                partial_count += 1
+            except Exception as e:
+                _write_log(log_fp, f"FAIL write {dst.as_posix()} :: {e}")
+                fail_count += 1
 
-            writer.writerow([
-                service_id,
-                label,
-                entry.get("display_name", ""),
-                entry.get("url", ""),
-                png_name,
-                svg_name,
-                png_path,
-                svg_path,
-                status,
-                ts_row,
-            ])
+        _write_log(log_fp, "-----------------")
+        _write_log(log_fp, f"RESULT ok={ok_count} wrote={wrote_count} skipped={skip_count} archived={archived_count} failed={fail_count}")
+        _write_log(log_fp, f"[download_service_logos] END log={lp.as_posix()}")
 
-    logger.info("")
-    logger.info("============================================================")
-    logger.info(f"Total targets        : {total}")
-    logger.info(f"OK (PNG+SVG)         : {ok_count}")
-    logger.info(f"PARTIAL              : {partial_count}")
-    logger.info(f"Not found in mosaic  : {miss_count}")
-    logger.info(f"Logos directory      : {LOGO_DIR}")
-    logger.info(f"Report CSV           : {report_path}")
-    logger.info("============================================================")
-    logger.info("")
+    try:
+        input("Press Enter to close...")
+    except Exception:
+        pass
+
+    return 0 if fail_count == 0 else 6
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
