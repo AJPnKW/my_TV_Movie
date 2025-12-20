@@ -2,34 +2,20 @@
 # ==============================================================================
 # [FILE]    scripts/qa_test_tmdb_tv_movie.py
 # [PROJECT] my_TV_Movie (My TV Hub)
-# [ROLE]    QA / debug TMDB calls (search vs direct ID) for TV + Movies
-# [VERSION] v1.0.0
-# [UPDATED] 2025-12-20_00-00-00
-# [BUILD]   14.01.10
+# [ROLE]    QA / debug TMDB calls + validate list parsing for tv/movies/watchlist
+# [VERSION] v1.0.2
+# [UPDATED] 2025-12-20
 #
-# PURPOSE
-# - Determine why fetch_tmdb reports "[show]/[movie] not found" even for valid TMDB IDs.
-# - Tests both:
-#   (A) Search calls (query + optional year)
-#   (B) Direct ID calls (/tv/{id}, /movie/{id})
-# - Produces request-level debug: auth mode, URL, status, and a small JSON snippet.
-#
-# ENV
-# - API_TMDB_KEY (required)  : v3 key OR v4 bearer (auto-detected)
-# - API_TMDB_TOKEN (optional): v4 bearer (preferred if present)
-#
-# INPUT
-# - Reads repo-root:
-#     tv_list.txt
-#     movies_list.txt
-#
-# OUTPUT
-# - logs/qa_test_tmdb_YYYY-MM-DD_HHMMSS.log.txt
-# - Console summary + per-item diagnostic lines
-#
-# RUN (PowerShell)
-#   cd C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie
-#   python scripts\qa_test_tmdb_tv_movie.py
+# CHANGELOG v1.0.2
+# - Parser now matches actual input schemas:
+#     tv_list.txt     => title|tmdb_id|season_spec|tvmaze_id
+#     watchlist.txt   => title|tmdb_id|season_spec
+#     movies_list.txt => title|tmdb_id
+# - Removed "4-digit=year" heuristic (INVALID for these schemas)
+# - Added tolerance for extra spacing around delimiters
+# - Added fix for malformed "Title12345|12345|*" (strip trailing digits from title)
+# - Writes a deterministic parse report to logs/ (always)
+# - TMDB calls keep: session reuse, retries, timeouts, redacted api_key
 # ==============================================================================
 
 from __future__ import annotations
@@ -45,11 +31,17 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
+from requests.adapters import HTTPAdapter
+
+try:
+    from urllib3.util.retry import Retry  # type: ignore
+except Exception:
+    Retry = None  # type: ignore
 
 try:
     from tqdm import tqdm  # type: ignore
 except Exception:
-    tqdm = None  # noqa
+    tqdm = None  # type: ignore
 
 
 # -------------------------
@@ -59,26 +51,61 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 LOGS_DIR = REPO_ROOT / "logs"
 
 TV_LIST_PATH = REPO_ROOT / "tv_list.txt"
+WATCHLIST_PATH = REPO_ROOT / "watchlist.txt"
 MOVIES_LIST_PATH = REPO_ROOT / "movies_list.txt"
 
 TMDB_API_BASE = "https://api.themoviedb.org/3"
-TIMEOUT = 25
 
-# IMPORTANT: Your current list format appears to be:
-#   Title|TMDB_ID|optional
-# The existing fetch parser is likely treating "|TMDB_ID" as a YEAR, causing invalid year params.
-# This QA parser extracts ID tokens safely and also shows what would happen if treated as year.
+# Timeouts: (connect_timeout, read_timeout)
+TIMEOUT = (10, 25)
 
+# Retries (only for transient network/proxy/TLS hiccups)
+RETRY_TOTAL = 4
+RETRY_BACKOFF = 0.6
+
+# Split on pipes with any surrounding whitespace
 RE_PIPE_SPLIT = re.compile(r"\s*\|\s*")
-RE_TMDB_TOKEN = re.compile(r"(?i)\b(tmdb)\s*[:=]\s*(\d{3,10})\b")
-RE_ID_ONLY = re.compile(r"^\d{3,10}$")
-RE_YEAR_4 = re.compile(r"^\d{4}$")
+RE_COMMENT_LINE = re.compile(r"^\s*#")
+RE_APIKEY_IN_URL = re.compile(r"(api_key=)[^&]+")
+
+# Malformed: Title12345|12345|*  -> strip trailing digits from title token
+RE_TITLE_TRAILING_DIGITS = re.compile(r"^(?P<title>.*?)(?P<digits>\d{3,10})$")
+
+# Digits-only token
+RE_DIGITS = re.compile(r"^\d{3,10}$")
 
 
 @dataclass(frozen=True)
 class TmdbAuth:
     mode: str  # "v3" or "bearer"
     value: str
+
+
+@dataclass(frozen=True)
+class ParsedTvLine:
+    title: str
+    tmdb_id: int
+    season_spec: str
+    tvmaze_id: Optional[int]
+    raw_line: str
+    tokens: List[str]
+
+
+@dataclass(frozen=True)
+class ParsedWatchLine:
+    title: str
+    tmdb_id: int
+    season_spec: str
+    raw_line: str
+    tokens: List[str]
+
+
+@dataclass(frozen=True)
+class ParsedMovieLine:
+    title: str
+    tmdb_id: int
+    raw_line: str
+    tokens: List[str]
 
 
 def _now_stamp() -> str:
@@ -107,143 +134,216 @@ def _looks_like_bearer(token: str) -> bool:
 
 
 def load_auth() -> TmdbAuth:
-    v_key = (os.getenv("API_TMDB_KEY") or "").strip()
+    # Prefer TOKEN if present; otherwise KEY
     v_tok = (os.getenv("API_TMDB_TOKEN") or "").strip()
+    v_key = (os.getenv("API_TMDB_KEY") or "").strip()
     candidate = v_tok or v_key
     if not candidate:
-        raise RuntimeError("Missing API_TMDB_KEY (or API_TMDB_TOKEN).")
+        raise RuntimeError("Missing API_TMDB_TOKEN or API_TMDB_KEY.")
 
-    if _looks_like_bearer(candidate):
+    if _looks_like_bearer(candidate) and v_tok:
         return TmdbAuth(mode="bearer", value=candidate)
     return TmdbAuth(mode="v3", value=candidate)
 
 
-def tmdb_get(auth: TmdbAuth, path: str, params: Optional[Dict[str, Any]] = None) -> Tuple[int, str, Dict[str, Any]]:
+def _make_session() -> requests.Session:
+    s = requests.Session()
+
+    if Retry is not None:
+        retry = Retry(
+            total=RETRY_TOTAL,
+            connect=RETRY_TOTAL,
+            read=RETRY_TOTAL,
+            status=RETRY_TOTAL,
+            backoff_factor=RETRY_BACKOFF,
+            status_forcelist=(429, 500, 502, 503, 504),
+            allowed_methods=frozenset(["GET"]),
+            raise_on_status=False,
+        )
+        adapter = HTTPAdapter(max_retries=retry, pool_connections=10, pool_maxsize=10)
+    else:
+        adapter = HTTPAdapter(pool_connections=10, pool_maxsize=10)
+
+    s.mount("https://", adapter)
+    s.mount("http://", adapter)
+    return s
+
+
+def _redact_url(u: str) -> str:
+    return RE_APIKEY_IN_URL.sub(r"\1***REDACTED***", u)
+
+
+def tmdb_get(session: requests.Session, auth: TmdbAuth, path: str, params: Optional[Dict[str, Any]] = None) -> Tuple[int, str, Dict[str, Any]]:
     params = dict(params or {})
     url = f"{TMDB_API_BASE}{path}"
-    headers = {"User-Agent": "my_TV_Movie qa_test_tmdb_tv_movie.py"}
+    headers = {"User-Agent": "my_TV_Movie qa_test_tmdb_tv_movie.py", "Accept": "application/json"}
 
     if auth.mode == "v3":
         params["api_key"] = auth.value
     else:
         headers["Authorization"] = f"Bearer {auth.value}"
 
-    r = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
-    text_head = (r.text or "")[:600]
-
     try:
-        j = r.json() if r.text else {}
-    except Exception:
-        j = {"_non_json_head": text_head}
+        r = session.get(url, headers=headers, params=params, timeout=TIMEOUT)
+        redacted_url = _redact_url(r.url if r.url else url)
+        try:
+            j = r.json() if r.text else {}
+        except Exception:
+            j = {"_non_json_head": (r.text or "")[:600]}
+        return r.status_code, redacted_url, j
 
-    return r.status_code, r.url, j
+    except requests.RequestException as e:
+        return 0, _redact_url(url), {"_request_exception": str(e)}
 
 
 def _read_lines(path: Path) -> List[str]:
     if not path.exists():
         return []
-    return [ln.strip() for ln in path.read_text(encoding="utf-8", errors="ignore").splitlines() if ln.strip() and not ln.strip().startswith("#")]
+    out: List[str] = []
+    for ln in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        s = ln.strip()
+        if not s:
+            continue
+        if RE_COMMENT_LINE.match(s):
+            continue
+        out.append(s)
+    return out
 
 
-def parse_line_guess_formats(line: str) -> Dict[str, Any]:
+def _split_tokens(line: str) -> List[str]:
+    toks = [t.strip() for t in RE_PIPE_SPLIT.split(line) if t.strip() != ""]
+    return toks
+
+
+def _normalize_title(title: str) -> str:
+    # collapse internal whitespace; preserve casing/punctuation
+    return " ".join(title.strip().split())
+
+
+def _strip_trailing_digits_if_malformed(title: str, tmdb_id: int) -> Tuple[str, bool]:
     """
-    Returns:
-      title
-      id_from_tokens
-      year_from_tokens (ONLY if exactly 4 digits)
-      raw_tokens
-      tmdb_token_id (tmdb:123)
+    Fix malformed: 'Criminal Record204490|204490|*'
+    Title token ends with the same digits as tmdb_id.
     """
-    tmdb_token_id: Optional[int] = None
-    m = RE_TMDB_TOKEN.search(line)
-    if m:
-        tmdb_token_id = int(m.group(2))
-
-    tokens = RE_PIPE_SPLIT.split(line)
-    tokens = [t.strip() for t in tokens if t.strip()]
-
-    title = tokens[0] if tokens else line.strip()
-
-    # attempt to extract an ID from pipe tokens (common in your logs)
-    id_from_tokens: Optional[int] = None
-    year_from_tokens: Optional[int] = None
-
-    for t in tokens[1:]:
-        if RE_ID_ONLY.match(t):
-            # if 4 digits, treat as year candidate; otherwise treat as id
-            if RE_YEAR_4.match(t):
-                # could still be an ID, but this QA test tracks it as "year" only if 4 digits
-                year_from_tokens = int(t)
-            else:
-                id_from_tokens = int(t)
-                break
-
-    return {
-        "title": title,
-        "raw_tokens": tokens,
-        "tmdb_token_id": tmdb_token_id,
-        "id_from_tokens": id_from_tokens,
-        "year_from_tokens": year_from_tokens,
-    }
+    m = RE_TITLE_TRAILING_DIGITS.match(title.strip())
+    if not m:
+        return title, False
+    try:
+        tail = int(m.group("digits"))
+    except Exception:
+        return title, False
+    if tail == tmdb_id:
+        cleaned = m.group("title").rstrip()
+        return cleaned, True
+    return title, False
 
 
-def pick_id(rec: Dict[str, Any]) -> Optional[int]:
-    # Priority: explicit tmdb: token, then pipe id token
-    if rec.get("tmdb_token_id"):
-        return int(rec["tmdb_token_id"])
-    if rec.get("id_from_tokens"):
-        return int(rec["id_from_tokens"])
-    return None
+def parse_tv_line(line: str) -> Optional[ParsedTvLine]:
+    """
+    Schema (binding): title | tmdb_show_id | season_spec | tvmaze_id
+    - season_spec may be '*' or '1' or '1,2' etc.
+    - tvmaze_id may be missing
+    """
+    toks = _split_tokens(line)
+    if len(toks) < 3:
+        return None
+
+    title = _normalize_title(toks[0])
+
+    if not RE_DIGITS.match(toks[1]):
+        return None
+    tmdb_id = int(toks[1])
+
+    season_spec = _normalize_title(toks[2])
+
+    tvmaze_id: Optional[int] = None
+    if len(toks) >= 4 and RE_DIGITS.match(toks[3]):
+        tvmaze_id = int(toks[3])
+
+    title2, fixed = _strip_trailing_digits_if_malformed(title, tmdb_id)
+    if fixed:
+        title = _normalize_title(title2)
+
+    return ParsedTvLine(
+        title=title,
+        tmdb_id=tmdb_id,
+        season_spec=season_spec,
+        tvmaze_id=tvmaze_id,
+        raw_line=line,
+        tokens=toks,
+    )
 
 
-def snippet(j: Dict[str, Any]) -> str:
-    # safe compact snippet for logs
+def parse_watch_line(line: str) -> Optional[ParsedWatchLine]:
+    """
+    Schema (binding): title | tmdb_show_id | season_spec
+    """
+    toks = _split_tokens(line)
+    if len(toks) < 3:
+        return None
+
+    title = _normalize_title(toks[0])
+
+    if not RE_DIGITS.match(toks[1]):
+        return None
+    tmdb_id = int(toks[1])
+
+    season_spec = _normalize_title(toks[2])
+
+    title2, fixed = _strip_trailing_digits_if_malformed(title, tmdb_id)
+    if fixed:
+        title = _normalize_title(title2)
+
+    return ParsedWatchLine(
+        title=title,
+        tmdb_id=tmdb_id,
+        season_spec=season_spec,
+        raw_line=line,
+        tokens=toks,
+    )
+
+
+def parse_movie_line(line: str) -> Optional[ParsedMovieLine]:
+    """
+    Schema (binding): title | tmdb_movie_id
+    """
+    toks = _split_tokens(line)
+    if len(toks) < 2:
+        return None
+
+    title = _normalize_title(toks[0])
+
+    if not RE_DIGITS.match(toks[1]):
+        return None
+    tmdb_id = int(toks[1])
+
+    title2, fixed = _strip_trailing_digits_if_malformed(title, tmdb_id)
+    if fixed:
+        title = _normalize_title(title2)
+
+    return ParsedMovieLine(
+        title=title,
+        tmdb_id=tmdb_id,
+        raw_line=line,
+        tokens=toks,
+    )
+
+
+def _snippet(j: Dict[str, Any]) -> str:
     keep: Dict[str, Any] = {}
-    for k in ["status_code", "status_message", "id", "name", "title", "release_date", "first_air_date", "results", "success"]:
+    for k in ["status_code", "status_message", "id", "name", "title", "release_date", "first_air_date", "results", "success", "_request_exception"]:
         if k in j:
             keep[k] = j[k]
-    # trim results if present
     if isinstance(keep.get("results"), list):
         keep["results"] = keep["results"][:1]
-    return json.dumps(keep, ensure_ascii=False)[:600]
-
-
-def test_one_tv(auth: TmdbAuth, title: str, year: Optional[int], tmdb_id: Optional[int], log_fp) -> None:
-    # A) search/tv
-    params: Dict[str, Any] = {"query": title}
-    if year:
-        params["first_air_date_year"] = year
-    st, url, j = tmdb_get(auth, "/search/tv", params=params)
-    _write(log_fp, f"TV SEARCH | title={title!r} year={year} -> status={st} url={url}")
-    _write(log_fp, f"TV SEARCH | resp={snippet(j)}")
-
-    # B) direct id
-    if tmdb_id:
-        st2, url2, j2 = tmdb_get(auth, f"/tv/{tmdb_id}", params={"language": "en-US"})
-        _write(log_fp, f"TV ID     | id={tmdb_id} -> status={st2} url={url2}")
-        _write(log_fp, f"TV ID     | resp={snippet(j2)}")
-
-
-def test_one_movie(auth: TmdbAuth, title: str, year: Optional[int], tmdb_id: Optional[int], log_fp) -> None:
-    # A) search/movie
-    params: Dict[str, Any] = {"query": title}
-    if year:
-        params["year"] = year
-    st, url, j = tmdb_get(auth, "/search/movie", params=params)
-    _write(log_fp, f"MOV SEARCH | title={title!r} year={year} -> status={st} url={url}")
-    _write(log_fp, f"MOV SEARCH | resp={snippet(j)}")
-
-    # B) direct id
-    if tmdb_id:
-        st2, url2, j2 = tmdb_get(auth, f"/movie/{tmdb_id}", params={"language": "en-US"})
-        _write(log_fp, f"MOV ID     | id={tmdb_id} -> status={st2} url={url2}")
-        _write(log_fp, f"MOV ID     | resp={snippet(j2)}")
+    return json.dumps(keep, ensure_ascii=False)[:700]
 
 
 def main() -> int:
     lp = _log_path()
     with lp.open("w", encoding="utf-8") as log_fp:
         _write(log_fp, f"[qa_test_tmdb] START repo_root={REPO_ROOT.as_posix()}")
+
         try:
             auth = load_auth()
         except Exception as e:
@@ -257,14 +357,73 @@ def main() -> int:
         _write(log_fp, f"auth_mode={auth.mode}")
 
         tv_lines = _read_lines(TV_LIST_PATH)
+        watch_lines = _read_lines(WATCHLIST_PATH)
         mov_lines = _read_lines(MOVIES_LIST_PATH)
 
-        _write(log_fp, f"tv_list_lines={len(tv_lines)} movies_list_lines={len(mov_lines)}")
+        _write(log_fp, f"tv_list_lines={len(tv_lines)} watchlist_lines={len(watch_lines)} movies_list_lines={len(mov_lines)}")
 
-        # Preflight: /configuration
-        st, url, j = tmdb_get(auth, "/configuration", params={})
-        _write(log_fp, f"PRECHECK  | status={st} url={url}")
-        _write(log_fp, f"PRECHECK  | resp={snippet(j)}")
+        # Parse + report errors (parser validation)
+        parsed_tv: List[ParsedTvLine] = []
+        parsed_watch: List[ParsedWatchLine] = []
+        parsed_mov: List[ParsedMovieLine] = []
+
+        bad_tv: List[str] = []
+        bad_watch: List[str] = []
+        bad_mov: List[str] = []
+
+        for ln in tv_lines:
+            rec = parse_tv_line(ln)
+            if rec is None:
+                bad_tv.append(ln)
+            else:
+                parsed_tv.append(rec)
+
+        for ln in watch_lines:
+            rec = parse_watch_line(ln)
+            if rec is None:
+                bad_watch.append(ln)
+            else:
+                parsed_watch.append(rec)
+
+        for ln in mov_lines:
+            rec = parse_movie_line(ln)
+            if rec is None:
+                bad_mov.append(ln)
+            else:
+                parsed_mov.append(rec)
+
+        _write(log_fp, f"PARSE tv_ok={len(parsed_tv)}/{len(tv_lines)} watch_ok={len(parsed_watch)}/{len(watch_lines)} mov_ok={len(parsed_mov)}/{len(mov_lines)}")
+
+        if bad_tv:
+            _write(log_fp, f"PARSE tv_bad_count={len(bad_tv)} (showing first 10)")
+            for b in bad_tv[:10]:
+                _write(log_fp, f"TV BAD   | {b!r}")
+
+        if bad_watch:
+            _write(log_fp, f"PARSE watch_bad_count={len(bad_watch)} (showing first 10)")
+            for b in bad_watch[:10]:
+                _write(log_fp, f"WATCH BAD| {b!r}")
+
+        if bad_mov:
+            _write(log_fp, f"PARSE mov_bad_count={len(bad_mov)} (showing first 10)")
+            for b in bad_mov[:10]:
+                _write(log_fp, f"MOV BAD  | {b!r}")
+
+        # Show a few parsed examples
+        for rec in parsed_tv[:5]:
+            _write(log_fp, f"TV OK    | title={rec.title!r} id={rec.tmdb_id} seasons={rec.season_spec!r} tvmaze={rec.tvmaze_id} tokens={rec.tokens}")
+
+        for rec in parsed_watch[:5]:
+            _write(log_fp, f"WATCH OK | title={rec.title!r} id={rec.tmdb_id} seasons={rec.season_spec!r} tokens={rec.tokens}")
+
+        for rec in parsed_mov[:5]:
+            _write(log_fp, f"MOV OK   | title={rec.title!r} id={rec.tmdb_id} tokens={rec.tokens}")
+
+        # TMDB preflight
+        session = _make_session()
+        st, url, j = tmdb_get(session, auth, "/configuration", params={})
+        _write(log_fp, f"PRECHECK | status={st} url={url}")
+        _write(log_fp, f"PRECHECK | resp={_snippet(j)}")
         if st != 200:
             _write(log_fp, "FAIL precheck: TMDB not reachable or auth invalid.")
             try:
@@ -273,52 +432,23 @@ def main() -> int:
                 pass
             return 3
 
-        # Test subsets (first 15 each) to keep fast
-        tv_subset = tv_lines[:15]
-        mov_subset = mov_lines[:15]
+        # Minimal TMDB checks (by ID, deterministic subset)
+        tv_subset = parsed_tv[:15]
+        mov_subset = parsed_mov[:15]
 
-        it_tv = tv_subset if tqdm is None else tqdm(tv_subset, desc="QA TV", unit="show")  # type: ignore
-        for line in it_tv:
-            rec = parse_line_guess_formats(line)
-            title = rec["title"]
-            tmdb_id = pick_id(rec)
+        it_tv = tv_subset if tqdm is None else tqdm(tv_subset, desc="QA TV (ID)", unit="show")  # type: ignore
+        for rec in it_tv:
+            st2, url2, j2 = tmdb_get(session, auth, f"/tv/{rec.tmdb_id}", params={"language": "en-US"})
+            _write(log_fp, f"TV ID    | title={rec.title!r} id={rec.tmdb_id} -> status={st2} url={url2}")
+            _write(log_fp, f"TV ID    | resp={_snippet(j2)}")
+            time.sleep(0.05)
 
-            # IMPORTANT: this shows you the problematic behavior:
-            # - if you treat the pipe-number as YEAR (e.g., 60585), searches will fail
-            year = rec.get("year_from_tokens")
-
-            _write(log_fp, "-----------------")
-            _write(log_fp, f"TV LINE   | raw={line!r}")
-            _write(log_fp, f"TV PARSE  | tokens={rec['raw_tokens']} id={tmdb_id} year4={year} tmdb_token={rec['tmdb_token_id']}")
-
-            # Run tests:
-            # 1) Search with NO year (baseline)
-            test_one_tv(auth, title=title, year=None, tmdb_id=tmdb_id, log_fp=log_fp)
-
-            # 2) If there is a 4-digit year, test search with year too
-            if year:
-                test_one_tv(auth, title=title, year=year, tmdb_id=None, log_fp=log_fp)
-
-            time.sleep(0.10)
-
-        it_mov = mov_subset if tqdm is None else tqdm(mov_subset, desc="QA Movies", unit="movie")  # type: ignore
-        for line in it_mov:
-            rec = parse_line_guess_formats(line)
-            title = rec["title"]
-            tmdb_id = pick_id(rec)
-
-            year = rec.get("year_from_tokens")
-
-            _write(log_fp, "-----------------")
-            _write(log_fp, f"MOV LINE  | raw={line!r}")
-            _write(log_fp, f"MOV PARSE | tokens={rec['raw_tokens']} id={tmdb_id} year4={year} tmdb_token={rec['tmdb_token_id']}")
-
-            test_one_movie(auth, title=title, year=None, tmdb_id=tmdb_id, log_fp=log_fp)
-
-            if year:
-                test_one_movie(auth, title=title, year=year, tmdb_id=None, log_fp=log_fp)
-
-            time.sleep(0.10)
+        it_mov = mov_subset if tqdm is None else tqdm(mov_subset, desc="QA Movies (ID)", unit="movie")  # type: ignore
+        for rec in it_mov:
+            st2, url2, j2 = tmdb_get(session, auth, f"/movie/{rec.tmdb_id}", params={"language": "en-US"})
+            _write(log_fp, f"MOV ID   | title={rec.title!r} id={rec.tmdb_id} -> status={st2} url={url2}")
+            _write(log_fp, f"MOV ID   | resp={_snippet(j2)}")
+            time.sleep(0.05)
 
         _write(log_fp, f"[qa_test_tmdb] END log={lp.as_posix()}")
 
