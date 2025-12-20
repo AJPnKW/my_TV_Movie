@@ -1,154 +1,156 @@
-#!/usr/bin/env python
-# =============================================================================
-# File: scripts/sync_trakt.py
-# Project: my_TV_Movie
-# Version: v2.0.1 (2025-11-10)
+#!/usr/bin/env python3
+# ==============================================================================
+# [FILE]    scripts/sync_trakt.py
+# [PROJECT] my_TV_Movie
+# [ROLE]    Deterministic orchestration wrapper for Trakt sync (invokes fetch_trakt.py)
+# [VERSION] v1.4.0
+# [UPDATED] 2025-12-19_00-00-00
+# [BUILD]   14.01.05
 #
-# Purpose:
-#   Merge Trakt-derived watch data (trakt_raw.json) into data.json.
+# [INPUTS]
+#   - scripts/fetch_trakt.py (authoritative Trakt sync implementation)
+#   - web/config.json        (read by fetch_trakt.py)
+#   - data/data.json         (read + updated by fetch_trakt.py)
 #
-#   - Adds `profiles` array at top level.
-#   - For each episode in each show:
-#       ep["watched_by"] = [profile, ...]
-#   - For each movie:
-#       movie["watched_by"] = [profile, ...]
+# [OUTPUTS]
+#   - data/data.json (via fetch_trakt.py)
+#   - data/last_refresh_trakt.txt (via fetch_trakt.py)
+#   - logs/sync_trakt_YYYY-MM-DD_HHMMSS.log.txt (this wrapper)
+#   - logs/fetch_trakt_YYYY-MM-DD_HHMMSS.log.txt (via fetch_trakt.py)
 #
-#   Contract with fetch_trakt.py:
-#     trakt_raw.json:
-#       {
-#         "profiles": ["Andrew", "Brant"],
-#         "episodes_watched": {
-#           "Andrew": {
-#             "<tmdb_show_id>": {
-#               "<season_number>": [<ep_numbers>]
-#             }
-#           },
-#           ...
-#         },
-#         "movies_watched": {
-#           "Andrew": {
-#             "<tmdb_movie_id>": true,
-#             ...
-#           },
-#           ...
-#         }
-#       }
+# [ENV REQUIRED]
+#   - TRAKT_CLIENT_ID
+#   - TRAKT_USERNAME
 #
-#   Notes:
-#     - Safe if trakt_raw.json missing or empty.
-#     - If no Trakt data, data.json is left unchanged.
-# =============================================================================
+# [ENV OPTIONAL]
+#   - TRAKT_ACCESS_TOKEN
+#
+# [BINDING RULES APPLIED]
+#   - No invented files/folders/modules.
+#   - Errors must be surfaced (visible via console + log; no silent failures).
+#   - data.json is not edited manually; script-driven updates only.
+#   - Canonical assets: no deprecated "image/" references introduced here.
+#
+# [WHY THIS EXISTS]
+#   - Provides a stable, single command entry for “Trakt sync” while keeping all
+#     actual Trakt logic inside scripts/fetch_trakt.py.
+# ==============================================================================
 
-import json
+from __future__ import annotations
+
+import datetime as _dt
+import os
+import subprocess
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-DATA_FILE = ROOT / "data" / "data.json"
-TRAKT_FILE = ROOT / "data" / "trakt_raw.json"
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS_DIR = REPO_ROOT / "scripts"
+FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
+
+DATA_JSON = REPO_ROOT / "data" / "data.json"
+LOGS_DIR = REPO_ROOT / "logs"
 
 
-def log(msg: str) -> None:
-    print(f"[sync_trakt] {msg}", flush=True)
+def _now_stamp() -> str:
+    return _dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
 
-def load_json(path: Path):
-    if not path.exists():
-        return None
-    with path.open("r", encoding="utf-8") as f:
-        return json.load(f)
+def _log_path() -> Path:
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
+    return LOGS_DIR / f"sync_trakt_{_now_stamp()}.log.txt"
 
 
-def main():
-    data = load_json(DATA_FILE)
-    if data is None:
-        log("data.json missing; nothing to sync.")
-        return
+def _write_line(fp, s: str) -> None:
+    fp.write(s + "\n")
+    fp.flush()
 
-    trakt = load_json(TRAKT_FILE) or {}
 
-    profiles = trakt.get("profiles") or []
-    episodes_watched = trakt.get("episodes_watched") or {}
-    movies_watched = trakt.get("movies_watched") or {}
+def _required_env(name: str) -> str:
+    v = os.getenv(name)
+    if not v or not v.strip():
+        raise RuntimeError(f"Missing required env var: {name}")
+    return v.strip()
 
-    if not profiles:
-        log("No Trakt profiles in trakt_raw.json; leaving data.json as-is.")
-        return
 
-    # Ensure top-level profiles exists for UI filters
-    data["profiles"] = profiles
+def _check_prereqs() -> None:
+    if not FETCH_TRAKT.exists():
+        raise FileNotFoundError(f"Missing required script: {FETCH_TRAKT}")
+    if not DATA_JSON.exists():
+        raise FileNotFoundError(f"Missing required data file: {DATA_JSON} (run fetch_tmdb.py first)")
+    _required_env("TRAKT_CLIENT_ID")
+    _required_env("TRAKT_USERNAME")
 
-    shows = data.get("shows") or []
-    movies = data.get("movies") or []
 
-    ep_count = 0
-    mv_count = 0
+def _run_fetch_trakt(log_fp) -> int:
+    cmd = [sys.executable, str(FETCH_TRAKT)]
+    _write_line(log_fp, f"[sync_trakt] CMD: {' '.join(cmd)}")
 
-    # -------------------------------------------------------------------------
-    # Episodes: annotate each ep with watched_by[]
-    # -------------------------------------------------------------------------
-    for show in shows:
-        sid = str(show.get("show_id") or show.get("id") or "")
-        if not sid:
-           continue
-
-        for season in show.get("seasons") or []:
-            sn = str(season.get("season_number"))
-            if not sn:
-                continue
-
-            for ep in season.get("episodes") or []:
-                en = ep.get("episode_number")
-                if en is None:
-                    continue
-                en_str = str(en)
-
-                watched_by = []
-                for profile in profiles:
-                    p_map = episodes_watched.get(profile, {})
-                    s_map = p_map.get(sid, {})
-                    # By contract: s_map[sn] is either list[int] or dict[str, bool]
-                    v = s_map.get(sn, [])
-                    if isinstance(v, list):
-                        if en in v or en_str in [str(x) for x in v]:
-                            watched_by.append(profile)
-                    elif isinstance(v, dict):
-                        if en_str in v or str(en) in v:
-                            watched_by.append(profile)
-
-                if watched_by:
-                    ep["watched_by"] = sorted(set(watched_by))
-                    ep_count += 1
-
-    # -------------------------------------------------------------------------
-    # Movies: annotate each movie with watched_by[]
-    # -------------------------------------------------------------------------
-    for mv in movies:
-        mid = str(mv.get("movie_id") or mv.get("id") or "")
-        if not mid:
-            continue
-
-        watched_by = []
-        for profile in profiles:
-            p_map = movies_watched.get(profile, {})
-            if p_map.get(mid):
-                watched_by.append(profile)
-
-        if watched_by:
-            mv["watched_by"] = sorted(set(watched_by))
-            mv_count += 1
-
-    # -------------------------------------------------------------------------
-    # Save
-    # -------------------------------------------------------------------------
-    DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with DATA_FILE.open("w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-    log(
-        f"Applied Trakt data: {ep_count} episodes tagged, "
-        f"{mv_count} movies tagged, profiles={profiles}"
+    # Stream stdout/stderr to console AND log (no silent failures)
+    proc = subprocess.Popen(
+        cmd,
+        cwd=str(REPO_ROOT),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
+
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        line = line.rstrip("\n")
+        print(line)
+        _write_line(log_fp, line)
+
+    return proc.wait()
+
+
+def main() -> int:
+    lp = _log_path()
+    with lp.open("w", encoding="utf-8") as log_fp:
+        _write_line(log_fp, f"[sync_trakt] START { _dt.datetime.now().isoformat(timespec='seconds') }")
+        _write_line(log_fp, f"[sync_trakt] repo_root={REPO_ROOT}")
+        _write_line(log_fp, f"[sync_trakt] python={sys.executable}")
+        _write_line(log_fp, f"[sync_trakt] log={lp}")
+
+        try:
+            _check_prereqs()
+        except Exception as e:
+            msg = f"[sync_trakt] ERROR prereq: {e}"
+            print(msg, file=sys.stderr)
+            _write_line(log_fp, msg)
+            _write_line(log_fp, "[sync_trakt] END (failed prereq)")
+            try:
+                input("Press Enter to close...")
+            except Exception:
+                pass
+            return 2
+
+        try:
+            rc = _run_fetch_trakt(log_fp)
+        except Exception as e:
+            msg = f"[sync_trakt] ERROR run: {e}"
+            print(msg, file=sys.stderr)
+            _write_line(log_fp, msg)
+            _write_line(log_fp, "[sync_trakt] END (run error)")
+            try:
+                input("Press Enter to close...")
+            except Exception:
+                pass
+            return 3
+
+        _write_line(log_fp, f"[sync_trakt] fetch_trakt_exit_code={rc}")
+        _write_line(log_fp, "[sync_trakt] END")
+
+    try:
+        input("Press Enter to close...")
+    except Exception:
+        pass
+
+    return int(rc)
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
