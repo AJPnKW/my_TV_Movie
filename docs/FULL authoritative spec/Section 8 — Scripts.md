@@ -1,7 +1,7 @@
 # **SECTION 8 — SCRIPTS (HIGH‑LEVEL SPECIFICATION)**  
 **Authoritative Specification — Conceptual Architecture Only**  
 **Document ID:** Section 8 — Scripts  
-**Version:** V0.00  
+**Version:** V0.01 (Updated for Phase 4.x)
 
 ---
 
@@ -19,6 +19,31 @@ These scripts are responsible for:
 - preparing the local dataset for UI consumption  
 
 This section describes **what each script must accomplish**, **what data it interacts with**, and **what guarantees it must uphold**, without specifying algorithms or code‑like logic.
+
+---
+
+# **8.0.1 — Phase 4.x Update Notes (New)**  
+The following updates apply to the script ecosystem as of Phase 4.x:
+
+### **A. watchlist.html (Section 4.9)**
+- watchlist.html is a **standalone, non‑SPA page**  
+- It loads `data.json` directly  
+- It uses **inline JavaScript** (the only exception in the system)  
+- It does **not** use SPA modules or the SPA rendering pipeline  
+- No script in this section is responsible for watchlist.html behavior  
+
+### **B. Asset Requirements (Section 7)**
+Scripts that download or validate assets must ensure:
+- posters, backdrops, network logos, and streaming icons exist locally  
+- no external URLs remain in metadata  
+- all asset paths match the canonical hierarchy  
+
+### **C. Data.json Integrity**
+All scripts must ensure:
+- deterministic field formatting  
+- no schema drift  
+- no conflicting metadata merges  
+- no removal of fields required by watchlist.html  
 
 ---
 
@@ -322,4 +347,30 @@ This script is responsible for **watch progress**, **watched/unwatched status**,
 
 ---
 
-# **END OF SECTION 8 — OUTPUT 2**  
+# **8.8 — Script Guarantees (New)**  
+All scripts must uphold the following system‑wide guarantees:
+
+- No script may introduce external asset URLs  
+- No script may remove fields required by UI views  
+- No script may create schema drift  
+- All merges must be deterministic  
+- All metadata must remain internally consistent  
+- All asset paths must match Section 7  
+- All watch‑history fields must remain stable for watchlist.html  
+
+---
+
+# **8.9 — Standalone Page Exception (New)**  
+The following rules apply **only** to watchlist.html:
+
+- It may load `data.json` directly  
+- It may use inline JavaScript  
+- It may implement its own expand/collapse logic  
+- It does not use SPA modules  
+- No script in Section 8 is responsible for its behavior  
+
+This exception exists **only** for the Phase‑4.x standalone watchlist page.
+
+---
+
+# **END OF SECTION 8 — SCRIPTS**

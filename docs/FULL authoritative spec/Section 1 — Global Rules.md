@@ -1,4 +1,3 @@
-
 # **SECTION 1 — GLOBAL RULES**  
 **Authoritative Specification — Full Scope (Including Future‑Phase Features)**  
 **Document ID:** Section 1 — Global Rules  

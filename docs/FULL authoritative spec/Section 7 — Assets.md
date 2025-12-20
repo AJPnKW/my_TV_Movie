@@ -1,173 +1,231 @@
-# **SECTION 7 — ASSETS & MEDIA**  
-**Authoritative Specification — Full Scope (Including Future‑Phase Features)**  
-**Document ID:** Section 7 — Assets & Media  
-**Version:** V0.00  
+# ⭐ **Section 7 — Assets.md**  
+*(Full file contents — ready to save)*
+
+```markdown
+/* =========================================================================================
+[SECTION] 7.0 — Assets
+[PROJECT] my_TV_Movie (My TV Hub)
+[ROLE] Canonical asset hierarchy, naming rules, and required asset sets
+[VERSION] v4.5.0
+[UPDATED] 2025‑12‑19_00‑00‑00
+[OWNER] Andrew & Brant (internal)
+
+[PHASE 4.x CONTEXT]
+- All assets must be local.
+- No external URLs (TMDB, CDN, remote images).
+- No deprecated folders (e.g., /image/).
+- All views (SPA and standalone) must use the canonical hierarchy defined here.
+- watchlist.html (Section 4.9) introduces additional asset requirements for
+  posters, backdrops, network logos, and streaming service icons.
+
+========================================================================================= */
+
+# Section 7 — Assets
+
+## 7.1 — Purpose
+This section defines the **canonical asset hierarchy** for My TV Hub.  
+All UI views, scripts, and pipelines must reference assets **exclusively** through
+the paths and naming rules defined here.
+
+No view may introduce its own asset folders or naming conventions.
+
 ---
-# **7.1 Purpose of This Section**
-This section defines the **complete, authoritative, immutable rules** for all assets and media used in the *my_TV_Movie (My TV Hub)* system, including:
-- posters  
-- backdrops  
-- still images  
-- logos  
-- icons  
-- fallback assets  
-- local storage rules  
-- naming conventions  
-- integrity rules  
-- caching rules  
-- future‑phase asset types  
-All assets must be **local**, never remote.
+
+## 7.2 — Canonical Asset Hierarchy
+
+```
+assets/
+    posters/
+        shows/
+            <slug>.jpg
+            placeholder_poster.jpg
+
+    backdrops/
+        shows/
+            <slug>.jpg
+            placeholder_backdrop.jpg
+
+    networks/
+        <network>.png
+
+    streaming/
+        <service>.png
+
+    icons/
+        <global UI icons>
+
+    ui/
+        <shared UI elements>
+
+    fonts/
+        <font files>
+
+    misc/
+        <miscellaneous static assets>
+```
+
+All folders listed above are required.  
+No additional folders may be created without SPEC approval.
+
 ---
-# **7.2 Asset Categories**
-The system must support the following asset categories:
-- posters  
-- backdrops  
-- still images  
-- network logos  
-- service logos  
-- channel logos  
-- icon strip icons  
-- fallback assets  
-- collection posters  
-- profile avatars (future‑phase)  
-- EPG images (future‑phase)  
+
+## 7.3 — Naming Rules
+
+### 7.3.1 — Show Slugs
+Show assets must use a **slug** derived from the show title:
+
+- lowercase  
+- alphanumeric  
+- hyphens instead of spaces  
+- no special characters  
+
+Example:
+```
+"The Expanse" → the-expanse.jpg
+```
+
+### 7.3.2 — Network Logos
+Network logos must use the network identifier:
+
+```
+assets/networks/netflix.png
+assets/networks/hbo.png
+assets/networks/amazon.png
+```
+
+### 7.3.3 — Streaming Service Icons
+Streaming icons must match the service name:
+
+```
+assets/streaming/netflix.png
+assets/streaming/prime-video.png
+assets/streaming/disney-plus.png
+```
+
+### 7.3.4 — File Format
+All posters, backdrops, and icons must be **.jpg** or **.png** only.
+
+No SVGs for posters/backdrops.  
+No WebP.  
+No GIFs.
+
 ---
-# **7.3 Directory Structure**
-Assets must be stored in:
+
+## 7.4 — Required Asset Sets
+
+### 7.4.1 — Posters (Shows)
+Required for:
+- Shows View (4.2)
+- Popups (P1–P3)
+- watchlist.html (4.9)
+
+Path:
 ```
-assets/posters/
-assets/backdrops/
-assets/stills/
-assets/logos/
-assets/icons/
-assets/fallback/
-assets/collections/
-assets/avatars/        (future‑phase)
-assets/epg/            (future‑phase)
+assets/posters/shows/<slug>.jpg
 ```
-This structure is immutable.
+
+Fallback:
+```
+assets/posters/placeholder_poster.jpg
+```
+
+### 7.4.2 — Backdrops (Shows)
+Required for:
+- Show Popup (P1)
+- watchlist.html (4.9)
+
+Path:
+```
+assets/backdrops/shows/<slug>.jpg
+```
+
+Fallback:
+```
+assets/backdrops/shows/placeholder_backdrop.jpg
+```
+
+### 7.4.3 — Network Logos
+Required for:
+- Shows View (4.2)
+- Popups (P1–P3)
+- watchlist.html (4.9)
+
+Path:
+```
+assets/networks/<network>.png
+```
+
+### 7.4.4 — Streaming Service Icons
+Required for:
+- watchlist.html (4.9)
+- Episode‑level streaming links (future phase)
+
+Path:
+```
+assets/streaming/<service>.png
+```
+
 ---
-# **7.4 Naming Conventions**
-### **7.4.1 Posters**
-```
-poster_<id>.jpg
-```
-### **7.4.2 Backdrops**
-```
-backdrop_<id>.jpg
-```
-### **7.4.3 Stills**
-```
-still_<showid>_<season>_<episode>.jpg
-```
-### **7.4.4 Logos**
-```
-logo_<network>.png
-```
-### **7.4.5 Icons**
-```
-icon_<service>.png
-```
-### **7.4.6 Collections**
-```
-collection_<id>.jpg
-```
-### **7.4.7 Avatars (Future‑Phase)**
-```
-avatar_<profileid>.png
-```
-### **7.4.8 EPG Images (Future‑Phase)**
-```
-epg_<channelid>_<timestamp>.jpg
-```
+
+## 7.5 — Forbidden Assets
+
+### 7.5.1 — External URLs
+The following are strictly forbidden:
+- TMDB image URLs  
+- CDN image URLs  
+- Remote icons  
+- Any non‑local asset references  
+
+### 7.5.2 — Deprecated Folders
+The following must not be used:
+- `/image/`
+- `/img/`
+- `/pictures/`
+- `/static/` (unless approved)
+
+### 7.5.3 — Inline Base64 Assets
+Inline base64 images are not allowed in:
+- SPA views  
+- popups  
+- shared components  
+
+Exception:  
+`watchlist.html` may embed small inline SVGs if required for layout.
+
 ---
-# **7.5 Local Storage Rules**
-### **7.5.1 No Remote URLs**
-All images must be:
-- downloaded  
-- stored locally  
-- referenced via relative paths  
-### **7.5.2 Integrity Requirements**
-Each asset must:
-- exist  
-- be readable  
-- be valid image format  
-- match expected dimensions  
-### **7.5.3 Fallback Rules**
-If an asset is missing:
-- use fallback poster  
-- use fallback logo  
-- use fallback icon  
-Fallbacks must always exist.
+
+## 7.6 — Asset Validation Rules
+All assets must satisfy:
+
+- Correct folder  
+- Correct filename  
+- Correct slug  
+- Correct format  
+- No missing posters/backdrops for watchlisted shows  
+- No broken paths  
+- No unused assets in the repo  
+
+The build pipeline (Section 9) must include an asset validation step.
+
 ---
-# **7.6 Image Dimensions**
-### **7.6.1 Posters**
-- portrait aspect ratio  
-- consistent across all views  
-### **7.6.2 Backdrops**
-- landscape aspect ratio  
-- consistent across all popups  
-### **7.6.3 Stills**
-- 16:9 aspect ratio  
-### **7.6.4 Logos**
-- normalized height  
-- variable width  
-### **7.6.5 Icons**
-- square  
-- consistent size  
+
+## 7.7 — watchlist.html (Section 4.9) Asset Requirements
+The standalone watchlist page requires:
+
+```
+assets/posters/shows/<slug>.jpg
+assets/backdrops/shows/<slug>.jpg
+assets/networks/<network>.png
+assets/streaming/<service>.png
+```
+
+Fallbacks must be used when assets are missing.
+
+watchlist.html must not reference:
+- TMDB URLs  
+- deprecated folders  
+- external icons  
+
 ---
-# **7.7 Icon Strip Requirements**
-Icon strip icons must:
-- be local  
-- be consistent size  
-- be horizontally aligned  
-- be deterministic in order  
----
-# **7.8 Logo Requirements**
-Logos must:
-- be local  
-- be normalized  
-- never distort  
-- never stretch  
----
-# **7.9 Asset Validation**
-The system must validate:
-- file existence  
-- file size  
-- file format  
-- file readability  
-- naming conventions  
-Invalid assets must be logged.
----
-# **7.10 Caching Rules**
-### **7.10.1 Image Caching Script**
-Must:
-- download all images  
-- validate integrity  
-- store locally  
-- never overwrite valid images unless updated  
-### **7.10.2 Cache Invalidation**
-Cache must be invalidated when:
-- poster changes  
-- backdrop changes  
-- logo changes  
-- icon changes  
----
-# **7.11 Future‑Phase Asset Requirements**
-Future‑phase assets include:
-- profile avatars  
-- EPG images  
-- AI‑generated thumbnails (local only)  
-- offline mode asset bundles  
----
-# **7.12 Invariants**
-The following must never change:
-- directory structure  
-- naming conventions  
-- local‑only rule  
-- fallback hierarchy  
-- icon strip rules  
-- logo normalization rules  
-These invariants are permanent.
----
-# **7.13 End of Section 7 — Assets & Media**
+
+# End of Section 7 — Assets
