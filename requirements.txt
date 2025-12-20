@@ -1,8 +1,30 @@
-# File: /requirements.txt
+# File: requirements.txt
 # Project: my_TV_Movie
-# Version: v1.1.0 (2025-11-06)
-# Purpose: Shared deps for GH Actions data build (and optional local use)
+# Version: v1.2.0 (2025-12-20)
+# Purpose:
+#   Shared runtime dependencies for:
+#   - GitHub Actions data build workflows
+#   - Local QA / debug scripts (TMDB, Trakt, audits)
+#
+# Usage (local):
+#   1) Activate the project virtual environment
+#        Windows (PowerShell):
+#          .\.venv\Scripts\Activate.ps1
+#        Linux / macOS:
+#          source .venv/bin/activate
+#
+#   2) Install deps:
+#          python -m pip install -r requirements.txt
+#
+# Notes:
+# - Flask is intentionally excluded (UI is static / SPA on GitHub Pages)
+# - Versions are pinned for deterministic builds
+# - tqdm / orjson are optional but supported if present
+
+# --- Core HTTP + config ---
 requests==2.32.3
 python-dotenv==1.0.1
-# Flask is optional (local only); not required for GitHub Pages:
-# Flask==3.0.3
+
+# --- Optional (progress + faster JSON; safe to omit locally) ---
+tqdm==4.66.5
+orjson==3.10.7

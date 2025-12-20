@@ -1,6 +1,3 @@
-# ⭐ **Section 4.9 — Watchlist (Standalone Page).md**  
-*(Full file contents — ready to save)*
-```markdown
 # =========================================================================================
 # Section 4.9 — Watchlist (Standalone Page)
 # [PROJECT] my_TV_Movie (My TV Hub)

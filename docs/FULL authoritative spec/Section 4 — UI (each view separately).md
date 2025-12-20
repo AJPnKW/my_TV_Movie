@@ -34,6 +34,8 @@ and must comply with the global rules and invariants defined here.
 separately in **Section 4.9**. It does not follow the SPA navigation model,
 popup system, or rendering pipeline described in this section.
 
+---
+
 ## Global UI Principles (SPA Views Only)
 
 ### 1. Local‑Only Rendering
@@ -122,7 +124,33 @@ This exception is documented fully in Section 4.9.
 
 ---
 
-## Versioning
-This section is versioned according to the global rules in Section 10. Any
-changes to SPA UI structure, navigation, or rendering must increment the
-appropriate version fields.
+## Deprecated legacy view: show.html
+
+### Status
+The legacy file `web/show.html` from the v3.3.5 architecture is deprecated and must no longer be used as a UI entry point.
+
+### Replacement
+`show.html` is replaced by the standalone Watchlist Page defined in Section 4.9.  
+All show‑level detail rendering is now provided by the show/season/episode accordion structure in watchlist.html.
+
+### Requirements
+- The file `web/show.html` must remain present in the repository.
+- It must contain a redirect to `watchlist.html`.
+- No SPA view may reference `show.html`.
+- No documentation may reference `show.html` except this deprecation notice.
+
+### Redirect behavior
+The file `web/show.html` must implement an immediate redirect to `watchlist.html`.
+
+Redirect rules:
+- Must work offline  
+- Must work in file:// mode  
+- Must not rely on SPA routing  
+- Must not create back‑button history entries  
+- Must not use external libraries  
+
+The redirect file must include both:
+- a `<meta http-equiv="refresh">` redirect  
+- a `window.location.replace()` redirect  
+
+This ensures compatibility across all browsers and hosting environments.
