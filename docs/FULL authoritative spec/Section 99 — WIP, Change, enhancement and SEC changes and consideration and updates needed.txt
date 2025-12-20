@@ -1,0 +1,244 @@
+# **SECTION 99 — WIP, Change, enhancement and SEC chanes and consideratin and upates needed**  
+**Authoritative Specification — Full Scope (Including Future‑Phase Features)**  
+**Document ID:** Section 99 — WIP, Change, enhancement and SEC changes and consideration and updates needed
+**Version:** V0.00  
+---
+# **1.1 Purpose of This Section**
+###
+###
+###
+###SPEC CHANGE: TXT inputs to JSON###
+###
+### Concept/Idea
+Shift from TXT inputs to JSON as source of truth eliminates parsing risks, ensures data quality, and adds traceability via history and active flags. TXT remains user-editable; workflow parses/cleans it to update JSON, which scripts use for reliable TMDB fetches.
+
+### Potential/Possible Approach and Design
+Implement new script (parse_txt_to_json.py) to split TXT lines by |, clean/normalize (strip spaces, titlecase, fetch TMDB official names/ID if missing), update JSON atomically (add/update entries, flag inactive on removal, append history with timestamp/action/changes). JSON structure: list of dicts {tmdb_id: int, official_title: str, user_title: str, year: int|null, seasons: '*'|list[int], active: bool, history: list[dict]}. Update workflow to run parse before fetch_tmdb.py; enhance error handling with logs, retries, schema validation.
+
+### Design Changes Implications
+Shift TXT to input only; parse/clean to JSON (shows.json, movies.json in data/) as source of truth. Add workflow step: new script parse_txt_to_json.py runs first, updates JSON (add/update, no delete, flag inactive, append history with timestamp/action/changes). fetch_tmdb.py updates to use JSON for TMDB fetches, produce data.json. Ensures data quality, traceability; reduces parse errors. Impacts: workflow sequence, error handling (validate JSON schema), API use (search if ID missing in parse).
+
+### Prompt for ChatGPT
+"Override current SPEC with this manual update: Implement design shift where tv_list.txt/movies_list.txt are user-editable inputs; create new script scripts/parse_txt_to_json.py to parse/clean TXT (split by |, extract title/year/ID/seasons, normalize case/spaces using TMDB official names via search/direct fetch if ID present, handle */lists/ranges for seasons), update data/shows.json and data/movies.json atomically (add new, update changed, flag inactive if removed from TXT, append history list per entry with {timestamp_utc, action: 'add'/'update', changes: dict of modified fields}). Structure JSON as list of dicts: {tmdb_id: int (required, search if missing), official_title: str (from TMDB), user_title: str (from TXT), year: int|null, seasons: '*'|list[int], active: bool (true default), history: list[dict{timestamp_utc: str, action: str, changes: dict}]}. fetch_tmdb.py now reads from these JSONs to fetch TMDB data into data/data.json. Update workflow build-data.yml to run parse_txt_to_json.py before fetch_tmdb.py. Ensure cross-consistency: same logging format, error append to data.json['errors'], retries on API (3x, backoff 0.6s), validate JSON schema post-write. Generate updated files: parse_txt_to_json.py (full code), fetch_tmdb.py (updated parser/use JSON), build-data.yml (add step). Preserve interdependencies: data.json production, Trakt enrichment after. Handle errors: log malformed TXT lines, API failures, unexpected data (e.g., invalid ID → search fallback, warn on duplicates)."
+
+### New JSON Creation
+Create base empty files: data/shows.json and data/movies.json as [] (empty list). ChatGPT prompt above generates parse_txt_to_json.py; run it on existing TXT to populate with TMDB queries (search for official_title/ID if missing). Manually: Copy TXT lines, format as JSON dicts, add minimal fields (tmdb_id null if unknown, active true, history []), commit to repo.
+
+### SPEC Update/Override Details (for Section 99)
+Group under headers: "Data Source Migration" (TXT→JSON shift, parser rules, cleaning/normalization); "JSON Schema" (fields as above, required/optional); "Workflow Pipeline" (add parse step pre-fetch_tmdb, error flows); "Error Handling" (logs, data.json errors, retries, validations); "Traceability" (history per entry, active flag, no deletes); "Consistency" (API: prefer direct ID, fallback search; cross-scripts: uniform logging/env). Fill goals: Quality (validation), Integrity (atomic writes), Consistency (TMDB names), Traceability (history). Ensure workflow active: Test sequence, outputs data.json.
+
+### Identified Scripts/Changes
+i) Code changes: fetch_tmdb.py (use JSON input, remove TXT parse); new parse_txt_to_json.py; build-data.yml (add parse step); fetch_trakt.py (minor: ensure data.json compatibility); sync_trakt.py (none, as wrapper).
+ii) SPEC changes: Update for new script, JSON schema, workflow steps; cross-link to ensure interlinks (e.g., data.json deps).
+
+### Deep Considerations
+Interdependencies: Workflow chain (parse→fetch_tmdb→fetch_trakt) unbroken; data.json as output hub. API: v3/v4 auth, rate limit (sleep 0.2s/call), direct /tv/{id} prefer over search. Smart handling: Parser skips malformed, warns duplicates; workflow exits on parse fail; unexpected (no ID: search TMDB, fail if ambiguous); bugs (try/except API, log tracebacks); integrity (hash check post-write, schema validate with jsonschema lib if add). Quality: Unit tests for parse; traceability: Git commits track JSON changes.
+
+### Clarifying Questions/Gaps/Assumptions
+Questions: JSON location (data/ ok?); Inactive handling (exclude from data.json or include flagged?); History details (include user who changed?); TXT without ID (auto-search in parse, or manual?).
+Gaps (filled from history): Assume separate JSONs for shows/movies; retain all in JSON (no delete); use TMDB for normalization.
+Assumptions (validated): JSON committed/pushed like data.json; workflow daily; no livetv yet (extensible).
+
+### Changes Needed to SPEC Documentation
+**Section 1: Purpose and Overview**  
+- Add JSON migration rationale; update data flow diagram to include parse step and JSON as core repository.
+**Section 2: Data Sources and Formats**  
+- Define TXT as input-only; specify JSON schema (fields, types, required); detail cleaning rules (spaces, case, TMDB normalization).
+**Section 3: Scripts and Tools**  
+- Introduce parse_txt_to_json.py (logic, inputs/outputs); update fetch_tmdb.py (switch to JSON input, remove TXT parse).
+**Section 4: Workflow Pipeline**  
+- Revise build-data.yml sequence: add parse step pre-fetch; include error flows (malformed lines, API failures).
+**Section 5: Error Handling and Logging**  
+- Specify validations (JSON schema, ID checks); add retry/backoff for TMDB; uniform logging across scripts.
+**Section 6: Traceability and Auditing**  
+- Detail history mechanism per entry; active/inactive flags; no-delete policy.
+**Section 99: WIP Changes**  
+- Group all above as overrides; cross-reference for consistency/interlinks.
+
+Absolutely — here is the **next deliverable you asked for**:
+
+👉 **A clean, complete, production‑ready Section 99 baseline entry**  
+This captures the entire TXT→JSON migration, design reasoning, schema, workflow, error handling, and traceability model.
+
+No filler.  
+No commentary.  
+No instructions.  
+Just the final file.
+
+---
+
+# ⭐ **SECTION 99 — WIP / MANUAL OVERRIDES (FULL FILE)**  
+*(Ready to paste into your SPEC repository)*
+
+```markdown
+/* =========================================================================================
+[SECTION] 99 — Manual Overrides, WIP Changes, and Transitional Architecture Notes
+[PROJECT] my_TV_Movie (My TV Hub)
+[ROLE] Repository of in-progress design changes not yet merged into primary SPEC sections
+[VERSION] v4.5.0
+[UPDATED] 2025‑12‑20_00‑00‑00
+[OWNER] Andrew & Brant (internal)
+
+[NOTES]
+- Section 99 stores authoritative overrides and transitional architecture updates.
+- All entries here supersede earlier SPEC sections until formally merged.
+- Once validated and stable, these entries will be integrated into Sections 1–7.
+========================================================================================= */
+
+# Section 99 — Manual Overrides and Transitional Updates
+
+## 99.1 — Data Source Migration (TXT → JSON)
+
+### Purpose
+Migrate from TXT-based metadata ingestion to a JSON-based source of truth to improve data quality, normalization, traceability, and workflow reliability.
+
+### Summary of Change
+- `tv_list.txt` and `movies_list.txt` remain user-editable input files.
+- A new script (`parse_txt_to_json.py`) converts TXT → JSON.
+- JSON files (`shows.json`, `movies.json`) become the canonical source of truth.
+- `fetch_tmdb.py` now reads JSON instead of TXT.
+- Workflow updated to run parser before TMDB fetch.
+- No deletes: entries removed from TXT are marked `active=false`.
+- All changes tracked via per-entry `history[]`.
+
+---
+
+## 99.2 — JSON Schema (Authoritative)
+
+Each entry in `data/shows.json` and `data/movies.json` must follow:
+
+```json
+{
+  "tmdb_id": 12345,
+  "official_title": "Official TMDB Title",
+  "user_title": "User-entered title",
+  "year": 2020,
+  "seasons": "*" | [1, 2, 3],
+  "active": true,
+  "history": [
+    {
+      "timestamp_utc": "2025-12-20T00:00:00Z",
+      "action": "add",
+      "changes": {
+        "field": "old→new"
+      }
+    }
+  ]
+}
+```
+
+### Schema Rules
+- `tmdb_id` is required; search TMDB if missing.
+- `official_title` must always match TMDB canonical naming.
+- `user_title` preserves the user’s input.
+- `seasons` supports `"*"`, lists, and ranges.
+- `active=false` replaces deletion.
+- `history[]` must record all adds/updates with UTC timestamps.
+- JSON must be written atomically.
+
+---
+
+## 99.3 — Parser Rules (parse_txt_to_json.py)
+
+### Responsibilities
+- Read TXT files.
+- Split lines by `|`.
+- Extract: title, year, TMDB ID, seasons.
+- Normalize whitespace and casing.
+- Resolve missing TMDB IDs via search.
+- Fetch official TMDB titles.
+- Convert seasons (`*`, lists, ranges).
+- Update JSON atomically:
+  - Add new entries.
+  - Update changed fields.
+  - Mark removed entries as inactive.
+- Append history entries for all changes.
+- Validate JSON schema before writing.
+
+### Error Handling
+- Log malformed TXT lines.
+- Log TMDB API failures.
+- Log ambiguous search results.
+- Log duplicates.
+- Append all errors to `data.json["errors"]`.
+
+---
+
+## 99.4 — Workflow Pipeline Update
+
+### New Required Order
+1. `parse_txt_to_json.py`  
+2. `fetch_tmdb.py`  
+3. `fetch_trakt.py`  
+4. `sync_trakt.py`  
+5. Output: `data/data.json`
+
+### Workflow Requirements
+- Fail on schema validation errors.
+- Use consistent logging across all scripts.
+- All scripts must be deterministic.
+
+---
+
+## 99.5 — TMDB Normalization Rules
+
+### Required Behavior
+- Always prefer direct ID fetch (`/tv/{id}`, `/movie/{id}`).
+- If ID missing, use TMDB search.
+- Normalize titles to TMDB official names.
+- Retry API calls 3× with exponential backoff (0.6s base).
+- Log all failures.
+
+---
+
+## 99.6 — Traceability and Auditing
+
+### Requirements
+- No deletes; inactive flag only.
+- All changes recorded in `history[]`.
+- Timestamps must be UTC ISO8601.
+- JSON must be deterministic and stable across runs.
+- Atomic writes required for all JSON outputs.
+
+---
+
+## 99.7 — Interdependency Notes
+
+### Required Chain
+- Parser produces JSON.
+- TMDB fetch consumes JSON.
+- Trakt fetch enriches `data.json`.
+- Sync script updates external services.
+
+### Constraints
+- No script may re-parse TXT except the parser.
+- No script may mutate JSON except the parser.
+- No script may bypass schema validation.
+
+---
+
+## 99.8 — Rationale
+
+### Why TXT → JSON Migration
+- TXT is human-friendly but structurally unreliable.
+- JSON provides:
+  - validation  
+  - normalization  
+  - traceability  
+  - atomic updates  
+  - consistent schema  
+  - reliable downstream processing  
+
+### Benefits
+- Eliminates parsing errors.
+- Ensures TMDB canonical naming.
+- Adds full audit history.
+- Improves workflow reliability.
+- Enables future automation.
+
+---
+
+## 99.9 — Status
+This override is **active** and must be treated as authoritative until merged into Sections 1–7.
+
+```
