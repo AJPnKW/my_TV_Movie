@@ -1,23 +1,9 @@
-# ==============================================================================
-# [FILE]    .github/workflows/build-data.yml
-# [PROJECT] my_TV_Movie
-# [ROLE]    Build data.json + assets via scripts, then publish to repo
-# [VERSION] v2.4.0
-# [UPDATED] 2025-12-19_00-00-00
-# [BUILD]   14.01.05
-#
-# [FIX]
-# - Inject API_TMDB_KEY into the runtime env used by scripts/fetch_tmdb.py
-# - Install python deps on the runner (requests + optional tqdm/orjson)
-# - Add deterministic TMDB preflight (hard-fails with real HTTP status if auth/network breaks)
-# ==============================================================================
-
 name: build-data
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 4 * * *" # daily 04:17 UTC
+    - cron: "0 */6 * * *"   # every 6 hours (adjust only if your spec requires otherwise)
 
 permissions:
   contents: write
@@ -27,81 +13,99 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
+  build-data:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Set up Python 3.12
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: "pip"
 
-      - name: Install Python deps
+      - name: Install dependencies
+        shell: bash
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install requests
-          python -m pip install tqdm orjson || true
+          python -m pip install -r requirements.txt
 
-      - name: TMDB preflight (auth + network)
+      # Preflight: proves the secret is injected (without printing it)
+      - name: TMDB preflight (masked)
+        shell: bash
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
+          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
         run: |
+          set -euo pipefail
           python - <<'PY'
           import os, sys, requests
-
           key = (os.getenv("API_TMDB_KEY") or "").strip()
-          if not key:
-            print("PRECHECK FAIL: API_TMDB_KEY missing from runtime env"); sys.exit(2)
+          tok = (os.getenv("API_TMDB_TOKEN") or "").strip()
 
-          url = "https://api.themoviedb.org/3/configuration"
-          headers = {"User-Agent": "my_TV_Movie tmdb-preflight"}
-          timeout = 20
+          # Only report presence/length, never the value
+          def kind(v):
+            if not v: return ("missing", 0)
+            looks_bearer = v.startswith("ey") and "." in v and len(v) > 40
+            return ("bearer/jwt" if looks_bearer else "v3_key", len(v))
 
-          # Auto-detect bearer vs v3 key (matches script logic)
-          if len(key) >= 60 or key.startswith("eyJ"):
-            headers["Authorization"] = f"Bearer {key}"
-            r = requests.get(url, headers=headers, timeout=timeout)
+          print("API_TMDB_KEY:", kind(key))
+          print("API_TMDB_TOKEN:", kind(tok))
+
+          # Prefer bearer if present, otherwise v3 key
+          headers = {"Accept": "application/json"}
+          params = {}
+          if tok:
+            headers["Authorization"] = f"Bearer {tok}"
+          elif key:
+            params["api_key"] = key
           else:
-            r = requests.get(url, headers=headers, params={"api_key": key}, timeout=timeout)
+            print("FAIL: no TMDB credential in env"); sys.exit(21)
 
-          print("TMDB preflight status:", r.status_code)
+          r = requests.get("https://api.themoviedb.org/3/configuration", headers=headers, params=params, timeout=25)
+          print("TMDB /configuration status:", r.status_code)
           if r.status_code != 200:
-            print(r.text[:500])
-            sys.exit(3)
-
-          print("TMDB preflight OK")
+            print((r.text or "")[:300].replace("\n", " "))
+            sys.exit(22)
           PY
 
-      - name: Fetch TMDB (data.json + assets)
+      - name: Fetch TMDB
+        shell: bash
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
-          API_TMDB_TOKEN: ${{ secrets.API_TMDB_KEY }}
+          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
         run: |
+          set -euo pipefail
           python scripts/fetch_tmdb.py
 
-      - name: Fetch Trakt (watchlist enrichment)
+      - name: Fetch Trakt (optional)
+        shell: bash
         env:
-          TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
-          TRAKT_USERNAME: ${{ secrets.API_TRAKT_KEY }}
-          TRAKT_ACCESS_TOKEN: ${{ secrets.API_TRAKT_KEY }}
+          API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
+          API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
+          API_TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
         run: |
-          python scripts/fetch_trakt.py
+          set -euo pipefail
+          if [ -f scripts/fetch_trakt.py ]; then
+            python scripts/fetch_trakt.py
+          else
+            echo "scripts/fetch_trakt.py not present; skipping"
+          fi
 
-      - name: Commit & push changes (if any)
+      - name: Commit refreshed data
+        shell: bash
         run: |
-          git config user.name  "github-actions[bot]"
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
+
+          # only commit if there are changes
+          if git diff --quiet; then
             echo "No changes to commit."
             exit 0
           fi
-          git commit -m "build-data: refresh data.json + assets"
+
+          git add -A
+          git commit -m "chore: refresh TV/Movie data [skip ci]"
           git push
