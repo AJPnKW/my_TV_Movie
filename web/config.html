@@ -1,64 +1,284 @@
-<!--
-========================================================================================
-[FILE]        web/config.html
-[PROJECT]     my_TV_Movie (My TV Hub)
-[ROLE]        Local configuration UI (client-side)
-[VERSION]     v1.2.0
-[UPDATED]     2025-12-14
-[OWNER]       Andrew & Brant (internal)
-[DEPENDS ON]  web/config.json (defaults + schema)
-              web/config.js (load/apply/validate/save behavior)
+<!-- ========================================================================================
+[FILE] web/config.html
+[PROJECT] my_TV_Movie (My TV Hub)
+[ROLE] Legacy compatibility page (NOT an entry point; SPA entry is index.html only)
+[VERSION] v4.4.0
+[UPDATED] 2025-12-19_00-00-00
+[BUILD] 00.00.00
+[OWNER] Andrew & Brant (internal)
+
+[PHASE 4.x MASTER OVERRIDE APPLIED]
+- TRUE SPA: index.html is the ONLY entry point.
+- No multi-page routing / no hash routing / no external routing.
+- This file must exist (cannot be renamed/removed), but must not act as an app entry.
+- Canonical asset hierarchy ONLY (assets/...); never reference deprecated image/ folder.
+- Errors must surface visually; no silent failures.
+
 [NOTES]
-- This is a static GitHub Pages site: config changes are stored in browser storage unless
-  you explicitly commit web/config.json in GitHub.
-- Workflow-driven behavior: GitHub Actions reads web/config.json to generate data/data.json.
-========================================================================================
--->
+- The authoritative configuration file is web/config.json (v1.2.0).
+- Config view renderer lives inside SPA (index.html) or config.js module as directed by rebuild commands.
+======================================================================================== -->
 
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configuration</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>My TV Hub — Config (Legacy)</title>
+
+  <style>
+    :root{
+      --bg:#0b0d12; --fg:#e8ecf3; --muted:#a8b0c0;
+      --panel:#121725; --border:rgba(255,255,255,0.10);
+      --focus:#ffffff;
+      --radius:14px;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --danger:#ff5b5b;
+      --ok:#35d07f;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:var(--font);
+      background:var(--bg);
+      color:var(--fg);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      box-sizing:border-box;
+      overflow:hidden;
+    }
+    .card{
+      width:min(900px, 100%);
+      border:1px solid var(--border);
+      background:rgba(18,23,37,0.82);
+      border-radius:var(--radius);
+      padding:18px;
+      box-sizing:border-box;
+    }
+    .row{
+      display:flex;
+      align-items:flex-start;
+      gap:14px;
+    }
+    .chip{
+      width:44px;
+      height:44px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.06);
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      font-weight:900;
+      user-select:none;
+    }
+    h1{
+      margin:0;
+      font-size:18px;
+      font-weight:850;
+      letter-spacing:0.2px;
+    }
+    p{
+      margin:8px 0 0 0;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:14px;
+    }
+    .actions{
+      margin-top:14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+    a.btn, button.btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      height:40px;
+      padding:0 14px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.08);
+      color:var(--fg);
+      text-decoration:none;
+      font-weight:750;
+      cursor:pointer;
+      user-select:none;
+    }
+    a.btn:focus, button.btn:focus{
+      outline:3px solid var(--focus);
+      outline-offset:2px;
+    }
+
+    .status{
+      margin-top:14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      background:rgba(255,255,255,0.06);
+      color:var(--muted);
+      font-size:13px;
+    }
+    .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:rgba(255,255,255,0.25);
+      box-shadow:0 0 0 2px rgba(255,255,255,0.06) inset;
+      flex:0 0 auto;
+    }
+    .dot.ok{background:var(--ok);}
+    .dot.err{background:var(--danger);}
+
+    .error{
+      margin-top:14px;
+      display:none;
+      border:1px solid rgba(255, 91, 91, 0.35);
+      background:rgba(255, 91, 91, 0.10);
+      color:#ffd7d7;
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:13px;
+    }
+
+    .cfgbox{
+      margin-top:14px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:rgba(0,0,0,0.18);
+      padding:12px;
+      overflow:auto;
+      max-height:320px;
+      font-family:var(--mono);
+      font-size:12px;
+      color:rgba(232,236,243,0.92);
+      display:none;
+      white-space:pre;
+    }
+
+    .meta{
+      margin-top:12px;
+      font-size:12px;
+      color:var(--muted);
+      font-family:var(--mono);
+      border-top:1px solid var(--border);
+      padding-top:12px;
+    }
+  </style>
 </head>
+
 <body>
+  <div class="card" role="main" aria-label="Legacy Config page notice">
+    <div class="row">
+      <div class="chip" aria-hidden="true">CFG</div>
+      <div style="min-width:0;">
+        <h1>Config view is part of the single-page app</h1>
+        <p>
+          This project is a <strong>true SPA</strong>. <strong>index.html</strong> is the only entry point.
+          This legacy page remains in the repo but does not run the app.
+        </p>
 
-    <h1>Configuration Panel</h1>
-
-    <h2>Streaming Service URLs</h2>
-    <form id="configForm">
-        <div>
-            <label for="vidsrcTvUrl">VidSrc TV Base URL:</label>
-            <input type="text" id="vidsrcTvUrl" name="vidsrcTvUrl" value="https://vidsrc.net/embed/tv/">
-        </div>
-        <div>
-            <label for="vidsrcMovieUrl">VidSrc Movie Base URL:</label>
-            <input type="text" id="vidsrcMovieUrl" name="vidsrcMovieUrl" value="https://vidsrc.net/embed/movie/">
-        </div>
-        <div>
-            <label for="videasyTvUrl">Videasy TV Base URL:</label>
-            <input type="text" id="videasyTvUrl" name="videasyTvUrl" value="https://player.videasy.net/tv/">
-        </div>
-        <div>
-            <label for="videasyMovieUrl">Videasy Movie Base URL:</label>
-            <input type="text" id="videasyMovieUrl" name="videasyMovieUrl" value="https://player.videasy.net/movie/">
+        <div class="actions">
+          <a class="btn" href="./index.html" aria-label="Open My TV Hub (SPA entry point)">Open My TV Hub</a>
+          <button class="btn" type="button" id="btn-load-config" aria-label="Load and display web/config.json">Show config.json</button>
+          <button class="btn" type="button" id="btn-hide-config" aria-label="Hide config.json display">Hide</button>
         </div>
 
-        <h2>Image Size Configuration</h2>
-        <div>
-            <label for="showImageWidth">Show Image Width (px):</label>
-            <input type="number" id="showImageWidth" name="showImageWidth" value="185">
-        </div>
-        <div>
-            <label for="movieImageWidth">Movie Image Width (px):</label>
-            <input type="number" id="movieImageWidth" name="movieImageWidth" value="185">
+        <div class="status" aria-label="Status">
+          <span class="dot" id="status-dot" aria-hidden="true"></span>
+          <span id="status-text">This page is legacy; use index.html.</span>
         </div>
 
-        <button type="submit">Save Configuration</button>
-    </form>
+        <div id="error" class="error" role="status" aria-live="polite"></div>
+        <pre id="cfgbox" class="cfgbox" aria-label="config.json contents"></pre>
 
-    <script src="config.js"></script>
+        <div class="meta">
+          File: web/config.html • Authoritative config: web/config.json • SPA entry: web/index.html • Canonical assets: assets/…
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+
+    const $ = (id) => document.getElementById(id);
+
+    function setStatus(kind, text) {
+      const dot = $("status-dot");
+      dot.className = "dot";
+      if (kind === "ok") dot.classList.add("ok");
+      if (kind === "err") dot.classList.add("err");
+      $("status-text").textContent = String(text || "");
+    }
+
+    function showError(msg) {
+      const box = $("error");
+      box.style.display = "block";
+      box.textContent = String(msg || "Unknown error");
+      setStatus("err", "Error surfaced (see message).");
+    }
+
+    function clearError() {
+      const box = $("error");
+      box.style.display = "none";
+      box.textContent = "";
+    }
+
+    function showCfg(text) {
+      const pre = $("cfgbox");
+      pre.style.display = "block";
+      pre.textContent = text;
+    }
+
+    function hideCfg() {
+      const pre = $("cfgbox");
+      pre.style.display = "none";
+      pre.textContent = "";
+    }
+
+    async function loadConfigJson() {
+      clearError();
+      setStatus("ok", "Loading web/config.json…");
+      try {
+        const resp = await fetch("./config.json", { cache: "no-store" });
+        if (!resp.ok) throw new Error("Failed to load web/config.json (" + resp.status + ")");
+        const text = await resp.text();
+
+        // Validate JSON (no silent failures)
+        let parsed = null;
+        try { parsed = JSON.parse(text); } catch (e) {
+          throw new Error("Invalid JSON in web/config.json: " + (e && e.message ? e.message : e));
+        }
+
+        // Display canonical config for visibility; this file is authoritative.
+        showCfg(JSON.stringify(parsed, null, 2));
+        setStatus("ok", "Loaded web/config.json (authoritative).");
+      } catch (e) {
+        showError((e && e.message) ? e.message : String(e));
+      }
+    }
+
+    function wire() {
+      $("btn-load-config").addEventListener("click", loadConfigJson);
+      $("btn-hide-config").addEventListener("click", hideCfg);
+
+      // No silent failure: if this page is opened directly, attempt redirect to SPA entry.
+      // If redirect fails, user still has an explicit button.
+      try {
+        window.location.replace("./index.html");
+      } catch (e) {
+        showError("Redirect to index.html failed. Use the 'Open My TV Hub' button.");
+      }
+    }
+
+    wire();
+  </script>
 </body>
 </html>
