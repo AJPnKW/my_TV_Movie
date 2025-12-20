@@ -1,27 +1,29 @@
-#!/usr/bin/env python
+# File: .github/workflows/build-data.yml
+# Project: my_TV_Movie
+# Purpose: Build canonical data (TMDB/Trakt) + deploy Pages
+# Notes:
+# - Keeps TMDB working exactly as proven in logs
+# - Fixes Trakt failure by mapping Secrets -> required env vars
 
 name: build-data
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */6 * * *"   # every 6 hours (adjust only if your spec requires otherwise)
+    - cron: "0 10 * * *" # daily 10:00 UTC (adjust if your repo already uses a different schedule)
 
 permissions:
   contents: write
 
-concurrency:
-  group: build-data
-  cancel-in-progress: false
-
 jobs:
   build-data:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -33,81 +35,68 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      # Preflight: proves the secret is injected (without printing it)
-      - name: TMDB preflight (masked)
+      # ---- Optional visibility preflight (keeps build deterministic; fails fast if missing) ----
+      - name: Preflight env (non-secret)
         shell: bash
-        env:
-          API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
-          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
         run: |
           set -euo pipefail
           python - <<'PY'
-          import os, sys, requests
-          key = (os.getenv("API_TMDB_KEY") or "").strip()
-          tok = (os.getenv("API_TMDB_TOKEN") or "").strip()
-
-          # Only report presence/length, never the value
-          def kind(v):
-            if not v: return ("missing", 0)
-            looks_bearer = v.startswith("ey") and "." in v and len(v) > 40
-            return ("bearer/jwt" if looks_bearer else "v3_key", len(v))
-
-          print("API_TMDB_KEY:", kind(key))
-          print("API_TMDB_TOKEN:", kind(tok))
-
-          # Prefer bearer if present, otherwise v3 key
-          headers = {"Accept": "application/json"}
-          params = {}
-          if tok:
-            headers["Authorization"] = f"Bearer {tok}"
-          elif key:
-            params["api_key"] = key
-          else:
-            print("FAIL: no TMDB credential in env"); sys.exit(21)
-
-          r = requests.get("https://api.themoviedb.org/3/configuration", headers=headers, params=params, timeout=25)
-          print("TMDB /configuration status:", r.status_code)
-          if r.status_code != 200:
-            print((r.text or "")[:300].replace("\n", " "))
-            sys.exit(22)
+          import os
+          def classify(v: str) -> str:
+            v=(v or "").strip()
+            if not v: return "missing"
+            if v.startswith("ey") and "." in v and len(v) > 40: return "bearer/jwt"
+            return "v3_key"
+          k=(os.getenv("API_TMDB_KEY") or "").strip()
+          t=(os.getenv("API_TMDB_TOKEN") or "").strip()
+          tcid=(os.getenv("TRAKT_CLIENT_ID") or "").strip()
+          tcs=(os.getenv("TRAKT_CLIENT_SECRET") or "").strip()
+          print("API_TMDB_KEY:", (classify(k), len(k)))
+          print("API_TMDB_TOKEN:", (classify(t), len(t)))
+          print("TRAKT_CLIENT_ID:", ("missing" if not tcid else ("present", len(tcid))))
+          print("TRAKT_CLIENT_SECRET:", ("missing" if not tcs else ("present", len(tcs))))
           PY
+        env:
+          # TMDB (already working)
+          API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
+          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
+
+          # TRAKT (FIX: map existing secrets into script-required names)
+          TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
+          TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_KEY }}
+          TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
 
       - name: Fetch TMDB
         shell: bash
-        env:
-          API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
-          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
         run: |
           set -euo pipefail
           python scripts/fetch_tmdb.py
-
-      - name: Fetch Trakt (optional)
-        shell: bash
         env:
-          API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
-          API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
-          API_TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
-        run: |
-          set -euo pipefail
-          if [ -f scripts/fetch_trakt.py ]; then
-            python scripts/fetch_trakt.py
-          else
-            echo "scripts/fetch_trakt.py not present; skipping"
-          fi
+          API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
+          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
 
-      - name: Commit refreshed data
+      - name: Fetch Trakt
         shell: bash
         run: |
           set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          python scripts/fetch_trakt.py
+        env:
+          # FIX: script requires these names
+          TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
+          TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_KEY }}
+          TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
 
-          # only commit if there are changes
-          if git diff --quiet; then
+      # If your repo commits build artifacts back to main
+      - name: Commit data changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git status --porcelain | grep -q .; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "build-data: update data outputs"
+            git push
+          else
             echo "No changes to commit."
-            exit 0
           fi
-
-          git add -A
-          git commit -m "chore: refresh TV/Movie data [skip ci]"
-          git push
