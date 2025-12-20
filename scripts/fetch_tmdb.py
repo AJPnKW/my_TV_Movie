@@ -3,24 +3,36 @@
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
-# [VERSION] v2.6.3
-# [UPDATED] 2025-12-19_00-00-00
-# [BUILD]   14.01.05
+# [VERSION] v2.6.4
+# [UPDATED] 2025-12-20_00-00-00
+# [BUILD]   14.01.06
 #
-# [FIX TARGET]
-# - Prevent “worked before, now 0/0” failures by:
-#   1) Supporting direct TMDB-ID lines in tv_list.txt / movies_list.txt
-#   2) Supporting BOTH TMDB v3 api_key AND v4 bearer token auth from same env vars
-#   3) Adding deterministic retries + clearer hard failures (no silent “None storms”)
+# [INPUTS]
+#   - tv_list.txt      (format: name | tmdb_show_id | season_spec | tvmaze_id)
+#   - movies_list.txt  (format: name|tmdb_movie_id)
+#   - livetv_list.txt  (optional)
+#   - web/config.json  (authoritative config; read-only)
+#
+# [OUTPUTS]
+#   - data/data.json (atomic write)
+#   - data/last_refresh.txt
+#   - logs/fetch_tmdb_YYYY-MM-DD_HHMMSS.log.txt
 #
 # [ENV]
-#   - API_TMDB_KEY   (v3 key OR v4 bearer token; auto-detected)
-#   - API_TMDB_TOKEN (optional; treated as bearer if present)
+#   - API_TMDB_KEY   (v3 api_key OR bearer token; auto-detected)
+#   - API_TMDB_TOKEN (optional; bearer token; if present, preferred for bearer auth)
 #
 # [BINDING]
-# - Canonical assets only (assets/...), never "image/"
-# - Atomic write for data/data.json
-# - Do not overwrite existing images
+#   - Canonical assets only (assets/...), never "image/"
+#   - data.json is not edited manually
+#   - Atomic write, read-back validation
+#   - Parser MUST handle extra spaces + pipe-delimited formats
+#   - TV season_spec:
+#       * '*' or blank -> ALL seasons
+#       * '5' -> season 5 only
+#       * '1,3,5' -> seasons list
+#       * '2-6' -> seasons range inclusive
+#       * If no season_spec provided -> assume ALL seasons
 # ==============================================================================
 
 from __future__ import annotations
@@ -35,13 +47,13 @@ import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 try:
     import requests  # type: ignore
 except Exception:
     print("ERROR: Missing dependency 'requests'.", file=sys.stderr)
-    print("Install: python -m pip install requests", file=sys.stderr)
+    print("Install: python -m pip install -r requirements.txt", file=sys.stderr)
     raise
 
 try:
@@ -93,17 +105,20 @@ ASSETS_STILLS_EPISODES = ASSETS_DIR / "stills" / "episodes"
 TMDB_API_BASE = "https://api.themoviedb.org/3"
 TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/"
 DEFAULT_TIMEOUT = 30
-DEFAULT_SLEEP_SECONDS = 0.15
+DEFAULT_SLEEP_SECONDS = 0.12
 USER_AGENT = "my_TV_Movie fetch_tmdb.py (static data builder)"
 
-# retries for transient HTTP issues
 HTTP_RETRIES = 3
 HTTP_BACKOFF = 0.6
 
 RE_TRAILING_YEAR_PARENS = re.compile(r"\((\d{4})\)\s*$")
 RE_TRAILING_YEAR_SEP = re.compile(r"[\|\-]\s*(\d{4})\s*$")
+
 RE_TMDB_ID_TOKEN = re.compile(r"(?i)\b(tmdb)\s*[:=]\s*(\d{3,10})\b")
-RE_ANY_ID_TOKEN = re.compile(r"\b(\d{3,10})\b")
+RE_INT = re.compile(r"^\s*(\d{1,10})\s*$")
+
+RE_SEASON_RANGE = re.compile(r"^\s*(\d{1,3})\s*-\s*(\d{1,3})\s*$")
+RE_SEASON_LIST = re.compile(r"^\s*(\d{1,3})\s*(,\s*\d{1,3}\s*)+$")
 
 
 @dataclass(frozen=True)
@@ -156,10 +171,7 @@ def setup_logging() -> Path:
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s | %(levelname)s | %(message)s",
-        handlers=[
-            logging.FileHandler(log_path, encoding="utf-8"),
-            logging.StreamHandler(sys.stdout),
-        ],
+        handlers=[logging.FileHandler(log_path, encoding="utf-8"), logging.StreamHandler(sys.stdout)],
     )
     logging.info("[fetch_tmdb] log=%s", log_path)
     return log_path
@@ -228,34 +240,48 @@ def load_config() -> Config:
 
 
 def _looks_like_bearer(token: str) -> bool:
-    # Heuristic: v4 bearer tokens are long and not purely numeric; v3 keys are typically 32 hex
     t = token.strip()
+    if not t:
+        return False
     if len(t) >= 60:
         return True
-    # Many v4 tokens start with "eyJ" (JWT-like)
     if t.startswith("eyJ") and len(t) > 40:
         return True
     return False
 
 
-def load_tmdb_auth() -> TmdbAuth:
-    # Accept both env vars; auto-detect bearer vs v3 api_key
+def load_tmdb_auth_candidates() -> List[TmdbAuth]:
+    # We may have BOTH; we will test and pick a working one deterministically.
     v_key = (os.getenv("API_TMDB_KEY") or "").strip()
     v_tok = (os.getenv("API_TMDB_TOKEN") or "").strip()
 
-    if not v_key and not v_tok:
+    cands: List[TmdbAuth] = []
+
+    # Prefer token env as bearer if it looks like bearer
+    if v_tok:
+        if _looks_like_bearer(v_tok):
+            cands.append(TmdbAuth(mode="bearer", value=v_tok))
+        else:
+            cands.append(TmdbAuth(mode="v3", value=v_tok))
+
+    if v_key:
+        if _looks_like_bearer(v_key):
+            cands.append(TmdbAuth(mode="bearer", value=v_key))
+        else:
+            cands.append(TmdbAuth(mode="v3", value=v_key))
+
+    # de-dupe exact duplicates
+    uniq: List[TmdbAuth] = []
+    seen: Set[Tuple[str, str]] = set()
+    for c in cands:
+        k = (c.mode, c.value)
+        if k not in seen:
+            uniq.append(c)
+            seen.add(k)
+
+    if not uniq:
         raise RuntimeError("Missing TMDB credentials: set API_TMDB_KEY (or API_TMDB_TOKEN).")
-
-    # Prefer explicit token if present
-    candidate = v_tok or v_key
-    if not candidate:
-        raise RuntimeError("TMDB credential value is empty.")
-
-    if _looks_like_bearer(candidate):
-        return TmdbAuth(mode="bearer", value=candidate)
-
-    # v3 keys often 32-hex; still accept anything non-empty as v3 api_key
-    return TmdbAuth(mode="v3", value=candidate)
+    return uniq
 
 
 def _http_get_json(url: str, headers: Dict[str, str], params: Dict[str, Any]) -> Dict[str, Any]:
@@ -264,7 +290,7 @@ def _http_get_json(url: str, headers: Dict[str, str], params: Dict[str, Any]) ->
         try:
             r = requests.get(url, headers=headers, params=params, timeout=DEFAULT_TIMEOUT)
             if r.status_code != 200:
-                last_err = f"HTTP {r.status_code} {r.text[:200]}"
+                last_err = f"HTTP {r.status_code} {r.text[:250]}"
                 raise RuntimeError(last_err)
             return r.json()
         except Exception as e:
@@ -278,7 +304,7 @@ def _http_get_json(url: str, headers: Dict[str, str], params: Dict[str, Any]) ->
 def tmdb_get(auth: TmdbAuth, path: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     url = f"{TMDB_API_BASE}{path}"
     params = dict(params or {})
-    headers = {"User-Agent": USER_AGENT}
+    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
 
     if auth.mode == "v3":
         params["api_key"] = auth.value
@@ -286,6 +312,21 @@ def tmdb_get(auth: TmdbAuth, path: str, params: Optional[Dict[str, Any]] = None)
         headers["Authorization"] = f"Bearer {auth.value}"
 
     return _http_get_json(url, headers=headers, params=params)
+
+
+def tmdb_precheck_pick_auth(cands: List[TmdbAuth]) -> TmdbAuth:
+    # Deterministically pick the first candidate that succeeds on /configuration.
+    last_err = ""
+    for c in cands:
+        try:
+            _ = tmdb_get(c, "/configuration", params={})
+            logging.info("[fetch_tmdb] tmdb_auth_mode=%s (precheck OK)", c.mode)
+            return c
+        except Exception as e:
+            last_err = str(e)
+            logging.warning("[fetch_tmdb] precheck failed auth_mode=%s (%s)", c.mode, last_err)
+            continue
+    raise RuntimeError(f"TMDB precheck failed for all credential candidates. Last error: {last_err}")
 
 
 def tmdb_search_tv(auth: TmdbAuth, query: str, year: Optional[int] = None) -> Optional[Dict[str, Any]]:
@@ -334,7 +375,7 @@ def download_if_missing(url: Optional[str], dst: Path) -> bool:
     last_err = ""
     for attempt in range(1, HTTP_RETRIES + 1):
         try:
-            r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=DEFAULT_TIMEOUT)
+            r = requests.get(url, headers={"User-Agent": USER_AGENT, "Accept": "image/*"}, timeout=DEFAULT_TIMEOUT)
             if r.status_code != 200:
                 last_err = f"HTTP {r.status_code}"
                 raise RuntimeError(last_err)
@@ -359,45 +400,19 @@ def rel_web_path(path: Path) -> str:
 
 
 # -------------------------
-# List parsing (NOW supports direct TMDB ID)
+# Parsing helpers
 # -------------------------
-def parse_title_year_and_optional_tmdb_id(line: str) -> Tuple[str, Optional[int], Optional[int]]:
-    s = line.strip()
-    if not s:
-        return "", None, None
-
-    # Explicit tmdb:id token anywhere in the line
-    m = RE_TMDB_ID_TOKEN.search(s)
-    if m:
-        tmdb_id = int(m.group(2))
-        # Remove token for title parsing
-        s2 = (s[: m.start()] + s[m.end() :]).strip()
-        title, year = parse_title_year(s2)
-        return title, year, tmdb_id
-
-    title, year = parse_title_year(s)
-
-    # If line is essentially an ID (or starts with it), accept direct id
-    stripped = title.strip()
-    if stripped.isdigit():
-        return "", year, int(stripped)
-
-    # If title begins with an ID token like "12345 | Name"
-    m2 = RE_ANY_ID_TOKEN.match(stripped)
-    if m2 and len(m2.group(1)) >= 3:
-        # Only treat as ID-direct if the line has very low alpha content before separators
-        prefix = m2.group(1)
-        rest = stripped[len(prefix) :].lstrip(" |:-")
-        if rest:
-            # keep title; do NOT force id mode
-            return stripped, year, None
-        return "", year, int(prefix)
-
-    return title, year, None
+def _split_pipes(line: str) -> List[str]:
+    # split into trimmed cells, preserving empty trailing cells
+    parts = [p.strip() for p in line.split("|")]
+    # drop only fully-empty tail beyond 4 (but keep 4-col structure when present)
+    while len(parts) > 0 and parts[-1] == "" and len(parts) > 4:
+        parts.pop()
+    return parts
 
 
-def parse_title_year(line: str) -> Tuple[str, Optional[int]]:
-    s = line.strip()
+def parse_title_year(s: str) -> Tuple[str, Optional[int]]:
+    s = (s or "").strip()
     if not s:
         return "", None
 
@@ -416,41 +431,203 @@ def parse_title_year(line: str) -> Tuple[str, Optional[int]]:
     return s, None
 
 
+def parse_season_spec(spec: str) -> Optional[Set[int]]:
+    """
+    Returns:
+      - None => ALL seasons
+      - set({n...}) => filtered seasons
+    Rules:
+      '*' or '' => ALL seasons (None)
+      '5' => {5}
+      '1,3,5' => {1,3,5}
+      '2-6' => {2,3,4,5,6}
+    """
+    s = (spec or "").strip()
+    if not s or s == "*":
+        return None
+
+    # tolerate "S5", "Season 5"
+    s = re.sub(r"(?i)\bseason\b", "", s).strip()
+    s = re.sub(r"(?i)\bs\b", "", s).strip()
+
+    m = RE_SEASON_RANGE.match(s)
+    if m:
+        a = int(m.group(1))
+        b = int(m.group(2))
+        if a <= 0 or b <= 0:
+            return None
+        lo, hi = (a, b) if a <= b else (b, a)
+        return set(range(lo, hi + 1))
+
+    if RE_SEASON_LIST.match(s):
+        out: Set[int] = set()
+        for part in s.split(","):
+            part = part.strip()
+            if part.isdigit():
+                n = int(part)
+                if n > 0:
+                    out.add(n)
+        return out if out else None
+
+    if s.isdigit():
+        n = int(s)
+        return {n} if n > 0 else None
+
+    # unknown token -> treat as ALL (but log for visibility)
+    logging.warning("[parse] unknown season_spec=%r -> treating as ALL", spec)
+    return None
+
+
 def parse_tv_list(path: Path) -> List[Dict[str, Any]]:
+    """
+    tv_list.txt binding format:
+      name | tmdb_show_id | season_spec | tvmaze_id
+
+    Must handle:
+      - extra spaces around pipes
+      - missing columns
+      - lines like: Beef|*               (season_spec only, no tmdb_id)
+      - lines like: Curb|521|           (tmdb_id present, season_spec blank)
+      - lines like: Watson | 242867 | * (spaces)
+    """
     if not path.exists():
         raise FileNotFoundError(f"Missing required file: {path}")
 
     rows: List[Dict[str, Any]] = []
+    seen_ids: Set[int] = set()
+    seen_titles: Set[str] = set()
+
     for raw in read_text_file(path).splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-        title, year, tmdb_id = parse_title_year_and_optional_tmdb_id(line)
-        if tmdb_id:
-            rows.append({"tmdb_id": tmdb_id, "title": title, "year": year})
+
+        parts = _split_pipes(line)
+        # normalize to at most 4 columns
+        if len(parts) > 4:
+            parts = parts[:4]
+
+        name = parts[0].strip() if len(parts) >= 1 else ""
+        c2 = parts[1].strip() if len(parts) >= 2 else ""
+        c3 = parts[2].strip() if len(parts) >= 3 else ""
+        c4 = parts[3].strip() if len(parts) >= 4 else ""
+
+        title, year = parse_title_year(name)
+        tmdb_id: Optional[int] = None
+        season_spec_raw: str = ""
+        tvmaze_id: Optional[int] = None
+
+        # Decide meaning of column2/3 based on content
+        # If col2 is numeric -> tmdb_id
+        if c2 and RE_INT.match(c2):
+            tmdb_id = int(c2)
+            season_spec_raw = c3 or ""
         else:
-            if not title:
-                continue
-            rows.append({"title": title, "year": year})
+            # col2 is not numeric; it may be season_spec (like '*') or blank
+            season_spec_raw = c2 or ""
+            # If col3 is numeric, treat it as tmdb_id (handles "Name|*|12345" style if ever)
+            if c3 and RE_INT.match(c3):
+                tmdb_id = int(c3)
+
+        # tvmaze_id: if col4 numeric, else ignore
+        if c4 and RE_INT.match(c4):
+            tvmaze_id = int(c4)
+
+        season_filter = parse_season_spec(season_spec_raw)
+
+        # De-dupe (stable): by tmdb_id when present; otherwise by normalized title
+        if tmdb_id and tmdb_id in seen_ids:
+            logging.warning("[parse] duplicate tmdb_id in tv_list: %s (%s) -> skipping", tmdb_id, title)
+            continue
+
+        key_title = re.sub(r"\s+", " ", (title or "").strip().lower())
+        if not tmdb_id and key_title and key_title in seen_titles:
+            logging.warning("[parse] duplicate title in tv_list: %s -> skipping", title)
+            continue
+
+        row: Dict[str, Any] = {
+            "title": title,
+            "year": year,
+            "tmdb_id": tmdb_id,
+            "season_spec": season_spec_raw.strip() if season_spec_raw else "",
+            "season_filter": sorted(list(season_filter)) if isinstance(season_filter, set) else None,
+            "tvmaze_id": tvmaze_id,
+        }
+
+        # Keep minimal correctness: title must exist if no tmdb_id
+        if not tmdb_id and not title:
+            logging.warning("[parse] skipping tv_list line with no title and no tmdb_id: %r", line)
+            continue
+
+        rows.append(row)
+        if tmdb_id:
+            seen_ids.add(tmdb_id)
+        if key_title:
+            seen_titles.add(key_title)
+
     return rows
 
 
 def parse_movies_list(path: Path) -> List[Dict[str, Any]]:
+    """
+    movies_list.txt binding format:
+      name|tmdb_movie_id
+
+    Must handle:
+      - extra spaces around pipes
+      - trailing comments/blank lines
+      - title with year in parentheses (optional)
+    """
     if not path.exists():
         raise FileNotFoundError(f"Missing required file: {path}")
 
     rows: List[Dict[str, Any]] = []
+    seen_ids: Set[int] = set()
+
     for raw in read_text_file(path).splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
             continue
-        title, year, tmdb_id = parse_title_year_and_optional_tmdb_id(line)
-        if tmdb_id:
-            rows.append({"tmdb_id": tmdb_id, "title": title, "year": year})
-        else:
-            if not title:
+
+        parts = _split_pipes(line)
+        if len(parts) == 1:
+            # allow "12345" or "Title (2024)"
+            s = parts[0].strip()
+            m = RE_INT.match(s)
+            if m:
+                tmdb_id = int(m.group(1))
+                if tmdb_id in seen_ids:
+                    continue
+                rows.append({"title": "", "year": None, "tmdb_id": tmdb_id})
+                seen_ids.add(tmdb_id)
                 continue
-            rows.append({"title": title, "year": year})
+
+            title, year = parse_title_year(s)
+            rows.append({"title": title, "year": year, "tmdb_id": None})
+            continue
+
+        title_raw = parts[0].strip()
+        id_raw = parts[1].strip() if len(parts) >= 2 else ""
+
+        title, year = parse_title_year(title_raw)
+
+        tmdb_id = None
+        if id_raw and RE_INT.match(id_raw):
+            tmdb_id = int(id_raw)
+
+        if tmdb_id and tmdb_id in seen_ids:
+            logging.warning("[parse] duplicate tmdb_id in movies_list: %s (%s) -> skipping", tmdb_id, title)
+            continue
+
+        # title may be blank when tmdb_id present (allowed)
+        if not tmdb_id and not title:
+            logging.warning("[parse] skipping movies_list line with no title and no tmdb_id: %r", line)
+            continue
+
+        rows.append({"title": title, "year": year, "tmdb_id": tmdb_id})
+        if tmdb_id:
+            seen_ids.add(tmdb_id)
+
     return rows
 
 
@@ -521,8 +698,14 @@ def qa_validate_links(cfg: Config, data: Dict[str, Any]) -> Tuple[bool, List[str
 # -------------------------
 def build_show_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     tmdb_id: Optional[int] = item.get("tmdb_id")
-    title = item.get("title") or ""
+    title = (item.get("title") or "").strip()
     year = item.get("year")
+
+    # season filter: None => ALL; otherwise set of allowed season numbers
+    season_filter_raw = item.get("season_filter")
+    season_filter: Optional[Set[int]] = None
+    if isinstance(season_filter_raw, list) and all(isinstance(x, int) for x in season_filter_raw):
+        season_filter = set(season_filter_raw)
 
     if tmdb_id:
         details = tmdb_tv_details(auth, int(tmdb_id))
@@ -554,9 +737,13 @@ def build_show_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Optio
 
     seasons_out: List[Dict[str, Any]] = []
     seasons = details.get("seasons") or []
+
+    # Build only requested seasons if filter provided; otherwise ALL seasons
     for s in seasons:
         season_number = int(s.get("season_number") or 0)
         if season_number <= 0:
+            continue
+        if season_filter is not None and season_number not in season_filter:
             continue
 
         season_details = tmdb_tv_season(auth, tmdb_id, season_number)
@@ -615,6 +802,9 @@ def build_show_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Optio
         "backdrop_path": backdrop_path,
         "local_backdrop_path": local_backdrop,
         "seasons": seasons_out,
+        # keep source ids in the dataset (non-breaking; consumers may ignore)
+        "tvmaze_id": item.get("tvmaze_id"),
+        "season_spec": item.get("season_spec") or "",
     }
 
 
@@ -623,7 +813,7 @@ def build_show_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Optio
 # -------------------------
 def build_movie_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     tmdb_id: Optional[int] = item.get("tmdb_id")
-    title = item.get("title") or ""
+    title = (item.get("title") or "").strip()
     year = item.get("year")
 
     if tmdb_id:
@@ -668,7 +858,7 @@ def build_movie_entry(cfg: Config, auth: TmdbAuth, item: Dict[str, Any]) -> Opti
 
 
 # -------------------------
-# Safe write
+# Atomic write
 # -------------------------
 def safe_write_json(path: Path, data: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -681,6 +871,11 @@ def safe_write_json(path: Path, data: Dict[str, Any]) -> None:
 
     _ = json.loads(tmp.read_text(encoding="utf-8"))
     tmp.replace(path)
+
+
+def utc_now_iso() -> str:
+    # timezone-aware UTC ISO (no utcnow deprecation)
+    return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 # -------------------------
@@ -697,10 +892,10 @@ def main() -> int:
         logging.error("[fetch_tmdb] config load failed: %s", e)
         return 2
 
-    # auth
+    # auth (pick working candidate)
     try:
-        auth = load_tmdb_auth()
-        logging.info("[fetch_tmdb] tmdb_auth_mode=%s", auth.mode)
+        cands = load_tmdb_auth_candidates()
+        auth = tmdb_precheck_pick_auth(cands)
     except Exception as e:
         logging.error("[fetch_tmdb] %s", e)
         return 3
@@ -710,6 +905,7 @@ def main() -> int:
         tv_rows = parse_tv_list(TV_LIST_PATH)
         movie_rows = parse_movies_list(MOVIES_LIST_PATH)
         livetv_raw = parse_livetv_list_optional(LIVETV_LIST_PATH)
+        logging.info("[fetch_tmdb] parsed tv=%s movies=%s livetv=%s", len(tv_rows), len(movie_rows), len(livetv_raw))
     except Exception as e:
         logging.error("[fetch_tmdb] list parse failed: %s", e)
         return 4
@@ -752,8 +948,8 @@ def main() -> int:
         "profiles": [],
         "watchlist": [],
         "metadata": {
-            "build_timestamp_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
-            "version": {"script": "fetch_tmdb.py", "script_version": "v2.6.3", "build": "14.01.05"},
+            "build_timestamp_utc": utc_now_iso(),
+            "version": {"script": "fetch_tmdb.py", "script_version": "v2.6.4", "build": "14.01.06"},
             "inputs": {
                 "tv_list": str(TV_LIST_PATH.name),
                 "movies_list": str(MOVIES_LIST_PATH.name),
@@ -781,7 +977,6 @@ def main() -> int:
             logging.error("[fetch_tmdb]   %s", e)
         return 5
 
-    # Guard stays, but the script is now much harder to end up at 0/0 unless TMDB is genuinely unreachable
     if len(shows_out) == 0 and len(movies_out) == 0:
         logging.error("[fetch_tmdb] Refusing to write data.json: shows=0 AND movies=0 (bad run)")
         return 6
