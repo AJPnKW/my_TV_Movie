@@ -238,3 +238,76 @@ tv_list.txt
 movies_list.txt
 live_tv_list.txt
 watchlist.txt formerly show_pages.txt
+
+
+
+
+While you proess and think , my brain keep o problem solving and thinking, and as such I thingk how o solve out issue in a differetn way that we ave been trying, as is the approach we are trying was sucesfull to e it seems that it owd  be fixed.
+as suc to me that mean we need to approach ot thing about the issue in another way and ot gin about the root causes and idntofy ways to address the root casues and find way to elimintae the root casues or find an aleritve the eliminates the issue rntirelly.
+
+
+
+
+
+i habe put together this conext for an upadate to the proecje and tp pgove to CahtGPT to ptovide and updaed solutin to our major prolem.
+this is a manual overrde to the SPEC, and i will also ass in noted in Section 99 so even thos teh SPEC section re not being upated in parlall they SPEC does hae it socument and noted in section 99 for a repository of SPEC updated withteh dtaila needed to bea ble to make teh updated at a let time as well as provie all the detaila and conenst and specifi of what we want to chaneg and what and how things were changed.
+tjis update likely need an intial entry as part of this promt focus chat and then an update after the program has been updated to actually capture teh corect details and then finally one it is teted and workg to capture any canges that we ned to get to a actie provitone lie situation.
+This ceom this please draft a chatgpt specific prompt, tailored to chatgpt behaviour and ai engire needs and reuoremtns and reponses as well as taliored and aligned to the project needs and curretn design and my needs, style and prefered au behviour.
+
+Concept/Idea
+Shift from TXT inputs to JSON as source of truth eliminates parsing risks, ensures data quality, and adds traceability via history and active flags. TXT remains user-editable; workflow parses/cleans it to update JSON, which scripts use for reliable TMDB fetches.
+Potential/Possible Approach and Design
+Implement new script (parse_txt_to_json.py) to split TXT lines by |, clean/normalize (strip spaces, titlecase, fetch TMDB official names/ID if missing), update JSON atomically (add/update entries, flag inactive on removal, append history with timestamp/action/changes). JSON structure: list of dicts {tmdb_id: int, official_title: str, user_title: str, year: int|null, seasons: '*'|list[int], active: bool, history: list[dict]}. Update workflow to run parse before fetch_tmdb.py; enhance error handling with logs, retries, schema validation.
+Design Changes Implications
+Shift TXT to input only; parse/clean to JSON (shows.json, movies.json in data/) as source of truth. Add workflow step: new script parse_txt_to_json.py runs first, updates JSON (add/update, no delete, flag inactive, append history with timestamp/action/changes). fetch_tmdb.py updates to use JSON for TMDB fetches, produce data.json. Ensures data quality, traceability; reduces parse errors. Impacts: workflow sequence, error handling (validate JSON schema), API use (search if ID missing in parse).
+Prompt for ChatGPT
+"Override current SPEC with this manual update: Implement design shift where tv_list.txt/movies_list.txt are user-editable inputs; create new script scripts/parse_txt_to_json.py to parse/clean TXT (split by |, extract title/year/ID/seasons, normalize case/spaces using TMDB official names via search/direct fetch if ID present, handle /lists/ranges for seasons), update data/shows.json and data/movies.json atomically (add new, update changed, flag inactive if removed from TXT, append history list per entry with {timestamp_utc, action: 'add'/'update', changes: dict of modified fields}). Structure JSON as list of dicts: {tmdb_id: int (required, search if missing), official_title: str (from TMDB), user_title: str (from TXT), year: int|null, seasons: ''|list[int], active: bool (true default), history: list[dict{timestamp_utc: str, action: str, changes: dict}]}. fetch_tmdb.py now reads from these JSONs to fetch TMDB data into data/data.json. Update workflow build-data.yml to run parse_txt_to_json.py before fetch_tmdb.py. Ensure cross-consistency: same logging format, error append to data.json['errors'], retries on API (3x, backoff 0.6s), validate JSON schema post-write. Generate updated files: parse_txt_to_json.py (full code), fetch_tmdb.py (updated parser/use JSON), build-data.yml (add step). Preserve interdependencies: data.json production, Trakt enrichment after. Handle errors: log malformed TXT lines, API failures, unexpected data (e.g., invalid ID → search fallback, warn on duplicates)."
+New JSON Creation
+Create base empty files: data/shows.json and data/movies.json as [] (empty list). ChatGPT prompt above generates parse_txt_to_json.py; run it on existing TXT to populate with TMDB queries (search for official_title/ID if missing). Manually: Copy TXT lines, format as JSON dicts, add minimal fields (tmdb_id null if unknown, active true, history []), commit to repo.
+SPEC Update/Override Details (for Section 99)
+Group under headers: "Data Source Migration" (TXT→JSON shift, parser rules, cleaning/normalization); "JSON Schema" (fields as above, required/optional); "Workflow Pipeline" (add parse step pre-fetch_tmdb, error flows); "Error Handling" (logs, data.json errors, retries, validations); "Traceability" (history per entry, active flag, no deletes); "Consistency" (API: prefer direct ID, fallback search; cross-scripts: uniform logging/env). Fill goals: Quality (validation), Integrity (atomic writes), Consistency (TMDB names), Traceability (history). Ensure workflow active: Test sequence, outputs data.json.
+Identified Scripts/Changes
+i) Code changes: fetch_tmdb.py (use JSON input, remove TXT parse); new parse_txt_to_json.py; build-data.yml (add parse step); fetch_trakt.py (minor: ensure data.json compatibility); sync_trakt.py (none, as wrapper).
+ii) SPEC changes: Update for new script, JSON schema, workflow steps; cross-link to ensure interlinks (e.g., data.json deps).
+Deep Considerations
+Interdependencies: Workflow chain (parse→fetch_tmdb→fetch_trakt) unbroken; data.json as output hub. API: v3/v4 auth, rate limit (sleep 0.2s/call), direct /tv/{id} prefer over search. Smart handling: Parser skips malformed, warns duplicates; workflow exits on parse fail; unexpected (no ID: search TMDB, fail if ambiguous); bugs (try/except API, log tracebacks); integrity (hash check post-write, schema validate with jsonschema lib if add). Quality: Unit tests for parse; traceability: Git commits track JSON changes.
+Clarifying Questions/Gaps/Assumptions
+Questions: JSON location (data/ ok?); Inactive handling (exclude from data.json or include flagged?); History details (include user who changed?); TXT without ID (auto-search in parse, or manual?).
+Gaps (filled from history): Assume separate JSONs for shows/movies; retain all in JSON (no delete); use TMDB for normalization.
+Assumptions (validated): JSON committed/pushed like data.json; workflow daily; no livetv yet (extensible).
+Changes Needed to SPEC Documentation
+Section 1: Purpose and Overview
+
+Add JSON migration rationale; update data flow diagram to include parse step and JSON as core repository.
+
+Section 2: Data Sources and Formats
+
+Define TXT as input-only; specify JSON schema (fields, types, required); detail cleaning rules (spaces, case, TMDB normalization).
+
+Section 3: Scripts and Tools
+
+Introduce parse_txt_to_json.py (logic, inputs/outputs); update fetch_tmdb.py (switch to JSON input, remove TXT parse).
+
+Section 4: Workflow Pipeline
+
+Revise build-data.yml sequence: add parse step pre-fetch; include error flows (malformed lines, API failures).
+
+Section 5: Error Handling and Logging
+
+Specify validations (JSON schema, ID checks); add retry/backoff for TMDB; uniform logging across scripts.
+
+Section 6: Traceability and Auditing
+
+Detail history mechanism per entry; active/inactive flags; no-delete policy.
+
+Section 99: WIP Changes
+
+Group all above as overrides; cross-reference for consistency/interlinks.
+
+
+
+
+
+
+
+

@@ -1,0 +1,115 @@
+
+
+
+## Web Icon Image Inventory (usable formats & variants)
+
+### 1) Raster image formats
+
+| Format | Extension(s)    | Transparency | Notes / Use cases                         |
+| ------ | --------------- | ------------ | ----------------------------------------- |
+| PNG    | `.png`          | ✅            | Most common for UI icons; crisp, lossless |
+| WebP   | `.webp`         | ✅            | Smaller than PNG; modern browsers         |
+| GIF    | `.gif`          | ⚠️ (binary)  | Rare for icons; legacy                    |
+| JPEG   | `.jpg`, `.jpeg` | ❌            | Not recommended (no transparency)         |
+| AVIF   | `.avif`         | ✅            | Very small; newer support                 |
+
+---
+
+### 2) Vector formats
+
+| Format       | Extension | Scales     | Notes / Use cases                               |
+| ------------ | --------- | ---------- | ----------------------------------------------- |
+| SVG          | `.svg`    | ✅ Infinite | **Preferred** for web icons; styleable with CSS |
+| PDF (vector) | `.pdf`    | ✅          | Source/export only; not for inline web use      |
+| EPS          | `.eps`    | ✅          | Source only; convert to SVG                     |
+
+---
+
+### 3) Icon container formats (favicons / app icons)
+
+| Format        | Extension | Typical Sizes       | Notes                    |
+| ------------- | --------- | ------------------- | ------------------------ |
+| ICO           | `.ico`    | 16–256px            | Windows, legacy browsers |
+| ICNS          | `.icns`   | multiple            | macOS apps               |
+| PNG (favicon) | `.png`    | 16, 32, 48, 96, 180 | Modern favicon strategy  |
+
+---
+
+### 4) SVG icon delivery variants
+
+| Variant      | Description             | When to use                  |
+| ------------ | ----------------------- | ---------------------------- |
+| Inline SVG   | `<svg>` in HTML         | CSS color/animation control  |
+| External SVG | `<img src>`             | Simple drop-in               |
+| SVG Sprite   | `<symbol>` sprite sheet | Large icon sets, performance |
+| SVG Mask     | CSS `mask-image`        | Single-color icons           |
+| SVG Data URI | `data:image/svg+xml`    | Bundled/embedded assets      |
+
+---
+
+### 5) Styling & color variants
+
+| Variant       | Description                |
+| ------------- | -------------------------- |
+| Monochrome    | Single-color icons         |
+| Duotone       | Two-layer SVG              |
+| Multicolor    | Full-color SVG/PNG         |
+| Stroke-only   | Outline icons              |
+| Filled        | Solid icons                |
+| CSS-themed    | `currentColor` / variables |
+| Dark-mode     | Light/dark sets            |
+| High-contrast | Accessibility sets         |
+
+---
+
+### 6) Resolution & density variants
+
+| Variant        | Notes                     |
+| -------------- | ------------------------- |
+| 1× / 2× / 3×   | Retina/HiDPI raster icons |
+| Responsive SVG | Scales without variants   |
+| Pixel-aligned  | 16/20/24px grids          |
+
+---
+
+### 7) Animation-capable icon formats
+
+| Format          | Extension | Notes               |
+| --------------- | --------- | ------------------- |
+| Animated SVG    | `.svg`    | SMIL / CSS / JS     |
+| Lottie          | `.json`   | After Effects → web |
+| GIF (animated)  | `.gif`    | Legacy, heavy       |
+| WebP (animated) | `.webp`   | Smaller than GIF    |
+
+---
+
+### 8) Common web icon size inventory
+
+| Context       | Sizes (px)             |
+| ------------- | ---------------------- |
+| UI icons      | 16, 20, 24, 32         |
+| Buttons       | 20, 24                 |
+| Favicons      | 16, 32, 48             |
+| PWA           | 96, 128, 192, 256, 512 |
+| Touch icons   | 180 (iOS)              |
+| Windows tiles | 150, 310               |
+
+---
+
+### 9) Icon font alternative (non-image)
+
+| Type                | Notes                                            |
+| ------------------- | ------------------------------------------------ |
+| Icon fonts          | `.woff2`, `.woff` (Font Awesome, Material Icons) |
+| SVG icon components | React/Vue/Svelte imports                         |
+
+---
+
+### 10) Recommended baseline set (practical)
+
+* **Primary:** SVG (inline + sprite)
+* **Fallback:** PNG @ 1×/2×
+* **Favicons:** PNG + ICO
+* **Animation:** Lottie (JSON)
+
+If you want this exported as **CSV**, **JSON**, or aligned to your **my_TV_Movie** repo structure (icons/ui, favicons, logos), say which format and target path.
