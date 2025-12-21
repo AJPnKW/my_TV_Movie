@@ -1,47 +1,52 @@
 #!/usr/bin/env python3
 # ==============================================================================
-# [FILE]    scripts/fetch_trakt.py
+# [FILE] scripts/fetch_trakt.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Enrich/Sync Trakt metadata into canonical data/data.json (watchlist + IDs)
-# [VERSION] v2.2.0
-# [UPDATED] 2025-12-19_00-00-00
-# [BUILD]   14.01.05
+# [ROLE] Enrich/Sync Trakt metadata into canonical data/data.json (watchlist + IDs)
+# [VERSION] v2.2.1
+# [UPDATED] 2025-12-20_00-00-00
+# [BUILD] 14.01.06
 #
 # [INPUTS]
-#   - web/config.json (authoritative config; read-only here)
-#   - data/data.json  (canonical dataset produced by fetch_tmdb.py; read + update)
+# - web/config.json (authoritative config; read-only here)
+# - data/data.json (canonical dataset produced by fetch_tmdb.py; read + update)
 #
 # [OUTPUTS]
-#   - data/data.json (atomic update; preserves all unrelated keys/structures)
-#   - data/last_refresh_trakt.txt
-#   - logs/fetch_trakt_YYYY-MM-DD_HHMMSS.log.txt
+# - data/data.json (atomic update; preserves all unrelated keys/structures)
+# - data/last_refresh_trakt.txt
+# - logs/fetch_trakt_YYYY-MM-DD_HHMMSS.log.txt
 #
 # [ENV REQUIRED]
-#   - TRAKT_CLIENT_ID        (required)
-#   - TRAKT_USERNAME         (required)  (Trakt user slug)
+# - TRAKT_CLIENT_ID (required)
+# - TRAKT_CLIENT_SECRET (required)
+# - TRAKT_OAUTH_REDIRECT_URL (required) (may be "urn:ietf:wg:oauth:2.0:oob")
 #
 # [ENV OPTIONAL]
-#   - TRAKT_ACCESS_TOKEN     (optional; enables private endpoints if needed)
+# - TRAKT_USERNAME (optional; only used for public user endpoints)
+# - TRAKT_ACCESS_TOKEN (optional; if present, enables /users/me/* endpoints)
 #
 # [BINDING RULES APPLIED]
-#   - TRUE SPA: index.html is the only entry point (not relevant to this script)
-#   - data.json is not edited manually (script updates atomically)
-#   - No schema redesign / no simplification / preserve existing keys
-#   - Errors must be surfaced (written into data.json errors + log; no silent failures)
-#   - Canonical asset hierarchy: no deprecated "image/" references added here
+# - TRUE SPA: index.html is the only entry point (not relevant to this script)
+# - data.json is not edited manually (script updates atomically)
+# - No schema redesign / no simplification / preserve existing keys
+# - Errors must be surfaced (written into data.json errors + log; no silent failures)
+# - Canonical asset hierarchy: no deprecated "image/" references added here
 #
 # [WHAT THIS SCRIPT DOES]
-#   1) Loads existing data/data.json
-#   2) Fetches Trakt Watchlist (shows + movies) for TRAKT_USERNAME
-#   3) Updates:
-#       - data["watchlist"] (canonical list of items with tmdb/trakt ids)
-#       - per-show and per-movie optional trakt_id enrichment when tmdb_id matches
-#       - data["metadata"] (adds trakt sync details + timestamp)
-#       - data["errors"] (appends errors encountered)
-#   4) Writes data/data.json atomically (temp -> validate -> replace)
+# 1) Loads existing data/data.json
+# 2) Attempts Trakt watchlist fetch:
+#    - If TRAKT_ACCESS_TOKEN is present: uses /users/me/watchlist/*
+#    - Else if TRAKT_USERNAME is present: uses /users/{username}/watchlist/*
+#    - Else: skips Trakt fetch (no OAuth/login/PIN flow is triggered)
+# 3) Updates:
+#    - data["watchlist"] ONLY when Trakt fetch actually runs and returns data
+#    - per-show and per-movie optional trakt_id enrichment when tmdb_id matches
+#    - data["metadata"]["trakt_sync"] timestamp + counts + mode
+#    - data["errors"] only for concrete failures (not for intentional skip)
+# 4) Writes data/data.json atomically (temp -> validate -> replace)
 #
 # [NO INVENTED MODULES]
-#   - Does not create new files/folders beyond logs + last_refresh_trakt.txt
+# - Does not create new files/folders beyond logs + last_refresh_trakt.txt
 # ==============================================================================
 
 from __future__ import annotations
@@ -61,7 +66,7 @@ try:
 except Exception:
     print("ERROR: Missing dependency 'requests'.", file=sys.stderr)
     print("Install it inside your venv:", file=sys.stderr)
-    print("  python -m pip install requests", file=sys.stderr)
+    print(" python -m pip install requests", file=sys.stderr)
     raise
 
 try:
@@ -81,11 +86,9 @@ except Exception:
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WEB_DIR = REPO_ROOT / "web"
 CONFIG_JSON_PATH = WEB_DIR / "config.json"
-
 DATA_DIR = REPO_ROOT / "data"
 DATA_JSON_PATH = DATA_DIR / "data.json"
 LAST_REFRESH_TRAKT_PATH = DATA_DIR / "last_refresh_trakt.txt"
-
 LOGS_DIR = REPO_ROOT / "logs"
 
 
@@ -101,7 +104,9 @@ USER_AGENT = "my_TV_Movie fetch_trakt.py (static data builder)"
 @dataclass(frozen=True)
 class TraktEnv:
     client_id: str
-    username: str
+    client_secret: str
+    oauth_redirect_url: str
+    username: Optional[str]
     access_token: Optional[str]
 
 
@@ -173,7 +178,9 @@ def _env_optional(name: str) -> Optional[str]:
 def load_trakt_env() -> TraktEnv:
     return TraktEnv(
         client_id=_env_required("TRAKT_CLIENT_ID"),
-        username=_env_required("TRAKT_USERNAME"),
+        client_secret=_env_required("TRAKT_CLIENT_SECRET"),
+        oauth_redirect_url=_env_required("TRAKT_OAUTH_REDIRECT_URL"),
+        username=_env_optional("TRAKT_USERNAME"),
         access_token=_env_optional("TRAKT_ACCESS_TOKEN"),
     )
 
@@ -194,7 +201,6 @@ def trakt_get(env: TraktEnv, path: str, params: Optional[Dict[str, Any]] = None)
     url = f"{TRAKT_API_BASE}{path}"
     r = requests.get(url, headers=trakt_headers(env), params=params or {}, timeout=DEFAULT_TIMEOUT)
     if r.status_code != 200:
-        # visible failures: log + propagate
         raise RuntimeError(f"TRAKT GET {path} failed: {r.status_code} {r.text[:300]}")
     return r.json()
 
@@ -202,14 +208,28 @@ def trakt_get(env: TraktEnv, path: str, params: Optional[Dict[str, Any]] = None)
 # -------------------------
 # Trakt watchlist fetch
 # -------------------------
+def _watchlist_base(env: TraktEnv) -> Optional[str]:
+    # No OAuth/login/PIN flow is triggered here.
+    # If access_token exists -> use /users/me; else if username exists -> use /users/{username}; else skip.
+    if env.access_token:
+        return "/users/me/watchlist"
+    if env.username:
+        return f"/users/{env.username}/watchlist"
+    return None
+
+
 def fetch_watchlist_movies(env: TraktEnv) -> List[Dict[str, Any]]:
-    # /users/{id}/watchlist/movies
-    return trakt_get(env, f"/users/{env.username}/watchlist/movies", params={"extended": "full"})
+    base = _watchlist_base(env)
+    if not base:
+        return []
+    return trakt_get(env, f"{base}/movies", params={"extended": "full"})
 
 
 def fetch_watchlist_shows(env: TraktEnv) -> List[Dict[str, Any]]:
-    # /users/{id}/watchlist/shows
-    return trakt_get(env, f"/users/{env.username}/watchlist/shows", params={"extended": "full"})
+    base = _watchlist_base(env)
+    if not base:
+        return []
+    return trakt_get(env, f"{base}/shows", params={"extended": "full"})
 
 
 # -------------------------
@@ -249,7 +269,21 @@ def _wl_show_item(item: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     }
 
 
-def build_watchlist(env: TraktEnv) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
+def build_watchlist(env: TraktEnv) -> Tuple[List[Dict[str, Any]], Dict[str, int], str]:
+    """
+    Returns: (watchlist_items, counts, mode)
+      mode:
+        - "bearer_me"  (TRAKT_ACCESS_TOKEN present; /users/me)
+        - "public_user" (TRAKT_USERNAME present; /users/{username})
+        - "skipped"     (no token and no username; no network calls made)
+    """
+    base = _watchlist_base(env)
+    if not base:
+        counts = {"watchlist_movies": 0, "watchlist_shows": 0, "watchlist_total": 0}
+        return [], counts, "skipped"
+
+    mode = "bearer_me" if env.access_token else "public_user"
+
     movies_raw = fetch_watchlist_movies(env)
     shows_raw = fetch_watchlist_shows(env)
 
@@ -258,7 +292,6 @@ def build_watchlist(env: TraktEnv) -> Tuple[List[Dict[str, Any]], Dict[str, int]
     it_m = movies_raw
     if tqdm is not None:
         it_m = tqdm(movies_raw, desc="Trakt watchlist movies", unit="movie")  # type: ignore
-
     for x in it_m:
         item = _wl_movie_item(x)
         if item:
@@ -267,7 +300,6 @@ def build_watchlist(env: TraktEnv) -> Tuple[List[Dict[str, Any]], Dict[str, int]
     it_s = shows_raw
     if tqdm is not None:
         it_s = tqdm(shows_raw, desc="Trakt watchlist shows", unit="show")  # type: ignore
-
     for x in it_s:
         item = _wl_show_item(x)
         if item:
@@ -278,7 +310,7 @@ def build_watchlist(env: TraktEnv) -> Tuple[List[Dict[str, Any]], Dict[str, int]
         "watchlist_shows": sum(1 for i in out if i.get("type") == "show"),
         "watchlist_total": len(out),
     }
-    return out, counts
+    return out, counts, mode
 
 
 # -------------------------
@@ -294,7 +326,6 @@ def index_by_tmdb_id(items: List[Dict[str, Any]], key: str = "tmdb_id") -> Dict[
 
 
 def enrich_trakt_ids(existing: Dict[str, Any], watchlist: List[Dict[str, Any]]) -> Dict[str, int]:
-    # Add trakt_id to existing shows/movies when tmdb_id matches.
     shows = existing.get("shows") or []
     movies = existing.get("movies") or []
 
@@ -340,26 +371,35 @@ def append_error(existing: Dict[str, Any], message: str) -> None:
     )
 
 
-def update_metadata(existing: Dict[str, Any], cfg_hash: str, trakt_counts: Dict[str, int], enrich_counts: Dict[str, int]) -> None:
+def update_metadata(
+    existing: Dict[str, Any],
+    cfg_hash: str,
+    trakt_counts: Dict[str, int],
+    enrich_counts: Dict[str, int],
+    mode: str,
+    env: TraktEnv,
+) -> None:
     meta = existing.get("metadata")
     if not isinstance(meta, dict):
         existing["metadata"] = {}
         meta = existing["metadata"]
 
-    # preserve existing metadata; append/overwrite only our tract sync block
     meta["trakt_sync"] = {
         "timestamp_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "script": "fetch_trakt.py",
-        "script_version": "v2.2.0",
-        "build": "14.01.05",
+        "script_version": "v2.2.1",
+        "build": "14.01.06",
         "config_sha256": cfg_hash,
+        "mode": mode,
+        "redirect_url": env.oauth_redirect_url,
         "counts": trakt_counts,
         "enrichment": enrich_counts,
+        "username_used": bool(env.username),
+        "access_token_used": bool(env.access_token),
     }
 
 
 def load_config_hash_only() -> str:
-    # Config is authoritative; we do not validate schema here beyond JSON parse.
     raw = _read_text(CONFIG_JSON_PATH)
     _ = json.loads(raw)
     return _sha256_text(raw)
@@ -372,7 +412,7 @@ def main() -> int:
     setup_logging()
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Load inputs
+    # Load env (NO TRAKT_USERNAME required)
     try:
         env = load_trakt_env()
     except Exception as e:
@@ -398,10 +438,19 @@ def main() -> int:
         _safe_write_json_atomic(DATA_JSON_PATH, existing)
         return 5
 
-    # Fetch trakt data
+    # Fetch trakt data (or skip)
     try:
-        logging.info("[fetch_trakt] user=%s", env.username)
-        watchlist, trakt_counts = build_watchlist(env)
+        watchlist, trakt_counts, mode = build_watchlist(env)
+
+        if mode == "skipped":
+            logging.info("[fetch_trakt] Trakt fetch skipped (no TRAKT_ACCESS_TOKEN and no TRAKT_USERNAME).")
+            enrich_counts: Dict[str, int] = {"enriched_shows": 0, "enriched_movies": 0}
+            update_metadata(existing, cfg_hash, trakt_counts, enrich_counts, mode, env)
+            _safe_write_json_atomic(DATA_JSON_PATH, existing)
+            LAST_REFRESH_TRAKT_PATH.write_text(_dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), encoding="utf-8")
+            return 0
+
+        logging.info("[fetch_trakt] mode=%s", mode)
         logging.info("[fetch_trakt] watchlist_total=%s", trakt_counts.get("watchlist_total"))
     except Exception as e:
         logging.error("[fetch_trakt] Trakt fetch failed: %s", e)
@@ -421,14 +470,15 @@ def main() -> int:
     # Apply updates (non-destructive; preserve existing keys)
     existing["watchlist"] = watchlist
 
-    enrich_counts = {}
+    enrich_counts: Dict[str, int] = {}
     try:
         enrich_counts = enrich_trakt_ids(existing, watchlist)
     except Exception as e:
         logging.error("[fetch_trakt] Enrichment failed: %s", e)
         append_error(existing, f"Enrichment failed: {e}")
+        enrich_counts = {"enriched_shows": 0, "enriched_movies": 0}
 
-    update_metadata(existing, cfg_hash, trakt_counts, enrich_counts)
+    update_metadata(existing, cfg_hash, trakt_counts, enrich_counts, mode, env)
 
     # Write atomically
     try:
