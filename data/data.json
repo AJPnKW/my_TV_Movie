@@ -2,49 +2,14 @@
   "errors": [
     {
       "media": "show",
-      "message": "404 Client Error: Not Found for url: https://api.themoviedb.org/3/tv/130380?language=en-US&api_key=d6d2232ed588f24c6050734b74b632c1",
-      "title": "Interview with the Vampire",
-      "tmdb_id": 130380,
-      "type": "tmdb_error"
-    },
-    {
-      "media": "show",
-      "message": "404 Client Error: Not Found for url: https://api.themoviedb.org/3/tv/125197?language=en-US&api_key=d6d2232ed588f24c6050734b74b632c1",
-      "title": "Invasion",
-      "tmdb_id": 125197,
-      "type": "tmdb_error"
-    },
-    {
-      "media": "show",
       "message": "404 Client Error: Not Found for url: https://api.themoviedb.org/3/tv/203893?language=en-US&api_key=d6d2232ed588f24c6050734b74b632c1",
       "title": "School Spirits",
       "tmdb_id": 203893,
       "type": "tmdb_error"
-    },
-    {
-      "media": "movie",
-      "message": "404 Client Error: Not Found for url: https://api.themoviedb.org/3/movie/115031?language=en-US&api_key=d6d2232ed588f24c6050734b74b632c1",
-      "title": "Bring Her Back",
-      "tmdb_id": 115031,
-      "type": "tmdb_error"
-    },
-    {
-      "media": "movie",
-      "message": "404 Client Error: Not Found for url: https://api.themoviedb.org/3/movie/929361?language=en-US&api_key=d6d2232ed588f24c6050734b74b632c1",
-      "title": "Civil War",
-      "tmdb_id": 929361,
-      "type": "tmdb_error"
-    },
-    {
-      "media": "movie",
-      "message": "404 Client Error: Not Found for url: https://api.themoviedb.org/3/movie/840678?language=en-US&api_key=d6d2232ed588f24c6050734b74b632c1",
-      "title": "Pain Hustlers",
-      "tmdb_id": 840678,
-      "type": "tmdb_error"
     }
   ],
   "meta": {
-    "build_timestamp_utc": "2025-12-21T16:09:47Z",
+    "build_timestamp_utc": "2025-12-21T16:51:34Z",
     "source": "fetch_tmdb.py",
     "version": "v2.6.4"
   },
@@ -52,14 +17,14 @@
     "trakt_public_enrichment": {
       "client_id_sha256": "3d2ddcc28a945c269c19f37c73dc41c518cb95ef10a76c3d48ea9ed70c22262d",
       "counts": {
-        "looked_up": 175,
+        "looked_up": 180,
         "not_found": 1,
         "updated_movies": 0,
         "updated_shows": 0
       },
       "mode": "public_lookup",
       "script": "fetch_trakt.py",
-      "timestamp_utc": "2025-12-21T16:10:52Z"
+      "timestamp_utc": "2025-12-21T16:51:58Z"
     }
   },
   "movies": [
@@ -170,6 +135,30 @@
       "title": "Black Bag",
       "tmdb_id": 1233575,
       "trakt_id": 997729
+    },
+    {
+      "backdrop_local": null,
+      "links": {
+        "videasy": "1151031",
+        "vidsrc": "1151031"
+      },
+      "poster_local": null,
+      "release_date": "2025-05-28",
+      "title": "Bring Her Back",
+      "tmdb_id": 1151031,
+      "trakt_id": 927248
+    },
+    {
+      "backdrop_local": null,
+      "links": {
+        "videasy": "929590",
+        "vidsrc": "929590"
+      },
+      "poster_local": null,
+      "release_date": "2024-04-10",
+      "title": "Civil War",
+      "tmdb_id": 929590,
+      "trakt_id": 745438
     },
     {
       "backdrop_local": null,
@@ -398,6 +387,18 @@
       "title": "Now You See Me: Now You Don't",
       "tmdb_id": 425274,
       "trakt_id": 292275
+    },
+    {
+      "backdrop_local": null,
+      "links": {
+        "videasy": "862968",
+        "vidsrc": "862968"
+      },
+      "poster_local": null,
+      "release_date": "2023-10-20",
+      "title": "Pain Hustlers",
+      "tmdb_id": 862968,
+      "trakt_id": 689888
     },
     {
       "backdrop_local": null,
@@ -1289,6 +1290,30 @@
       "title": "IT: Welcome to Derry",
       "tmdb_id": 200875,
       "trakt_id": 195268
+    },
+    {
+      "backdrop_local": null,
+      "first_air_date": "2001-04-01",
+      "links": {},
+      "poster_local": null,
+      "season_filter": null,
+      "season_mode": "all",
+      "seasons": [],
+      "title": "Liocracy",
+      "tmdb_id": 12098,
+      "trakt_id": 12045
+    },
+    {
+      "backdrop_local": null,
+      "first_air_date": "2000-04-20",
+      "links": {},
+      "poster_local": null,
+      "season_filter": null,
+      "season_mode": "all",
+      "seasons": [],
+      "title": "Another Heaven",
+      "tmdb_id": 125325,
+      "trakt_id": 228386
     },
     {
       "backdrop_local": null,
