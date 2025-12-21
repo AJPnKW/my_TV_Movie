@@ -1,102 +1,82 @@
-# File: .github/workflows/build-data.yml
-# Project: my_TV_Movie
-# Purpose: Build canonical data (TMDB/Trakt) + deploy Pages
-# Notes:
-# - Keeps TMDB working exactly as proven in logs
-# - Fixes Trakt failure by mapping Secrets -> required env vars
-
 name: build-data
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 10 * * *" # daily 10:00 UTC (adjust if your repo already uses a different schedule)
-
-permissions:
-  contents: write
+    - cron: "17 4 * * *"   # daily, deterministic
+  push:
+    paths:
+      - "scripts/**"
+      - "web/**"
+      - "data/**"
+      - "*.txt"
+      - "inputs/**"
+      - ".github/workflows/build-data.yml"
+      - "requirements.txt"
 
 jobs:
-  build-data:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        shell: bash
+      - name: Install deps
         run: |
-          set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      # ---- Optional visibility preflight (keeps build deterministic; fails fast if missing) ----
-      - name: Preflight env (non-secret)
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import os
-          def classify(v: str) -> str:
-            v=(v or "").strip()
-            if not v: return "missing"
-            if v.startswith("ey") and "." in v and len(v) > 40: return "bearer/jwt"
-            return "v3_key"
-          k=(os.getenv("API_TMDB_KEY") or "").strip()
-          t=(os.getenv("API_TMDB_TOKEN") or "").strip()
-          tcid=(os.getenv("TRAKT_CLIENT_ID") or "").strip()
-          tcs=(os.getenv("TRAKT_CLIENT_SECRET") or "").strip()
-          print("API_TMDB_KEY:", (classify(k), len(k)))
-          print("API_TMDB_TOKEN:", (classify(t), len(t)))
-          print("TRAKT_CLIENT_ID:", ("missing" if not tcid else ("present", len(tcid))))
-          print("TRAKT_CLIENT_SECRET:", ("missing" if not tcs else ("present", len(tcs))))
-          PY
-        env:
-          # TMDB (already working)
-          API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
-          API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
+      # ------------------------------------------------------------
+      # TXT → JSON (intermediate)
+      # ------------------------------------------------------------
+      - name: Parse TXT inputs
+        run: python scripts/parse_txt_to_json.py
 
-          # TRAKT (FIX: map existing secrets into script-required names)
-          TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
-          TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_KEY }}
-          TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
-
+      # ------------------------------------------------------------
+      # TMDB → data/data.json
+      # ------------------------------------------------------------
       - name: Fetch TMDB
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/fetch_tmdb.py
+        run: python scripts/fetch_tmdb.py
         env:
+          # Keep BOTH names available for script auto-detection
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
 
+      # ------------------------------------------------------------
+      # TRAKT → data/trakt_watched.json (and/or other artifacts)
+      # ------------------------------------------------------------
       - name: Fetch Trakt
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/fetch_trakt.py
+        run: python scripts/fetch_trakt.py
         env:
-          # FIX: script requires these names
+          # Map from your existing secrets (authoritative)
           TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
           TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_KEY }}
           TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
+          # Compatibility aliases (if scripts still look for API_* names)
+          API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
+          API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
+          API_TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
 
-      # If your repo commits build artifacts back to main
-      - name: Commit data changes
-        shell: bash
+      - name: Sync Trakt
+        run: python scripts/sync_trakt.py
+        env:
+          TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
+          TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_KEY }}
+          TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
+          API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
+          API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
+          API_TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
+
+      - name: Commit changes (if any)
         run: |
-          set -euo pipefail
-          if git status --porcelain | grep -q .; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "build-data: update data outputs"
-            git push
-          else
-            echo "No changes to commit."
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "build: update data artifacts"
+          git push
