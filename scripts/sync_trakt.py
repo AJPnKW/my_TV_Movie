@@ -1,37 +1,16 @@
 #!/usr/bin/env python3
 # ==============================================================================
-# [FILE] scripts/sync_trakt.py
-# [PROJECT] my_TV_Movie
-# [ROLE] Deterministic orchestration wrapper for Trakt sync (invokes fetch_trakt.py)
-# [VERSION] v1.4.1
-# [UPDATED] 2025-12-20_00-00-00
-# [BUILD] 14.01.06
+# File: scripts/sync_trakt.py
+# Project: my_TV_Movie
+# Purpose:
+#   Deterministic wrapper that runs fetch_trakt.py using ONLY API_TRAKT_ID + API_TRAKT_KEY.
+#   - NO auth flows
+#   - NO user context
+#   - NO additional env vars
 #
-# [INPUTS]
-# - scripts/fetch_trakt.py (authoritative Trakt sync implementation)
-# - web/config.json (read by fetch_trakt.py)
-# - data/data.json (read + updated by fetch_trakt.py)
-#
-# [OUTPUTS]
-# - data/data.json (via fetch_trakt.py)
-# - data/last_refresh_trakt.txt (via fetch_trakt.py)
-# - logs/sync_trakt_YYYY-MM-DD_HHMMSS.log.txt (this wrapper)
-# - logs/fetch_trakt_YYYY-MM-DD_HHMMSS.log.txt (via fetch_trakt.py)
-#
-# [ENV REQUIRED]
-# - TRAKT_CLIENT_ID
-# - TRAKT_CLIENT_SECRET
-# - TRAKT_OAUTH_REDIRECT_URL
-#
-# [ENV OPTIONAL]
-# - TRAKT_USERNAME
-# - TRAKT_ACCESS_TOKEN
-#
-# [BINDING RULES APPLIED]
-# - No invented files/folders/modules.
-# - Errors must be surfaced (visible via console + log; no silent failures).
-# - data.json is not edited manually; script-driven updates only.
-# - Canonical assets: no deprecated "image/" references introduced here.
+# Required env (ONLY):
+#   - API_TRAKT_ID
+#   - API_TRAKT_KEY
 # ==============================================================================
 
 from __future__ import annotations
@@ -63,7 +42,7 @@ def _write_line(fp, s: str) -> None:
     fp.flush()
 
 
-def _required_env(name: str) -> str:
+def _env_required(name: str) -> str:
     v = os.getenv(name)
     if not v or not v.strip():
         raise RuntimeError(f"Missing required env var: {name}")
@@ -74,19 +53,17 @@ def _check_prereqs() -> None:
     if not FETCH_TRAKT.exists():
         raise FileNotFoundError(f"Missing required script: {FETCH_TRAKT}")
     if not DATA_JSON.exists():
-        raise FileNotFoundError(f"Missing required data file: {DATA_JSON} (run fetch_tmdb.py first)")
+        raise FileNotFoundError(f"Missing required data file: {DATA_JSON} (run earlier pipeline steps first)")
 
-    # NO TRAKT_USERNAME required anywhere.
-    _required_env("TRAKT_CLIENT_ID")
-    _required_env("TRAKT_CLIENT_SECRET")
-    _required_env("TRAKT_OAUTH_REDIRECT_URL")
+    # ONLY allowed env vars:
+    _env_required("API_TRAKT_ID")
+    _env_required("API_TRAKT_KEY")
 
 
 def _run_fetch_trakt(log_fp) -> int:
     cmd = [sys.executable, str(FETCH_TRAKT)]
     _write_line(log_fp, f"[sync_trakt] CMD: {' '.join(cmd)}")
 
-    # Stream stdout/stderr to console AND log (no silent failures)
     proc = subprocess.Popen(
         cmd,
         cwd=str(REPO_ROOT),
