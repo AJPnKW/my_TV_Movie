@@ -54,24 +54,30 @@ jobs:
       - name: Fetch Trakt
         run: python scripts/fetch_trakt.py
         env:
-          # Map from your existing secrets (authoritative)
+          # Authoritative mapping (required by fetch_trakt.py)
           TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
           TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_KEY }}
           TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
+          TRAKT_USERNAME: ${{ secrets.API_TRAKT_USERNAME }}
           # Compatibility aliases (if scripts still look for API_* names)
           API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
           API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
           API_TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
+          API_TRAKT_USERNAME: ${{ secrets.API_TRAKT_USERNAME }}
 
       - name: Sync Trakt
         run: python scripts/sync_trakt.py
         env:
+          # Authoritative mapping (keep consistent across trakt steps)
           TRAKT_CLIENT_ID: ${{ secrets.API_TRAKT_ID }}
           TRAKT_CLIENT_SECRET: ${{ secrets.API_TRAKT_KEY }}
           TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
+          TRAKT_USERNAME: ${{ secrets.API_TRAKT_USERNAME }}
+          # Compatibility aliases
           API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
           API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
           API_TRAKT_OAUTH_REDIRECT_URL: ${{ secrets.API_TRAKT_OAUTH_REDIRECT_URL }}
+          API_TRAKT_USERNAME: ${{ secrets.API_TRAKT_USERNAME }}
 
       - name: Commit changes (if any)
         run: |
