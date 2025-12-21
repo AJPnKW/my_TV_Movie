@@ -1,143 +1,311 @@
-# File: scripts/parse_txt_to_json.py
-# Purpose: Parse user-editable TXT inputs into canonical JSON with traceability
-# Deterministic, atomic, schema-enforcing
+#!/usr/bin/env python3
+# ==============================================================================
+# [FILE]    scripts/parse_txt_to_json.py
+# [PROJECT] my_TV_Movie
+# [ROLE]    Parse TXT inputs → deterministic intermediate JSON for TMDB build
+# [VERSION] v1.0.0
+# [UPDATED] 2025-12-20_00-00-00
+#
+# [PIPELINE]
+# TXT → parse_txt_to_json.py → JSON → fetch_tmdb.py → data/data.json → ...
+#
+# [INPUTS] (first-found wins; supports legacy locations)
+# - inputs/tv_list.txt   OR tv_list.txt
+# - inputs/movies_list.txt OR movies_list.txt
+# - inputs/watchlist.txt OR watchlist.txt
+#
+# [OUTPUT]
+# - data/inputs_parsed.json
+#
+# [RULES]
+# - Handle extra spaces and inconsistent " | " formatting.
+# - TV season rules:
+#   - If season_spec missing/blank/"*" => all seasons (season_mode="all", seasons=null)
+#   - If "1" / "S1" / "Season 1" => [1]
+#   - If "1,2,3" => [1,2,3]
+#   - If "1-5" => [1,2,3,4,5]
+# - Never crash on a single bad line; capture to errors[] and continue.
+# - Deterministic ordering: preserve file order.
+# - No schema changes to data/data.json here; this is intermediate only.
+# ==============================================================================
+
+from __future__ import annotations
 
 import json
 import os
 import re
+import sys
 import time
-import tempfile
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import List, Dict, Any, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
-import requests
+try:
+    from dotenv import load_dotenv  # type: ignore
+except Exception:
+    load_dotenv = None  # noqa
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA_DIR = os.path.join(REPO_ROOT, "data")
-INPUT_DIR = os.path.join(REPO_ROOT, "data", "inputs")
-OUTPUT_FILE = os.path.join(DATA_DIR, "data.json")
+# -------------------------
+# Constants / paths
+# -------------------------
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = REPO_ROOT / "data"
+OUT_JSON = DATA_DIR / "inputs_parsed.json"
 
-TMDB_BASE = "https://api.themoviedb.org/3"
-TMDB_KEY = os.getenv("API_TMDB_KEY") or os.getenv("API_TMDB_TOKEN")
+TV_CANDIDATES = [REPO_ROOT / "inputs" / "tv_list.txt", REPO_ROOT / "tv_list.txt"]
+MOV_CANDIDATES = [REPO_ROOT / "inputs" / "movies_list.txt", REPO_ROOT / "movies_list.txt"]
+WCH_CANDIDATES = [REPO_ROOT / "inputs" / "watchlist.txt", REPO_ROOT / "watchlist.txt"]
 
-RETRIES = 3
-BACKOFF = 0.6
+RE_COMMENT = re.compile(r"^\s*#")
+RE_PIPE_SPLIT = re.compile(r"\s*\|\s*")
+RE_YEAR_PAREN = re.compile(r"\((\d{4})\)\s*$", re.IGNORECASE)
+RE_S_TOKEN = re.compile(r"^\s*(?:s|season)\s*(\d+)\s*$", re.IGNORECASE)
+RE_RANGE = re.compile(r"^\s*(\d+)\s*-\s*(\d+)\s*$")
+RE_LIST = re.compile(r"^\s*(\d+)(\s*,\s*\d+)+\s*$")
 
-SCHEMA_KEYS = {
-    "tmdb_id", "official_title", "user_title", "year",
-    "seasons", "active", "history"
-}
 
-def utc_now() -> str:
+def _now_utc_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-def atomic_write(path: str, payload: Dict[str, Any]) -> None:
-    fd, tmp = tempfile.mkstemp(prefix="._tmp_", suffix=".json", dir=os.path.dirname(path))
+
+def _read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _first_existing(candidates: List[Path]) -> Optional[Path]:
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
+
+def _split_pipe(line: str) -> List[str]:
+    # tolerate extra pipes, extra spaces
+    parts = RE_PIPE_SPLIT.split(line.strip())
+    # do NOT drop interior empties; trim only ends to support "title|"
+    while parts and parts[-1] == "":
+        parts.pop()
+    return [p.strip() for p in parts]
+
+
+def _parse_title_year(title_raw: str) -> Tuple[str, Optional[int]]:
+    t = (title_raw or "").strip()
+    if not t:
+        return "", None
+    m = RE_YEAR_PAREN.search(t)
+    if m:
+        year = int(m.group(1))
+        t2 = t[: m.start()].strip()
+        return t2, year
+    return t, None
+
+
+def _parse_int(s: str) -> Optional[int]:
+    s2 = (s or "").strip()
+    if not s2:
+        return None
+    if s2 == "*":
+        return None
     try:
-        with os.fdopen(fd, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2, sort_keys=True)
-        with open(tmp, "r", encoding="utf-8") as f:
-            json.load(f)
-        os.replace(tmp, path)
-    finally:
-        if os.path.exists(tmp):
-            os.unlink(tmp)
+        return int(s2)
+    except Exception:
+        return None
 
-def read_lines(path: str) -> List[str]:
-    with open(path, "r", encoding="utf-8") as f:
-        return [l.strip() for l in f.readlines() if l.strip() and not l.strip().startswith("#")]
 
-def tmdb_get(url: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
-    headers = {}
-    if TMDB_KEY and TMDB_KEY.startswith("ey"):
-        headers["Authorization"] = f"Bearer {TMDB_KEY}"
+def _parse_season_spec(spec_raw: str) -> Tuple[str, Optional[List[int]]]:
+    s = (spec_raw or "").strip()
+    if not s or s == "*":
+        return "all", None
+
+    m = RE_S_TOKEN.match(s)
+    if m:
+        n = int(m.group(1))
+        return "list", [n]
+
+    m = RE_RANGE.match(s)
+    if m:
+        a = int(m.group(1))
+        b = int(m.group(2))
+        if a <= 0 or b <= 0:
+            return "all", None
+        if a > b:
+            a, b = b, a
+        return "list", list(range(a, b + 1))
+
+    if RE_LIST.match(s):
+        nums = [int(x.strip()) for x in s.split(",") if x.strip().isdigit()]
+        nums = [n for n in nums if n > 0]
+        if not nums:
+            return "all", None
+        # dedupe but preserve order
+        seen = set()
+        out: List[int] = []
+        for n in nums:
+            if n not in seen:
+                seen.add(n)
+                out.append(n)
+        return "list", out
+
+    # single number
+    if s.isdigit():
+        n = int(s)
+        if n > 0:
+            return "list", [n]
+
+    # unknown spec => treat as all, but record raw
+    return "all", None
+
+
+def _log(msg: str) -> None:
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"{ts} | {msg}")
+
+
+def main() -> int:
+    if load_dotenv:
+        # local support (no override)
+        load_dotenv(dotenv_path=REPO_ROOT / ".env", override=False)
+
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    tv_path = _first_existing(TV_CANDIDATES)
+    mov_path = _first_existing(MOV_CANDIDATES)
+    wch_path = _first_existing(WCH_CANDIDATES)
+
+    errors: List[Dict[str, Any]] = []
+    out: Dict[str, Any] = {
+        "meta": {
+            "generated_at_utc": _now_utc_iso(),
+            "repo_root": str(REPO_ROOT).replace("\\", "/"),
+            "inputs": {
+                "tv_list": str(tv_path).replace("\\", "/") if tv_path else None,
+                "movies_list": str(mov_path).replace("\\", "/") if mov_path else None,
+                "watchlist": str(wch_path).replace("\\", "/") if wch_path else None,
+            },
+        },
+        "tv": [],
+        "movies": [],
+        "watchlist": [],
+        "errors": errors,
+    }
+
+    # -------------------------
+    # TV
+    # -------------------------
+    if not tv_path:
+        errors.append({"type": "missing_file", "file": "tv_list.txt", "message": "tv_list not found (inputs/ or repo root)"})
     else:
-        params = params or {}
-        params["api_key"] = TMDB_KEY
-    for i in range(RETRIES):
-        r = requests.get(url, headers=headers, params=params, timeout=20)
-        if r.status_code == 200:
-            return r.json()
-        time.sleep(BACKOFF * (i + 1))
-    raise RuntimeError(f"TMDB request failed: {url}")
-
-def normalize_title_by_id(tmdb_id: int, kind: str) -> Dict[str, Any]:
-    endpoint = f"{TMDB_BASE}/{kind}/{tmdb_id}"
-    data = tmdb_get(endpoint)
-    return {
-        "tmdb_id": tmdb_id,
-        "official_title": data.get("title") or data.get("name"),
-        "year": int((data.get("release_date") or data.get("first_air_date") or "0000")[:4]) if (data.get("release_date") or data.get("first_air_date")) else None
-    }
-
-def search_and_resolve(title: str, kind: str) -> Dict[str, Any]:
-    data = tmdb_get(f"{TMDB_BASE}/search/{kind}", params={"query": title})
-    if not data.get("results"):
-        raise RuntimeError(f"No TMDB results for {title}")
-    r = data["results"][0]
-    return {
-        "tmdb_id": r["id"],
-        "official_title": r.get("title") or r.get("name"),
-        "year": int((r.get("release_date") or r.get("first_air_date") or "0000")[:4]) if (r.get("release_date") or r.get("first_air_date")) else None
-    }
-
-def parse_entry(line: str, kind: str) -> Dict[str, Any]:
-    parts = [p.strip() for p in line.split("|")]
-    user_title = parts[0]
-    tmdb_id = None
-    seasons = "*"
-    year = None
-
-    if len(parts) > 1 and parts[1].isdigit():
-        tmdb_id = int(parts[1])
-    if len(parts) > 2:
-        seasons = "*" if parts[2] == "*" else [int(x) for x in re.split(r"[,\s]+", parts[2]) if x.isdigit()]
-
-    if tmdb_id:
-        norm = normalize_title_by_id(tmdb_id, kind)
-    else:
-        norm = search_and_resolve(user_title, kind)
-
-    entry = {
-        "tmdb_id": norm["tmdb_id"],
-        "official_title": norm["official_title"],
-        "user_title": user_title,
-        "year": norm["year"],
-        "seasons": seasons,
-        "active": True,
-        "history": [{
-            "timestamp_utc": utc_now(),
-            "action": "add",
-            "changes": {"source": "parse_txt"}
-        }]
-    }
-    if set(entry.keys()) != SCHEMA_KEYS:
-        raise RuntimeError("Schema violation")
-    return entry
-
-def main():
-    os.makedirs(DATA_DIR, exist_ok=True)
-    payload = {"shows": [], "movies": [], "errors": []}
-
-    for fname, kind, target in [
-        ("tv_list.txt", "tv", "shows"),
-        ("movies_list.txt", "movie", "movies"),
-    ]:
-        path = os.path.join(INPUT_DIR, fname)
-        if not os.path.exists(path):
-            continue
-        for line in read_lines(path):
+        lines = _read_text(tv_path).splitlines()
+        for i, raw in enumerate(lines, start=1):
+            if not raw.strip() or RE_COMMENT.match(raw):
+                continue
             try:
-                payload[target].append(parse_entry(line, kind))
-            except Exception as e:
-                payload["errors"].append({
-                    "timestamp_utc": utc_now(),
-                    "source": fname,
-                    "line": line,
-                    "error": str(e)
-                })
+                parts = _split_pipe(raw)
+                # format: name | tmdb_show_id | season_spec | tvmaze_id
+                name_raw = parts[0] if len(parts) >= 1 else ""
+                tmdb_raw = parts[1] if len(parts) >= 2 else ""
+                season_raw = parts[2] if len(parts) >= 3 else ""
+                tvmaze_raw = parts[3] if len(parts) >= 4 else ""
 
-    atomic_write(OUTPUT_FILE, payload)
+                title, year = _parse_title_year(name_raw)
+                tmdb_id = _parse_int(tmdb_raw)
+                tvmaze_id = _parse_int(tvmaze_raw)
+
+                season_mode, seasons = _parse_season_spec(season_raw)
+
+                out["tv"].append(
+                    {
+                        "source_file": "tv_list",
+                        "source_line": i,
+                        "raw": raw.rstrip("\n"),
+                        "title": title,
+                        "year": year,
+                        "tmdb_id": tmdb_id,
+                        "season_spec_raw": (season_raw or "").strip() or None,
+                        "season_mode": season_mode,   # "all" or "list"
+                        "seasons": seasons,           # null if all
+                        "tvmaze_id": tvmaze_id,
+                    }
+                )
+            except Exception as ex:
+                errors.append(
+                    {
+                        "type": "parse_error",
+                        "file": "tv_list",
+                        "line": i,
+                        "raw": raw.rstrip("\n"),
+                        "message": str(ex),
+                    }
+                )
+
+    # -------------------------
+    # Movies
+    # -------------------------
+    if not mov_path:
+        errors.append({"type": "missing_file", "file": "movies_list.txt", "message": "movies_list not found (inputs/ or repo root)"})
+    else:
+        lines = _read_text(mov_path).splitlines()
+        for i, raw in enumerate(lines, start=1):
+            if not raw.strip() or RE_COMMENT.match(raw):
+                continue
+            try:
+                parts = _split_pipe(raw)
+                # format: name|tmdb_movie_id
+                name_raw = parts[0] if len(parts) >= 1 else ""
+                tmdb_raw = parts[1] if len(parts) >= 2 else ""
+
+                title, year = _parse_title_year(name_raw)
+                tmdb_id = _parse_int(tmdb_raw)
+
+                out["movies"].append(
+                    {
+                        "source_file": "movies_list",
+                        "source_line": i,
+                        "raw": raw.rstrip("\n"),
+                        "title": title,
+                        "year": year,
+                        "tmdb_id": tmdb_id,
+                    }
+                )
+            except Exception as ex:
+                errors.append(
+                    {
+                        "type": "parse_error",
+                        "file": "movies_list",
+                        "line": i,
+                        "raw": raw.rstrip("\n"),
+                        "message": str(ex),
+                    }
+                )
+
+    # -------------------------
+    # Watchlist (pass-through; used downstream)
+    # -------------------------
+    if wch_path and wch_path.exists():
+        lines = _read_text(wch_path).splitlines()
+        for i, raw in enumerate(lines, start=1):
+            if not raw.strip() or RE_COMMENT.match(raw):
+                continue
+            out["watchlist"].append({"source_file": "watchlist", "source_line": i, "raw": raw.rstrip("\n")})
+
+    # deterministic write
+    tmp = OUT_JSON.with_suffix(".tmp")
+    tmp.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    tmp.replace(OUT_JSON)
+
+    _log(f"[parse_txt_to_json] wrote {OUT_JSON.as_posix()}")
+    _log(f"tv={len(out['tv'])} movies={len(out['movies'])} watchlist={len(out['watchlist'])} errors={len(errors)}")
+
+    # GH Actions must not wait; local interactive can
+    if sys.stdin.isatty():
+        try:
+            input("Press Enter to close...")
+        except Exception:
+            pass
+
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
