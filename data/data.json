@@ -1,7 +1,7 @@
 {
   "errors": [],
   "meta": {
-    "build_timestamp_utc": "2025-12-21T16:58:33Z",
+    "build_timestamp_utc": "2025-12-21T23:41:54Z",
     "source": "fetch_tmdb.py",
     "version": "v2.6.4"
   },
@@ -9,14 +9,14 @@
     "trakt_public_enrichment": {
       "client_id_sha256": "3d2ddcc28a945c269c19f37c73dc41c518cb95ef10a76c3d48ea9ed70c22262d",
       "counts": {
-        "looked_up": 181,
+        "looked_up": 182,
         "not_found": 2,
         "updated_movies": 0,
         "updated_shows": 0
       },
       "mode": "public_lookup",
       "script": "fetch_trakt.py",
-      "timestamp_utc": "2025-12-21T16:58:50Z"
+      "timestamp_utc": "2025-12-21T23:42:40Z"
     }
   },
   "movies": [
@@ -2262,6 +2262,18 @@
       "title": "Lynley",
       "tmdb_id": 274479,
       "trakt_id": 260076
+    },
+    {
+      "backdrop_local": null,
+      "first_air_date": "2024-12-31",
+      "links": {},
+      "poster_local": null,
+      "season_filter": null,
+      "season_mode": "all",
+      "seasons": [],
+      "title": "Slaycation",
+      "tmdb_id": 241431,
+      "trakt_id": 243409
     }
   ]
 }
