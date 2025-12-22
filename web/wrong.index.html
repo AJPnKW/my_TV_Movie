@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>My TV Hub</title>
+<link rel="stylesheet" href="css/my_tv_hub.css" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+<header id="global-header">
+  <nav id="main-nav">
+    <button data-view="calendar" class="nav-btn active">Calendar</button>
+    <button data-view="shows" class="nav-btn">Shows</button>
+    <button data-view="movies" class="nav-btn">Movies</button>
+    <button data-view="live" class="nav-btn">Live TV</button>
+    <button id="watchlist-link" class="nav-btn">Watchlist</button>
+    <button data-view="explore" class="nav-btn">Explore</button>
+    <button data-view="profiles" class="nav-btn">Profiles</button>
+    <button id="config-link" class="nav-btn">Config</button>
+  </nav>
+</header>
+
+<div id="error-banner" hidden tabindex="0"></div>
+
+<main id="content-root" tabindex="-1"></main>
+
+<div id="popup-overlay" hidden>
+  <div id="popup-container" role="dialog" aria-modal="true">
+    <pre id="popup-content"></pre>
+    <div class="popup-actions">
+      <button id="popup-close">Close</button>
+      <button id="popup-copy">Copy</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let DATA = null;
+let ACTIVE_VIEW = "calendar";
+
+const root = document.getElementById("content-root");
+const errorBanner = document.getElementById("error-banner");
+const popupOverlay = document.getElementById("popup-overlay");
+const popupContent = document.getElementById("popup-content");
+
+fetch("data/data.json")
+  .then(r => r.json())
+  .then(j => {
+    DATA = j;
+    if (DATA.errors && DATA.errors.length) {
+      errorBanner.hidden = false;
+      errorBanner.textContent = `Error data.json reports ${DATA.errors.length} error(s). Click to view.`;
+    }
+    renderView("calendar");
+  })
+  .catch(err => {
+    errorBanner.hidden = false;
+    errorBanner.textContent = "Failed to load data.json";
+    console.error(err);
+  });
+
+errorBanner.onclick = () => {
+  popupContent.textContent = JSON.stringify(DATA.errors, null, 2);
+  popupOverlay.hidden = false;
+  document.getElementById("popup-close").focus();
+};
+
+document.getElementById("popup-close").onclick = () => {
+  popupOverlay.hidden = true;
+  errorBanner.focus();
+};
+
+document.getElementById("popup-copy").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(popupContent.textContent);
+  } catch {
+    alert("Copy failed, please select and copy manually.");
+  }
+};
+
+document.querySelectorAll(".nav-btn[data-view]").forEach(btn => {
+  btn.onclick = () => renderView(btn.dataset.view);
+});
+
+document.getElementById("watchlist-link").onclick = () => location.href = "watchlist.html";
+document.getElementById("config-link").onclick = () => location.href = "config.html";
+
+function renderView(view) {
+  ACTIVE_VIEW = view;
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+  document.querySelector(`.nav-btn[data-view="${view}"]`)?.classList.add("active");
+  root.innerHTML = "";
+
+  if (view === "calendar") renderCalendar();
+  else if (view === "shows") renderShows();
+  else if (view === "movies") renderMovies();
+  else renderComingSoon(view);
+}
+
+function renderCalendar() {
+  const today = new Date().toISOString().slice(0,10);
+  const grid = document.createElement("div");
+  grid.className = "calendar-grid";
+
+  DATA.calendar.forEach(e => {
+    const cell = document.createElement("div");
+    cell.className = "calendar-cell";
+    if (e.air_date === today || e.release_date === today) {
+      cell.classList.add("today");
+    }
+    cell.innerHTML = `
+      <strong>${e.type === "tv" ? `${e.show_name} S${e.season_number}E${e.episode_number}` : e.title}</strong>
+      <div>${e.episode_name || "MOVIE"}</div>
+      <a href="${e.links.videasy}" target="_blank">Videasy</a>
+      <a href="${e.links.vidsrc}" target="_blank">VidSrc</a>
+    `;
+    grid.appendChild(cell);
+  });
+
+  root.appendChild(grid);
+}
+
+function renderShows() {
+  const grid = document.createElement("div");
+  grid.className = "card-grid";
+
+  DATA.tv.forEach(s => {
+    const card = document.createElement("div");
+    card.className = "card";
+    const img = s.local_poster_path || s.poster_url;
+    card.innerHTML = `
+      <img src="${img}" alt="">
+      <h3>${s.name}</h3>
+      <div>${s.status}</div>
+      <div>${s.genres.join(", ")}</div>
+      <div>Seasons: ${s.number_of_seasons} Episodes: ${s.number_of_episodes}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  root.appendChild(grid);
+}
+
+function renderMovies() {
+  const grid = document.createElement("div");
+  grid.className = "card-grid";
+
+  DATA.movies.forEach(m => {
+    const card = document.createElement("div");
+    card.className = "card";
+    const img = m.local_poster_path || m.poster_url;
+    card.innerHTML = `
+      <img src="${img}" alt="">
+      <h3>${m.title}</h3>
+      <div>${m.release_date}</div>
+      <div>${m.genres.join(", ")}</div>
+    `;
+    grid.appendChild(card);
+  });
+
+  root.appendChild(grid);
+}
+
+function renderComingSoon(view) {
+  const msg = document.createElement("div");
+  msg.className = "coming-soon";
+  msg.textContent = `Feature not wired up yet — ${view} will land later.`;
+  root.appendChild(msg);
+}
+</script>
+</body>
+</html>
