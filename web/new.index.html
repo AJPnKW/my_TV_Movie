@@ -1,0 +1,620 @@
+### FILE: web/index.html
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>My TV & Movie Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Preserve existing CSS link -->
+  <link rel="stylesheet" href="css/my_tv_hub.css" />
+
+  <style>
+    :root{
+      --bg-main:#05060b; --bg-elev:#0b0d18; --text:#f5f5f7; --muted:#a3a6b8;
+      --accent:#ff3366; --border:rgba(255,255,255,.10); --shadow:0 18px 45px rgba(0,0,0,.65);
+      --r-xl:18px; --r-lg:14px; --r-md:10px; --pill:999px;
+    }
+    html,body{margin:0;padding:0;background:radial-gradient(circle at top,#14172a 0%,#05060b 55%,#020308 100%);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+    .shell{max-width:1200px;margin:0 auto;padding:16px 16px 60px}
+    @media(min-width:1024px){.shell{padding:24px 24px 72px}}
+
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap}
+    .title{display:flex;flex-direction:column;gap:4px;min-width:260px}
+    .title h1{margin:0;font-size:1.5rem;font-weight:650;letter-spacing:.02em}
+    .title .sub{color:var(--muted);font-size:.9rem}
+    nav{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+    .navbtn{padding:7px 12px;border-radius:var(--pill);border:1px solid var(--border);background:rgba(11,13,24,.9);color:var(--text);text-decoration:none;font-size:.85rem}
+    .navbtn:hover{border-color:rgba(255,255,255,.22)}
+
+    .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 10px}
+    .tabbtn{
+      padding:7px 12px;border-radius:var(--pill);border:1px solid rgba(255,255,255,.14);
+      background:rgba(11,13,24,.9);color:var(--text);font-size:.85rem;cursor:pointer
+    }
+    .tabbtn[aria-selected="true"]{
+      border-color:rgba(255,51,102,.55);
+      background:linear-gradient(135deg,rgba(255,51,102,.18),rgba(60,90,255,.16));
+    }
+
+    .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:20;
+      padding:10px 12px;border-radius:var(--r-xl);border:1px solid rgba(255,255,255,.12);
+      background:radial-gradient(circle at top left,rgba(255,51,102,.16) 0%,transparent 45%),
+                 radial-gradient(circle at bottom right,rgba(60,90,255,.18) 0%,transparent 55%),
+                 rgba(5,6,11,.94);
+      box-shadow:var(--shadow);backdrop-filter:blur(16px)
+    }
+    .bar label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+    .input,.select{
+      background:rgba(11,13,24,.9);border-radius:var(--pill);border:1px solid rgba(255,255,255,.12);
+      padding:7px 10px;color:var(--text);font-size:.85rem;outline:none
+    }
+    .input{min-width:220px;flex:1}
+    .pill{padding:4px 10px;border-radius:var(--pill);border:1px solid rgba(255,255,255,.10);background:rgba(10,12,24,.9);color:var(--muted);font-size:.82rem}
+
+    .grid{margin-top:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+    .card{
+      border-radius:var(--r-xl);border:1px solid rgba(255,255,255,.08);overflow:hidden;box-shadow:var(--shadow);
+      background:rgba(7,9,18,.98);position:relative
+    }
+    .card .backdrop{height:110px;background:#05060b;position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.10)}
+    .card .backdrop img{width:100%;height:100%;object-fit:cover;opacity:.85;filter:saturate(1.1) contrast(1.05) brightness(.9);transform:scale(1.04)}
+    .card .backdrop .fade{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.15) 0%,rgba(5,6,12,.92) 75%,rgba(5,6,12,1) 100%)}
+    .card .row{display:flex;gap:10px;padding:10px 10px 12px}
+    .poster{width:60px;min-width:60px;height:90px;border-radius:var(--r-md);overflow:hidden;background:#151728;box-shadow:0 10px 25px rgba(0,0,0,.85)}
+    .poster img{width:100%;height:100%;object-fit:cover;display:block}
+    .meta{min-width:0;flex:1;display:flex;flex-direction:column;gap:6px}
+    .name{font-weight:650;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .submeta{display:flex;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:.78rem}
+    .links{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+    .linkchip{
+      display:inline-flex;align-items:center;justify-content:center;
+      padding:4px 8px;border-radius:var(--pill);
+      border:1px solid rgba(255,255,255,.12);background:rgba(10,12,24,.92);
+      color:var(--text);font-size:.78rem
+    }
+
+    .calendar{margin-top:14px}
+    .day{margin-top:12px;border-radius:var(--r-xl);border:1px solid rgba(255,255,255,.10);background:rgba(7,9,18,.96);box-shadow:var(--shadow);overflow:hidden}
+    .dayhead{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;
+      padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(135deg,rgba(255,51,102,.10),rgba(60,90,255,.10))
+    }
+    .daytitle{font-weight:650;letter-spacing:.02em}
+    .daylist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;padding:10px 12px 12px}
+    .mini{
+      display:flex;gap:10px;align-items:center;border-radius:var(--r-lg);border:1px solid rgba(255,255,255,.08);
+      background:rgba(10,12,24,.92);padding:8px 10px
+    }
+    .mini .mp{width:40px;min-width:40px;height:60px;border-radius:10px;overflow:hidden;background:#151728;box-shadow:0 8px 18px rgba(0,0,0,.7)}
+    .mini .mp img{width:100%;height:100%;object-fit:cover;display:block}
+    .mini .mi{min-width:0;display:flex;flex-direction:column;gap:4px}
+    .mini .t{font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .mini .m{display:flex;gap:6px;flex-wrap:wrap;color:var(--muted);font-size:.75rem}
+
+    .empty{
+      margin-top:14px;padding:18px 14px;border-radius:var(--r-xl);border:1px dashed rgba(255,255,255,.22);
+      background:rgba(5,6,14,.96);color:var(--muted)
+    }
+    .err{color:#ffb4b4}
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+    <header>
+      <div class="title">
+        <h1>My TV & Movie Hub</h1>
+        <div class="sub">Movies + Shows from <code>data/data.json</code>.</div>
+      </div>
+      <nav>
+        <a class="navbtn" href="watchlist.html">Watchlist</a>
+        <a class="navbtn" href="config.html">Config</a>
+      </nav>
+    </header>
+
+    <div class="tabs" role="tablist" aria-label="Views">
+      <button id="tab-browse" class="tabbtn" role="tab" aria-selected="true" aria-controls="view-browse">Browse</button>
+      <button id="tab-calendar" class="tabbtn" role="tab" aria-selected="false" aria-controls="view-calendar">Calendar</button>
+    </div>
+
+    <section class="bar">
+      <label for="q">Search</label>
+      <input id="q" class="input" type="search" placeholder="Title contains…" autocomplete="off" />
+
+      <label for="type">Type</label>
+      <select id="type" class="select">
+        <option value="all">All</option>
+        <option value="movies">Movies</option>
+        <option value="shows">Shows</option>
+      </select>
+
+      <label for="sort">Sort</label>
+      <select id="sort" class="select">
+        <option value="title-asc">Title A → Z</option>
+        <option value="title-desc">Title Z → A</option>
+        <option value="date-desc">Date New → Old</option>
+        <option value="date-asc">Date Old → New</option>
+      </select>
+
+      <span id="count" class="pill">Loading…</span>
+    </section>
+
+    <div id="error" class="empty err" style="display:none"></div>
+
+    <main id="view-browse" role="tabpanel" aria-labelledby="tab-browse">
+      <div id="grid" class="grid"></div>
+      <div id="empty-browse" class="empty" style="display:none"></div>
+    </main>
+
+    <main id="view-calendar" class="calendar" role="tabpanel" aria-labelledby="tab-calendar" style="display:none">
+      <div id="calendar" class="calendar"></div>
+      <div id="empty-calendar" class="empty" style="display:none"></div>
+    </main>
+  </div>
+
+  <script>
+    // ============================================================
+    // Schema-safe helpers (ONLY allowed fields are accessed)
+    // ============================================================
+    function safeStr(v, fallback="") {
+      return (typeof v === "string" && v.trim() !== "") ? v : fallback;
+    }
+
+    function safeNum(v) {
+      return (typeof v === "number" && Number.isFinite(v)) ? v : null;
+    }
+
+    function parseDate(s) {
+      const t = safeStr(s, "");
+      if (!t) return null;
+      const d = new Date(t);
+      return isNaN(d.getTime()) ? null : d;
+    }
+
+    function ymd(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const da = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${da}`;
+    }
+
+    function dateLabel(s, fallback="—") {
+      const d = parseDate(s);
+      if (!d) return fallback;
+      return d.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+    }
+
+    function yearLabel(s, fallback="—") {
+      const d = parseDate(s);
+      if (!d) return fallback;
+      return String(d.getFullYear());
+    }
+
+    function isNonEmptyObject(o) {
+      return !!o && typeof o === "object" && !Array.isArray(o) && Object.keys(o).length > 0;
+    }
+
+    function imgOrFallback(path, fallback) {
+      const p = safeStr(path, "");
+      return p ? p : fallback;
+    }
+
+    function linkKeys(linksObj) {
+      // Streaming availability: keys only (per requirement)
+      if (!isNonEmptyObject(linksObj)) return [];
+      return Object.keys(linksObj).filter(k => safeStr(k, "") !== "");
+    }
+
+    // ============================================================
+    // Elements
+    // ============================================================
+    const els = {
+      q: document.getElementById("q"),
+      type: document.getElementById("type"),
+      sort: document.getElementById("sort"),
+      count: document.getElementById("count"),
+      error: document.getElementById("error"),
+
+      tabBrowse: document.getElementById("tab-browse"),
+      tabCalendar: document.getElementById("tab-calendar"),
+      viewBrowse: document.getElementById("view-browse"),
+      viewCalendar: document.getElementById("view-calendar"),
+
+      grid: document.getElementById("grid"),
+      emptyBrowse: document.getElementById("empty-browse"),
+
+      calendar: document.getElementById("calendar"),
+      emptyCalendar: document.getElementById("empty-calendar")
+    };
+
+    const FALLBACK_POSTER = "assets/fallback/poster_fallback.jpg";
+    const FALLBACK_BACKDROP = "assets/fallback/backdrop_fallback.jpg";
+
+    let state = { movies: [], shows: [] };
+
+    // ============================================================
+    // Unify items (schema-aligned)
+    // ============================================================
+    function unifyItems() {
+      const items = [];
+
+      for (const m of state.movies) {
+        if (!m) continue;
+        items.push({
+          kind: "movie",
+          title: safeStr(m.title, "Untitled"),
+          tmdb_id: safeNum(m.tmdb_id),
+          trakt_id: safeNum(m.trakt_id),
+          date: safeStr(m.release_date, ""),
+          poster_local: safeStr(m.poster_local, ""),
+          backdrop_local: safeStr(m.backdrop_local, ""),
+          links: isNonEmptyObject(m.links) ? m.links : {}
+        });
+      }
+
+      for (const s of state.shows) {
+        if (!s) continue;
+        items.push({
+          kind: "show",
+          title: safeStr(s.title, "Untitled"),
+          tmdb_id: safeNum(s.tmdb_id),
+          trakt_id: safeNum(s.trakt_id),
+          date: safeStr(s.first_air_date, ""),
+          poster_local: safeStr(s.poster_local, ""),
+          backdrop_local: safeStr(s.backdrop_local, ""),
+          links: isNonEmptyObject(s.links) ? s.links : {},
+          season_mode: safeStr(s.season_mode, ""),
+          season_filter: safeStr(s.season_filter, ""),
+          seasons_count: Array.isArray(s.seasons) ? s.seasons.length : 0
+        });
+      }
+
+      return items;
+    }
+
+    // ============================================================
+    // Browse: filter + sort + render
+    // ============================================================
+    function applyFilters(items) {
+      const q = safeStr(els.q.value, "").toLowerCase();
+      const t = els.type.value;
+
+      let out = items;
+
+      if (t === "movies") out = out.filter(x => x.kind === "movie");
+      if (t === "shows") out = out.filter(x => x.kind === "show");
+
+      if (q) out = out.filter(x => x.title.toLowerCase().includes(q));
+
+      const sk = els.sort.value;
+      out = out.slice().sort((a,b) => {
+        if (sk === "title-asc") return a.title.localeCompare(b.title);
+        if (sk === "title-desc") return b.title.localeCompare(a.title);
+
+        const da = parseDate(a.date);
+        const db = parseDate(b.date);
+
+        if (!da && !db) return a.title.localeCompare(b.title);
+        if (!da) return 1;
+        if (!db) return -1;
+
+        return (sk === "date-asc") ? (da - db) : (db - da);
+      });
+
+      return out;
+    }
+
+    function setCount(n) {
+      els.count.textContent = `${n} item${n === 1 ? "" : "s"}`;
+    }
+
+    function renderBrowse(items) {
+      els.grid.innerHTML = "";
+      els.emptyBrowse.style.display = "none";
+
+      if (!items.length) {
+        els.emptyBrowse.style.display = "block";
+        els.emptyBrowse.innerHTML = `<div><b>No results.</b></div><div>Try clearing search / changing filters.</div>`;
+        setCount(0);
+        return;
+      }
+
+      setCount(items.length);
+
+      for (const it of items) {
+        const card = document.createElement("section");
+        card.className = "card";
+
+        const backdrop = document.createElement("div");
+        backdrop.className = "backdrop";
+
+        const bimg = document.createElement("img");
+        bimg.alt = "";
+        bimg.src = imgOrFallback(it.backdrop_local, FALLBACK_BACKDROP);
+        bimg.loading = "lazy";
+        backdrop.appendChild(bimg);
+
+        const fade = document.createElement("div");
+        fade.className = "fade";
+        backdrop.appendChild(fade);
+
+        const row = document.createElement("div");
+        row.className = "row";
+
+        const poster = document.createElement("div");
+        poster.className = "poster";
+        const pimg = document.createElement("img");
+        pimg.alt = it.title;
+        pimg.src = imgOrFallback(it.poster_local, FALLBACK_POSTER);
+        pimg.loading = "lazy";
+        poster.appendChild(pimg);
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+
+        const name = document.createElement("div");
+        name.className = "name";
+        name.textContent = it.title;
+
+        const sub = document.createElement("div");
+        sub.className = "submeta";
+        sub.innerHTML = `
+          <span class="pill">${it.kind.toUpperCase()}</span>
+          <span class="pill">${yearLabel(it.date)}</span>
+          <span class="pill">${dateLabel(it.date, "No date")}</span>
+        `;
+
+        const ids = document.createElement("div");
+        ids.className = "submeta";
+        const tmdb = (it.tmdb_id !== null) ? it.tmdb_id : "—";
+        const trakt = (it.trakt_id !== null) ? it.trakt_id : "—";
+        ids.innerHTML = `<span class="pill">TMDB: ${tmdb}</span><span class="pill">Trakt: ${trakt}</span>`;
+
+        if (it.kind === "show") {
+          const extra = document.createElement("div");
+          extra.className = "submeta";
+          const parts = [];
+          parts.push(`<span class="pill">Seasons: ${it.seasons_count}</span>`);
+          if (it.season_mode) parts.push(`<span class="pill">Mode: ${it.season_mode}</span>`);
+          if (it.season_filter) parts.push(`<span class="pill">Filter: ${it.season_filter}</span>`);
+          extra.innerHTML = parts.join("");
+          meta.appendChild(extra);
+        }
+
+        const avail = document.createElement("div");
+        avail.className = "links";
+        const keys = linkKeys(it.links);
+        if (keys.length) {
+          for (const k of keys) {
+            const chip = document.createElement("span");
+            chip.className = "linkchip";
+            chip.textContent = k;
+            avail.appendChild(chip);
+          }
+        } else {
+          const chip = document.createElement("span");
+          chip.className = "pill";
+          chip.textContent = "No links";
+          avail.appendChild(chip);
+        }
+
+        meta.appendChild(name);
+        meta.appendChild(sub);
+        meta.appendChild(ids);
+        meta.appendChild(avail);
+
+        row.appendChild(poster);
+        row.appendChild(meta);
+
+        card.appendChild(backdrop);
+        card.appendChild(row);
+
+        els.grid.appendChild(card);
+      }
+    }
+
+    // ============================================================
+    // Calendar indexing: show.first_air_date, movie.release_date
+    // - ignores invalid/missing dates
+    // - uses poster/backdrop fallbacks
+    // - streaming availability from links keys
+    // - graceful when seasons[] empty/null (seasons_count shown)
+    // ============================================================
+    function buildCalendarIndex(items) {
+      const map = new Map(); // y-m-d -> { dateObj, items[] }
+
+      for (const it of items) {
+        const d = parseDate(it.date);
+        if (!d) continue; // ignore invalid/missing dates
+        const key = ymd(d);
+
+        if (!map.has(key)) map.set(key, { dateObj: d, items: [] });
+        map.get(key).items.push(it);
+      }
+
+      // sort items within a day by title
+      for (const v of map.values()) {
+        v.items.sort((a,b) => a.title.localeCompare(b.title));
+      }
+
+      // return days sorted by date asc
+      const days = Array.from(map.entries())
+        .map(([key, val]) => ({ key, dateObj: val.dateObj, items: val.items }))
+        .sort((a,b) => a.dateObj - b.dateObj);
+
+      return days;
+    }
+
+    function renderCalendar(items) {
+      els.calendar.innerHTML = "";
+      els.emptyCalendar.style.display = "none";
+
+      const days = buildCalendarIndex(items);
+
+      if (!days.length) {
+        els.emptyCalendar.style.display = "block";
+        els.emptyCalendar.innerHTML =
+          `<div><b>No dated items.</b></div><div>Calendar ignores missing/invalid dates.</div>`;
+        return;
+      }
+
+      for (const day of days) {
+        const wrap = document.createElement("section");
+        wrap.className = "day";
+
+        const head = document.createElement("div");
+        head.className = "dayhead";
+
+        const title = document.createElement("div");
+        title.className = "daytitle";
+        title.textContent = day.dateObj.toLocaleDateString(undefined, { weekday:"short", year:"numeric", month:"short", day:"numeric" });
+
+        const count = document.createElement("span");
+        count.className = "pill";
+        count.textContent = `${day.items.length} item${day.items.length === 1 ? "" : "s"}`;
+
+        head.appendChild(title);
+        head.appendChild(count);
+
+        const list = document.createElement("div");
+        list.className = "daylist";
+
+        for (const it of day.items) {
+          const mini = document.createElement("div");
+          mini.className = "mini";
+
+          const mp = document.createElement("div");
+          mp.className = "mp";
+          const img = document.createElement("img");
+          img.alt = it.title;
+          img.loading = "lazy";
+          img.src = imgOrFallback(it.poster_local, FALLBACK_POSTER);
+          mp.appendChild(img);
+
+          const mi = document.createElement("div");
+          mi.className = "mi";
+
+          const t = document.createElement("div");
+          t.className = "t";
+          t.textContent = it.title;
+
+          const m = document.createElement("div");
+          m.className = "m";
+
+          const kind = document.createElement("span");
+          kind.className = "pill";
+          kind.textContent = it.kind.toUpperCase();
+
+          const yr = document.createElement("span");
+          yr.className = "pill";
+          yr.textContent = yearLabel(it.date);
+
+          m.appendChild(kind);
+          m.appendChild(yr);
+
+          if (it.kind === "show") {
+            const sc = document.createElement("span");
+            sc.className = "pill";
+            sc.textContent = `Seasons: ${it.seasons_count}`;
+            m.appendChild(sc);
+          }
+
+          const keys = linkKeys(it.links);
+          if (keys.length) {
+            const av = document.createElement("span");
+            av.className = "pill";
+            av.textContent = `Links: ${keys.join(", ")}`;
+            m.appendChild(av);
+          } else {
+            const av = document.createElement("span");
+            av.className = "pill";
+            av.textContent = "Links: —";
+            m.appendChild(av);
+          }
+
+          mi.appendChild(t);
+          mi.appendChild(m);
+
+          mini.appendChild(mp);
+          mini.appendChild(mi);
+
+          list.appendChild(mini);
+        }
+
+        wrap.appendChild(head);
+        wrap.appendChild(list);
+        els.calendar.appendChild(wrap);
+      }
+    }
+
+    // ============================================================
+    // Tabs
+    // ============================================================
+    function setTab(which) {
+      const isBrowse = (which === "browse");
+
+      els.tabBrowse.setAttribute("aria-selected", isBrowse ? "true" : "false");
+      els.tabCalendar.setAttribute("aria-selected", isBrowse ? "false" : "true");
+
+      els.viewBrowse.style.display = isBrowse ? "" : "none";
+      els.viewCalendar.style.display = isBrowse ? "none" : "";
+
+      // Render the active view using the same filtered set
+      rerender();
+    }
+
+    els.tabBrowse.addEventListener("click", () => setTab("browse"));
+    els.tabCalendar.addEventListener("click", () => setTab("calendar"));
+
+    // ============================================================
+    // Load + rerender
+    // ============================================================
+    function showError(msg) {
+      els.error.style.display = "block";
+      els.error.textContent = msg;
+    }
+
+    function rerender() {
+      const all = unifyItems();
+      const filtered = applyFilters(all);
+
+      // Browse view
+      if (els.viewBrowse.style.display !== "none") {
+        renderBrowse(filtered);
+        return;
+      }
+
+      // Calendar view: still respects filters (type/search)
+      // Calendar is indexed by first_air_date/release_date already stored in it.date
+      renderCalendar(filtered);
+      setCount(filtered.length);
+    }
+
+    async function load() {
+      try {
+        const res = await fetch("data/data.json", { cache: "no-cache" });
+        if (!res.ok) throw new Error(`Failed to load data/data.json (HTTP ${res.status})`);
+        const data = await res.json();
+
+        state.movies = Array.isArray(data?.movies) ? data.movies : [];
+        state.shows  = Array.isArray(data?.shows)  ? data.shows  : [];
+
+        rerender();
+      } catch (e) {
+        console.error(e);
+        showError(String(e?.message || e));
+      }
+    }
+
+    els.q.addEventListener("input", rerender);
+    els.type.addEventListener("change", rerender);
+    els.sort.addEventListener("change", rerender);
+
+    load();
+  </script>
+</body>
+</html>
+```
