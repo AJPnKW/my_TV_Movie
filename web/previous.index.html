@@ -1,0 +1,1630 @@
+<!-- ========================================================================================
+[FILE] web/index.html
+[PROJECT] my_TV_Movie (My TV Hub)
+[ROLE] Single-Page Application shell (single entry point; dynamic views + popup root)
+[VERSION] v4.1.1
+[UPDATED] 2025-12-19_00-00-00
+[BUILD] 00.00.00
+[OWNER] Andrew & Brant (internal)
+[DEPENDS ON] web/css/my_tv_hub.css web/config.json data/data.json
+[NOTES]
+- True SPA shell: internal state routing only; no URL changes; no hash routing.
+- Views (fixed): Calendar, Shows, Movies, Live TV, Watchlist, Explore, Profiles, Config.
+- One global popup root; stacked overlays; scroll trapped inside popup; Escape/Back closes top popup.
+- data.json is loaded once and never mutated.
+- Canonical asset hierarchy ONLY (assets/...); never reference deprecated image/ folder.
+- Phase 4.1 scope: Calendar View renderer inside index.html (per Section 4.1).
+======================================================================================== -->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>My TV Hub</title>
+
+  <!-- External CSS (module boundary respected) -->
+  <link rel="stylesheet" href="./css/my_tv_hub.css" />
+
+  <!-- Minimal SPA-shell CSS (self-contained; does not modify other modules) -->
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --fg: #e8ecf3;
+      --muted: #a8b0c0;
+      --panel: #121725;
+      --panel2: #0f1420;
+      --border: rgba(255,255,255,0.10);
+      --focus: #ffffff;
+      --danger: #ff5b5b;
+      --ok: #35d07f;
+
+      --header-h: 64px;
+      --nav-h: 56px;
+
+      --radius: 14px;
+      --pad: 14px;
+
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--fg);
+      overflow: hidden; /* SPA: scroll is handled inside view panels */
+    }
+
+    /* Global header (sticky; always visible) */
+    #global-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 14px;
+      background: linear-gradient(180deg, rgba(18,23,37,0.96), rgba(18,23,37,0.88));
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    #brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 220px;
+    }
+
+    #brand .logo-chip {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.10);
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+
+    #brand .title {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    #brand .title .name {
+      font-size: 16px;
+      font-weight: 650;
+      letter-spacing: 0.2px;
+    }
+    #brand .title .sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    #header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 260px;
+      justify-content: flex-end;
+    }
+
+    #status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(255,255,255,0.06);
+      font-size: 12px;
+      color: var(--muted);
+      user-select: none;
+    }
+
+    #status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.06) inset;
+      flex: 0 0 auto;
+    }
+
+    #error-surface {
+      max-width: 520px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(255, 91, 91, 0.35);
+      background: rgba(255, 91, 91, 0.10);
+      color: #ffd7d7;
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+    #error-surface .label { font-weight: 650; }
+    #error-surface .msg {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 380px;
+    }
+    #error-surface button {
+      margin-left: auto;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.08);
+      color: var(--fg);
+      border-radius: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    #error-surface button:focus {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Main nav (tabs) */
+    #main-nav {
+      height: var(--nav-h);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(15,20,32,0.92);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: var(--header-h);
+      z-index: 25;
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      height: 40px;
+      min-width: 118px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.06);
+      color: var(--fg);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .nav-btn[aria-selected="true"] {
+      background: rgba(255,255,255,0.14);
+      border-color: rgba(255,255,255,0.22);
+    }
+    .nav-btn:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* App body */
+    #app-shell {
+      height: calc(100% - var(--header-h) - var(--nav-h));
+      display: flex;
+      flex-direction: column;
+    }
+
+    #content-root {
+      flex: 1 1 auto;
+      overflow: auto;
+      padding: 14px;
+      box-sizing: border-box;
+      scroll-behavior: smooth;
+    }
+
+    .view-panel {
+      background: rgba(18,23,37,0.78);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      min-height: calc(100% - 2px);
+      box-sizing: border-box;
+    }
+
+    .view-title {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin: 0 0 10px 0;
+    }
+    .view-title h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 750;
+    }
+    .view-title .meta {
+      color: var(--muted);
+      font-size: 12px;
+      font-family: var(--mono);
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    /* ==========================
+       Calendar View (Section 4.1)
+       ========================== */
+
+    .cal-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+      min-height: 0;
+    }
+
+    .cal-month-header {
+      position: sticky; /* Section 4.1.2.2 sticky month header */
+      top: 0;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(15,20,32,0.96);
+      backdrop-filter: blur(10px);
+    }
+
+    .cal-month-header .btn {
+      border: 1px solid rgba(255,255,255,0.20);
+      background: rgba(255,255,255,0.08);
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 750;
+      font-size: 13px;
+      min-width: 44px;
+      text-align: center;
+    }
+    .cal-month-header .btn:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .cal-month-header .title {
+      font-size: 16px;
+      font-weight: 850;
+      letter-spacing: 0.2px;
+    }
+
+    .cal-month-header .today-ind {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      font-family: var(--mono);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.06);
+      user-select: none;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr); /* Section 4.1.2.1 7 columns */
+      gap: 10px;
+      min-height: 0;
+      flex: 1 1 auto;
+    }
+
+    .cal-dow {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 750;
+      letter-spacing: 0.2px;
+      padding: 0 8px;
+    }
+
+    .cal-cell {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      border-radius: 14px;
+      padding: 10px;
+      min-height: 136px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      outline: none;
+    }
+    .cal-cell:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .cal-cell[aria-disabled="true"] {
+      opacity: 0.55;
+    }
+
+    .cal-date {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 850;
+      font-size: 13px;
+    }
+    .cal-date .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.15);
+      user-select: none;
+    }
+    .cal-date .badge-today {
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: rgba(255,255,255,0.06);
+      user-select: none;
+    }
+
+    .cal-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 0;
+    }
+
+    .cal-item {
+      display: grid;
+      grid-template-columns: 34px 1fr auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.18);
+      border-radius: 12px;
+      padding: 6px 8px;
+      outline: none;
+      cursor: pointer;
+    }
+    .cal-item:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .cal-item .thumb {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+    .cal-item .thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .cal-item .thumb .noimg {
+      font-size: 11px;
+      font-weight: 850;
+      color: rgba(255,255,255,0.65);
+      user-select: none;
+    }
+
+    .cal-item .main {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+    .cal-item .main .t {
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .cal-item .main .s {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: var(--mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .cal-item .right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cal-item .avail {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.22);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.06) inset;
+      flex: 0 0 auto;
+    }
+    .cal-item .avail[data-on="true"] { background: var(--ok); }
+
+    .cal-item .tba {
+      font-size: 11px;
+      color: #ffe2a8;
+      border: 1px solid rgba(255, 226, 168, 0.25);
+      border-radius: 999px;
+      padding: 2px 8px;
+      background: rgba(255, 226, 168, 0.08);
+      font-family: var(--mono);
+      user-select: none;
+    }
+
+    .cal-item .logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+    }
+    .cal-item .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .cal-item .icons {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 2px;
+    }
+    .cal-item .icons button {
+      width: 24px;
+      height: 24px;
+      border-radius: 9px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      padding: 0;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+    .cal-item .icons button:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+    .cal-item .icons img {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .cal-more {
+      border: 1px dashed rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.04);
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-size: 12px;
+      color: var(--muted);
+      cursor: pointer;
+      outline: none;
+      text-align: left;
+    }
+    .cal-more:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    /* Popup system */
+    #popup-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: none; /* enabled when stack not empty */
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(6px);
+    }
+
+    #popup-container {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: none; /* enabled when stack not empty */
+      pointer-events: none; /* only active popups handle */
+    }
+
+    .popup {
+      pointer-events: auto;
+      position: absolute;
+      inset: 6% 6%;
+      background: rgba(18,23,37,0.98);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 18px;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* scroll trapped inside popup body */
+    }
+
+    .popup-header {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(15,20,32,0.96);
+    }
+
+    .popup-header .title {
+      font-weight: 800;
+      font-size: 15px;
+    }
+
+    .popup-header .spacer { margin-left: auto; }
+
+    .popup-header .btn {
+      border: 1px solid rgba(255,255,255,0.20);
+      background: rgba(255,255,255,0.08);
+      color: var(--fg);
+      border-radius: 12px;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 650;
+      font-size: 12px;
+    }
+    .popup-header .btn:focus {
+      outline: 3px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .popup-body {
+      flex: 1 1 auto;
+      overflow: auto;
+      padding: 14px;
+    }
+
+    /* Utility */
+    .sr-only {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- GLOBAL HEADER (sticky; always visible) -->
+  <header id="global-header" role="banner">
+    <div id="brand" aria-label="My TV Hub">
+      <div class="logo-chip" aria-hidden="true">
+        <span style="font-weight:900;">TV</span>
+      </div>
+      <div class="title">
+        <div class="name">My TV Hub</div>
+        <div class="sub">Single-page • DPAD-first • Local assets</div>
+      </div>
+    </div>
+
+    <div id="error-surface" role="status" aria-live="polite">
+      <span class="label">Error</span>
+      <span class="msg" id="error-msg"></span>
+      <button type="button" id="error-dismiss">Dismiss</button>
+    </div>
+
+    <div id="header-right">
+      <div id="status-pill" aria-label="Load status">
+        <span id="status-dot" aria-hidden="true"></span>
+        <span id="status-text">Initializing…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN NAV (tabs; calls renderView(<view>)) -->
+  <nav id="main-nav" role="tablist" aria-label="Main navigation tabs">
+    <button class="nav-btn" role="tab" aria-selected="true" data-view="calendar">Calendar</button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-view="shows">Shows</button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-view="movies">Movies</button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-view="live_tv">Live TV</button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-view="watchlist">Watchlist</button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-view="explore">Explore</button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-view="profiles">Profiles</button>
+    <button class="nav-btn" role="tab" aria-selected="false" data-view="config">Config</button>
+  </nav>
+
+  <!-- SPA SHELL -->
+  <main id="app-shell" role="main">
+    <div id="content-root" tabindex="-1" aria-label="Active view content"></div>
+  </main>
+
+  <!-- POPUP SYSTEM (global root) -->
+  <div id="popup-overlay" aria-hidden="true"></div>
+  <div id="popup-container" aria-live="polite" aria-label="Popup overlays"></div>
+
+  <script>
+    "use strict";
+
+    // =====================================================================================
+    // SPA Shell Runtime (index.html module)
+    // - Internal state routing only (no URL changes)
+    // - data.json loaded once and never mutated
+    // - Global popup root with stacked overlays; Escape/Back closes top popup
+    // - Canonical assets hierarchy only (assets/...)
+    // =====================================================================================
+
+    const VIEWS = Object.freeze([
+      { key: "calendar",  label: "Calendar"  },
+      { key: "shows",     label: "Shows"     },
+      { key: "movies",    label: "Movies"    },
+      { key: "live_tv",   label: "Live TV"   },
+      { key: "watchlist", label: "Watchlist" },
+      { key: "explore",   label: "Explore"   },
+      { key: "profiles",  label: "Profiles"  },
+      { key: "config",    label: "Config"    }
+    ]);
+
+    const App = {
+      state: {
+        active_view: "calendar",
+        data_loaded: false,
+        config_loaded: false,
+        fatal_error: null,
+        calendar: {
+          year: null,
+          month_index: null // 0-11
+        }
+      },
+      // data.json is loaded once and never mutated
+      frozen_data: null,
+      config: null,
+      popup_stack: []
+    };
+
+    const el = {
+      contentRoot: document.getElementById("content-root"),
+      popupOverlay: document.getElementById("popup-overlay"),
+      popupContainer: document.getElementById("popup-container"),
+      statusDot: document.getElementById("status-dot"),
+      statusText: document.getElementById("status-text"),
+      errorSurface: document.getElementById("error-surface"),
+      errorMsg: document.getElementById("error-msg"),
+      errorDismiss: document.getElementById("error-dismiss"),
+      nav: document.getElementById("main-nav")
+    };
+
+    function setStatus(kind, text) {
+      el.statusText.textContent = text;
+      if (kind === "ok") el.statusDot.style.background = "var(--ok)";
+      else if (kind === "error") el.statusDot.style.background = "var(--danger)";
+      else el.statusDot.style.background = "rgba(255,255,255,0.25)";
+    }
+
+    function showError(message) {
+      el.errorMsg.textContent = String(message || "Unknown error");
+      el.errorSurface.style.display = "inline-flex";
+    }
+
+    function clearErrorSurface() {
+      el.errorMsg.textContent = "";
+      el.errorSurface.style.display = "none";
+    }
+
+    function safeJsonParse(text, contextLabel) {
+      try { return JSON.parse(text); }
+      catch (e) {
+        throw new Error(`Invalid JSON in ${contextLabel}: ${e && e.message ? e.message : e}`);
+      }
+    }
+
+    async function loadConfigOnce() {
+      const resp = await fetch("./config.json", { cache: "no-store" });
+      if (!resp.ok) throw new Error(`Failed to load config.json (${resp.status})`);
+      const text = await resp.text();
+      const cfg = safeJsonParse(text, "web/config.json");
+      App.config = cfg;
+      App.state.config_loaded = true;
+    }
+
+    async function loadDataOnce() {
+      const resp = await fetch("../data/data.json", { cache: "no-store" });
+      if (!resp.ok) throw new Error(`Failed to load data.json (${resp.status})`);
+      const text = await resp.text();
+      const data = safeJsonParse(text, "data/data.json");
+      App.frozen_data = Object.freeze(data);
+      App.state.data_loaded = true;
+    }
+
+    function setActiveNav(viewKey) {
+      const btns = Array.from(el.nav.querySelectorAll(".nav-btn"));
+      for (const b of btns) {
+        const isActive = (b.getAttribute("data-view") === viewKey);
+        b.setAttribute("aria-selected", isActive ? "true" : "false");
+      }
+    }
+
+    // =============================================================================
+    // Calendar View (Section 4.1) — renderer inside index.html (binding rule)
+    // =============================================================================
+
+    const CAL = {
+      DOW: Object.freeze(["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]),
+      MONTHS: Object.freeze([
+        "January","February","March","April","May","June",
+        "July","August","September","October","November","December"
+      ])
+    };
+
+    function pad2(n) { return String(n).padStart(2, "0"); }
+    function isoDayKeyFromDate(d) {
+      const y = d.getFullYear();
+      const m = pad2(d.getMonth() + 1);
+      const day = pad2(d.getDate());
+      return `${y}-${m}-${day}`;
+    }
+
+    function parseISODateOnly(s) {
+      if (!s || typeof s !== "string") return null;
+      // Accept YYYY-MM-DD; reject anything else deterministically
+      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      const y = Number(m[1]), mo = Number(m[2]), da = Number(m[3]);
+      if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(da)) return null;
+      const d = new Date(Date.UTC(y, mo - 1, da));
+      // Validate round-trip (invalid dates collapse)
+      if (d.getUTCFullYear() !== y || (d.getUTCMonth() + 1) !== mo || d.getUTCDate() !== da) return null;
+      // Return local date with same Y-M-D for consistent calendar placement
+      return new Date(y, mo - 1, da);
+    }
+
+    function firstDayOffsetMonday(year, monthIndex) {
+      // Returns 0..6 offset where 0 is Monday
+      const d = new Date(year, monthIndex, 1);
+      const jsDow = d.getDay(); // 0=Sun..6=Sat
+      // Convert to Monday-first: Mon=0..Sun=6
+      return (jsDow + 6) % 7;
+    }
+
+    function daysInMonth(year, monthIndex) {
+      return new Date(year, monthIndex + 1, 0).getDate();
+    }
+
+    function normalizeText(s, fallback) {
+      const t = (typeof s === "string") ? s.trim() : "";
+      return t ? t : (fallback || "");
+    }
+
+    function buildCalendarItemsIndex(data) {
+      // Section 4.1.3.1 sources:
+      // - shows[*].seasons[*].episodes[*]
+      // - movies[*]
+      // - live_tv[*].epg[*] (future-phase)
+      const byDay = new Map(); // dayKey -> { episodes:[], movies:[], epg:[] }
+
+      function ensureDay(dayKey) {
+        if (!byDay.has(dayKey)) {
+          byDay.set(dayKey, { episodes: [], movies: [], epg: [] });
+        }
+        return byDay.get(dayKey);
+      }
+
+      // Episodes
+      const shows = Array.isArray(data && data.shows) ? data.shows : [];
+      for (const show of shows) {
+        const showTitle = normalizeText(show && show.title, "Untitled Show");
+        const showPoster = show ? show.poster : null;
+        const showNetworkLogo = show ? show.network_logo : null;
+
+        const seasons = Array.isArray(show && show.seasons) ? show.seasons : [];
+        for (const season of seasons) {
+          const sn = season ? season.season_number : null;
+          const eps = Array.isArray(season && season.episodes) ? season.episodes : [];
+          for (const ep of eps) {
+            const airDate = parseISODateOnly(ep && ep.air_date);
+            if (!airDate) {
+              // Section 4.1.9.2: invalid dates must be logged and excluded; cannot mutate data.errors[]
+              // so surface a non-silent UI error summary (deduplicated at display time).
+              continue;
+            }
+            const dayKey = isoDayKeyFromDate(airDate);
+            const dayBucket = ensureDay(dayKey);
+
+            const en = ep ? ep.episode_number : null;
+            const epTitle = normalizeText(ep && ep.title, "Untitled Episode");
+            const runtime = (ep && Number.isFinite(ep.runtime)) ? ep.runtime : null;
+            const still = ep ? ep.still : null;
+
+            const tba = !!(ep && ep.tba);
+
+            const streaming_links = Array.isArray(ep && ep.streaming_links) ? ep.streaming_links : [];
+            const icon_strip = Array.isArray(ep && ep.icon_strip) ? ep.icon_strip : [];
+
+            dayBucket.episodes.push({
+              kind: "episode",
+              day_key: dayKey,
+              show_title: showTitle,
+              season_number: sn,
+              episode_number: en,
+              title: epTitle,
+              runtime: runtime,
+              poster: still || showPoster || null,
+              network_logo: showNetworkLogo || null,
+              streaming_links,
+              icon_strip,
+              tba,
+              // Popup routing payload
+              popup: {
+                type: "episode", // routes to Episode Popup (P3)
+                show_id: show ? show.id : null,
+                season_number: sn,
+                episode_number: en
+              }
+            });
+          }
+        }
+      }
+
+      // Movies
+      const movies = Array.isArray(data && data.movies) ? data.movies : [];
+      for (const movie of movies) {
+        const rel = parseISODateOnly(movie && movie.release_date);
+        if (!rel) continue;
+        const dayKey = isoDayKeyFromDate(rel);
+        const dayBucket = ensureDay(dayKey);
+
+        const title = normalizeText(movie && movie.title, "Untitled Movie");
+        const runtime = (movie && Number.isFinite(movie.runtime)) ? movie.runtime : null;
+        const poster = movie ? movie.poster : null;
+        const backdrop = movie ? movie.backdrop : null;
+
+        const streaming_links = Array.isArray(movie && movie.streaming_links) ? movie.streaming_links : [];
+        const icon_strip = Array.isArray(movie && movie.icon_strip) ? movie.icon_strip : [];
+
+        dayBucket.movies.push({
+          kind: "movie",
+          day_key: dayKey,
+          title,
+          runtime,
+          poster: poster || backdrop || null,
+          network_logo: null, // Movie uses service logo in other modules; Calendar spec says service logo; data model doesn't define service_logo field.
+          streaming_links,
+          icon_strip,
+          tba: false,
+          popup: {
+            type: "movie", // routes to Movie Popup (P4)
+            movie_id: movie ? movie.id : null
+          }
+        });
+      }
+
+      // Live TV EPG (future-phase)
+      const live_tv = Array.isArray(data && data.live_tv) ? data.live_tv : [];
+      for (const ch of live_tv) {
+        const epg = Array.isArray(ch && ch.epg) ? ch.epg : [];
+        for (const entry of epg) {
+          // Spec: epg entries sorted by start time; schema provides start/end (strings). We place by start day.
+          const startDate = (entry && typeof entry.start === "string") ? entry.start : null;
+          // Accept YYYY-MM-DD prefix
+          const m = startDate ? startDate.match(/^(\d{4}-\d{2}-\d{2})/) : null;
+          if (!m) continue;
+          const d = parseISODateOnly(m[1]);
+          if (!d) continue;
+          const dayKey = isoDayKeyFromDate(d);
+          const dayBucket = ensureDay(dayKey);
+
+          dayBucket.epg.push({
+            kind: "epg",
+            day_key: dayKey,
+            title: normalizeText(entry && entry.title, "Untitled Program"),
+            runtime: null,
+            poster: entry ? entry.poster : null,
+            network_logo: (ch && ch.logo) ? ch.logo : null, // channel logo per spec
+            streaming_links: [],
+            icon_strip: [],
+            tba: false,
+            start: startDate,
+            popup: {
+              type: "epg", // future-phase program popup
+              channel_id: ch ? ch.id : null,
+              start: startDate
+            }
+          });
+        }
+      }
+
+      // Section 4.1.3.3 sorting rules within each day:
+      // 1) Episodes by air time (not present); deterministic fallback by season/episode numbers
+      // 2) Movies by release time (not present); deterministic fallback by title
+      // 3) EPG by start time
+      // 4) TBA episodes last
+      for (const [dayKey, bucket] of byDay.entries()) {
+        bucket.episodes.sort((a, b) => {
+          // TBA last
+          if (a.tba !== b.tba) return a.tba ? 1 : -1;
+          const asn = Number.isFinite(a.season_number) ? a.season_number : 0;
+          const bsn = Number.isFinite(b.season_number) ? b.season_number : 0;
+          if (asn !== bsn) return asn - bsn;
+          const aen = Number.isFinite(a.episode_number) ? a.episode_number : 0;
+          const ben = Number.isFinite(b.episode_number) ? b.episode_number : 0;
+          if (aen !== ben) return aen - ben;
+          return String(a.title).localeCompare(String(b.title));
+        });
+
+        bucket.movies.sort((a, b) => String(a.title).localeCompare(String(b.title)));
+
+        bucket.epg.sort((a, b) => String(a.start || "").localeCompare(String(b.start || "")));
+      }
+
+      return byDay;
+    }
+
+    function calendarItemSecondaryText(item) {
+      if (item.kind === "episode") {
+        const sn = Number.isFinite(item.season_number) ? item.season_number : null;
+        const en = Number.isFinite(item.episode_number) ? item.episode_number : null;
+        const partA = (sn !== null && en !== null) ? `S${pad2(sn)}E${pad2(en)}` : "EP";
+        const rt = Number.isFinite(item.runtime) ? `${item.runtime}m` : "—";
+        return `${partA} • ${rt}`;
+      }
+      if (item.kind === "movie") {
+        const rt = Number.isFinite(item.runtime) ? `${item.runtime}m` : "—";
+        return `MOVIE • ${rt}`;
+      }
+      if (item.kind === "epg") {
+        return `LIVE • ${normalizeText(item.start, "—")}`;
+      }
+      return "";
+    }
+
+    function hasStreaming(item) {
+      const links = Array.isArray(item && item.streaming_links) ? item.streaming_links : [];
+      return links.length > 0;
+    }
+
+    function openPopupForItem(item) {
+      // Section 4.1.5 popup routing requirements
+      // This module only routes; popup renderers are separate modules.
+      if (!item || !item.popup) {
+        showError("Calendar item has no popup routing payload.");
+        return;
+      }
+      openPopup({
+        title: (item.kind === "episode") ? "Episode" :
+               (item.kind === "movie") ? "Movie" :
+               (item.kind === "epg") ? "Program" : "Popup",
+        body: `ROUTE:${item.popup.type}`,
+        route: Object.freeze(item.popup)
+      });
+    }
+
+    function openMorePopup(dayKey, items) {
+      openPopup({
+        title: `More items • ${dayKey}`,
+        body: `COUNT:${items.length}`,
+        route: Object.freeze({ type: "calendar_more", day: dayKey })
+      });
+    }
+
+    function renderCalendarView(panel, data) {
+      // Section 4.1: month-based 7x5/6 grid with sticky month header.
+      const wrap = document.createElement("div");
+      wrap.className = "cal-wrap";
+
+      const header = document.createElement("div");
+      header.className = "cal-month-header";
+
+      const prevBtn = document.createElement("button");
+      prevBtn.type = "button";
+      prevBtn.className = "btn";
+      prevBtn.textContent = "◀";
+      prevBtn.setAttribute("aria-label", "Previous month");
+
+      const nextBtn = document.createElement("button");
+      nextBtn.type = "button";
+      nextBtn.className = "btn";
+      nextBtn.textContent = "▶";
+      nextBtn.setAttribute("aria-label", "Next month");
+
+      const title = document.createElement("div");
+      title.className = "title";
+
+      const todayPill = document.createElement("div");
+      todayPill.className = "today-ind";
+      todayPill.innerHTML = `<span>Today</span><span id="cal-today"></span>`;
+
+      const todayBtn = document.createElement("button");
+      todayBtn.type = "button";
+      todayBtn.className = "btn";
+      todayBtn.textContent = "Today";
+      todayBtn.setAttribute("aria-label", "Go to current month");
+
+      header.appendChild(prevBtn);
+      header.appendChild(nextBtn);
+      header.appendChild(title);
+      header.appendChild(todayBtn);
+      header.appendChild(todayPill);
+
+      // DOW row
+      const dowRow = document.createElement("div");
+      dowRow.className = "cal-grid";
+      for (const d of CAL.DOW) {
+        const lab = document.createElement("div");
+        lab.className = "cal-dow";
+        lab.textContent = d;
+        dowRow.appendChild(lab);
+      }
+
+      // Grid container (days)
+      const grid = document.createElement("div");
+      grid.className = "cal-grid";
+      grid.setAttribute("role", "grid");
+      grid.setAttribute("aria-label", "Calendar grid");
+
+      const today = new Date();
+      const todayKey = isoDayKeyFromDate(today);
+
+      const byDay = buildCalendarItemsIndex(data);
+
+      function setMonth(year, monthIndex) {
+        App.state.calendar.year = year;
+        App.state.calendar.month_index = monthIndex;
+
+        title.textContent = `${CAL.MONTHS[monthIndex]} ${year}`;
+        const calToday = header.querySelector("#cal-today");
+        if (calToday) calToday.textContent = todayKey;
+
+        grid.innerHTML = "";
+
+        const offset = firstDayOffsetMonday(year, monthIndex);
+        const dim = daysInMonth(year, monthIndex);
+
+        const totalCells = offset + dim;
+        const weeks = Math.ceil(totalCells / 7); // 5-6 rows depending month (Section 4.1.2.1)
+
+        // Build cells with deterministic positions:
+        // cellIndex 0..(weeks*7-1)
+        const cellElements = [];
+        const firstCellDate = new Date(year, monthIndex, 1 - offset);
+
+        for (let idx = 0; idx < weeks * 7; idx++) {
+          const d = new Date(firstCellDate.getFullYear(), firstCellDate.getMonth(), firstCellDate.getDate() + idx);
+          const dYear = d.getFullYear();
+          const dMonth = d.getMonth();
+          const dNum = d.getDate();
+          const inMonth = (dYear === year && dMonth === monthIndex);
+
+          const dayKey = isoDayKeyFromDate(d);
+
+          const cell = document.createElement("div");
+          cell.className = "cal-cell";
+          cell.setAttribute("role", "gridcell");
+          cell.setAttribute("tabindex", idx === 0 ? "0" : "-1");
+          cell.setAttribute("data-day-index", String(idx));
+          cell.setAttribute("data-day-key", dayKey);
+          cell.setAttribute("aria-disabled", inMonth ? "false" : "true");
+
+          const dateRow = document.createElement("div");
+          dateRow.className = "cal-date";
+
+          const num = document.createElement("div");
+          num.className = "num";
+          num.textContent = String(dNum);
+
+          dateRow.appendChild(num);
+
+          if (dayKey === todayKey) {
+            const badge = document.createElement("div");
+            badge.className = "badge-today";
+            badge.textContent = "Today";
+            dateRow.appendChild(badge);
+          }
+
+          const itemsWrap = document.createElement("div");
+          itemsWrap.className = "cal-items";
+
+          const bucket = byDay.get(dayKey) || { episodes: [], movies: [], epg: [] };
+
+          // Section 4.1.3.3 day ordering: episodes, movies, epg; TBA already handled in episode sort.
+          const dayItems = []
+            .concat(bucket.episodes)
+            .concat(bucket.movies)
+            .concat(bucket.epg);
+
+          // Render first 3 items
+          const firstThree = dayItems.slice(0, 3);
+          for (const item of firstThree) {
+            const it = document.createElement("div");
+            it.className = "cal-item";
+            it.setAttribute("role", "button");
+            it.setAttribute("tabindex", "-1"); // roving; cell focus controls
+            it.setAttribute("data-kind", item.kind);
+
+            const thumb = document.createElement("div");
+            thumb.className = "thumb";
+
+            const posterPath = item.poster;
+            if (posterPath && typeof posterPath === "string") {
+              const img = document.createElement("img");
+              img.alt = "";
+              img.loading = "lazy";
+              img.decoding = "async";
+              img.src = posterPath; // must be local path in data model
+              img.addEventListener("error", () => {
+                // Section 4.1.9.2/4.1.9.3: show fallback and surface error (UI cannot mutate data/errors)
+                thumb.innerHTML = `<div class="noimg">NO</div>`;
+                showError(`Missing image for calendar item: ${posterPath}`);
+              }, { once: true });
+              thumb.appendChild(img);
+            } else {
+              thumb.innerHTML = `<div class="noimg">NO</div>`;
+              // Non-silent error
+              showError(`Calendar item missing required poster/still path for ${item.kind}.`);
+            }
+
+            const main = document.createElement("div");
+            main.className = "main";
+
+            const t = document.createElement("div");
+            t.className = "t";
+            t.textContent = item.title;
+
+            const s = document.createElement("div");
+            s.className = "s";
+            s.textContent = calendarItemSecondaryText(item);
+
+            main.appendChild(t);
+            main.appendChild(s);
+
+            const right = document.createElement("div");
+            right.className = "right";
+
+            const avail = document.createElement("div");
+            avail.className = "avail";
+            avail.setAttribute("data-on", hasStreaming(item) ? "true" : "false");
+            avail.setAttribute("aria-label", hasStreaming(item) ? "Streaming available" : "Streaming unknown");
+
+            right.appendChild(avail);
+
+            if (item.tba) {
+              const tba = document.createElement("div");
+              tba.className = "tba";
+              tba.textContent = "TBA";
+              right.appendChild(tba);
+            }
+
+            // Logo (episodes network logo; live tv channel logo; movies: not defined in schema)
+            const logoPath = item.network_logo;
+            if (logoPath && typeof logoPath === "string") {
+              const logo = document.createElement("div");
+              logo.className = "logo";
+              const img = document.createElement("img");
+              img.alt = "";
+              img.loading = "lazy";
+              img.decoding = "async";
+              img.src = logoPath;
+              img.addEventListener("error", () => {
+                logo.innerHTML = "";
+                showError(`Missing logo for calendar item: ${logoPath}`);
+              }, { once: true });
+              logo.appendChild(img);
+              right.appendChild(logo);
+            }
+
+            // Icon strip (Section 4.1.6): unified icon strip per item
+            const icons = Array.isArray(item.icon_strip) ? item.icon_strip : [];
+            if (icons.length > 0) {
+              const strip = document.createElement("div");
+              strip.className = "icons";
+              for (const ic of icons) {
+                // Section 3.12: {type, icon, label}
+                const iconPath = ic && ic.icon;
+                const label = (ic && typeof ic.label === "string" && ic.label.trim()) ? ic.label.trim() : (ic && ic.type ? String(ic.type) : "icon");
+                if (!iconPath || typeof iconPath !== "string") continue;
+
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.setAttribute("aria-label", label);
+
+                const img = document.createElement("img");
+                img.alt = "";
+                img.decoding = "async";
+                img.loading = "lazy";
+                img.src = iconPath; // must be local path (likely assets/icons/services/ or assets/icons/ui/)
+                img.addEventListener("error", () => {
+                  btn.innerHTML = "";
+                  showError(`Missing icon strip icon: ${iconPath}`);
+                }, { once: true });
+
+                btn.appendChild(img);
+
+                // Clicking icon is "clickable/tappable" requirement; routing behavior is defined in popup modules.
+                // Here: open the item popup deterministically.
+                btn.addEventListener("click", (ev) => {
+                  ev.preventDefault();
+                  ev.stopPropagation();
+                  openPopupForItem(item);
+                });
+
+                strip.appendChild(btn);
+              }
+              right.appendChild(strip);
+            }
+
+            it.appendChild(thumb);
+            it.appendChild(main);
+            it.appendChild(right);
+
+            it.addEventListener("click", () => openPopupForItem(item));
+            it.addEventListener("keydown", (ev) => {
+              // Enter opens popup (Section 4.1.4.3)
+              if (ev.key === "Enter") {
+                ev.preventDefault();
+                openPopupForItem(item);
+              }
+            });
+
+            itemsWrap.appendChild(it);
+          }
+
+          // Overflow (Section 4.1.8.4)
+          if (dayItems.length > 3) {
+            const more = document.createElement("button");
+            more.type = "button";
+            more.className = "cal-more";
+            more.textContent = `+${dayItems.length - 3} more`;
+            more.addEventListener("click", () => openMorePopup(dayKey, dayItems));
+            more.addEventListener("keydown", (ev) => {
+              if (ev.key === "Enter") {
+                ev.preventDefault();
+                openMorePopup(dayKey, dayItems);
+              }
+            });
+            itemsWrap.appendChild(more);
+          }
+
+          cell.appendChild(dateRow);
+          cell.appendChild(itemsWrap);
+
+          grid.appendChild(cell);
+          cellElements.push(cell);
+        }
+
+        // DPAD / arrow navigation within grid (Section 4.1.4.1)
+        function focusCellByIndex(nextIdx) {
+          const max = cellElements.length - 1;
+          const clamped = Math.max(0, Math.min(max, nextIdx));
+          const current = grid.querySelector('.cal-cell[tabindex="0"]');
+          if (current) current.setAttribute("tabindex", "-1");
+          const next = cellElements[clamped];
+          if (next) {
+            next.setAttribute("tabindex", "0");
+            next.focus({ preventScroll: true });
+          }
+        }
+
+        function onGridKeyDown(ev) {
+          const active = document.activeElement;
+          const cell = active && active.classList && active.classList.contains("cal-cell")
+            ? active
+            : (active && active.closest ? active.closest(".cal-cell") : null);
+
+          if (!cell) return;
+
+          const idx = Number(cell.getAttribute("data-day-index"));
+          if (!Number.isFinite(idx)) return;
+
+          if (ev.key === "ArrowLeft")  { ev.preventDefault(); focusCellByIndex(idx - 1); return; }
+          if (ev.key === "ArrowRight") { ev.preventDefault(); focusCellByIndex(idx + 1); return; }
+          if (ev.key === "ArrowUp")    { ev.preventDefault(); focusCellByIndex(idx - 7); return; }
+          if (ev.key === "ArrowDown")  { ev.preventDefault(); focusCellByIndex(idx + 7); return; }
+
+          // OK/Enter opens first item popup in the day (Section 4.1.4.1)
+          if (ev.key === "Enter") {
+            ev.preventDefault();
+            const dayKey = cell.getAttribute("data-day-key");
+            const bucket = byDay.get(dayKey) || { episodes: [], movies: [], epg: [] };
+            const dayItems = [].concat(bucket.episodes).concat(bucket.movies).concat(bucket.epg);
+            if (dayItems.length > 0) {
+              openPopupForItem(dayItems[0]);
+            } else {
+              showError(`No items for ${dayKey}`);
+            }
+            return;
+          }
+        }
+
+        grid.addEventListener("keydown", onGridKeyDown);
+      }
+
+      prevBtn.addEventListener("click", () => {
+        const y = App.state.calendar.year;
+        const m = App.state.calendar.month_index;
+        const d = new Date(y, m, 1);
+        d.setMonth(d.getMonth() - 1);
+        setMonth(d.getFullYear(), d.getMonth());
+      });
+
+      nextBtn.addEventListener("click", () => {
+        const y = App.state.calendar.year;
+        const m = App.state.calendar.month_index;
+        const d = new Date(y, m, 1);
+        d.setMonth(d.getMonth() + 1);
+        setMonth(d.getFullYear(), d.getMonth());
+      });
+
+      todayBtn.addEventListener("click", () => {
+        const t = new Date();
+        setMonth(t.getFullYear(), t.getMonth());
+      });
+
+      wrap.appendChild(header);
+      // Section 4.1 requires 7 columns Monday→Sunday; DOW labels are separate from grid cells
+      wrap.appendChild(dowRow);
+      wrap.appendChild(grid);
+
+      panel.appendChild(wrap);
+
+      // init month
+      const t = new Date();
+      const initY = App.state.calendar.year ?? t.getFullYear();
+      const initM = App.state.calendar.month_index ?? t.getMonth();
+      setMonth(initY, initM);
+    }
+
+    // =============================================================================
+    // View Routing (internal state only)
+    // =============================================================================
+
+    function renderView(viewKey) {
+      App.state.active_view = viewKey;
+      setActiveNav(viewKey);
+
+      const panel = document.createElement("section");
+      panel.className = "view-panel";
+      panel.setAttribute("data-view", viewKey);
+
+      const titleRow = document.createElement("div");
+      titleRow.className = "view-title";
+
+      const h1 = document.createElement("h1");
+      const viewMeta = VIEWS.find(v => v.key === viewKey);
+      h1.textContent = viewMeta ? viewMeta.label : viewKey;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = (App.state.data_loaded && App.state.config_loaded) ? "READY" : "LOADING";
+
+      titleRow.appendChild(h1);
+      titleRow.appendChild(meta);
+      panel.appendChild(titleRow);
+
+      // Clear + mount
+      el.contentRoot.innerHTML = "";
+      el.contentRoot.appendChild(panel);
+
+      // Per-view renderer
+      if (!App.state.data_loaded || !App.state.config_loaded) {
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = "Loading required data/config…";
+        panel.appendChild(hint);
+      } else {
+        if (viewKey === "calendar") {
+          renderCalendarView(panel, App.frozen_data);
+        } else {
+          // Placeholder containers for other views (rebuilt in their own modules)
+          const hint = document.createElement("div");
+          hint.className = "hint";
+          hint.textContent = `View container ready: ${h1.textContent}.`;
+          panel.appendChild(hint);
+        }
+      }
+
+      el.contentRoot.focus({ preventScroll: true });
+    }
+
+    // ==========================
+    // Popup System (stacked)
+    // ==========================
+
+    function syncPopupDom() {
+      const hasPopups = App.popup_stack.length > 0;
+      el.popupOverlay.style.display = hasPopups ? "block" : "none";
+      el.popupContainer.style.display = hasPopups ? "block" : "none";
+      el.popupOverlay.setAttribute("aria-hidden", hasPopups ? "false" : "true");
+
+      el.popupContainer.innerHTML = "";
+      if (!hasPopups) return;
+
+      for (let i = 0; i < App.popup_stack.length; i++) {
+        const p = App.popup_stack[i];
+
+        const popup = document.createElement("div");
+        popup.className = "popup";
+        popup.setAttribute("role", "dialog");
+        popup.setAttribute("aria-modal", "true");
+        popup.setAttribute("data-popup-index", String(i));
+        popup.style.zIndex = String(90 + i);
+
+        const header = document.createElement("div");
+        header.className = "popup-header";
+
+        const t = document.createElement("div");
+        t.className = "title";
+        t.textContent = p && p.title ? String(p.title) : "Popup";
+
+        const spacer = document.createElement("div");
+        spacer.className = "spacer";
+
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.className = "btn";
+        closeBtn.textContent = "Close";
+        closeBtn.addEventListener("click", () => closeTopPopup());
+
+        header.appendChild(t);
+        header.appendChild(spacer);
+        header.appendChild(closeBtn);
+
+        const body = document.createElement("div");
+        body.className = "popup-body";
+        body.tabIndex = 0;
+
+        const bodyText = document.createElement("div");
+        bodyText.className = "hint";
+        bodyText.textContent = p && p.body ? String(p.body) : "Popup body container ready.";
+        body.appendChild(bodyText);
+
+        popup.appendChild(header);
+        popup.appendChild(body);
+
+        el.popupContainer.appendChild(popup);
+      }
+
+      const topPopup = el.popupContainer.querySelector(".popup:last-child .popup-body");
+      if (topPopup) topPopup.focus({ preventScroll: true });
+    }
+
+    function openPopup(payload) {
+      App.popup_stack.push(payload || { title: "Popup", body: "" });
+      syncPopupDom();
+    }
+
+    function closeTopPopup() {
+      if (App.popup_stack.length === 0) return;
+      App.popup_stack.pop();
+      syncPopupDom();
+      if (App.popup_stack.length === 0) {
+        el.contentRoot.focus({ preventScroll: true });
+      }
+    }
+
+    function closeAllPopups() {
+      if (App.popup_stack.length === 0) return;
+      App.popup_stack = [];
+      syncPopupDom();
+      el.contentRoot.focus({ preventScroll: true });
+    }
+
+    // ==========================
+    // Event wiring
+    // ==========================
+
+    function onNavClick(e) {
+      const btn = e.target && e.target.closest ? e.target.closest(".nav-btn") : null;
+      if (!btn) return;
+      const viewKey = btn.getAttribute("data-view");
+      if (!viewKey) return;
+      renderView(viewKey);
+    }
+
+    function onGlobalKeyDown(e) {
+      // Escape/Back closes the top popup (if any)
+      if (e.key === "Escape") {
+        if (App.popup_stack.length > 0) {
+          e.preventDefault();
+          closeTopPopup();
+          return;
+        }
+      }
+    }
+
+    function wireEvents() {
+      el.nav.addEventListener("click", onNavClick);
+      document.addEventListener("keydown", onGlobalKeyDown);
+
+      el.errorDismiss.addEventListener("click", () => clearErrorSurface());
+      el.popupOverlay.addEventListener("click", () => {
+        closeTopPopup();
+      });
+    }
+
+    // ==========================
+    // Boot
+    // ==========================
+
+    async function boot() {
+      clearErrorSurface();
+      setStatus("idle", "Loading config…");
+      try {
+        wireEvents();
+
+        await loadConfigOnce();
+        setStatus("idle", "Loading data…");
+
+        await loadDataOnce();
+        setStatus("ok", "Loaded");
+
+        // Initial view render (Calendar by default)
+        renderView(App.state.active_view);
+
+        // If data.json contains errors[] per spec, surface summary non-silently (read-only)
+        try {
+          const d = App.frozen_data;
+          if (d && d.errors && Array.isArray(d.errors) && d.errors.length > 0) {
+            showError(`data.json reports ${d.errors.length} error(s).`);
+            setStatus("error", "Loaded with errors");
+          }
+        } catch (_) {}
+
+      } catch (err) {
+        App.state.fatal_error = (err && err.message) ? err.message : String(err);
+        showError(App.state.fatal_error);
+        setStatus("error", "Fatal error");
+        renderView("config");
+      }
+    }
+
+    // Expose strictly-limited debug hooks (read-only; no mutation)
+    window.MyTVHub = Object.freeze({
+      renderView,
+      openPopup,
+      closeTopPopup,
+      closeAllPopups,
+      getData: () => App.frozen_data,
+      getConfig: () => App.config
+    });
+
+    boot();
+  </script>
+</body>
+</html>
