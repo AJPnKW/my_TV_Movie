@@ -1,0 +1,955 @@
+<!-- ========================================================================================
+[FILE] web/index.html
+[PROJECT] my_TV_Movie (My TV Hub)
+[ROLE] Single-Page Application shell (single entry point; dynamic views + popup root)
+[VERSION] v4.1.1
+[UPDATED] 2025-12-19_00-00-00
+[BUILD] 00.00.00
+[OWNER] Andrew & Brant (internal)
+[DEPENDS ON] web/css/my_tv_hub.css web/config.json data/data.json
+
+[NOTES]
+- This file is the SPA shell. It loads:
+  - data/data.json (authoritative data; movies[] + shows[])
+  - web/config.json (user config + defaults)
+- This file must remain schema-aligned with data/data.json:
+  - movies[*]: title, tmdb_id, trakt_id, release_date, poster_local, backdrop_local, links{}
+  - shows[*]:  title, tmdb_id, trakt_id, first_air_date, poster_local, backdrop_local, links{},
+              season_mode, season_filter, seasons[]
+- DO NOT introduce forbidden fields:
+  - is_watchlisted, poster_path_local, backdrop_path_local, streaming_links[], icon_strip[],
+    or any episode-level fields not present above.
+
+======================================================================================== -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>My TV Hub</title>
+
+  <!-- keep existing CSS links -->
+  <link rel="stylesheet" href="./css/my_tv_hub.css" />
+
+  <style>
+    /* minimal safe additions only (kept inline to avoid CSS dependency churn) */
+    .sr-only{
+      position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+      overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+    }
+    .view-root { min-height: 320px; }
+    .pill { display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px; font-size:12px; opacity:.9; }
+    .pill.ok { background: rgba(70, 180, 120, .18); border:1px solid rgba(70, 180, 120, .35); }
+    .pill.err{ background: rgba(200, 80, 90, .16); border:1px solid rgba(200, 80, 90, .35); }
+    .toast-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .toast-actions{ display:flex; gap:10px; align-items:center; }
+    .btn-mini{
+      padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.15);
+      background: rgba(255,255,255,.06); color:#fff; cursor:pointer;
+    }
+    .btn-mini:hover{ background: rgba(255,255,255,.10); }
+    .noimg{
+      width:44px;height:44px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      font-weight:700;letter-spacing:.3px;font-size:12px;
+    }
+    .cal-grid{ display:grid; grid-template-columns: repeat(7, 1fr); gap:10px; }
+    .cal-dow{ opacity:.8; font-size:12px; padding:6px 6px; }
+    .cal-cell{
+      border:1px solid rgba(255,255,255,.10);
+      border-radius:14px;
+      min-height:92px;
+      padding:10px;
+      background: rgba(255,255,255,.03);
+      position:relative;
+      overflow:hidden;
+    }
+    .cal-cell .daynum{
+      position:absolute; top:8px; left:8px;
+      font-weight:700; font-size:12px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.18);
+      padding:2px 8px; border-radius:999px;
+    }
+    .cal-cell.today{ outline: 2px solid rgba(120, 180, 255, .35); }
+    .cal-items{ margin-top:26px; display:flex; flex-direction:column; gap:8px; }
+    .cal-item{
+      display:flex; gap:10px; align-items:center;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius:12px;
+      padding:6px 8px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .cal-item:focus{ outline:2px solid rgba(120,180,255,.4); outline-offset:2px; }
+    .cal-item .thumb{
+      width:44px;height:44px;border-radius:10px; overflow:hidden; flex:0 0 auto;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      display:flex;align-items:center;justify-content:center;
+    }
+    .cal-item img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .cal-item .main{ min-width:0; flex:1 1 auto; }
+    .cal-item .t{ font-weight:700; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cal-item .s{ font-size:11px; opacity:.85; margin-top:2px; display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .badge{ font-size:10px; padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.14); background: rgba(255,255,255,.06); }
+    .badge.kind-m{ background: rgba(255, 170, 0, .10); border-color: rgba(255, 170, 0, .25); }
+    .badge.kind-s{ background: rgba(80, 160, 255, .10); border-color: rgba(80, 160, 255, .25); }
+    .badge.links{ background: rgba(70, 180, 120, .10); border-color: rgba(70, 180, 120, .25); }
+    .popup-overlay{
+      position:fixed; inset:0;
+      background: rgba(0,0,0,.65);
+      display:none;
+      z-index: 9999;
+      align-items:center; justify-content:center;
+      padding: 18px;
+    }
+    .popup-overlay.open{ display:flex; }
+    .popup{
+      width:min(980px, 100%);
+      max-height: min(88vh, 980px);
+      overflow:auto;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(10,16,28,.92);
+      box-shadow: 0 16px 40px rgba(0,0,0,.55);
+    }
+    .popup-h{
+      padding:16px 18px;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      position:sticky; top:0;
+      backdrop-filter: blur(8px);
+      background: rgba(10,16,28,.92);
+      z-index: 1;
+    }
+    .popup-title{ font-size:18px; font-weight:800; margin:0; }
+    .popup-body{ padding: 16px 18px 20px 18px; }
+    .link-row{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .link-btn{
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      cursor:pointer;
+      color:#fff;
+      font-weight:700;
+    }
+    .link-btn:hover{ background: rgba(255,255,255,.10); }
+    .muted{ opacity:.8; }
+    .hr{ height:1px; background: rgba(255,255,255,.10); margin: 14px 0; }
+
+    /* Hide redundant "READY/LOADING" meta text (kept element to avoid layout surprises) */
+    .meta{ display:none; }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <!-- HEADER (preserve structure; keep nav consistent) -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-badge">TV</div>
+        <div class="brand-text">
+          <div class="brand-title">My TV Hub</div>
+          <div class="brand-sub">Single-page • DPAD-first • Local assets</div>
+        </div>
+      </div>
+
+      <div class="status">
+        <div id="toastHost" class="toast-host" aria-live="polite"></div>
+        <div id="loadedPill" class="pill ok" title="Data & config loaded">
+          <span class="dot"></span>
+          <span>Loaded</span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="app-nav" aria-label="Primary">
+      <button class="tab" data-view="calendar" type="button">Calendar</button>
+      <button class="tab" data-view="shows" type="button">Shows</button>
+      <button class="tab" data-view="movies" type="button">Movies</button>
+      <button class="tab" data-view="livetv" type="button">Live TV</button>
+
+      <!-- IMPORTANT: Watchlist + Config must navigate to their dedicated pages -->
+      <a class="tab" href="./watchlist.html">Watchlist</a>
+
+      <button class="tab" data-view="explore" type="button">Explore</button>
+      <button class="tab" data-view="profiles" type="button">Profiles</button>
+
+      <a class="tab" href="./config.html">Config</a>
+    </nav>
+
+    <main class="app-main">
+      <section id="viewRoot" class="view-root" tabindex="-1" aria-label="View root"></section>
+    </main>
+  </div>
+
+  <!-- POPUP ROOT -->
+  <div id="popupOverlay" class="popup-overlay" role="dialog" aria-modal="true" aria-label="Details dialog">
+    <div class="popup">
+      <div class="popup-h">
+        <h2 class="popup-title" id="popupTitle">Details</h2>
+        <div class="toast-actions">
+          <button id="popupClose" class="btn-mini" type="button">Close</button>
+        </div>
+      </div>
+      <div class="popup-body" id="popupBody"></div>
+    </div>
+  </div>
+
+  <script>
+  (() => {
+    "use strict";
+
+    // -----------------------------------------------------------------------------------
+    // APP STATE + UTILITIES
+    // -----------------------------------------------------------------------------------
+
+    const App = {
+      state: {
+        data_loaded: false,
+        config_loaded: false,
+        data: null,
+        config: null,
+        // derived cache
+        calendar_index: new Map(), // yyyy-mm-dd -> items[]
+        current_view: "calendar",
+        cal_cursor: new Date(),
+        popup_stack: []
+      }
+    };
+
+    const $ = (sel, root=document) => root.querySelector(sel);
+
+    function safeObj(v){
+      return (v && typeof v === "object") ? v : {};
+    }
+    function safeArr(v){
+      return Array.isArray(v) ? v : [];
+    }
+    function safeStr(v){
+      return (typeof v === "string") ? v : "";
+    }
+
+    function showToast(kind, message){
+      const host = $("#toastHost");
+      if (!host) return;
+
+      const row = document.createElement("div");
+      row.className = `toast ${kind || "info"}`;
+
+      const inner = document.createElement("div");
+      inner.className = "toast-row";
+
+      const msg = document.createElement("div");
+      msg.className = "toast-msg";
+      msg.textContent = message || "";
+
+      const actions = document.createElement("div");
+      actions.className = "toast-actions";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-mini";
+      btn.textContent = "Dismiss";
+      btn.addEventListener("click", () => row.remove());
+
+      actions.appendChild(btn);
+      inner.appendChild(msg);
+      inner.appendChild(actions);
+      row.appendChild(inner);
+
+      host.appendChild(row);
+    }
+
+    function showError(message){
+      showToast("error", message);
+    }
+
+    function setLoadedPill(ok){
+      const pill = $("#loadedPill");
+      if (!pill) return;
+      pill.className = `pill ${ok ? "ok" : "err"}`;
+      pill.querySelector("span:last-child").textContent = ok ? "Loaded" : "Not loaded";
+    }
+
+    function parseISODate(iso){
+      const s = safeStr(iso).trim();
+      // Accept YYYY-MM-DD only (schema uses date strings)
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return null;
+      const d = new Date(s + "T00:00:00");
+      if (Number.isNaN(d.getTime())) return null;
+      return d;
+    }
+
+    function fmtYYYYMMDD(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const da = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${da}`;
+    }
+
+    function monthStart(d){
+      return new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    function monthEnd(d){
+      return new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    }
+
+    // -----------------------------------------------------------------------------------
+    // DATA LOADING (data/data.json + web/config.json)
+    // -----------------------------------------------------------------------------------
+
+    async function loadJSON(url){
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+      return await res.json();
+    }
+
+    async function init(){
+      setLoadedPill(false);
+
+      try {
+        const [data, config] = await Promise.all([
+          loadJSON("../data/data.json"),
+          loadJSON("./config.json")
+        ]);
+
+        App.state.data = data;
+        App.state.config = config;
+        App.state.data_loaded = true;
+        App.state.config_loaded = true;
+
+        buildCalendarIndex();
+        wireNav();
+        renderView(App.state.current_view);
+
+        setLoadedPill(true);
+      } catch (e) {
+        setLoadedPill(false);
+        showError(`Init failed: ${e && e.message ? e.message : String(e)}`);
+        // still wire nav so user can attempt switching / refresh
+        wireNav();
+      }
+
+      wirePopup();
+      wireGlobalKeys();
+    }
+
+    // -----------------------------------------------------------------------------------
+    // CALENDAR INDEXING (schema-safe)
+    // - movies: release_date
+    // - shows: first_air_date
+    // - images: poster_local/backdrop_local (local assets; may be null)
+    // - links: keys from links{} only
+    // -----------------------------------------------------------------------------------
+
+    function buildCalendarIndex(){
+      const data = safeObj(App.state.data);
+      const movies = safeArr(data.movies);
+      const shows = safeArr(data.shows);
+
+      const idx = new Map();
+
+      function addItem(dateStr, item){
+        if (!dateStr) return;
+        const d = parseISODate(dateStr);
+        if (!d) return;
+        const key = fmtYYYYMMDD(d);
+        if (!idx.has(key)) idx.set(key, []);
+        idx.get(key).push(item);
+      }
+
+      // Movies
+      for (const m of movies){
+        const title = safeStr(m && m.title);
+        const tmdb_id = (m && typeof m.tmdb_id === "number") ? m.tmdb_id : null;
+        const trakt_id = (m && typeof m.trakt_id === "number") ? m.trakt_id : null;
+        const release_date = safeStr(m && m.release_date);
+        const poster_local = safeStr(m && m.poster_local);
+        const backdrop_local = safeStr(m && m.backdrop_local);
+        const links = safeObj(m && m.links);
+
+        addItem(release_date, {
+          kind: "movie",
+          title,
+          tmdb_id,
+          trakt_id,
+          date: release_date,
+          poster_local,
+          backdrop_local,
+          links
+        });
+      }
+
+      // Shows
+      for (const s of shows){
+        const title = safeStr(s && s.title);
+        const tmdb_id = (s && typeof s.tmdb_id === "number") ? s.tmdb_id : null;
+        const trakt_id = (s && typeof s.trakt_id === "number") ? s.trakt_id : null;
+        const first_air_date = safeStr(s && s.first_air_date);
+        const poster_local = safeStr(s && s.poster_local);
+        const backdrop_local = safeStr(s && s.backdrop_local);
+        const links = safeObj(s && s.links);
+        const season_mode = safeStr(s && s.season_mode);
+        const season_filter = (s && (typeof s.season_filter === "string" || s.season_filter === null)) ? s.season_filter : null;
+        const seasons = safeArr(s && s.seasons);
+
+        addItem(first_air_date, {
+          kind: "show",
+          title,
+          tmdb_id,
+          trakt_id,
+          date: first_air_date,
+          poster_local,
+          backdrop_local,
+          links,
+          season_mode,
+          season_filter,
+          seasons_count: seasons.length
+        });
+      }
+
+      // Stable ordering: date asc then title
+      for (const [k, arr] of idx.entries()){
+        arr.sort((a,b) => {
+          const ta = safeStr(a.title).toLowerCase();
+          const tb = safeStr(b.title).toLowerCase();
+          return ta.localeCompare(tb);
+        });
+        idx.set(k, arr);
+      }
+
+      App.state.calendar_index = idx;
+    }
+
+    // -----------------------------------------------------------------------------------
+    // NAV + VIEWS
+    // -----------------------------------------------------------------------------------
+
+    function wireNav(){
+      const tabs = document.querySelectorAll(".app-nav .tab");
+      tabs.forEach(btn => {
+        // Only bind buttons; anchors navigate normally
+        if (btn.tagName.toLowerCase() === "a") return;
+
+        btn.addEventListener("click", () => {
+          const v = btn.getAttribute("data-view");
+          if (!v) return;
+          App.state.current_view = v;
+          renderView(v);
+          setActiveTab(v);
+        });
+      });
+
+      setActiveTab(App.state.current_view);
+    }
+
+    function setActiveTab(view){
+      const tabs = document.querySelectorAll(".app-nav .tab");
+      tabs.forEach(t => {
+        if (t.tagName.toLowerCase() === "a") {
+          t.classList.remove("active");
+          return;
+        }
+        const v = t.getAttribute("data-view");
+        t.classList.toggle("active", v === view);
+      });
+    }
+
+    function clearViewRoot(){
+      const root = $("#viewRoot");
+      if (!root) return;
+      root.innerHTML = "";
+    }
+
+    function renderView(view){
+      clearViewRoot();
+
+      if (view === "calendar") return renderCalendar();
+      if (view === "shows") return renderStub("Shows");
+      if (view === "movies") return renderStub("Movies");
+      if (view === "livetv") return renderStub("Live TV");
+      if (view === "explore") return renderStub("Explore");
+      if (view === "profiles") return renderStub("Profiles");
+
+      return renderStub("Unknown");
+    }
+
+    function renderStub(name){
+      const root = $("#viewRoot");
+      if (!root) return;
+
+      const panel = document.createElement("div");
+      panel.className = "panel";
+
+      const titleRow = document.createElement("div");
+      titleRow.className = "title-row";
+
+      const h1 = document.createElement("h1");
+      h1.textContent = name;
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = "";
+
+      titleRow.appendChild(h1);
+      titleRow.appendChild(meta);
+      panel.appendChild(titleRow);
+
+      const p = document.createElement("div");
+      p.className = "muted";
+      p.style.marginTop = "10px";
+      p.textContent = `View container ready: ${name}.`;
+
+      panel.appendChild(p);
+      root.appendChild(panel);
+    }
+
+    // -----------------------------------------------------------------------------------
+    // CALENDAR VIEW
+    // -----------------------------------------------------------------------------------
+
+    function renderCalendar(){
+      const root = $("#viewRoot");
+      if (!root) return;
+
+      const panel = document.createElement("div");
+      panel.className = "panel";
+
+      const header = document.createElement("div");
+      header.className = "cal-header";
+
+      const left = document.createElement("div");
+      left.className = "cal-left";
+
+      const prevBtn = document.createElement("button");
+      prevBtn.type = "button";
+      prevBtn.className = "btn";
+      prevBtn.textContent = "◀";
+      prevBtn.setAttribute("aria-label", "Previous month");
+
+      const nextBtn = document.createElement("button");
+      nextBtn.type = "button";
+      nextBtn.className = "btn";
+      nextBtn.textContent = "▶";
+      nextBtn.setAttribute("aria-label", "Next month");
+
+      const title = document.createElement("div");
+      title.className = "title";
+
+      const todayBtn = document.createElement("button");
+      todayBtn.type = "button";
+      todayBtn.className = "btn";
+      todayBtn.textContent = "Today";
+      todayBtn.setAttribute("aria-label", "Go to current month");
+
+      header.appendChild(prevBtn);
+      header.appendChild(nextBtn);
+      header.appendChild(title);
+      header.appendChild(todayBtn);
+
+      // Month cursor (defaults to current date)
+      if (!(App.state.cal_cursor instanceof Date) || Number.isNaN(App.state.cal_cursor.getTime())){
+        App.state.cal_cursor = new Date();
+      }
+
+      function updateHeader(){
+        const d = App.state.cal_cursor;
+        const monthName = d.toLocaleString(undefined, { month: "long" });
+        title.textContent = `${monthName} ${d.getFullYear()}`;
+      }
+
+      function moveMonth(delta){
+        const d = App.state.cal_cursor;
+        App.state.cal_cursor = new Date(d.getFullYear(), d.getMonth() + delta, 1);
+        drawGrid();
+      }
+
+      prevBtn.addEventListener("click", () => moveMonth(-1));
+      nextBtn.addEventListener("click", () => moveMonth(1));
+      todayBtn.addEventListener("click", () => {
+        App.state.cal_cursor = new Date();
+        drawGrid();
+      });
+
+      const gridWrap = document.createElement("div");
+      gridWrap.className = "cal-wrap";
+
+      const dowRow = document.createElement("div");
+      dowRow.className = "cal-grid";
+
+      const dows = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+      for (const d of dows){
+        const el = document.createElement("div");
+        el.className = "cal-dow";
+        el.textContent = d;
+        dowRow.appendChild(el);
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "cal-grid";
+
+      function drawGrid(){
+        updateHeader();
+
+        grid.innerHTML = "";
+
+        const cursor = App.state.cal_cursor;
+        const start = monthStart(cursor);
+        const end = monthEnd(cursor);
+
+        // Convert JS Sunday-start to Monday-start index (Mon=0..Sun=6)
+        const jsDow = start.getDay(); // Sun=0..Sat=6
+        const monIndex = (jsDow + 6) % 7;
+
+        // Start date for grid (backfill from previous month)
+        const gridStart = new Date(start);
+        gridStart.setDate(start.getDate() - monIndex);
+
+        const todayKey = fmtYYYYMMDD(new Date());
+
+        // 6 weeks grid
+        for (let i=0; i<42; i++){
+          const day = new Date(gridStart);
+          day.setDate(gridStart.getDate() + i);
+
+          const dayKey = fmtYYYYMMDD(day);
+          const inMonth = day.getMonth() === cursor.getMonth();
+
+          const cell = document.createElement("div");
+          cell.className = "cal-cell";
+          if (!inMonth) cell.style.opacity = ".45";
+          if (dayKey === todayKey) cell.classList.add("today");
+
+          const daynum = document.createElement("div");
+          daynum.className = "daynum";
+          daynum.textContent = String(day.getDate());
+          cell.appendChild(daynum);
+
+          const itemsWrap = document.createElement("div");
+          itemsWrap.className = "cal-items";
+
+          const items = safeArr(App.state.calendar_index.get(dayKey));
+          if (items.length > 0){
+            const max = 3;
+            const showItems = items.slice(0, max);
+            for (const item of showItems){
+              itemsWrap.appendChild(renderCalItem(item));
+            }
+            if (items.length > max){
+              const more = document.createElement("div");
+              more.className = "cal-item";
+              more.tabIndex = 0;
+              more.setAttribute("role", "button");
+              more.innerHTML = `<div class="thumb"><div class="noimg">+</div></div><div class="main"><div class="t">+ ${items.length - max} more</div><div class="s"><span class="badge">Open day</span></div></div>`;
+              more.addEventListener("click", () => openDayPopup(dayKey, items));
+              more.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDayPopup(dayKey, items); }
+              });
+              itemsWrap.appendChild(more);
+            }
+          }
+
+          cell.appendChild(itemsWrap);
+          grid.appendChild(cell);
+        }
+      }
+
+      function renderCalItem(item){
+        const el = document.createElement("div");
+        el.className = "cal-item";
+        el.tabIndex = 0;
+        el.setAttribute("role", "button");
+
+        const thumb = document.createElement("div");
+        thumb.className = "thumb";
+
+        // Prefer poster_local for thumb; fallback to backdrop_local
+        const imgPath = safeStr(item.poster_local) || safeStr(item.backdrop_local);
+        if (imgPath){
+          const img = document.createElement("img");
+          img.loading = "lazy";
+          img.src = imgPath;
+          img.alt = item.title ? `${item.title} poster` : "poster";
+          img.addEventListener("error", () => {
+            thumb.innerHTML = `<div class="noimg">NO</div>`;
+          }, { once: true });
+          thumb.appendChild(img);
+        } else {
+          // Graceful placeholder only (no error toast)
+          thumb.innerHTML = `<div class="noimg">NO</div>`;
+        }
+
+        const main = document.createElement("div");
+        main.className = "main";
+
+        const t = document.createElement("div");
+        t.className = "t";
+        t.textContent = safeStr(item.title) || "(untitled)";
+
+        const s = document.createElement("div");
+        s.className = "s";
+
+        const kind = document.createElement("span");
+        kind.className = `badge ${item.kind === "movie" ? "kind-m" : "kind-s"}`;
+        kind.textContent = item.kind === "movie" ? "Movie" : "Show";
+
+        const links = safeObj(item.links);
+        const linkKeys = Object.keys(links || {});
+        const lk = document.createElement("span");
+        lk.className = "badge links";
+        lk.textContent = linkKeys.length > 0 ? `Links: ${linkKeys.join(", ")}` : "Links: none";
+
+        s.appendChild(kind);
+
+        if (item.kind === "show"){
+          const sc = document.createElement("span");
+          sc.className = "badge";
+          const n = (typeof item.seasons_count === "number") ? item.seasons_count : 0;
+          sc.textContent = `Seasons: ${n}`;
+          s.appendChild(sc);
+        }
+
+        s.appendChild(lk);
+
+        main.appendChild(t);
+        main.appendChild(s);
+
+        el.appendChild(thumb);
+        el.appendChild(main);
+
+        el.addEventListener("click", () => openItemPopup(item));
+        el.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openItemPopup(item); }
+        });
+
+        return el;
+      }
+
+      function openDayPopup(dayKey, items){
+        const d = parseISODate(dayKey);
+        const title = d ? d.toLocaleDateString(undefined, { year:"numeric", month:"long", day:"numeric" }) : dayKey;
+
+        const body = document.createElement("div");
+        const p = document.createElement("div");
+        p.className = "muted";
+        p.textContent = `${items.length} item(s)`;
+        body.appendChild(p);
+        body.appendChild(document.createElement("div")).className = "hr";
+
+        for (const it of items){
+          const row = document.createElement("div");
+          row.style.display = "flex";
+          row.style.alignItems = "center";
+          row.style.justifyContent = "space-between";
+          row.style.gap = "12px";
+          row.style.padding = "10px 0";
+          row.style.borderBottom = "1px solid rgba(255,255,255,.08)";
+
+          const left = document.createElement("div");
+          left.style.minWidth = "0";
+
+          const t = document.createElement("div");
+          t.style.fontWeight = "800";
+          t.style.whiteSpace = "nowrap";
+          t.style.overflow = "hidden";
+          t.style.textOverflow = "ellipsis";
+          t.textContent = safeStr(it.title) || "(untitled)";
+
+          const meta = document.createElement("div");
+          meta.className = "muted";
+          meta.style.fontSize = "12px";
+          meta.textContent = `${it.kind === "movie" ? "Movie" : "Show"} • TMDB ${it.tmdb_id ?? "?"}`;
+
+          left.appendChild(t);
+          left.appendChild(meta);
+
+          const right = document.createElement("div");
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "link-btn";
+          btn.textContent = "Open";
+          btn.addEventListener("click", () => openItemPopup(it));
+          right.appendChild(btn);
+
+          row.appendChild(left);
+          row.appendChild(right);
+
+          body.appendChild(row);
+        }
+
+        openPopup(title, body);
+      }
+
+      panel.appendChild(header);
+      panel.appendChild(dowRow);
+      panel.appendChild(grid);
+
+      root.appendChild(panel);
+
+      drawGrid();
+    }
+
+    // -----------------------------------------------------------------------------------
+    // POPUPS
+    // -----------------------------------------------------------------------------------
+
+    function wirePopup(){
+      const overlay = $("#popupOverlay");
+      const close = $("#popupClose");
+
+      if (close){
+        close.addEventListener("click", closePopup);
+      }
+      if (overlay){
+        overlay.addEventListener("click", (e) => {
+          if (e.target === overlay) closePopup();
+        });
+      }
+    }
+
+    function openPopup(title, bodyNode){
+      const overlay = $("#popupOverlay");
+      const t = $("#popupTitle");
+      const b = $("#popupBody");
+      if (!overlay || !t || !b) return;
+
+      t.textContent = title || "Details";
+      b.innerHTML = "";
+      if (bodyNode) b.appendChild(bodyNode);
+
+      overlay.classList.add("open");
+
+      App.state.popup_stack.push({ title });
+    }
+
+    function closePopup(){
+      const overlay = $("#popupOverlay");
+      if (!overlay) return;
+      overlay.classList.remove("open");
+      App.state.popup_stack.pop();
+    }
+
+    function openItemPopup(item){
+      const body = document.createElement("div");
+
+      const top = document.createElement("div");
+      top.style.display = "grid";
+      top.style.gridTemplateColumns = "220px 1fr";
+      top.style.gap = "16px";
+      top.style.alignItems = "start";
+
+      const imgBox = document.createElement("div");
+      imgBox.style.width = "220px";
+      imgBox.style.borderRadius = "16px";
+      imgBox.style.overflow = "hidden";
+      imgBox.style.border = "1px solid rgba(255,255,255,.12)";
+      imgBox.style.background = "rgba(255,255,255,.04)";
+
+      const imgPath = safeStr(item.poster_local) || safeStr(item.backdrop_local);
+      if (imgPath){
+        const img = document.createElement("img");
+        img.src = imgPath;
+        img.alt = item.title ? item.title : "image";
+        img.style.width = "100%";
+        img.style.height = "auto";
+        img.style.display = "block";
+        img.addEventListener("error", () => {
+          imgBox.innerHTML = `<div class="noimg" style="width:100%;height:260px;border-radius:0;">NO</div>`;
+        }, { once: true });
+        imgBox.appendChild(img);
+      } else {
+        imgBox.innerHTML = `<div class="noimg" style="width:100%;height:260px;border-radius:0;">NO</div>`;
+      }
+
+      const info = document.createElement("div");
+
+      const h = document.createElement("div");
+      h.style.fontSize = "22px";
+      h.style.fontWeight = "900";
+      h.textContent = safeStr(item.title) || "(untitled)";
+
+      const meta = document.createElement("div");
+      meta.className = "muted";
+      meta.style.marginTop = "6px";
+      meta.textContent =
+        `${item.kind === "movie" ? "Movie" : "Show"} • TMDB ${item.tmdb_id ?? "?"} • Trakt ${item.trakt_id ?? "?"}` +
+        (safeStr(item.date) ? ` • Date ${item.date}` : "");
+
+      info.appendChild(h);
+      info.appendChild(meta);
+
+      if (item.kind === "show"){
+        const extra = document.createElement("div");
+        extra.className = "muted";
+        extra.style.marginTop = "10px";
+        const sc = (typeof item.seasons_count === "number") ? item.seasons_count : 0;
+        extra.textContent = `Season mode: ${safeStr(item.season_mode) || "n/a"} • Season filter: ${item.season_filter ?? "n/a"} • Seasons: ${sc}`;
+        info.appendChild(extra);
+      }
+
+      top.appendChild(imgBox);
+      top.appendChild(info);
+
+      body.appendChild(top);
+      body.appendChild(document.createElement("div")).className = "hr";
+
+      // Links (keys only)
+      const links = safeObj(item.links);
+      const keys = Object.keys(links || {});
+      const linkRow = document.createElement("div");
+      linkRow.className = "link-row";
+
+      if (keys.length === 0){
+        const none = document.createElement("div");
+        none.className = "muted";
+        none.textContent = "No streaming links available.";
+        body.appendChild(none);
+      } else {
+        for (const k of keys){
+          const url = safeStr(links[k]);
+          if (!url) continue;
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "link-btn";
+          btn.textContent = (k || "link").toUpperCase();
+          btn.addEventListener("click", () => {
+            window.open(url, "_blank", "noopener,noreferrer");
+          });
+
+          linkRow.appendChild(btn);
+        }
+        body.appendChild(linkRow);
+      }
+
+      openPopup(item.title || "Details", body);
+    }
+
+    function wireGlobalKeys(){
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape"){
+          const overlay = $("#popupOverlay");
+          if (overlay && overlay.classList.contains("open")){
+            e.preventDefault();
+            closePopup();
+          }
+        }
+      });
+    }
+
+    // -----------------------------------------------------------------------------------
+    // START
+    // -----------------------------------------------------------------------------------
+
+    init();
+
+  })();
+  </script>
+</body>
+</html>
