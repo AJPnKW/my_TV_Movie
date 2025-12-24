@@ -1,0 +1,115 @@
+1️⃣ Final pipeline output model (this is what data.json WILL contain)
+Movies
+movies[*] {
+  title,
+  tmdb_id,
+  trakt_id,
+  release_date,
+  poster,
+  backdrop,
+  streaming_links[],
+  icon_strip[]
+}
+
+Shows
+shows[*] {
+  title,
+  tmdb_id,
+  trakt_id,
+  first_air_date,
+  poster,
+  backdrop,
+  season_mode,
+  season_filter,
+  seasons[]
+}
+
+Seasons
+seasons[*] {
+  season_number,
+  poster,
+  episodes[]
+}
+
+Episodes
+episodes[*] {
+  episode_id,
+  title,
+  air_date,
+  season_number,
+  episode_number,
+  poster,
+  backdrop,
+  streaming_links[],
+  icon_strip[]
+}
+
+
+This explicitly enables:
+
+episode-level calendar tiles
+
+episode cards
+
+episode streaming buttons
+
+episode icon strips
+
+Nothing is inferred in the UI.
+
+2️⃣ Required pipeline changes (step-by-step)
+A. Fetch scripts (TMDB / Trakt)
+Script responsibility	Required change
+Movie fetch	Already OK → extend to fetch poster + backdrop
+Show fetch	Already OK → must fetch seasons + episodes
+Episode fetch	NEW: per season, fetch full episode list
+IDs	Use tmdb_id everywhere (movie/show/episode)
+Dates	Normalize to YYYY-MM-DD
+B. Image handling (MANDATORY)
+
+Pipeline must:
+
+Task	Rule
+Download images	TMDB poster / backdrop / still
+Store locally	/assets/posters/, /assets/backdrops/, /assets/stills/
+Naming	tmdb_<id>_<type>.jpg
+Emit paths	Relative paths only
+Missing image	Emit null (never omit key)
+
+No UI fallback logic beyond placeholder rendering.
+
+C. Streaming link generation (MANDATORY)
+
+Pipeline must compute:
+
+streaming_links[] = [
+  { "provider": "vidsrc", "url": "..." },
+  { "provider": "videasy", "url": "..." }
+]
+
+
+Rules:
+
+Generated for movies AND episodes
+
+No string concatenation in UI
+
+If unavailable → emit empty array []
+
+D. Icon strip derivation (MANDATORY)
+
+Pipeline computes:
+
+icon_strip[] = ["4K", "HDR", "EN", "SUB"]
+
+
+Derived from:
+
+resolution metadata
+
+language/subtitle flags
+
+provider rules
+
+UI never calculates this.
+
