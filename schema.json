@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "errors": {
+      "type": "array"
+    },
+    "meta": {
+      "type": "object",
+      "properties": {
+        "build_timestamp_utc": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "build_timestamp_utc",
+        "source",
+        "version"
+      ]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "trakt_public_enrichment": {
+          "type": "object",
+          "properties": {
+            "client_id_sha256": {
+              "type": "string"
+            },
+            "counts": {
+              "type": "object",
+              "properties": {
+                "looked_up": {
+                  "type": "integer"
+                },
+                "not_found": {
+                  "type": "integer"
+                },
+                "updated_movies": {
+                  "type": "integer"
+                },
+                "updated_shows": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "looked_up",
+                "not_found",
+                "updated_movies",
+                "updated_shows"
+              ]
+            },
+            "mode": {
+              "type": "string"
+            },
+            "script": {
+              "type": "string"
+            },
+            "timestamp_utc": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "client_id_sha256",
+            "counts",
+            "mode",
+            "script",
+            "timestamp_utc"
+          ]
+        }
+      },
+      "required": [
+        "trakt_public_enrichment"
+      ]
+    },
+    "movies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "backdrop_local": {
+            "type": "null"
+          },
+          "links": {
+            "type": "object",
+            "properties": {
+              "videasy": {
+                "type": "string"
+              },
+              "vidsrc": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "videasy",
+              "vidsrc"
+            ]
+          },
+          "poster_local": {
+            "type": "null"
+          },
+          "release_date": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "tmdb_id": {
+            "type": "integer"
+          },
+          "trakt_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "backdrop_local",
+          "links",
+          "poster_local",
+          "release_date",
+          "title",
+          "tmdb_id",
+          "trakt_id"
+        ]
+      }
+    },
+    "shows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "backdrop_local": {
+            "type": "null"
+          },
+          "first_air_date": {
+            "type": "string"
+          },
+          "links": {
+            "type": "object"
+          },
+          "poster_local": {
+            "type": "null"
+          },
+          "season_filter": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              }
+            ]
+          },
+          "season_mode": {
+            "type": "string"
+          },
+          "seasons": {
+            "type": "array"
+          },
+          "title": {
+            "type": "string"
+          },
+          "tmdb_id": {
+            "type": "integer"
+          },
+          "trakt_id": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "backdrop_local",
+          "first_air_date",
+          "links",
+          "poster_local",
+          "season_filter",
+          "season_mode",
+          "seasons",
+          "title",
+          "tmdb_id"
+        ]
+      }
+    }
+  },
+  "required": [
+    "errors",
+    "meta",
+    "metadata",
+    "movies",
+    "shows"
+  ]
+}

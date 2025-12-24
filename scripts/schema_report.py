@@ -4,7 +4,7 @@ from collections import defaultdict
 
 REPORT_DIR = r"C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie\reports"
 os.makedirs(REPORT_DIR, exist_ok=True)
-REPORT_FILE = os.path.join(REPORT_DIR, "data_schema_report.txt")
+REPORT_FILE = os.path.join(REPORT_DIR, "data_schema_archived_report.txt")
 
 def summarize_schema(obj, prefix=""):
     schema = {}
@@ -31,7 +31,7 @@ def find_empty(obj, path="", results=None):
             find_empty(v, f"{path}[{i}]", results)
     return results
 
-with open("data/data.json", "r", encoding="utf-8") as f:
+with open("data/archived/data.json", "r", encoding="utf-8") as f:
     data = json.load(f)
 
 lines = []
