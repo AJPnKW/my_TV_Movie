@@ -113,3 +113,180 @@ provider rules
 
 UI never calculates this.
 
+
+
+
+
+
+i saved this as https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/docs/FULL%20authoritative%20spec/Mandatory-PIPELINE%20SOLUTION.txt, then ext we need to update the code that generates the json. and as input silently Generate final data.json schema file, and Refactor existing fetch scripts to support the schema, downloads, smart error handling, loggin issues at a debuggin level, that aligns and suppoort the disired goal of a dats.json as defeind in Final pipeline output model (this is what data.json WILL contain)
+
+i saved this as https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/docs/FULL%20authoritative%20spec/Mandatory-PIPELINE%20SOLUTION.txt, but i dont see a data points for let me know if any of tehse don exist, as my search result were general reponses and we need specific of waht can be gathered and pulled. i also don see any trackt data points included 
+
+
+Movie
+movie description
+ratings or populatiry
+genre
+run time
+recommendations
+similar
++ trakt data
+
+and for Shows
+show  description
+ratings or populatiry
+genre
+number_of_episodes
+number_of_seasons
+last_air_date
+next_episode_to_air
+last_episode_to_air
+homepage
+backdrop_path
+backdrop_path_local
+poster_path_local
+network
+network_logo
+notwork_logo_path
+recommendations
+similar
++ trakt data
+
+and for Seasons
+backdrop_path
+backdrop_path_local
+poster_path_local
+number_of_episodes
+season description
++ trakt data
+
+and for Episodes
+backdrop_path
+backdrop_path_local
+poster_path_local
+episode  description
+run time
++ trakt data
+
+can yo review my concners and idetnofy what can and cant be pulled and included in the daaa.json file by providing an updated Final pipeline output model
+
+
+ok from what I learned we may have to do some couting on watch staus and i nclud that in the pipline code
+here is what i found that wasnt clear to me
+🎬 Movies
+To know:
+
+watched or not
+
+in watchlist or not
+
+You only need these fields:
+
+From /sync/history
+watched_at → if present, you watched it
+
+id → the movie identifier
+
+From /sync/watchlist
+listed_at → if present, it’s in your watchlist
+
+Minimal movie state you can compute
+Code
+watched: true/false
+in_watchlist: true/false
+📺 TV Shows
+You want:
+
+watched or not
+
+progress
+
+in watchlist or not
+
+You only need these fields:
+
+From /shows/{id}/progress/watched
+aired → total episodes aired
+
+completed → episodes you’ve watched
+
+last_watched_at → timestamp
+
+next_episode → the next episode you need to watch
+
+From /sync/watchlist
+listed_at → if present, it’s in your watchlist
+
+Minimal show state you can compute
+Code
+completed_episodes: number
+total_episodes: number
+next_episode: SxxEyy or null
+in_watchlist: true/false
+📘 Seasons
+You want:
+
+watched or not
+
+progress
+
+You only need:
+
+From /shows/{id}/progress/watched
+Inside each season:
+
+number → season number
+
+aired → total episodes
+
+completed → watched episodes
+
+Minimal season state
+Code
+season_number: number
+completed_episodes: number
+total_episodes: number
+🎞 Episodes
+You want:
+
+watched or not
+
+You only need:
+
+From /sync/history
+episode.ids → episode identifier
+
+watched_at → if present, you watched it
+
+Minimal episode state
+Code
+watched: true/false
+🧩 Your Final Minimal Data Model
+Here is the entire set of fields you need to track everything you described:
+
+Code
+movie:
+  watched: true/false
+  in_watchlist: true/false
+
+show:
+  completed_episodes: number
+  total_episodes: number
+  next_episode: SxxEyy or null
+  in_watchlist: true/false
+
+season:
+  season_number: number
+  completed_episodes: number
+  total_episodes: number
+
+episode:
+  watched: true/false
+  
+  no i dont want  the exclude, if i did i would nto ask for them to be included
+  guaranteed episode runtime	Inconsistent
+guaranteed episode description	Often empty
+if ti does exist as with any data point we need smar handling for teh value, we dont drop all runtime collectiojn becasue a couple of shows or movides dont ahvce them, and i think in most cases if the epidoe hasnt beenplayed the exact runtime is not knwo, so we acpt taht and deal withit and code for knowin that. 
+  I am Ok with
+  season_backdrop_path	TMDB does not provide
+episode_backdrop_path	TMDB does not provide
