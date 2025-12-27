@@ -3,7 +3,7 @@
 # FILE: scripts/generate_repo_file_map.py
 #
 # PURPOSE:
-#   Generate a repo file listing, extrapolate GitHub RAW URLs for main branch,
+#   Generate a key file listing for my_TV_Movie, extrapolate GitHub RAW URLs,
 #   validate local existence under repo root, and output a 4-column table:
 #     1) repo_relative_path
 #     2) local_full_path
@@ -15,14 +15,23 @@
 #   - REPORTS: <repo>\reports\_repo_file_map_<timestamp>.csv
 #              <repo>\reports\_repo_file_map_<timestamp>.md
 #
+# DEFAULT KEY FILES (aligned to your repo structure):
+#   - scripts/fetch_tmdb.py
+#   - scripts/fetch_trakt.py
+#   - scripts/sync_trakt.py
+#   - scripts/fetch_tvmaze.py
+#   - inputs/*.txt lists (movies_list.txt, tv_list.txt, etc.)
+#   - web/* (index/config/watchlist)
+#   - data/data.json
+#   - .github/workflows/build-data.yml (or .yaml)
+#
+# USAGE:
+#   python scripts\generate_repo_file_map.py
+#   python scripts\generate_repo_file_map.py --full
+#   python scripts\generate_repo_file_map.py --hash
+#   python scripts\generate_repo_file_map.py --branch main
+#
 # NOTES:
-#   - KEY_ONLY by default uses YOUR repo's current structure:
-#       scripts/* pipeline scripts
-#       inputs/* input lists
-#       web/* ui + config
-#       data/data.json
-#       .github/workflows/build-data.yml (or build-data.yaml)
-#   - --full includes full repo inventory (filtered)
 #   - Deterministic ordering
 #   - No silent failures
 #   - Waits for Enter at end
@@ -75,14 +84,14 @@ def to_posix(rel: str) -> str:
 
 
 def build_raw_url(owner: str, repo: str, branch: str, repo_rel_posix: str) -> str:
-    # Required format:
+    # Required format example:
     # https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/web/index.html
     return f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{branch}/{repo_rel_posix}"
 
 
 def md_table(rows: Sequence[Row]) -> str:
     header = "| repo_relative_path | local_full_path | github_raw_url | status |\n|---|---|---|---|\n"
-    lines = []
+    lines: List[str] = []
     for r in rows:
         repo_rel = r.repo_rel.replace("|", "\\|")
         local_path = r.local_path.replace("|", "\\|")
@@ -92,15 +101,15 @@ def md_table(rows: Sequence[Row]) -> str:
     return header + "\n".join(lines) + "\n"
 
 
-def iter_glob_files(repo_root: Path, rel_glob: str) -> List[Path]:
-    rel_glob_norm = rel_glob.replace("\\", "/")
+def iter_repo_files_filtered(repo_root: Path, exclude_dirs: Set[str]) -> List[Path]:
     out: List[Path] = []
     for p in repo_root.rglob("*"):
         if not p.is_file():
             continue
-        rel = p.relative_to(repo_root).as_posix()
-        if fnmatch.fnmatch(rel, rel_glob_norm):
-            out.append(p)
+        rel = p.relative_to(repo_root)
+        if any(part in exclude_dirs for part in rel.parts):
+            continue
+        out.append(p)
     out.sort(key=lambda x: str(x).lower())
     return out
 
@@ -137,7 +146,7 @@ def main() -> int:
     write_log(log_path, f"mode: {'FULL' if args.full else 'KEY_ONLY'}")
     write_log(log_path, f"outputs: {out_csv.name}, {out_md.name}, {log_path.name}")
 
-    # KEY FILES: aligned to YOUR repo structure (as per your directory listing)
+    # KEY FILES aligned to your repo structure (as per your directory listing)
     key_rel_paths: List[str] = [
         ".github/workflows/build-data.yml",
         ".github/workflows/build-data.yaml",
@@ -157,11 +166,11 @@ def main() -> int:
         "inputs/watchlist.txt",
         "inputs/show_pages.txt",
         "inputs/livetv_list.txt",
+        "inputs/schema.json",
         "requirements.txt",
         "README.md",
     ]
 
-    # FULL inventory excludes noisy folders
     exclude_dirs = {
         ".git",
         ".venv",
@@ -175,18 +184,13 @@ def main() -> int:
         "build",
         ".idea",
         ".vscode",
+        "logs",
+        "reports",
     }
 
     # Build candidate list
     if args.full:
-        rel_candidates: List[str] = []
-        for p in repo_root.rglob("*"):
-            if not p.is_file():
-                continue
-            rel = p.relative_to(repo_root)
-            if any(part in exclude_dirs for part in rel.parts):
-                continue
-            rel_candidates.append(rel.as_posix())
+        rel_candidates = [p.relative_to(repo_root).as_posix() for p in iter_repo_files_filtered(repo_root, exclude_dirs)]
     else:
         rel_candidates = [to_posix(x) for x in key_rel_paths]
 
