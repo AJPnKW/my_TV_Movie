@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
-# ==============================================================================
-# File: scripts/sync_trakt.py
-# Project: my_TV_Movie
-# Purpose:
-#   Deterministic wrapper that runs fetch_trakt.py using ONLY API_TRAKT_ID + API_TRAKT_KEY.
-#   - NO auth flows
-#   - NO user context
-#   - NO additional env vars
+# ======================================================================================
+# sync_trakt.py
 #
-# Required env (ONLY):
-#   - API_TRAKT_ID
-#   - API_TRAKT_KEY
-# ==============================================================================
+# Wrapper to run fetch_trakt.py with the same repository conventions:
+# - Logs to repo_root/logs
+# - Writes status to log
+# - No schema changes here (pipeline scripts own data.json structure)
+#
+# NOTE:
+#   This script currently "syncs" by executing fetch_trakt.py.
+#   (i.e., it enriches/looks up trakt ids and related info already supported by fetch_trakt.py)
+# ======================================================================================
 
 from __future__ import annotations
 
@@ -21,15 +20,21 @@ import subprocess
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS_DIR = REPO_ROOT / "scripts"
-FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
-DATA_JSON = REPO_ROOT / "data" / "data.json"
+# ----------------------------
+# Repo paths (derived)
+# ----------------------------
+SCRIPT_PATH = Path(__file__).resolve()
+REPO_ROOT = SCRIPT_PATH.parent.parent  # .../my_TV_Movie
 LOGS_DIR = REPO_ROOT / "logs"
+
+FETCH_TRAKT = REPO_ROOT / "scripts" / "fetch_trakt.py"
+
+DATA_DIR = REPO_ROOT / "data"
+DATA_JSON = DATA_DIR / "data.json"
 
 
 def _now_stamp() -> str:
-    return _dt.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+    return _dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
 def _log_path() -> Path:
@@ -42,29 +47,25 @@ def _write_line(fp, s: str) -> None:
     fp.flush()
 
 
-def _env_required(name: str) -> str:
-    v = os.getenv(name)
-    if not v or not v.strip():
-        raise RuntimeError(f"Missing required env var: {name}")
-    return v.strip()
-
-
 def _check_prereqs() -> None:
+    missing = []
     if not FETCH_TRAKT.exists():
-        raise FileNotFoundError(f"Missing required script: {FETCH_TRAKT}")
+        missing.append(str(FETCH_TRAKT))
     if not DATA_JSON.exists():
-        raise FileNotFoundError(f"Missing required data file: {DATA_JSON} (run earlier pipeline steps first)")
+        # Not strictly required for fetch_trakt (depends on implementation),
+        # but in this repo it is expected that pipeline produces/uses data.json.
+        missing.append(str(DATA_JSON))
 
-    # ONLY allowed env vars:
-    _env_required("API_TRAKT_ID")
-    _env_required("API_TRAKT_KEY")
+    if missing:
+        raise FileNotFoundError("Missing required file(s): " + ", ".join(missing))
 
 
 def _run_fetch_trakt(log_fp) -> int:
     cmd = [sys.executable, str(FETCH_TRAKT)]
-    _write_line(log_fp, f"[sync_trakt] CMD: {' '.join(cmd)}")
+    _write_line(log_fp, f"[sync_trakt] exec: {' '.join(cmd)}")
 
-    proc = subprocess.Popen(
+    # Inherit current environment (API_TRAKT_ID / API_TRAKT_KEY etc.)
+    p = subprocess.run(
         cmd,
         cwd=str(REPO_ROOT),
         stdout=subprocess.PIPE,
@@ -73,15 +74,25 @@ def _run_fetch_trakt(log_fp) -> int:
         encoding="utf-8",
         errors="replace",
     )
-    assert proc.stdout is not None
-    for line in proc.stdout:
-        line = line.rstrip("\n")
-        print(line)
-        _write_line(log_fp, line)
-    return proc.wait()
+
+    _write_line(log_fp, "[sync_trakt] --- fetch_trakt output begin ---")
+    _write_line(log_fp, p.stdout.rstrip("\n"))
+    _write_line(log_fp, "[sync_trakt] --- fetch_trakt output end ---")
+    _write_line(log_fp, f"[sync_trakt] fetch_trakt exit_code={p.returncode}")
+    return int(p.returncode)
 
 
 def main() -> int:
+    import argparse
+
+    ap = argparse.ArgumentParser(add_help=True)
+    ap.add_argument(
+        "--pause",
+        action="store_true",
+        help="Pause for Enter before exit (useful when double-clicking the script).",
+    )
+    args = ap.parse_args()
+
     lp = _log_path()
     with lp.open("w", encoding="utf-8") as log_fp:
         _write_line(log_fp, f"[sync_trakt] START {_dt.datetime.now().isoformat(timespec='seconds')}")
@@ -96,10 +107,11 @@ def main() -> int:
             print(msg, file=sys.stderr)
             _write_line(log_fp, msg)
             _write_line(log_fp, "[sync_trakt] END (failed prereq)")
-            try:
-                input("Press Enter to close...")
-            except Exception:
-                pass
+            if args.pause:
+                try:
+                    input("Press Enter to close...")
+                except Exception:
+                    pass
             return 2
 
         try:
@@ -108,20 +120,23 @@ def main() -> int:
             msg = f"[sync_trakt] ERROR run: {e}"
             print(msg, file=sys.stderr)
             _write_line(log_fp, msg)
-            _write_line(log_fp, "[sync_trakt] END (run error)")
-            try:
-                input("Press Enter to close...")
-            except Exception:
-                pass
+            _write_line(log_fp, "[sync_trakt] END (failed run)")
+            if args.pause:
+                try:
+                    input("Press Enter to close...")
+                except Exception:
+                    pass
             return 3
 
-        _write_line(log_fp, f"[sync_trakt] fetch_trakt_exit_code={rc}")
-        _write_line(log_fp, "[sync_trakt] END")
+        _write_line(log_fp, f"[sync_trakt] END exit_code={rc}")
+
+    if args.pause:
         try:
             input("Press Enter to close...")
         except Exception:
             pass
-        return int(rc)
+
+    return rc
 
 
 if __name__ == "__main__":
