@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 # ==============================================================================
-# scripts/generate_repo_file_map.py
+# generate_repo_file_map.py
 #
-# Clean repo map:
-# - Canonical paths first (your real repo structure)
-# - Legacy/root aliases are allowed, but NEVER treated as missing if canonical exists
-# - Outputs:
+# Interactive + CLI repo file mapper
+# - Canonical pipeline-aware paths
+# - Legacy aliases resolved (never false-missing)
+# - Optional full inventory
+# - Optional SHA256 hashing
+#
+# Outputs:
 #   logs\_repo_file_map_<stamp>.log.txt
 #   reports\_repo_file_map_<stamp>.csv
 #   reports\_repo_file_map_<stamp>.md
@@ -15,11 +18,16 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Sequence, Set, Tuple
+from typing import Dict, List, Set
 
+
+# ------------------------------------------------------------------------------
+# Models
+# ------------------------------------------------------------------------------
 
 @dataclass
 class Row:
@@ -27,52 +35,78 @@ class Row:
     local_full_path: str
     github_raw_url: str
     status: str
+    sha256: str = ""
 
 
-def _stamp() -> str:
+# ------------------------------------------------------------------------------
+# Helpers
+# ------------------------------------------------------------------------------
+
+def stamp() -> str:
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
-def _now() -> str:
+def now() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _posix(rel: str) -> str:
-    return rel.replace("\\", "/").lstrip("/")
+def posix(p: str) -> str:
+    return p.replace("\\", "/").lstrip("/")
 
 
-def _raw_url(owner: str, repo: str, branch: str, rel_posix: str) -> str:
-    return f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{branch}/{rel_posix}"
+def raw_url(owner: str, repo: str, branch: str, rel: str) -> str:
+    return f"https://raw.githubusercontent.com/{owner}/{repo}/refs/heads/{branch}/{rel}"
 
 
-def _write_log(log_path: Path, msg: str) -> None:
-    line = f"[{_now()}] {msg}"
+def sha256_file(path: Path) -> str:
+    try:
+        h = hashlib.sha256()
+        with path.open("rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
+                h.update(chunk)
+        return h.hexdigest()
+    except Exception:
+        return ""
+
+
+def log(log_path: Path, msg: str) -> None:
+    line = f"[{now()}] {msg}"
     print(line)
     log_path.open("a", encoding="utf-8").write(line + "\n")
 
 
-def _md_table(rows: Sequence[Row]) -> str:
-    header = "| repo_relative_path | local_full_path | github_raw_url | status |\n|---|---|---|---|\n"
-    lines: List[str] = []
-    for r in rows:
-        lines.append(
-            f"| `{r.repo_relative_path}` | `{r.local_full_path}` | {r.github_raw_url} | **{r.status}** |"
+def md_table(rows: List[Row], include_hash: bool) -> str:
+    if include_hash:
+        header = "| repo_relative_path | local_full_path | github_raw_url | status | sha256 |\n"
+        header += "|---|---|---|---|---|\n"
+        body = "\n".join(
+            f"| `{r.repo_relative_path}` | `{r.local_full_path}` | {r.github_raw_url} | **{r.status}** | `{r.sha256}` |"
+            for r in rows
         )
-    return header + "\n".join(lines) + "\n"
+    else:
+        header = "| repo_relative_path | local_full_path | github_raw_url | status |\n"
+        header += "|---|---|---|---|\n"
+        body = "\n".join(
+            f"| `{r.repo_relative_path}` | `{r.local_full_path}` | {r.github_raw_url} | **{r.status}** |"
+            for r in rows
+        )
+    return header + body + "\n"
 
 
-def _iter_repo_files_filtered(repo_root: Path, exclude_dirs: Set[str]) -> List[Path]:
+def iter_repo_files(repo_root: Path, exclude: Set[str]) -> List[Path]:
     out: List[Path] = []
     for p in repo_root.rglob("*"):
         if not p.is_file():
             continue
-        rel = p.relative_to(repo_root)
-        if any(part in exclude_dirs for part in rel.parts):
+        if any(part in exclude for part in p.relative_to(repo_root).parts):
             continue
         out.append(p)
-    out.sort(key=lambda x: str(x).lower())
-    return out
+    return sorted(out, key=lambda x: str(x).lower())
 
+
+# ------------------------------------------------------------------------------
+# Main
+# ------------------------------------------------------------------------------
 
 def main() -> int:
     ap = argparse.ArgumentParser()
@@ -80,41 +114,45 @@ def main() -> int:
     ap.add_argument("--owner", default="AJPnKW")
     ap.add_argument("--repo", default="my_TV_Movie")
     ap.add_argument("--branch", default="main")
-    ap.add_argument("--full", action="store_true", help="List full repo inventory (filtered).")
+    ap.add_argument("--full", action="store_true")
+    ap.add_argument("--hash", action="store_true")
     args = ap.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
-    if not repo_root.exists():
-        print(f"Repo root not found: {repo_root}")
-        return 1
-
     logs_dir = repo_root / "logs"
     reports_dir = repo_root / "reports"
-    logs_dir.mkdir(parents=True, exist_ok=True)
-    reports_dir.mkdir(parents=True, exist_ok=True)
+    logs_dir.mkdir(exist_ok=True)
+    reports_dir.mkdir(exist_ok=True)
 
-    s = _stamp()
+    s = stamp()
     log_path = logs_dir / f"_repo_file_map_{s}.log.txt"
     csv_path = reports_dir / f"_repo_file_map_{s}.csv"
     md_path = reports_dir / f"_repo_file_map_{s}.md"
 
-    _write_log(log_path, "START generate_repo_file_map")
-    _write_log(log_path, f"repo_root: {repo_root}")
-    _write_log(log_path, f"owner/repo: {args.owner}/{args.repo}")
-    _write_log(log_path, f"branch: {args.branch}")
-    _write_log(log_path, f"mode: {'FULL' if args.full else 'KEY_ONLY'}")
-    _write_log(log_path, f"outputs: {csv_path.name}, {md_path.name}, {log_path.name}")
+    # ---------------- Menu (if no switches) ----------------
+    if not args.full and not args.hash:
+        print("\nSelect run mode:")
+        print("  1) Key files only (default)")
+        print("  2) Full repository inventory")
+        print("  3) Key files + SHA256 hashes")
+        print("  4) Full inventory + SHA256 hashes")
+        choice = input("\nEnter choice [1-4]: ").strip()
 
-    # Canonical keys (your real structure)
-    canonical_keys: List[str] = [
+        if choice == "2":
+            args.full = True
+        elif choice == "3":
+            args.hash = True
+        elif choice == "4":
+            args.full = True
+            args.hash = True
+
+    log(log_path, "START generate_repo_file_map")
+    log(log_path, f"repo_root: {repo_root}")
+    log(log_path, f"mode: {'FULL' if args.full else 'KEY_ONLY'} | hash={'ON' if args.hash else 'OFF'}")
+
+    canonical = [
         ".github/workflows/build-data.yml",
-        ".github/workflows/build-data.yaml",
         "data/data.json",
-        "web/index.html",
-        "web/watchlist.html",
-        "web/config.json",
-        "web/config.html",
-        "web/config.js",
         "scripts/fetch_tmdb.py",
         "scripts/fetch_trakt.py",
         "scripts/sync_trakt.py",
@@ -126,104 +164,107 @@ def main() -> int:
         "inputs/show_pages.txt",
         "inputs/livetv_list.txt",
         "inputs/schema.json",
+        "web/index.html",
+        "web/watchlist.html",
+        "web/config.json",
+        "web/config.html",
+        "web/config.js",
         "requirements.txt",
         "README.md",
     ]
 
-    # Legacy aliases (old expectations)
-    # If alias exists locally -> OK (root file truly exists)
-    # Else if canonical exists -> ALIAS -> canonical (not missing)
-    # Else -> MISSING_LOCAL
-    legacy_alias_to_canonical: Dict[str, str] = {
+    legacy_alias = {
         "fetch_tmdb.py": "scripts/fetch_tmdb.py",
         "fetch_trakt.py": "scripts/fetch_trakt.py",
         "sync_trakt.py": "scripts/sync_trakt.py",
         "movies_list.txt": "inputs/movies_list.txt",
         "tv_list.txt": "inputs/tv_list.txt",
         "watchlist.txt": "inputs/watchlist.txt",
-        "show_pages.txt": "inputs/show_pages.txt",
-        "livetv_list.txt": "inputs/livetv_list.txt",
-    }
-
-    exclude_dirs = {
-        ".git", ".venv", "venv", "__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache",
-        "node_modules", "dist", "build", ".idea", ".vscode", "logs", "reports"
     }
 
     rows: List[Row] = []
 
+    exclude_dirs = {
+        ".git", ".venv", "venv", "__pycache__", "node_modules",
+        "logs", "reports", ".idea", ".vscode"
+    }
+
     if args.full:
-        files = _iter_repo_files_filtered(repo_root, exclude_dirs)
-        _write_log(log_path, f"paths_to_process: {len(files)}")
-        for i, p in enumerate(files, start=1):
+        files = iter_repo_files(repo_root, exclude_dirs)
+        for p in files:
             rel = p.relative_to(repo_root).as_posix()
             rows.append(
-                Row(rel, str(p), _raw_url(args.owner, args.repo, args.branch, rel), "OK")
+                Row(
+                    rel,
+                    str(p),
+                    raw_url(args.owner, args.repo, args.branch, rel),
+                    "OK",
+                    sha256_file(p) if args.hash else ""
+                )
             )
-            if i % 50 == 0 or i == len(files):
-                _write_log(log_path, f"progress: {i}/{len(files)}")
     else:
-        # Process canonical keys first
-        canon = sorted(set(_posix(x) for x in canonical_keys), key=lambda x: x.lower())
-        _write_log(log_path, f"paths_to_process (canonical): {len(canon)}")
-        for rel in canon:
+        for rel in canonical:
+            rel = posix(rel)
             p = repo_root / rel
-            status = "OK" if p.exists() else "MISSING_LOCAL"
-            rows.append(Row(rel, str(p), _raw_url(args.owner, args.repo, args.branch, rel), status))
+            rows.append(
+                Row(
+                    rel,
+                    str(p),
+                    raw_url(args.owner, args.repo, args.branch, rel),
+                    "OK" if p.exists() else "MISSING_LOCAL",
+                    sha256_file(p) if args.hash and p.exists() else ""
+                )
+            )
 
-        # Then append legacy aliases for visibility (but do not let them create fake "missing")
-        legacy = sorted(set(_posix(x) for x in legacy_alias_to_canonical.keys()), key=lambda x: x.lower())
-        _write_log(log_path, f"paths_to_process (legacy): {len(legacy)}")
-        for alias in legacy:
-            alias_path = repo_root / alias
-            canon_rel = _posix(legacy_alias_to_canonical[alias])
-            canon_path = repo_root / canon_rel
-
-            if alias_path.exists():
-                status = "OK (legacy file exists)"
-                resolved = alias_path
-            elif canon_path.exists():
-                status = f"ALIAS -> {canon_rel}"
-                resolved = canon_path
+        for alias, canon in legacy_alias.items():
+            alias_p = repo_root / alias
+            canon_p = repo_root / canon
+            if alias_p.exists():
+                status = "OK (legacy)"
+                resolved = alias_p
+            elif canon_p.exists():
+                status = f"ALIAS -> {canon}"
+                resolved = canon_p
             else:
                 status = "MISSING_LOCAL"
-                resolved = alias_path
+                resolved = alias_p
 
-            rows.append(Row(alias, str(resolved), _raw_url(args.owner, args.repo, args.branch, alias), status))
+            rows.append(
+                Row(
+                    alias,
+                    str(resolved),
+                    raw_url(args.owner, args.repo, args.branch, alias),
+                    status,
+                    sha256_file(resolved) if args.hash and resolved.exists() else ""
+                )
+            )
 
-    # Summary counts: only true missing rows count as missing
-    missing = sum(1 for r in rows if r.status == "MISSING_LOCAL")
-    ok = len(rows) - missing
-
-    _write_log(log_path, f"summary_ok: {ok}")
-    _write_log(log_path, f"summary_missing: {missing}")
-
-    _write_log(log_path, "writing CSV...")
+    log(log_path, "writing CSV...")
     with csv_path.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
-        w.writerow(["repo_relative_path", "local_full_path", "github_raw_url", "status"])
+        headers = ["repo_relative_path", "local_full_path", "github_raw_url", "status"]
+        if args.hash:
+            headers.append("sha256")
+        w.writerow(headers)
         for r in rows:
-            w.writerow([r.repo_relative_path, r.local_full_path, r.github_raw_url, r.status])
+            row = [r.repo_relative_path, r.local_full_path, r.github_raw_url, r.status]
+            if args.hash:
+                row.append(r.sha256)
+            w.writerow(row)
 
-    _write_log(log_path, "writing Markdown table...")
-    md: List[str] = []
-    md.append(f"# my_TV_Movie — Repo File Map ({s})\n\n")
-    md.append(f"- Repo root: `{repo_root}`\n")
-    md.append(f"- GitHub: `https://github.com/{args.owner}/{args.repo}`\n")
-    md.append(f"- Raw base: `https://raw.githubusercontent.com/{args.owner}/{args.repo}/refs/heads/{args.branch}/`\n")
-    md.append(f"- Mode: `{'FULL' if args.full else 'KEY_ONLY (canonical + legacy aliases)'}`\n\n")
-    md.append("## Files\n\n")
-    md.append(_md_table(rows))
-    md.append("\n## Summary\n\n")
-    md.append(f"- OK: {ok}\n")
-    md.append(f"- Missing locally: {missing}\n")
-
+    log(log_path, "writing Markdown...")
+    md = [
+        f"# my_TV_Movie Repo File Map ({s})\n\n",
+        f"- Mode: {'FULL' if args.full else 'KEY_ONLY'}\n",
+        f"- Hashing: {'ON' if args.hash else 'OFF'}\n\n",
+        md_table(rows, args.hash),
+    ]
     md_path.write_text("".join(md), encoding="utf-8")
 
-    _write_log(log_path, "SUCCESS")
-    _write_log(log_path, f"CSV: {csv_path}")
-    _write_log(log_path, f"MD : {md_path}")
-    _write_log(log_path, f"LOG: {log_path}")
+    log(log_path, "SUCCESS")
+    log(log_path, f"CSV: {csv_path}")
+    log(log_path, f"MD : {md_path}")
+    log(log_path, f"LOG: {log_path}")
 
     input("Press Enter to exit")
     return 0
