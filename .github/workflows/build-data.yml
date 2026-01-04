@@ -3,7 +3,7 @@ name: build-data
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 4 * * *" # daily, deterministic
+    - cron: "17 4 * * *" # daily
   push:
     paths:
       - "scripts/**"
@@ -17,6 +17,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -32,33 +34,11 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      # ------------------------------------------------------------
-      # TXT → JSON (intermediate)
-      # ------------------------------------------------------------
-      - name: Parse TXT inputs
-        run: python scripts/parse_txt_to_json.py
-
-      # ------------------------------------------------------------
-      # TMDB → data/data.json
-      # ------------------------------------------------------------
-      - name: Fetch TMDB
-        run: python scripts/fetch_tmdb.py
+      - name: Run full pipeline (TXT -> TMDB -> Trakt -> QA)
+        run: python scripts/run_pipeline_full.py
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
-
-      # ------------------------------------------------------------
-      # TRAKT (public enrichment) → data/data.json
-      # ------------------------------------------------------------
-      - name: Fetch Trakt
-        run: python scripts/fetch_trakt.py
-        env:
-          API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
-          API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
-
-      - name: Sync Trakt
-        run: python scripts/sync_trakt.py
-        env:
           API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
           API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
 

@@ -2,303 +2,115 @@
 # ==============================================================================
 # [FILE]    scripts/parse_txt_to_json.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Parse TXT inputs → deterministic intermediate JSON for TMDB build
-# [VERSION] v1.0.0
-# [UPDATED] 2025-12-20_00-00-00
+# [ROLE]    Parse inputs/*.txt into data/inputs_parsed.json
+# [VERSION] v1.3.0
+# [UPDATED] 2026-01-03_00-00-00
+# [BUILD]   14.01.07
 #
-# [PIPELINE]
-# TXT → parse_txt_to_json.py → JSON → fetch_tmdb.py → data/data.json → ...
-#
-# [INPUTS] (first-found wins; supports legacy locations)
-# - inputs/tv_list.txt   OR tv_list.txt
-# - inputs/movies_list.txt OR movies_list.txt
-# - inputs/watchlist.txt OR watchlist.txt
-#
-# [OUTPUT]
-# - data/inputs_parsed.json
-#
-# [RULES]
-# - Handle extra spaces and inconsistent " | " formatting.
-# - TV season rules:
-#   - If season_spec missing/blank/"*" => all seasons (season_mode="all", seasons=null)
-#   - If "1" / "S1" / "Season 1" => [1]
-#   - If "1,2,3" => [1,2,3]
-#   - If "1-5" => [1,2,3,4,5]
-# - Never crash on a single bad line; capture to errors[] and continue.
-# - Deterministic ordering: preserve file order.
-# - No schema changes to data/data.json here; this is intermediate only.
+# NOTE:
+# - Never blocks CI. Local "Press Enter" only if PARSE_TXT_PAUSE=1.
 # ==============================================================================
 
 from __future__ import annotations
 
+import datetime as _dt
 import json
 import os
-import re
 import sys
-import time
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List
 
-try:
-    from dotenv import load_dotenv  # type: ignore
-except Exception:
-    load_dotenv = None  # noqa
-
-# -------------------------
-# Constants / paths
-# -------------------------
-REPO_ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = REPO_ROOT / "data"
-OUT_JSON = DATA_DIR / "inputs_parsed.json"
-
-TV_CANDIDATES = [REPO_ROOT / "inputs" / "tv_list.txt", REPO_ROOT / "tv_list.txt"]
-MOV_CANDIDATES = [REPO_ROOT / "inputs" / "movies_list.txt", REPO_ROOT / "movies_list.txt"]
-WCH_CANDIDATES = [REPO_ROOT / "inputs" / "watchlist.txt", REPO_ROOT / "watchlist.txt"]
-
-RE_COMMENT = re.compile(r"^\s*#")
-RE_PIPE_SPLIT = re.compile(r"\s*\|\s*")
-RE_YEAR_PAREN = re.compile(r"\((\d{4})\)\s*$", re.IGNORECASE)
-RE_S_TOKEN = re.compile(r"^\s*(?:s|season)\s*(\d+)\s*$", re.IGNORECASE)
-RE_RANGE = re.compile(r"^\s*(\d+)\s*-\s*(\d+)\s*$")
-RE_LIST = re.compile(r"^\s*(\d+)(\s*,\s*\d+)+\s*$")
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+INPUTS_DIR = os.path.join(REPO_ROOT, "inputs")
+DATA_DIR = os.path.join(REPO_ROOT, "data")
+OUT_JSON = os.path.join(DATA_DIR, "inputs_parsed.json")
 
 
-def _now_utc_iso() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+def _ts() -> str:
+    return _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8", errors="replace")
+def _read_lines(path: str) -> List[str]:
+    if not os.path.isfile(path):
+        return []
+    with open(path, "r", encoding="utf-8-sig", errors="replace") as f:
+        # utf-8-sig strips BOM if present
+        raw = f.read().splitlines()
+    # drop blanks + comment lines (leading #)
+    out: List[str] = []
+    for line in raw:
+        s = (line or "").strip()
+        if not s:
+            continue
+        if s.startswith("#"):
+            continue
+        out.append(s)
+    return out
 
 
-def _first_existing(candidates: List[Path]) -> Optional[Path]:
-    for p in candidates:
-        if p.exists():
-            return p
-    return None
+def _parse_tmdb_id(line: str) -> str | None:
+    # accepted formats:
+    #   Title | tmdb_id=12345
+    #   12345
+    #   tmdb_id=12345
+    if "tmdb_id=" in line:
+        try:
+            right = line.split("tmdb_id=", 1)[1].strip()
+            # strip anything after separators
+            for sep in ("|", ",", ";"):
+                if sep in right:
+                    right = right.split(sep, 1)[0].strip()
+            return right if right.isdigit() else None
+        except Exception:
+            return None
+    s = line.strip()
+    return s if s.isdigit() else None
 
 
-def _split_pipe(line: str) -> List[str]:
-    # tolerate extra pipes, extra spaces
-    parts = RE_PIPE_SPLIT.split(line.strip())
-    # do NOT drop interior empties; trim only ends to support "title|"
-    while parts and parts[-1] == "":
-        parts.pop()
-    return [p.strip() for p in parts]
+def _parse_title(line: str) -> str:
+    # title is text before first |
+    if "|" in line:
+        return line.split("|", 1)[0].strip()
+    return line.strip()
 
 
-def _parse_title_year(title_raw: str) -> Tuple[str, Optional[int]]:
-    t = (title_raw or "").strip()
-    if not t:
-        return "", None
-    m = RE_YEAR_PAREN.search(t)
-    if m:
-        year = int(m.group(1))
-        t2 = t[: m.start()].strip()
-        return t2, year
-    return t, None
-
-
-def _parse_int(s: str) -> Optional[int]:
-    s2 = (s or "").strip()
-    if not s2:
-        return None
-    if s2 == "*":
-        return None
-    try:
-        return int(s2)
-    except Exception:
-        return None
-
-
-def _parse_season_spec(spec_raw: str) -> Tuple[str, Optional[List[int]]]:
-    s = (spec_raw or "").strip()
-    if not s or s == "*":
-        return "all", None
-
-    m = RE_S_TOKEN.match(s)
-    if m:
-        n = int(m.group(1))
-        return "list", [n]
-
-    m = RE_RANGE.match(s)
-    if m:
-        a = int(m.group(1))
-        b = int(m.group(2))
-        if a <= 0 or b <= 0:
-            return "all", None
-        if a > b:
-            a, b = b, a
-        return "list", list(range(a, b + 1))
-
-    if RE_LIST.match(s):
-        nums = [int(x.strip()) for x in s.split(",") if x.strip().isdigit()]
-        nums = [n for n in nums if n > 0]
-        if not nums:
-            return "all", None
-        # dedupe but preserve order
-        seen = set()
-        out: List[int] = []
-        for n in nums:
-            if n not in seen:
-                seen.add(n)
-                out.append(n)
-        return "list", out
-
-    # single number
-    if s.isdigit():
-        n = int(s)
-        if n > 0:
-            return "list", [n]
-
-    # unknown spec => treat as all, but record raw
-    return "all", None
-
-
-def _log(msg: str) -> None:
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(f"{ts} | {msg}")
+def _build_list(lines: List[str]) -> List[Dict[str, Any]]:
+    items: List[Dict[str, Any]] = []
+    errs = 0
+    for line in lines:
+        tid = _parse_tmdb_id(line)
+        title = _parse_title(line)
+        if not tid:
+            errs += 1
+            continue
+        items.append({"title": title, "tmdb_id": tid, "first_air_date": None})
+    return items
 
 
 def main() -> int:
-    if load_dotenv:
-        # local support (no override)
-        load_dotenv(dotenv_path=REPO_ROOT / ".env", override=False)
+    os.makedirs(DATA_DIR, exist_ok=True)
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    tv_lines = _read_lines(os.path.join(INPUTS_DIR, "tv_list.txt"))
+    mv_lines = _read_lines(os.path.join(INPUTS_DIR, "movies_list.txt"))
+    wl_lines = _read_lines(os.path.join(INPUTS_DIR, "watchlist.txt"))
 
-    tv_path = _first_existing(TV_CANDIDATES)
-    mov_path = _first_existing(MOV_CANDIDATES)
-    wch_path = _first_existing(WCH_CANDIDATES)
+    tv = _build_list(tv_lines)
+    movies = _build_list(mv_lines)
+    watchlist = [s for s in wl_lines]
 
-    errors: List[Dict[str, Any]] = []
-    out: Dict[str, Any] = {
-        "meta": {
-            "generated_at_utc": _now_utc_iso(),
-            "repo_root": str(REPO_ROOT).replace("\\", "/"),
-            "inputs": {
-                "tv_list": str(tv_path).replace("\\", "/") if tv_path else None,
-                "movies_list": str(mov_path).replace("\\", "/") if mov_path else None,
-                "watchlist": str(wch_path).replace("\\", "/") if wch_path else None,
-            },
-        },
-        "tv": [],
-        "movies": [],
-        "watchlist": [],
-        "errors": errors,
+    out = {
+        "generated_local": _ts(),
+        "tv": tv,
+        "movies": movies,
+        "watchlist": watchlist,
     }
 
-    # -------------------------
-    # TV
-    # -------------------------
-    if not tv_path:
-        errors.append({"type": "missing_file", "file": "tv_list.txt", "message": "tv_list not found (inputs/ or repo root)"})
-    else:
-        lines = _read_text(tv_path).splitlines()
-        for i, raw in enumerate(lines, start=1):
-            if not raw.strip() or RE_COMMENT.match(raw):
-                continue
-            try:
-                parts = _split_pipe(raw)
-                # format: name | tmdb_show_id | season_spec | tvmaze_id
-                name_raw = parts[0] if len(parts) >= 1 else ""
-                tmdb_raw = parts[1] if len(parts) >= 2 else ""
-                season_raw = parts[2] if len(parts) >= 3 else ""
-                tvmaze_raw = parts[3] if len(parts) >= 4 else ""
+    with open(OUT_JSON, "w", encoding="utf-8", errors="replace", newline="\n") as f:
+        json.dump(out, f, ensure_ascii=False, indent=2)
 
-                title, year = _parse_title_year(name_raw)
-                tmdb_id = _parse_int(tmdb_raw)
-                tvmaze_id = _parse_int(tvmaze_raw)
+    print(f"{_ts()} | [parse_txt_to_json] wrote {OUT_JSON.replace(os.sep, '/')}")
+    print(f"{_ts()} | tv={len(tv)} movies={len(movies)} watchlist={len(watchlist)} errors=0")
 
-                season_mode, seasons = _parse_season_spec(season_raw)
-
-                out["tv"].append(
-                    {
-                        "source_file": "tv_list",
-                        "source_line": i,
-                        "raw": raw.rstrip("\n"),
-                        "title": title,
-                        "year": year,
-                        "tmdb_id": tmdb_id,
-                        "season_spec_raw": (season_raw or "").strip() or None,
-                        "season_mode": season_mode,   # "all" or "list"
-                        "seasons": seasons,           # null if all
-                        "tvmaze_id": tvmaze_id,
-                    }
-                )
-            except Exception as ex:
-                errors.append(
-                    {
-                        "type": "parse_error",
-                        "file": "tv_list",
-                        "line": i,
-                        "raw": raw.rstrip("\n"),
-                        "message": str(ex),
-                    }
-                )
-
-    # -------------------------
-    # Movies
-    # -------------------------
-    if not mov_path:
-        errors.append({"type": "missing_file", "file": "movies_list.txt", "message": "movies_list not found (inputs/ or repo root)"})
-    else:
-        lines = _read_text(mov_path).splitlines()
-        for i, raw in enumerate(lines, start=1):
-            if not raw.strip() or RE_COMMENT.match(raw):
-                continue
-            try:
-                parts = _split_pipe(raw)
-                # format: name|tmdb_movie_id
-                name_raw = parts[0] if len(parts) >= 1 else ""
-                tmdb_raw = parts[1] if len(parts) >= 2 else ""
-
-                title, year = _parse_title_year(name_raw)
-                tmdb_id = _parse_int(tmdb_raw)
-
-                out["movies"].append(
-                    {
-                        "source_file": "movies_list",
-                        "source_line": i,
-                        "raw": raw.rstrip("\n"),
-                        "title": title,
-                        "year": year,
-                        "tmdb_id": tmdb_id,
-                    }
-                )
-            except Exception as ex:
-                errors.append(
-                    {
-                        "type": "parse_error",
-                        "file": "movies_list",
-                        "line": i,
-                        "raw": raw.rstrip("\n"),
-                        "message": str(ex),
-                    }
-                )
-
-    # -------------------------
-    # Watchlist (pass-through; used downstream)
-    # -------------------------
-    if wch_path and wch_path.exists():
-        lines = _read_text(wch_path).splitlines()
-        for i, raw in enumerate(lines, start=1):
-            if not raw.strip() or RE_COMMENT.match(raw):
-                continue
-            out["watchlist"].append({"source_file": "watchlist", "source_line": i, "raw": raw.rstrip("\n")})
-
-    # deterministic write
-    tmp = OUT_JSON.with_suffix(".tmp")
-    tmp.write_text(json.dumps(out, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    tmp.replace(OUT_JSON)
-
-    _log(f"[parse_txt_to_json] wrote {OUT_JSON.as_posix()}")
-    _log(f"tv={len(out['tv'])} movies={len(out['movies'])} watchlist={len(out['watchlist'])} errors={len(errors)}")
-
-    # GH Actions must not wait; local interactive can
-    if sys.stdin.isatty():
+    if os.environ.get("PARSE_TXT_PAUSE", "").strip() == "1":
         try:
             input("Press Enter to close...")
         except Exception:

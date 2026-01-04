@@ -2,64 +2,89 @@
 # ==============================================================================
 # [FILE]    scripts/run_pipeline_tmdb_trakt.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Local wrapper to run TMDB -> Trakt pipeline in correct order
-# [VERSION] v1.0.0
-# [UPDATED] 2025-12-29_22-30-00
-# [BUILD]   14.01.07
-#
-# Usage:
-#   cd C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie
-#   .\.venv\Scripts\python.exe .\scripts\run_pipeline_tmdb_trakt.py
-#
-# Notes:
-#   - Exits non-zero if any stage fails
-#   - Prints paths to the newest TMDB/Trakt logs
+# [ROLE]    One-command local runner: TMDB build -> Trakt enrich
+# [VERSION] v1.2.0
+# [UPDATED] 2025-12-29_00-00-00
+# [BUILD]   14.01.08
 # ==============================================================================
 from __future__ import annotations
 
-import sys
-import subprocess
 import datetime as _dt
+import subprocess
+import sys
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO_ROOT / "scripts"
-LOGS = REPO_ROOT / "logs"
+SCRIPTS_DIR = REPO_ROOT / "scripts"
+LOGS_DIR = REPO_ROOT / "logs"
 
-TMDB = SCRIPTS / "fetch_tmdb.py"
-TRAKT = SCRIPTS / "fetch_trakt.py"
+FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
+FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
 
-def _run(label: str, script: Path) -> int:
-    print(f"\n[{label}] RUN {script}")
-    cmd = [sys.executable, str(script)]
-    p = subprocess.run(cmd, cwd=str(REPO_ROOT))
-    print(f"[{label}] exit_code={p.returncode}")
-    return p.returncode
 
-def _newest_log(glob_pat: str) -> str:
-    if not LOGS.exists():
+def _ts() -> str:
+    return _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _tail(path: Path, n: int = 40) -> str:
+    try:
+        lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
+        return "\n".join(lines[-n:])
+    except Exception:
         return ""
-    hits = sorted([p for p in LOGS.glob(glob_pat)], key=lambda p: p.stat().st_mtime, reverse=True)
-    return str(hits[0]) if hits else ""
+
+
+def _latest_log(glob_pat: str) -> Path | None:
+    try:
+        hits = sorted(LOGS_DIR.glob(glob_pat), key=lambda p: p.stat().st_mtime, reverse=True)
+        return hits[0] if hits else None
+    except Exception:
+        return None
+
+
+def _run_one(label: str, script_path: Path) -> int:
+    py = Path(sys.executable)
+    print(f"\n[{label}] RUN {script_path}")
+    if not script_path.exists():
+        print(f"[{label}] ERROR missing: {script_path}")
+        return 2
+    p = subprocess.run([str(py), str(script_path)], cwd=str(REPO_ROOT))
+    print(f"[{label}] exit_code={p.returncode}")
+    return int(p.returncode)
+
 
 def main() -> int:
-    started = _dt.datetime.now()
-    rc1 = _run("TMDB", TMDB)
-    if rc1 != 0:
-        return rc1
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
-    rc2 = _run("TRAKT", TRAKT)
-    if rc2 != 0:
-        return rc2
+    started = _ts()
+    rc = _run_one("TMDB", FETCH_TMDB)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
 
-    finished = _dt.datetime.now()
+    rc = _run_one("TRAKT", FETCH_TRAKT)
+    finished = _ts()
+
+    tmdb_log = _latest_log("fetch_tmdb.*.log.txt")
+    trakt_log = _latest_log("fetch_trakt_*.log.txt")
 
     print("\n--- SUMMARY ---")
-    print("started : " + started.strftime("%Y-%m-%d %H:%M:%S"))
-    print("finished: " + finished.strftime("%Y-%m-%d %H:%M:%S"))
-    print("tmdb_log : " + _newest_log("fetch_tmdb.*.log.txt"))
-    print("trakt_log: " + _newest_log("fetch_trakt_*.log.txt"))
-    return 0
+    print(f"started : {started}")
+    print(f"finished: {finished}")
+    print(f"tmdb_log : {tmdb_log}" if tmdb_log else "tmdb_log : (not found)")
+    print(f"trakt_log: {trakt_log}" if trakt_log else "trakt_log: (not found)")
+
+    if tmdb_log:
+        print("\n--- TMDB LOG (tail) ---")
+        print(_tail(tmdb_log, 15))
+    if trakt_log:
+        print("\n--- TRAKT LOG (tail) ---")
+        print(_tail(trakt_log, 15))
+
+    return rc
+
 
 if __name__ == "__main__":
     raise SystemExit(main())
