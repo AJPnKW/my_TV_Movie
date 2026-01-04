@@ -1,13 +1,28 @@
-# >>> FILE: tools/library_manager/run_library_manager.ps1
+>>> FILE: tools/library_manager/run_library_manager.ps1
 <#
 File: run_library_manager.ps1
 Project: my_TV_Movie
 Tool: Library Manager
-Version: v0.2.2 (2026-01-03)
+Version: v0.2.4 (2026-01-03)
 Path: tools\library_manager\run_library_manager.ps1
 
-Fix:
-  PowerShell reserves $Host (read-only). Use $bind_host instead.
+Purpose:
+  Launch local Library Manager web UI (Flask) using repo venv when available,
+  with deterministic logging/output folders.
+
+Fixes included:
+  - Do not use reserved $Host variable (use $bind_host).
+  - Run Python via cmd.exe so native STDERR (e.g., SyntaxWarning) does not terminate PowerShell
+    when $ErrorActionPreference = "Stop". Output is still captured to the log.
+
+Usage:
+  Set-Location "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie\tools\library_manager"
+  powershell -ExecutionPolicy Bypass -File .\run_library_manager.ps1
+
+Outputs:
+  logs\library_manager_YYYYMMDD_HHMMSS.log.txt
+  out\library_inputs.json
+  out\validation_report.json
 #>
 
 [CmdletBinding()]
@@ -36,6 +51,8 @@ $repoRoot = Resolve-Path (Join-Path $here "..\..") | Select-Object -ExpandProper
 
 $logDir = Join-Path $here "logs"
 $outDir = Join-Path $here "out"
+if (-not (Test-Path -LiteralPath $outDir)) { New-Item -ItemType Directory -Path $outDir | Out-Null }
+
 $log = New-LogFile -LogDir $logDir
 
 Write-Log $log "START Library Manager"
@@ -80,7 +97,11 @@ Write-Log $log "OutDir = $outDir"
 
 Start-Process $url | Out-Null
 
-& $py $app --repo-root $repoRoot --host $bind_host --port $port --out-dir $outDir 2>&1 | Out-File -LiteralPath $log -Append -Encoding utf8
+# Run via cmd.exe so STDERR is merged into STDOUT and does not terminate PowerShell.
+$cmdLine = "`"$py`" `"$app`" --repo-root `"$repoRoot`" --host $bind_host --port $port --out-dir `"$outDir`""
+Write-Log $log "Cmd = $cmdLine"
+
+cmd.exe /c $cmdLine 1>> $log 2>>&1
 
 Write-Log $log "DONE"
 Write-Host ""
@@ -89,4 +110,4 @@ Write-Host "Log: $log"
 Write-Host "Out: $outDir"
 Write-Host ""
 Read-Host "Press Enter"
-# <<< END FILE
+<<< END FILE

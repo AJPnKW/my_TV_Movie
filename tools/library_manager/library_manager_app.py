@@ -1,21 +1,18 @@
-# >>> FILE: tools/library_manager/library_manager_app.py
-# PATCH: fix invalid escape sequence warning by avoiding backslash escapes in docstring
-# Version: v0.2.3 (2026-01-03)
-
+>>> FILE: tools/library_manager/library_manager_app.py
 # -*- coding: utf-8 -*-
-"""
+r"""
 File: library_manager_app.py
 Project: my_TV_Movie
-Tool: Library Manager (Local Web UI)
-Version: v0.2.3 (2026-01-03)
-Path: tools/library_manager/library_manager_app.py
+Tool: Library Manager
+Version: v0.2.4 (2026-01-03)
 
 Purpose:
-  Local web UI to manage inputs/*.txt:
-    - tv_list.txt
-    - movies_list.txt
-    - watchlist.txt
-    - livetv_list.txt (optional)
+  Local web UI to manage inputs/*.txt (tv_list.txt, movies_list.txt, watchlist.txt, livetv_list.txt)
+  - Search TMDB and add items
+  - Toggle active/inactive (comment/uncomment)
+  - Edit season specs
+  - Validate formatting + TMDB IDs + season ranges
+  - Export JSON for future pipelines
 
 Run (recommended):
   powershell -ExecutionPolicy Bypass -File tools\library_manager\run_library_manager.ps1
@@ -31,1150 +28,1053 @@ Env:
 from __future__ import annotations
 
 import argparse
-import dataclasses
 import datetime as _dt
+import html
 import json
 import os
 import re
 import sys
-import threading
-import traceback
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
-from flask import Flask, Response, jsonify, redirect, render_template_string, request, url_for
+from flask import Flask, jsonify, redirect, render_template_string, request, url_for
 
-APP_NAME = "Library Manager"
-SCHEMA_INPUTS = "inputs.v0.2"
-SCHEMA_VALIDATION = "validation.v0.2"
+# ----------------------------
+# constants / defaults
+# ----------------------------
+
+APP_TITLE = "my_TV_Movie — Library Manager"
+DEFAULT_HOST = "127.0.0.1"
+DEFAULT_PORT = 5177
+
+INPUTS_DIRNAME = "inputs"
+OUT_DIRNAME = "out"
+
+FILE_TV = "tv_list.txt"
+FILE_MOVIES = "movies_list.txt"
+FILE_WATCHLIST = "watchlist.txt"
+FILE_LIVETV = "livetv_list.txt"
+
+SUPPORTED_FILES = [FILE_TV, FILE_MOVIES, FILE_WATCHLIST, FILE_LIVETV]
+
+UA = "my_TV_Movie-LibraryManager/0.2.4"
+
+# ----------------------------
+# helpers
+# ----------------------------
 
 
-def now_local_iso() -> str:
-    return _dt.datetime.now().astimezone().isoformat(timespec="seconds")
+def now_stamp() -> str:
+    return _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def safe_mkdir(p: Path) -> None:
-    p.mkdir(parents=True, exist_ok=True)
-
-
-def read_text_utf8(path: Path) -> str:
+def safe_read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
-def write_text_utf8(path: Path, text: str) -> None:
-    safe_mkdir(path.parent)
-    path.write_text(text, encoding="utf-8", errors="replace", newline="\n")
+def safe_write_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text, encoding="utf-8", errors="replace")
 
 
 def json_dump(path: Path, obj: Any) -> None:
-    safe_mkdir(path.parent)
-    path.write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", errors="replace")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(obj, indent=2, ensure_ascii=False), encoding="utf-8", errors="replace")
 
 
-SEASON_SPEC_RE = re.compile(r"^\s*(\*|\d+\s*(?:-\s*\d+)?(?:\s*,\s*\d+\s*(?:-\s*\d+)?)*)\s*$")
-
-
-def normalize_season_spec(spec: str) -> str:
-    s = (spec or "").strip()
-    if s == "":
-        return "*"
-    if s == "*":
-        return "*"
-    parts: List[str] = []
-    for part in s.split(","):
-        part = part.strip()
-        if not part:
-            continue
-        if "-" in part:
-            a, b = [x.strip() for x in part.split("-", 1)]
-            parts.append(f"{int(a)}-{int(b)}")
-        else:
-            parts.append(str(int(part)))
-    return ",".join(parts) if parts else "*"
-
-
-def parse_season_spec(spec: str) -> Tuple[bool, List[int]]:
-    s = (spec or "").strip()
-    if s == "" or s == "*":
-        return True, []
-    if not SEASON_SPEC_RE.match(s):
-        return False, []
-    seasons: List[int] = []
-    for chunk in s.split(","):
-        chunk = chunk.strip()
-        if not chunk:
-            continue
-        if "-" in chunk:
-            a, b = [x.strip() for x in chunk.split("-", 1)]
-            try:
-                ia, ib = int(a), int(b)
-            except Exception:
-                return False, []
-            if ia < 1 or ib < 1:
-                return False, []
-            if ib < ia:
-                ia, ib = ib, ia
-            seasons.extend(list(range(ia, ib + 1)))
-        else:
-            try:
-                seasons.append(int(chunk))
-            except Exception:
-                return False, []
-    seasons = sorted(set(seasons))
-    return True, seasons
-
-
-def safe_int(x: str) -> Optional[int]:
+def parse_int(s: str) -> Optional[int]:
+    s = s.strip()
+    if not s:
+        return None
     try:
-        x = (x or "").strip()
-        if x == "":
-            return None
-        return int(x)
+        return int(s)
     except Exception:
         return None
 
 
-def strip_comment_prefix(line: str) -> Tuple[bool, str]:
-    s = line.lstrip()
-    if s.startswith("#"):
-        idx = line.find("#")
-        return True, (line[idx + 1 :]).strip()
-    return False, line.strip()
+def normalize_spaces(s: str) -> str:
+    return re.sub(r"\s+", " ", s).strip()
 
 
-def with_comment(active: bool, raw: str) -> str:
-    raw = raw.strip()
-    return raw if active else f"# {raw}"
+def split_pipe_line(line: str) -> List[str]:
+    # split into pipe parts, preserving empty trailing parts
+    parts = [p.strip() for p in line.split("|")]
+    return parts
 
 
-class TMDBClient:
-    def __init__(self, session: requests.Session, api_key: Optional[str], bearer_token: Optional[str]) -> None:
-        self.s = session
-        self.api_key = api_key
-        self.bearer = bearer_token
-        self.base = "https://api.themoviedb.org/3"
-        self.cache_tv: Dict[int, Dict[str, Any]] = {}
-        self.cache_movie: Dict[int, Dict[str, Any]] = {}
-        self.cache_search: Dict[Tuple[str, str], List[Dict[str, Any]]] = {}
-        self.lock = threading.Lock()
+def is_commented(line: str) -> bool:
+    return line.lstrip().startswith("#")
 
-    def _headers(self) -> Dict[str, str]:
-        h = {"Accept": "application/json"}
-        if self.bearer:
-            h["Authorization"] = f"Bearer {self.bearer}"
-        return h
 
-    def _params(self) -> Dict[str, str]:
-        p: Dict[str, str] = {}
-        if self.api_key and not self.bearer:
-            p["api_key"] = self.api_key
-        return p
+def uncomment_line(line: str) -> str:
+    # remove a single leading '#', preserve original indentation after it
+    m = re.match(r"^(\s*)#\s?(.*)$", line)
+    if not m:
+        return line
+    return f"{m.group(1)}{m.group(2)}"
 
-    def search(self, kind: str, query: str) -> List[Dict[str, Any]]:
-        kind = kind.lower().strip()
-        if kind not in ("tv", "movie"):
-            return []
-        q = (query or "").strip()
-        if not q:
-            return []
-        key = (kind, q.lower())
-        with self.lock:
-            if key in self.cache_search:
-                return self.cache_search[key]
-        url = f"{self.base}/search/{kind}"
-        params = {"query": q, "include_adult": "false", "language": "en-US", **self._params()}
-        r = self.s.get(url, params=params, headers=self._headers(), timeout=20)
-        if r.status_code != 200:
-            return []
-        items = r.json().get("results", []) or []
-        out: List[Dict[str, Any]] = []
-        for it in items[:25]:
-            out.append(
-                {
-                    "id": it.get("id"),
-                    "name": it.get("name") or it.get("title") or "",
-                    "original_name": it.get("original_name") or it.get("original_title") or "",
-                    "first_air_date": it.get("first_air_date") or "",
-                    "release_date": it.get("release_date") or "",
-                    "overview": (it.get("overview") or "")[:220],
-                    "vote_average": it.get("vote_average"),
-                    "poster_path": it.get("poster_path") or "",
-                }
-            )
-        with self.lock:
-            self.cache_search[key] = out
-        return out
 
-    def get_tv(self, tmdb_id: int) -> Tuple[Optional[Dict[str, Any]], Optional[str], int]:
-        with self.lock:
-            if tmdb_id in self.cache_tv:
-                return self.cache_tv[tmdb_id], None, 200
-        url = f"{self.base}/tv/{tmdb_id}"
-        params = {"language": "en-US", **self._params()}
-        r = self.s.get(url, params=params, headers=self._headers(), timeout=20)
-        if r.status_code != 200:
-            return None, f"HTTP {r.status_code}", r.status_code
-        data = r.json()
-        with self.lock:
-            self.cache_tv[tmdb_id] = data
-        return data, None, 200
+def comment_line(line: str) -> str:
+    if is_commented(line):
+        return line
+    # preserve indentation
+    m = re.match(r"^(\s*)(.*)$", line)
+    if not m:
+        return "# " + line
+    return f"{m.group(1)}# {m.group(2)}"
 
-    def get_movie(self, tmdb_id: int) -> Tuple[Optional[Dict[str, Any]], Optional[str], int]:
-        with self.lock:
-            if tmdb_id in self.cache_movie:
-                return self.cache_movie[tmdb_id], None, 200
-        url = f"{self.base}/movie/{tmdb_id}"
-        params = {"language": "en-US", **self._params()}
-        r = self.s.get(url, params=params, headers=self._headers(), timeout=20)
-        if r.status_code != 200:
-            return None, f"HTTP {r.status_code}", r.status_code
-        data = r.json()
-        with self.lock:
-            self.cache_movie[tmdb_id] = data
-        return data, None, 200
+
+SEASON_SPEC_RE = re.compile(r"^\*$|^\d+(\s*[,]\s*\d+)*$")
+
+
+def validate_season_spec(spec: str) -> Tuple[bool, str]:
+    spec = spec.strip()
+    if spec == "":
+        return True, "ok"
+    if not SEASON_SPEC_RE.match(spec):
+        return False, "Invalid season spec. Use '*' or comma-separated numbers (e.g., 1,2,3)."
+    return True, "ok"
+
+
+def seasons_from_spec(spec: str) -> List[int]:
+    spec = spec.strip()
+    if spec == "" or spec == "*":
+        return []
+    out: List[int] = []
+    for p in spec.split(","):
+        p = p.strip()
+        if not p:
+            continue
+        n = parse_int(p)
+        if n is None:
+            continue
+        out.append(n)
+    # unique sorted
+    return sorted(set(out))
+
+
+def join_season_spec(seasons: List[int]) -> str:
+    if not seasons:
+        return "*"
+    return ",".join(str(x) for x in sorted(set(seasons)))
+
+
+# ----------------------------
+# domain model
+# ----------------------------
 
 
 @dataclass
-class Record:
-    kind: str
+class LibraryEntry:
+    file_key: str  # tv/movies/watchlist/livetv
+    file_name: str
+    line_index: int  # 0-based
+    raw: str
     active: bool
     name: str
     tmdb_id: Optional[int] = None
-    season_spec: Optional[str] = None
+    season_spec: str = ""
     tvmaze_id: Optional[int] = None
-    source_file: str = ""
-    line_no: int = 0
-    raw_line: str = ""
+    parse_ok: bool = True
+    parse_error: str = ""
 
 
-@dataclass
-class Issue:
-    severity: str
-    code: str
-    message: str
-    source_file: str
-    line_no: int
-    raw_line: str
+def file_key_from_name(fn: str) -> str:
+    if fn == FILE_TV:
+        return "tv"
+    if fn == FILE_MOVIES:
+        return "movies"
+    if fn == FILE_WATCHLIST:
+        return "watchlist"
+    if fn == FILE_LIVETV:
+        return "livetv"
+    return "unknown"
 
 
-def split_header_and_body(text: str) -> Tuple[str, List[str]]:
+def parse_entry_from_line(fn: str, idx: int, line: str) -> LibraryEntry:
+    original = line.rstrip("\n")
+    stripped = original.strip()
+
+    if stripped == "" or stripped.startswith("# File:") or stripped.startswith("# Project:") or stripped.startswith("# Version:") or stripped.startswith("# format:"):
+        return LibraryEntry(
+            file_key=file_key_from_name(fn),
+            file_name=fn,
+            line_index=idx,
+            raw=original,
+            active=not is_commented(original),
+            name="",
+            tmdb_id=None,
+            season_spec="",
+            tvmaze_id=None,
+            parse_ok=True,
+            parse_error="",
+        )
+
+    active = not is_commented(original)
+    content = uncomment_line(original).strip()
+
+    parts = split_pipe_line(content)
+
+    if fn == FILE_MOVIES:
+        # name|tmdb_movie_id
+        if len(parts) < 2:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, "", None, "", None, False, "Expected format: name|tmdb_movie_id")
+        name = normalize_spaces(parts[0])
+        tmdb_id = parse_int(parts[1])
+        if not name:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, "", tmdb_id, "", None, False, "Missing movie name")
+        if tmdb_id is None:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, None, "", None, False, "Invalid TMDB movie ID")
+        return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, tmdb_id, "", None, True, "")
+
+    if fn == FILE_TV:
+        # name | tmdb_show_id | season_spec | tvmaze_id
+        # allow missing tail columns
+        if len(parts) < 2:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, "", None, "", None, False, "Expected format: name|tmdb_show_id|season_spec|tvmaze_id")
+        name = normalize_spaces(parts[0])
+        tmdb_id = parse_int(parts[1])
+        season_spec = normalize_spaces(parts[2]) if len(parts) >= 3 else ""
+        tvmaze_id = parse_int(parts[3]) if len(parts) >= 4 else None
+
+        if not name:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, "", tmdb_id, season_spec, tvmaze_id, False, "Missing show name")
+        if tmdb_id is None:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, None, season_spec, tvmaze_id, False, "Invalid TMDB show ID")
+        ok, msg = validate_season_spec(season_spec) if season_spec else (True, "ok")
+        if not ok:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, tmdb_id, season_spec, tvmaze_id, False, msg)
+        return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, tmdb_id, season_spec, tvmaze_id, True, "")
+
+    if fn == FILE_WATCHLIST:
+        # Treat as tv-like: Title|TMDB_ID|seasons
+        if len(parts) < 2:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, "", None, "", None, False, "Expected format: title|tmdb_id|season_spec")
+        name = normalize_spaces(parts[0])
+        tmdb_id = parse_int(parts[1])
+        season_spec = normalize_spaces(parts[2]) if len(parts) >= 3 else ""
+        if not name:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, "", tmdb_id, season_spec, None, False, "Missing title")
+        if tmdb_id is None:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, None, season_spec, None, False, "Invalid TMDB ID")
+        ok, msg = validate_season_spec(season_spec) if season_spec else (True, "ok")
+        if not ok:
+            return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, tmdb_id, season_spec, None, False, msg)
+        return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, tmdb_id, season_spec, None, True, "")
+
+    if fn == FILE_LIVETV:
+        # currently unspecified; allow free-form but keep parse_ok true unless malformed pipes
+        # recommended future: name|provider|url|notes
+        name = normalize_spaces(parts[0]) if parts else ""
+        return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, name, None, "", None, True, "")
+
+    return LibraryEntry(file_key_from_name(fn), fn, idx, original, active, "", None, "", None, True, "")
+
+
+def load_entries(file_path: Path) -> List[LibraryEntry]:
+    text = safe_read_text(file_path) if file_path.exists() else ""
     lines = text.splitlines()
-    header_lines: List[str] = []
-    body_lines: List[str] = []
-    in_header = True
-    for ln in lines:
-        if in_header and (ln.strip() == "" or ln.lstrip().startswith("#")):
-            header_lines.append(ln)
-        else:
-            in_header = False
-            body_lines.append(ln)
-    header = "\n".join(header_lines).rstrip("\n")
-    return header, body_lines
+    entries: List[LibraryEntry] = []
+    for i, line in enumerate(lines):
+        entries.append(parse_entry_from_line(file_path.name, i, line))
+    return entries
 
 
-def parse_file(kind: str, path: Path) -> Tuple[List[Record], List[Issue], str]:
-    issues: List[Issue] = []
-    text = read_text_utf8(path)
-    header, body_lines = split_header_and_body(text)
-
-    records: List[Record] = []
-    for idx, raw in enumerate(body_lines, start=1):
-        line_no = idx + (len(header.splitlines()) if header else 0)
-        raw_line = raw.rstrip("\n")
-        if raw_line.strip() == "":
-            continue
-        was_comment, content = strip_comment_prefix(raw_line)
-        active = not was_comment
-        if content.strip() == "":
-            continue
-
-        parts = [p.strip() for p in content.split("|")]
-
-        if kind == "movie":
-            if len(parts) < 2:
-                issues.append(Issue("error", "FORMAT", "Expected 'name|tmdb_movie_id'.", path.name, line_no, raw_line))
-                continue
-            name = parts[0]
-            tmdb_id = safe_int(parts[1])
-            if not name:
-                issues.append(Issue("error", "NAME_MISSING", "Name is missing.", path.name, line_no, raw_line))
-            if tmdb_id is None:
-                issues.append(
-                    Issue("error", "TMDB_ID_MISSING_OR_INVALID", "TMDB id is missing or not an integer.", path.name, line_no, raw_line)
-                )
-            records.append(
-                Record(kind="movie", active=active, name=name, tmdb_id=tmdb_id, source_file=path.name, line_no=line_no, raw_line=raw_line)
-            )
-        else:
-            name = parts[0] if len(parts) >= 1 else ""
-            tmdb_id = safe_int(parts[1]) if len(parts) >= 2 else None
-            season_spec = parts[2].strip() if len(parts) >= 3 else ""
-            tvmaze_id = safe_int(parts[3]) if len(parts) >= 4 else None
-
-            if not name:
-                issues.append(Issue("error", "NAME_MISSING", "Name is missing.", path.name, line_no, raw_line))
-            if tmdb_id is None:
-                issues.append(
-                    Issue("error", "TMDB_ID_MISSING_OR_INVALID", "TMDB id is missing or not an integer.", path.name, line_no, raw_line)
-                )
-
-            if season_spec != "":
-                ok, _ = parse_season_spec(season_spec)
-                if not ok:
-                    issues.append(
-                        Issue("error", "SEASON_SPEC_INVALID", "Season spec must be '*' or '1,2,3' or '1-3,5'.", path.name, line_no, raw_line)
-                    )
-
-            records.append(
-                Record(
-                    kind=kind,
-                    active=active,
-                    name=name,
-                    tmdb_id=tmdb_id,
-                    season_spec=(season_spec if season_spec != "" else None),
-                    tvmaze_id=tvmaze_id,
-                    source_file=path.name,
-                    line_no=line_no,
-                    raw_line=raw_line,
-                )
-            )
-
-    return records, issues, header
+def rewrite_file(file_path: Path, entries: List[LibraryEntry]) -> None:
+    # use original raw lines but updated by caller
+    lines = [e.raw for e in entries]
+    safe_write_text(file_path, "\n".join(lines).rstrip() + "\n")
 
 
-def serialize_records(records: List[Record]) -> List[Dict[str, Any]]:
-    return [dataclasses.asdict(r) for r in records]
+# ----------------------------
+# TMDB client
+# ----------------------------
 
 
-def format_line(kind: str, r: Record) -> str:
-    name = (r.name or "").strip()
-    if kind == "movie":
-        tmdb = "" if r.tmdb_id is None else str(r.tmdb_id)
-        raw = f"{name}|{tmdb}"
-        return with_comment(r.active, raw)
+class TMDBClient:
+    def __init__(self, api_key: Optional[str], api_token: Optional[str]) -> None:
+        self.api_key = api_key or ""
+        self.api_token = api_token or ""
 
-    tmdb = "" if r.tmdb_id is None else str(r.tmdb_id)
-    season = ""
-    if r.season_spec is not None:
-        season = normalize_season_spec(r.season_spec)
-    tvmaze = "" if r.tvmaze_id is None else str(r.tvmaze_id)
+    def headers(self) -> Dict[str, str]:
+        h = {"User-Agent": UA}
+        if self.api_token:
+            h["Authorization"] = f"Bearer {self.api_token}"
+        return h
 
-    raw = f"{name}|{tmdb}|{season}"
-    if r.tvmaze_id is not None:
-        raw = f"{raw}|{tvmaze}"
-    return with_comment(r.active, raw)
+    def get(self, url: str, params: Optional[Dict[str, Any]] = None) -> requests.Response:
+        params = params or {}
+        if self.api_key:
+            params.setdefault("api_key", self.api_key)
+        return requests.get(url, params=params, headers=self.headers(), timeout=20)
+
+    def search(self, media_type: str, query: str) -> Tuple[bool, Any]:
+        query = query.strip()
+        if not query:
+            return False, {"error": "Empty query"}
+        if media_type not in ("tv", "movie"):
+            return False, {"error": "Invalid media_type"}
+
+        url = f"https://api.themoviedb.org/3/search/{media_type}"
+        r = self.get(url, params={"query": query, "include_adult": "false", "language": "en-US"})
+        if r.status_code != 200:
+            return False, {"error": f"TMDB search failed: {r.status_code}", "body": r.text[:1000]}
+        return True, r.json()
+
+    def tv_details(self, tmdb_id: int) -> Tuple[bool, Any]:
+        url = f"https://api.themoviedb.org/3/tv/{tmdb_id}"
+        r = self.get(url, params={"language": "en-US"})
+        if r.status_code != 200:
+            return False, {"error": f"TMDB tv details failed: {r.status_code}", "body": r.text[:1000]}
+        return True, r.json()
+
+    def movie_details(self, tmdb_id: int) -> Tuple[bool, Any]:
+        url = f"https://api.themoviedb.org/3/movie/{tmdb_id}"
+        r = self.get(url, params={"language": "en-US"})
+        if r.status_code != 200:
+            return False, {"error": f"TMDB movie details failed: {r.status_code}", "body": r.text[:1000]}
+        return True, r.json()
 
 
-def write_file(path: Path, header: str, kind: str, records: List[Record]) -> None:
-    body = "\n".join(format_line(kind, r) for r in records).rstrip("\n")
-    text = header.rstrip("\n")
-    if text:
-        text += "\n"
-    if body:
-        text += body + "\n"
-    write_text_utf8(path, text)
-
-
-class AppState:
-    def __init__(self, repo_root: Path, out_dir: Path, tmdb: TMDBClient) -> None:
-        self.repo_root = repo_root
-        self.inputs_dir = repo_root / "inputs"
-        self.out_dir = out_dir
-        self.tmdb = tmdb
-
-        self.headers: Dict[str, str] = {}
-        self.records: Dict[str, List[Record]] = {"tv": [], "movie": [], "watchlist": [], "livetv": []}
-        self.issues_parse: List[Issue] = []
-        self.issues_validate: List[Issue] = []
-
-        self.load()
-
-    def load(self) -> None:
-        self.issues_parse = []
-        self.issues_validate = []
-        self.headers = {}
-        self.records = {"tv": [], "movie": [], "watchlist": [], "livetv": []}
-
-        mapping = {
-            "tv": self.inputs_dir / "tv_list.txt",
-            "movie": self.inputs_dir / "movies_list.txt",
-            "watchlist": self.inputs_dir / "watchlist.txt",
-            "livetv": self.inputs_dir / "livetv_list.txt",
-        }
-        for kind, path in mapping.items():
-            if not path.exists():
-                if kind == "livetv":
-                    header = (
-                        "# File: livetv_list.txt\n"
-                        "# Project: my_TV_Movie\n"
-                        f"# Version: auto-created ({now_local_iso()})\n"
-                        "# format: name|tmdb_id|season_spec\n"
-                    ).rstrip("\n")
-                    self.headers[kind] = header
-                    self.records[kind] = []
-                    write_text_utf8(path, header + "\n")
-                    continue
-                self.issues_parse.append(Issue("error", "FILE_MISSING", f"Missing required file: {path}", path.name, 0, ""))
-                continue
-
-            recs, issues, header = parse_file(kind, path)
-            self.headers[kind] = header
-            self.records[kind] = recs
-            self.issues_parse.extend(issues)
-
-        self.export_json()
-
-    def save(self) -> None:
-        mapping = {
-            "tv": self.inputs_dir / "tv_list.txt",
-            "movie": self.inputs_dir / "movies_list.txt",
-            "watchlist": self.inputs_dir / "watchlist.txt",
-            "livetv": self.inputs_dir / "livetv_list.txt",
-        }
-        for kind, path in mapping.items():
-            write_file(path, self.headers.get(kind, ""), kind, self.records.get(kind, []))
-        self.export_json()
-
-    def export_json(self) -> None:
-        safe_mkdir(self.out_dir)
-        out_inputs = self.out_dir / "library_inputs.json"
-        out_validation = self.out_dir / "validation_report.json"
-
-        payload = {
-            "schema_version": SCHEMA_INPUTS,
-            "generated_at": now_local_iso(),
-            "records": serialize_records(self.all_records()),
-            "by_kind": {k: len(v) for k, v in self.records.items()},
-        }
-        json_dump(out_inputs, payload)
-
-        all_issues = self.issues_parse + self.issues_validate
-        v_payload = {
-            "schema_version": SCHEMA_VALIDATION,
-            "generated_at": now_local_iso(),
-            "counts": {
-                "records_total": sum(len(v) for v in self.records.values()),
-                "issues_total": len(all_issues),
-                "issues_error": sum(1 for i in all_issues if i.severity == "error"),
-                "issues_warning": sum(1 for i in all_issues if i.severity == "warning"),
-            },
-            "issues": [dataclasses.asdict(i) for i in all_issues],
-        }
-        json_dump(out_validation, v_payload)
-
-        gen_dir = self.inputs_dir / "_generated"
-        safe_mkdir(gen_dir)
-        json_dump(gen_dir / "library_inputs.json", payload)
-        json_dump(gen_dir / "validation_report.json", v_payload)
-
-    def all_records(self) -> List[Record]:
-        out: List[Record] = []
-        for k in ("tv", "movie", "watchlist", "livetv"):
-            out.extend(self.records.get(k, []))
-        return out
-
-    def validate(self) -> None:
-        issues: List[Issue] = []
-
-        for kind in ("tv", "watchlist", "livetv"):
-            for r in self.records.get(kind, []):
-                if r.tmdb_id is None:
-                    continue
-                tv, err, _ = self.tmdb.get_tv(r.tmdb_id)
-                if tv is None:
-                    issues.append(Issue("error", "TMDB_TV_NOT_FOUND", f"TMDB TV id not found ({err}).", r.source_file, r.line_no, r.raw_line))
-                    continue
-                seasons_total = int(tv.get("number_of_seasons") or 0)
-                if r.season_spec and r.season_spec.strip() != "*" and seasons_total > 0:
-                    ok, seasons = parse_season_spec(r.season_spec)
-                    if ok:
-                        bad = [s for s in seasons if s < 1 or s > seasons_total]
-                        if bad:
-                            issues.append(
-                                Issue("error", "SEASON_OUT_OF_RANGE", f"Season(s) out of range (max={seasons_total}): {bad}", r.source_file, r.line_no, r.raw_line)
-                            )
-
-        for r in self.records.get("movie", []):
-            if r.tmdb_id is None:
-                continue
-            mv, err, _ = self.tmdb.get_movie(r.tmdb_id)
-            if mv is None:
-                issues.append(Issue("error", "TMDB_MOVIE_NOT_FOUND", f"TMDB Movie id not found ({err}).", r.source_file, r.line_no, r.raw_line))
-
-        self.issues_validate = issues
-        self.export_json()
-
+# ----------------------------
+# Flask app
+# ----------------------------
 
 BASE_HTML = r"""
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>{{ app_name }}</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>{{title}}</title>
   <style>
-    :root{
-      --bg:#0b0f14; --panel:#101826; --panel2:#0f1724; --text:#e7eef8; --muted:#9fb0c4;
-      --line:#223147; --good:#40c4aa; --warn:#f7c948; --bad:#ff5c5c; --btn:#1a2a44; --btn2:#223a5f;
-      --chip:#17243a;
+    :root {
+      --bg: #0b0f14;
+      --panel: #101722;
+      --panel2: #0e1520;
+      --text: #e7eef8;
+      --muted: #98a6b7;
+      --line: rgba(255,255,255,.08);
+      --accent: #5aa7ff;
+      --bad: #ff6b6b;
+      --ok: #5bffb6;
+      --warn: #ffcc66;
+      --btn: #1b2a3f;
+      --btn2: #22334c;
+      --shadow: 0 12px 30px rgba(0,0,0,.45);
+      --radius: 14px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     }
-    body{ margin:0; font-family:var(--sans); background:var(--bg); color:var(--text); }
-    .wrap{ max-width: 1320px; margin:0 auto; padding: 16px; }
-    .topbar{ display:flex; gap:12px; align-items:center; justify-content:space-between; padding:12px 14px; background:var(--panel); border:1px solid var(--line); border-radius:12px; }
-    .brand{ display:flex; flex-direction:column; gap:2px; }
-    .brand h1{ margin:0; font-size:16px; letter-spacing:0.2px; }
-    .brand .sub{ font-size:12px; color:var(--muted); }
-    .actions{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:flex-end; }
-    button,.btn{ background:var(--btn); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:9px 12px; font-weight:600; cursor:pointer; }
-    button:hover,.btn:hover{ background:var(--btn2); }
-    button:disabled{ opacity:0.55; cursor:not-allowed; }
-    .grid{ display:grid; grid-template-columns: 420px 1fr; gap: 14px; margin-top:14px; }
-    .card{ background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:12px; }
-    .card h2{ margin:0 0 8px 0; font-size:14px; color:var(--text); }
-    .row{ display:flex; gap:8px; align-items:center; }
-    .row + .row{ margin-top:8px; }
-    label{ font-size:12px; color:var(--muted); }
-    input, select{
-      width:100%; padding:9px 10px; border-radius:10px; border:1px solid var(--line);
-      background:#0c1422; color:var(--text);
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(90,167,255,.16), transparent 60%),
+                  radial-gradient(900px 500px at 90% 10%, rgba(91,255,182,.10), transparent 55%),
+                  var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
     }
-    input::placeholder{ color:#738aa3; }
-    .tabs{ display:flex; gap:8px; flex-wrap:wrap; }
-    .tab{ padding:9px 12px; border-radius:10px; border:1px solid var(--line); background:var(--chip); color:var(--text); text-decoration:none; font-weight:700; font-size:13px; }
-    .tab.active{ background:#243a60; }
-    .meta{ display:flex; gap:10px; flex-wrap:wrap; color:var(--muted); font-size:12px; }
-    .pill{ padding:5px 8px; border-radius:999px; border:1px solid var(--line); background:var(--chip); }
-    .pill.good{ border-color: rgba(64,196,170,.5); }
-    .pill.warn{ border-color: rgba(247,201,72,.55); }
-    .pill.bad{ border-color: rgba(255,92,92,.55); }
-
-    table{ width:100%; border-collapse:collapse; }
-    th,td{ border-bottom:1px solid var(--line); padding:8px 8px; font-size:13px; vertical-align:top; }
-    th{ text-align:left; color:var(--muted); font-weight:800; font-size:12px; }
-    td small{ color:var(--muted); }
-    .mono{ font-family:var(--mono); }
-    .right{ text-align:right; }
-    .center{ text-align:center; }
-    .muted{ color:var(--muted); }
-    .tiny{ font-size:11px; }
-    .split{ display:flex; gap:8px; }
-    .split > *{ flex:1; }
-    .list{ max-height: 360px; overflow:auto; border:1px solid var(--line); border-radius:12px; }
-    .list table th{ position:sticky; top:0; background: #0f1b2d; }
-    .toast{ margin-top:10px; padding:10px 12px; border-radius:12px; border:1px solid var(--line); background:#0c1526; color:var(--text); display:none; }
-    .toast.good{ border-color: rgba(64,196,170,.55); }
-    .toast.bad{ border-color: rgba(255,92,92,.55); }
-    .issues{ max-height: 240px; overflow:auto; border:1px solid var(--line); border-radius:12px; }
-    .issue{ padding:8px 10px; border-bottom:1px solid var(--line); }
-    .issue:last-child{ border-bottom:none; }
-    .sev{ font-weight:900; font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--line); display:inline-block; }
-    .sev.error{ border-color: rgba(255,92,92,.55); }
-    .sev.warning{ border-color: rgba(247,201,72,.55); }
-    .kbd{ font-family:var(--mono); font-size:12px; color:var(--muted); }
-    @media (max-width: 1100px){ .grid{ grid-template-columns: 1fr; } }
+    header {
+      position: sticky; top: 0;
+      backdrop-filter: blur(10px);
+      background: rgba(11,15,20,.75);
+      border-bottom: 1px solid var(--line);
+      z-index: 9;
+    }
+    .wrap { max-width: 1260px; margin: 0 auto; padding: 14px 18px; }
+    .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+    .title { font-size: 16px; font-weight: 700; letter-spacing: .2px; }
+    .badge { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+    .grid { display: grid; grid-template-columns: 420px 1fr; gap: 14px; align-items: start; }
+    @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: linear-gradient(180deg, rgba(16,23,34,.90), rgba(14,21,32,.86));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card h2 {
+      margin: 0;
+      padding: 12px 14px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--line);
+      display:flex; align-items:center; justify-content: space-between;
+    }
+    .card .body { padding: 12px 14px; }
+    label { display:block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.20);
+      color: var(--text);
+      outline: none;
+    }
+    textarea { min-height: 92px; font-family: var(--mono); font-size: 12px; }
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: var(--btn);
+      color: var(--text);
+      cursor:pointer;
+      text-decoration:none;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .btn:hover { background: var(--btn2); }
+    .btn.primary { background: rgba(90,167,255,.18); border-color: rgba(90,167,255,.35); }
+    .btn.primary:hover { background: rgba(90,167,255,.25); }
+    .btn.danger { background: rgba(255,107,107,.14); border-color: rgba(255,107,107,.30); }
+    .btn.danger:hover { background: rgba(255,107,107,.20); }
+    .btn.ok { background: rgba(91,255,182,.13); border-color: rgba(91,255,182,.30); }
+    .btn.ok:hover { background: rgba(91,255,182,.20); }
+    .pill { padding: 3px 8px; border-radius: 999px; font-size: 12px; border:1px solid var(--line); color: var(--muted); }
+    .pill.bad { color: #ffd2d2; border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.10); }
+    .pill.ok { color: #d3ffe9; border-color: rgba(91,255,182,.35); background: rgba(91,255,182,.10); }
+    .pill.warn { color: #ffe8c2; border-color: rgba(255,204,102,.35); background: rgba(255,204,102,.10); }
+    .muted { color: var(--muted); }
+    .sep { height: 1px; background: var(--line); margin: 12px 0; }
+    .table { width:100%; border-collapse: collapse; }
+    .table th, .table td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .table th { text-align:left; font-size: 12px; color: var(--muted); font-weight: 700; }
+    .table td { font-size: 13px; }
+    .k { font-family: var(--mono); font-size: 12px; color: #cfe5ff; }
+    .small { font-size: 12px; }
+    .right { text-align: right; }
+    .actions { display:flex; gap:8px; flex-wrap: wrap; }
+    .notice { padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line); background: rgba(0,0,0,.20); }
+    .notice.bad { border-color: rgba(255,107,107,.35); background: rgba(255,107,107,.08); }
+    .notice.ok { border-color: rgba(91,255,182,.35); background: rgba(91,255,182,.08); }
+    .notice.warn { border-color: rgba(255,204,102,.35); background: rgba(255,204,102,.08); }
+    .subrow { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 700px) { .subrow { grid-template-columns: 1fr; } }
+    .chiplist { display:flex; gap:8px; flex-wrap: wrap; }
+    .chip { padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid var(--line); font-size: 12px; }
   </style>
 </head>
 <body>
+<header>
   <div class="wrap">
-    <div class="topbar">
-      <div class="brand">
-        <h1>{{ app_name }}</h1>
-        <div class="sub">Repo: <span class="mono">{{ repo_root }}</span> · Active file: <span class="mono">{{ active_file }}</span></div>
-      </div>
-      <div class="actions">
-        <a class="tab {% if active_tab=='tv' %}active{% endif %}" href="/?tab=tv">TV</a>
-        <a class="tab {% if active_tab=='movie' %}active{% endif %}" href="/?tab=movie">Movies</a>
-        <a class="tab {% if active_tab=='watchlist' %}active{% endif %}" href="/?tab=watchlist">Watchlist</a>
-        <a class="tab {% if active_tab=='livetv' %}active{% endif %}" href="/?tab=livetv">LiveTV</a>
-        <button id="btnReload" title="Reload from disk">Reload</button>
-        <button id="btnValidate" title="Validate TMDB IDs + season ranges">Validate</button>
-        <button id="btnSave" title="Write changes to inputs/*.txt">Save</button>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>TMDB Lookup → Add to {{ active_tab }}</h2>
-
-        <div class="row">
-          <div style="flex:1">
-            <label>Search</label>
-            <input id="q" placeholder="Type a show or movie title…"/>
-          </div>
-        </div>
-
-        <div class="row split">
-          <div>
-            <label>Search type</label>
-            <select id="kind">
-              <option value="tv">TV</option>
-              <option value="movie">Movie</option>
-            </select>
-          </div>
-          <div>
-            <label>Target list</label>
-            <select id="target">
-              <option value="tv">tv_list</option>
-              <option value="movie">movies_list</option>
-              <option value="watchlist">watchlist</option>
-              <option value="livetv">livetv_list</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row split">
-          <div>
-            <label>Season spec (TV/Watchlist/LiveTV only)</label>
-            <input id="season" placeholder="* or 1 or 1-3,5"/>
-          </div>
-          <div class="row" style="align-items:flex-end">
-            <button id="btnSearch" style="width:100%">Search</button>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="meta">
-            <span class="pill good">Out: <span class="mono">{{ out_inputs }}</span></span>
-            <span class="pill warn">Report: <span class="mono">{{ out_validation }}</span></span>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="list" style="width:100%">
-            <table>
-              <thead>
-                <tr>
-                  <th style="width:70px">TMDB</th>
-                  <th>Title</th>
-                  <th style="width:88px">Rating</th>
-                  <th style="width:110px">Year</th>
-                  <th class="right" style="width:92px">Action</th>
-                </tr>
-              </thead>
-              <tbody id="results">
-                <tr><td colspan="5" class="muted">Search results will appear here.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div id="toast" class="toast"></div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <h2 style="margin:0">Inventory: {{ active_tab }}</h2>
-          <div class="meta">
-            <span class="pill">Records: <span class="mono">{{ counts.records_total }}</span></span>
-            <span class="pill {% if counts.issues_total==0 %}good{% else %}bad{% endif %}">
-              Issues: <span class="mono">{{ counts.issues_total }}</span>
-            </span>
-          </div>
-        </div>
-
-        <div class="row split">
-          <div>
-            <label>Filter</label>
-            <input id="filter" placeholder="Type to filter rows…"/>
-          </div>
-          <div>
-            <label>Show</label>
-            <select id="showMode">
-              <option value="all">All</option>
-              <option value="active">Active only</option>
-              <option value="inactive">Inactive only</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="list" style="width:100%">
-            <table id="invTable">
-              <thead>
-                <tr>
-                  <th class="center" style="width:80px">Active</th>
-                  <th>Title</th>
-                  <th style="width:90px">TMDB</th>
-                  <th style="width:140px">Seasons</th>
-                  <th class="right" style="width:90px">Remove</th>
-                </tr>
-              </thead>
-              <tbody id="invBody">
-                {% for r in rows %}
-                <tr data-idx="{{ loop.index0 }}">
-                  <td class="center">
-                    <input type="checkbox" class="chkActive" {% if r.active %}checked{% endif %}/>
-                  </td>
-                  <td>
-                    <div>{{ r.name }}</div>
-                    <div class="tiny muted mono">{{ r.source_file }}{% if r.line_no %}:{{ r.line_no }}{% endif %}</div>
-                  </td>
-                  <td class="mono">{{ r.tmdb_id if r.tmdb_id is not none else "" }}</td>
-                  <td>
-                    {% if active_tab == 'movie' %}
-                      <span class="muted tiny">n/a</span>
-                    {% else %}
-                      <input class="seasonEdit" value="{{ r.season_spec if r.season_spec else '*' }}" />
-                    {% endif %}
-                  </td>
-                  <td class="right">
-                    <button class="btnRemove">Remove</button>
-                  </td>
-                </tr>
-                {% endfor %}
-                {% if rows|length == 0 %}
-                <tr><td colspan="5" class="muted">No rows in this list.</td></tr>
-                {% endif %}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="row">
-          <h2 style="margin:0">Issues</h2>
-        </div>
-        <div class="issues" id="issues">
-          {% if issues|length == 0 %}
-            <div class="issue muted">No issues.</div>
-          {% else %}
-            {% for i in issues %}
-              <div class="issue">
-                <span class="sev {{ i.severity }}">{{ i.severity|upper }}</span>
-                <span class="mono">{{ i.code }}</span>
-                <div>{{ i.message }}</div>
-                <div class="tiny muted mono">{{ i.source_file }}{% if i.line_no %}:{{ i.line_no }}{% endif %}</div>
-              </div>
-            {% endfor %}
-          {% endif %}
-        </div>
-
-        <div class="row">
-          <div class="muted tiny">
-            Tips: toggle Active to comment/uncomment; seasons accepts <span class="kbd">*</span>, <span class="kbd">1</span>, <span class="kbd">1-3,5</span>.
-          </div>
-        </div>
-      </div>
+    <div class="row">
+      <div class="title">{{title}}</div>
+      <span class="badge">Local UI • repo inputs/*.txt → validate + export JSON</span>
+      <span class="badge">Time: {{now}}</span>
+      <span class="badge">Repo: <span class="k">{{repo_root}}</span></span>
+      <span class="badge">Inputs: <span class="k">{{inputs_dir}}</span></span>
+      <span class="badge">Out: <span class="k">{{out_dir}}</span></span>
     </div>
   </div>
+</header>
 
-<script>
-  const activeTab = "{{ active_tab }}";
+<div class="wrap" style="padding-top: 14px;">
+  <div class="grid">
+    <div class="card">
+      <h2>
+        <span>Search TMDB → Add</span>
+        <span class="chip">{{tmdb_status}}</span>
+      </h2>
+      <div class="body">
+        <form method="post" action="{{ url_for('search') }}">
+          <div class="subrow">
+            <div>
+              <label>Media type</label>
+              <select name="media_type">
+                <option value="tv" {{ 'selected' if media_type=='tv' else '' }}>TV</option>
+                <option value="movie" {{ 'selected' if media_type=='movie' else '' }}>Movie</option>
+              </select>
+            </div>
+            <div>
+              <label>Target list</label>
+              <select name="target_file">
+                <option value="tv_list.txt" {{ 'selected' if target_file=='tv_list.txt' else '' }}>tv_list.txt</option>
+                <option value="movies_list.txt" {{ 'selected' if target_file=='movies_list.txt' else '' }}>movies_list.txt</option>
+                <option value="watchlist.txt" {{ 'selected' if target_file=='watchlist.txt' else '' }}>watchlist.txt</option>
+              </select>
+            </div>
+          </div>
 
-  function toast(msg, ok=true){
-    const el = document.getElementById("toast");
-    el.className = "toast " + (ok ? "good" : "bad");
-    el.textContent = msg;
-    el.style.display = "block";
-    setTimeout(()=>{ el.style.display="none"; }, 4200);
-  }
+          <div style="margin-top:10px;">
+            <label>Search text</label>
+            <input name="q" value="{{q}}" placeholder="Type a title, e.g., Abbott Elementary" />
+          </div>
 
-  async function postJSON(url, body){
-    const r = await fetch(url, {
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(body || {})
-    });
-    const j = await r.json().catch(()=> ({}));
-    if(!r.ok){
-      throw new Error(j.error || ("HTTP " + r.status));
-    }
-    return j;
-  }
+          <div class="subrow" style="margin-top:10px;">
+            <div>
+              <label>Seasons (TV/watchlist only)</label>
+              <input name="season_spec" value="{{season_spec}}" placeholder="* or 1,2,3" />
+              <div class="small muted" style="margin-top:6px;">Use <span class="k">*</span> for all seasons, or comma list.</div>
+            </div>
+            <div>
+              <label>TVMaze ID (optional)</label>
+              <input name="tvmaze_id" value="{{tvmaze_id}}" placeholder="optional integer" />
+            </div>
+          </div>
 
-  function rowMatches(tr, text, mode){
-    const idx = tr.getAttribute("data-idx");
-    if(idx === null) return true;
-    const active = tr.querySelector(".chkActive")?.checked ?? true;
-    if(mode === "active" && !active) return false;
-    if(mode === "inactive" && active) return false;
-    if(!text) return true;
-    const hay = tr.innerText.toLowerCase();
-    return hay.includes(text.toLowerCase());
-  }
+          <div class="actions" style="margin-top:12px;">
+            <button class="btn primary" type="submit">Search</button>
+            <a class="btn" href="{{ url_for('index') }}">Refresh</a>
+            <a class="btn ok" href="{{ url_for('export_json') }}">Export JSON</a>
+            <a class="btn" href="{{ url_for('validate') }}">Validate</a>
+          </div>
+        </form>
 
-  function applyFilter(){
-    const text = document.getElementById("filter").value.trim();
-    const mode = document.getElementById("showMode").value;
-    document.querySelectorAll("#invBody tr").forEach(tr=>{
-      tr.style.display = rowMatches(tr, text, mode) ? "" : "none";
-    });
-  }
+        {% if search_error %}
+          <div class="sep"></div>
+          <div class="notice bad">{{ search_error }}</div>
+        {% endif %}
 
-  document.getElementById("filter").addEventListener("input", applyFilter);
-  document.getElementById("showMode").addEventListener("change", applyFilter);
+        {% if results %}
+          <div class="sep"></div>
+          <div class="muted small">Select the correct match and add it to the chosen list.</div>
+          <div style="margin-top:10px;">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th style="width: 70px;">Add</th>
+                  <th>Title</th>
+                  <th style="width: 80px;">Year</th>
+                  <th style="width: 90px;">TMDB ID</th>
+                  <th class="right" style="width: 90px;">Score</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for r in results %}
+                <tr>
+                  <td>
+                    <form method="post" action="{{ url_for('add') }}">
+                      <input type="hidden" name="target_file" value="{{ target_file }}" />
+                      <input type="hidden" name="media_type" value="{{ media_type }}" />
+                      <input type="hidden" name="name" value="{{ r.title }}" />
+                      <input type="hidden" name="tmdb_id" value="{{ r.id }}" />
+                      <input type="hidden" name="season_spec" value="{{ season_spec }}" />
+                      <input type="hidden" name="tvmaze_id" value="{{ tvmaze_id }}" />
+                      <button class="btn ok" type="submit">Add</button>
+                    </form>
+                  </td>
+                  <td>
+                    <div style="font-weight:700;">{{ r.title }}</div>
+                    <div class="small muted">{{ r.overview }}</div>
+                  </td>
+                  <td class="small">{{ r.year }}</td>
+                  <td class="k">{{ r.id }}</td>
+                  <td class="right small">{{ r.score }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
 
-  document.getElementById("target").value = activeTab;
+      </div>
+    </div>
 
-  document.getElementById("btnReload").addEventListener("click", ()=>{
-    window.location = "/reload?tab=" + encodeURIComponent(activeTab);
-  });
+    <div class="card">
+      <h2>
+        <span>Inventory</span>
+        <span class="chiplist">
+          <span class="chip">Filter: {{filter_file}}</span>
+          <span class="chip">Search: {{filter_q}}</span>
+        </span>
+      </h2>
+      <div class="body">
 
-  document.getElementById("btnSave").addEventListener("click", async ()=>{
-    try{
-      await postJSON("/api/save", {});
-      toast("Saved to inputs/*.txt");
-      setTimeout(()=>window.location.reload(), 650);
-    }catch(e){
-      toast("Save failed: " + e.message, false);
-    }
-  });
+        <form method="get" action="{{ url_for('index') }}">
+          <div class="subrow">
+            <div>
+              <label>File</label>
+              <select name="file">
+                <option value="all" {{ 'selected' if filter_file=='all' else '' }}>All</option>
+                <option value="tv_list.txt" {{ 'selected' if filter_file=='tv_list.txt' else '' }}>tv_list.txt</option>
+                <option value="movies_list.txt" {{ 'selected' if filter_file=='movies_list.txt' else '' }}>movies_list.txt</option>
+                <option value="watchlist.txt" {{ 'selected' if filter_file=='watchlist.txt' else '' }}>watchlist.txt</option>
+                <option value="livetv_list.txt" {{ 'selected' if filter_file=='livetv_list.txt' else '' }}>livetv_list.txt</option>
+              </select>
+            </div>
+            <div>
+              <label>Search</label>
+              <input name="q" value="{{filter_q}}" placeholder="filter by title (contains)" />
+            </div>
+          </div>
+          <div class="actions" style="margin-top:12px;">
+            <button class="btn primary" type="submit">Apply</button>
+            <a class="btn" href="{{ url_for('index') }}">Clear</a>
+            <a class="btn" href="{{ url_for('validate') }}">Validate</a>
+            <a class="btn ok" href="{{ url_for('export_json') }}">Export JSON</a>
+          </div>
+        </form>
 
-  document.getElementById("btnValidate").addEventListener("click", async ()=>{
-    try{
-      await postJSON("/api/validate", {});
-      toast("Validation complete (report updated)");
-      setTimeout(()=>window.location.reload(), 650);
-    }catch(e){
-      toast("Validate failed: " + e.message, false);
-    }
-  });
+        {% if notice %}
+          <div class="sep"></div>
+          <div class="notice {{notice.kind}}">{{ notice.msg }}</div>
+        {% endif %}
 
-  document.getElementById("btnSearch").addEventListener("click", async ()=>{
-    const q = document.getElementById("q").value.trim();
-    const kind = document.getElementById("kind").value;
-    const tb = document.getElementById("results");
-    if(!q){ toast("Type a search query", false); return; }
-    tb.innerHTML = `<tr><td colspan="5" class="muted">Searching…</td></tr>`;
-    try{
-      const j = await postJSON("/api/search", { kind, query:q });
-      const rows = (j.results || []);
-      if(rows.length === 0){
-        tb.innerHTML = `<tr><td colspan="5" class="muted">No matches.</td></tr>`;
-        return;
-      }
-      tb.innerHTML = rows.map(r=>{
-        const year = (kind==="tv" ? (r.first_air_date||"") : (r.release_date||"")).slice(0,4);
-        const rating = (r.vote_average == null ? "" : r.vote_average.toFixed(1));
-        const safeName = (r.name || "").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
-        return `
-          <tr>
-            <td class="mono">${r.id||""}</td>
-            <td>
-              <div>${safeName}</div>
-              <div class="tiny muted">${(r.overview||"")}</div>
-            </td>
-            <td class="mono">${rating}</td>
-            <td class="mono">${year}</td>
-            <td class="right"><button class="btnAdd" data-id="${r.id||""}" data-name="${encodeURIComponent(r.name||"")}">Add</button></td>
-          </tr>
-        `;
-      }).join("");
-      document.querySelectorAll(".btnAdd").forEach(btn=>{
-        btn.addEventListener("click", async ()=>{
-          const target = document.getElementById("target").value;
-          const season = document.getElementById("season").value.trim();
-          const tmdb_id = btn.getAttribute("data-id");
-          const name = decodeURIComponent(btn.getAttribute("data-name") || "");
-          try{
-            await postJSON("/api/add", { kind: target, tmdb_id, name, season_spec: season });
-            toast(`Added to ${target}`);
-            setTimeout(()=>window.location = "/?tab=" + encodeURIComponent(activeTab), 650);
-          }catch(e){
-            toast("Add failed: " + e.message, false);
-          }
-        });
-      });
-    }catch(e){
-      tb.innerHTML = `<tr><td colspan="5" class="muted">Search failed: ${e.message}</td></tr>`;
-      toast("Search failed: " + e.message, false);
-    }
-  });
+        <div class="sep"></div>
 
-  document.querySelectorAll("#invBody tr[data-idx]").forEach(tr=>{
-    const idx = parseInt(tr.getAttribute("data-idx"), 10);
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width:90px;">Status</th>
+              <th>Title</th>
+              <th style="width:110px;">List</th>
+              <th style="width:110px;">TMDB</th>
+              <th style="width:110px;">Seasons</th>
+              <th style="width:120px;">TVMaze</th>
+              <th class="right" style="width:260px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in entries %}
+              {% if e.name %}
+              <tr>
+                <td>
+                  {% if e.parse_ok %}
+                    <span class="pill ok">ok</span>
+                  {% else %}
+                    <span class="pill bad">bad</span>
+                  {% endif %}
+                  {% if e.active %}
+                    <span class="pill ok" style="margin-left:6px;">active</span>
+                  {% else %}
+                    <span class="pill warn" style="margin-left:6px;">inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div style="font-weight:700;">{{ e.name }}</div>
+                  {% if not e.parse_ok %}
+                    <div class="small" style="color: #ffd2d2; margin-top:6px;">{{ e.parse_error }}</div>
+                  {% endif %}
+                </td>
+                <td class="small muted">{{ e.file_name }}</td>
+                <td class="k">{{ e.tmdb_id or '' }}</td>
+                <td class="k">{{ e.season_spec or '' }}</td>
+                <td class="k">{{ e.tvmaze_id or '' }}</td>
+                <td class="right">
+                  <div class="actions" style="justify-content:flex-end;">
+                    <form method="post" action="{{ url_for('toggle') }}">
+                      <input type="hidden" name="file_name" value="{{ e.file_name }}" />
+                      <input type="hidden" name="line_index" value="{{ e.line_index }}" />
+                      <button class="btn" type="submit">{{ 'Deactivate' if e.active else 'Activate' }}</button>
+                    </form>
+                    {% if e.file_name in ['tv_list.txt','watchlist.txt'] %}
+                    <form method="post" action="{{ url_for('set_seasons') }}">
+                      <input type="hidden" name="file_name" value="{{ e.file_name }}" />
+                      <input type="hidden" name="line_index" value="{{ e.line_index }}" />
+                      <input type="hidden" name="season_spec" value="*" />
+                      <button class="btn" type="submit">All seasons</button>
+                    </form>
+                    {% endif %}
+                    <form method="post" action="{{ url_for('remove') }}" onsubmit="return confirm('Remove this line from file?');">
+                      <input type="hidden" name="file_name" value="{{ e.file_name }}" />
+                      <input type="hidden" name="line_index" value="{{ e.line_index }}" />
+                      <button class="btn danger" type="submit">Remove</button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
 
-    const chk = tr.querySelector(".chkActive");
-    if(chk){
-      chk.addEventListener("change", async ()=>{
-        try{
-          await postJSON("/api/update", { tab: activeTab, idx, field:"active", value: chk.checked });
-          toast("Updated active state");
-          applyFilter();
-        }catch(e){
-          toast("Update failed: " + e.message, false);
-          chk.checked = !chk.checked;
-        }
-      });
-    }
+        <div class="sep"></div>
 
-    const se = tr.querySelector(".seasonEdit");
-    if(se){
-      let last = se.value;
-      se.addEventListener("blur", async ()=>{
-        const v = se.value.trim();
-        if(v === last) return;
-        try{
-          await postJSON("/api/update", { tab: activeTab, idx, field:"season_spec", value: v });
-          toast("Updated seasons");
-          last = v;
-        }catch(e){
-          toast("Season update failed: " + e.message, false);
-          se.value = last;
-        }
-      });
-      se.addEventListener("keydown", (ev)=>{
-        if(ev.key === "Enter"){ ev.preventDefault(); se.blur(); }
-      });
-    }
+        <div class="notice">
+          <div style="font-weight:700;">Edit seasons (selected item)</div>
+          <div class="small muted" style="margin-top:6px;">Pick an item above, then use the form below with its line number.</div>
 
-    const rm = tr.querySelector(".btnRemove");
-    if(rm){
-      rm.addEventListener("click", async ()=>{
-        if(!confirm("Remove this row from the list?")) return;
-        try{
-          await postJSON("/api/remove", { tab: activeTab, idx });
-          toast("Removed");
-          setTimeout(()=>window.location.reload(), 350);
-        }catch(e){
-          toast("Remove failed: " + e.message, false);
-        }
-      });
-    }
-  });
+          <form method="post" action="{{ url_for('set_seasons') }}" style="margin-top:10px;">
+            <div class="subrow">
+              <div>
+                <label>File</label>
+                <select name="file_name">
+                  <option value="tv_list.txt">tv_list.txt</option>
+                  <option value="watchlist.txt">watchlist.txt</option>
+                </select>
+              </div>
+              <div>
+                <label>Line # (0-based)</label>
+                <input name="line_index" placeholder="e.g., 12" />
+              </div>
+            </div>
+            <div style="margin-top:10px;">
+              <label>Season spec</label>
+              <input name="season_spec" placeholder="* or 1,2,3" />
+            </div>
+            <div class="actions" style="margin-top:12px;">
+              <button class="btn primary" type="submit">Update seasons</button>
+            </div>
+          </form>
+        </div>
 
-  applyFilter();
-</script>
+      </div>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>
 """
 
 
-def build_counts(state: AppState) -> Dict[str, Any]:
-    issues = state.issues_parse + state.issues_validate
-    return {"records_total": sum(len(v) for v in state.records.values()), "issues_total": len(issues)}
-
-
-def get_tabs() -> List[str]:
-    return ["tv", "movie", "watchlist", "livetv"]
-
-
-def active_file_for(tab: str) -> str:
-    return {
-        "tv": "inputs/tv_list.txt",
-        "movie": "inputs/movies_list.txt",
-        "watchlist": "inputs/watchlist.txt",
-        "livetv": "inputs/livetv_list.txt",
-    }.get(tab, "")
-
-
-def create_app(state: AppState) -> Flask:
+def make_app(repo_root: Path, out_dir: Path) -> Flask:
     app = Flask(__name__)
-    app.config["JSON_AS_ASCII"] = False
 
-    def render(tab: str) -> str:
-        tab = (tab or "tv").lower().strip()
-        if tab not in get_tabs():
-            tab = "tv"
-        rows = state.records.get(tab, [])
-        issues = [dataclasses.asdict(i) for i in (state.issues_parse + state.issues_validate)]
-        counts = build_counts(state)
-        out_inputs = str((state.out_dir / "library_inputs.json").resolve())
-        out_validation = str((state.out_dir / "validation_report.json").resolve())
-        return render_template_string(
-            BASE_HTML,
-            app_name=APP_NAME,
-            repo_root=str(state.repo_root),
-            tabs=get_tabs(),
-            active_tab=tab,
-            active_file=active_file_for(tab),
-            rows=rows,
-            issues=issues,
-            counts=counts,
-            out_inputs=out_inputs,
-            out_validation=out_validation,
-        )
+    inputs_dir = repo_root / INPUTS_DIRNAME
+    inputs_dir.mkdir(parents=True, exist_ok=True)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    tmdb = TMDBClient(os.getenv("API_TMDB_KEY"), os.getenv("API_TMDB_TOKEN"))
+
+    def read_all_entries() -> List[LibraryEntry]:
+        all_entries: List[LibraryEntry] = []
+        for fn in SUPPORTED_FILES:
+            fp = inputs_dir / fn
+            if not fp.exists():
+                continue
+            all_entries.extend(load_entries(fp))
+        return all_entries
+
+    def filter_entries(entries: List[LibraryEntry], file_filter: str, q: str) -> List[LibraryEntry]:
+        qn = normalize_spaces(q).lower()
+        out: List[LibraryEntry] = []
+        for e in entries:
+            if not e.name:
+                continue
+            if file_filter != "all" and e.file_name != file_filter:
+                continue
+            if qn and qn not in (e.name or "").lower():
+                continue
+            out.append(e)
+        return out
+
+    def tmdb_health() -> str:
+        if not (tmdb.api_key or tmdb.api_token):
+            return "TMDB auth missing (set API_TMDB_KEY or API_TMDB_TOKEN)"
+        return "TMDB auth ok (env set)"
+
+    def export_snapshot() -> Tuple[Path, Path]:
+        # lightweight snapshot from current TXT (not API-enriched)
+        entries = read_all_entries()
+        items: List[Dict[str, Any]] = []
+        issues: List[Dict[str, Any]] = []
+
+        for e in entries:
+            if not e.name:
+                continue
+            items.append(
+                {
+                    "file": e.file_name,
+                    "active": e.active,
+                    "name": e.name,
+                    "tmdb_id": e.tmdb_id,
+                    "season_spec": e.season_spec,
+                    "tvmaze_id": e.tvmaze_id,
+                    "parse_ok": e.parse_ok,
+                    "parse_error": e.parse_error,
+                    "line_index": e.line_index,
+                }
+            )
+            if not e.parse_ok:
+                issues.append(
+                    {
+                        "file": e.file_name,
+                        "line_index": e.line_index,
+                        "raw": e.raw,
+                        "error": e.parse_error,
+                    }
+                )
+
+        library_inputs_path = out_dir / "library_inputs.json"
+        validation_report_path = out_dir / "validation_report.json"
+
+        json_dump(library_inputs_path, {"generated_at": now_stamp(), "items": items})
+        json_dump(validation_report_path, {"generated_at": now_stamp(), "issues": issues})
+
+        return library_inputs_path, validation_report_path
+
+    def update_line(file_name: str, line_index: int, transform) -> Tuple[bool, str]:
+        fp = inputs_dir / file_name
+        if not fp.exists():
+            return False, f"Missing file: {file_name}"
+        entries = load_entries(fp)
+        if line_index < 0 or line_index >= len(entries):
+            return False, f"Line index out of range (0..{len(entries)-1})"
+        e = entries[line_index]
+        new_raw = transform(e.raw)
+        entries[line_index].raw = new_raw
+        # re-parse to keep parse fields consistent (optional)
+        entries[line_index] = parse_entry_from_line(file_name, line_index, new_raw)
+        rewrite_file(fp, entries)
+        return True, "updated"
+
+    def remove_line(file_name: str, line_index: int) -> Tuple[bool, str]:
+        fp = inputs_dir / file_name
+        if not fp.exists():
+            return False, f"Missing file: {file_name}"
+        text = safe_read_text(fp)
+        lines = text.splitlines()
+        if line_index < 0 or line_index >= len(lines):
+            return False, f"Line index out of range (0..{len(lines)-1})"
+        del lines[line_index]
+        safe_write_text(fp, "\n".join(lines).rstrip() + "\n")
+        return True, "removed"
+
+    def append_entry(file_name: str, line: str) -> Tuple[bool, str]:
+        fp = inputs_dir / file_name
+        if not fp.exists():
+            # create minimal file with header
+            hdr = [
+                f"# File: {file_name}",
+                "# Project: my_TV_Movie",
+                f"# Version: v1.0.0 ({_dt.datetime.now().strftime('%Y-%m-%d')})",
+            ]
+            if file_name == FILE_MOVIES:
+                hdr.append("# format: name|tmdb_movie_id")
+            elif file_name == FILE_TV:
+                hdr.append("# format: name|tmdb_show_id|season_spec|tvmaze_id")
+            elif file_name == FILE_WATCHLIST:
+                hdr.append("# format: title|tmdb_id|seasons")
+            safe_write_text(fp, "\n".join(hdr).rstrip() + "\n")
+        with fp.open("a", encoding="utf-8", errors="replace") as f:
+            if not line.endswith("\n"):
+                line += "\n"
+            f.write(line)
+        return True, "added"
 
     @app.get("/")
     def index() -> str:
-        tab = request.args.get("tab", "tv")
-        return render(tab)
+        file_filter = request.args.get("file", "all")
+        q = request.args.get("q", "")
+        entries = filter_entries(read_all_entries(), file_filter, q)
 
-    @app.get("/reload")
-    def reload() -> Response:
-        state.load()
-        return redirect(url_for("index", tab=request.args.get("tab", "tv")))
-
-    @app.post("/api/search")
-    def api_search() -> Response:
-        data = request.get_json(force=True, silent=True) or {}
-        kind = (data.get("kind") or "tv").lower().strip()
-        query = (data.get("query") or "").strip()
-        if kind not in ("tv", "movie"):
-            return jsonify({"error": "Invalid kind"}), 400
-        if not query:
-            return jsonify({"error": "Query is empty"}), 400
-        results = state.tmdb.search(kind, query)
-        return jsonify({"results": results})
-
-    @app.post("/api/add")
-    def api_add() -> Response:
-        data = request.get_json(force=True, silent=True) or {}
-        kind = (data.get("kind") or "").lower().strip()
-        tmdb_id = data.get("tmdb_id")
-        name = (data.get("name") or "").strip()
-        season_spec = (data.get("season_spec") or "").strip()
-
-        if kind not in ("tv", "movie", "watchlist", "livetv"):
-            return jsonify({"error": "Invalid kind"}), 400
-        try:
-            tmdb_id_int = int(tmdb_id)
-        except Exception:
-            return jsonify({"error": "TMDB id must be an integer"}), 400
-        if not name:
-            return jsonify({"error": "Name is required"}), 400
-
-        if kind != "movie":
-            season_spec = normalize_season_spec(season_spec)
-            ok, _ = parse_season_spec(season_spec)
-            if not ok:
-                return jsonify({"error": "Season spec must be '*' or '1,2,3' or '1-3,5'."}), 400
-
-        for r in state.records.get(kind, []):
-            if r.tmdb_id == tmdb_id_int:
-                return jsonify({"error": f"TMDB id already exists in {kind} list."}), 400
-
-        state.records[kind].append(
-            Record(
-                kind=kind,
-                active=True,
-                name=name,
-                tmdb_id=tmdb_id_int,
-                season_spec=(season_spec if kind != "movie" else None),
-                source_file=Path(active_file_for(kind)).name,
-                line_no=0,
-                raw_line="",
-            )
+        return render_template_string(
+            BASE_HTML,
+            title=APP_TITLE,
+            now=now_stamp(),
+            repo_root=str(repo_root),
+            inputs_dir=str(inputs_dir),
+            out_dir=str(out_dir),
+            tmdb_status=tmdb_health(),
+            media_type="tv",
+            target_file="tv_list.txt",
+            q="",
+            season_spec="*",
+            tvmaze_id="",
+            results=None,
+            search_error="",
+            filter_file=file_filter,
+            filter_q=q,
+            entries=entries,
+            notice=None,
         )
-        state.records[kind] = sorted(state.records[kind], key=lambda x: (x.name or "").lower())
-        state.export_json()
-        return jsonify({"ok": True})
 
-    @app.post("/api/update")
-    def api_update() -> Response:
-        data = request.get_json(force=True, silent=True) or {}
-        tab = (data.get("tab") or "tv").lower().strip()
-        idx = data.get("idx")
-        field = (data.get("field") or "").strip()
-        value = data.get("value")
+    @app.post("/search")
+    def search() -> str:
+        media_type = request.form.get("media_type", "tv").strip()
+        target_file = request.form.get("target_file", "tv_list.txt").strip()
+        q = request.form.get("q", "").strip()
+        season_spec = request.form.get("season_spec", "*").strip()
+        tvmaze_id = request.form.get("tvmaze_id", "").strip()
 
-        if tab not in get_tabs():
-            return jsonify({"error": "Invalid tab"}), 400
-        try:
-            i = int(idx)
-        except Exception:
-            return jsonify({"error": "Invalid idx"}), 400
+        results = []
+        search_error = ""
 
-        try:
-            r = state.records[tab][i]
-        except Exception:
-            return jsonify({"error": "Row not found"}), 404
-
-        if field == "active":
-            r.active = bool(value)
-        elif field == "season_spec":
-            if tab == "movie":
-                return jsonify({"error": "Movie has no season spec"}), 400
-            spec = normalize_season_spec(str(value or ""))
-            ok, _ = parse_season_spec(spec)
-            if not ok:
-                return jsonify({"error": "Season spec must be '*' or '1,2,3' or '1-3,5'."}), 400
-            r.season_spec = spec
+        if media_type == "tv" and target_file == "movies_list.txt":
+            search_error = "Target file is movies_list.txt but media type is TV. Change one of them."
+        elif media_type == "movie" and target_file != "movies_list.txt":
+            search_error = "Media type is Movie but target file is not movies_list.txt. Change one of them."
         else:
-            return jsonify({"error": "Invalid field"}), 400
+            if media_type in ("tv", "movie"):
+                ok, data = tmdb.search(media_type, q)
+                if not ok:
+                    search_error = data.get("error", "Search failed")
+                else:
+                    raw = data.get("results", [])[:12]
+                    for r in raw:
+                        title = r.get("name") if media_type == "tv" else r.get("title")
+                        title = title or ""
+                        year = ""
+                        if media_type == "tv":
+                            d = r.get("first_air_date") or ""
+                        else:
+                            d = r.get("release_date") or ""
+                        year = d.split("-")[0] if d else ""
+                        overview = (r.get("overview") or "").strip()
+                        if len(overview) > 210:
+                            overview = overview[:210].rstrip() + "…"
+                        results.append(
+                            {
+                                "id": r.get("id"),
+                                "title": html.escape(title),
+                                "year": html.escape(year),
+                                "overview": html.escape(overview),
+                                "score": f"{(r.get('vote_average') or 0):.1f}",
+                            }
+                        )
+            else:
+                search_error = "Invalid media type."
 
-        state.export_json()
-        return jsonify({"ok": True})
+        entries = filter_entries(read_all_entries(), request.args.get("file", "all"), request.args.get("q", ""))
 
-    @app.post("/api/remove")
-    def api_remove() -> Response:
-        data = request.get_json(force=True, silent=True) or {}
-        tab = (data.get("tab") or "tv").lower().strip()
-        idx = data.get("idx")
-        if tab not in get_tabs():
-            return jsonify({"error": "Invalid tab"}), 400
-        try:
-            i = int(idx)
-        except Exception:
-            return jsonify({"error": "Invalid idx"}), 400
-        try:
-            state.records[tab].pop(i)
-        except Exception:
-            return jsonify({"error": "Row not found"}), 404
-        state.export_json()
-        return jsonify({"ok": True})
+        return render_template_string(
+            BASE_HTML,
+            title=APP_TITLE,
+            now=now_stamp(),
+            repo_root=str(repo_root),
+            inputs_dir=str(inputs_dir),
+            out_dir=str(out_dir),
+            tmdb_status=tmdb_health(),
+            media_type=media_type,
+            target_file=target_file,
+            q=q,
+            season_spec=season_spec or "*",
+            tvmaze_id=tvmaze_id,
+            results=results,
+            search_error=search_error,
+            filter_file=request.args.get("file", "all"),
+            filter_q=request.args.get("q", ""),
+            entries=entries,
+            notice=None,
+        )
 
-    @app.post("/api/validate")
-    def api_validate() -> Response:
-        state.validate()
-        return jsonify({"ok": True})
+    @app.post("/add")
+    def add() -> str:
+        target_file = request.form.get("target_file", "").strip()
+        media_type = request.form.get("media_type", "").strip()
+        name = request.form.get("name", "").strip()
+        tmdb_id = request.form.get("tmdb_id", "").strip()
+        season_spec = request.form.get("season_spec", "*").strip()
+        tvmaze_id = request.form.get("tvmaze_id", "").strip()
 
-    @app.post("/api/save")
-    def api_save() -> Response:
-        state.save()
-        return jsonify({"ok": True})
+        notice = {"kind": "ok", "msg": "Added."}
 
-    @app.errorhandler(Exception)
-    def handle_exc(err: Exception):
-        if request.path.startswith("/api/"):
-            return jsonify({"error": str(err), "trace": traceback.format_exc()[:4000]}), 500
-        return ("<pre>" + traceback.format_exc() + "</pre>", 500)
+        tmdb_int = parse_int(tmdb_id)
+        if not name or tmdb_int is None:
+            notice = {"kind": "bad", "msg": "Missing name or invalid TMDB ID."}
+            return redirect(url_for("index", _n=now_stamp()))
+
+        if target_file not in [FILE_TV, FILE_MOVIES, FILE_WATCHLIST]:
+            notice = {"kind": "bad", "msg": f"Invalid target file: {target_file}"}
+            return redirect(url_for("index", _n=now_stamp()))
+
+        if media_type == "tv":
+            ok, msg = validate_season_spec(season_spec)
+            if not ok:
+                notice = {"kind": "bad", "msg": msg}
+                return redirect(url_for("index", _n=now_stamp()))
+
+        tvmaze_int = parse_int(tvmaze_id) if tvmaze_id.strip() else None
+
+        if target_file == FILE_MOVIES:
+            line = f"{name}|{tmdb_int}"
+        elif target_file == FILE_TV:
+            line = f"{name}|{tmdb_int}|{season_spec or '*'}|{tvmaze_int or ''}".rstrip("|")
+        else:
+            # watchlist
+            line = f"{name}|{tmdb_int}|{season_spec or '*'}"
+
+        ok, msg = append_entry(target_file, line)
+        if not ok:
+            notice = {"kind": "bad", "msg": msg}
+
+        return redirect(url_for("index", _n=int(time.time())))
+
+    @app.post("/toggle")
+    def toggle() -> str:
+        file_name = request.form.get("file_name", "").strip()
+        line_index = parse_int(request.form.get("line_index", ""))
+        if file_name not in SUPPORTED_FILES or line_index is None:
+            return redirect(url_for("index", _n=int(time.time())))
+
+        def _t(line: str) -> str:
+            return comment_line(line) if not is_commented(line) else uncomment_line(line)
+
+        update_line(file_name, line_index, _t)
+        return redirect(url_for("index", _n=int(time.time())))
+
+    @app.post("/set_seasons")
+    def set_seasons() -> str:
+        file_name = request.form.get("file_name", "").strip()
+        line_index = parse_int(request.form.get("line_index", ""))
+        season_spec = request.form.get("season_spec", "").strip()
+        if file_name not in [FILE_TV, FILE_WATCHLIST] or line_index is None:
+            return redirect(url_for("index", _n=int(time.time())))
+
+        ok, msg = validate_season_spec(season_spec)
+        if not ok:
+            return redirect(url_for("index", _n=int(time.time())))
+
+        def _set(line: str) -> str:
+            was_comment = is_commented(line)
+            content = uncomment_line(line).strip()
+            parts = split_pipe_line(content)
+            # ensure at least 3 cols
+            while len(parts) < 3:
+                parts.append("")
+            parts[2] = season_spec
+            new_line = "|".join(parts).rstrip("|")
+            if was_comment:
+                new_line = comment_line(new_line)
+            return new_line
+
+        update_line(file_name, line_index, _set)
+        return redirect(url_for("index", _n=int(time.time())))
+
+    @app.post("/remove")
+    def remove() -> str:
+        file_name = request.form.get("file_name", "").strip()
+        line_index = parse_int(request.form.get("line_index", ""))
+        if file_name not in SUPPORTED_FILES or line_index is None:
+            return redirect(url_for("index", _n=int(time.time())))
+        remove_line(file_name, line_index)
+        return redirect(url_for("index", _n=int(time.time())))
+
+    @app.get("/validate")
+    def validate() -> Any:
+        _, report_path = export_snapshot()
+        data = json.loads(safe_read_text(report_path))
+        return jsonify(data)
+
+    @app.get("/export_json")
+    def export_json() -> Any:
+        inputs_path, report_path = export_snapshot()
+        return jsonify(
+            {
+                "generated_at": now_stamp(),
+                "library_inputs": str(inputs_path),
+                "validation_report": str(report_path),
+            }
+        )
 
     return app
 
 
-def read_tmdb_creds() -> Tuple[Optional[str], Optional[str]]:
-    bearer = os.environ.get("API_TMDB_TOKEN") or os.environ.get("TMDB_BEARER_TOKEN") or os.environ.get("TMDB_API_READ_TOKEN")
-    key = os.environ.get("API_TMDB_KEY") or os.environ.get("TMDB_API_KEY") or os.environ.get("TMDB_KEY")
-    if bearer:
-        bearer = bearer.strip()
-    if key:
-        key = key.strip()
-    return key, bearer
+def main(argv: Optional[List[str]] = None) -> int:
+    argv = argv or sys.argv[1:]
+    p = argparse.ArgumentParser()
+    p.add_argument("--repo-root", required=True)
+    p.add_argument("--host", default=DEFAULT_HOST)
+    p.add_argument("--port", type=int, default=DEFAULT_PORT)
+    p.add_argument("--out-dir", default="")
+    args = p.parse_args(argv)
 
+    repo_root = Path(args.repo_root).resolve()
+    out_dir = Path(args.out_dir).resolve() if args.out_dir else (repo_root / "tools" / "library_manager" / OUT_DIRNAME)
 
-def build_requests_session() -> requests.Session:
-    s = requests.Session()
-    s.headers.update({"User-Agent": "my_TV_Movie-LibraryManager/0.2.2"})
-    return s
-
-
-def parse_args(argv: List[str]) -> argparse.Namespace:
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--repo-root", required=True, help="Path to my_TV_Movie repo root")
-    ap.add_argument("--port", type=int, default=5177)
-    ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--out-dir", default="", help="Output dir (default: tools/library_manager/out)")
-    return ap.parse_args(argv)
-
-
-def main(argv: List[str]) -> int:
-    args = parse_args(argv)
-    repo_root = Path(args.repo_root).expanduser().resolve()
-    out_dir = Path(args.out_dir).expanduser().resolve() if args.out_dir else (repo_root / "tools" / "library_manager" / "out")
-
-    if not (repo_root / "inputs").exists():
-        print(f"ERROR: inputs folder not found under repo root: {repo_root}", file=sys.stderr)
-        return 2
-
-    api_key, bearer = read_tmdb_creds()
-    if not api_key and not bearer:
-        print("ERROR: TMDB creds not found. Set API_TMDB_KEY or API_TMDB_TOKEN in environment.", file=sys.stderr)
-        return 3
-
-    s = build_requests_session()
-    tmdb = TMDBClient(s, api_key=api_key, bearer_token=bearer)
-    state = AppState(repo_root=repo_root, out_dir=out_dir, tmdb=tmdb)
-
-    app = create_app(state)
-    print(f"{APP_NAME} running at http://{args.host}:{args.port}/")
+    app = make_app(repo_root, out_dir)
     app.run(host=args.host, port=args.port, debug=False)
     return 0
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
-# <<< END FILE
+    raise SystemExit(main())
+<<< END FILE
