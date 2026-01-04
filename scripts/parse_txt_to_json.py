@@ -1,121 +1,203 @@
+\
 #!/usr/bin/env python3
 # ==============================================================================
 # [FILE]    scripts/parse_txt_to_json.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Parse inputs/*.txt into data/inputs_parsed.json
-# [VERSION] v1.3.0
-# [UPDATED] 2026-01-03_00-00-00
+# [ROLE]    Parse plain-text inputs/*.txt into data/inputs_parsed.json
+# [VERSION] v1.2.0
+# [UPDATED] 2026-01-03
 # [BUILD]   14.01.07
 #
-# NOTE:
-# - Never blocks CI. Local "Press Enter" only if PARSE_TXT_PAUSE=1.
+# Fix: robustly locate tv + movies input files (filename drift tolerant) and
+#      parse both "name|id" and "name | id | ..." formats.
 # ==============================================================================
 
 from __future__ import annotations
 
-import datetime as _dt
 import json
 import os
 import sys
-from typing import Any, Dict, List
+import re
+import datetime as _dt
+from typing import Any, Dict, List, Tuple
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-INPUTS_DIR = os.path.join(REPO_ROOT, "inputs")
-DATA_DIR = os.path.join(REPO_ROOT, "data")
-OUT_JSON = os.path.join(DATA_DIR, "inputs_parsed.json")
+INPUT_DIR = os.path.join(REPO_ROOT, "inputs")
+OUT_PATH = os.path.join(REPO_ROOT, "data", "inputs_parsed.json")
+LOG_DIR = os.path.join(REPO_ROOT, "logs")
 
 
-def _ts() -> str:
+def _ts_local() -> str:
     return _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-def _read_lines(path: str) -> List[str]:
-    if not os.path.isfile(path):
-        return []
+def _ensure_dirs() -> None:
+    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
+    os.makedirs(LOG_DIR, exist_ok=True)
+
+
+def _log(msg: str) -> None:
+    print(f"{_ts_local()} | [parse_txt_to_json] {msg}")
+
+
+def _read_text(path: str) -> str:
+    # tolerate odd encodings + BOM
     with open(path, "r", encoding="utf-8-sig", errors="replace") as f:
-        # utf-8-sig strips BOM if present
-        raw = f.read().splitlines()
-    # drop blanks + comment lines (leading #)
-    out: List[str] = []
-    for line in raw:
-        s = (line or "").strip()
-        if not s:
+        return f.read()
+
+
+def _pick_existing(candidates: List[str]) -> str | None:
+    for rel in candidates:
+        p = os.path.join(INPUT_DIR, rel)
+        if os.path.isfile(p):
+            return p
+    return None
+
+
+_COMMENT_RE = re.compile(r"^\s*(#|;|//)")
+_WS = re.compile(r"\s+")
+
+
+def _split_pipe(line: str) -> List[str]:
+    # Accept both "a|b" and "a | b | c" and trim whitespace.
+    parts = [p.strip() for p in line.split("|")]
+    # Drop empty trailing parts (common when line ends with '|')
+    while parts and parts[-1] == "":
+        parts.pop()
+    return parts
+
+
+def _norm_title(s: str) -> str:
+    return _WS.sub(" ", (s or "").strip())
+
+
+def _parse_tv_lines(text: str) -> Tuple[List[Dict[str, Any]], int]:
+    out: List[Dict[str, Any]] = []
+    errors = 0
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or _COMMENT_RE.match(line):
             continue
-        if s.startswith("#"):
+        parts = _split_pipe(line)
+        # Expected: name | tmdb_show_id | season_spec | tvmaze_id
+        # But allow: name|tmdb_show_id (minimal)
+        if len(parts) < 2:
+            errors += 1
             continue
-        out.append(s)
-    return out
-
-
-def _parse_tmdb_id(line: str) -> str | None:
-    # accepted formats:
-    #   Title | tmdb_id=12345
-    #   12345
-    #   tmdb_id=12345
-    if "tmdb_id=" in line:
-        try:
-            right = line.split("tmdb_id=", 1)[1].strip()
-            # strip anything after separators
-            for sep in ("|", ",", ";"):
-                if sep in right:
-                    right = right.split(sep, 1)[0].strip()
-            return right if right.isdigit() else None
-        except Exception:
-            return None
-    s = line.strip()
-    return s if s.isdigit() else None
-
-
-def _parse_title(line: str) -> str:
-    # title is text before first |
-    if "|" in line:
-        return line.split("|", 1)[0].strip()
-    return line.strip()
-
-
-def _build_list(lines: List[str]) -> List[Dict[str, Any]]:
-    items: List[Dict[str, Any]] = []
-    errs = 0
-    for line in lines:
-        tid = _parse_tmdb_id(line)
-        title = _parse_title(line)
-        if not tid:
-            errs += 1
+        title = _norm_title(parts[0])
+        tmdb_id = (parts[1] or "").strip()
+        if not title or not tmdb_id.isdigit():
+            errors += 1
             continue
-        items.append({"title": title, "tmdb_id": tid, "first_air_date": None})
-    return items
+        season_spec = (parts[2] or "").strip() if len(parts) >= 3 else ""
+        tvmaze_id = (parts[3] or "").strip() if len(parts) >= 4 else ""
+        item: Dict[str, Any] = {
+            "title": title,
+            "tmdb_id": int(tmdb_id),
+        }
+        if season_spec:
+            item["season_spec"] = season_spec
+        if tvmaze_id.isdigit():
+            item["tvmaze_id"] = int(tvmaze_id)
+        out.append(item)
+    return out, errors
+
+
+def _parse_movie_lines(text: str) -> Tuple[List[Dict[str, Any]], int]:
+    out: List[Dict[str, Any]] = []
+    errors = 0
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or _COMMENT_RE.match(line):
+            continue
+        parts = _split_pipe(line)
+        # Expected: name|tmdb_movie_id
+        if len(parts) < 2:
+            errors += 1
+            continue
+        title = _norm_title(parts[0])
+        tmdb_id = (parts[1] or "").strip()
+        if not title or not tmdb_id.isdigit():
+            errors += 1
+            continue
+        out.append({"title": title, "tmdb_id": int(tmdb_id)})
+    return out, errors
+
+
+def _parse_watchlist_lines(text: str) -> Tuple[List[Dict[str, Any]], int]:
+    # Preserve existing behavior: accept flexible "type|id" or "name|id"
+    out: List[Dict[str, Any]] = []
+    errors = 0
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or _COMMENT_RE.match(line):
+            continue
+        parts = _split_pipe(line)
+        if len(parts) < 2:
+            errors += 1
+            continue
+        a = (parts[0] or "").strip()
+        b = (parts[1] or "").strip()
+        if b.isdigit():
+            out.append({"title": _norm_title(a), "tmdb_id": int(b)})
+        else:
+            errors += 1
+    return out, errors
 
 
 def main() -> int:
-    os.makedirs(DATA_DIR, exist_ok=True)
+    _ensure_dirs()
 
-    tv_lines = _read_lines(os.path.join(INPUTS_DIR, "tv_list.txt"))
-    mv_lines = _read_lines(os.path.join(INPUTS_DIR, "movies_list.txt"))
-    wl_lines = _read_lines(os.path.join(INPUTS_DIR, "watchlist.txt"))
+    # Filename drift tolerant (covers older/newer naming).
+    tv_path = _pick_existing(["tv_list.txt", "shows_list.txt", "tv.txt", "shows.txt"])
+    mv_path = _pick_existing(["movies_list.txt", "movie_list.txt", "movies.txt"])
+    wl_path = _pick_existing(["watchlist.txt"])
 
-    tv = _build_list(tv_lines)
-    movies = _build_list(mv_lines)
-    watchlist = [s for s in wl_lines]
+    if not tv_path:
+        _log("WARNING tv input not found in inputs/. Expected one of: tv_list.txt, shows_list.txt, tv.txt, shows.txt")
+    else:
+        _log(f"tv_input={tv_path}")
 
-    out = {
-        "generated_local": _ts(),
-        "tv": tv,
-        "movies": movies,
-        "watchlist": watchlist,
+    if not mv_path:
+        _log("WARNING movies input not found in inputs/. Expected one of: movies_list.txt, movie_list.txt, movies.txt")
+    else:
+        _log(f"movies_input={mv_path}")
+
+    if not wl_path:
+        _log("WARNING watchlist input not found in inputs/. Expected: watchlist.txt")
+    else:
+        _log(f"watchlist_input={wl_path}")
+
+    tv_items: List[Dict[str, Any]] = []
+    mv_items: List[Dict[str, Any]] = []
+    wl_items: List[Dict[str, Any]] = []
+    err = 0
+
+    if tv_path:
+        tv_items, e = _parse_tv_lines(_read_text(tv_path))
+        err += e
+
+    if mv_path:
+        mv_items, e = _parse_movie_lines(_read_text(mv_path))
+        err += e
+
+    if wl_path:
+        wl_items, e = _parse_watchlist_lines(_read_text(wl_path))
+        err += e
+
+    payload: Dict[str, Any] = {
+        "generated_local": _dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+        "generated_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "tv": tv_items,
+        "movies": mv_items,
+        "watchlist": wl_items,
     }
 
-    with open(OUT_JSON, "w", encoding="utf-8", errors="replace", newline="\n") as f:
-        json.dump(out, f, ensure_ascii=False, indent=2)
+    with open(OUT_PATH, "w", encoding="utf-8", errors="replace") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
 
-    print(f"{_ts()} | [parse_txt_to_json] wrote {OUT_JSON.replace(os.sep, '/')}")
-    print(f"{_ts()} | tv={len(tv)} movies={len(movies)} watchlist={len(watchlist)} errors=0")
-
-    if os.environ.get("PARSE_TXT_PAUSE", "").strip() == "1":
-        try:
-            input("Press Enter to close...")
-        except Exception:
-            pass
-
+    _log(f"wrote {OUT_PATH.replace(os.sep, '/')}")
+    _log(f"tv={len(tv_items)} movies={len(mv_items)} watchlist={len(wl_items)} errors={err}")
     return 0
 
 
