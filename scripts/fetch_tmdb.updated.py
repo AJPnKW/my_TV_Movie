@@ -3,8 +3,8 @@
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
-# [VERSION] v2.6.6
-# [UPDATED] 2025-12-29_22-30-00
+# [VERSION] v2.6.5
+# [UPDATED] 2025-12-23_00-00-00
 # [BUILD]   14.01.07
 #
 # [PATCH GOALS]
@@ -107,6 +107,39 @@ def setup_logging() -> None:
 
 def read_text_file(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+def load_prev_trakt_maps(data_json_path: Path) -> tuple[dict[int, Any], dict[int, Any]]:
+    """Load existing data/data.json and return (show_tmdb_id->trakt_id, movie_tmdb_id->trakt_id).
+    This lets TMDB refresh preserve Trakt IDs that are later enriched by scripts/fetch_trakt.py.
+    """
+    try:
+        if not data_json_path.exists():
+            return {}, {}
+        raw = data_json_path.read_text(encoding="utf-8", errors="replace")
+        obj = json.loads(raw)
+        shows_map: dict[int, Any] = {}
+        movies_map: dict[int, Any] = {}
+        for s in (obj.get("shows") or []):
+            try:
+                tid = s.get("trakt_id", None)
+                mid = s.get("tmdb_id", None)
+                if mid is not None:
+                    shows_map[int(mid)] = tid
+            except Exception:
+                pass
+        for m in (obj.get("movies") or []):
+            try:
+                tid = m.get("trakt_id", None)
+                mid = m.get("tmdb_id", None)
+                if mid is not None:
+                    movies_map[int(mid)] = tid
+            except Exception:
+                pass
+        return shows_map, movies_map
+    except Exception:
+        return {}, {}
+
 
 
 def write_json_atomic(path: Path, obj: Any) -> None:
@@ -495,6 +528,8 @@ def main() -> int:
         "movies": [],
         "errors": [],
     }
+    prev_show_trakt, prev_movie_trakt = load_prev_trakt_maps(OUT_DATA_JSON)
+
 
     # progress helper
     def _iter(items: List[Dict[str, Any]], desc: str):
@@ -553,7 +588,8 @@ def main() -> int:
             show_obj = {
                 # --- core / legacy ---
                 "tmdb_id": int(tmdb_id),
-                "trakt_id": None,
+                "trakt_id": prev_movie_trakt.get(int(tmdb_id)),
+                "trakt_id": prev_show_trakt.get(int(tmdb_id)),
                 "title": show.get("name") or title,
                 "first_air_date": show.get("first_air_date"),
                 "poster_local": poster_local,
@@ -640,7 +676,6 @@ def main() -> int:
             mv_obj = {
                 # --- core / legacy ---
                 "tmdb_id": int(tmdb_id),
-                "trakt_id": None,
                 "title": mv.get("title") or title,
                 "release_date": mv.get("release_date"),
                 "poster_local": poster_local,
@@ -679,37 +714,6 @@ def main() -> int:
 
     data["meta"]["counts"] = {"shows": shows_ok, "movies": movies_ok, "errors": len(data["errors"])}
 
-
-    # -------------------------
-    # Preserve Trakt enrichment across TMDB rebuilds
-    #   - TMDB fetch rebuilds the file; Trakt later enriches it.
-    #   - Without this step, running fetch_tmdb.py after fetch_trakt.py would wipe trakt_id.
-    # -------------------------
-    try:
-        if OUT_DATA_JSON.exists():
-            prev = json.loads(OUT_DATA_JSON.read_text(encoding="utf-8", errors="replace") or "{}")
-            prev_movies = {
-                str(m.get("tmdb_id")): m.get("trakt_id")
-                for m in (prev.get("movies") or [])
-                if m.get("tmdb_id") is not None and m.get("trakt_id") not in (None, "", 0)
-            }
-            prev_shows = {
-                str(s.get("tmdb_id")): s.get("trakt_id")
-                for s in (prev.get("shows") or [])
-                if s.get("tmdb_id") is not None and s.get("trakt_id") not in (None, "", 0)
-            }
-
-            for m in data.get("movies", []):
-                k = str(m.get("tmdb_id"))
-                if not m.get("trakt_id") and k in prev_movies:
-                    m["trakt_id"] = prev_movies[k]
-
-            for s in data.get("shows", []):
-                k = str(s.get("tmdb_id"))
-                if not s.get("trakt_id") and k in prev_shows:
-                    s["trakt_id"] = prev_shows[k]
-    except Exception as ex:
-        logging.warning("[merge] preserve trakt_id skipped: %s", ex)
     write_json_atomic(OUT_DATA_JSON, data)
     logging.info("[done] wrote=%s shows=%s movies=%s errors=%s", OUT_DATA_JSON, shows_ok, movies_ok, len(data["errors"]))
     return 0

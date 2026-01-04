@@ -1,0 +1,43 @@
+import requests
+
+urls = [
+    "https://www.tv-address.com/page/canada-channels-information.html/",
+    "https://www.tv-address.com/page/australia-channels-information.html/",
+    "https://www.tv-address.com/page/united-kingdom-channels-information.html/",
+    "https://www.tv-address.com/page/united-states-channels-information.html/",
+    "https://www.rabbitears.info/market.php?request=maxcontour",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Fetch_TV",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Foxtel_Now",
+    "https://www.tvchannellists.com/w/List_of_channels_on_10Play",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Foxtel",
+    "https://www.tvchannellists.com/w/List_of_Rogers_TV_channels_(Kitchener/Waterloo)",
+    "https://www.tvchannellists.com/w/List_of_Bell_MTS_channels",
+    "https://www.tvchannellists.com/w/List_of_Canadian_over-the-air_television_stations",
+    "https://www.tvchannellists.com/w/List_of_over-the-air_television_stations_in_Toronto-Hamilton",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Pluto_TV_(Canada)",
+    "https://www.tvchannellists.com/w/Master_list_of_channels_on_Pluto_TV",
+    "https://www.tvchannellists.com/w/List_of_Bell_Satellite_TV_channels",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Freesat_(UK)",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Virgin_Media_(United_Kingdom)",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Sky_Q_(United_Kingdom_%26_Ireland)",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Stream_from_Virgin_Media",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Freely_(United_Kingdom)",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Freeview_stream_(United_Kingdom)",
+    "https://www.tvchannellists.com/w/Master_list_of_pay_television_channels_(United_States)",
+    "https://www.tvchannellists.com/w/List_of_channels_on_DirecTV_(USA)",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Dish_Network",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Xfinity",
+    "https://www.tvchannellists.com/w/List_of_channels_on_Spectrum",
+    "https://www.tvchannellists.com/w/List_of_American_over-the-air_television_stations"
+]
+
+for url in urls:
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        filename = url.split("/")[-1].split("?")[0].replace("(", "").replace(")", "").replace("%26", "&") + ".txt"
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(response.text)
+        print(f"Saved: {filename}")
+    except Exception as e:
+        print(f"Error {url}: {e}")
