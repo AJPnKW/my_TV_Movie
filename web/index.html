@@ -776,14 +776,43 @@
       return t ? t : (fallback || "");
     }
 
-    function hasLinks(item) {
-      const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : [];
+    // Schema-tolerant helpers (shows may use name vs title; posters may be local or TMDB paths)
+    function getTitle(item) {
+      if (!item) return "";
+      return normalizeText(item.title, normalizeText(item.name, ""));
+    }
+
+    function getYear(item) {
+      if (!item) return "";
+      if (item.year) return String(item.year);
+      const d = normalizeText(item.release_date, normalizeText(item.first_air_date, ""));
+      return d ? d.slice(0, 4) : "";
+    }
+
+    function tmdbImg(path, size) {
+      const p = normalizeText(path, "");
+      if (!p) return "";
+      const s = size || "w500";
+      return `https://image.tmdb.org/t/p/${s}${p}`;
+    }
+
+    function getPosterUrl(item) {
+      if (!item) return "";
+      return normalizeText(item.poster_local, tmdbImg(item.poster_path, "w500"));
+    }
+
+    function getBackdropUrl(item) {
+      if (!item) return "";
+      return normalizeText(item.backdrop_local, tmdbImg(item.backdrop_path, "w780"));
+    }
+function hasLinks(item) {
+      const keys = (item && Array.isArray(item.links_keys) && item.links_keys.length) ? item.links_keys : Object.keys((item && item.links) ? item.links : {});
       return keys.length > 0;
     }
 
     function calendarItemSecondaryText(item) {
       const kind = item && item.kind ? String(item.kind) : "";
-      const keys = (item && item.links_keys) ? item.links_keys : [];
+      const keys = (item && Array.isArray(item.links_keys) && item.links_keys.length) ? item.links_keys : Object.keys((item && item.links) ? item.links : {});
       const avail = (Array.isArray(keys) && keys.length) ? keys.join(" • ") : "No links";
       if (kind === "show") {
         const sc = Number.isFinite(item.seasons_count) ? item.seasons_count : 0;
@@ -834,12 +863,12 @@
         const dayKey = isoDayKeyFromDate(d);
         const bucket = ensureDay(dayKey);
 
-        const title = normalizeText(show && show.title, "Untitled Show");
+        const title = normalizeText(getTitle(show), "Untitled Show");
         const tmdb_id = (show && Number.isFinite(show.tmdb_id)) ? show.tmdb_id : null;
         const trakt_id = (show && Number.isFinite(show.trakt_id)) ? show.trakt_id : null;
 
-        const poster_local = (show && typeof show.poster_local === "string" && show.poster_local.trim()) ? show.poster_local.trim() : null;
-        const backdrop_local = (show && typeof show.backdrop_local === "string" && show.backdrop_local.trim()) ? show.backdrop_local.trim() : null;
+        const poster_local = (normalizeText(getPosterUrl(show), "") || null);
+        const backdrop_local = (normalizeText(getBackdropUrl(show), "") || null);
 
         const links = (show && show.links && typeof show.links === "object") ? show.links : {};
         const links_keys = safeLinksKeys(links);
@@ -880,12 +909,12 @@
         const dayKey = isoDayKeyFromDate(d);
         const bucket = ensureDay(dayKey);
 
-        const title = normalizeText(movie && movie.title, "Untitled Movie");
+        const title = normalizeText(getTitle(movie), "Untitled Movie");
         const tmdb_id = (movie && Number.isFinite(movie.tmdb_id)) ? movie.tmdb_id : null;
         const trakt_id = (movie && Number.isFinite(movie.trakt_id)) ? movie.trakt_id : null;
 
-        const poster_local = (movie && typeof movie.poster_local === "string" && movie.poster_local.trim()) ? movie.poster_local.trim() : null;
-        const backdrop_local = (movie && typeof movie.backdrop_local === "string" && movie.backdrop_local.trim()) ? movie.backdrop_local.trim() : null;
+        const poster_local = (normalizeText(getPosterUrl(movie), "") || null);
+        const backdrop_local = (normalizeText(getBackdropUrl(movie), "") || null);
 
         const links = (movie && movie.links && typeof movie.links === "object") ? movie.links : {};
         const links_keys = safeLinksKeys(links);
@@ -919,7 +948,7 @@
 
     function openPopupForItem(item) {
       const kind = item && item.kind ? String(item.kind) : "item";
-      const title = (item && item.title) ? String(item.title) : "Details";
+      const title = normalizeText(getTitle(item), "Details");
 
       const body = document.createElement("div");
 
@@ -1063,7 +1092,7 @@
       }
 
       function itemHasLinks(item) {
-        const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : [];
+        const keys = (item && Array.isArray(item.links_keys) && item.links_keys.length) ? item.links_keys : Object.keys((item && item.links) ? item.links : {});
         return keys.length > 0;
       }
 
@@ -1103,7 +1132,7 @@
 
         const t = document.createElement("div");
         t.className = "t";
-        t.textContent = (item && item.title) ? String(item.title) : "Untitled";
+        t.textContent = normalizeText(getTitle(item), "Untitled");
 
         const s = document.createElement("div");
         s.className = "s";
