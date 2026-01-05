@@ -776,56 +776,35 @@
       return t ? t : (fallback || "");
     }
 
-    // Schema-tolerant helpers (shows may use name vs title; posters may be local or TMDB paths)
-    function getTitle(item) {
-      if (!item) return "";
-      return normalizeText(item.title, normalizeText(item.name, ""));
-    }
-
-    function getYear(item) {
-      if (!item) return "";
-      if (item.year) return String(item.year);
-      const d = normalizeText(item.release_date, normalizeText(item.first_air_date, ""));
-      return d ? d.slice(0, 4) : "";
-    }
-
-    function tmdbImg(path, size) {
-      const p = normalizeText(path, "");
-      if (!p) return "";
-      const s = size || "w500";
-      return `https://image.tmdb.org/t/p/${s}${p}`;
-    }
-
-    function getPosterUrl(item) {
-      if (!item) return "";
-      return normalizeText(item.poster_local, tmdbImg(item.poster_path, "w500"));
-    }
-
-    function getBackdropUrl(item) {
-      if (!item) return "";
-      return normalizeText(item.backdrop_local, tmdbImg(item.backdrop_path, "w780"));
-    }
-function hasLinks(item) {
-      const keys = (item && Array.isArray(item.links_keys) && item.links_keys.length) ? item.links_keys : Object.keys((item && item.links) ? item.links : {});
+    function hasLinks(item) {
+      const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : [];
       return keys.length > 0;
     }
 
     function calendarItemSecondaryText(item) {
-      const kind = item && item.kind ? String(item.kind) : "";
-      const keys = (item && Array.isArray(item.links_keys) && item.links_keys.length) ? item.links_keys : Object.keys((item && item.links) ? item.links : {});
-      const avail = (Array.isArray(keys) && keys.length) ? keys.join(" • ") : "No links";
-      if (kind === "show") {
-        const sc = Number.isFinite(item.seasons_count) ? item.seasons_count : 0;
-        const sm = (item && typeof item.season_mode === "string" && item.season_mode.trim()) ? item.season_mode.trim() : "";
-        const sf = (item && typeof item.season_filter === "string" && item.season_filter.trim()) ? item.season_filter.trim() : "";
-        const parts = [];
-        parts.push("Show");
-        if (sc > 0) parts.push(`Seasons:${sc}`);
-        if (sm) parts.push(`Mode:${sm}`);
-        if (sf) parts.push(`Filter:${sf}`);
-        parts.push(avail);
-        return parts.join(" • ");
-      }
+  // A compact, resilient secondary label for calendar chips.
+  // Prefer episode-based labeling when available.
+  const kind = (item && item.kind) ? String(item.kind) : "";
+  const parts = [];
+  if (kind === "show") parts.push("Show");
+  else if (kind === "movie") parts.push("Movie");
+
+  // Episode label (if present)
+  const sn = (item && Number.isFinite(item.season_number)) ? item.season_number : null;
+  const en = (item && Number.isFinite(item.episode_number)) ? item.episode_number : null;
+  if (sn !== null || en !== null) {
+    const s = (sn !== null) ? ("S" + String(sn).padStart(2, "0")) : "";
+    const e = (en !== null) ? ("E" + String(en).padStart(2, "0")) : "";
+    const se = (s + e).trim();
+    if (se) parts.push(se);
+  }
+
+  // Season filter (if present)
+  const sf = (item && item.season_filter != null) ? String(item.season_filter).trim() : "";
+  if (sf) parts.push("Season:" + sf);
+
+  return parts.join(" • ");
+}
       if (kind === "movie") {
         return `Movie • ${avail}`;
       }
@@ -857,18 +836,28 @@ function hasLinks(item) {
 
       const shows = Array.isArray(data && data.shows) ? data.shows : [];
       for (const show of shows) {
-        const d = parseISODateOnly(show && show.first_air_date);
+        const nextEp = (show && typeof show.next_episode_to_air === "object" && show.next_episode_to_air) ? show.next_episode_to_air : null;
+        const lastEp = (show && typeof show.last_episode_to_air === "object" && show.last_episode_to_air) ? show.last_episode_to_air : null;
+
+        const dateStr =
+          (nextEp && nextEp.air_date) ||
+          (lastEp && lastEp.air_date) ||
+          (show && show.air_date) ||
+          (show && show.first_air_date) ||
+          null;
+
+        const d = parseISODateOnly(dateStr);
         if (!d) continue;
 
         const dayKey = isoDayKeyFromDate(d);
         const bucket = ensureDay(dayKey);
 
-        const title = normalizeText(getTitle(show), "Untitled Show");
+        const title = normalizeText(show && show.title, "Untitled Show");
         const tmdb_id = (show && Number.isFinite(show.tmdb_id)) ? show.tmdb_id : null;
         const trakt_id = (show && Number.isFinite(show.trakt_id)) ? show.trakt_id : null;
 
-        const poster_local = (normalizeText(getPosterUrl(show), "") || null);
-        const backdrop_local = (normalizeText(getBackdropUrl(show), "") || null);
+        const poster_local = (show && typeof show.poster_local === "string" && show.poster_local.trim()) ? show.poster_local.trim() : null;
+        const backdrop_local = (show && typeof show.backdrop_local === "string" && show.backdrop_local.trim()) ? show.backdrop_local.trim() : null;
 
         const links = (show && show.links && typeof show.links === "object") ? show.links : {};
         const links_keys = safeLinksKeys(links);
@@ -886,6 +875,10 @@ function hasLinks(item) {
           tmdb_id,
           trakt_id,
           first_air_date: show && typeof show.first_air_date === "string" ? show.first_air_date : null,
+          episode_air_date: (nextEp && typeof nextEp.air_date === "string") ? nextEp.air_date : ((lastEp && typeof lastEp.air_date === "string") ? lastEp.air_date : null),
+          season_number: (nextEp && Number.isFinite(nextEp.season_number)) ? nextEp.season_number : null,
+          episode_number: (nextEp && Number.isFinite(nextEp.episode_number)) ? nextEp.episode_number : null,
+          episode_title: (nextEp && typeof nextEp.name === "string") ? nextEp.name : null,
           poster_local,
           backdrop_local,
           links,
@@ -909,12 +902,12 @@ function hasLinks(item) {
         const dayKey = isoDayKeyFromDate(d);
         const bucket = ensureDay(dayKey);
 
-        const title = normalizeText(getTitle(movie), "Untitled Movie");
+        const title = normalizeText(movie && movie.title, "Untitled Movie");
         const tmdb_id = (movie && Number.isFinite(movie.tmdb_id)) ? movie.tmdb_id : null;
         const trakt_id = (movie && Number.isFinite(movie.trakt_id)) ? movie.trakt_id : null;
 
-        const poster_local = (normalizeText(getPosterUrl(movie), "") || null);
-        const backdrop_local = (normalizeText(getBackdropUrl(movie), "") || null);
+        const poster_local = (movie && typeof movie.poster_local === "string" && movie.poster_local.trim()) ? movie.poster_local.trim() : null;
+        const backdrop_local = (movie && typeof movie.backdrop_local === "string" && movie.backdrop_local.trim()) ? movie.backdrop_local.trim() : null;
 
         const links = (movie && movie.links && typeof movie.links === "object") ? movie.links : {};
         const links_keys = safeLinksKeys(links);
@@ -948,7 +941,7 @@ function hasLinks(item) {
 
     function openPopupForItem(item) {
       const kind = item && item.kind ? String(item.kind) : "item";
-      const title = normalizeText(getTitle(item), "Details");
+      const title = (item && item.title) ? String(item.title) : "Details";
 
       const body = document.createElement("div");
 
@@ -958,7 +951,19 @@ function hasLinks(item) {
       bits.push(kind === "show" ? "Show" : (kind === "movie" ? "Movie" : "Item"));
       if (Number.isFinite(item && item.tmdb_id)) bits.push(`tmdb:${item.tmdb_id}`);
       if (Number.isFinite(item && item.trakt_id)) bits.push(`trakt:${item.trakt_id}`);
-      if (kind === "show" && item.first_air_date) bits.push(`first_air_date:${item.first_air_date}`);
+      if (kind === "show") {
+        if (item.episode_air_date) bits.push(`air_date:${item.episode_air_date}`);
+        else if (item.first_air_date) bits.push(`first_air_date:${item.first_air_date}`);
+
+        if (Number.isFinite(item.season_number) || Number.isFinite(item.episode_number)) {
+          const s = Number.isFinite(item.season_number) ? ("S" + String(item.season_number).padStart(2, "0")) : "";
+          const e = Number.isFinite(item.episode_number) ? ("E" + String(item.episode_number).padStart(2, "0")) : "";
+          const se = (s + e).trim();
+          if (se) bits.push(se);
+        }
+
+        if (item.episode_title) bits.push(`ep:${item.episode_title}`);
+      }
       if (kind === "movie" && item.release_date) bits.push(`release_date:${item.release_date}`);
       meta.textContent = bits.join(" • ");
       body.appendChild(meta);
@@ -1092,7 +1097,7 @@ function hasLinks(item) {
       }
 
       function itemHasLinks(item) {
-        const keys = (item && Array.isArray(item.links_keys) && item.links_keys.length) ? item.links_keys : Object.keys((item && item.links) ? item.links : {});
+        const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : [];
         return keys.length > 0;
       }
 
@@ -1132,7 +1137,7 @@ function hasLinks(item) {
 
         const t = document.createElement("div");
         t.className = "t";
-        t.textContent = normalizeText(getTitle(item), "Untitled");
+        t.textContent = (item && item.title) ? String(item.title) : "Untitled";
 
         const s = document.createElement("div");
         s.className = "s";
