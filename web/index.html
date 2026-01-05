@@ -700,12 +700,21 @@
     }
 
     async function loadConfigOnce() {
-      const resp = await fetch("./config.json", { cache: "no-store" });
-      if (!resp.ok) throw new Error(`Failed to load config.json (${resp.status})`);
-      const text = await resp.text();
-      const cfg = safeJsonParse(text, "web/config.json");
-      App.config = cfg;
-      App.state.config_loaded = true;
+      // Optional: config.json may not exist. Missing config must not block app init.
+      if (App.config) return App.config;
+      const url = "./config.json";
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) {
+          App.config = {};
+          return App.config;
+        }
+        App.config = await res.json();
+        return App.config;
+      } catch (_err) {
+        App.config = {};
+        return App.config;
+      }
     }
 
     async function loadDataOnce() {
@@ -782,29 +791,21 @@
     }
 
     function calendarItemSecondaryText(item) {
-  // A compact, resilient secondary label for calendar chips.
-  // Prefer episode-based labeling when available.
-  const kind = (item && item.kind) ? String(item.kind) : "";
-  const parts = [];
-  if (kind === "show") parts.push("Show");
-  else if (kind === "movie") parts.push("Movie");
-
-  // Episode label (if present)
-  const sn = (item && Number.isFinite(item.season_number)) ? item.season_number : null;
-  const en = (item && Number.isFinite(item.episode_number)) ? item.episode_number : null;
-  if (sn !== null || en !== null) {
-    const s = (sn !== null) ? ("S" + String(sn).padStart(2, "0")) : "";
-    const e = (en !== null) ? ("E" + String(en).padStart(2, "0")) : "";
-    const se = (s + e).trim();
-    if (se) parts.push(se);
-  }
-
-  // Season filter (if present)
-  const sf = (item && item.season_filter != null) ? String(item.season_filter).trim() : "";
-  if (sf) parts.push("Season:" + sf);
-
-  return parts.join(" • ");
-}
+      const kind = item && item.kind ? String(item.kind) : "";
+      const keys = (item && item.links_keys) ? item.links_keys : [];
+      const avail = (Array.isArray(keys) && keys.length) ? keys.join(" • ") : "No links";
+      if (kind === "show") {
+        const sc = Number.isFinite(item.seasons_count) ? item.seasons_count : 0;
+        const sm = (item && typeof item.season_mode === "string" && item.season_mode.trim()) ? item.season_mode.trim() : "";
+        const sf = (item && typeof item.season_filter === "string" && item.season_filter.trim()) ? item.season_filter.trim() : "";
+        const parts = [];
+        parts.push("Show");
+        if (sc > 0) parts.push(`Seasons:${sc}`);
+        if (sm) parts.push(`Mode:${sm}`);
+        if (sf) parts.push(`Filter:${sf}`);
+        parts.push(avail);
+        return parts.join(" • ");
+      }
       if (kind === "movie") {
         return `Movie • ${avail}`;
       }
@@ -813,7 +814,7 @@
 
     function buildCalendarItemsIndex(data) {
       // Calendar indexing (schema-bound):
-      // - shows[*] indexed by first_air_date
+      // - shows[*] indexed by next_episode_to_air.air_date (fallback last_episode_to_air.air_date)
       // - movies[*] indexed by release_date
       // - invalid/missing dates are ignored
       // - availability derived only from links{} keys
@@ -836,17 +837,8 @@
 
       const shows = Array.isArray(data && data.shows) ? data.shows : [];
       for (const show of shows) {
-        const nextEp = (show && typeof show.next_episode_to_air === "object" && show.next_episode_to_air) ? show.next_episode_to_air : null;
-        const lastEp = (show && typeof show.last_episode_to_air === "object" && show.last_episode_to_air) ? show.last_episode_to_air : null;
-
-        const dateStr =
-          (nextEp && nextEp.air_date) ||
-          (lastEp && lastEp.air_date) ||
-          (show && show.air_date) ||
-          (show && show.first_air_date) ||
-          null;
-
-        const d = parseISODateOnly(dateStr);
+        const episode_air = (show && show.next_episode_to_air && show.next_episode_to_air.air_date) || (show && show.last_episode_to_air && show.last_episode_to_air.air_date) || "";
+        const d = parseISODateOnly(episode_air);
         if (!d) continue;
 
         const dayKey = isoDayKeyFromDate(d);
@@ -875,10 +867,7 @@
           tmdb_id,
           trakt_id,
           first_air_date: show && typeof show.first_air_date === "string" ? show.first_air_date : null,
-          episode_air_date: (nextEp && typeof nextEp.air_date === "string") ? nextEp.air_date : ((lastEp && typeof lastEp.air_date === "string") ? lastEp.air_date : null),
-          season_number: (nextEp && Number.isFinite(nextEp.season_number)) ? nextEp.season_number : null,
-          episode_number: (nextEp && Number.isFinite(nextEp.episode_number)) ? nextEp.episode_number : null,
-          episode_title: (nextEp && typeof nextEp.name === "string") ? nextEp.name : null,
+          air_date: episode_air ? String(episode_air) : null,
           poster_local,
           backdrop_local,
           links,
@@ -951,19 +940,7 @@
       bits.push(kind === "show" ? "Show" : (kind === "movie" ? "Movie" : "Item"));
       if (Number.isFinite(item && item.tmdb_id)) bits.push(`tmdb:${item.tmdb_id}`);
       if (Number.isFinite(item && item.trakt_id)) bits.push(`trakt:${item.trakt_id}`);
-      if (kind === "show") {
-        if (item.episode_air_date) bits.push(`air_date:${item.episode_air_date}`);
-        else if (item.first_air_date) bits.push(`first_air_date:${item.first_air_date}`);
-
-        if (Number.isFinite(item.season_number) || Number.isFinite(item.episode_number)) {
-          const s = Number.isFinite(item.season_number) ? ("S" + String(item.season_number).padStart(2, "0")) : "";
-          const e = Number.isFinite(item.episode_number) ? ("E" + String(item.episode_number).padStart(2, "0")) : "";
-          const se = (s + e).trim();
-          if (se) bits.push(se);
-        }
-
-        if (item.episode_title) bits.push(`ep:${item.episode_title}`);
-      }
+      if (kind === "show" && item.first_air_date) bits.push(`first_air_date:${item.first_air_date}`);
       if (kind === "movie" && item.release_date) bits.push(`release_date:${item.release_date}`);
       meta.textContent = bits.join(" • ");
       body.appendChild(meta);
@@ -1095,6 +1072,108 @@
         const b = (item && typeof item.backdrop_local === "string" && item.backdrop_local.trim()) ? item.backdrop_local.trim() : "";
         return p || b || "";
       }
+
+    function renderLibraryList(panel, items, kind) {
+      const esc = (s) => String(s ?? "").replace(/[&<>"']+/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","\'":"&#39;" }[c] || c));
+      const getTitle = (it) => (it && (it.title || it.name || it.original_name || it.original_title)) || "";
+      const getSub = (it) => {
+        if (kind === "movie") return it.release_date || "";
+        const ep = (it && it.next_episode_to_air && it.next_episode_to_air.air_date) || (it && it.last_episode_to_air && it.last_episode_to_air.air_date) || it.first_air_date || "";
+        return ep;
+      };
+
+      const wrap = document.createElement("div");
+      wrap.className = "vstack";
+      wrap.style.gap = "12px";
+
+      const top = document.createElement("div");
+      top.className = "hstack";
+      top.style.gap = "10px";
+      top.style.alignItems = "center";
+
+      const label = document.createElement("div");
+      label.className = "muted";
+      label.textContent = `${kind === "movie" ? "Movies" : "Shows"}: ${items.length}`;
+
+      const input = document.createElement("input");
+      input.type = "search";
+      input.placeholder = "Search";
+      input.className = "input";
+      input.style.flex = "1";
+
+      top.appendChild(label);
+      top.appendChild(input);
+
+      const list = document.createElement("div");
+      list.className = "vstack";
+      list.style.gap = "8px";
+
+      function render() {
+        const q = input.value.trim().toLowerCase();
+        const filtered = items
+          .filter((it) => getTitle(it).toLowerCase().includes(q))
+          .slice()
+          .sort((a, b) => getTitle(a).localeCompare(getTitle(b)));
+
+        list.replaceChildren();
+        if (!filtered.length) {
+          const empty = document.createElement("div");
+          empty.className = "muted";
+          empty.textContent = "No matches.";
+          list.appendChild(empty);
+          return;
+        }
+
+        for (const it of filtered) {
+          const row = document.createElement("button");
+          row.type = "button";
+          row.className = "cal-item";
+          row.style.width = "100%";
+          row.style.justifyContent = "flex-start";
+          row.style.textAlign = "left";
+
+          const thumbUrl = resolveThumb(it);
+          if (thumbUrl) {
+            const img = document.createElement("img");
+            img.className = "thumb";
+            img.loading = "lazy";
+            img.alt = "";
+            img.src = thumbUrl;
+            row.appendChild(img);
+          }
+
+          const body = document.createElement("div");
+          body.style.display = "flex";
+          body.style.flexDirection = "column";
+          body.style.gap = "2px";
+
+          const t = document.createElement("div");
+          t.textContent = getTitle(it);
+
+          const sub = document.createElement("div");
+          sub.className = "muted";
+          sub.textContent = getSub(it);
+
+          body.appendChild(t);
+          body.appendChild(sub);
+          row.appendChild(body);
+
+          row.addEventListener("click", () => {
+            openPopupForItem({ ...it, kind });
+          });
+
+          list.appendChild(row);
+        }
+      }
+
+      input.addEventListener("input", render);
+      render();
+
+      wrap.appendChild(top);
+      wrap.appendChild(list);
+      panel.replaceChildren(wrap);
+    }
+
 
       function itemHasLinks(item) {
         const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : [];
@@ -1383,19 +1462,38 @@
 
       if (viewKey === "calendar") {
         renderCalendarView(panel, data);
+      } else if (viewKey === "shows") {
+        renderLibraryList(panel, Array.isArray(data && data.shows) ? data.shows : [], "show");
+      } else if (viewKey === "movies") {
+        renderLibraryList(panel, Array.isArray(data && data.movies) ? data.movies : [], "movie");
+      } else if (viewKey === "live_tv") {
+        const items = Array.isArray(data && (data.live_tv || data.livetv || data.channels)) ? (data.live_tv || data.livetv || data.channels) : [];
+        renderLibraryList(panel, items, "live_tv");
+      } else if (viewKey === "watchlist") {
+        const items = Array.isArray(data && data.watchlist) ? data.watchlist : [];
+        renderLibraryList(panel, items, "watchlist");
+      } else if (viewKey === "explore") {
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        const sc = Array.isArray(data && data.shows) ? data.shows.length : 0;
+        const mc = Array.isArray(data && data.movies) ? data.movies.length : 0;
+        hint.textContent = `Library: shows=${sc} • movies=${mc}`;
+        panel.appendChild(hint);
+      } else if (viewKey === "profiles") {
+        const hint = document.createElement("div");
+        hint.className = "hint";
+        hint.textContent = "Profiles are stored locally in this browser (localStorage).";
+        panel.appendChild(hint);
+      } else if (viewKey === "config") {
+        const pre = document.createElement("pre");
+        pre.className = "hint";
+        pre.textContent = JSON.stringify(App.config || {}, null, 2);
+        panel.appendChild(pre);
       } else {
         const hint = document.createElement("div");
         hint.className = "hint";
-        hint.textContent = "This view is present in the shell; detailed rendering is handled by its module.";
+        hint.textContent = "Unknown view.";
         panel.appendChild(hint);
-
-        // Minimal schema-safe counts (read-only)
-        const counts = document.createElement("div");
-        counts.className = "hint";
-        const sc = Array.isArray(data && data.shows) ? data.shows.length : 0;
-        const mc = Array.isArray(data && data.movies) ? data.movies.length : 0;
-        counts.textContent = `shows:${sc} • movies:${mc}`;
-        panel.appendChild(counts);
       }
 
       el.contentRoot.appendChild(panel);
