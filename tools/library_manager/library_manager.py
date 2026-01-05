@@ -1,26 +1,22 @@
->>> FILE: tools/library_manager/library_manager.py
-# library_manager.py
-# my_TV_Movie - TXT validator + JSON exporter (backend for future GUI)
-# Version: v0.1.1 (2026-01-03)
-# - Parses: movies_list.txt, tv_list.txt, watchlist.txt, livetv_list.txt (if present)
-# - Supports commented entries (inactive) with leading '#'
-# - Validates formatting + IDs + season specs
-# - Exports: out/library_inputs.json and out/validation_report.json
-#
-# Env: API_TMDB_KEY (preferred) OR API_TMDB_TOKEN (Bearer token)
-#
-# Notes:
-# - This is a non-interactive utility (CLI) used by the UI and for batch QA.
-# - It does NOT modify your inputs unless explicitly asked to (it reads + reports).
-#
-# Usage:
-#   python tools/library_manager/library_manager.py --repo-root "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
-#   python tools/library_manager/library_manager.py --repo-root .. --out-dir tools/library_manager/out
+# -*- coding: utf-8 -*-
+"""
+File: library_manager.py
+Project: my_TV_Movie
+Tool: Library Manager (Backend Validator/Exporter)
+Version: v0.1.2 (2026-01-04)
+Path: tools/library_manager/library_manager.py
+
+Reads inputs/*.txt and writes:
+  tools/library_manager/out/library_inputs.json
+  tools/library_manager/out/validation_report.json
+
+This file stays non-interactive. The UI is library_manager_app.py.
+"""
 
 from __future__ import annotations
 
 import argparse
-import datetime as _dt
+import datetime as dt
 import json
 import os
 import re
@@ -31,18 +27,18 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-UA = "my_TV_Movie-LibraryManagerBackend/0.1.1"
+UA = "my_TV_Movie-LibraryManagerBackend/v0.1.2"
 
 FILE_TV = "tv_list.txt"
 FILE_MOVIES = "movies_list.txt"
 FILE_WATCHLIST = "watchlist.txt"
 FILE_LIVETV = "livetv_list.txt"
 
-SEASON_SPEC_RE = re.compile(r"^\*$|^\d+(\s*[,]\s*\d+)*$")
+SEASON_SPEC_RE = re.compile(r"^\*$|^\d+(\s*,\s*\d+)*$")
 
 
 def now_stamp() -> str:
-    return _dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def safe_read_text(path: Path) -> str:
@@ -55,7 +51,6 @@ def safe_write_text(path: Path, text: str) -> None:
 
 
 def json_dump(path: Path, obj: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
     safe_write_text(path, json.dumps(obj, indent=2, ensure_ascii=False))
 
 
@@ -86,39 +81,35 @@ def parse_int(s: str) -> Optional[int]:
 
 def validate_season_spec(spec: str) -> Tuple[bool, str]:
     spec = (spec or "").strip()
-    if spec == "" or SEASON_SPEC_RE.match(spec):
+    if spec == "":
         return True, "ok"
-    return False, "Invalid season spec. Use '*' or comma-separated numbers (e.g., 1,2,3)."
+    if not SEASON_SPEC_RE.match(spec):
+        return False, "Invalid season spec. Use '*' or comma-separated numbers (e.g., 1,2,3)."
+    return True, "ok"
 
 
 class TMDBClient:
     def __init__(self) -> None:
         self.api_key = os.getenv("API_TMDB_KEY", "") or ""
         self.api_token = os.getenv("API_TMDB_TOKEN", "") or ""
-
-    def headers(self) -> Dict[str, str]:
-        h = {"User-Agent": UA}
+        self.s = requests.Session()
+        self.s.headers.update({"User-Agent": UA})
         if self.api_token:
-            h["Authorization"] = f"Bearer {self.api_token}"
-        return h
+            self.s.headers.update({"Authorization": f"Bearer {self.api_token}"})
 
-    def get(self, url: str, params: Optional[Dict[str, Any]] = None) -> requests.Response:
+    def _get(self, url: str, params: Optional[Dict[str, Any]] = None) -> requests.Response:
         params = params or {}
         if self.api_key:
             params.setdefault("api_key", self.api_key)
-        return requests.get(url, params=params, headers=self.headers(), timeout=20)
+        return self.s.get(url, params=params, timeout=20)
 
-    def validate_tv_id(self, tmdb_id: int) -> Tuple[bool, str]:
-        r = self.get(f"https://api.themoviedb.org/3/tv/{tmdb_id}", params={"language": "en-US"})
-        if r.status_code == 200:
-            return True, "ok"
-        return False, f"TMDB TV ID not found/invalid (HTTP {r.status_code})"
+    def validate_tv(self, tmdb_id: int) -> Tuple[bool, str]:
+        r = self._get(f"https://api.themoviedb.org/3/tv/{tmdb_id}", params={"language": "en-US"})
+        return (r.status_code == 200, f"HTTP {r.status_code}")
 
-    def validate_movie_id(self, tmdb_id: int) -> Tuple[bool, str]:
-        r = self.get(f"https://api.themoviedb.org/3/movie/{tmdb_id}", params={"language": "en-US"})
-        if r.status_code == 200:
-            return True, "ok"
-        return False, f"TMDB Movie ID not found/invalid (HTTP {r.status_code})"
+    def validate_movie(self, tmdb_id: int) -> Tuple[bool, str]:
+        r = self._get(f"https://api.themoviedb.org/3/movie/{tmdb_id}", params={"language": "en-US"})
+        return (r.status_code == 200, f"HTTP {r.status_code}")
 
 
 @dataclass
@@ -129,195 +120,161 @@ class Issue:
     error: str
 
 
-@dataclass
-class Item:
-    file: str
-    active: bool
-    name: str
-    tmdb_id: Optional[int]
-    season_spec: str = ""
-    tvmaze_id: Optional[int] = None
-    parse_ok: bool = True
-    parse_error: str = ""
+def load_lines(fp: Path) -> List[str]:
+    if not fp.exists():
+        return []
+    return safe_read_text(fp).splitlines()
 
 
-def parse_tv_line(line: str) -> Tuple[Optional[Item], Optional[Issue]]:
-    raw = line.rstrip("\n")
-    if not raw.strip() or raw.strip().startswith("# File:") or raw.strip().startswith("# Project:") or raw.strip().startswith("# Version:") or raw.strip().startswith("# format:"):
-        return None, None
-
-    active = not is_commented(raw)
-    content = uncomment_line(raw).strip()
-    parts = split_pipe_line(content)
-
-    if len(parts) < 2:
-        return None, Issue(FILE_TV, -1, raw, "Expected format: name|tmdb_show_id|season_spec|tvmaze_id")
-
-    name = parts[0].strip()
-    tmdb_id = parse_int(parts[1])
-    season_spec = parts[2].strip() if len(parts) >= 3 else ""
-    tvmaze_id = parse_int(parts[3]) if len(parts) >= 4 else None
-
-    if not name:
-        return None, Issue(FILE_TV, -1, raw, "Missing show name")
-    if tmdb_id is None:
-        return None, Issue(FILE_TV, -1, raw, "Invalid TMDB show ID")
-
-    ok, msg = validate_season_spec(season_spec) if season_spec else (True, "ok")
-    if not ok:
-        return None, Issue(FILE_TV, -1, raw, msg)
-
-    return Item(FILE_TV, active, name, tmdb_id, season_spec, tvmaze_id, True, ""), None
-
-
-def parse_movies_line(line: str) -> Tuple[Optional[Item], Optional[Issue]]:
-    raw = line.rstrip("\n")
-    if not raw.strip() or raw.strip().startswith("# File:") or raw.strip().startswith("# Project:") or raw.strip().startswith("# Version:") or raw.strip().startswith("# format:"):
-        return None, None
-
-    active = not is_commented(raw)
-    content = uncomment_line(raw).strip()
-    parts = split_pipe_line(content)
-
-    if len(parts) < 2:
-        return None, Issue(FILE_MOVIES, -1, raw, "Expected format: name|tmdb_movie_id")
-
-    name = parts[0].strip()
-    tmdb_id = parse_int(parts[1])
-
-    if not name:
-        return None, Issue(FILE_MOVIES, -1, raw, "Missing movie name")
-    if tmdb_id is None:
-        return None, Issue(FILE_MOVIES, -1, raw, "Invalid TMDB movie ID")
-
-    return Item(FILE_MOVIES, active, name, tmdb_id, "", None, True, ""), None
-
-
-def parse_watchlist_line(line: str) -> Tuple[Optional[Item], Optional[Issue]]:
-    raw = line.rstrip("\n")
-    if not raw.strip() or raw.strip().startswith("# File:") or raw.strip().startswith("# Project:") or raw.strip().startswith("# Version:") or raw.strip().startswith("# format:"):
-        return None, None
-
-    active = not is_commented(raw)
-    content = uncomment_line(raw).strip()
-    parts = split_pipe_line(content)
-
-    if len(parts) < 2:
-        return None, Issue(FILE_WATCHLIST, -1, raw, "Expected format: title|tmdb_id|seasons")
-
-    name = parts[0].strip()
-    tmdb_id = parse_int(parts[1])
-    season_spec = parts[2].strip() if len(parts) >= 3 else ""
-
-    if not name:
-        return None, Issue(FILE_WATCHLIST, -1, raw, "Missing title")
-    if tmdb_id is None:
-        return None, Issue(FILE_WATCHLIST, -1, raw, "Invalid TMDB ID")
-
-    ok, msg = validate_season_spec(season_spec) if season_spec else (True, "ok")
-    if not ok:
-        return None, Issue(FILE_WATCHLIST, -1, raw, msg)
-
-    return Item(FILE_WATCHLIST, active, name, tmdb_id, season_spec, None, True, ""), None
-
-
-def load_items_and_issues(inputs_dir: Path) -> Tuple[List[Item], List[Issue]]:
-    items: List[Item] = []
+def validate_file_format(inputs_dir: Path) -> Tuple[List[Dict[str, Any]], List[Issue]]:
+    items: List[Dict[str, Any]] = []
     issues: List[Issue] = []
 
-    files = [
-        (FILE_MOVIES, parse_movies_line),
-        (FILE_TV, parse_tv_line),
-        (FILE_WATCHLIST, parse_watchlist_line),
-    ]
+    def add_issue(file: str, idx: int, raw: str, err: str) -> None:
+        issues.append(Issue(file=file, line_index=idx, raw=raw, error=err))
 
-    for fname, parser in files:
-        fp = inputs_dir / fname
-        if not fp.exists():
+    # movies_list.txt: name|tmdb_movie_id
+    fp = inputs_dir / FILE_MOVIES
+    for i, ln in enumerate(load_lines(fp)):
+        raw = ln.rstrip("\n")
+        if not raw.strip() or raw.strip().startswith("#"):
             continue
-        for i, line in enumerate(safe_read_text(fp).splitlines()):
-            item, issue = parser(line)
-            if issue:
-                issue.line_index = i
-                issues.append(issue)
-            if item:
-                items.append(item)
+        active = not is_commented(raw)
+        content = uncomment_line(raw).strip()
+        parts = split_pipe_line(content)
+        if len(parts) < 2:
+            add_issue(FILE_MOVIES, i, raw, "Expected: name|tmdb_movie_id")
+            continue
+        name = parts[0].strip()
+        mid = parse_int(parts[1])
+        if not name:
+            add_issue(FILE_MOVIES, i, raw, "Missing movie name")
+            continue
+        if mid is None:
+            add_issue(FILE_MOVIES, i, raw, "Invalid TMDB movie ID")
+            continue
+        items.append({"file": FILE_MOVIES, "line_index": i, "active": active, "name": name, "tmdb_id": mid})
 
-    # livetv_list is allowed to exist; currently treated as free-form (no hard validation)
-    fp_live = inputs_dir / FILE_LIVETV
-    if fp_live.exists():
-        for i, line in enumerate(safe_read_text(fp_live).splitlines()):
-            raw = line.rstrip("\n")
-            if not raw.strip() or raw.strip().startswith("#"):
-                continue
-            active = not is_commented(raw)
-            content = uncomment_line(raw).strip()
-            name = split_pipe_line(content)[0].strip() if content else ""
-            items.append(Item(FILE_LIVETV, active, name, None, "", None, True, ""))
+    # tv_list.txt: name|tmdb_show_id|season_spec|tvmaze_id
+    fp = inputs_dir / FILE_TV
+    for i, ln in enumerate(load_lines(fp)):
+        raw = ln.rstrip("\n")
+        if not raw.strip() or raw.strip().startswith("#"):
+            continue
+        active = not is_commented(raw)
+        content = uncomment_line(raw).strip()
+        parts = split_pipe_line(content)
+        if len(parts) < 2:
+            add_issue(FILE_TV, i, raw, "Expected: name|tmdb_show_id|season_spec|tvmaze_id")
+            continue
+        name = parts[0].strip()
+        sid = parse_int(parts[1])
+        season_spec = parts[2].strip() if len(parts) >= 3 else ""
+        tvmaze_id = parse_int(parts[3]) if len(parts) >= 4 else None
+        if not name:
+            add_issue(FILE_TV, i, raw, "Missing show name")
+            continue
+        if sid is None:
+            add_issue(FILE_TV, i, raw, "Invalid TMDB show ID")
+            continue
+        ok, msg = validate_season_spec(season_spec) if season_spec else (True, "ok")
+        if not ok:
+            add_issue(FILE_TV, i, raw, msg)
+            continue
+        items.append(
+            {
+                "file": FILE_TV,
+                "line_index": i,
+                "active": active,
+                "name": name,
+                "tmdb_id": sid,
+                "season_spec": season_spec,
+                "tvmaze_id": tvmaze_id,
+            }
+        )
+
+    # watchlist.txt: title|tmdb_id|seasons
+    fp = inputs_dir / FILE_WATCHLIST
+    for i, ln in enumerate(load_lines(fp)):
+        raw = ln.rstrip("\n")
+        if not raw.strip() or raw.strip().startswith("#"):
+            continue
+        active = not is_commented(raw)
+        content = uncomment_line(raw).strip()
+        parts = split_pipe_line(content)
+        if len(parts) < 2:
+            add_issue(FILE_WATCHLIST, i, raw, "Expected: title|tmdb_id|seasons")
+            continue
+        name = parts[0].strip()
+        sid = parse_int(parts[1])
+        season_spec = parts[2].strip() if len(parts) >= 3 else ""
+        if not name:
+            add_issue(FILE_WATCHLIST, i, raw, "Missing title")
+            continue
+        if sid is None:
+            add_issue(FILE_WATCHLIST, i, raw, "Invalid TMDB ID")
+            continue
+        ok, msg = validate_season_spec(season_spec) if season_spec else (True, "ok")
+        if not ok:
+            add_issue(FILE_WATCHLIST, i, raw, msg)
+            continue
+        items.append({"file": FILE_WATCHLIST, "line_index": i, "active": active, "name": name, "tmdb_id": sid, "season_spec": season_spec})
+
+    # livetv_list.txt: currently free-form (no strict validation)
+    fp = inputs_dir / FILE_LIVETV
+    for i, ln in enumerate(load_lines(fp)):
+        raw = ln.rstrip("\n")
+        if not raw.strip() or raw.strip().startswith("#"):
+            continue
+        active = not is_commented(raw)
+        content = uncomment_line(raw).strip()
+        name = split_pipe_line(content)[0].strip() if content else ""
+        items.append({"file": FILE_LIVETV, "line_index": i, "active": active, "name": name})
 
     return items, issues
 
 
-def validate_tmdb_ids(items: List[Item], issues: List[Issue]) -> None:
+def validate_tmdb_ids(items: List[Dict[str, Any]], issues: List[Issue]) -> None:
     tmdb = TMDBClient()
     if not (tmdb.api_key or tmdb.api_token):
-        issues.append(Issue("ENV", -1, "", "Missing TMDB credentials: set API_TMDB_KEY or API_TMDB_TOKEN"))
+        issues.append(Issue(file="ENV", line_index=-1, raw="", error="Missing TMDB credentials: set API_TMDB_KEY or API_TMDB_TOKEN"))
         return
 
     for it in items:
-        if it.tmdb_id is None:
+        tmdb_id = it.get("tmdb_id", None)
+        if tmdb_id is None:
             continue
-        if it.file == FILE_MOVIES:
-            ok, msg = tmdb.validate_movie_id(it.tmdb_id)
+        if it["file"] == FILE_MOVIES:
+            ok, msg = tmdb.validate_movie(int(tmdb_id))
             if not ok:
-                issues.append(Issue(it.file, it.line_index if hasattr(it, "line_index") else -1, "", f"{it.name}: {msg}"))
-        elif it.file in (FILE_TV, FILE_WATCHLIST):
-            ok, msg = tmdb.validate_tv_id(it.tmdb_id)
+                issues.append(Issue(file=it["file"], line_index=int(it["line_index"]), raw="", error=f"{it.get('name','')}: invalid TMDB movie id ({msg})"))
+        elif it["file"] in (FILE_TV, FILE_WATCHLIST):
+            ok, msg = tmdb.validate_tv(int(tmdb_id))
             if not ok:
-                issues.append(Issue(it.file, it.line_index if hasattr(it, "line_index") else -1, "", f"{it.name}: {msg}"))
+                issues.append(Issue(file=it["file"], line_index=int(it["line_index"]), raw="", error=f"{it.get('name','')}: invalid TMDB tv id ({msg})"))
 
 
 def main(argv: Optional[List[str]] = None) -> int:
     argv = argv or sys.argv[1:]
-    p = argparse.ArgumentParser()
-    p.add_argument("--repo-root", required=True)
-    p.add_argument("--out-dir", default="")
-    args = p.parse_args(argv)
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--repo-root", required=True)
+    ap.add_argument("--out-dir", default="")
+    args = ap.parse_args(argv)
 
     repo_root = Path(args.repo_root).resolve()
     inputs_dir = repo_root / "inputs"
+    inputs_dir.mkdir(parents=True, exist_ok=True)
+
     out_dir = Path(args.out_dir).resolve() if args.out_dir else (repo_root / "tools" / "library_manager" / "out")
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    items, issues = load_items_and_issues(inputs_dir)
+    items, issues = validate_file_format(inputs_dir)
+    validate_tmdb_ids(items, issues)
 
-    # write snapshot
-    library_inputs_path = out_dir / "library_inputs.json"
-    validation_report_path = out_dir / "validation_report.json"
-
-    json_dump(
-        library_inputs_path,
-        {
-            "generated_at": now_stamp(),
-            "repo_root": str(repo_root),
-            "inputs_dir": str(inputs_dir),
-            "items": [it.__dict__ for it in items],
-        },
-    )
-
-    json_dump(
-        validation_report_path,
-        {
-            "generated_at": now_stamp(),
-            "repo_root": str(repo_root),
-            "inputs_dir": str(inputs_dir),
-            "issues": [iss.__dict__ for iss in issues],
-        },
-    )
-
+    json_dump(out_dir / "library_inputs.json", {"generated_at": now_stamp(), "repo_root": str(repo_root), "inputs_dir": str(inputs_dir), "items": items})
+    json_dump(out_dir / "validation_report.json", {"generated_at": now_stamp(), "repo_root": str(repo_root), "inputs_dir": str(inputs_dir), "issues": [x.__dict__ for x in issues]})
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-<<< END FILE
