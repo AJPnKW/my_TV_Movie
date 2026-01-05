@@ -573,7 +573,60 @@
       white-space: nowrap !important;
       border: 0 !important;
     }
-  </style>
+  
+/* --- Added: media grid/cards/calendar/detail --- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.media-card{display:flex;flex-direction:column;gap:10px;padding:10px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);cursor:pointer;text-align:left}
+.media-card:hover{background:rgba(255,255,255,.05)}
+.media-poster{width:100%;aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02);display:flex;align-items:center;justify-content:center}
+.media-poster img{width:100%;height:100%;object-fit:cover;display:block}
+.poster-ph{font-size:12px;opacity:.7}
+.media-meta{display:flex;flex-direction:column;gap:6px}
+.media-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-sub{font-size:12px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.media-chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.02);font-size:12px;opacity:.9}
+.btn{padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:inherit;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,.05)}
+.placeholder{padding:18px}
+.muted{opacity:.7}
+
+/* calendar */
+.cal-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 14px}
+.cal-nav{display:flex;align-items:center;gap:10px}
+.cal-title{font-weight:800;font-size:18px}
+.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:10px;opacity:.75;font-size:12px}
+.cal-wd{padding:0 8px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.cal-cell{min-height:118px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);padding:10px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+.cal-cell.today{border-color:rgba(255,255,255,.22);background:rgba(255,255,255,.03)}
+.cal-cell.cal-empty{opacity:.3}
+.cal-day{display:flex;align-items:center;justify-content:space-between}
+.cal-daynum{font-weight:800}
+.cal-items{display:flex;flex-direction:column;gap:8px}
+.cal-item{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(0,0,0,.12);color:inherit;cursor:pointer;text-align:left}
+.cal-item:hover{background:rgba(0,0,0,.18)}
+.cal-item img{width:26px;height:38px;object-fit:cover;border-radius:8px;flex:0 0 auto}
+.cal-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.5);display:inline-block}
+.cal-item-title{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.cal-more{font-size:12px;opacity:.7;padding-left:4px}
+
+/* modal detail */
+.detail-backdrop{border-radius:18px;overflow:hidden;max-height:180px;margin-bottom:12px;border:1px solid rgba(255,255,255,.08)}
+.detail-backdrop img{width:100%;height:100%;object-fit:cover;display:block}
+.detail-main{display:flex;gap:14px}
+.detail-poster{width:160px;border-radius:16px;border:1px solid rgba(255,255,255,.10)}
+.detail-right{flex:1;min-width:0}
+.detail-title{margin:0 0 6px}
+.detail-overview{line-height:1.4}
+.kvgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin:10px 0}
+.kv{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);font-size:12px}
+.kv span:first-child{opacity:.7}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.linkbtn{padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:inherit;text-decoration:none}
+.linkbtn:hover{background:rgba(255,255,255,.05)}
+
+</style>
 </head>
 
 <body>
@@ -624,931 +677,566 @@
   <div id="popup-overlay" aria-hidden="true"></div>
   <div id="popup-container" aria-live="polite" aria-label="Popup overlays"></div>
 
-  <script>
-    "use strict";
+  
+<script>
+/* My TV Hub - index.html (production)
+   - Loads data from ../data/data.json (when served from /web/)
+   - Optional config from ./config.js (if present). If missing, uses defaults.
+   - Renders: Calendar (episode air_date), Shows grid, Movies grid
+*/
 
-    // =====================================================================================
-    // SPA Shell Runtime (index.html module)
-    // - Internal state routing only (no URL changes)
-    // - data.json loaded once and never mutated
-    // - Global popup root with stacked overlays; Escape/Back closes top popup
-    // - Canonical assets hierarchy only (assets/...)
-    // =====================================================================================
+(function () {
+  "use strict";
 
-    const VIEWS = Object.freeze([
-      { key: "calendar",  label: "Calendar"  },
-      { key: "shows",     label: "Shows"     },
-      { key: "movies",    label: "Movies"    },
-      { key: "live_tv",   label: "Live TV"   },
-      { key: "watchlist", label: "Watchlist" },
-      { key: "explore",   label: "Explore"   },
-      { key: "profiles",  label: "Profiles"  },
-      { key: "config",    label: "Config"    }
-    ]);
+  // ---------- helpers ----------
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
 
-    const App = {
-      state: {
-        active_view: "calendar",
-        data_loaded: false,
-        config_loaded: false,
-        fatal_error: null,
-        calendar: {
-          year: null,
-          month_index: null // 0-11
-        }
-      },
-      // data.json is loaded once and never mutated
-      frozen_data: null,
-      config: null,
-      popup_stack: []
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+
+  function safeText(v){ return (v === null || v === undefined) ? "" : String(v); }
+
+  function toDateKey(iso){ // "YYYY-MM-DD" => same
+    if (!iso) return null;
+    const s = String(iso).trim();
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? `${m[1]}-${m[2]}-${m[3]}` : null;
+  }
+
+  function parseISODate(iso){
+    const k = toDateKey(iso);
+    if (!k) return null;
+    // Treat as local date (no TZ shift)
+    const [y,m,d] = k.split("-").map(x=>parseInt(x,10));
+    return new Date(y, m-1, d);
+  }
+
+  function fmtMonthYear(d){
+    return d.toLocaleString(undefined, { month: "long", year: "numeric" });
+  }
+
+  function fmtWeekdayShort(d){
+    return d.toLocaleString(undefined, { weekday: "short" });
+  }
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  function dateKeyFromDate(d){
+    return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  }
+
+  function uniqBy(arr, keyFn){
+    const seen = new Set();
+    const out = [];
+    for (const x of arr){
+      const k = keyFn(x);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push(x);
+    }
+    return out;
+  }
+
+  function resolveDataUrl(){
+    // We want /data/data.json regardless of whether index.html is /web/index.html or /index.html
+    const p = location.pathname.replace(/\\/g,"/");
+    if (p.endsWith("/web/index.html") || p.endsWith("/web/")) return "../data/data.json";
+    if (p.endsWith("/index.html") || p.endsWith("/")) return "data/data.json";
+    // fallback
+    return "../data/data.json";
+  }
+
+  function resolveConfigUrl(){
+    // config.js lives beside index.html in /web/
+    return "./config.js";
+  }
+
+  // ---------- config ----------
+  const DEFAULT_CFG = {
+    tmdb_image_base: "https://image.tmdb.org/t/p/",
+    tmdb_poster_size: "w342",
+    tmdb_backdrop_size: "w780",
+    // streaming link templates (safe defaults; can be overridden in config.js)
+    show_link_templates: [],
+    movie_link_templates: [],
+    // UI
+    cards_per_row_min: 4
+  };
+
+  async function tryLoadConfig(){
+    // If config.js exists, it should set window.MY_TV_CFG = {...} or export via window.CONFIG / window.AppConfig
+    try {
+      const res = await fetch(resolveConfigUrl(), { cache: "no-store" });
+      if (!res.ok) return { cfg: DEFAULT_CFG, ok: false };
+      // execute config.js in a safe-ish sandbox: add a script tag
+      const js = await res.text();
+      const s = document.createElement("script");
+      s.type = "text/javascript";
+      s.text = js + "\n//# sourceURL=config.js";
+      document.head.appendChild(s);
+      const merged = Object.assign({}, DEFAULT_CFG, window.MY_TV_CFG || window.CONFIG || window.AppConfig || {});
+      return { cfg: merged, ok: true };
+    } catch (_e){
+      return { cfg: DEFAULT_CFG, ok: false };
+    }
+  }
+
+  // ---------- data loading ----------
+  async function loadData(){
+    const url = resolveDataUrl();
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`data fetch failed (${res.status})`);
+    const d = await res.json();
+    // normalize keys we depend on
+    d.shows = Array.isArray(d.shows) ? d.shows : [];
+    d.movies = Array.isArray(d.movies) ? d.movies : [];
+    return d;
+  }
+
+  // ---------- image urls ----------
+  function posterUrl(cfg, item){
+    const path = item && (item.poster_path || item.poster || item.posterPath);
+    if (!path) return "";
+    const base = cfg.tmdb_image_base || DEFAULT_CFG.tmdb_image_base;
+    const size = cfg.tmdb_poster_size || DEFAULT_CFG.tmdb_poster_size;
+    return `${base}${size}${path}`;
+  }
+  function backdropUrl(cfg, item){
+    const path = item && (item.backdrop_path || item.backdrop || item.backdropPath);
+    if (!path) return "";
+    const base = cfg.tmdb_image_base || DEFAULT_CFG.tmdb_image_base;
+    const size = cfg.tmdb_backdrop_size || DEFAULT_CFG.tmdb_backdrop_size;
+    return `${base}${size}${path}`;
+  }
+
+  // ---------- modal ----------
+  function openModal(html){
+    const root = $("#popupRoot");
+    if (!root) return;
+    root.innerHTML = `
+      <div class="popup-overlay" role="dialog" aria-modal="true">
+        <div class="popup-card">
+          <div class="popup-actions">
+            <button class="btn" id="popupCloseBtn" type="button">Close</button>
+          </div>
+          <div class="popup-body">${html}</div>
+        </div>
+      </div>
+    `;
+    $("#popupCloseBtn", root)?.addEventListener("click", closeModal);
+    root.addEventListener("click", (e)=>{ if (e.target === $(".popup-overlay", root)) closeModal(); }, { once: true });
+    document.addEventListener("keydown", escCloseOnce, { once: true });
+  }
+  function escCloseOnce(e){ if (e.key === "Escape") closeModal(); }
+  function closeModal(){
+    const root = $("#popupRoot");
+    if (root) root.innerHTML = "";
+  }
+
+  // ---------- link building ----------
+  function buildLinks(cfg, item, kind){
+    // templates: [{label, url}] where url can include {tmdb_id} {tvmaze_id} {trakt_id} {imdb_id} {season} {episode}
+    const tpls = (kind === "show") ? (cfg.show_link_templates || []) : (cfg.movie_link_templates || []);
+    const vals = {
+      tmdb_id: item.tmdb_id || item.tmdb || item.id || "",
+      tvmaze_id: item.tvmaze_id || "",
+      trakt_id: item.trakt_id || "",
+      imdb_id: item.imdb_id || item.imdb || "",
+      season: item.season_number || item.season || "",
+      episode: item.episode_number || item.episode || ""
+    };
+    const out = [];
+    for (const t of tpls){
+      const label = safeText(t.label || t.name || "Link");
+      let url = safeText(t.url || "");
+      if (!url) continue;
+      url = url.replace(/\{(\w+)\}/g, (_m, k)=> safeText(vals[k] ?? ""));
+      if (url.includes("{")) continue; // unresolved placeholder, skip
+      out.push({ label, url });
+    }
+    return out;
+  }
+
+  // ---------- card rendering ----------
+  function cardHTML(cfg, item, kind){
+    const title = safeText(item.title || item.name || "");
+    const year = safeText((item.release_date || item.first_air_date || "").slice(0,4));
+    const p = posterUrl(cfg, item);
+    const sub = (kind === "show")
+      ? safeText(item.status || "")
+      : safeText(item.release_date || "");
+    const rating = (item.vote_average !== undefined && item.vote_average !== null) ? Number(item.vote_average).toFixed(1) : "";
+    const chips = [];
+    if (rating) chips.push(`<span class="chip">★ ${rating}</span>`);
+    if (year) chips.push(`<span class="chip">${year}</span>`);
+    return `
+      <button class="media-card" type="button" data-kind="${kind}" data-key="${safeText(kind)}:${safeText(item.tmdb_id || item.id || "")}">
+        <div class="media-poster">
+          ${p ? `<img loading="lazy" src="${p}" alt="${title} poster">` : `<div class="poster-ph">No poster</div>`}
+        </div>
+        <div class="media-meta">
+          <div class="media-title" title="${title}">${title || "(untitled)"}</div>
+          <div class="media-sub">${sub}</div>
+          <div class="media-chips">${chips.join("")}</div>
+        </div>
+      </button>
+    `;
+  }
+
+  function detailHTML(cfg, item, kind){
+    const title = safeText(item.title || item.name || "");
+    const overview = safeText(item.overview || "");
+    const p = posterUrl(cfg, item);
+    const b = backdropUrl(cfg, item);
+    const tmdb = safeText(item.tmdb_id || item.tmdb || item.id || "");
+    const trakt = safeText(item.trakt_id || "");
+    const imdb = safeText(item.imdb_id || "");
+    const tvmaze = safeText(item.tvmaze_id || "");
+    const genres = Array.isArray(item.genres) ? item.genres.join(", ") : safeText(item.genres || "");
+    const links = buildLinks(cfg, item, kind);
+
+    let extra = "";
+    if (kind === "show"){
+      const next = item.next_episode_to_air || item.next_episode || null;
+      const air = next && (next.air_date || next.first_air_date) ? toDateKey(next.air_date || next.first_air_date) : null;
+      const s = next && (next.season_number ?? next.season) ? (next.season_number ?? next.season) : "";
+      const e = next && (next.episode_number ?? next.episode) ? (next.episode_number ?? next.episode) : "";
+      if (air) extra += `<div class="kv"><span>Next episode</span><span>${air}${(s&&e)?` • S${s}E${e}`:""}</span></div>`;
+    } else {
+      const rd = toDateKey(item.release_date);
+      if (rd) extra += `<div class="kv"><span>Release</span><span>${rd}</span></div>`;
+    }
+
+    const linkHtml = links.length
+      ? `<div class="links">${links.map(x=>`<a class="linkbtn" href="${x.url}" target="_blank" rel="noopener">${x.label}</a>`).join("")}</div>`
+      : `<div class="muted">No links available.</div>`;
+
+    return `
+      <div class="detail">
+        ${b ? `<div class="detail-backdrop"><img loading="lazy" src="${b}" alt=""></div>` : ``}
+        <div class="detail-main">
+          <div class="detail-left">
+            ${p ? `<img class="detail-poster" loading="lazy" src="${p}" alt="${title} poster">` : `<div class="detail-poster ph">No poster</div>`}
+          </div>
+          <div class="detail-right">
+            <h2 class="detail-title">${title || "(untitled)"}</h2>
+            ${genres ? `<div class="muted">${genres}</div>` : ``}
+            <div class="kvgrid">
+              ${tmdb ? `<div class="kv"><span>TMDB</span><span>${tmdb}</span></div>` : ``}
+              ${trakt ? `<div class="kv"><span>Trakt</span><span>${trakt}</span></div>` : ``}
+              ${imdb ? `<div class="kv"><span>IMDb</span><span>${imdb}</span></div>` : ``}
+              ${tvmaze ? `<div class="kv"><span>TVMaze</span><span>${tvmaze}</span></div>` : ``}
+              ${extra}
+            </div>
+            ${overview ? `<p class="detail-overview">${overview}</p>` : `<p class="muted">No overview.</p>`}
+            ${linkHtml}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---------- calendar indexing (EPISODE air_date) ----------
+  function calendarIndex(data){
+    const idx = new Map(); // dateKey -> [{kind, item, dateKey, label}]
+    const add = (dateKey, entry) => {
+      if (!dateKey) return;
+      if (!idx.has(dateKey)) idx.set(dateKey, []);
+      idx.get(dateKey).push(entry);
     };
 
-    const el = {
-      contentRoot: document.getElementById("content-root"),
-      popupOverlay: document.getElementById("popup-overlay"),
-      popupContainer: document.getElementById("popup-container"),
-      statusDot: document.getElementById("status-dot"),
-      statusText: document.getElementById("status-text"),
-      errorSurface: document.getElementById("error-surface"),
-      errorMsg: document.getElementById("error-msg"),
-      errorDismiss: document.getElementById("error-dismiss"),
-      nav: document.getElementById("main-nav")
-    };
-
-    function setStatus(kind, text) {
-      el.statusText.textContent = text;
-      if (kind === "ok") el.statusDot.style.background = "var(--ok)";
-      else if (kind === "error") el.statusDot.style.background = "var(--danger)";
-      else el.statusDot.style.background = "rgba(255,255,255,0.25)";
-    }
-
-    function showError(message) {
-      el.errorMsg.textContent = String(message || "Unknown error");
-      el.errorSurface.style.display = "inline-flex";
-    }
-
-    function clearErrorSurface() {
-      el.errorMsg.textContent = "";
-      el.errorSurface.style.display = "none";
-    }
-
-    function safeJsonParse(text, contextLabel) {
-      try { return JSON.parse(text); }
-      catch (e) {
-        throw new Error(`Invalid JSON in ${contextLabel}: ${e && e.message ? e.message : e}`);
-      }
-    }
-
-    async function loadConfigOnce() {
-      // Optional: config.json may not exist. Missing config must not block app init.
-      if (App.config) return App.config;
-      const url = "./config.json";
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) {
-          App.config = {};
-          return App.config;
-        }
-        App.config = await res.json();
-        return App.config;
-      } catch (_err) {
-        App.config = {};
-        return App.config;
-      }
-    }
-
-    async function loadDataOnce() {
-      const resp = await fetch("../data/data.json", { cache: "no-store" });
-      if (!resp.ok) throw new Error(`Failed to load data.json (${resp.status})`);
-      const text = await resp.text();
-      const data = safeJsonParse(text, "data/data.json");
-      App.frozen_data = Object.freeze(data);
-      App.state.data_loaded = true;
-    }
-
-    function setActiveNav(viewKey) {
-      const btns = Array.from(el.nav.querySelectorAll(".nav-btn"));
-      for (const b of btns) {
-        const isActive = (b.getAttribute("data-view") === viewKey);
-        b.setAttribute("aria-selected", isActive ? "true" : "false");
-      }
-    }
-
-    // =============================================================================
-    // Calendar View (Section 4.1) — renderer inside index.html (binding rule)
-    // =============================================================================
-
-    const CAL = {
-      DOW: Object.freeze(["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]),
-      MONTHS: Object.freeze([
-        "January","February","March","April","May","June",
-        "July","August","September","October","November","December"
-      ])
-    };
-
-    function pad2(n) { return String(n).padStart(2, "0"); }
-    function isoDayKeyFromDate(d) {
-      const y = d.getFullYear();
-      const m = pad2(d.getMonth() + 1);
-      const day = pad2(d.getDate());
-      return `${y}-${m}-${day}`;
-    }
-
-    function parseISODateOnly(s) {
-      if (!s || typeof s !== "string") return null;
-      // Accept YYYY-MM-DD; reject anything else deterministically
-      const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!m) return null;
-      const y = Number(m[1]), mo = Number(m[2]), da = Number(m[3]);
-      if (!Number.isFinite(y) || !Number.isFinite(mo) || !Number.isFinite(da)) return null;
-      const d = new Date(Date.UTC(y, mo - 1, da));
-      // Validate round-trip (invalid dates collapse)
-      if (d.getUTCFullYear() !== y || (d.getUTCMonth() + 1) !== mo || d.getUTCDate() !== da) return null;
-      // Return local date with same Y-M-D for consistent calendar placement
-      return new Date(y, mo - 1, da);
-    }
-
-    function firstDayOffsetMonday(year, monthIndex) {
-      // Returns 0..6 offset where 0 is Monday
-      const d = new Date(year, monthIndex, 1);
-      const jsDow = d.getDay(); // 0=Sun..6=Sat
-      // Convert to Monday-first: Mon=0..Sun=6
-      return (jsDow + 6) % 7;
-    }
-
-    function daysInMonth(year, monthIndex) {
-      return new Date(year, monthIndex + 1, 0).getDate();
-    }
-
-    function normalizeText(s, fallback) {
-      const t = (typeof s === "string") ? s.trim() : "";
-      return t ? t : (fallback || "");
-    }
-
-    function hasLinks(item) {
-      const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : [];
-      return keys.length > 0;
-    }
-
-    function calendarItemSecondaryText(item) {
-      const kind = item && item.kind ? String(item.kind) : "";
-      const keys = (item && item.links_keys) ? item.links_keys : [];
-      const avail = (Array.isArray(keys) && keys.length) ? keys.join(" • ") : "No links";
-      if (kind === "show") {
-        const sc = Number.isFinite(item.seasons_count) ? item.seasons_count : 0;
-        const sm = (item && typeof item.season_mode === "string" && item.season_mode.trim()) ? item.season_mode.trim() : "";
-        const sf = (item && typeof item.season_filter === "string" && item.season_filter.trim()) ? item.season_filter.trim() : "";
-        const parts = [];
-        parts.push("Show");
-        if (sc > 0) parts.push(`Seasons:${sc}`);
-        if (sm) parts.push(`Mode:${sm}`);
-        if (sf) parts.push(`Filter:${sf}`);
-        parts.push(avail);
-        return parts.join(" • ");
-      }
-      if (kind === "movie") {
-        return `Movie • ${avail}`;
-      }
-      return avail;
-    }
-
-    function buildCalendarItemsIndex(data) {
-      // Calendar indexing (schema-bound):
-      // - shows[*] indexed by next_episode_to_air.air_date (fallback last_episode_to_air.air_date)
-      // - movies[*] indexed by release_date
-      // - invalid/missing dates are ignored
-      // - availability derived only from links{} keys
-      const byDay = new Map(); // dayKey -> { shows: [], movies: [] }
-
-      function ensureDay(dayKey) {
-        if (!byDay.has(dayKey)) byDay.set(dayKey, { shows: [], movies: [] });
-        return byDay.get(dayKey);
-      }
-
-      function safeLinksKeys(linksObj) {
-        if (!linksObj || typeof linksObj !== "object") return [];
-        try {
-          return Object.keys(linksObj).filter(k => {
-            const v = linksObj[k];
-            return (typeof v === "string") ? v.trim().length > 0 : !!v;
-          });
-        } catch (_) { return []; }
-      }
-
-      const shows = Array.isArray(data && data.shows) ? data.shows : [];
-      for (const show of shows) {
-        const episode_air = (show && show.next_episode_to_air && show.next_episode_to_air.air_date) || (show && show.last_episode_to_air && show.last_episode_to_air.air_date) || "";
-        const d = parseISODateOnly(episode_air);
-        if (!d) continue;
-
-        const dayKey = isoDayKeyFromDate(d);
-        const bucket = ensureDay(dayKey);
-
-        const title = normalizeText(show && show.title, "Untitled Show");
-        const tmdb_id = (show && Number.isFinite(show.tmdb_id)) ? show.tmdb_id : null;
-        const trakt_id = (show && Number.isFinite(show.trakt_id)) ? show.trakt_id : null;
-
-        const poster_local = (show && typeof show.poster_local === "string" && show.poster_local.trim()) ? show.poster_local.trim() : null;
-        const backdrop_local = (show && typeof show.backdrop_local === "string" && show.backdrop_local.trim()) ? show.backdrop_local.trim() : null;
-
-        const links = (show && show.links && typeof show.links === "object") ? show.links : {};
-        const links_keys = safeLinksKeys(links);
-
-        const seasons = Array.isArray(show && show.seasons) ? show.seasons : [];
-        const seasons_count = seasons.length;
-
-        const season_mode = (show && typeof show.season_mode === "string") ? show.season_mode : "";
-        const season_filter = (show && typeof show.season_filter === "string") ? show.season_filter : "";
-
-        bucket.shows.push({
-          kind: "show",
-          day_key: dayKey,
-          title,
-          tmdb_id,
-          trakt_id,
-          first_air_date: show && typeof show.first_air_date === "string" ? show.first_air_date : null,
-          air_date: episode_air ? String(episode_air) : null,
-          poster_local,
-          backdrop_local,
-          links,
-          links_keys,
-          season_mode,
-          season_filter,
-          seasons_count,
-          popup: {
-            type: "show",
-            tmdb_id,
-            trakt_id
-          }
-        });
-      }
-
-      const movies = Array.isArray(data && data.movies) ? data.movies : [];
-      for (const movie of movies) {
-        const d = parseISODateOnly(movie && movie.release_date);
-        if (!d) continue;
-
-        const dayKey = isoDayKeyFromDate(d);
-        const bucket = ensureDay(dayKey);
-
-        const title = normalizeText(movie && movie.title, "Untitled Movie");
-        const tmdb_id = (movie && Number.isFinite(movie.tmdb_id)) ? movie.tmdb_id : null;
-        const trakt_id = (movie && Number.isFinite(movie.trakt_id)) ? movie.trakt_id : null;
-
-        const poster_local = (movie && typeof movie.poster_local === "string" && movie.poster_local.trim()) ? movie.poster_local.trim() : null;
-        const backdrop_local = (movie && typeof movie.backdrop_local === "string" && movie.backdrop_local.trim()) ? movie.backdrop_local.trim() : null;
-
-        const links = (movie && movie.links && typeof movie.links === "object") ? movie.links : {};
-        const links_keys = safeLinksKeys(links);
-
-        bucket.movies.push({
-          kind: "movie",
-          day_key: dayKey,
-          title,
-          tmdb_id,
-          trakt_id,
-          release_date: movie && typeof movie.release_date === "string" ? movie.release_date : null,
-          poster_local,
-          backdrop_local,
-          links,
-          links_keys,
-          popup: {
-            type: "movie",
-            tmdb_id,
-            trakt_id
-          }
-        });
-      }
-
-      for (const [, bucket] of byDay.entries()) {
-        bucket.shows.sort((a, b) => String(a.title).localeCompare(String(b.title)));
-        bucket.movies.sort((a, b) => String(a.title).localeCompare(String(b.title)));
-      }
-
-      return byDay;
-    }
-
-    function openPopupForItem(item) {
-      const kind = item && item.kind ? String(item.kind) : "item";
-      const title = (item && item.title) ? String(item.title) : "Details";
-
-      const body = document.createElement("div");
-
-      const meta = document.createElement("div");
-      meta.className = "hint";
-      const bits = [];
-      bits.push(kind === "show" ? "Show" : (kind === "movie" ? "Movie" : "Item"));
-      if (Number.isFinite(item && item.tmdb_id)) bits.push(`tmdb:${item.tmdb_id}`);
-      if (Number.isFinite(item && item.trakt_id)) bits.push(`trakt:${item.trakt_id}`);
-      if (kind === "show" && item.first_air_date) bits.push(`first_air_date:${item.first_air_date}`);
-      if (kind === "movie" && item.release_date) bits.push(`release_date:${item.release_date}`);
-      meta.textContent = bits.join(" • ");
-      body.appendChild(meta);
-
-      const linksObj = (item && item.links && typeof item.links === "object") ? item.links : {};
-      const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : Object.keys(linksObj || {});
-      if (keys.length === 0) {
-        const none = document.createElement("div");
-        none.className = "hint";
-        none.style.marginTop = "10px";
-        none.textContent = "No links available.";
-        body.appendChild(none);
-      } else {
-        const grid = document.createElement("div");
-        grid.style.display = "grid";
-        grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(160px, 1fr))";
-        grid.style.gap = "10px";
-        grid.style.marginTop = "12px";
-
-        for (const k of keys) {
-          const url = linksObj && linksObj[k] ? String(linksObj[k]) : "";
-          const btn = document.createElement("button");
-          btn.type = "button";
-          btn.className = "btn";
-          btn.style.textAlign = "left";
-          btn.textContent = k;
-          btn.disabled = !url;
-          btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if (!url) return;
-            window.open(url, "_blank", "noopener,noreferrer");
-          });
-          grid.appendChild(btn);
-        }
-        body.appendChild(grid);
-      }
-
-      openPopup({
-        title: title,
-        body,
-        route: Object.freeze((item && item.popup) ? item.popup : { type: kind })
+    for (const s of data.shows){
+      const next = s.next_episode_to_air || s.next_episode || null;
+      const dk = toDateKey(next && (next.air_date || next.first_air_date));
+      if (!dk) continue;
+      const label = safeText(s.name) || safeText(s.title);
+      // store episode context for display
+      add(dk, {
+        kind: "show",
+        key: `show:${safeText(s.tmdb_id||s.id||"")}`,
+        title: label,
+        item: s,
+        ep: next
       });
     }
 
-    function openMorePopup(items, dayKey) {
-      const body = document.createElement("div");
-
-      const h = document.createElement("div");
-      h.className = "hint";
-      h.textContent = `Items on ${String(dayKey || "")}`;
-      body.appendChild(h);
-
-      const list = document.createElement("div");
-      list.style.display = "flex";
-      list.style.flexDirection = "column";
-      list.style.gap = "10px";
-      list.style.marginTop = "12px";
-
-      const arr = Array.isArray(items) ? items : [];
-      for (const it of arr) {
-        const row = document.createElement("button");
-        row.type = "button";
-        row.className = "btn";
-        row.style.textAlign = "left";
-        row.textContent = (it && it.title) ? String(it.title) : "Untitled";
-        row.addEventListener("click", () => openPopupForItem(it));
-        list.appendChild(row);
-      }
-
-      body.appendChild(list);
-
-      openPopup({
-        title: "More",
-        body,
-        route: Object.freeze({ type: "calendar_more", day: dayKey || null })
+    for (const m of data.movies){
+      const dk = toDateKey(m.release_date);
+      if (!dk) continue;
+      const label = safeText(m.title) || safeText(m.name);
+      add(dk, {
+        kind: "movie",
+        key: `movie:${safeText(m.tmdb_id||m.id||"")}`,
+        title: label,
+        item: m
       });
     }
 
-    function renderCalendarView(panel, data) {
-      const wrap = document.createElement("div");
-      wrap.className = "cal-wrap";
+    // stable sort within day
+    for (const [k, arr] of idx.entries()){
+      arr.sort((a,b)=> a.title.localeCompare(b.title));
+      idx.set(k, arr);
+    }
+    return idx;
+  }
 
-      const header = document.createElement("div");
-      header.className = "cal-month-header";
+  function episodeChip(ep){
+    if (!ep) return "";
+    const s = ep.season_number ?? ep.season;
+    const e = ep.episode_number ?? ep.episode;
+    const name = safeText(ep.name || ep.title || "");
+    const parts = [];
+    if (s !== undefined && s !== null && e !== undefined && e !== null) parts.push(`S${s}E${e}`);
+    if (name) parts.push(name);
+    return parts.length ? `<span class="chip">${parts.join(" • ")}</span>` : "";
+  }
 
-      const btnPrev = document.createElement("button");
-      btnPrev.type = "button";
-      btnPrev.className = "btn";
-      btnPrev.textContent = "◀";
-      btnPrev.setAttribute("aria-label", "Previous month");
-      btnPrev.addEventListener("click", () => shiftMonth(-1));
+  // ---------- views ----------
+  function setStatus(dataOk, cfgOk){
+    $("#statusData").textContent = dataOk ? "data:ok" : "data:fail";
+    $("#statusCfg").textContent = cfgOk ? "cfg:ok" : "cfg:default";
+    const badge = $("#statusBadge");
+    if (badge){
+      badge.classList.toggle("ok", !!dataOk);
+      badge.classList.toggle("fail", !dataOk);
+      badge.textContent = dataOk ? "Ready" : "Failed";
+    }
+  }
 
-      const btnNext = document.createElement("button");
-      btnNext.type = "button";
-      btnNext.className = "btn";
-      btnNext.textContent = "▶";
-      btnNext.setAttribute("aria-label", "Next month");
-      btnNext.addEventListener("click", () => shiftMonth(1));
+  function renderGrid(panel, cfg, items, kind){
+    const html = `
+      <div class="grid">
+        ${items.map(it => cardHTML(cfg, it, kind)).join("")}
+      </div>
+    `;
+    panel.innerHTML = html;
 
-      const title = document.createElement("div");
-      title.className = "title";
+    $$(".media-card", panel).forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const k = btn.getAttribute("data-key") || "";
+        const id = k.split(":")[1] || "";
+        const item = items.find(x => String(x.tmdb_id||x.id||"") === String(id));
+        if (!item) return;
+        openModal(detailHTML(cfg, item, kind));
+      });
+    });
+  }
 
-      const todayInd = document.createElement("div");
-      todayInd.className = "today-ind";
-      const today = new Date();
-      const todayKey = isoDayKeyFromDate(today);
-      todayInd.textContent = `Today ${todayKey}`;
+  function renderCalendar(panel, cfg, data){
+    const idx = calendarIndex(data);
+    const today = new Date();
+    const nowKey = dateKeyFromDate(today);
 
-      header.appendChild(btnPrev);
-      header.appendChild(btnNext);
-      header.appendChild(title);
-      header.appendChild(todayInd);
+    // start month at today month
+    let cursor = new Date(today.getFullYear(), today.getMonth(), 1);
 
-      const grid = document.createElement("div");
-      grid.className = "cal-grid";
+    const header = `
+      <div class="cal-header">
+        <div class="cal-nav">
+          <button class="btn" id="calPrev" type="button" aria-label="Previous month">◀</button>
+          <button class="btn" id="calNext" type="button" aria-label="Next month">▶</button>
+          <div class="cal-title" id="calTitle"></div>
+        </div>
+        <div class="cal-today">
+          <span class="chip">Today ${nowKey}</span>
+          <button class="btn" id="calGoToday" type="button">Today</button>
+        </div>
+      </div>
+      <div class="cal-weekdays">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<div class="cal-wd">${d}</div>`).join("")}</div>
+      <div class="cal-grid" id="calGrid"></div>
+    `;
+    panel.innerHTML = header;
 
-      // DOW headers
-      for (const d of CAL.DOW) {
-        const dow = document.createElement("div");
-        dow.className = "cal-dow";
-        dow.textContent = d;
-        grid.appendChild(dow);
-      }
+    const titleEl = $("#calTitle", panel);
+    const gridEl = $("#calGrid", panel);
 
-      const byDay = buildCalendarItemsIndex(data);
-
-      function resolveThumb(item) {
-        const p = (item && typeof item.poster_local === "string" && item.poster_local.trim()) ? item.poster_local.trim() : "";
-        const b = (item && typeof item.backdrop_local === "string" && item.backdrop_local.trim()) ? item.backdrop_local.trim() : "";
-        return p || b || "";
-      }
-
-    function renderLibraryList(panel, items, kind) {
-      const esc = (s) => String(s ?? "").replace(/[&<>"']+/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","\'":"&#39;" }[c] || c));
-      const getTitle = (it) => (it && (it.title || it.name || it.original_name || it.original_title)) || "";
-      const getSub = (it) => {
-        if (kind === "movie") return it.release_date || "";
-        const ep = (it && it.next_episode_to_air && it.next_episode_to_air.air_date) || (it && it.last_episode_to_air && it.last_episode_to_air.air_date) || it.first_air_date || "";
-        return ep;
-      };
-
-      const wrap = document.createElement("div");
-      wrap.className = "vstack";
-      wrap.style.gap = "12px";
-
-      const top = document.createElement("div");
-      top.className = "hstack";
-      top.style.gap = "10px";
-      top.style.alignItems = "center";
-
-      const label = document.createElement("div");
-      label.className = "muted";
-      label.textContent = `${kind === "movie" ? "Movies" : "Shows"}: ${items.length}`;
-
-      const input = document.createElement("input");
-      input.type = "search";
-      input.placeholder = "Search";
-      input.className = "input";
-      input.style.flex = "1";
-
-      top.appendChild(label);
-      top.appendChild(input);
-
-      const list = document.createElement("div");
-      list.className = "vstack";
-      list.style.gap = "8px";
-
-      function render() {
-        const q = input.value.trim().toLowerCase();
-        const filtered = items
-          .filter((it) => getTitle(it).toLowerCase().includes(q))
-          .slice()
-          .sort((a, b) => getTitle(a).localeCompare(getTitle(b)));
-
-        list.replaceChildren();
-        if (!filtered.length) {
-          const empty = document.createElement("div");
-          empty.className = "muted";
-          empty.textContent = "No matches.";
-          list.appendChild(empty);
-          return;
-        }
-
-        for (const it of filtered) {
-          const row = document.createElement("button");
-          row.type = "button";
-          row.className = "cal-item";
-          row.style.width = "100%";
-          row.style.justifyContent = "flex-start";
-          row.style.textAlign = "left";
-
-          const thumbUrl = resolveThumb(it);
-          if (thumbUrl) {
-            const img = document.createElement("img");
-            img.className = "thumb";
-            img.loading = "lazy";
-            img.alt = "";
-            img.src = thumbUrl;
-            row.appendChild(img);
-          }
-
-          const body = document.createElement("div");
-          body.style.display = "flex";
-          body.style.flexDirection = "column";
-          body.style.gap = "2px";
-
-          const t = document.createElement("div");
-          t.textContent = getTitle(it);
-
-          const sub = document.createElement("div");
-          sub.className = "muted";
-          sub.textContent = getSub(it);
-
-          body.appendChild(t);
-          body.appendChild(sub);
-          row.appendChild(body);
-
-          row.addEventListener("click", () => {
-            openPopupForItem({ ...it, kind });
-          });
-
-          list.appendChild(row);
-        }
-      }
-
-      input.addEventListener("input", render);
-      render();
-
-      wrap.appendChild(top);
-      wrap.appendChild(list);
-      panel.replaceChildren(wrap);
+    function monthFirstWeekdayMon0(d){
+      // JS: Sun=0..Sat=6; we want Mon=0..Sun=6
+      const w = d.getDay(); // 0..6 (Sun..Sat)
+      return (w + 6) % 7;
     }
 
+    function renderMonth(){
+      titleEl.textContent = fmtMonthYear(cursor);
 
-      function itemHasLinks(item) {
-        const keys = (item && Array.isArray(item.links_keys)) ? item.links_keys : [];
-        return keys.length > 0;
+      const first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+      const startOffset = monthFirstWeekdayMon0(first);
+      const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0).getDate();
+
+      const cells = [];
+      // leading blanks
+      for (let i=0;i<startOffset;i++){
+        cells.push(`<div class="cal-cell cal-empty"></div>`);
       }
 
-      function makeItemRow(item) {
-        const row = document.createElement("div");
-        row.className = "cal-item";
-        row.tabIndex = 0;
+      for (let day=1; day<=daysInMonth; day++){
+        const d = new Date(cursor.getFullYear(), cursor.getMonth(), day);
+        const dk = dateKeyFromDate(d);
+        const entries = idx.get(dk) || [];
+        const isToday = dk === nowKey;
 
-        row.addEventListener("click", () => openPopupForItem(item));
-        row.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            openPopupForItem(item);
+        const chips = entries.slice(0,3).map(ent=>{
+          const p = posterUrl(cfg, ent.item);
+          const epChip = ent.kind==="show" ? episodeChip(ent.ep) : "";
+          return `
+            <button class="cal-item" type="button" data-kind="${ent.kind}" data-id="${safeText(ent.item.tmdb_id||ent.item.id||"")}" title="${safeText(ent.title)}">
+              ${p ? `<img loading="lazy" src="${p}" alt="">` : `<span class="cal-dot"></span>`}
+              <span class="cal-item-title">${safeText(ent.title)}</span>
+              ${epChip}
+            </button>
+          `;
+        }).join("");
+
+        const more = (entries.length>3) ? `<div class="cal-more">+${entries.length-3} more</div>` : "";
+
+        cells.push(`
+          <div class="cal-cell ${isToday ? "today" : ""}" data-date="${dk}">
+            <div class="cal-day">
+              <span class="cal-daynum">${day}</span>
+            </div>
+            <div class="cal-items">
+              ${chips}
+              ${more}
+            </div>
+          </div>
+        `);
+      }
+
+      // trailing blanks to complete weeks to full rows (optional)
+      const total = startOffset + daysInMonth;
+      const rem = total % 7;
+      if (rem !== 0){
+        for (let i=0;i<(7-rem);i++) cells.push(`<div class="cal-cell cal-empty"></div>`);
+      }
+
+      gridEl.innerHTML = cells.join("");
+
+      // handlers
+      $$(".cal-item", gridEl).forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const kind = btn.getAttribute("data-kind");
+          const id = btn.getAttribute("data-id");
+          if (kind==="show"){
+            const it = data.shows.find(x=> String(x.tmdb_id||x.id||"")===String(id));
+            if (!it) return;
+            openModal(detailHTML(cfg, it, "show"));
+          } else {
+            const it = data.movies.find(x=> String(x.tmdb_id||x.id||"")===String(id));
+            if (!it) return;
+            openModal(detailHTML(cfg, it, "movie"));
           }
         });
-
-        const thumb = document.createElement("div");
-        thumb.className = "thumb";
-        const src = resolveThumb(item);
-        if (src) {
-          const img = document.createElement("img");
-          img.alt = "";
-          img.loading = "lazy";
-          img.decoding = "async";
-          img.src = src;
-          img.onerror = () => { thumb.innerHTML = '<div class="noimg">NO</div>'; };
-          thumb.appendChild(img);
-        } else {
-          const no = document.createElement("div");
-          no.className = "noimg";
-          no.textContent = "NO";
-          thumb.appendChild(no);
-        }
-
-        const main = document.createElement("div");
-        main.className = "main";
-
-        const t = document.createElement("div");
-        t.className = "t";
-        t.textContent = (item && item.title) ? String(item.title) : "Untitled";
-
-        const s = document.createElement("div");
-        s.className = "s";
-        s.textContent = calendarItemSecondaryText(item);
-
-        main.appendChild(t);
-        main.appendChild(s);
-
-        const right = document.createElement("div");
-        right.className = "right";
-
-        const avail = document.createElement("div");
-        avail.className = "avail";
-        avail.dataset.on = itemHasLinks(item) ? "true" : "false";
-
-        right.appendChild(avail);
-
-        row.appendChild(thumb);
-        row.appendChild(main);
-        row.appendChild(right);
-
-        return row;
-      }
-
-      function shiftMonth(delta) {
-        const y = App.state.calendar.year;
-        const m = App.state.calendar.month_index;
-        const d = new Date(y, m + delta, 1);
-        App.state.calendar.year = d.getFullYear();
-        App.state.calendar.month_index = d.getMonth();
-        renderView("calendar");
-      }
-
-      const y = App.state.calendar.year;
-      const m = App.state.calendar.month_index;
-      title.textContent = `${CAL.MONTHS[m]} ${y}`;
-
-      const offset = firstDayOffsetMonday(y, m);
-      const dim = daysInMonth(y, m);
-
-      // Use 5 rows unless overflow requires 6
-      const totalCells = offset + dim;
-      const rows = (totalCells > 35) ? 6 : 5;
-      const cellCount = rows * 7;
-
-      for (let i = 0; i < cellCount; i++) {
-        const cell = document.createElement("div");
-        cell.className = "cal-cell";
-        cell.tabIndex = 0;
-
-        const dayNum = i - offset + 1;
-        const inMonth = (dayNum >= 1 && dayNum <= dim);
-
-        if (!inMonth) {
-          cell.setAttribute("aria-disabled", "true");
-        }
-
-        const dateRow = document.createElement("div");
-        dateRow.className = "cal-date";
-
-        const num = document.createElement("div");
-        num.className = "num";
-        num.textContent = inMonth ? String(dayNum) : "";
-
-        dateRow.appendChild(num);
-
-        if (inMonth) {
-          const dLocal = new Date(y, m, dayNum);
-          const k = isoDayKeyFromDate(dLocal);
-          if (k === todayKey) {
-            const b = document.createElement("div");
-            b.className = "badge-today";
-            b.textContent = "TODAY";
-            dateRow.appendChild(b);
-          }
-        }
-
-        const itemsWrap = document.createElement("div");
-        itemsWrap.className = "cal-items";
-
-        if (inMonth) {
-          const dLocal = new Date(y, m, dayNum);
-          const dayKey = isoDayKeyFromDate(dLocal);
-          const bucket = byDay.get(dayKey) || null;
-
-          const items = [];
-          if (bucket) {
-            if (Array.isArray(bucket.shows)) items.push(...bucket.shows);
-            if (Array.isArray(bucket.movies)) items.push(...bucket.movies);
-          }
-
-          // Deterministic ordering
-          items.sort((a, b) => {
-            const ak = String(a.kind || "");
-            const bk = String(b.kind || "");
-            if (ak !== bk) return ak.localeCompare(bk);
-            return String(a.title || "").localeCompare(String(b.title || ""));
-          });
-
-          const max = 3;
-          for (let n = 0; n < Math.min(items.length, max); n++) {
-            itemsWrap.appendChild(makeItemRow(items[n]));
-          }
-
-          if (items.length > max) {
-            const more = document.createElement("button");
-            more.type = "button";
-            more.className = "cal-more";
-            more.textContent = `+${items.length - max} more`;
-            more.addEventListener("click", () => openMorePopup(items, dayKey));
-            itemsWrap.appendChild(more);
-          }
-        }
-
-        cell.appendChild(dateRow);
-        cell.appendChild(itemsWrap);
-        grid.appendChild(cell);
-      }
-
-      wrap.appendChild(header);
-      wrap.appendChild(grid);
-
-      panel.appendChild(wrap);
-    }
-
-    // =============================================================================
-    // Popup system (stacked overlays)
-    // =============================================================================
-
-    function syncPopupDom() {
-      const has = App.popup_stack.length > 0;
-      el.popupOverlay.style.display = has ? "block" : "none";
-      el.popupContainer.style.display = has ? "block" : "none";
-      el.popupOverlay.setAttribute("aria-hidden", has ? "false" : "true");
-
-      el.popupContainer.innerHTML = "";
-      if (!has) return;
-
-      // Only top popup is interactive (pointer-events handled via container)
-      const top = App.popup_stack[App.popup_stack.length - 1];
-      const popup = document.createElement("div");
-      popup.className = "popup";
-      popup.setAttribute("role", "dialog");
-      popup.setAttribute("aria-modal", "true");
-
-      const header = document.createElement("div");
-      header.className = "popup-header";
-
-      const title = document.createElement("div");
-      title.className = "title";
-      title.textContent = top && top.title ? String(top.title) : "Popup";
-
-      const spacer = document.createElement("div");
-      spacer.className = "spacer";
-
-      const btnClose = document.createElement("button");
-      btnClose.type = "button";
-      btnClose.className = "btn";
-      btnClose.textContent = "Close";
-      btnClose.addEventListener("click", closeTopPopup);
-
-      header.appendChild(title);
-      header.appendChild(spacer);
-      header.appendChild(btnClose);
-
-      const body = document.createElement("div");
-      body.className = "popup-body";
-
-      if (top && top.body instanceof HTMLElement) body.appendChild(top.body);
-      else {
-        const hint = document.createElement("div");
-        hint.className = "hint";
-        hint.textContent = "No content.";
-        body.appendChild(hint);
-      }
-
-      popup.appendChild(header);
-      popup.appendChild(body);
-
-      el.popupContainer.appendChild(popup);
-    }
-
-    function openPopup(payload) {
-      const title = payload && payload.title ? String(payload.title) : "Popup";
-      const body = payload && payload.body ? payload.body : null;
-      const route = payload && payload.route ? payload.route : null;
-
-      App.popup_stack.push({
-        title,
-        body,
-        route
       });
-
-      syncPopupDom();
     }
 
-    function closeTopPopup() {
-      if (App.popup_stack.length === 0) return;
-      App.popup_stack.pop();
-      syncPopupDom();
-    }
+    $("#calPrev", panel).addEventListener("click", ()=>{
+      cursor = new Date(cursor.getFullYear(), cursor.getMonth()-1, 1);
+      renderMonth();
+    });
+    $("#calNext", panel).addEventListener("click", ()=>{
+      cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
+      renderMonth();
+    });
+    $("#calGoToday", panel).addEventListener("click", ()=>{
+      cursor = new Date(today.getFullYear(), today.getMonth(), 1);
+      renderMonth();
+    });
 
-    function closeAllPopups() {
-      App.popup_stack.length = 0;
-      syncPopupDom();
-    }
+    renderMonth();
+  }
 
-    // =============================================================================
-    // Views + routing (minimal deterministic shell behavior)
-    // =============================================================================
+  function renderPlaceholder(panel, title){
+    panel.innerHTML = `
+      <div class="placeholder">
+        <h2>${title}</h2>
+        <div class="muted">Coming soon.</div>
+      </div>
+    `;
+  }
 
-    function renderView(viewKey) {
-      App.state.active_view = viewKey;
-      setActiveNav(viewKey);
+  // ---------- routing ----------
+  function showPanel(id){
+    $$(".view").forEach(v=> v.classList.toggle("active", v.id === id));
+    $$(".navbtn").forEach(b=> b.classList.toggle("active", b.getAttribute("data-target") === id));
+  }
 
-      el.contentRoot.innerHTML = "";
-      const panel = document.createElement("div");
-      panel.className = "view-panel";
+  function initNav(){
+    $$(".navbtn").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        const t = btn.getAttribute("data-target");
+        if (!t) return;
+        showPanel(t);
+      });
+    });
+  }
 
-      const vt = document.createElement("div");
-      vt.className = "view-title";
-      const h1 = document.createElement("h1");
-      h1.textContent = (VIEWS.find(v => v.key === viewKey) || { label: viewKey }).label;
+  // ---------- bootstrap ----------
+  async function main(){
+    initNav();
+    showPanel("viewCalendar");
 
-      const meta = document.createElement("div");
-      meta.className = "meta";
-      meta.textContent = (App.state.data_loaded ? "data:ok" : "data:…") + " • " + (App.state.config_loaded ? "cfg:ok" : "cfg:…");
+    const statusPill = $("#statusPill");
+    if (statusPill) statusPill.textContent = "Initializing…";
 
-      vt.appendChild(h1);
-      vt.appendChild(meta);
-      panel.appendChild(vt);
+    const { cfg, ok: cfgOk } = await tryLoadConfig();
 
-      if (!App.state.data_loaded) {
-        const hint = document.createElement("div");
-        hint.className = "hint";
-        hint.textContent = "Loading data…";
-        panel.appendChild(hint);
-        el.contentRoot.appendChild(panel);
-        return;
-      }
-
-      const data = App.frozen_data;
-
-      if (viewKey === "calendar") {
-        renderCalendarView(panel, data);
-      } else if (viewKey === "shows") {
-        renderLibraryList(panel, Array.isArray(data && data.shows) ? data.shows : [], "show");
-      } else if (viewKey === "movies") {
-        renderLibraryList(panel, Array.isArray(data && data.movies) ? data.movies : [], "movie");
-      } else if (viewKey === "live_tv") {
-        const items = Array.isArray(data && (data.live_tv || data.livetv || data.channels)) ? (data.live_tv || data.livetv || data.channels) : [];
-        renderLibraryList(panel, items, "live_tv");
-      } else if (viewKey === "watchlist") {
-        const items = Array.isArray(data && data.watchlist) ? data.watchlist : [];
-        renderLibraryList(panel, items, "watchlist");
-      } else if (viewKey === "explore") {
-        const hint = document.createElement("div");
-        hint.className = "hint";
-        const sc = Array.isArray(data && data.shows) ? data.shows.length : 0;
-        const mc = Array.isArray(data && data.movies) ? data.movies.length : 0;
-        hint.textContent = `Library: shows=${sc} • movies=${mc}`;
-        panel.appendChild(hint);
-      } else if (viewKey === "profiles") {
-        const hint = document.createElement("div");
-        hint.className = "hint";
-        hint.textContent = "Profiles are stored locally in this browser (localStorage).";
-        panel.appendChild(hint);
-      } else if (viewKey === "config") {
-        const pre = document.createElement("pre");
-        pre.className = "hint";
-        pre.textContent = JSON.stringify(App.config || {}, null, 2);
-        panel.appendChild(pre);
-      } else {
-        const hint = document.createElement("div");
-        hint.className = "hint";
-        hint.textContent = "Unknown view.";
-        panel.appendChild(hint);
-      }
-
-      el.contentRoot.appendChild(panel);
-      el.contentRoot.focus({ preventScroll: true });
-    }
-
-    function onNavClick(e) {
-      const btn = e.target.closest(".nav-btn");
-      if (!btn) return;
-      const viewKey = btn.getAttribute("data-view");
-      if (!viewKey) return;
-      renderView(viewKey);
-    }
-
-    function onKeyDown(e) {
-      // Escape closes top popup; if none, no-op
-      if (e.key === "Escape") {
-        if (App.popup_stack.length > 0) {
-          e.preventDefault();
-          closeTopPopup();
-        }
+    let dataOk = false;
+    let data = { shows: [], movies: [] };
+    try {
+      data = await loadData();
+      dataOk = true;
+    } catch (e) {
+      console.error(e);
+      dataOk = false;
+      // surface error
+      const toast = $("#toast");
+      if (toast){
+        toast.classList.add("show","error");
+        $("#toastText").textContent = "Failed to fetch";
       }
     }
+    setStatus(dataOk, cfgOk);
 
-    async function boot() {
-      try {
-        clearErrorSurface();
-        setStatus("busy", "Loading config…");
-        await loadConfigOnce();
+    // render views
+    const cal = $("#viewCalendar");
+    const sh  = $("#viewShows");
+    const mv  = $("#viewMovies");
+    const lt  = $("#viewLiveTV");
+    const wl  = $("#viewWatchlist");
+    const ex  = $("#viewExplore");
+    const pr  = $("#viewProfiles");
+    const cf  = $("#viewConfig");
 
-        setStatus("busy", "Loading data…");
-        await loadDataOnce();
-
-        // Initialize calendar to current month
-        const now = new Date();
-        App.state.calendar.year = now.getFullYear();
-        App.state.calendar.month_index = now.getMonth();
-
-        setStatus("ok", "Ready");
-        renderView(App.state.active_view);
-      } catch (err) {
-        const msg = (err && err.message) ? err.message : String(err);
-        setStatus("error", "Failed");
-        showError(msg);
-        console.error(err);
-      }
+    if (dataOk){
+      renderCalendar(cal, cfg, data);
+      renderGrid(sh, cfg, data.shows, "show");
+      renderGrid(mv, cfg, data.movies, "movie");
+    } else {
+      renderPlaceholder(cal, "Calendar");
+      renderPlaceholder(sh, "Shows");
+      renderPlaceholder(mv, "Movies");
     }
 
-    // Wire events
-    el.nav.addEventListener("click", onNavClick);
-    el.errorDismiss.addEventListener("click", clearErrorSurface);
-    window.addEventListener("keydown", onKeyDown);
+    renderPlaceholder(lt, "Live TV");
+    renderPlaceholder(wl, "Watchlist");
+    renderPlaceholder(ex, "Explore");
+    renderPlaceholder(pr, "Profiles");
+    renderPlaceholder(cf, "Config");
 
-    // Boot
-    boot();
-  </script>
+    if (statusPill) statusPill.textContent = dataOk ? "Ready" : "Failed";
+  }
+
+  // toast dismiss
+  document.addEventListener("click", (e)=>{
+    const b = e.target.closest && e.target.closest("#toastDismiss");
+    if (!b) return;
+    const toast = $("#toast");
+    toast?.classList.remove("show");
+  });
+
+  main();
+})();
+</script>
+
 </body>
 </html>
