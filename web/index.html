@@ -208,6 +208,16 @@ select{
 .modal-item-sub{ font-size:12px; opacity:.85; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .modal-links{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
 
+
+.footerbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;background:rgba(0,0,0,.55);border-top:1px solid rgba(255,255,255,.08);backdrop-filter:blur(10px)}
+.footerbar .kv{margin-left:10px;opacity:.85}
+.footerbar b{margin-left:6px}
+body{padding-bottom:54px}
+/* Footer bar */
+.footerbar{position:fixed;left:0;right:0;bottom:0;z-index:50;padding:10px 18px;background:rgba(0,0,0,0.35);backdrop-filter:blur(8px);border-top:1px solid rgba(255,255,255,0.08);}
+.footer-meta{opacity:.85;font-size:12px;line-height:1.3;}
+#statusLine{display:none;}
+body{padding-bottom:52px;}
 </style>
 </head>
 <body>
@@ -242,7 +252,7 @@ select{
     <div class="hrow">
       <div>
         <h2 id="viewTitle">Calendar</h2>
-        <div class="meta">
+        <div class="meta" id="statusLine">
           <span class="kv">data:<b id="dataOk">…</b></span>
           <span class="kv">cfg:<b id="cfgOk">…</b></span>
           <span class="kv">shows:<b id="showsCount">…</b></span>
@@ -714,21 +724,7 @@ function renderCards(kind){
     }
 
     meta.appendChild(title);
-          if (ep && (ep.season_number != null) && (ep.episode_number != null)) {
-            const epLine = document.createElement('div');
-            epLine.className = 'cal-ep-line';
-            const sNum = String(ep.season_number).padStart(2,'0');
-            const eNum = String(ep.episode_number).padStart(2,'0');
-            const code = `S${sNum}E${eNum}`;
-            const epA = document.createElement('a');
-            epA.href = '#';
-            epA.textContent = `${code} • ${ep.name || 'Episode'}` + (ep.runtime ? ` • ${ep.runtime}m` : '');
-            epA.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openModal('season', { obj, season_number: ep.season_number }); });
-            epLine.appendChild(epA);
-            meta.appendChild(epLine);
-          }
-
-    meta.appendChild(sub);
+            meta.appendChild(sub);
     meta.appendChild(kv);
 
     card.appendChild(img);
@@ -1184,6 +1180,14 @@ function setCounts(){
   const movies= Array.isArray(d.movies)? d.movies.length: 0;
   el("showsCount").textContent = String(shows);
   el("moviesCount").textContent= String(movies);
+
+  // Reference info belongs in footer (not the main views)
+  const dataOk = (el("dataOk")?.textContent||'').trim() || '...';
+  const cfgOk  = (el("cfgOk")?.textContent||'').trim() || '...';
+  const footer = document.getElementById('footer_meta');
+  if(footer){
+    footer.textContent = `Single-page • DPAD-first • Local assets • data: ${dataOk} • cfg: ${cfgOk} • shows: ${shows} • movies: ${movies}`;
+  }
 }
 
 function setView(view){
