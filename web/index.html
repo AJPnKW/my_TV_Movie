@@ -1,1272 +1,637 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My TV Hub</title>
-<style>
-:root{
-  --bg:#0b0f16; --panel:#111827; --panel2:#0f172a; --text:#e5e7eb; --muted:#94a3b8;
-  --line:rgba(148,163,184,.18); --pill:rgba(148,163,184,.14); --accent:#60a5fa; --bad:#ef4444;
-  --shadow: 0 10px 30px rgba(0,0,0,.35);
-  --r:18px;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-  background: radial-gradient(1200px 600px at 20% 0%, #111827 0%, rgba(17,24,39,0) 60%),
-              radial-gradient(900px 500px at 80% 0%, #0b2a4a 0%, rgba(11,42,74,0) 55%),
-              var(--bg);
-  color:var(--text);
-}
-a{color:inherit}
-header{
-  padding:18px 18px 10px;
-}
-.topbar{
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-}
-.brand{display:flex; align-items:center; gap:12px; min-width:200px}
-.badge{
-  width:38px;height:38px;border-radius:12px;background:rgba(148,163,184,.12);
-  display:grid;place-items:center;border:1px solid var(--line);
-  font-weight:800; letter-spacing:.5px;
-}
-.brand h1{margin:0; font-size:22px; line-height:1}
-.brand .sub{margin:2px 0 0; color:var(--muted); font-size:12px}
-.status{
-  display:flex; align-items:center; gap:10px;
-  padding:8px 12px;border:1px solid var(--line); border-radius:999px; background:rgba(2,6,23,.35);
-}
-.dot{width:10px;height:10px;border-radius:999px;background:#64748b}
-.dot.ok{background:#22c55e}
-.dot.bad{background:var(--bad)}
-.nav{
-  margin-top:14px; display:flex; gap:10px; flex-wrap:wrap;
-  padding:10px; border:1px solid var(--line); border-radius:999px; background:rgba(2,6,23,.35);
-}
-.nav button{
-  cursor:pointer; border:1px solid var(--line); background:rgba(148,163,184,.08);
-  color:var(--text); padding:10px 18px; border-radius:999px; font-size:15px; font-weight:650;
-}
-.nav button.active{background:rgba(96,165,250,.18); border-color:rgba(96,165,250,.35)}
-main{padding:0 18px 18px}
-.panel{
-  border:1px solid var(--line); border-radius: var(--r); background:rgba(2,6,23,.35);
-  box-shadow: var(--shadow);
-  padding:16px;
-  min-height:70vh;
-}
-.hrow{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px}
-.hrow h2{margin:0; font-size:26px}
-.meta{color:var(--muted); font-size:12px; display:flex; gap:10px; align-items:center}
-.kv{display:inline-flex; gap:6px; align-items:center}
-.kv b{color:var(--text); font-weight:700}
-.controls{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
-input[type="search"]{
-  width:min(520px, 92vw);
-  padding:10px 12px; border-radius:12px;
-  border:1px solid var(--line); background:rgba(15,23,42,.65); color:var(--text);
-}
-select{
-  padding:10px 12px; border-radius:12px;
-  border:1px solid var(--line); background:rgba(15,23,42,.65); color:var(--text);
-}
-.calendar-head{
-  display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
-  margin:10px 0 14px;
-  padding:14px; border-radius: var(--r); border:1px solid var(--line); background:rgba(15,23,42,.35);
-}
-.cal-title{display:flex; gap:12px; align-items:center}
-.cal-title h3{margin:0; font-size:22px}
-.cal-nav{display:flex; gap:8px; align-items:center}
-.iconbtn{
-  width:42px;height:42px;border-radius:12px;
-  border:1px solid var(--line); background:rgba(148,163,184,.08); color:var(--text);
-  cursor:pointer; font-weight:900;
-}
-.todaypill{
-  padding:8px 12px; border-radius:999px; border:1px solid var(--line); background:rgba(148,163,184,.08);
-  color:var(--muted); font-size:13px;
-}
-.grid{display:grid; grid-template-columns: repeat(7, 1fr); gap:10px}
-.dow{color:var(--muted); font-size:12px; letter-spacing:.12em; text-transform:uppercase; padding:0 6px}
-.day{
-  border:1px solid var(--line); border-radius:16px; background:rgba(15,23,42,.25);
-  min-height:120px; padding:10px; position:relative;
-}
-.day.off{opacity:.45}
-.daynum{
-  display:inline-flex; align-items:center; justify-content:center;
-  width:30px;height:30px;border-radius:10px;
-  border:1px solid var(--line); background:rgba(2,6,23,.35);
-  font-weight:800; font-size:13px;
-}
-.items{margin-top:8px; display:flex; flex-direction:column; gap:7px}
-.item{
-  display:flex; gap:8px; align-items:center;
-  padding:8px 10px; border-radius:14px;
-  border:1px solid var(--line); background:rgba(2,6,23,.32);
-  cursor:pointer;
-}
-.item:hover{border-color:rgba(96,165,250,.35)}
-.thumb{
-  width:26px;height:26px;border-radius:8px;background:rgba(148,163,184,.12); border:1px solid var(--line);
-  flex:0 0 auto; overflow:hidden; display:grid; place-items:center; font-size:11px; color:var(--muted);
-}
-.thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.itxt{min-width:0}
-.itxt .t{font-size:13px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.itxt .s{font-size:11px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.pill{
-  margin-left:auto;
-  padding:4px 8px; border-radius:999px; font-size:11px; color:var(--muted);
-  border:1px solid var(--line); background:rgba(148,163,184,.08);
-  flex:0 0 auto;
-}
-.list{display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:12px; margin-top:12px}
-.card{
-  border:1px solid var(--line); border-radius:18px; background:rgba(15,23,42,.25); overflow:hidden;
-  cursor:pointer;
-}
-.card:hover{border-color:rgba(96,165,250,.35)}
-.poster{aspect-ratio: 2/3; background:rgba(148,163,184,.08); display:grid; place-items:center}
-.poster img{width:100%;height:100%;object-fit:cover;display:block}
-.cbody{padding:10px}
-.ctitle{margin:0; font-size:15px; font-weight:800; line-height:1.2}
-.csub{margin-top:6px; font-size:12px; color:var(--muted)}
-.modal{
-  position:fixed; inset:0; background:rgba(0,0,0,.58);
-  display:none; align-items:center; justify-content:center; padding:16px;
-}
-.modal.show{display:flex}
-.mbox{
-  width:min(980px, 96vw);
-  border-radius:22px; border:1px solid var(--line); background:rgba(2,6,23,.92);
-  box-shadow: var(--shadow); overflow:hidden;
-}
-.mhead{
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
-  padding:14px 14px 12px; border-bottom:1px solid var(--line);
-}
-.mhead h3{margin:0; font-size:20px}
-.mclose{
-  cursor:pointer; padding:10px 14px; border-radius:999px;
-  border:1px solid var(--line); background:rgba(148,163,184,.08); color:var(--text);
-  font-weight:800;
-}
-.mcontent{display:grid; grid-template-columns: 260px 1fr; gap:14px; padding:14px}
-@media (max-width: 760px){ .mcontent{grid-template-columns:1fr} }
-.mposter{border:1px solid var(--line); border-radius:18px; overflow:hidden; background:rgba(148,163,184,.08)}
-.mposter img{width:100%;height:100%;object-fit:cover;display:block}
-.mtext{min-width:0}
-.mtext .row{color:var(--muted); font-size:13px; margin-top:8px}
-.mtext .row b{color:var(--text)}
-.links{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
-.links a{
-  text-decoration:none;
-  padding:10px 12px; border-radius:999px;
-  border:1px solid var(--line); background:rgba(148,163,184,.08);
-  font-weight:750; font-size:13px;
-}
-.err{
-  margin-top:10px; padding:10px 12px; border-radius:14px;
-  border:1px solid rgba(239,68,68,.35); background:rgba(239,68,68,.08); color:#fecaca;
-  display:none;
-}
-.small{font-size:12px;color:var(--muted)}
-
-/* --- UI: calendar cards + buttons (production) --- */
-.cal-item{ min-height: 320px; } /* taller */
-.cal-items{ max-height: none; } /* allow more visible items */
-.cal-item .cal-title a{ color: inherit; text-decoration: none; }
-.cal-item .cal-title a:hover{ text-decoration: underline; }
-.cal-ep-line{ font-size: 12px; opacity: .9; margin-top: 2px; line-height: 1.25; }
-.cal-ep-line a{ color: inherit; text-decoration: none; }
-.cal-ep-line a:hover{ text-decoration: underline; }
-.cal-btn-row{ display:flex; gap:8px; margin-top: 8px; flex-wrap: wrap; }
-.cal-btn{ display:inline-flex; align-items:center; justify-content:center; padding:6px 10px; border-radius: 999px; border:1px solid var(--border); background: rgba(255,255,255,.06); color: var(--text); text-decoration:none; font-size:12px; }
-.cal-btn:hover{ background: rgba(255,255,255,.10); }
-.cards-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:14px; }
-.media-card{ display:flex; gap:12px; padding:12px; border-radius: 14px; border:1px solid var(--border); background: rgba(255,255,255,.03); cursor:pointer; }
-.media-card:hover{ background: rgba(255,255,255,.06); }
-.media-card img{ width:74px; height:110px; border-radius: 12px; object-fit: cover; background: rgba(255,255,255,.04); }
-.media-meta{ min-width:0; }
-.media-title{ font-weight:700; margin-bottom:4px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
-.media-sub{ font-size:12px; opacity:.85; margin-bottom:6px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
-.media-kv{ display:flex; flex-wrap:wrap; gap:6px; font-size:11px; opacity:.9; }
-.kv-pill{ padding:3px 8px; border-radius:999px; border:1px solid var(--border); background: rgba(255,255,255,.04); }
-.modal-section{ margin-top: 14px; }
-.modal-h2{ font-size: 14px; font-weight:800; margin: 10px 0 8px; }
-.modal-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
-.modal-item{ padding: 10px; border-radius: 14px; border:1px solid var(--border); background: rgba(255,255,255,.03); cursor:pointer; }
-.modal-item:hover{ background: rgba(255,255,255,.06); }
-.modal-item-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.modal-item-title{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.modal-item-sub{ font-size:12px; opacity:.85; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.modal-links{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
-
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My TV Hub</title>
+  <link rel="stylesheet" href="./css/my_tv_hub.css" />
+  <link rel="icon" href="./favicon.ico" />
 </head>
 <body>
-<header>
-  <div class="topbar">
-    <div class="brand">
-      <div class="badge">TV</div>
-      <div>
-        <h1>My TV Hub</h1>
-        <div class="sub">Single-page • DPAD-first • Local assets</div>
-      </div>
-    </div>
-    <div class="status" id="statusPill" title="data + config readiness">
-      <span class="dot" id="statusDot"></span>
-      <span id="statusText">Initializing…</span>
-    </div>
-  </div>
-  <div class="nav" id="nav">
-    <button data-view="calendar" class="active">Calendar</button>
-    <button data-view="shows">Shows</button>
-    <button data-view="movies">Movies</button>
-    <button data-view="livetv">Live TV</button>
-    <button data-view="watchlist">Watchlist</button>
-    <button data-view="explore">Explore</button>
-    <button data-view="profiles">Profiles</button>
-    <button data-view="config">Config</button>
-  </div>
-</header>
-
-<main>
-  <section class="panel">
-    <div class="hrow">
-      <div>
-        <h2 id="viewTitle">Calendar</h2>
-        <div class="meta">
-          <span class="kv">data:<b id="dataOk">…</b></span>
-          <span class="kv">cfg:<b id="cfgOk">…</b></span>
-          <span class="kv">shows:<b id="showsCount">…</b></span>
-          <span class="kv">movies:<b id="moviesCount">…</b></span>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">TV</div>
+        <div class="brand-text">
+          <div class="brand-title">My TV Hub</div>
+          <div class="brand-sub" id="brand_sub">Single-page • DPAD-first • Local assets</div>
         </div>
       </div>
-      <div class="controls" id="controls" style="display:none">
-        <input id="q" type="search" placeholder="Search…" autocomplete="off"/>
-        <select id="sort">
-          <option value="title_asc">Title A→Z</option>
-          <option value="title_desc">Title Z→A</option>
-          <option value="date_desc">Date (new→old)</option>
-          <option value="date_asc">Date (old→new)</option>
-        </select>
+      <div class="status-pill" id="status_pill" aria-live="polite">
+        <span class="dot" id="status_dot"></span>
+        <span class="label" id="status_label">Initializing…</span>
       </div>
-    </div>
+    </header>
 
-    <div class="err" id="errBox"></div>
+    <nav class="tabs" role="tablist" aria-label="Main views">
+      <button class="tab is-active" data-view="calendar" role="tab" aria-selected="true">Calendar</button>
+      <button class="tab" data-view="shows" role="tab" aria-selected="false">Shows</button>
+      <button class="tab" data-view="movies" role="tab" aria-selected="false">Movies</button>
+      <button class="tab" data-view="livetv" role="tab" aria-selected="false">Live TV</button>
+      <button class="tab" data-view="watchlist" role="tab" aria-selected="false">Watchlist</button>
+      <button class="tab" data-view="explore" role="tab" aria-selected="false">Explore</button>
+      <button class="tab" data-view="profiles" role="tab" aria-selected="false">Profiles</button>
+      <button class="tab" data-view="config" role="tab" aria-selected="false">Config</button>
+    </nav>
 
-    <div id="view_calendar">
-      <div class="calendar-head">
-        <div class="cal-title">
-          <div class="cal-nav">
-            <button class="iconbtn" id="prevMonth" title="Previous month">◀</button>
-            <button class="iconbtn" id="nextMonth" title="Next month">▶</button>
+    <main class="viewhost">
+      <!-- CALENDAR -->
+      <section class="view is-active" id="view_calendar" data-view="calendar" role="tabpanel" aria-label="Calendar">
+        <h1 class="view-title">Calendar</h1>
+
+        <div class="panel">
+          <div class="cal-header">
+            <div class="cal-nav">
+              <button class="iconbtn" id="cal_prev" aria-label="Previous month">◀</button>
+              <button class="iconbtn" id="cal_next" aria-label="Next month">▶</button>
+            </div>
+            <div class="cal-month" id="cal_month">…</div>
+            <div class="cal-today">
+              <button class="pillbtn" id="cal_today">Today</button>
+            </div>
           </div>
-          <div>
-            <h3 id="monthLabel">…</h3>
-            <div class="small" id="monthHint">Shows use next_episode_to_air.air_date (or first_air_date). Movies use release_date.</div>
+
+          <div class="cal-grid" id="cal_grid" aria-label="Calendar grid"></div>
+        </div>
+      </section>
+
+      <!-- SHOWS -->
+      <section class="view" id="view_shows" data-view="shows" role="tabpanel" aria-label="Shows">
+        <div class="view-head">
+          <h1 class="view-title">Shows</h1>
+          <div class="toolbar">
+            <input class="search" id="shows_search" placeholder="Search…" autocomplete="off" />
+            <select class="select" id="shows_sort">
+              <option value="title_az">Title A→Z</option>
+              <option value="title_za">Title Z→A</option>
+              <option value="next_soon">Next episode soonest</option>
+              <option value="next_latest">Next episode latest</option>
+            </select>
           </div>
         </div>
-        <div class="todaypill" id="todayPill">Today</div>
-      </div>
+        <div class="card-grid" id="shows_grid"></div>
+      </section>
 
-      <div class="grid" id="dowRow">
-        <div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div><div class="dow">Sun</div>
-      </div>
-      <div class="grid" id="calGrid"></div>
-    </div>
+      <!-- MOVIES -->
+      <section class="view" id="view_movies" data-view="movies" role="tabpanel" aria-label="Movies">
+        <div class="view-head">
+          <h1 class="view-title">Movies</h1>
+          <div class="toolbar">
+            <input class="search" id="movies_search" placeholder="Search…" autocomplete="off" />
+            <select class="select" id="movies_sort">
+              <option value="title_az">Title A→Z</option>
+              <option value="title_za">Title Z→A</option>
+              <option value="release_new">Release newest</option>
+              <option value="release_old">Release oldest</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-grid" id="movies_grid"></div>
+      </section>
 
-    <div id="view_shows" style="display:none">
-      <div class="list" id="showsList"></div>
-    </div>
+      <!-- PLACEHOLDERS (kept intentionally minimal until implemented) -->
+      <section class="view" id="view_livetv" data-view="livetv" role="tabpanel" aria-label="Live TV">
+        <h1 class="view-title">Live TV</h1>
+        <div class="panel"><div class="muted">Not implemented in index.html yet.</div></div>
+      </section>
 
-    <div id="view_movies" style="display:none">
-      <div class="list" id="moviesList"></div>
-    </div>
+      <section class="view" id="view_watchlist" data-view="watchlist" role="tabpanel" aria-label="Watchlist">
+        <h1 class="view-title">Watchlist</h1>
+        <div class="panel"><div class="muted">Use watchlist.html for now.</div></div>
+      </section>
 
-    <div id="view_livetv" style="display:none">
-      <div class="small">Live TV UI is driven by your pipeline inputs (livetv_list.txt). This view renders from data when available.</div>
-      <div class="list" id="livetvList"></div>
-    </div>
+      <section class="view" id="view_explore" data-view="explore" role="tabpanel" aria-label="Explore">
+        <h1 class="view-title">Explore</h1>
+        <div class="panel"><div class="muted">Not implemented in index.html yet.</div></div>
+      </section>
 
-    <div id="view_watchlist" style="display:none">
-      <div class="list" id="watchlistList"></div>
-    </div>
+      <section class="view" id="view_profiles" data-view="profiles" role="tabpanel" aria-label="Profiles">
+        <h1 class="view-title">Profiles</h1>
+        <div class="panel"><div class="muted">Not implemented in index.html yet.</div></div>
+      </section>
 
-    <div id="view_explore" style="display:none">
-      <div class="small">Explore (basic): genre + year drilldown will be added after core views are stable.</div>
-    </div>
+      <section class="view" id="view_config" data-view="config" role="tabpanel" aria-label="Config">
+        <h1 class="view-title">Config</h1>
+        <div class="panel">
+          <div class="muted">Config editing remains in config.html.</div>
+        </div>
+      </section>
 
-    <div id="view_profiles" style="display:none">
-      <div class="small">Profiles: reserved for future multi-user/profile configuration.</div>
-    </div>
+    </main>
 
-    <div id="view_config" style="display:none">
-      <pre id="cfgDump" class="small" style="white-space:pre-wrap"></pre>
-    </div>
-  </section>
-</main>
-
-<div class="modal" id="modal">
-  <div class="mbox" role="dialog" aria-modal="true">
-    <div class="mhead">
-      <h3 id="mTitle">…</h3>
-      <button class="mclose" id="mClose">Close</button>
-    </div>
-    <div class="mcontent">
-      <div class="mposter"><img id="mPoster" alt="" /></div>
-      <div class="mtext">
-        <div class="row" id="mSub"></div>
-        <div class="row" id="mOverview"></div>
-        <div class="links" id="mLinks"></div>
-        <div class="row small" id="mRaw"></div>
-      </div>
-    </div>
+    <footer class="footer" id="app_footer">
+      <span id="footer_text">Single-page • DPAD-first • Local assets</span>
+    </footer>
   </div>
-</div>
 
-<script src="./config.js"></script>
 <script>
-/*
-  Data source (always):
-    ../data/data.json  (relative to /web/index.html)
+(() => {
+  "use strict";
 
-  Calendar:
-    Shows: next_episode_to_air.air_date if present else first_air_date
-    Movies: release_date
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
-  This file intentionally avoids "stub" rendering. It is a full working UI shell.
-*/
-
-const TMDB_IMG = {
-  poster:  (p)=> p ? `https://image.tmdb.org/t/p/w342${p}` : "",
-  backdrop:(p)=> p ? `https://image.tmdb.org/t/p/w780${p}` : ""
-};
-
-const state = {
-  data:null,
-  cfg:null,
-  view:"calendar",
-  month: null, // Date at first of month in local tz
-  q:"",
-  sort:"title_asc",
-  indexByDate: new Map(), // yyyy-mm-dd -> [{type, obj, dateKey}]
-};
-
-const el = (id)=>document.getElementById(id);
-const $err = el("errBox");
-
-function setStatus(kind, text){
-  const dot = el("statusDot");
-  const st  = el("statusText");
-  dot.classList.remove("ok","bad");
-  if(kind==="ok") dot.classList.add("ok");
-  if(kind==="bad") dot.classList.add("bad");
-  st.textContent = text;
-}
-
-function showErr(msg){
-  $err.style.display="block";
-  $err.textContent = msg;
-  setStatus("bad","Failed");
-}
-function clearErr(){
-  $err.style.display="none";
-  $err.textContent="";
-}
-
-function isoDate(d){
-  // returns YYYY-MM-DD in local time
-  const y=d.getFullYear();
-  const m=String(d.getMonth()+1).padStart(2,"0");
-  const da=String(d.getDate()).padStart(2,"0");
-  return `${y}-${m}-${da}`;
-}
-
-function parseISODate(s){
-  // Accept "YYYY-MM-DD" strictly.
-  if(!s || typeof s!=="string") return null;
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s.trim());
-  if(!m) return null;
-  const y=+m[1], mo=+m[2]-1, da=+m[3];
-  const d = new Date(y,mo,da);
-  // validate round-trip
-  if(d.getFullYear()!==y || d.getMonth()!==mo || d.getDate()!==da) return null;
-  return d;
-}
-
-function pickShowCalendarDate(show){
-  // priority: next_episode_to_air.air_date (episode) else first_air_date (show premiere)
-  const ne = show?.next_episode_to_air;
-  const d1 = parseISODate(ne?.air_date);
-  if(d1) return {date:d1, label: `S${ne.season_number ?? "?"}E${ne.episode_number ?? "?"}`, kind:"next_episode"};
-  const d2 = parseISODate(show?.first_air_date);
-  if(d2) return {date:d2, label: "Premiere", kind:"first_air"};
-  return null;
-}
-
-function pickMovieCalendarDate(movie){
-  const d = parseISODate(movie?.release_date);
-  if(d) return {date:d, label:"Release", kind:"release"};
-  return null;
-}
-
-function buildIndex(){
-  state.indexByDate.clear();
-  const d = state.data || {};
-  const shows = Array.isArray(d.shows)? d.shows : [];
-  const movies= Array.isArray(d.movies)? d.movies: [];
-  const add = (key, rec)=>{
-    if(!state.indexByDate.has(key)) state.indexByDate.set(key, []);
-    state.indexByDate.get(key).push(rec);
+  const state = {
+    data: null,
+    shows: [],
+    movies: [],
+    view: "calendar",
+    today: new Date(),
+    calYear: null,
+    calMonth: null, // 0-11
   };
 
-  for(const s of shows){
-    const pick = pickShowCalendarDate(s);
-    if(!pick) continue;
-    const key = isoDate(pick.date);
-    add(key, {type:"show", obj:s, dateKey:key, dateKind:pick.kind, dateLabel:pick.label});
+  function setStatus(kind, text) {
+    const dot = $("#status_dot");
+    const label = $("#status_label");
+    const pill = $("#status_pill");
+    if (!dot || !label || !pill) return;
+    label.textContent = text;
+    pill.classList.remove("is-ok","is-warn","is-bad");
+    dot.classList.remove("is-ok","is-warn","is-bad");
+    const cls = kind === "ok" ? "is-ok" : (kind === "warn" ? "is-warn" : "is-bad");
+    pill.classList.add(cls);
+    dot.classList.add(cls);
   }
-  for(const m of movies){
-    const pick = pickMovieCalendarDate(m);
-    if(!pick) continue;
-    const key = isoDate(pick.date);
-    add(key, {type:"movie", obj:m, dateKey:key, dateKind:pick.kind, dateLabel:pick.label});
+
+  function setFooter(meta) {
+    const base = "Single-page • DPAD-first • Local assets";
+    if (!meta) { $("#footer_text").textContent = base; return; }
+    const parts = [base];
+    parts.push(`data: ${meta.data}`);
+    parts.push(`cfg: ${meta.cfg}`);
+    parts.push(`shows: ${meta.shows}`);
+    parts.push(`movies: ${meta.movies}`);
+    $("#footer_text").textContent = parts.join(" • ");
   }
 
-  // stable ordering within day
-  for(const [k,arr] of state.indexByDate.entries()){
-    arr.sort((a,b)=> (a.type===b.type ? String(a.obj?.name||a.obj?.title||"").localeCompare(String(b.obj?.name||b.obj?.title||""))
-                                     : (a.type==="show"?-1:1)));
+  function parseISODate(iso) {
+    if (!iso || typeof iso !== "string") return null;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
+    if (!m) return null;
+    const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
+    const dt = new Date(Date.UTC(y, mo, d));
+    if (Number.isNaN(dt.getTime())) return null;
+    // normalize to local date at midnight for comparisons
+    return new Date(y, mo, d);
   }
-}
 
-function fmtMonthLabel(d){
-  return d.toLocaleString(undefined, {month:"long", year:"numeric"});
-}
+  function fmtMonthYear(y, m0) {
+    const dt = new Date(y, m0, 1);
+    return dt.toLocaleString(undefined, { month: "long", year: "numeric" });
+  }
 
-function renderCalendar(){
-  const grid = el("calGrid");
-  grid.innerHTML = "";
+  function ymd(dt) {
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth()+1).padStart(2,"0");
+    const d = String(dt.getDate()).padStart(2,"0");
+    return `${y}-${m}-${d}`;
+  }
 
-  const month = state.month || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  const y = month.getFullYear();
-  const m = month.getMonth();
-  el("monthLabel").textContent = fmtMonthLabel(month);
+  function safeText(v, fallback="") {
+    if (v === null || v === undefined) return fallback;
+    const s = String(v);
+    return s.length ? s : fallback;
+  }
 
-  const today = new Date();
-  el("todayPill").textContent = `Today  ${isoDate(today)}`;
+  function normalizeTitle(item) {
+    return (item.title || item.name || item.original_title || item.original_name || "").trim();
+  }
 
-  // Monday-first grid
-  const first = new Date(y,m,1);
-  const firstDow = (first.getDay()+6)%7; // 0=Mon..6=Sun
-  const daysInMonth = new Date(y,m+1,0).getDate();
+  function posterUrl(item) {
+    // Prefer local assets emitted by pipeline
+    return item.poster_local || item.poster || item.poster_path || item.posterUrl || "";
+  }
 
-  // pad previous month days
-  const prevMonthDays = firstDow;
-  const prevMonthLast = new Date(y,m,0).getDate();
+  function backdropUrl(item) {
+    return item.backdrop_local || item.backdrop || item.backdrop_path || "";
+  }
 
-  const totalCells = 42; // 6 weeks
-  for(let i=0;i<totalCells;i++){
-    const cell = document.createElement("div");
-    cell.className="day";
+  function buildShowNextEpisodeLabel(show) {
+    const nea = show.next_episode_to_air;
+    if (!nea || typeof nea !== "object") return "";
+    const s = Number(nea.season_number || 0);
+    const e = Number(nea.episode_number || 0);
+    const code = (s && e) ? `S${String(s).padStart(2,"0")}E${String(e).padStart(2,"0")}` : "";
+    const name = safeText(nea.name, "");
+    const air = safeText(nea.air_date, "");
+    const bits = [];
+    if (code) bits.push(code);
+    if (name) bits.push(name);
+    if (air) bits.push(air);
+    return bits.join(" • ");
+  }
 
-    let dayNum, dateObj, off=false;
-    if(i < prevMonthDays){
-      off=true;
-      dayNum = prevMonthLast - (prevMonthDays - 1 - i);
-      dateObj = new Date(y, m-1, dayNum);
-    }else if(i >= prevMonthDays + daysInMonth){
-      off=true;
-      dayNum = i - (prevMonthDays + daysInMonth) + 1;
-      dateObj = new Date(y, m+1, dayNum);
-    }else{
-      dayNum = i - prevMonthDays + 1;
-      dateObj = new Date(y, m, dayNum);
+  function extractCalendarItems() {
+    // Calendar is driven by per-item dates in data.json:
+    //  - Shows: show.next_episode_to_air.air_date (episode date)
+    //  - Movies: movie.release_date
+    const byDate = new Map(); // ymd -> items[]
+    const add = (dateIso, payload) => {
+      const dt = parseISODate(dateIso);
+      if (!dt) return;
+      const k = ymd(dt);
+      if (!byDate.has(k)) byDate.set(k, []);
+      byDate.get(k).push(payload);
+    };
+
+    for (const show of state.shows) {
+      const nea = show.next_episode_to_air;
+      if (nea && typeof nea === "object" && nea.air_date) {
+        add(nea.air_date, { kind:"show", show, episode: nea });
+      }
     }
-    if(off) cell.classList.add("off");
 
-    const head = document.createElement("div");
-    head.className="daynum";
-    head.textContent = String(dayNum);
-    cell.appendChild(head);
+    for (const movie of state.movies) {
+      if (movie.release_date) {
+        add(movie.release_date, { kind:"movie", movie });
+      }
+    }
 
-    const key = isoDate(dateObj);
-    const items = state.indexByDate.get(key) || [];
-    const itemsWrap = document.createElement("div");
-    itemsWrap.className="items";
-
-    // Render up to 3 items, then +N
-    const max=3;
-    const shown = items.slice(0,max);
-    for(const it of shown){
-            const row = document.createElement("div");
-      row.className = "item";
-      row.tabIndex = 0;
-
-      const thumb = document.createElement("img");
-      thumb.className = "thumb";
-      thumb.loading = "lazy";
-      thumb.alt = (obj.name||obj.title||"");
-      thumb.src = posterUrl(obj.poster_path) || posterUrl(obj.backdrop_path) || "";
-      row.appendChild(thumb);
-
-      const text = document.createElement("div");
-      text.className = "text";
-
-      // Title -> open Show/Movie view
-      const t = document.createElement("div");
-      t.className = "t";
-      const tLink = document.createElement("a");
-      tLink.href = "#";
-      tLink.textContent = (obj.name||obj.title||"").trim() || "(untitled)";
-      tLink.addEventListener("click",(e)=>{
-        e.preventDefault(); e.stopPropagation();
-        openModal({type: it.type, obj});
+    // stable ordering within a day: shows first then movies, title A-Z
+    for (const [k, arr] of byDate.entries()) {
+      arr.sort((a,b) => {
+        if (a.kind !== b.kind) return a.kind === "show" ? -1 : 1;
+        const ta = a.kind === "show" ? normalizeTitle(a.show) : normalizeTitle(a.movie);
+        const tb = b.kind === "show" ? normalizeTitle(b.show) : normalizeTitle(b.movie);
+        return ta.localeCompare(tb);
       });
-      t.appendChild(tLink);
+    }
+    return byDate;
+  }
 
-      // Episode line (for shows) with runtime + episode name
-      const epLine = document.createElement("div");
-      epLine.className = "cal-ep-line";
+  function renderCalendar() {
+    const grid = $("#cal_grid");
+    const monthEl = $("#cal_month");
+    if (!grid || !monthEl) return;
 
-      if(it.type==="show"){
-        const ne = obj.next_episode_to_air || null;
-        if(ne && ne.air_date){
-          const se = fmtSE(ne.season_number, ne.episode_number);
-          const rt = fmtRuntime(ne.runtime || ne.duration);
-          const epName = ne.name ? ` — ${ne.name}` : "";
-          const rtTxt = rt ? ` • ${rt}` : "";
-          const epLink = document.createElement("a");
-          epLink.href = "#";
-          epLink.textContent = `Next: ${se}${epName}${rtTxt}`;
-          epLink.addEventListener("click",(e)=>{
-            e.preventDefault(); e.stopPropagation();
-            // Try to find season/episode details from show.seasons; fall back to next_episode_to_air
-            const seasons = Array.isArray(obj.seasons) ? obj.seasons : [];
-            const season = seasons.find(s=>Number(s.season_number)===Number(ne.season_number)) || { season_number: ne.season_number, name: `Season ${ne.season_number}`, episodes: [ne] };
-            const eps = Array.isArray(season.episodes) ? season.episodes : [];
-            const ep = eps.find(x=>Number(x.episode_number)===Number(ne.episode_number)) || ne;
-            openModal({type:"episode", show: obj, season, episode: ep});
-          });
-          epLine.appendChild(epLink);
-        }else{
-          epLine.textContent = obj.first_air_date ? `First aired: ${obj.first_air_date}` : "";
-        }
-      }else{
-        epLine.textContent = obj.release_date ? `Release: ${obj.release_date}` : "";
-      }
+    const y = state.calYear, m0 = state.calMonth;
+    monthEl.textContent = fmtMonthYear(y, m0);
 
-      // Buttons row (TMDB / VidSrc / Videasy)
-      const btns = document.createElement("div");
-      btns.className = "cal-btn-row";
+    const first = new Date(y, m0, 1);
+    const last = new Date(y, m0 + 1, 0);
+    const startDow = (first.getDay() + 6) % 7; // convert Sunday=0 to Monday=0
+    const daysInMonth = last.getDate();
 
-      const tmdbId = obj.tmdb_id || obj.id;
-      const isTv = it.type==="show";
+    const itemsByDate = extractCalendarItems();
 
-      const ne = isTv ? (obj.next_episode_to_air||null) : null;
-      const sNum = ne?.season_number || 1;
-      const eNum = ne?.episode_number || 1;
-
-      const tmdbUrl = buildTmdbUrl(isTv ? "tv" : "movie", tmdbId);
-      const vidsrcUrl = firstNonEmpty(obj.vidsrc_url, buildVidSrcUrl(isTv ? "tv" : "movie", tmdbId, sNum, eNum));
-      const videasyUrl = firstNonEmpty(obj.videasy_url, buildVideasyUrl(isTv ? "tv" : "movie", tmdbId, sNum, eNum));
-
-      function mkBtn(label, href){
-        const a = document.createElement("a");
-        a.className = "cal-btn";
-        a.textContent = label;
-        a.href = href || "#";
-        a.target = "_blank";
-        a.rel = "noopener";
-        if(!href) a.style.opacity = ".5";
-        a.addEventListener("click",(e)=> e.stopPropagation());
-        return a;
-      }
-
-      btns.appendChild(mkBtn("TMDB", tmdbUrl));
-      btns.appendChild(mkBtn("VidSrc", vidsrcUrl));
-      btns.appendChild(mkBtn("Videasy", videasyUrl));
-
-      // Assemble
-      text.appendChild(t);
-      text.appendChild(epLine);
-      text.appendChild(btns);
-
-      row.appendChild(text);
-
-      // Type pill (right)
-      const pill = document.createElement("div");
-      pill.className = "pill";
-      pill.textContent = isTv ? "TV" : "Movie";
-      row.appendChild(pill);
-
-      row.addEventListener("click",()=> openModal(it));
-      row.addEventListener("keydown",(e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openModal(it); }});
-
-      itemsWrap.appendChild(row);    }
-
-    if(items.length > max){
-      const more = document.createElement("div");
-      more.className="small";
-      more.style.color="var(--muted)";
-      more.style.padding="2px 4px";
-      more.textContent = `+${items.length-max} more`;
-      itemsWrap.appendChild(more);
+    // Build 6 weeks (42 cells) for consistent layout.
+    // Leading days from prev month, trailing days from next month.
+    const cells = [];
+    // prev month tail
+    const prevLast = new Date(y, m0, 0).getDate();
+    for (let i = 0; i < startDow; i++) {
+      const dayNum = prevLast - (startDow - 1 - i);
+      cells.push({ y: y, m0: m0-1, d: dayNum, inMonth:false });
+    }
+    // current month
+    for (let d = 1; d <= daysInMonth; d++) {
+      cells.push({ y, m0, d, inMonth:true });
+    }
+    // next month head
+    while (cells.length < 42) {
+      const d = cells.length - (startDow + daysInMonth) + 1;
+      cells.push({ y: y, m0: m0+1, d, inMonth:false });
     }
 
-    cell.appendChild(itemsWrap);
-    grid.appendChild(cell);
+    grid.innerHTML = "";
+    // day labels row (Mon..Sun) is already in CSS layout; we create 42 day boxes only.
+    // Use existing CSS classes where possible.
+    for (const c of cells) {
+      const dt = new Date(c.y, c.m0, c.d);
+      const key = ymd(dt);
+      const isToday = key === ymd(state.today);
+
+      const dayBox = document.createElement("div");
+      dayBox.className = "cal-day" + (c.inMonth ? "" : " is-out") + (isToday ? " is-today" : "");
+      dayBox.setAttribute("data-date", key);
+
+      const dayNum = document.createElement("div");
+      dayNum.className = "cal-daynum";
+      dayNum.textContent = String(dt.getDate());
+      dayBox.appendChild(dayNum);
+
+      const list = document.createElement("div");
+      list.className = "cal-items";
+
+      const items = itemsByDate.get(key) || [];
+      const max = 3;
+      for (let i = 0; i < Math.min(max, items.length); i++) {
+        const it = items[i];
+        list.appendChild(buildCalendarChip(it));
+      }
+      if (items.length > max) {
+        const more = document.createElement("div");
+        more.className = "cal-more";
+        more.textContent = `+${items.length - max} more`;
+        list.appendChild(more);
+      }
+
+      dayBox.appendChild(list);
+      grid.appendChild(dayBox);
+    }
   }
-}
 
-function cmpSort(a,b){
-  const ta = (a.name||a.title||"").toString();
-  const tb = (b.name||b.title||"").toString();
-  if(state.sort==="title_asc") return ta.localeCompare(tb);
-  if(state.sort==="title_desc") return tb.localeCompare(ta);
+  function buildCalendarChip(it) {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "cal-chip";
+    if (it.kind === "show") {
+      const title = normalizeTitle(it.show);
+      const sub = buildShowNextEpisodeLabel(it.show);
+      chip.innerHTML = `
+        <span class="chip-title">${escapeHtml(title)}</span>
+        <span class="chip-sub">${escapeHtml(sub)}</span>
+      `;
+      chip.addEventListener("click", () => openShowModal(it.show, it.episode));
+    } else {
+      const title = normalizeTitle(it.movie);
+      const sub = safeText(it.movie.release_date, "");
+      chip.innerHTML = `
+        <span class="chip-title">${escapeHtml(title)}</span>
+        <span class="chip-sub">${escapeHtml(sub)}</span>
+      `;
+      chip.addEventListener("click", () => openMovieModal(it.movie));
+    }
+    return chip;
+  }
 
-  const da = (a.next_episode_to_air?.air_date || a.first_air_date || a.release_date || "");
-  const db = (b.next_episode_to_air?.air_date || b.first_air_date || b.release_date || "");
-  if(state.sort==="date_asc") return String(da).localeCompare(String(db));
-  if(state.sort==="date_desc") return String(db).localeCompare(String(da));
-  return 0;
-}
+  function renderShows() {
+    const grid = $("#shows_grid");
+    if (!grid) return;
 
-function filterByQuery(list, getText){
-  const q = (state.q||"").trim().toLowerCase();
-  if(!q) return list;
-  return list.filter(x => (getText(x)||"").toLowerCase().includes(q));
-}
+    const q = ($("#shows_search").value || "").trim().toLowerCase();
+    const sort = $("#shows_sort").value;
 
-function renderCards(kind){
-  const listEl = kind==="shows" ? el("showsList") : el("moviesList");
-  const data = kind==="shows" ? (APP?.shows||[]) : (APP?.movies||[]);
-  const q = (el("searchInput")?.value||"").trim().toLowerCase();
+    let rows = state.shows.slice();
+    if (q) {
+      rows = rows.filter(s => normalizeTitle(s).toLowerCase().includes(q));
+    }
 
-  const items = q ? data.filterer(o=>{
-    const t = (o.title||o.name||"").toLowerCase();
-    const ov = (o.overview||"").toLowerCase();
-    return t.includes(q) || ov.includes(q);
-  }) : data;
+    const nextDate = (s) => {
+      const nea = s.next_episode_to_air;
+      if (nea && typeof nea === "object" && nea.air_date) {
+        const dt = parseISODate(nea.air_date);
+        return dt ? dt.getTime() : Number.POSITIVE_INFINITY;
+      }
+      return Number.POSITIVE_INFINITY;
+    };
 
-  const sorted = items.slice().sort((a,b)=>{
-    const ta = (a.title||a.name||"").toLowerCase();
-    const tb = (b.title||b.name||"").toLowerCase();
-    return ta.localeCompare(tb);
-  });
+    rows.sort((a,b) => {
+      if (sort === "title_za") return normalizeTitle(b).localeCompare(normalizeTitle(a));
+      if (sort === "next_soon") return nextDate(a) - nextDate(b);
+      if (sort === "next_latest") return nextDate(b) - nextDate(a);
+      return normalizeTitle(a).localeCompare(normalizeTitle(b));
+    });
 
-  listEl.innerHTML = "";
-  const grid = document.createElement("div");
-  grid.className = "cards-grid";
-  listEl.appendChild(grid);
+    grid.innerHTML = "";
+    for (const s of rows) grid.appendChild(buildShowCard(s));
+  }
 
-  for(const obj of sorted){
+  function renderMovies() {
+    const grid = $("#movies_grid");
+    if (!grid) return;
+
+    const q = ($("#movies_search").value || "").trim().toLowerCase();
+    const sort = $("#movies_sort").value;
+
+    let rows = state.movies.slice();
+    if (q) rows = rows.filter(m => normalizeTitle(m).toLowerCase().includes(q));
+
+    const relTime = (m) => {
+      const dt = parseISODate(m.release_date);
+      return dt ? dt.getTime() : 0;
+    };
+
+    rows.sort((a,b) => {
+      if (sort === "title_za") return normalizeTitle(b).localeCompare(normalizeTitle(a));
+      if (sort === "release_new") return relTime(b) - relTime(a);
+      if (sort === "release_old") return relTime(a) - relTime(b);
+      return normalizeTitle(a).localeCompare(normalizeTitle(b));
+    });
+
+    grid.innerHTML = "";
+    for (const m of rows) grid.appendChild(buildMovieCard(m));
+  }
+
+  function buildShowCard(show) {
     const card = document.createElement("div");
     card.className = "media-card";
-    card.setAttribute("role","button");
-    card.tabIndex = 0;
+    const title = normalizeTitle(show);
+    const poster = posterUrl(show);
+    const backdrop = backdropUrl(show);
+    const subtitle = buildShowNextEpisodeLabel(show) || safeText(show.status, "");
 
-    const img = document.createElement("img");
-    img.alt = (obj.title||obj.name||"");
-    img.src = posterUrl(obj.poster_path) || posterUrl(obj.backdrop_path) || "";
-    img.loading = "lazy";
+    card.innerHTML = `
+      <button class="media-card-btn" type="button">
+        <div class="media-img" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
+        <div class="media-meta">
+          <div class="media-title">${escapeHtml(title)}</div>
+          <div class="media-sub">${escapeHtml(subtitle)}</div>
+        </div>
+      </button>
+    `;
+    card.querySelector("button").addEventListener("click", () => openShowModal(show, show.next_episode_to_air || null));
+    return card;
+  }
 
-    const meta = document.createElement("div");
-    meta.className = "media-meta";
+  function buildMovieCard(movie) {
+    const card = document.createElement("div");
+    card.className = "media-card";
+    const title = normalizeTitle(movie);
+    const poster = posterUrl(movie);
+    const subtitle = movie.release_date ? `Release • ${movie.release_date}` : safeText(movie.status,"");
 
-    const title = document.createElement("div");
-    title.className = "media-title";
-    title.textContent = (obj.title||obj.name||"");
+    card.innerHTML = `
+      <button class="media-card-btn" type="button">
+        <div class="media-img" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
+        <div class="media-meta">
+          <div class="media-title">${escapeHtml(title)}</div>
+          <div class="media-sub">${escapeHtml(subtitle)}</div>
+        </div>
+      </button>
+    `;
+    card.querySelector("button").addEventListener("click", () => openMovieModal(movie));
+    return card;
+  }
 
-    const sub = document.createElement("div");
-    sub.className = "media-sub";
-    if(kind==="shows"){
-      const status = obj.status ? ` • ${obj.status}` : "";
-      const first = obj.first_air_date ? ` • ${obj.first_air_date}` : "";
-      sub.textContent = `TV${status}${first}`.replace(/^TV • /,"TV ");
-    }else{
-      const rel = obj.release_date ? ` • ${obj.release_date}` : "";
-      sub.textContent = `Movie${rel}`.replace(/^Movie • /,"Movie ");
+  function ensureModal() {
+    let modal = $("#modal");
+    if (modal) return modal;
+    modal = document.createElement("div");
+    modal.id = "modal";
+    modal.className = "modal is-hidden";
+    modal.innerHTML = `
+      <div class="modal-backdrop" id="modal_backdrop"></div>
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-label="Details">
+        <button class="modal-close" id="modal_close" aria-label="Close">✕</button>
+        <div class="modal-body" id="modal_body"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    $("#modal_backdrop").addEventListener("click", closeModal);
+    $("#modal_close").addEventListener("click", closeModal);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !modal.classList.contains("is-hidden")) closeModal();
+    });
+    return modal;
+  }
+
+  function openShowModal(show, episode) {
+    const modal = ensureModal();
+    const body = $("#modal_body");
+    const title = normalizeTitle(show);
+    const poster = posterUrl(show);
+    const status = safeText(show.status, "");
+    const genres = Array.isArray(show.genres) ? show.genres.join(", ") : safeText(show.genres,"");
+    const firstAir = safeText(show.first_air_date || show.release_date, "");
+    const next = (episode && episode.air_date) ? `${buildShowNextEpisodeLabel(show)}` : "";
+    const tmdb = show.tmdb_url || (show.tmdb_id ? `https://www.themoviedb.org/tv/${show.tmdb_id}` : "");
+    const vidsrc = show.vidsrc_url || (show.tmdb_id ? `https://vidsrc.to/embed/tv/${show.tmdb_id}` : "");
+    const videasy = show.videasy_url || (show.tmdb_id ? `https://www.videasy.net/tv/${show.tmdb_id}` : "");
+
+    body.innerHTML = `
+      <div class="detail-hero">
+        <div class="detail-poster" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
+        <div class="detail-info">
+          <div class="detail-title">${escapeHtml(title)}</div>
+          <div class="detail-sub">${escapeHtml([status, genres].filter(Boolean).join(" • "))}</div>
+          <div class="detail-sub">${escapeHtml([firstAir ? `First aired • ${firstAir}` : "", next ? `Next • ${next}` : ""].filter(Boolean).join(" • "))}</div>
+          <div class="detail-actions">
+            ${tmdb ? `<a class="btn" href="${escapeAttr(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+            ${vidsrc ? `<a class="btn" href="${escapeAttr(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+            ${videasy ? `<a class="btn" href="${escapeAttr(videasy)}" target="_blank" rel="noopener">Videasy</a>` : ""}
+          </div>
+        </div>
+      </div>
+      <div class="detail-overview">${escapeHtml(safeText(show.overview, ""))}</div>
+    `;
+    modal.classList.remove("is-hidden");
+  }
+
+  function openMovieModal(movie) {
+    const modal = ensureModal();
+    const body = $("#modal_body");
+    const title = normalizeTitle(movie);
+    const poster = posterUrl(movie);
+    const genres = Array.isArray(movie.genres) ? movie.genres.join(", ") : safeText(movie.genres,"");
+    const rel = safeText(movie.release_date, "");
+    const runtime = movie.runtime ? `${movie.runtime} min` : "";
+    const tmdb = movie.tmdb_url || (movie.tmdb_id ? `https://www.themoviedb.org/movie/${movie.tmdb_id}` : "");
+    const vidsrc = movie.vidsrc_url || (movie.tmdb_id ? `https://vidsrc.to/embed/movie/${movie.tmdb_id}` : "");
+    const videasy = movie.videasy_url || (movie.tmdb_id ? `https://www.videasy.net/movie/${movie.tmdb_id}` : "");
+
+    body.innerHTML = `
+      <div class="detail-hero">
+        <div class="detail-poster" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
+        <div class="detail-info">
+          <div class="detail-title">${escapeHtml(title)}</div>
+          <div class="detail-sub">${escapeHtml([genres, rel ? `Release • ${rel}` : "", runtime].filter(Boolean).join(" • "))}</div>
+          <div class="detail-actions">
+            ${tmdb ? `<a class="btn" href="${escapeAttr(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+            ${vidsrc ? `<a class="btn" href="${escapeAttr(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+            ${videasy ? `<a class="btn" href="${escapeAttr(videasy)}" target="_blank" rel="noopener">Videasy</a>` : ""}
+          </div>
+        </div>
+      </div>
+      <div class="detail-overview">${escapeHtml(safeText(movie.overview, ""))}</div>
+    `;
+    modal.classList.remove("is-hidden");
+  }
+
+  function closeModal() {
+    const modal = $("#modal");
+    if (modal) modal.classList.add("is-hidden");
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s).replace(/"/g,'&quot;'); }
+
+  function setView(name) {
+    state.view = name;
+    $$(".tab").forEach(btn => {
+      const on = btn.getAttribute("data-view") === name;
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    $$(".view").forEach(v => v.classList.toggle("is-active", v.getAttribute("data-view") === name));
+    // render on demand
+    if (name === "calendar") renderCalendar();
+    if (name === "shows") renderShows();
+    if (name === "movies") renderMovies();
+  }
+
+  async function loadData() {
+    // NOTE: must be served via http(s) (not file://) so fetch can read ../data/data.json
+    const url = "../data/data.json";
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
+    const json = await res.json();
+    state.data = json;
+    state.shows = Array.isArray(json.shows) ? json.shows : [];
+    state.movies = Array.isArray(json.movies) ? json.movies : [];
+    setFooter({ data: "ok", cfg: "ok", shows: state.shows.length, movies: state.movies.length });
+  }
+
+  function bindUI() {
+    $$(".tab").forEach(btn => btn.addEventListener("click", () => setView(btn.getAttribute("data-view"))));
+
+    $("#shows_search").addEventListener("input", () => renderShows());
+    $("#shows_sort").addEventListener("change", () => renderShows());
+
+    $("#movies_search").addEventListener("input", () => renderMovies());
+    $("#movies_sort").addEventListener("change", () => renderMovies());
+
+    const today = state.today;
+    state.calYear = today.getFullYear();
+    state.calMonth = today.getMonth();
+
+    $("#cal_prev").addEventListener("click", () => {
+      const d = new Date(state.calYear, state.calMonth - 1, 1);
+      state.calYear = d.getFullYear(); state.calMonth = d.getMonth();
+      renderCalendar();
+    });
+
+    $("#cal_next").addEventListener("click", () => {
+      const d = new Date(state.calYear, state.calMonth + 1, 1);
+      state.calYear = d.getFullYear(); state.calMonth = d.getMonth();
+      renderCalendar();
+    });
+
+    $("#cal_today").addEventListener("click", () => {
+      const d = state.today;
+      state.calYear = d.getFullYear(); state.calMonth = d.getMonth();
+      renderCalendar();
+    });
+  }
+
+  async function init() {
+    try {
+      setStatus("warn", "Initializing…");
+      setFooter(null);
+      bindUI();
+      await loadData();
+      setStatus("ok", "Ready");
+      setView("calendar");
+      // pre-render: show counts in footer already
+    } catch (err) {
+      console.error(err);
+      setStatus("bad", "Failed");
+      setFooter({ data: "fail", cfg: "ok", shows: "…", movies: "…" });
+      const cal = $("#view_calendar .panel");
+      if (cal) {
+        const box = document.createElement("div");
+        box.className = "errorbox";
+        box.textContent = `Failed to fetch data.json. Run a local server from repo root then open /web/index.html. Details: ${err && err.message ? err.message : err}`;
+        cal.prepend(box);
+      }
     }
-
-    const kv = document.createElement("div");
-    kv.className = "media-kv";
-    const pills = [];
-    if(kind==="shows" && obj.number_of_seasons!=null) pills.push(`Seasons: ${obj.number_of_seasons}`);
-    if(kind==="shows" && obj.number_of_episodes!=null) pills.push(`Episodes: ${obj.number_of_episodes}`);
-    if(kind==="movies" && obj.runtime) pills.push(`${obj.runtime}m`);
-    if(obj.genres && Array.isArray(obj.genres) && obj.genres.length) pills.push(obj.genres.slice(0,3).map(g=>g.name||g).filter(Boolean).join(", "));
-    for(const p of pills){
-      const s = document.createElement("span");
-      s.className = "kv-pill";
-      s.textContent = p;
-      kv.appendChild(s);
-    }
-
-    meta.appendChild(title);
-    meta.appendChild(sub);
-    meta.appendChild(kv);
-
-    card.appendChild(img);
-    card.appendChild(meta);
-
-    const open = ()=>{
-      if(kind==="shows") openShow(obj);
-      else openMovie(obj);
-    };
-    card.addEventListener("click", open);
-    card.addEventListener("keydown", (e)=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } });
-
-    grid.appendChild(card);
   }
 
-  if(!sorted.length){
-    const empty = document.createElement("div");
-    empty.style.opacity = ".8";
-    empty.style.padding = "12px";
-    empty.textContent = "No results.";
-    listEl.appendChild(empty);
-  }
-}
-
-function openModal(payload){
-  // payload: {type, obj, ...context}
-  const type = payload?.type || "";
-  const obj = payload?.obj || null;
-  if(type==="show") return openShow(obj, payload);
-  if(type==="movie") return openMovie(obj, payload);
-  if(type==="season") return openSeason(payload.show, payload.season, payload);
-  if(type==="episode") return openEpisode(payload.show, payload.season, payload.episode, payload);
-}
-
-function buildTmdbUrl(kind, tmdbId){
-  if(!tmdbId) return "";
-  return kind==="tv"
-    ? `https://www.themoviedb.org/tv/${tmdbId}`
-    : `https://www.themoviedb.org/movie/${tmdbId}`;
-}
-
-function buildVidSrcUrl(kind, tmdbId, s, e){
-  if(!tmdbId) return "";
-  return kind==="tv"
-    ? `https://vidsrc.to/embed/tv/${tmdbId}/${s||1}/${e||1}`
-    : `https://vidsrc.to/embed/movie/${tmdbId}`;
-}
-
-function buildVideasyUrl(kind, tmdbId, s, e){
-  if(!tmdbId) return "";
-  return kind==="tv"
-    ? `https://www.videasy.net/tv/${tmdbId}/${s||1}/${e||1}`
-    : `https://www.videasy.net/movie/${tmdbId}`;
-}
-
-function fmtSE(s,e){
-  const ss = String(s||0).padStart(2,"0");
-  const ee = String(e||0).padStart(2,"0");
-  return `S${ss}E${ee}`;
-}
-
-function fmtRuntime(mins){
-  const n = Number(mins);
-  if(!Number.isFinite(n) || n<=0) return "";
-  return `${Math.round(n)}m`;
-}
-
-function firstNonEmpty(...vals){
-  for(const v of vals){
-    if(typeof v === "string" && v.trim()) return v.trim();
-  }
-  return "";
-}
-
-function setModalTitle(t){ el("modalTitle").textContent = t || ""; }
-function setModalSub(t){ el("modalSub").textContent = t || ""; }
-
-function openShow(show, ctx){
-  if(!show) return;
-  const tmdbId = show.tmdb_id || show.id;
-  const tmdbUrl = buildTmdbUrl("tv", tmdbId);
-  const poster = posterUrl(show.poster_path) || posterUrl(show.backdrop_path) || "";
-  const genres = (show.genres||[]).map(g=>g.name||g).filter(Boolean).join(", ");
-  const status = show.status || "";
-  const type = show.type || "";
-  const first = show.first_air_date || "";
-  const lastEp = show.last_episode_to_air || null;
-  const nextEp = show.next_episode_to_air || null;
-
-  setModalTitle(show.name || show.title || "");
-  setModalSub([type||"TV", status, genres].filter(Boolean).join(" • "));
-
-  const body = el("modalBody");
-  body.innerHTML = "";
-
-  // header
-  const top = document.createElement("div");
-  top.className = "modal-top";
-  top.style.display = "flex";
-  top.style.gap = "14px";
-  top.style.alignItems = "flex-start";
-
-  const img = document.createElement("img");
-  img.src = poster;
-  img.alt = show.name || "";
-  img.style.width = "120px";
-  img.style.height = "180px";
-  img.style.borderRadius = "16px";
-  img.style.objectFit = "cover";
-  img.style.background = "rgba(255,255,255,.04)";
-  top.appendChild(img);
-
-  const meta = document.createElement("div");
-  meta.style.minWidth = "0";
-
-  const kv = document.createElement("div");
-  kv.className = "media-kv";
-  const pills = [];
-  if(first) pills.push(`First: ${first}`);
-  if(show.number_of_seasons!=null) pills.push(`Seasons: ${show.number_of_seasons}`);
-  if(show.number_of_episodes!=null) pills.push(`Episodes: ${show.number_of_episodes}`);
-  if(lastEp?.air_date) pills.push(`Last ep: ${lastEp.air_date}`);
-  if(nextEp?.air_date) pills.push(`Next ep: ${nextEp.air_date}`);
-  for(const p of pills){
-    const s = document.createElement("span");
-    s.className = "kv-pill";
-    s.textContent = p;
-    kv.appendChild(s);
-  }
-
-  const overview = document.createElement("div");
-  overview.style.marginTop = "10px";
-  overview.style.opacity = ".92";
-  overview.style.lineHeight = "1.35";
-  overview.textContent = show.overview || "";
-
-  const links = document.createElement("div");
-  links.className = "modal-links";
-  const aTmdb = document.createElement("a");
-  aTmdb.className = "cal-btn";
-  aTmdb.href = tmdbUrl || "#";
-  aTmdb.target = "_blank";
-  aTmdb.rel = "noopener";
-  aTmdb.textContent = "TMDB";
-  if(!tmdbUrl) aTmdb.style.opacity = ".5";
-  links.appendChild(aTmdb);
-
-  meta.appendChild(kv);
-  meta.appendChild(links);
-  meta.appendChild(overview);
-  top.appendChild(meta);
-  body.appendChild(top);
-
-  // seasons
-  const seasons = Array.isArray(show.seasons) ? show.seasons.slice().sort((a,b)=>(a.season_number||0)-(b.season_number||0)) : [];
-  if(seasons.length){
-    const sec = document.createElement("div");
-    sec.className = "modal-section";
-    const h = document.createElement("div");
-    h.className = "modal-h2";
-    h.textContent = "Seasons";
-    sec.appendChild(h);
-
-    const grid = document.createElement("div");
-    grid.className = "modal-grid";
-    for(const season of seasons){
-      const item = document.createElement("div");
-      item.className = "modal-item";
-      const topRow = document.createElement("div");
-      topRow.className = "modal-item-top";
-      const t = document.createElement("div");
-      t.className = "modal-item-title";
-      t.textContent = season.name || `Season ${season.season_number}`;
-      const right = document.createElement("div");
-      right.className = "kv-pill";
-      right.textContent = `S${String(season.season_number||0).padStart(2,"0")}`;
-      topRow.appendChild(t);
-      topRow.appendChild(right);
-
-      const sub = document.createElement("div");
-      sub.className = "modal-item-sub";
-      const parts = [];
-      if(season.air_date) parts.push(`Air: ${season.air_date}`);
-      if(season.episode_count!=null) parts.push(`Eps: ${season.episode_count}`);
-      sub.textContent = parts.join(" • ");
-
-      item.appendChild(topRow);
-      item.appendChild(sub);
-
-      item.addEventListener("click", ()=> openSeason(show, season, ctx));
-      grid.appendChild(item);
-    }
-    sec.appendChild(grid);
-    body.appendChild(sec);
-  }
-
-  showDialog();
-}
-
-function openSeason(show, season, ctx){
-  if(!show || !season) return;
-  const tmdbId = show.tmdb_id || show.id;
-  const seasonNum = season.season_number || 0;
-
-  setModalTitle(`${show.name||show.title||""} — ${season.name||("Season "+seasonNum)}`);
-  const genres = (show.genres||[]).map(g=>g.name||g).filter(Boolean).join(", ");
-  setModalSub([show.status, genres].filter(Boolean).join(" • "));
-
-  const body = el("modalBody");
-  body.innerHTML = "";
-
-  const links = document.createElement("div");
-  links.className = "modal-links";
-
-  const tmdbUrl = buildTmdbUrl("tv", tmdbId);
-  const aTmdb = document.createElement("a");
-  aTmdb.className = "cal-btn";
-  aTmdb.href = tmdbUrl ? `${tmdbUrl}/season/${seasonNum}` : "#";
-  aTmdb.target = "_blank";
-  aTmdb.rel = "noopener";
-  aTmdb.textContent = "TMDB";
-  if(!tmdbUrl) aTmdb.style.opacity = ".5";
-  links.appendChild(aTmdb);
-
-  body.appendChild(links);
-
-  const episodes = Array.isArray(season.episodes) ? season.episodes.slice().sort((a,b)=>(a.episode_number||0)-(b.episode_number||0)) : [];
-  const sec = document.createElement("div");
-  sec.className = "modal-section";
-  const h = document.createElement("div");
-  h.className = "modal-h2";
-  h.textContent = "Episodes";
-  sec.appendChild(h);
-
-  if(!episodes.length){
-    const note = document.createElement("div");
-    note.style.opacity = ".85";
-    note.style.padding = "8px 0";
-    note.textContent = "No episodes found in data.json for this season.";
-    sec.appendChild(note);
-  }else{
-    const grid = document.createElement("div");
-    grid.className = "modal-grid";
-    for(const ep of episodes){
-      const item = document.createElement("div");
-      item.className = "modal-item";
-
-      const topRow = document.createElement("div");
-      topRow.className = "modal-item-top";
-
-      const t = document.createElement("div");
-      t.className = "modal-item-title";
-      const se = fmtSE(seasonNum, ep.episode_number||0);
-      t.textContent = `${se} — ${ep.name||"Episode"}`;
-
-      const right = document.createElement("div");
-      right.className = "kv-pill";
-      right.textContent = fmtRuntime(ep.runtime || ep.duration);
-
-      topRow.appendChild(t);
-      topRow.appendChild(right);
-
-      const sub = document.createElement("div");
-      sub.className = "modal-item-sub";
-      const parts = [];
-      if(ep.air_date) parts.push(`Air: ${ep.air_date}`);
-      if(ep.vote_average!=null) parts.push(`★ ${Number(ep.vote_average).toFixed(1)}`);
-      sub.textContent = parts.join(" • ");
-
-      item.appendChild(topRow);
-      item.appendChild(sub);
-
-      item.addEventListener("click", ()=> openEpisode(show, season, ep, ctx));
-      grid.appendChild(item);
-    }
-    sec.appendChild(grid);
-  }
-
-  body.appendChild(sec);
-  showDialog();
-}
-
-function openEpisode(show, season, ep, ctx){
-  if(!show || !season || !ep) return;
-  const tmdbId = show.tmdb_id || show.id;
-  const s = season.season_number || ep.season_number || 0;
-  const e = ep.episode_number || 0;
-
-  setModalTitle(`${show.name||show.title||""} — ${fmtSE(s,e)}`);
-  setModalSub(ep.name || "");
-
-  const body = el("modalBody");
-  body.innerHTML = "";
-
-  const poster = posterUrl(ep.still_path) || posterUrl(season.poster_path) || posterUrl(show.backdrop_path) || "";
-  if(poster){
-    const img = document.createElement("img");
-    img.src = poster;
-    img.alt = ep.name || "";
-    img.style.width = "100%";
-    img.style.maxHeight = "260px";
-    img.style.objectFit = "cover";
-    img.style.borderRadius = "16px";
-    img.style.background = "rgba(255,255,255,.04)";
-    body.appendChild(img);
-  }
-
-  const kv = document.createElement("div");
-  kv.className = "media-kv";
-  const pills = [];
-  if(ep.air_date) pills.push(`Air: ${ep.air_date}`);
-  const rt = fmtRuntime(ep.runtime || ep.duration);
-  if(rt) pills.push(`Runtime: ${rt}`);
-  for(const p of pills){
-    const sEl = document.createElement("span");
-    sEl.className = "kv-pill";
-    sEl.textContent = p;
-    kv.appendChild(sEl);
-  }
-  body.appendChild(kv);
-
-  const links = document.createElement("div");
-  links.className = "modal-links";
-
-  const tmdbUrl = buildTmdbUrl("tv", tmdbId);
-  const aTmdb = document.createElement("a");
-  aTmdb.className = "cal-btn";
-  aTmdb.href = tmdbUrl ? `${tmdbUrl}/season/${s}` : "#";
-  aTmdb.target = "_blank";
-  aTmdb.rel = "noopener";
-  aTmdb.textContent = "TMDB";
-
-  const vidsrc = firstNonEmpty(ep.vidsrc_url, show.vidsrc_url, buildVidSrcUrl("tv", tmdbId, s, e));
-  const videasy = firstNonEmpty(ep.videasy_url, show.videasy_url, buildVideasyUrl("tv", tmdbId, s, e));
-
-  const aVidsrc = document.createElement("a");
-  aVidsrc.className = "cal-btn";
-  aVidsrc.href = vidsrc || "#";
-  aVidsrc.target = "_blank";
-  aVidsrc.rel = "noopener";
-  aVidsrc.textContent = "VidSrc";
-  if(!vidsrc) aVidsrc.style.opacity = ".5";
-
-  const aVideasy = document.createElement("a");
-  aVideasy.className = "cal-btn";
-  aVideasy.href = videasy || "#";
-  aVideasy.target = "_blank";
-  aVideasy.rel = "noopener";
-  aVideasy.textContent = "Videasy";
-  if(!videasy) aVideasy.style.opacity = ".5";
-
-  links.appendChild(aTmdb);
-  links.appendChild(aVidsrc);
-  links.appendChild(aVideasy);
-  body.appendChild(links);
-
-  const overview = document.createElement("div");
-  overview.style.marginTop = "10px";
-  overview.style.opacity = ".92";
-  overview.style.lineHeight = "1.35";
-  overview.textContent = ep.overview || ep.summary || "";
-  body.appendChild(overview);
-
-  showDialog();
-}
-
-function openMovie(movie, ctx){
-  if(!movie) return;
-  const tmdbId = movie.tmdb_id || movie.id;
-  setModalTitle(movie.title || movie.name || "");
-  const genres = (movie.genres||[]).map(g=>g.name||g).filter(Boolean).join(", ");
-  setModalSub(["Movie", movie.release_date, genres].filter(Boolean).join(" • "));
-
-  const body = el("modalBody");
-  body.innerHTML = "";
-
-  const poster = posterUrl(movie.poster_path) || posterUrl(movie.backdrop_path) || "";
-  if(poster){
-    const img = document.createElement("img");
-    img.src = poster;
-    img.alt = movie.title || "";
-    img.style.width = "120px";
-    img.style.height = "180px";
-    img.style.borderRadius = "16px";
-    img.style.objectFit = "cover";
-    img.style.background = "rgba(255,255,255,.04)";
-    body.appendChild(img);
-  }
-
-  const kv = document.createElement("div");
-  kv.className = "media-kv";
-  const pills = [];
-  if(movie.runtime) pills.push(`Runtime: ${fmtRuntime(movie.runtime)}`);
-  if(movie.status) pills.push(movie.status);
-  for(const p of pills){
-    const sEl = document.createElement("span");
-    sEl.className = "kv-pill";
-    sEl.textContent = p;
-    kv.appendChild(sEl);
-  }
-  body.appendChild(kv);
-
-  const links = document.createElement("div");
-  links.className = "modal-links";
-
-  const tmdbUrl = buildTmdbUrl("movie", tmdbId);
-  const aTmdb = document.createElement("a");
-  aTmdb.className = "cal-btn";
-  aTmdb.href = tmdbUrl || "#";
-  aTmdb.target = "_blank";
-  aTmdb.rel = "noopener";
-  aTmdb.textContent = "TMDB";
-
-  const vidsrc = firstNonEmpty(movie.vidsrc_url, buildVidSrcUrl("movie", tmdbId));
-  const videasy = firstNonEmpty(movie.videasy_url, buildVideasyUrl("movie", tmdbId));
-
-  const aVidsrc = document.createElement("a");
-  aVidsrc.className = "cal-btn";
-  aVidsrc.href = vidsrc || "#";
-  aVidsrc.target = "_blank";
-  aVidsrc.rel = "noopener";
-  aVidsrc.textContent = "VidSrc";
-  if(!vidsrc) aVidsrc.style.opacity = ".5";
-
-  const aVideasy = document.createElement("a");
-  aVideasy.className = "cal-btn";
-  aVideasy.href = videasy || "#";
-  aVideasy.target = "_blank";
-  aVideasy.rel = "noopener";
-  aVideasy.textContent = "Videasy";
-  if(!videasy) aVideasy.style.opacity = ".5";
-
-  links.appendChild(aTmdb);
-  links.appendChild(aVidsrc);
-  links.appendChild(aVideasy);
-  body.appendChild(links);
-
-  const overview = document.createElement("div");
-  overview.style.marginTop = "10px";
-  overview.style.opacity = ".92";
-  overview.style.lineHeight = "1.35";
-  overview.textContent = movie.overview || "";
-  body.appendChild(overview);
-
-  showDialog();
-}
-
-function closeModal(){ el("modal").classList.remove("show"); }
-
-function setCounts(){
-  const d = state.data || {};
-  const shows = Array.isArray(d.shows)? d.shows.length : 0;
-  const movies= Array.isArray(d.movies)? d.movies.length: 0;
-  el("showsCount").textContent = String(shows);
-  el("moviesCount").textContent= String(movies);
-}
-
-function setView(view){
-  state.view=view;
-  for(const v of ["calendar","shows","movies","livetv","watchlist","explore","profiles","config"]){
-    el("view_"+v).style.display = (v===view) ? "block" : "none";
-  }
-  el("controls").style.display = (view==="shows" || view==="movies") ? "flex" : "none";
-  el("viewTitle").textContent = view.charAt(0).toUpperCase() + view.slice(1).replace("livetv","Live TV");
-  document.querySelectorAll("#nav button").forEach(b=>{
-    b.classList.toggle("active", b.dataset.view===view);
-  });
-
-  if(view==="calendar") renderCalendar();
-  if(view==="shows"){ renderCards("shows"); }
-  if(view==="movies"){ renderCards("movies"); }
-  if(view==="config"){
-    const cfg = state.cfg || {};
-    el("cfgDump").textContent = JSON.stringify(cfg, null, 2);
-  }
-}
-
-async function loadJSON(url){
-  const r = await fetch(url, {cache:"no-store"});
-  if(!r.ok) throw new Error(`HTTP ${r.status} for ${url}`);
-  return await r.json();
-}
-
-async function init(){
-  clearErr();
-  setStatus(null,"Initializing…");
-
-  // Read config from config.js if it sets window.APP_CONFIG or similar
-  state.cfg = window.APP_CONFIG || window.CONFIG || window.MyTVHubConfig || null;
-  el("cfgOk").textContent = state.cfg ? "ok" : "none";
-  if(state.cfg){
-    try{ el("cfgDump").textContent = JSON.stringify(state.cfg, null, 2); }catch(_){}
-  }
-
-  // Load data from ../data/data.json (relative to /web/index.html)
-  const dataUrl = "../data/data.json";
-  try{
-    state.data = await loadJSON(dataUrl);
-        buildDateIndex();
-el("dataOk").textContent = "ok";
-  }catch(e){
-    el("dataOk").textContent = "fail";
-    showErr(
-      "Failed to fetch data.json.\n\n" +
-      "Fix: run a local server from repo root:\n" +
-      "  .\\.venv\\Scripts\\python.exe -m http.server 8000\n" +
-      "Then open:\n" +
-      "  http://127.0.0.1:8000/web/index.html\n\n" +
-      "Details: " + e.message
-    );
-    return;
-  }
-
-  setCounts();
-  buildIndex();
-
-  // month default: current month
-  const now=new Date();
-  state.month = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  // wire up nav
-  el("nav").addEventListener("click", (ev)=>{
-    const b = ev.target.closest("button[data-view]");
-    if(!b) return;
-    setView(b.dataset.view);
-  });
-
-  // month nav
-  el("prevMonth").addEventListener("click", ()=>{
-    const d=state.month; state.month = new Date(d.getFullYear(), d.getMonth()-1, 1);
-    renderCalendar();
-  });
-  el("nextMonth").addEventListener("click", ()=>{
-    const d=state.month; state.month = new Date(d.getFullYear(), d.getMonth()+1, 1);
-    renderCalendar();
-  });
-
-  // search/sort
-  el("q").addEventListener("input", (e)=>{ state.q=e.target.value; if(state.view==="shows") renderCards("shows"); if(state.view==="movies") renderCards("movies"); });
-  el("sort").addEventListener("change", (e)=>{ state.sort=e.target.value; if(state.view==="shows") renderCards("shows"); if(state.view==="movies") renderCards("movies"); });
-
-  // modal
-  el("mClose").addEventListener("click", closeModal);
-  el("modal").addEventListener("click", (e)=>{ if(e.target===el("modal")) closeModal(); });
-  window.addEventListener("keydown",(e)=>{ if(e.key==="Escape") closeModal(); });
-
-  setStatus("ok","Ready");
-  el("statusDot").classList.add("ok");
-  el("statusText").textContent = "Ready";
-
-  // default view
-  setView("calendar");
-}
-
-document.addEventListener("DOMContentLoaded", init);
+  init();
+})();
 </script>
 </body>
 </html>
