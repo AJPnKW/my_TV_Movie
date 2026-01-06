@@ -177,8 +177,9 @@ select{
 }
 .small{font-size:12px;color:var(--muted)}
 
+.footer-meta{position:fixed;left:16px;bottom:10px;font-size:12px;opacity:.65;z-index:50;}
 /* --- UI: calendar cards + buttons (production) --- */
-.cal-item{ min-height: 320px; } /* taller */
+.cal-item{ min-height: 480px; } /* taller */
 .cal-items{ max-height: none; } /* allow more visible items */
 .cal-item .cal-title a{ color: inherit; text-decoration: none; }
 .cal-item .cal-title a:hover{ text-decoration: underline; }
@@ -270,7 +271,7 @@ select{
           </div>
           <div>
             <h3 id="monthLabel">…</h3>
-            <div class="small" id="monthHint">Shows use next_episode_to_air.air_date (or first_air_date). Movies use release_date.</div>
+            <div class="small" id="monthHint"></div>
           </div>
         </div>
         <div class="todaypill" id="todayPill">Today</div>
@@ -505,8 +506,10 @@ function renderCalendar(){
     // Render up to 3 items, then +N
     const max=3;
     const shown = items.slice(0,max);
-    for(const it of shown){
-            const row = document.createElement("div");
+    for (const it of shown) {
+          const obj = it.obj || {};
+          const ep = it.ep || null;
+const row = document.createElement("div");
       row.className = "item";
       row.tabIndex = 0;
 
@@ -711,6 +714,20 @@ function renderCards(kind){
     }
 
     meta.appendChild(title);
+          if (ep && (ep.season_number != null) && (ep.episode_number != null)) {
+            const epLine = document.createElement('div');
+            epLine.className = 'cal-ep-line';
+            const sNum = String(ep.season_number).padStart(2,'0');
+            const eNum = String(ep.episode_number).padStart(2,'0');
+            const code = `S${sNum}E${eNum}`;
+            const epA = document.createElement('a');
+            epA.href = '#';
+            epA.textContent = `${code} • ${ep.name || 'Episode'}` + (ep.runtime ? ` • ${ep.runtime}m` : '');
+            epA.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openModal('season', { obj, season_number: ep.season_number }); });
+            epLine.appendChild(epA);
+            meta.appendChild(epLine);
+          }
+
     meta.appendChild(sub);
     meta.appendChild(kv);
 
@@ -1267,5 +1284,6 @@ async function init(){
 
 document.addEventListener("DOMContentLoaded", init);
 </script>
+<div id="footer_meta" class="footer-meta"></div>
 </body>
 </html>
