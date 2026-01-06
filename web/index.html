@@ -5,632 +5,583 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>My TV Hub</title>
   <link rel="stylesheet" href="./css/my_tv_hub.css" />
-  <link rel="icon" href="./favicon.ico" />
+  <style>
+    /* Safety net styling (keeps UI usable even if CSS drifts) */
+    :root{color-scheme:dark;}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:#070b12;color:#e8eefc;}
+    .app{max-width:1400px;margin:0 auto;padding:14px;}
+    .topbar{display:flex;align-items:center;gap:12px}
+    .brand{display:flex;align-items:center;gap:10px}
+    .logo{width:34px;height:34px;border-radius:10px;background:#0f172a;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08)}
+    .title{font-weight:800;font-size:22px;letter-spacing:.2px}
+    .subtitle{opacity:.8;font-size:12px;margin-top:2px}
+    .status{margin-left:auto;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+    .dot{width:10px;height:10px;border-radius:50%;background:#16a34a}
+    .dot.bad{background:#dc2626}
+    .nav{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;padding:10px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .tab{cursor:pointer;user-select:none;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-weight:700}
+    .tab.active{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5)}
+    .panel{margin-top:14px;border-radius:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);padding:18px;min-height:520px}
+    .panel h2{margin:0 0 6px 0;font-size:34px}
+    .toolbar{display:flex;gap:10px;align-items:center;margin:8px 0 14px 0}
+    .search{flex:1;min-width:240px}
+    input,select{width:100%;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);color:#e8eefc}
+    .grid{display:grid;gap:14px}
+    .grid.cards{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+    .card{border-radius:18px;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+    .poster{aspect-ratio:2/3;width:100%;object-fit:cover;background:#0b1220}
+    .card-body{padding:12px}
+    .card-title{font-weight:900;font-size:15px;margin:0}
+    .meta{opacity:.85;font-size:12px;margin-top:6px;line-height:1.25}
+    .pill{display:inline-block;margin-right:6px;margin-top:6px;padding:3px 8px;border-radius:999px;font-size:11px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .btnrow{display:flex;gap:8px;margin-top:10px}
+    .btn{flex:1;text-align:center;text-decoration:none;font-weight:800;font-size:12px;padding:9px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#e8eefc}
+    .btn:focus,.tab:focus{outline:2px solid rgba(59,130,246,.6);outline-offset:2px}
+    .btn.tmdb{background:rgba(56,189,248,.22)}
+    .btn.videasy{background:rgba(236,72,153,.22)}
+    .btn.vidsrc{background:rgba(34,197,94,.18)}
+    .btn.disabled{opacity:.45;pointer-events:none}
+    .footer{opacity:.75;font-size:12px;margin-top:10px;padding:10px 2px;text-align:left}
+    /* Calendar */
+    .cal-head{display:flex;align-items:center;gap:10px;margin-top:6px}
+    .cal-navbtn{width:42px;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:#e8eefc;font-weight:900;cursor:pointer}
+    .cal-month{font-size:26px;font-weight:900;margin-left:4px}
+    .cal-today{margin-left:auto;padding:9px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);opacity:.85}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;margin-top:14px}
+    .dow{opacity:.75;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:0 4px}
+    .day{min-height:110px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);padding:10px;position:relative}
+    .day.dim{opacity:.45}
+    .daynum{position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;font-weight:900;font-size:13px}
+    .chips{margin-top:34px;display:flex;flex-direction:column;gap:8px}
+    .chip{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer}
+    .chip .t{font-weight:900;font-size:12px;line-height:1.2}
+    .chip .s{opacity:.8;font-size:11px;line-height:1.2}
+    .more{opacity:.8;font-size:12px;margin-top:2px;cursor:pointer;padding:6px 10px;border-radius:12px;background:rgba(255,255,255,.03);border:1px dashed rgba(255,255,255,.12)}
+    /* Modal */
+    .modal-back{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;padding:18px;z-index:999}
+    .modal{max-width:980px;width:100%;max-height:86vh;overflow:auto;border-radius:22px;background:#0b1220;border:1px solid rgba(255,255,255,.10);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+    .modal-head{display:flex;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .modal-title{font-weight:1000;font-size:18px}
+    .modal-close{margin-left:auto;cursor:pointer;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:#e8eefc;font-weight:900;padding:8px 12px}
+    .modal-body{padding:16px}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .row{padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+    .row .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+    .row .name{font-weight:900}
+    .row .sub{opacity:.8;font-size:12px}
+  </style>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
+  <div class="app">
+    <div class="topbar">
       <div class="brand">
-        <div class="brand-badge" aria-hidden="true">TV</div>
-        <div class="brand-text">
-          <div class="brand-title">My TV Hub</div>
-          <div class="brand-sub" id="brand_sub">Single-page • DPAD-first • Local assets</div>
+        <div class="logo"><span style="font-weight:1000;">TV</span></div>
+        <div>
+          <div class="title">My TV Hub</div>
+          <div class="subtitle" id="subtitle">Single-page • DPAD-first • Local assets</div>
         </div>
       </div>
-      <div class="status-pill" id="status_pill" aria-live="polite">
-        <span class="dot" id="status_dot"></span>
-        <span class="label" id="status_label">Initializing…</span>
+      <div class="status" id="statusPill" title="Data status">
+        <div class="dot" id="statusDot"></div>
+        <div id="statusText">Ready</div>
       </div>
-    </header>
+    </div>
 
-    <nav class="tabs" role="tablist" aria-label="Main views">
-      <button class="tab is-active" data-view="calendar" role="tab" aria-selected="true">Calendar</button>
-      <button class="tab" data-view="shows" role="tab" aria-selected="false">Shows</button>
-      <button class="tab" data-view="movies" role="tab" aria-selected="false">Movies</button>
-      <button class="tab" data-view="livetv" role="tab" aria-selected="false">Live TV</button>
-      <button class="tab" data-view="watchlist" role="tab" aria-selected="false">Watchlist</button>
-      <button class="tab" data-view="explore" role="tab" aria-selected="false">Explore</button>
-      <button class="tab" data-view="profiles" role="tab" aria-selected="false">Profiles</button>
-      <button class="tab" data-view="config" role="tab" aria-selected="false">Config</button>
-    </nav>
+    <div class="nav" role="tablist" aria-label="Views">
+      <div class="tab active" data-tab="calendar" tabindex="0">Calendar</div>
+      <div class="tab" data-tab="shows" tabindex="0">Shows</div>
+      <div class="tab" data-tab="movies" tabindex="0">Movies</div>
+      <div class="tab" aria-disabled="true" title="Not in this single-page build" style="opacity:.55;cursor:not-allowed;">Live TV</div>
+      <div class="tab" aria-disabled="true" title="Not in this single-page build" style="opacity:.55;cursor:not-allowed;">Watchlist</div>
+      <div class="tab" aria-disabled="true" title="Not in this single-page build" style="opacity:.55;cursor:not-allowed;">Explore</div>
+      <div class="tab" aria-disabled="true" title="Not in this single-page build" style="opacity:.55;cursor:not-allowed;">Profiles</div>
+      <div class="tab" aria-disabled="true" title="Use config.html" style="opacity:.55;cursor:not-allowed;">Config</div>
+    </div></div>
 
-    <main class="viewhost">
-      <!-- CALENDAR -->
-      <section class="view is-active" id="view_calendar" data-view="calendar" role="tabpanel" aria-label="Calendar">
-        <h1 class="view-title">Calendar</h1>
+    <div class="panel" id="panel"></div>
 
-        <div class="panel">
-          <div class="cal-header">
-            <div class="cal-nav">
-              <button class="iconbtn" id="cal_prev" aria-label="Previous month">◀</button>
-              <button class="iconbtn" id="cal_next" aria-label="Next month">▶</button>
-            </div>
-            <div class="cal-month" id="cal_month">…</div>
-            <div class="cal-today">
-              <button class="pillbtn" id="cal_today">Today</button>
-            </div>
-          </div>
+    <div class="footer" id="footer"></div>
+  </div>
 
-          <div class="cal-grid" id="cal_grid" aria-label="Calendar grid"></div>
-        </div>
-      </section>
-
-      <!-- SHOWS -->
-      <section class="view" id="view_shows" data-view="shows" role="tabpanel" aria-label="Shows">
-        <div class="view-head">
-          <h1 class="view-title">Shows</h1>
-          <div class="toolbar">
-            <input class="search" id="shows_search" placeholder="Search…" autocomplete="off" />
-            <select class="select" id="shows_sort">
-              <option value="title_az">Title A→Z</option>
-              <option value="title_za">Title Z→A</option>
-              <option value="next_soon">Next episode soonest</option>
-              <option value="next_latest">Next episode latest</option>
-            </select>
-          </div>
-        </div>
-        <div class="card-grid" id="shows_grid"></div>
-      </section>
-
-      <!-- MOVIES -->
-      <section class="view" id="view_movies" data-view="movies" role="tabpanel" aria-label="Movies">
-        <div class="view-head">
-          <h1 class="view-title">Movies</h1>
-          <div class="toolbar">
-            <input class="search" id="movies_search" placeholder="Search…" autocomplete="off" />
-            <select class="select" id="movies_sort">
-              <option value="title_az">Title A→Z</option>
-              <option value="title_za">Title Z→A</option>
-              <option value="release_new">Release newest</option>
-              <option value="release_old">Release oldest</option>
-            </select>
-          </div>
-        </div>
-        <div class="card-grid" id="movies_grid"></div>
-      </section>
-
-      <!-- PLACEHOLDERS (kept intentionally minimal until implemented) -->
-      <section class="view" id="view_livetv" data-view="livetv" role="tabpanel" aria-label="Live TV">
-        <h1 class="view-title">Live TV</h1>
-        <div class="panel"><div class="muted">Not implemented in index.html yet.</div></div>
-      </section>
-
-      <section class="view" id="view_watchlist" data-view="watchlist" role="tabpanel" aria-label="Watchlist">
-        <h1 class="view-title">Watchlist</h1>
-        <div class="panel"><div class="muted">Use watchlist.html for now.</div></div>
-      </section>
-
-      <section class="view" id="view_explore" data-view="explore" role="tabpanel" aria-label="Explore">
-        <h1 class="view-title">Explore</h1>
-        <div class="panel"><div class="muted">Not implemented in index.html yet.</div></div>
-      </section>
-
-      <section class="view" id="view_profiles" data-view="profiles" role="tabpanel" aria-label="Profiles">
-        <h1 class="view-title">Profiles</h1>
-        <div class="panel"><div class="muted">Not implemented in index.html yet.</div></div>
-      </section>
-
-      <section class="view" id="view_config" data-view="config" role="tabpanel" aria-label="Config">
-        <h1 class="view-title">Config</h1>
-        <div class="panel">
-          <div class="muted">Config editing remains in config.html.</div>
-        </div>
-      </section>
-
-    </main>
-
-    <footer class="footer" id="app_footer">
-      <span id="footer_text">Single-page • DPAD-first • Local assets</span>
-    </footer>
+  <div class="modal-back" id="modalBack" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Details">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Details</div>
+        <button class="modal-close" id="modalClose">Close</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
   </div>
 
 <script>
 (() => {
-  "use strict";
-
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
 
   const state = {
+    cfg: null,
     data: null,
-    shows: [],
-    movies: [],
-    view: "calendar",
-    today: new Date(),
-    calYear: null,
-    calMonth: null, // 0-11
+    tab: "calendar",
+    calendarMonth: null, // Date set to first of month
+    search: { shows: "", movies: "" },
+    sort: { shows: "title", movies: "title" },
   };
 
-  function setStatus(kind, text) {
-    const dot = $("#status_dot");
-    const label = $("#status_label");
-    const pill = $("#status_pill");
-    if (!dot || !label || !pill) return;
-    label.textContent = text;
-    pill.classList.remove("is-ok","is-warn","is-bad");
-    dot.classList.remove("is-ok","is-warn","is-bad");
-    const cls = kind === "ok" ? "is-ok" : (kind === "warn" ? "is-warn" : "is-bad");
-    pill.classList.add(cls);
-    dot.classList.add(cls);
+  function setStatus(ok, msg) {
+    $("#statusText").textContent = msg;
+    $("#statusDot").classList.toggle("bad", !ok);
   }
 
-  function setFooter(meta) {
-    const base = "Single-page • DPAD-first • Local assets";
-    if (!meta) { $("#footer_text").textContent = base; return; }
-    const parts = [base];
-    parts.push(`data: ${meta.data}`);
-    parts.push(`cfg: ${meta.cfg}`);
-    parts.push(`shows: ${meta.shows}`);
-    parts.push(`movies: ${meta.movies}`);
-    $("#footer_text").textContent = parts.join(" • ");
+  function fmtDate(d) {
+    if (!d) return "";
+    try {
+      const dt = new Date(d + "T00:00:00");
+      return dt.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
+    } catch { return String(d); }
   }
 
-  function parseISODate(iso) {
-    if (!iso || typeof iso !== "string") return null;
-    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
-    if (!m) return null;
-    const y = Number(m[1]), mo = Number(m[2]) - 1, d = Number(m[3]);
-    const dt = new Date(Date.UTC(y, mo, d));
-    if (Number.isNaN(dt.getTime())) return null;
-    // normalize to local date at midnight for comparisons
-    return new Date(y, mo, d);
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function seTag(s,e){ return `S${pad2(s)}E${pad2(e)}`; }
+
+  function tmdbShowUrl(id){ return `https://www.themoviedb.org/tv/${id}`; }
+  function tmdbMovieUrl(id){ return `https://www.themoviedb.org/movie/${id}`; }
+
+  function videasyTvUrl(id,s,e){
+    const base = state.cfg?.streaming?.videasy_tv || "https://player.videasy.net/tv/";
+    return `${base}${id}/${s}/${e}`;
+  }
+  function vidsrcTvUrl(id,s,e){
+    const base = state.cfg?.streaming?.vidsrc_tv || "https://vidsrc.net/embed/tv/";
+    return `${base}${id}/${s}/${e}`;
+  }
+  function videasyMovieUrl(id){
+    const base = state.cfg?.streaming?.videasy_movie || "https://player.videasy.net/movie/";
+    return `${base}${id}`;
+  }
+  function vidsrcMovieUrl(id){
+    const base = state.cfg?.streaming?.vidsrc_movie || "https://vidsrc.net/embed/movie/";
+    return `${base}${id}`;
   }
 
-  function fmtMonthYear(y, m0) {
-    const dt = new Date(y, m0, 1);
-    return dt.toLocaleString(undefined, { month: "long", year: "numeric" });
+  function safeText(s){ return (s ?? "").toString(); }
+  function genreLine(genres){
+    if (!genres || !genres.length) return "";
+    const names = genres.map(g => g?.name ? g.name : String(g)).filter(Boolean);
+    return names.join(" / ");
   }
 
-  function ymd(dt) {
-    const y = dt.getFullYear();
-    const m = String(dt.getMonth()+1).padStart(2,"0");
-    const d = String(dt.getDate()).padStart(2,"0");
-    return `${y}-${m}-${d}`;
+  function openModal(title, html) {
+    $("#modalTitle").textContent = title;
+    $("#modalBody").innerHTML = html;
+    $("#modalBack").style.display = "flex";
+    $("#modalBack").setAttribute("aria-hidden", "false");
+    $("#modalClose").focus();
+  }
+  function closeModal(){
+    $("#modalBack").style.display = "none";
+    $("#modalBack").setAttribute("aria-hidden", "true");
+    $("#modalBody").innerHTML = "";
   }
 
-  function safeText(v, fallback="") {
-    if (v === null || v === undefined) return fallback;
-    const s = String(v);
-    return s.length ? s : fallback;
+  function footerText() {
+    const meta = state.data?.meta || {};
+    const counts = meta.counts || {};
+    const dataOk = state.data ? "ok" : "fail";
+    const cfgOk  = state.cfg ? "ok" : "fail";
+    const showsN = counts.shows ?? (state.data?.shows?.length ?? 0);
+    const moviesN = counts.movies ?? (state.data?.movies?.length ?? 0);
+    return `Single-page • DPAD-first • Local assets • data: ${dataOk} • cfg: ${cfgOk} • shows: ${showsN} • movies: ${moviesN}`;
   }
 
-  function normalizeTitle(item) {
-    return (item.title || item.name || item.original_title || item.original_name || "").trim();
-  }
+  async function loadAll() {
+    setStatus(true, "Loading");
+    try {
+      const [cfgRes, dataRes] = await Promise.all([
+        fetch("./config.json", {cache:"no-store"}),
+        fetch("../data/data.json", {cache:"no-store"})
+      ]);
+      if (!cfgRes.ok) throw new Error(`config.json HTTP ${cfgRes.status}`);
+      if (!dataRes.ok) throw new Error(`data.json HTTP ${dataRes.status}`);
+      state.cfg = await cfgRes.json();
+      state.data = await dataRes.json();
 
-  function posterUrl(item) {
-    // Prefer local assets emitted by pipeline
-    return item.poster_local || item.poster || item.poster_path || item.posterUrl || "";
-  }
-
-  function backdropUrl(item) {
-    return item.backdrop_local || item.backdrop || item.backdrop_path || "";
-  }
-
-  function buildShowNextEpisodeLabel(show) {
-    const nea = show.next_episode_to_air;
-    if (!nea || typeof nea !== "object") return "";
-    const s = Number(nea.season_number || 0);
-    const e = Number(nea.episode_number || 0);
-    const code = (s && e) ? `S${String(s).padStart(2,"0")}E${String(e).padStart(2,"0")}` : "";
-    const name = safeText(nea.name, "");
-    const air = safeText(nea.air_date, "");
-    const bits = [];
-    if (code) bits.push(code);
-    if (name) bits.push(name);
-    if (air) bits.push(air);
-    return bits.join(" • ");
-  }
-
-  function extractCalendarItems() {
-    // Calendar is driven by per-item dates in data.json:
-    //  - Shows: show.next_episode_to_air.air_date (episode date)
-    //  - Movies: movie.release_date
-    const byDate = new Map(); // ymd -> items[]
-    const add = (dateIso, payload) => {
-      const dt = parseISODate(dateIso);
-      if (!dt) return;
-      const k = ymd(dt);
-      if (!byDate.has(k)) byDate.set(k, []);
-      byDate.get(k).push(payload);
-    };
-
-    for (const show of state.shows) {
-      const nea = show.next_episode_to_air;
-      if (nea && typeof nea === "object" && nea.air_date) {
-        add(nea.air_date, { kind:"show", show, episode: nea });
-      }
+      $("#footer").textContent = footerText();
+      setStatus(true, "Ready");
+      initCalendarMonth();
+      render();
+    } catch (e) {
+      console.error(e);
+      $("#footer").textContent = footerText();
+      setStatus(false, "Failed");
+      const msg = safeText(e?.message || e);
+      $("#panel").innerHTML = `
+        <h2>Calendar</h2>
+        <div style="margin-top:10px;padding:12px 14px;border-radius:16px;border:1px solid rgba(220,38,38,.35);background:rgba(220,38,38,.10);">
+          Failed to fetch data/config. Fix: run a local server from repo root: <code> .\.venv\Scripts\python.exe -m http.server 8000 </code>
+          Then open: <code> http://127.0.0.1:8000/web/index.html </code><br/>
+          Details: <code>${msg.replaceAll("<","&lt;")}</code>
+        </div>
+      `;
     }
+  }
 
-    for (const movie of state.movies) {
-      if (movie.release_date) {
-        add(movie.release_date, { kind:"movie", movie });
-      }
-    }
+  function initCalendarMonth() {
+    const today = new Date();
+    state.calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  }
 
-    // stable ordering within a day: shows first then movies, title A-Z
-    for (const [k, arr] of byDate.entries()) {
-      arr.sort((a,b) => {
-        if (a.kind !== b.kind) return a.kind === "show" ? -1 : 1;
-        const ta = a.kind === "show" ? normalizeTitle(a.show) : normalizeTitle(a.movie);
-        const tb = b.kind === "show" ? normalizeTitle(b.show) : normalizeTitle(b.movie);
-        return ta.localeCompare(tb);
+  function buildCalendarEvents() {
+    // Events: show.next_episode_to_air.air_date and movies.release_date
+    const eventsByDate = new Map(); // yyyy-mm-dd -> [{type, ...}]
+    const shows = state.data?.shows || [];
+    const movies = state.data?.movies || [];
+
+    for (const s of shows) {
+      const nea = s?.next_episode_to_air;
+      const ad = nea?.air_date;
+      if (!ad) continue;
+      const k = ad;
+      const arr = eventsByDate.get(k) || [];
+      arr.push({
+        type: "show",
+        title: s.title,
+        tmdb_id: s.tmdb_id,
+        poster: s.poster_local,
+        season: nea.season_number,
+        episode: nea.episode_number,
+        ep_name: nea.name,
+        air_date: ad
       });
+      eventsByDate.set(k, arr);
     }
-    return byDate;
+
+    for (const m of movies) {
+      const rd = m?.release_date;
+      if (!rd) continue;
+      const k = rd;
+      const arr = eventsByDate.get(k) || [];
+      arr.push({
+        type: "movie",
+        title: m.title,
+        tmdb_id: m.tmdb_id,
+        poster: m.poster_local,
+        release_date: rd
+      });
+      eventsByDate.set(k, arr);
+    }
+
+    // Stable sort per date
+    for (const [k, arr] of eventsByDate.entries()) {
+      arr.sort((a,b) => (a.type === b.type ? safeText(a.title).localeCompare(safeText(b.title)) : (a.type === "show" ? -1 : 1)));
+    }
+
+    return eventsByDate;
   }
 
   function renderCalendar() {
-    const grid = $("#cal_grid");
-    const monthEl = $("#cal_month");
-    if (!grid || !monthEl) return;
+    const m = state.calendarMonth;
+    const monthName = m.toLocaleDateString(undefined, { month:"long", year:"numeric" });
+    const today = new Date();
+    const todayKey = `${today.getFullYear()}-${pad2(today.getMonth()+1)}-${pad2(today.getDate())}`;
+    const eventsByDate = buildCalendarEvents();
 
-    const y = state.calYear, m0 = state.calMonth;
-    monthEl.textContent = fmtMonthYear(y, m0);
+    // Calendar grid: include leading/trailing days to fill 6 weeks
+    const firstDow = new Date(m.getFullYear(), m.getMonth(), 1).getDay(); // 0=Sun
+    const startOffset = (firstDow + 6) % 7; // convert Monday=0
+    const gridStart = new Date(m.getFullYear(), m.getMonth(), 1 - startOffset);
 
-    const first = new Date(y, m0, 1);
-    const last = new Date(y, m0 + 1, 0);
-    const startDow = (first.getDay() + 6) % 7; // convert Sunday=0 to Monday=0
-    const daysInMonth = last.getDate();
-
-    const itemsByDate = extractCalendarItems();
-
-    // Build 6 weeks (42 cells) for consistent layout.
-    // Leading days from prev month, trailing days from next month.
-    const cells = [];
-    // prev month tail
-    const prevLast = new Date(y, m0, 0).getDate();
-    for (let i = 0; i < startDow; i++) {
-      const dayNum = prevLast - (startDow - 1 - i);
-      cells.push({ y: y, m0: m0-1, d: dayNum, inMonth:false });
-    }
-    // current month
-    for (let d = 1; d <= daysInMonth; d++) {
-      cells.push({ y, m0, d, inMonth:true });
-    }
-    // next month head
-    while (cells.length < 42) {
-      const d = cells.length - (startDow + daysInMonth) + 1;
-      cells.push({ y: y, m0: m0+1, d, inMonth:false });
+    const days = [];
+    for (let i=0;i<42;i++){
+      const d = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate()+i);
+      const key = `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+      const inMonth = d.getMonth() === m.getMonth();
+      days.push({ d, key, inMonth });
     }
 
-    grid.innerHTML = "";
-    // day labels row (Mon..Sun) is already in CSS layout; we create 42 day boxes only.
-    // Use existing CSS classes where possible.
-    for (const c of cells) {
-      const dt = new Date(c.y, c.m0, c.d);
-      const key = ymd(dt);
-      const isToday = key === ymd(state.today);
+    const dows = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(s => `<div class="dow">${s}</div>`).join("");
 
-      const dayBox = document.createElement("div");
-      dayBox.className = "cal-day" + (c.inMonth ? "" : " is-out") + (isToday ? " is-today" : "");
-      dayBox.setAttribute("data-date", key);
+    const dayHtml = days.map(({d,key,inMonth}) => {
+      const ev = eventsByDate.get(key) || [];
+      const top = ev.slice(0,3);
+      const rest = Math.max(0, ev.length - top.length);
 
-      const dayNum = document.createElement("div");
-      dayNum.className = "cal-daynum";
-      dayNum.textContent = String(dt.getDate());
-      dayBox.appendChild(dayNum);
+      const chips = top.map((it, idx) => {
+        const sub = it.type === "show"
+          ? `${seTag(it.season, it.episode)} • ${safeText(it.ep_name)}`
+          : `Movie • Release`;
+        const t = safeText(it.title);
+        return `
+          <div class="chip" data-day="${key}" data-idx="${idx}">
+            <div>
+              <div class="t">${t}</div>
+              <div class="s">${sub}</div>
+            </div>
+          </div>
+        `;
+      }).join("");
 
-      const list = document.createElement("div");
-      list.className = "cal-items";
+      const more = rest > 0 ? `<div class="more" data-more="${key}">+${rest} more</div>` : "";
 
-      const items = itemsByDate.get(key) || [];
-      const max = 3;
-      for (let i = 0; i < Math.min(max, items.length); i++) {
-        const it = items[i];
-        list.appendChild(buildCalendarChip(it));
-      }
-      if (items.length > max) {
-        const more = document.createElement("div");
-        more.className = "cal-more";
-        more.textContent = `+${items.length - max} more`;
-        list.appendChild(more);
-      }
-
-      dayBox.appendChild(list);
-      grid.appendChild(dayBox);
-    }
-  }
-
-  function buildCalendarChip(it) {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "cal-chip";
-    if (it.kind === "show") {
-      const title = normalizeTitle(it.show);
-      const sub = buildShowNextEpisodeLabel(it.show);
-      chip.innerHTML = `
-        <span class="chip-title">${escapeHtml(title)}</span>
-        <span class="chip-sub">${escapeHtml(sub)}</span>
+      const dim = inMonth ? "" : "dim";
+      return `
+        <div class="day ${dim}">
+          <div class="daynum">${d.getDate()}</div>
+          <div class="chips">${chips}${more}</div>
+        </div>
       `;
-      chip.addEventListener("click", () => openShowModal(it.show, it.episode));
-    } else {
-      const title = normalizeTitle(it.movie);
-      const sub = safeText(it.movie.release_date, "");
-      chip.innerHTML = `
-        <span class="chip-title">${escapeHtml(title)}</span>
-        <span class="chip-sub">${escapeHtml(sub)}</span>
-      `;
-      chip.addEventListener("click", () => openMovieModal(it.movie));
-    }
-    return chip;
+    }).join("");
+
+    $("#panel").innerHTML = `
+      <h2>Calendar</h2>
+      <div class="cal-head">
+        <button class="cal-navbtn" id="calPrev" aria-label="Previous month">◀</button>
+        <button class="cal-navbtn" id="calNext" aria-label="Next month">▶</button>
+        <div class="cal-month">${monthName}</div>
+        <div class="cal-today">Today ${todayKey}</div>
+      </div>
+      <div class="cal-grid" style="margin-top:10px;">
+        ${dows}
+        ${dayHtml}
+      </div>
+    `;
+
+    $("#calPrev").onclick = () => { state.calendarMonth = new Date(m.getFullYear(), m.getMonth()-1, 1); render(); };
+    $("#calNext").onclick = () => { state.calendarMonth = new Date(m.getFullYear(), m.getMonth()+1, 1); render(); };
+
+    // chip click -> open episode/movie modal
+    $$(".chip").forEach(ch => {
+      ch.onclick = () => {
+        const day = ch.getAttribute("data-day");
+        const idx = parseInt(ch.getAttribute("data-idx"), 10);
+        const list = (eventsByDate.get(day) || []);
+        const it = list[idx];
+        if (!it) return;
+        if (it.type === "show") {
+          const s = it.season, e = it.episode;
+          const html = `
+            <div class="row">
+              <div class="top">
+                <div class="name"><a href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer" style="color:#e8eefc;text-decoration:none;">${safeText(it.title)}</a></div>
+                <div class="sub">• ${fmtDate(it.air_date)} • ${seTag(s,e)}</div>
+              </div>
+              <div class="sub" style="margin-top:6px;">${safeText(it.ep_name)}</div>
+              <div class="btnrow" style="margin-top:12px;">
+                <a class="btn tmdb" href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Info at TMDB</a>
+                <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+                <a class="btn vidsrc" href="${vidsrcTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+              </div>
+            </div>
+          `;
+          openModal(`${safeText(it.title)} • ${seTag(s,e)}`, html);
+        } else {
+          const html = `
+            <div class="row">
+              <div class="top">
+                <div class="name"><a href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer" style="color:#e8eefc;text-decoration:none;">${safeText(it.title)}</a></div>
+                <div class="sub">• ${fmtDate(it.release_date)}</div>
+              </div>
+              <div class="btnrow" style="margin-top:12px;">
+                <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Info at TMDB</a>
+                <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+                <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+              </div>
+            </div>
+          `;
+          openModal(`${safeText(it.title)} • Movie`, html);
+        }
+      };
+    });
+
+    $$(".more").forEach(more => {
+      more.onclick = () => {
+        const day = more.getAttribute("data-more");
+        const list = (eventsByDate.get(day) || []);
+        const rows = list.map((it) => {
+          if (it.type === "show") {
+            const s = it.season, e = it.episode;
+            return `
+              <div class="row">
+                <div class="top">
+                  <div class="name">${safeText(it.title)}</div>
+                  <div class="sub">• ${seTag(s,e)} • ${safeText(it.ep_name)}</div>
+                </div>
+                <div class="btnrow" style="margin-top:10px;">
+                  <a class="btn tmdb" href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
+                  <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Videasy</a>
+                  <a class="btn vidsrc" href="${vidsrcTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">VidSrc</a>
+                </div>
+              </div>
+            `;
+          } else {
+            return `
+              <div class="row">
+                <div class="top">
+                  <div class="name">${safeText(it.title)}</div>
+                  <div class="sub">• Movie</div>
+                </div>
+                <div class="btnrow" style="margin-top:10px;">
+                  <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
+                  <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Videasy</a>
+                  <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidSrc</a>
+                </div>
+              </div>
+            `;
+          }
+        }).join("");
+        openModal(`${day} • ${list.length} items`, `<div class="list">${rows}</div>`);
+      };
+    });
   }
 
   function renderShows() {
-    const grid = $("#shows_grid");
-    if (!grid) return;
+    const shows = (state.data?.shows || []).slice();
+    const q = state.search.shows.trim().toLowerCase();
+    const sort = state.sort.shows;
 
-    const q = ($("#shows_search").value || "").trim().toLowerCase();
-    const sort = $("#shows_sort").value;
-
-    let rows = state.shows.slice();
-    if (q) {
-      rows = rows.filter(s => normalizeTitle(s).toLowerCase().includes(q));
-    }
-
-    const nextDate = (s) => {
-      const nea = s.next_episode_to_air;
-      if (nea && typeof nea === "object" && nea.air_date) {
-        const dt = parseISODate(nea.air_date);
-        return dt ? dt.getTime() : Number.POSITIVE_INFINITY;
-      }
-      return Number.POSITIVE_INFINITY;
-    };
-
-    rows.sort((a,b) => {
-      if (sort === "title_za") return normalizeTitle(b).localeCompare(normalizeTitle(a));
-      if (sort === "next_soon") return nextDate(a) - nextDate(b);
-      if (sort === "next_latest") return nextDate(b) - nextDate(a);
-      return normalizeTitle(a).localeCompare(normalizeTitle(b));
+    const filtered = shows.filter(s => {
+      if (!q) return true;
+      const hay = `${safeText(s.title)} ${safeText(s.original_name)} ${safeText(s.tmdb_id)}`.toLowerCase();
+      return hay.includes(q);
     });
 
-    grid.innerHTML = "";
-    for (const s of rows) grid.appendChild(buildShowCard(s));
+    filtered.sort((a,b) => safeText(a.title).localeCompare(safeText(b.title)));
+
+    const cards = filtered.map(s => {
+      const poster = s.poster_local ? s.poster_local : "";
+      const year = s.first_air_date ? String(s.first_air_date).slice(0,4) : "";
+      const status = safeText(s.status);
+      const genres = genreLine(s.genres);
+      const nea = s.next_episode_to_air;
+      const nextLine = nea?.air_date ? `Next: ${fmtDate(nea.air_date)} • ${seTag(nea.season_number, nea.episode_number)} • ${safeText(nea.name)}` : "";
+      const canWatch = !!nea?.air_date && !!s.tmdb_id;
+
+      const tmdb = tmdbShowUrl(s.tmdb_id);
+      const videasy = canWatch ? videasyTvUrl(s.tmdb_id, nea.season_number, nea.episode_number) : "#";
+      const vidsrc = canWatch ? vidsrcTvUrl(s.tmdb_id, nea.season_number, nea.episode_number) : "#";
+
+      return `
+        <div class="card">
+          ${poster ? `<img class="poster" src="${poster}" alt="">` : `<div class="poster"></div>`}
+          <div class="card-body">
+            <div class="card-title">${safeText(s.title)}</div>
+            <div class="meta">${year ? `Since ${year}` : ""}${status ? ` • ${status}` : ""}</div>
+            ${genres ? `<div class="meta" style="margin-top:6px;">${genres}</div>` : ``}
+            ${nextLine ? `<div class="meta" style="margin-top:8px;font-weight:800;">${nextLine}</div>` : ``}
+            <div class="btnrow">
+              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">Info at TMDB</a>
+              <a class="btn videasy ${canWatch ? "" : "disabled"}" href="${videasy}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+              <a class="btn vidsrc ${canWatch ? "" : "disabled"}" href="${vidsrc}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    $("#panel").innerHTML = `
+      <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+          <h2>Shows</h2>
+        </div>
+        <div style="flex:2;min-width:260px;">
+          <div class="toolbar" style="margin:0;">
+            <div class="search"><input id="showSearch" placeholder="Search..." value="${state.search.shows.replaceAll('"',"&quot;")}"></div>
+            <div style="width:170px"><select id="showSort"><option value="title">Title A→Z</option></select></div>
+          </div>
+        </div>
+      </div>
+      <div class="grid cards" style="margin-top:16px;">${cards}</div>
+    `;
+
+    $("#showSearch").oninput = (e) => { state.search.shows = e.target.value; renderShows(); };
   }
 
   function renderMovies() {
-    const grid = $("#movies_grid");
-    if (!grid) return;
+    const movies = (state.data?.movies || []).slice();
+    const q = state.search.movies.trim().toLowerCase();
 
-    const q = ($("#movies_search").value || "").trim().toLowerCase();
-    const sort = $("#movies_sort").value;
-
-    let rows = state.movies.slice();
-    if (q) rows = rows.filter(m => normalizeTitle(m).toLowerCase().includes(q));
-
-    const relTime = (m) => {
-      const dt = parseISODate(m.release_date);
-      return dt ? dt.getTime() : 0;
-    };
-
-    rows.sort((a,b) => {
-      if (sort === "title_za") return normalizeTitle(b).localeCompare(normalizeTitle(a));
-      if (sort === "release_new") return relTime(b) - relTime(a);
-      if (sort === "release_old") return relTime(a) - relTime(b);
-      return normalizeTitle(a).localeCompare(normalizeTitle(b));
+    const filtered = movies.filter(m => {
+      if (!q) return true;
+      const hay = `${safeText(m.title)} ${safeText(m.original_title)} ${safeText(m.tmdb_id)}`.toLowerCase();
+      return hay.includes(q);
     });
 
-    grid.innerHTML = "";
-    for (const m of rows) grid.appendChild(buildMovieCard(m));
-  }
+    filtered.sort((a,b) => safeText(a.title).localeCompare(safeText(b.title)));
 
-  function buildShowCard(show) {
-    const card = document.createElement("div");
-    card.className = "media-card";
-    const title = normalizeTitle(show);
-    const poster = posterUrl(show);
-    const backdrop = backdropUrl(show);
-    const subtitle = buildShowNextEpisodeLabel(show) || safeText(show.status, "");
+    const cards = filtered.map(m => {
+      const poster = m.poster_local ? m.poster_local : "";
+      const year = m.release_date ? String(m.release_date).slice(0,4) : "";
+      const genres = genreLine(m.genres);
+      const runtime = m.runtime ? `${m.runtime} min` : "";
+      const tmdb = tmdbMovieUrl(m.tmdb_id);
+      const videasy = videasyMovieUrl(m.tmdb_id);
+      const vidsrc = vidsrcMovieUrl(m.tmdb_id);
 
-    card.innerHTML = `
-      <button class="media-card-btn" type="button">
-        <div class="media-img" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
-        <div class="media-meta">
-          <div class="media-title">${escapeHtml(title)}</div>
-          <div class="media-sub">${escapeHtml(subtitle)}</div>
+      return `
+        <div class="card">
+          ${poster ? `<img class="poster" src="${poster}" alt="">` : `<div class="poster"></div>`}
+          <div class="card-body">
+            <div class="card-title">${safeText(m.title)}</div>
+            <div class="meta">${year ? `Since ${year}` : ""}${runtime ? ` • ${runtime}` : ""}</div>
+            ${genres ? `<div class="meta" style="margin-top:6px;">${genres}</div>` : ``}
+            <div class="btnrow">
+              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">Info at TMDB</a>
+              <a class="btn videasy" href="${videasy}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+              <a class="btn vidsrc" href="${vidsrc}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+            </div>
+          </div>
         </div>
-      </button>
-    `;
-    card.querySelector("button").addEventListener("click", () => openShowModal(show, show.next_episode_to_air || null));
-    return card;
-  }
+      `;
+    }).join("");
 
-  function buildMovieCard(movie) {
-    const card = document.createElement("div");
-    card.className = "media-card";
-    const title = normalizeTitle(movie);
-    const poster = posterUrl(movie);
-    const subtitle = movie.release_date ? `Release • ${movie.release_date}` : safeText(movie.status,"");
-
-    card.innerHTML = `
-      <button class="media-card-btn" type="button">
-        <div class="media-img" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
-        <div class="media-meta">
-          <div class="media-title">${escapeHtml(title)}</div>
-          <div class="media-sub">${escapeHtml(subtitle)}</div>
+    $("#panel").innerHTML = `
+      <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+          <h2>Movies</h2>
         </div>
-      </button>
-    `;
-    card.querySelector("button").addEventListener("click", () => openMovieModal(movie));
-    return card;
-  }
-
-  function ensureModal() {
-    let modal = $("#modal");
-    if (modal) return modal;
-    modal = document.createElement("div");
-    modal.id = "modal";
-    modal.className = "modal is-hidden";
-    modal.innerHTML = `
-      <div class="modal-backdrop" id="modal_backdrop"></div>
-      <div class="modal-panel" role="dialog" aria-modal="true" aria-label="Details">
-        <button class="modal-close" id="modal_close" aria-label="Close">✕</button>
-        <div class="modal-body" id="modal_body"></div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-    $("#modal_backdrop").addEventListener("click", closeModal);
-    $("#modal_close").addEventListener("click", closeModal);
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && !modal.classList.contains("is-hidden")) closeModal();
-    });
-    return modal;
-  }
-
-  function openShowModal(show, episode) {
-    const modal = ensureModal();
-    const body = $("#modal_body");
-    const title = normalizeTitle(show);
-    const poster = posterUrl(show);
-    const status = safeText(show.status, "");
-    const genres = Array.isArray(show.genres) ? show.genres.join(", ") : safeText(show.genres,"");
-    const firstAir = safeText(show.first_air_date || show.release_date, "");
-    const next = (episode && episode.air_date) ? `${buildShowNextEpisodeLabel(show)}` : "";
-    const tmdb = show.tmdb_url || (show.tmdb_id ? `https://www.themoviedb.org/tv/${show.tmdb_id}` : "");
-    const vidsrc = show.vidsrc_url || (show.tmdb_id ? `https://vidsrc.to/embed/tv/${show.tmdb_id}` : "");
-    const videasy = show.videasy_url || (show.tmdb_id ? `https://www.videasy.net/tv/${show.tmdb_id}` : "");
-
-    body.innerHTML = `
-      <div class="detail-hero">
-        <div class="detail-poster" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
-        <div class="detail-info">
-          <div class="detail-title">${escapeHtml(title)}</div>
-          <div class="detail-sub">${escapeHtml([status, genres].filter(Boolean).join(" • "))}</div>
-          <div class="detail-sub">${escapeHtml([firstAir ? `First aired • ${firstAir}` : "", next ? `Next • ${next}` : ""].filter(Boolean).join(" • "))}</div>
-          <div class="detail-actions">
-            ${tmdb ? `<a class="btn" href="${escapeAttr(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-            ${vidsrc ? `<a class="btn" href="${escapeAttr(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-            ${videasy ? `<a class="btn" href="${escapeAttr(videasy)}" target="_blank" rel="noopener">Videasy</a>` : ""}
+        <div style="flex:2;min-width:260px;">
+          <div class="toolbar" style="margin:0;">
+            <div class="search"><input id="movieSearch" placeholder="Search..." value="${state.search.movies.replaceAll('"',"&quot;")}"></div>
+            <div style="width:170px"><select id="movieSort"><option value="title">Title A→Z</option></select></div>
           </div>
         </div>
       </div>
-      <div class="detail-overview">${escapeHtml(safeText(show.overview, ""))}</div>
+      <div class="grid cards" style="margin-top:16px;">${cards}</div>
     `;
-    modal.classList.remove("is-hidden");
+
+    $("#movieSearch").oninput = (e) => { state.search.movies = e.target.value; renderMovies(); };
   }
 
-  function openMovieModal(movie) {
-    const modal = ensureModal();
-    const body = $("#modal_body");
-    const title = normalizeTitle(movie);
-    const poster = posterUrl(movie);
-    const genres = Array.isArray(movie.genres) ? movie.genres.join(", ") : safeText(movie.genres,"");
-    const rel = safeText(movie.release_date, "");
-    const runtime = movie.runtime ? `${movie.runtime} min` : "";
-    const tmdb = movie.tmdb_url || (movie.tmdb_id ? `https://www.themoviedb.org/movie/${movie.tmdb_id}` : "");
-    const vidsrc = movie.vidsrc_url || (movie.tmdb_id ? `https://vidsrc.to/embed/movie/${movie.tmdb_id}` : "");
-    const videasy = movie.videasy_url || (movie.tmdb_id ? `https://www.videasy.net/movie/${movie.tmdb_id}` : "");
-
-    body.innerHTML = `
-      <div class="detail-hero">
-        <div class="detail-poster" style="${poster ? `background-image:url('${escapeAttr(poster)}')` : ""}"></div>
-        <div class="detail-info">
-          <div class="detail-title">${escapeHtml(title)}</div>
-          <div class="detail-sub">${escapeHtml([genres, rel ? `Release • ${rel}` : "", runtime].filter(Boolean).join(" • "))}</div>
-          <div class="detail-actions">
-            ${tmdb ? `<a class="btn" href="${escapeAttr(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-            ${vidsrc ? `<a class="btn" href="${escapeAttr(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-            ${videasy ? `<a class="btn" href="${escapeAttr(videasy)}" target="_blank" rel="noopener">Videasy</a>` : ""}
-          </div>
-        </div>
-      </div>
-      <div class="detail-overview">${escapeHtml(safeText(movie.overview, ""))}</div>
-    `;
-    modal.classList.remove("is-hidden");
+  function render() {
+    $("#footer").textContent = footerText();
+    if (state.tab === "calendar") renderCalendar();
+    else if (state.tab === "shows") renderShows();
+    else if (state.tab === "movies") renderMovies();
+    else { state.tab = "calendar"; renderCalendar(); }
   }
 
-  function closeModal() {
-    const modal = $("#modal");
-    if (modal) modal.classList.add("is-hidden");
+  function setTab(tab) {
+    state.tab = tab;
+    $$(".tab").forEach(t => t.classList.toggle("active", t.getAttribute("data-tab") === tab));
+    render();
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  }
-  function escapeAttr(s) { return escapeHtml(s).replace(/"/g,'&quot;'); }
-
-  function setView(name) {
-    state.view = name;
-    $$(".tab").forEach(btn => {
-      const on = btn.getAttribute("data-view") === name;
-      btn.classList.toggle("is-active", on);
-      btn.setAttribute("aria-selected", on ? "true" : "false");
-    });
-    $$(".view").forEach(v => v.classList.toggle("is-active", v.getAttribute("data-view") === name));
-    // render on demand
-    if (name === "calendar") renderCalendar();
-    if (name === "shows") renderShows();
-    if (name === "movies") renderMovies();
-  }
-
-  async function loadData() {
-    // NOTE: must be served via http(s) (not file://) so fetch can read ../data/data.json
-    const url = "../data/data.json";
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
-    const json = await res.json();
-    state.data = json;
-    state.shows = Array.isArray(json.shows) ? json.shows : [];
-    state.movies = Array.isArray(json.movies) ? json.movies : [];
-    setFooter({ data: "ok", cfg: "ok", shows: state.shows.length, movies: state.movies.length });
-  }
-
-  function bindUI() {
-    $$(".tab").forEach(btn => btn.addEventListener("click", () => setView(btn.getAttribute("data-view"))));
-
-    $("#shows_search").addEventListener("input", () => renderShows());
-    $("#shows_sort").addEventListener("change", () => renderShows());
-
-    $("#movies_search").addEventListener("input", () => renderMovies());
-    $("#movies_sort").addEventListener("change", () => renderMovies());
-
-    const today = state.today;
-    state.calYear = today.getFullYear();
-    state.calMonth = today.getMonth();
-
-    $("#cal_prev").addEventListener("click", () => {
-      const d = new Date(state.calYear, state.calMonth - 1, 1);
-      state.calYear = d.getFullYear(); state.calMonth = d.getMonth();
-      renderCalendar();
-    });
-
-    $("#cal_next").addEventListener("click", () => {
-      const d = new Date(state.calYear, state.calMonth + 1, 1);
-      state.calYear = d.getFullYear(); state.calMonth = d.getMonth();
-      renderCalendar();
-    });
-
-    $("#cal_today").addEventListener("click", () => {
-      const d = state.today;
-      state.calYear = d.getFullYear(); state.calMonth = d.getMonth();
-      renderCalendar();
+  function bindNav() {
+    $$(".tab").forEach(t => {
+      const tab = t.getAttribute("data-tab");
+      if (!tab) return;
+      t.onclick = () => setTab(tab);
+      t.onkeydown = (e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTab(tab); }
+      };
     });
   }
 
-  async function init() {
-    try {
-      setStatus("warn", "Initializing…");
-      setFooter(null);
-      bindUI();
-      await loadData();
-      setStatus("ok", "Ready");
-      setView("calendar");
-      // pre-render: show counts in footer already
-    } catch (err) {
-      console.error(err);
-      setStatus("bad", "Failed");
-      setFooter({ data: "fail", cfg: "ok", shows: "…", movies: "…" });
-      const cal = $("#view_calendar .panel");
-      if (cal) {
-        const box = document.createElement("div");
-        box.className = "errorbox";
-        box.textContent = `Failed to fetch data.json. Run a local server from repo root then open /web/index.html. Details: ${err && err.message ? err.message : err}`;
-        cal.prepend(box);
-      }
-    }
-  }
+  $("#modalClose").onclick = closeModal;
+  $("#modalBack").addEventListener("click", (e) => { if (e.target === $("#modalBack")) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-  init();
+  bindNav();
+  loadAll();
 })();
 </script>
 </body>
