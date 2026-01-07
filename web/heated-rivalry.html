@@ -118,11 +118,41 @@
     }
 
     .poster-shell img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
+	  width: 100%;
+	  height: 100%;
+	  object-fit: cover;
+	}
+
+	/* === SMART POSTER SIZING PATCH === */
+
+	.hero {
+	  align-items: start;
+	}
+
+	.hero-poster .poster-shell {
+	  height: auto;
+	  max-height: 480px; /* adaptive cap */
+	  width: auto;
+	  max-width: 100%;
+	  aspect-ratio: auto; /* remove forced 2:3 ratio */
+	}
+
+	.hero-poster .poster-shell img {
+	  width: 100%;
+	  height: auto;
+	  object-fit: contain; /* prevents distortion */
+	}
+
+	/* When hero text is shorter, poster shrinks to match */
+	@media (min-width: 900px) {
+	  .hero {
+	    grid-auto-rows: 1fr;
+	  }
+
+	  .hero-poster .poster-shell {
+	    max-height: calc(100% - 20px);
+	  }
+	}
 
     .hero-main {
       padding: 18px 20px 20px;
