@@ -8,7 +8,7 @@
 [CmdletBinding()]
 param(
   [string]$ZipName = "",
-  [string]$PatchInboxRelative = ".ai_downloads"   # change only if you move the inbox
+  [string]$PatchInboxRelative = ".ai_downloads"
 )
 
 Set-StrictMode -Version Latest
@@ -20,7 +20,7 @@ function Ensure-Dir([string]$p) {
 
 function Find-RepoRoot {
   param([string]$StartDir)
-  $d = (Resolve-Path -LiteralPath $StartDir).Path  # always a string
+  $d = (Resolve-Path -LiteralPath $StartDir).Path
   while ($true) {
     if (Test-Path -LiteralPath (Join-Path $d ".git")) { return $d }
     $parent = Split-Path -Parent $d
@@ -29,9 +29,7 @@ function Find-RepoRoot {
   }
 }
 
-$repoRoot = Find-RepoRoot -StartDir $PSScriptRoot
-
-# Patch inbox (where zip files live)
+$repoRoot   = Find-RepoRoot -StartDir $PSScriptRoot
 $patchInbox = Join-Path $repoRoot $PatchInboxRelative
 $logDir     = Join-Path $patchInbox "logs"
 Ensure-Dir $patchInbox
@@ -62,7 +60,6 @@ if ($ZipName -and $ZipName.Trim() -ne "") {
   if (-not $z) { throw "No .zip files found in: $patchInbox" }
   $zipPath = $z.FullName
 }
-
 Log "zip=$zipPath"
 
 # temp extract
@@ -72,17 +69,16 @@ Ensure-Dir $temp
 Log "extract_to=$temp"
 Expand-Archive -LiteralPath $zipPath -DestinationPath $temp -Force
 
-$extractedFiles = Get-ChildItem -LiteralPath $temp -Recurse -File
-if (-not $extractedFiles -or $extractedFiles.Count -eq 0) {
-  throw "Zip extracted zero files."
-}
+# FORCE array so .Length always exists (single file => 1)
+$extractedFiles = @(Get-ChildItem -LiteralPath $temp -Recurse -File)
+if ($extractedFiles.Length -eq 0) { throw "Zip extracted zero files." }
 
 # backup overwritten files (in inbox backups)
 $backupRoot = Join-Path (Join-Path $patchInbox "backups") $ts
 Ensure-Dir $backupRoot
 
 Log "backup_root=$backupRoot"
-Log ("files_in_patch={0}" -f $extractedFiles.Count)
+Log ("files_in_patch={0}" -f $extractedFiles.Length)
 
 # 1) backup anything that will be overwritten
 $idx = 0
@@ -91,8 +87,8 @@ foreach ($f in $extractedFiles) {
   $rel  = $f.FullName.Substring($temp.Length).TrimStart("\","/")
   $dest = Join-Path $repoRoot $rel
 
-  $pct = [int](($idx / [double]$extractedFiles.Count) * 100)
-  Write-Progress -Activity "Applying patch" -Status "$idx / $($extractedFiles.Count): $rel" -PercentComplete $pct
+  $pct = if ($extractedFiles.Length -gt 0) { [int](($idx / [double]$extractedFiles.Length) * 100) } else { 0 }
+  Write-Progress -Activity "Applying patch" -Status "$idx / $($extractedFiles.Length): $rel" -PercentComplete $pct
 
   if (Test-Path -LiteralPath $dest) {
     $destRelDir = Split-Path -Parent $rel
@@ -111,8 +107,8 @@ foreach ($f in $extractedFiles) {
   $destDir = Split-Path -Parent $dest
   Ensure-Dir $destDir
 
-  $pct = [int](($idx / [double]$extractedFiles.Count) * 100)
-  Write-Progress -Activity "Copying files" -Status "$idx / $($extractedFiles.Count): $rel" -PercentComplete $pct
+  $pct = if ($extractedFiles.Length -gt 0) { [int](($idx / [double]$extractedFiles.Length) * 100) } else { 0 }
+  Write-Progress -Activity "Copying files" -Status "$idx / $($extractedFiles.Length): $rel" -PercentComplete $pct
 
   Copy-Item -LiteralPath $f.FullName -Destination $dest -Force
 }
