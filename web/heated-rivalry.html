@@ -90,7 +90,6 @@
       pointer-events: none;
       z-index: -1;
     }
-
     /* HERO */
 
     .hero {
@@ -165,11 +164,6 @@
       color: var(--text-muted);
     }
 
-    .series-synopsis strong {
-      color: #e5e7eb;
-      font-weight: 600;
-    }
-
     .hero-aside {
       display: flex;
       flex-direction: column;
@@ -228,18 +222,11 @@
       transition: transform var(--transition-fast), box-shadow var(--transition-fast), filter var(--transition-fast);
     }
 
-    .ext-link:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-      box-shadow: 0 14px 26px rgba(0,0,0,0.85);
-    }
-
     .ext-link-tmdb {
       background: #01b4e4;
       color: #001219;
       font-size: 16px;
       font-weight: 700;
-      font-family: system-ui, sans-serif;
     }
 
     .ext-link-rt {
@@ -247,12 +234,37 @@
       color: #fff5f5;
       font-size: 18px;
       font-weight: 700;
-      font-family: system-ui, sans-serif;
+    }
+    /* MERGED SEASON SECTION */
+
+    .season-header {
+      text-align: center;
+      margin: 28px 0 12px;
     }
 
-    /* SEASON OVERVIEW */
+    .season-header-title {
+      font-size: 20px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
 
-    .season-panel {
+    .season-header-meta {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: rgba(148,163,184,0.9);
+    }
+
+    .season-merged-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
+      gap: 18px;
+      margin-top: 18px;
+      margin-bottom: 20px;
+    }
+
+    .season-overview-panel {
       border-radius: var(--radius-lg);
       background: radial-gradient(circle at top left, rgba(15,23,42,0.92), rgba(6,8,20,0.98));
       border: 1px solid var(--border-subtle);
@@ -260,51 +272,96 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
-      margin-bottom: 18px;
     }
 
-    .section-title {
+    .season-overview-title {
       font-size: 15px;
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--text-primary);
-      margin-bottom: 2px;
     }
 
-    .section-submeta {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: rgba(148,163,184,0.9);
-      margin-bottom: 4px;
-    }
-
-    .season-body {
+    .season-overview-body {
       font-size: 13px;
       line-height: 1.6;
       color: var(--text-muted);
     }
 
-    .season-body strong {
-      color: #e5e7eb;
+    .episode-detail-panel {
+      border-radius: var(--radius-lg);
+      background: radial-gradient(circle at top, rgba(15,23,42,0.96), rgba(6,8,20,0.98));
+      border: 1px solid var(--border-subtle);
+      padding: 12px 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .episode-hero-image-shell {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 21 / 9;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #020617;
+      border: 1px solid rgba(148,163,184,0.7);
+      margin-bottom: 6px;
+    }
+
+    .episode-hero-image-shell img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(1.04);
+      transition: opacity 700ms ease-in-out, transform 700ms ease-in-out;
+    }
+
+    .episode-hero-image-shell img.active {
+      opacity: 1;
+      transform: scale(1.0);
+    }
+
+    .episode-detail-title {
+      font-size: 16px;
       font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
     }
 
-    /* LOWER GRID: EPISODE ROW + DETAIL */
-
-    .lower-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
-      gap: 18px;
-      align-items: flex-start;
+    .episode-detail-title a {
+      color: var(--text-primary);
+      text-decoration: none;
     }
 
-    /* EPISODE ROW (HORIZONTAL ON DESKTOP, VERTICAL ON MOBILE) */
+    .episode-detail-title a:hover {
+      text-decoration: underline;
+    }
+
+    .episode-detail-meta {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .episode-detail-summary {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+    /* EPISODE ROW */
 
     .episodes-panel {
       border-radius: var(--radius-lg);
       background: radial-gradient(circle at top, rgba(15,23,42,0.94), rgba(6,8,20,0.98));
       border: 1px solid var(--border-subtle);
       padding: 12px 12px 12px;
+      margin-bottom: 10px;
     }
 
     .episodes-header {
@@ -324,21 +381,8 @@
       scrollbar-color: rgba(148,163,184,0.75) transparent;
     }
 
-    .episodes-strip::-webkit-scrollbar {
-      height: 6px;
-    }
-
-    .episodes-strip::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    .episodes-strip::-webkit-scrollbar-thumb {
-      background: rgba(148,163,184,0.7);
-      border-radius: 999px;
-    }
-
     .episode-card {
-      flex: 0 0 230px;
+      flex: 0 0 260px;
       border-radius: 14px;
       background: rgba(15,23,42,0.92);
       border: 1px solid rgba(30,64,175,0.65);
@@ -469,247 +513,165 @@
       color: var(--text-primary);
     }
 
-    .btn-ghost:hover {
-      background: rgba(17,24,39,1);
-      border-color: rgba(209,213,219,0.9);
-      transform: translateY(-0.5px);
-    }
-
     .btn-outline {
-      border-color: rgba(56,189,248,0.85);
-      background: rgba(8,47,73,0.4);
-      color: #e0f2fe;
-    }
+.btn-outline {
+  border-color: rgba(56,189,248,0.85);
+  background: rgba(8,47,73,0.4);
+  color: #e0f2fe;
+}
 
-    .btn-outline:hover {
-      background: rgba(8,47,73,0.7);
-      border-color: rgba(56,189,248,1);
-      transform: translateY(-0.5px);
-    }
+.btn-outline:hover {
+  background: rgba(8,47,73,0.7);
+  border-color: rgba(56,189,248,1);
+  transform: translateY(-0.5px);
+}
 
-    .btn-pill-icon {
-      font-size: 10px;
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      background: rgba(15,23,42,0.95);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+.btn-pill-icon {
+  font-size: 10px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.95);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
-    /* EPISODE DETAIL PANEL */
+/* MODAL PLAYER */
 
-    .episode-detail-panel {
-      border-radius: var(--radius-lg);
-      background: radial-gradient(circle at top, rgba(15,23,42,0.96), rgba(6,8,20,0.98));
-      border: 1px solid var(--border-subtle);
-      padding: 12px 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
 
-    .episode-hero-image-shell {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 21 / 9;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #020617;
-      border: 1px solid rgba(148,163,184,0.7);
-      margin-bottom: 6px;
-    }
+.modal-backdrop.visible {
+  display: flex;
+}
 
-    .episode-hero-image-shell img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transform: scale(1.04);
-      transition: opacity 700ms ease-in-out, transform 700ms ease-in-out;
-    }
+.modal-player {
+  position: relative;
+  width: 90%;
+  max-width: 960px;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.95);
+}
 
-    .episode-hero-image-shell img.active {
-      opacity: 1;
-      transform: scale(1.0);
-    }
+.modal-player iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
 
-    .episode-detail-title {
-      font-size: 16px;
-      font-weight: 600;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-    }
+.modal-close {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.8);
+  border: 1px solid rgba(156,163,175,0.9);
+  color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
 
-    .episode-detail-title a {
-      color: var(--text-primary);
-      text-decoration: none;
-    }
+.modal-close:hover {
+  background: rgba(15,23,42,1);
+  transform: translateY(-0.5px);
+}
 
-    .episode-detail-title a:hover {
-      text-decoration: underline;
-    }
+/* RESPONSIVE */
 
-    .episode-detail-meta {
-      font-size: 11px;
-      color: var(--text-muted);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
+@media (max-width: 1040px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+  }
+  .season-merged-grid {
+    grid-template-columns: 1fr;
+  }
+}
 
-    .episode-detail-summary {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--text-muted);
-    }
+@media (max-width: 860px) {
+  body {
+    padding: 18px 8px;
+  }
+  .app-shell {
+    border-radius: 0;
+    max-width: 100%;
+    padding: 18px 10px 20px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+  }
+  .hero-aside {
+    order: -1;
+  }
+  .episodes-strip {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+  .episode-card {
+    flex: 1 1 auto;
+  }
+}
 
-    /* MODAL PLAYER */
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modal-backdrop.visible {
-      display: flex;
-    }
-
-    .modal-player {
-      position: relative;
-      width: 90%;
-      max-width: 960px;
-      aspect-ratio: 16 / 9;
-      background: #000;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.95);
-    }
-
-    .modal-player iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .modal-close {
-      position: absolute;
-      top: 8px;
-      right: 10px;
-      width: 28px;
-      height: 28px;
-      border-radius: 999px;
-      background: rgba(15,23,42,0.8);
-      border: 1px solid rgba(156,163,175,0.9);
-      color: #e5e7eb;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      cursor: pointer;
-      z-index: 10;
-      transition: background var(--transition-fast), transform var(--transition-fast);
-    }
-
-    .modal-close:hover {
-      background: rgba(15,23,42,1);
-      transform: translateY(-0.5px);
-    }
-
-    @media (max-width: 1040px) {
-      .hero {
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
-      }
-      .lower-grid {
-        grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.1fr);
-      }
-    }
-
-    @media (max-width: 860px) {
-      body {
-        padding: 18px 8px;
-      }
-      .app-shell {
-        border-radius: 0;
-        max-width: 100%;
-        padding: 18px 10px 20px;
-      }
-      .hero {
-        grid-template-columns: 1fr;
-      }
-      .hero-aside {
-        order: -1;
-      }
-      .lower-grid {
-        grid-template-columns: 1fr;
-      }
-      .episodes-strip {
-        flex-direction: column;
-        overflow-x: visible;
-      }
-      .episode-card {
-        flex: 1 1 auto;
-      }
-    }
-
-    @media (max-width: 520px) {
-      .hero-main {
-        padding: 12px 12px 14px;
-      }
-      .show-title {
-        font-size: 26px;
-      }
-      .poster-shell {
-        aspect-ratio: 2 / 3;
-      }
-      .episode-hero-image-shell {
-        aspect-ratio: 16 / 9;
-      }
-    }
+@media (max-width: 520px) {
+  .hero-main {
+    padding: 12px 12px 14px;
+  }
+  .show-title {
+    font-size: 26px;
+  }
+  .poster-shell {
+    aspect-ratio: 2 / 3;
+  }
+  .episode-hero-image-shell {
+    aspect-ratio: 16 / 9;
+  }
+}
   </style>
 </head>
+
 <body>
   <div class="app-shell">
     <div class="backdrop-layer"></div>
     <div class="grain"></div>
 
-    <!-- HERO -->
+    <!-- HERO SECTION -->
     <section class="hero">
       <article class="hero-main">
         <div class="show-tagline">Original Series · Limited Run</div>
         <h1 class="show-title">Heated Rivalry</h1>
+
         <div class="meta-row">
-          <div class="pill">
-            <span class="pill-dot"></span>
-            <span>Drama</span>
-          </div>
-          <div class="pill">
-            <span class="pill-dot"></span>
-            <span>Romance</span>
-          </div>
-          <div class="pill">
-            <span class="pill-dot"></span>
-            <span>Sports</span>
-          </div>
+          <div class="pill"><span class="pill-dot"></span>Drama</div>
+          <div class="pill"><span class="pill-dot"></span>Romance</div>
+          <div class="pill"><span class="pill-dot"></span>Sports</div>
           <div class="pill pill-rating">★ 7.6</div>
           <div class="pill pill-network">Crave</div>
           <div class="pill">Premiered Nov 28, 2025</div>
         </div>
+
         <div class="series-synopsis">
-          In the high‑pressure world of professional hockey, two elite players—<strong>Shane Hollander</strong> and
-          <strong>Ilya Rozanov</strong>—find themselves locked in a rivalry that has defined their careers.
-          But as competition forces them into constant collision, the line between animosity and attraction blurs.
-          Their journey becomes a tense, emotional exploration of identity, loyalty, and whether love can survive
-          in a world built on winning.
+          In the high‑pressure world of professional hockey, two elite players—
+          <strong>Shane Hollander</strong> and <strong>Ilya Rozanov</strong>—find themselves locked in a rivalry
+          that has defined their careers. But as competition forces them into constant collision, the line between
+          animosity and attraction blurs. Their journey becomes a tense, emotional exploration of identity, loyalty,
+          and whether love can survive in a world built on winning.
         </div>
       </article>
 
@@ -718,70 +680,71 @@
           <img src="../assets/HR/heated rivalry-poster.jpg" alt="Heated Rivalry poster" />
           <div class="poster-tag">Season 1</div>
         </div>
+
         <div class="ext-links-row">
           <a class="ext-link ext-link-tmdb"
              href="https://www.themoviedb.org/tv/242783-heated-rivalry"
-             target="_blank" rel="noopener noreferrer">
-            TM
-          </a>
+             target="_blank" rel="noopener noreferrer">TM</a>
+
           <a class="ext-link ext-link-rt"
              href="https://www.rottentomatoes.com/tv/heated_rivalry"
-             target="_blank" rel="noopener noreferrer">
-            🍅
-          </a>
+             target="_blank" rel="noopener noreferrer">🍅</a>
         </div>
       </aside>
     </section>
 
-    <!-- SEASON OVERVIEW -->
-    <section class="season-panel">
-      <div class="section-title">Season 1 · Overview</div>
-      <div class="section-submeta">6 episodes · Premiered Nov 28, 2025 · Crave</div>
-      <div class="season-body">
-        Season 1 follows Shane and Ilya as their long‑standing rivalry evolves into a connection neither expected.
-        Between road trips, Olympic pressure, media scrutiny, and the emotional cost of secrecy, the season traces
-        how two fiercely competitive athletes navigate desire in a world that demands perfection.
-        Every episode deepens their bond while raising the stakes of what they stand to lose—and what they might finally gain.
-      </div>
-    </section>
+    <!-- MERGED SEASON HEADER -->
+    <div class="season-header">
+      <div class="season-header-title">Season 1 · Limited Run</div>
+      <div class="season-header-meta">6 episodes · Premiered Nov 28, 2025 · Crave</div>
+    </div>
 
-    <!-- EPISODES + DETAIL -->
-    <section class="lower-grid">
-      <!-- EPISODES PANEL -->
-      <article class="episodes-panel">
-        <div class="episodes-header">Season 1 · Episodes</div>
-        <div class="episodes-strip" id="episodesStrip">
-          <!-- Episode cards injected here -->
+    <!-- MERGED SEASON GRID -->
+    <section class="season-merged-grid">
+      <!-- LEFT: SEASON OVERVIEW -->
+      <article class="season-overview-panel">
+        <div class="season-overview-title">Overview</div>
+        <div class="season-overview-body">
+          Season 1 follows Shane and Ilya as their long‑standing rivalry evolves into a connection neither expected.
+          Between road trips, Olympic pressure, media scrutiny, and the emotional cost of secrecy, the season traces
+          how two fiercely competitive athletes navigate desire in a world that demands perfection. Every episode
+          deepens their bond while raising the stakes of what they stand to lose—and what they might finally gain.
         </div>
       </article>
 
-      <!-- EPISODE DETAIL PANEL -->
+      <!-- RIGHT: EPISODE DETAIL PANEL -->
       <article class="episode-detail-panel">
-        <div class="episode-hero-image-shell" id="episodeHeroImages">
-          <!-- Rotating images injected here -->
-        </div>
+        <div class="episode-hero-image-shell" id="episodeHeroImages"></div>
+
         <div class="episode-detail-title" id="detailTitle"></div>
+
         <div class="episode-detail-meta" id="detailMeta"></div>
+
         <div class="episode-detail-summary" id="detailSummary"></div>
       </article>
     </section>
-  </div>
 
-  <!-- MODAL PLAYER -->
-  <div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal-player">
-      <button class="modal-close" id="modalClose" aria-label="Close player">✕</button>
-      <iframe id="modalIframe"
-              src=""
-              allow="autoplay; fullscreen"
-              allowfullscreen>
-      </iframe>
+    <!-- EPISODE ROW -->
+    <section class="episodes-panel">
+      <div class="episodes-header">Episodes</div>
+      <div class="episodes-strip" id="episodesStrip"></div>
+    </section>
+    <!-- MODAL PLAYER -->
+    <div class="modal-backdrop" id="modalBackdrop">
+      <div class="modal-player">
+        <button class="modal-close" id="modalClose" aria-label="Close player">✕</button>
+        <iframe id="modalIframe"
+                src=""
+                allow="autoplay; fullscreen"
+                allowfullscreen>
+        </iframe>
+      </div>
     </div>
-  </div>
 
+  </div> <!-- end .app-shell -->
+
+  <!-- JAVASCRIPT ENGINE -->
   <script>
-    // Episode data with Google Drive IDs and local image sets
-
     const EPISODES = [
       {
         season: 1,
@@ -806,7 +769,7 @@
         airdate: "Nov 28, 2025",
         runtime: 43,
         summary:
-          "Forced together on the world’s biggest stage, Shane and Ilya struggle to balance their growing secret with the demands of Olympic competition. Their chemistry deepens in stolen moments, but the pressure of representing their countries—and protecting their reputations—pushes them to the edge. As victory and vulnerability collide, they begin to realize their connection is no longer something they can dismiss.",
+          "Forced together on the world’s biggest stage, Shane and Ilya struggle to balance their growing secret with the demands of Olympic competition. Their chemistry deepens in stolen moments, but the pressure of representing their countries—and protecting their reputations—pushes them to the edge.",
         driveId: "1eNkS4IbB5QyiisNwmiXK0eA0NKGDTedk",
         images: [
           "../assets/HR/ep02_olympians.jpg",
@@ -821,7 +784,7 @@
         airdate: "Dec 5, 2025",
         runtime: 48,
         summary:
-          "A chance encounter off the ice forces Shane to confront feelings he has tried to bury. Meanwhile, Ilya’s carefully controlled world begins to crack as the emotional weight of their secret relationship grows heavier. Their rivalry becomes increasingly intertwined with desire, leaving both men questioning what they truly want—and whether they can keep pretending their connection is just a passing spark.",
+          "A chance encounter off the ice forces Shane to confront feelings he has tried to bury. Meanwhile, Ilya’s carefully controlled world begins to crack as the emotional weight of their secret relationship grows heavier.",
         driveId: "1l1OZpdmA0KfiHHUE9JDylGrZz9xYE5Fw",
         images: [
           "../assets/HR/ep03_hunter.jpg",
@@ -836,7 +799,7 @@
         airdate: "Dec 12, 2025",
         runtime: 43,
         summary:
-          "A moment of raw vulnerability shifts everything between Shane and Ilya, exposing fears neither has dared to voice. As media attention intensifies and a high‑profile romance enters the spotlight, the emotional stakes skyrocket. Their private world begins to fracture under public scrutiny, forcing them to confront the cost of secrecy—and the possibility that their bond may be stronger than the chaos surrounding them.",
+          "A moment of raw vulnerability shifts everything between Shane and Ilya, exposing fears neither has dared to voice. As media attention intensifies and a high‑profile romance enters the spotlight, the emotional stakes skyrocket.",
         driveId: "1sr3IfZS94cXaAUy-WMYnUt1kI53gT7mm",
         images: [
           "../assets/HR/ep04_faceoff.jpg",
@@ -853,7 +816,7 @@
         airdate: "Dec 19, 2025",
         runtime: 55,
         summary:
-          "Shane, Ilya, and Scott each face pivotal crossroads that reshape their futures. For Shane and Ilya, the emotional strain of hiding their relationship reaches a breaking point, forcing them to confront what they’re willing to sacrifice for each other. As personal loyalties collide with professional expectations, every choice becomes a test of trust, courage, and the belief that something real is worth fighting for.",
+          "Shane, Ilya, and Scott each face pivotal crossroads that reshape their futures. For Shane and Ilya, the emotional strain of hiding their relationship reaches a breaking point.",
         driveId: "14PameTR0EjoZTq7DPQ0Sl8Jjfwfu-EmK",
         images: [
           "../assets/HR/ep05_i'll_believe_in_anything.jpg",
@@ -868,7 +831,7 @@
         airdate: "Dec 26, 2025",
         runtime: 51,
         summary:
-          "Escaping to a secluded cottage, Shane and Ilya finally experience a rare moment of peace away from the relentless spotlight. In the quiet, their walls fall away, revealing the depth of what they’ve built together. But as reality looms, they must decide whether this fragile freedom can survive the world waiting outside. Their time together becomes a turning point—one that could redefine everything they know.",
+          "Escaping to a secluded cottage, Shane and Ilya finally experience a rare moment of peace away from the relentless spotlight. Their time together becomes a turning point—one that could redefine everything they know.",
         driveId: "17pyunGZ4ujlxvNIcqFf4rQjR0pc9_lHO",
         images: [
           "../assets/HR/ep06_the_cottage.jpg"
@@ -980,7 +943,6 @@
         card.appendChild(thumbShell);
         card.appendChild(body);
 
-        // Clicking card focuses episode detail
         card.addEventListener("click", () => setActiveEpisode(idx));
 
         episodesStrip.appendChild(card);
@@ -1001,9 +963,7 @@
         heroImagesShell.appendChild(img);
       });
 
-      if (heroImageTimer) {
-        clearInterval(heroImageTimer);
-      }
+      if (heroImageTimer) clearInterval(heroImageTimer);
 
       if (images.length > 1) {
         heroImageTimer = setInterval(() => {
@@ -1020,17 +980,14 @@
       activeIndex = index;
       const ep = EPISODES[index];
 
-      // Update card active state
       const cards = episodesStrip.querySelectorAll(".episode-card");
       cards.forEach((card, i) => {
         card.classList.toggle("active", i === index);
       });
 
-      // Update detail title + link
       detailTitle.innerHTML =
         `<a href="${drivePreviewUrl(ep.driveId)}" target="_blank" rel="noopener noreferrer">Episode ${ep.number} · ${ep.title}</a>`;
 
-      // Update meta
       detailMeta.innerHTML = `
         <span>Season ${ep.season}</span>
         <span>Episode ${ep.number}</span>
@@ -1038,16 +995,13 @@
         <span>${ep.runtime} min</span>
       `;
 
-      // Full summary
       detailSummary.textContent = ep.summary;
 
-      // Rotating images
       renderHeroImages(ep);
     }
 
     function openModal(driveId) {
-      const src = drivePreviewUrl(driveId);
-      modalIframe.src = src;
+      modalIframe.src = drivePreviewUrl(driveId);
       modalBackdrop.classList.add("visible");
     }
 
@@ -1057,14 +1011,10 @@
     }
 
     modalBackdrop.addEventListener("click", (e) => {
-      if (e.target === modalBackdrop) {
-        closeModal();
-      }
+      if (e.target === modalBackdrop) closeModal();
     });
 
-    modalClose.addEventListener("click", () => {
-      closeModal();
-    });
+    modalClose.addEventListener("click", closeModal);
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && modalBackdrop.classList.contains("visible")) {
@@ -1072,9 +1022,9 @@
       }
     });
 
-    // Initialize
     renderEpisodeCards();
     setActiveEpisode(0);
   </script>
+
 </body>
 </html>
