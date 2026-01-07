@@ -90,7 +90,6 @@
       pointer-events: none;
       z-index: -1;
     }
-
     /* HERO */
 
     .hero {
@@ -126,9 +125,9 @@
     }
 
     .hero-main {
-      padding: 16px 18px 18px;
+      padding: 18px 20px 20px;
       border-radius: var(--radius-lg);
-      background: radial-gradient(circle at top left, rgba(15,23,42,0.88), rgba(6,10,22,0.98));
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.9), rgba(6,10,22,0.98));
       border: 1px solid var(--border-subtle);
       backdrop-filter: blur(12px);
       display: flex;
@@ -144,7 +143,7 @@
     }
 
     .show-title {
-      font-size: 32px;
+      font-size: 34px;
       letter-spacing: 0.09em;
       text-transform: uppercase;
     }
@@ -185,8 +184,8 @@
     }
 
     .series-synopsis {
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: 14px;
+      line-height: 1.7;
       color: var(--text-muted);
     }
 
@@ -278,41 +277,13 @@
       line-height: 1.6;
       color: var(--text-muted);
     }
-
-    /* EPISODE HERO + SLIDER */
+    /* EPISODE SLIDER */
 
     .episodes-section {
       border-radius: var(--radius-lg);
       background: radial-gradient(circle at top, rgba(15,23,42,0.95), rgba(6,8,20,0.98));
       border: 1px solid var(--border-subtle);
       padding: 12px 12px 14px;
-    }
-
-    .episode-hero-image-shell {
-      position: relative;
-      width: 100%;
-      aspect-ratio: 21 / 9;
-      border-radius: 14px;
-      overflow: hidden;
-      background: #020617;
-      border: 1px solid rgba(148,163,184,0.7);
-      margin-bottom: 10px;
-    }
-
-    .episode-hero-image-shell img {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transform: scale(1.04);
-      transition: opacity 700ms ease-in-out, transform 700ms ease-in-out;
-    }
-
-    .episode-hero-image-shell img.active {
-      opacity: 1;
-      transform: scale(1.0);
     }
 
     .episodes-header {
@@ -330,6 +301,7 @@
       padding-bottom: 4px;
       scrollbar-width: thin;
       scrollbar-color: rgba(148,163,184,0.75) transparent;
+      align-items: flex-start;
     }
 
     .episodes-strip::-webkit-scrollbar {
@@ -346,7 +318,7 @@
     }
 
     .episode-card {
-      flex: 0 0 325px; /* 25% wider than ~260px */
+      flex: 0 0 340px;
       border-radius: 14px;
       background: rgba(15,23,42,0.92);
       border: 1px solid rgba(30,64,175,0.65);
@@ -371,26 +343,29 @@
       box-shadow: 0 22px 40px rgba(15,23,42,1);
     }
 
-    .episode-thumb-shell {
+    .episode-hero-image-shell {
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
       overflow: hidden;
       background: #020617;
+      border-bottom: 1px solid rgba(30,64,175,0.6);
     }
 
-    .episode-thumb-shell img {
+    .episode-hero-image-shell img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
+      opacity: 0;
       transform: scale(1.04);
-      transition: transform var(--transition-med), filter var(--transition-med);
-      display: block;
+      transition: opacity 700ms ease-in-out, transform 700ms ease-in-out;
     }
 
-    .episode-card:hover .episode-thumb-shell img {
-      transform: scale(1.08);
-      filter: saturate(1.1);
+    .episode-hero-image-shell img.active {
+      opacity: 1;
+      transform: scale(1.0);
     }
 
     .episode-num-pill {
@@ -407,10 +382,10 @@
     }
 
     .episode-card-body {
-      padding: 8px 10px 9px;
+      padding: 10px 11px 10px;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 6px;
     }
 
     .episode-card-title-row {
@@ -421,7 +396,7 @@
     }
 
     .episode-card-title {
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 600;
       color: var(--text-primary);
       text-decoration: none;
@@ -432,7 +407,7 @@
     }
 
     .episode-card-meta {
-      font-size: 11px;
+      font-size: 13px;
       color: var(--text-muted);
       display: flex;
       gap: 8px;
@@ -440,11 +415,10 @@
     }
 
     .episode-card-snippet {
-      font-size: 12px;
+      font-size: 14px;
       color: var(--text-muted);
-      max-height: 2.6em;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      line-height: 1.5;
+      /* no max-height or clipping — full text */
     }
 
     .episode-card-actions {
@@ -457,8 +431,8 @@
     .btn-ghost,
     .btn-outline {
       border-radius: 999px;
-      padding: 5px 11px;
-      font-size: 11px;
+      padding: 6px 12px;
+      font-size: 13px;
       display: inline-flex;
       align-items: center;
       gap: 6px;
@@ -495,9 +469,9 @@
     }
 
     .btn-pill-icon {
-      font-size: 10px;
-      width: 14px;
-      height: 14px;
+      font-size: 11px;
+      width: 16px;
+      height: 16px;
       border-radius: 999px;
       background: rgba(15,23,42,0.95);
       display: inline-flex;
@@ -664,7 +638,6 @@
         </div>
       </article>
     </section>
-
     <!-- SEASON OVERVIEW -->
     <section class="season-panel">
       <div class="season-title">Season 1</div>
@@ -677,14 +650,11 @@
       </div>
     </section>
 
-    <!-- EPISODE HERO + SLIDER -->
+    <!-- EPISODE SLIDER -->
     <section class="episodes-section">
-      <div class="episode-hero-image-shell" id="episodeHeroImages"></div>
-
       <div class="episodes-header">Episodes</div>
       <div class="episodes-strip" id="episodesStrip"></div>
     </section>
-
     <!-- MODAL PLAYER -->
     <div class="modal-backdrop" id="modalBackdrop">
       <div class="modal-player">
@@ -696,8 +666,10 @@
         </iframe>
       </div>
     </div>
-  </div>
 
+  </div> <!-- end .app-shell -->
+
+  <!-- JAVASCRIPT ENGINE -->
   <script>
     const EPISODES = [
       {
@@ -793,17 +765,13 @@
         thumbnail: "../assets/HR/ep06_the_cottage.jpg"
       }
     ];
-
     const episodesStrip = document.getElementById("episodesStrip");
-    const heroImagesShell = document.getElementById("episodeHeroImages");
-
     const modalBackdrop = document.getElementById("modalBackdrop");
     const modalClose = document.getElementById("modalClose");
     const modalIframe = document.getElementById("modalIframe");
 
     let activeIndex = 0;
-    let heroImageIndex = 0;
-    let heroImageTimer = null;
+    let fadeTimers = {};
 
     function drivePreviewUrl(id) {
       return `https://drive.google.com/uc?export=preview&id=${id}`;
@@ -813,12 +781,31 @@
       return `https://drive.google.com/uc?export=download&id=${id}`;
     }
 
-    function makeSnippet(text, maxLen = 140) {
-      if (!text) return "";
-      if (text.length <= maxLen) return text;
-      const cut = text.slice(0, maxLen);
-      const lastSpace = cut.lastIndexOf(" ");
-      return (lastSpace > 60 ? cut.slice(0, lastSpace) : cut) + "…";
+    function createRotatingStills(images, epIndex) {
+      const shell = document.createElement("div");
+      shell.className = "episode-hero-image-shell";
+
+      images.forEach((src, i) => {
+        const img = document.createElement("img");
+        img.src = src;
+        img.alt = `Episode still ${i + 1}`;
+        if (i === 0) img.classList.add("active");
+        shell.appendChild(img);
+      });
+
+      if (fadeTimers[epIndex]) clearInterval(fadeTimers[epIndex]);
+
+      if (images.length > 1) {
+        let idx = 0;
+        fadeTimers[epIndex] = setInterval(() => {
+          const imgs = shell.querySelectorAll("img");
+          imgs[idx].classList.remove("active");
+          idx = (idx + 1) % imgs.length;
+          imgs[idx].classList.add("active");
+        }, 4500);
+      }
+
+      return shell;
     }
 
     function renderEpisodeCards() {
@@ -827,17 +814,13 @@
         card.className = "episode-card" + (idx === activeIndex ? " active" : "");
         card.dataset.index = idx;
 
-        const thumbShell = document.createElement("div");
-        thumbShell.className = "episode-thumb-shell";
-        const img = document.createElement("img");
-        img.src = ep.thumbnail;
-        img.alt = `${ep.title} still`;
-        thumbShell.appendChild(img);
+        const stills = createRotatingStills(ep.images, idx);
+        card.appendChild(stills);
 
         const numPill = document.createElement("div");
         numPill.className = "episode-num-pill";
         numPill.textContent = `S${ep.season} · E${ep.number}`;
-        thumbShell.appendChild(numPill);
+        stills.appendChild(numPill);
 
         const body = document.createElement("div");
         body.className = "episode-card-body";
@@ -861,7 +844,7 @@
 
         const snippet = document.createElement("div");
         snippet.className = "episode-card-snippet";
-        snippet.textContent = makeSnippet(ep.summary);
+        snippet.textContent = ep.summary;
 
         const actions = document.createElement("div");
         actions.className = "episode-card-actions";
@@ -891,7 +874,6 @@
         body.appendChild(snippet);
         body.appendChild(actions);
 
-        card.appendChild(thumbShell);
         card.appendChild(body);
 
         card.addEventListener("click", () => setActiveEpisode(idx));
@@ -900,45 +882,14 @@
       });
     }
 
-    function renderHeroImages(ep) {
-      heroImagesShell.innerHTML = "";
-      heroImageIndex = 0;
-
-      const images = ep.images && ep.images.length ? ep.images : [ep.thumbnail];
-
-      images.forEach((src, i) => {
-        const img = document.createElement("img");
-        img.src = src;
-        img.alt = `${ep.title} still ${i + 1}`;
-        if (i === 0) img.classList.add("active");
-        heroImagesShell.appendChild(img);
-      });
-
-      if (heroImageTimer) clearInterval(heroImageTimer);
-
-      if (images.length > 1) {
-        heroImageTimer = setInterval(() => {
-          const imgs = heroImagesShell.querySelectorAll("img");
-          if (!imgs.length) return;
-          imgs[heroImageIndex].classList.remove("active");
-          heroImageIndex = (heroImageIndex + 1) % imgs.length;
-          imgs[heroImageIndex].classList.add("active");
-        }, 4500);
-      }
-    }
-
     function setActiveEpisode(index) {
       activeIndex = index;
-      const ep = EPISODES[index];
 
       const cards = episodesStrip.querySelectorAll(".episode-card");
       cards.forEach((card, i) => {
         card.classList.toggle("active", i === index);
       });
-
-      renderHeroImages(ep);
     }
-
     function openModal(driveId) {
       modalIframe.src = drivePreviewUrl(driveId);
       modalBackdrop.classList.add("visible");
@@ -964,5 +915,6 @@
     renderEpisodeCards();
     setActiveEpisode(0);
   </script>
+
 </body>
 </html>
