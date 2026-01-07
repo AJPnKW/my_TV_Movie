@@ -109,24 +109,24 @@
     }
 
     .poster-shell {
-      position: relative;
-      border-radius: 18px;
-      overflow: hidden;
-      background: radial-gradient(circle at top, #0f172a, #020617);
-      border: 1px solid rgba(148,163,184,0.45);
-      box-shadow:
-        0 26px 46px rgba(0,0,0,0.85),
-        0 0 0 1px rgba(15,23,42,0.9);
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      max-height: 480px;
-    }
+	  position: relative;
+	  border-radius: 18px;
+	  overflow: hidden;
+	  background: radial-gradient(circle at top, #0f172a, #020617);
+	  border: 1px solid rgba(148,163,184,0.45);
+	  box-shadow:
+	    0 26px 46px rgba(0,0,0,0.85),
+	    0 0 0 1px rgba(15,23,42,0.9);
 
-    .poster-shell img {
+	  /* THE KEY: give the container a real height */
 	  width: 100%;
-	  height: auto;
-	  object-fit: contain;
+	  height: 360px; /* or 380px or 400px depending on taste */
+	}
+
+	.poster-shell img {
+	  width: 100%;
+	  height: 100%;      /* fill the container */
+	  object-fit: contain; /* show full poster, no cropping */
 	  display: block;
 	}
 
@@ -563,7 +563,8 @@
         grid-template-columns: 1fr;
       }
       .hero-poster {
-        order: -1;
+	    max-width: 360px; /* or 380px depending on taste */
+	  }
       }
       .episodes-strip {
         flex-direction: column;
