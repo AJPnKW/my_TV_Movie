@@ -1,4 +1,16 @@
 <!doctype html>
+<!--
+  my_TV_Movie / web / indexV2.html
+
+  indexV2 MVP
+  Version: v0.3.0 (2026-01-11)
+  ChangeLog:
+    - v0.3.0: eliminate CSS/ID collisions with my_tv_hub.css by scoping to #v2-root and renaming popup IDs
+              add safe fallbacks (inline SVG) so images never show broken icons
+              normalize genres/networks to avoid [object Object]
+              coordinate sticky header stacking using computed --v2-header-h
+    - v0.2.x: initial big-bang MVP scaffold (calendar/shows/movies/popups/config embed)
+-->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -6,118 +18,364 @@
   <meta name="color-scheme" content="dark light" />
   <title>My TV Movie Hub (indexV2)</title>
 
-  <!-- Required references -->
+  <!-- REQUIRED REFERENCES -->
   <link rel="stylesheet" href="./css/my_tv_hub.css" />
-
-  <!-- Optional: allow config.js to set globals before app boots -->
   <script defer src="./config.js"></script>
 
   <style>
-    /* Minimal structural CSS; keep the “real styling” in my_tv_hub.css */
-    :root { --focus-ring: 2px; --focus-gap: 2px; }
+    /* =========================================================
+       indexV2: collision-proof styling
+       - all rules scoped under #v2-root
+       - no shared IDs like #popupLayer/#popupBody/etc
+       ========================================================= */
 
-    body { margin: 0; }
-    .v2-app { min-height: 100vh; display: flex; flex-direction: column; }
-    .v2-header { position: sticky; top: 0; z-index: 50; }
-    .v2-main { flex: 1; display: block; }
-    .v2-footer { opacity: 0.85; }
+    #v2-root, #v2-root * { box-sizing: border-box; }
 
-    /* DPAD focus visibility (neurodivergent-friendly: always obvious) */
-    [data-focusable="1"]:focus {
-      outline: var(--focus-ring) solid currentColor;
-      outline-offset: var(--focus-gap);
+    /* Basic reset for our subtree only (minimizes my_tv_hub.css bleed) */
+    #v2-root {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+
+      /* explicitly set base look */
+      background: #0b0f14;
+      color: #e8eef7;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
 
-    /* View container */
-    .v2-view { display: none; padding: 12px; }
-    .v2-view.is-active { display: block; }
+    #v2-root button,
+    #v2-root input,
+    #v2-root select {
+      font: inherit;
+      color: inherit;
+    }
 
-    /* Generic grid */
-    .v2-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-    .v2-card { border-radius: 12px; overflow: hidden; }
-    .v2-card__img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; }
-    .v2-card__body { padding: 10px; }
+    #v2-root a { color: inherit; }
 
-    /* Calendar base: 7x6 grid, Mon->Sun */
-    .v2-cal-header { position: sticky; top: 0; z-index: 40; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
-    .v2-cal-title { font-weight: 700; }
-    .v2-cal-nav { display: flex; gap: 8px; align-items: center; }
-    .v2-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: minmax(120px, auto); gap: 8px; }
-    .v2-cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 0 0 8px 0; opacity: 0.9; }
-    .v2-cal-cell { border-radius: 12px; padding: 8px; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
-    .v2-cal-date { font-weight: 700; opacity: 0.9; }
-    .v2-cal-items { display: grid; gap: 6px; }
-    .v2-cal-overflow { font-size: 12px; opacity: 0.8; }
+    /* DPAD focus (obvious) */
+    #v2-root [data-focusable="1"]:focus {
+      outline: 3px solid #ffffff;
+      outline-offset: 2px;
+    }
 
-    /* TV safe sizing */
+    /* Layout */
+    #v2-header {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      padding: 10px 12px;
+      background: rgba(11,15,20,0.96);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    #v2-status {
+      padding: 0 12px 10px 12px;
+      font-size: 12px;
+      opacity: 0.9;
+    }
+
+    #v2-main {
+      flex: 1;
+      padding: 12px;
+    }
+
+    #v2-footer {
+      padding: 10px 12px;
+      font-size: 12px;
+      opacity: 0.85;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: rgba(11,15,20,0.96);
+    }
+
+    /* Top nav tabs */
+    .v2-tabs { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .v2-tabs button {
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      cursor: pointer;
+    }
+    .v2-tabs button:hover { background: rgba(255,255,255,0.10); }
+
+    /* Views */
+    .v2-view { display:none; }
+    .v2-view.is-active { display:block; }
+
+    /* Filter bar */
+    .v2-bar {
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin: 0 0 12px 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+    }
+    .v2-bar label { display:flex; gap:8px; align-items:center; font-size:12px; opacity:0.95; }
+    .v2-bar input, .v2-bar select {
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      min-width: 160px;
+    }
+
+    /* Card grid */
+    .v2-grid {
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .v2-card {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+    }
+
+    .v2-card__img {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      object-fit: cover;
+      display:block;
+      background: rgba(255,255,255,0.05);
+    }
+
+    .v2-card__body { padding: 10px 12px; display:grid; gap:6px; }
+    .v2-title { font-weight: 900; letter-spacing: 0.2px; }
+    .v2-sub { font-size: 12px; opacity: 0.86; line-height: 1.25; }
+
+    .v2-strip { display:flex; gap:10px; flex-wrap:wrap; font-size:12px; opacity:0.92; }
+    .v2-strip a { text-decoration: underline; }
+
+    /* Calendar */
+    #v2-cal-header {
+      position: sticky;
+      top: var(--v2-header-h, 0px); /* computed in JS */
+      z-index: 150;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      backdrop-filter: blur(6px);
+      display:flex;
+      gap:10px;
+      align-items:center;
+      margin-bottom: 10px;
+    }
+
+    #v2-cal-title { font-weight: 950; }
+
+    #v2-cal-header button {
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      cursor: pointer;
+    }
+
+    .v2-cal-dow {
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+      opacity: 0.9;
+      font-size: 12px;
+      padding: 0 2px 8px 2px;
+    }
+
+    #v2-cal-grid {
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      grid-auto-rows: minmax(120px, auto);
+      gap: 10px;
+    }
+
+    .v2-cal-cell {
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+      padding: 8px;
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .v2-cal-date { font-weight: 950; opacity: 0.92; }
+
+    .v2-cal-items { display:grid; gap: 8px; }
+
+    .v2-cal-item {
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.03);
+      padding: 8px;
+      display:grid;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .v2-cal-item__top { display:flex; gap:8px; align-items:center; }
+    .v2-cal-item__img {
+      width: 56px; height: 34px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: rgba(255,255,255,0.06);
+      display:block;
+      flex: 0 0 auto;
+    }
+    .v2-cal-item__text { min-width: 0; }
+    .v2-cal-item__line1 { font-weight: 850; font-size: 12px; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+    .v2-cal-item__line2 { font-size: 12px; opacity: 0.86; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
+    .v2-cal-overflow { font-size: 12px; opacity: 0.80; }
+
+    /* Popup (unique IDs to avoid collisions) */
+    #v2-popup-layer {
+      position: fixed;
+      inset: 0;
+      display: none;
+      z-index: 2000;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(6px);
+      padding: 4vh 4vw;
+    }
+
+    #v2-popup-panel {
+      margin: 0 auto;
+      width: min(1100px, 92vw);
+      max-height: 92vh;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(11,15,20,0.98);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.65);
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    #v2-popup-head {
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+    }
+
+    #v2-popup-close {
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.06);
+      cursor: pointer;
+    }
+
+    #v2-popup-body {
+      padding: 12px;
+      overflow: auto;
+      max-height: calc(92vh - 52px);
+    }
+
+    .v2-popup-hero {
+      display:grid;
+      grid-template-columns: 220px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+
+    .v2-popup-poster {
+      width: 100%;
+      aspect-ratio: 2/3;
+      border-radius: 14px;
+      object-fit: cover;
+      background: rgba(255,255,255,0.06);
+      display:block;
+    }
+
+    .v2-popup-h1 { font-weight: 950; font-size: 18px; }
+    .v2-popup-overview { line-height: 1.35; opacity: 0.96; }
+
+    /* Diagnostics */
+    #v2-diag {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(255,255,255,0.02);
+      font-size: 12px;
+      line-height: 1.35;
+      white-space: pre-wrap;
+      max-height: 28vh;
+      overflow: auto;
+      opacity: 0.92;
+    }
+
+    /* Responsive */
     @media (min-width: 900px) {
-      .v2-view { padding: 16px 18px; }
-      .v2-cal-grid { grid-auto-rows: minmax(140px, auto); }
+      #v2-main { padding: 16px 18px; }
+      #v2-cal-grid { grid-auto-rows: minmax(140px, auto); }
+    }
+
+    @media (max-width: 700px) {
+      .v2-popup-hero { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 
 <body>
-  <div class="v2-app" id="app">
-    <!-- Global Sticky Header -->
-    <header class="v2-header" id="globalHeader">
-      <div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;">
-        <div style="display:flex;gap:10px;align-items:center;">
-          <div style="font-weight:800;">My TV Movie Hub</div>
-          <div id="buildTag" style="opacity:.8;font-size:12px;">indexV2</div>
+  <div id="v2-root">
+    <!-- HEADER -->
+    <header id="v2-header">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-weight:950;">My TV Movie Hub</div>
+          <div style="font-size:12px;opacity:.85;">indexV2 v0.3.0</div>
         </div>
 
-        <nav id="topNav" aria-label="Primary">
-          <!-- Tab buttons (DPAD friendly) -->
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button data-route="#calendar" data-focusable="1">Calendar</button>
-            <button data-route="#shows" data-focusable="1">Shows</button>
-            <button data-route="#movies" data-focusable="1">Movies</button>
-            <button data-route="#livetv" data-focusable="1">Live TV</button>
-            <button data-route="#config" data-focusable="1">Config</button>
-            <button data-route="#explore" data-focusable="1">Explore</button>
-            <button data-route="#profiles" data-focusable="1">Profiles</button>
-          </div>
+        <nav class="v2-tabs" aria-label="Primary">
+          <button data-route="#calendar" data-focusable="1">Calendar</button>
+          <button data-route="#shows" data-focusable="1">Shows</button>
+          <button data-route="#movies" data-focusable="1">Movies</button>
+          <button data-route="#livetv" data-focusable="1">Live TV</button>
+          <button data-route="#config" data-focusable="1">Config</button>
+          <button data-route="#explore" data-focusable="1">Explore</button>
+          <button data-route="#profiles" data-focusable="1">Profiles</button>
         </nav>
       </div>
-      <div id="statusStrip" style="padding:0 12px 10px 12px;opacity:.9;font-size:12px;">
-        Loading…
-      </div>
+
+      <div id="v2-status">Booting…</div>
     </header>
 
-    <!-- Main content -->
-    <main class="v2-main" id="main">
-
+    <!-- MAIN -->
+    <main id="v2-main">
       <!-- CALENDAR VIEW -->
-      <section class="v2-view" id="view-calendar" aria-label="Calendar">
-        <div class="v2-cal-header" id="calHeader">
-          <div class="v2-cal-nav">
-            <button id="calPrev" data-focusable="1" aria-label="Previous month">◀</button>
-            <button id="calToday" data-focusable="1" aria-label="Go to today">Today</button>
-            <button id="calNext" data-focusable="1" aria-label="Next month">▶</button>
+      <section class="v2-view" id="v2-view-calendar" aria-label="Calendar">
+        <div id="v2-cal-header">
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="v2-cal-prev" data-focusable="1" aria-label="Previous month">◀</button>
+            <button id="v2-cal-today" data-focusable="1" aria-label="Today">Today</button>
+            <button id="v2-cal-next" data-focusable="1" aria-label="Next month">▶</button>
           </div>
-          <div class="v2-cal-title" id="calTitle">Month YYYY</div>
-          <div style="margin-left:auto;opacity:.85;font-size:12px;" id="calHint">DPAD: move • OK: open</div>
+
+          <div id="v2-cal-title">Month YYYY</div>
+
+          <div style="margin-left:auto;font-size:12px;opacity:.85;">DPAD: arrows • OK/Enter: open</div>
         </div>
 
-        <div class="v2-cal-dow" id="calDow">
+        <div class="v2-cal-dow">
           <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
         </div>
 
-        <div class="v2-cal-grid" id="calGrid" role="grid" aria-label="Month grid"></div>
+        <div id="v2-cal-grid" role="grid" aria-label="Month grid"></div>
       </section>
 
       <!-- SHOWS VIEW -->
-      <section class="v2-view" id="view-shows" aria-label="Shows">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-          <label>
-            Genre
-            <select id="showsGenre" data-focusable="1" multiple size="1" aria-label="Genre filter (multi-select)"></select>
-          </label>
+      <section class="v2-view" id="v2-view-shows" aria-label="Shows">
+        <div class="v2-bar">
+          <label>Search <input id="v2-shows-search" data-focusable="1" placeholder="title…" /></label>
 
-          <label>
-            Status
-            <select id="showsStatus" data-focusable="1" aria-label="Status filter">
+          <label>Status
+            <select id="v2-shows-status" data-focusable="1">
               <option value="">All</option>
               <option value="Running">Running</option>
               <option value="Ended">Ended</option>
@@ -126,23 +384,16 @@
             </select>
           </label>
 
-          <label>
-            Origin
-            <select id="showsCountry" data-focusable="1" aria-label="Origin country filter"></select>
-          </label>
-
-          <label>
-            Watched
-            <select id="showsWatched" data-focusable="1" aria-label="Watched filter">
+          <label>Watched
+            <select id="v2-shows-watched" data-focusable="1">
               <option value="">All</option>
               <option value="watched">Watched</option>
               <option value="unwatched">Unwatched</option>
             </select>
           </label>
 
-          <label>
-            Sort
-            <select id="showsSort" data-focusable="1" aria-label="Sort shows">
+          <label>Sort
+            <select id="v2-shows-sort" data-focusable="1">
               <option value="az">A→Z</option>
               <option value="za">Z→A</option>
               <option value="popularity">Popularity</option>
@@ -153,29 +404,24 @@
           </label>
         </div>
 
-        <div class="v2-grid" id="showsGrid" aria-label="Show cards"></div>
+        <div class="v2-grid" id="v2-shows-grid" aria-label="Show cards"></div>
       </section>
 
       <!-- MOVIES VIEW -->
-      <section class="v2-view" id="view-movies" aria-label="Movies">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">
-          <label>
-            Genre
-            <select id="moviesGenre" data-focusable="1" multiple size="1" aria-label="Genre filter (multi-select)"></select>
-          </label>
+      <section class="v2-view" id="v2-view-movies" aria-label="Movies">
+        <div class="v2-bar">
+          <label>Search <input id="v2-movies-search" data-focusable="1" placeholder="title…" /></label>
 
-          <label>
-            Watched
-            <select id="moviesWatched" data-focusable="1" aria-label="Watched filter">
+          <label>Watched
+            <select id="v2-movies-watched" data-focusable="1">
               <option value="">All</option>
               <option value="watched">Watched</option>
               <option value="unwatched">Unwatched</option>
             </select>
           </label>
 
-          <label>
-            Sort
-            <select id="moviesSort" data-focusable="1" aria-label="Sort movies">
+          <label>Sort
+            <select id="v2-movies-sort" data-focusable="1">
               <option value="az">A→Z</option>
               <option value="za">Z→A</option>
               <option value="popularity">Popularity</option>
@@ -186,634 +432,813 @@
           </label>
         </div>
 
-        <div class="v2-grid" id="moviesGrid" aria-label="Movie cards"></div>
+        <div class="v2-grid" id="v2-movies-grid" aria-label="Movie cards"></div>
       </section>
 
-      <!-- LIVE TV VIEW -->
-      <section class="v2-view" id="view-livetv" aria-label="Live TV">
-        <div id="livetvRoot">Live TV view (placeholder)</div>
+      <!-- LIVE TV -->
+      <section class="v2-view" id="v2-view-livetv" aria-label="Live TV">
+        <div style="opacity:.9;">Live TV (placeholder)</div>
       </section>
 
-      <!-- CONFIG VIEW (must be based on config.html; we will import it next step) -->
-      <section class="v2-view" id="view-config" aria-label="Config">
-        <div id="configRoot">Config view will load config.html content here.</div>
+      <!-- CONFIG -->
+      <section class="v2-view" id="v2-view-config" aria-label="Config">
+        <div id="v2-config-root" style="opacity:.9;">Loading config.html…</div>
       </section>
 
-      <!-- EXPLORE VIEW -->
-      <section class="v2-view" id="view-explore" aria-label="Explore">
-        <div id="exploreRoot">Explore view (placeholder)</div>
+      <!-- EXPLORE -->
+      <section class="v2-view" id="v2-view-explore" aria-label="Explore">
+        <div style="opacity:.9;">Explore (placeholder)</div>
       </section>
 
-      <!-- PROFILES VIEW -->
-      <section class="v2-view" id="view-profiles" aria-label="Profiles">
-        <div id="profilesRoot">Profiles view (placeholder)</div>
+      <!-- PROFILES -->
+      <section class="v2-view" id="v2-view-profiles" aria-label="Profiles">
+        <div style="opacity:.9;">Profiles (placeholder)</div>
       </section>
+
+      <div id="v2-diag"></div>
     </main>
 
-    <footer class="v2-footer" id="globalFooter" style="padding:10px 12px;font-size:12px;">
-      <div id="footerMeta">Ready.</div>
-    </footer>
+    <footer id="v2-footer">Ready.</footer>
 
-    <!-- Popup layer (Show / Season / Movie) -->
-    <div id="popupLayer" style="position:fixed;inset:0;display:none;z-index:1000;">
-      <div id="popupBackdrop" style="position:absolute;inset:0;"></div>
-      <div id="popupPanel" role="dialog" aria-modal="true"
-           style="position:relative;margin:6vh auto 0 auto;max-width:1100px;width:min(1100px,92vw);border-radius:14px;overflow:hidden;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;">
-          <div id="popupTitle" style="font-weight:800;">Details</div>
-          <button id="popupClose" data-focusable="1" aria-label="Close">✕</button>
+    <!-- POPUP (unique IDs to avoid collisions) -->
+    <div id="v2-popup-layer" aria-hidden="true">
+      <div id="v2-popup-panel" role="dialog" aria-modal="true">
+        <div id="v2-popup-head">
+          <div id="v2-popup-title" style="font-weight:950;">Details</div>
+          <button id="v2-popup-close" data-focusable="1" aria-label="Close">✕</button>
         </div>
-        <div id="popupBody" style="padding:12px;"></div>
+        <div id="v2-popup-body"></div>
       </div>
     </div>
   </div>
 
-  <script>
-    /* indexV2.js (inline for now; can be extracted later) */
+<script>
+/* =========================================================
+   indexV2 MVP JS
+   Version: v0.3.0
+   Notes:
+     - No dependency on index.html
+     - Avoids global CSS collisions by using v2-only IDs/classes
+   ========================================================= */
 
-    // ---------- Hard defaults (can be overridden by config.js / config.json) ----------
-    const DEFAULTS = {
-      data_url_primary: "./data/data.json",
-      data_url_fallback: "https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/data/data.json",
-      fallback_poster: "./assets/fallback/poster_fallback.png",
-      fallback_backdrop: "./assets/fallback/backdrop_fallback.png",
-      fallback_logo: "./assets/fallback/logo_fallback.png",
-      week_starts_monday: true,
-      calendar_max_items_per_day: 4,
-    };
+const V2_VERSION = "v0.3.0";
 
-    // ---------- State ----------
-    const state = {
-      cfg: { ...DEFAULTS },
-      config_json: null,
-      data: null,
-      errors: [],
-      route: "#calendar",
-      calendarCursor: new Date(),
-      lastFocusEl: null,
-    };
+/* Inline SVG fallbacks (never broken icons) */
+const SVG_POSTER_FALLBACK = `data:image/svg+xml;charset=utf-8,` + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="600" height="900">
+    <rect width="100%" height="100%" fill="#121a24"/>
+    <text x="50%" y="45%" fill="#e8eef7" font-family="Arial" font-size="42" text-anchor="middle">No Poster</text>
+    <text x="50%" y="55%" fill="#9fb0c6" font-family="Arial" font-size="28" text-anchor="middle">indexV2</text>
+  </svg>
+`);
+const SVG_BACKDROP_FALLBACK = `data:image/svg+xml;charset=utf-8,` + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720">
+    <rect width="100%" height="100%" fill="#121a24"/>
+    <text x="50%" y="50%" fill="#e8eef7" font-family="Arial" font-size="42" text-anchor="middle">No Image</text>
+  </svg>
+`);
 
-    // ---------- DOM ----------
-    const $ = (sel, root = document) => root.querySelector(sel);
-    const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+const DEFAULTS = {
+  data_url_primary: "./data/data.json",
+  data_url_fallback: "https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/data/data.json",
+  calendar_max_items_per_day: 4
+};
 
-    const elStatus = $("#statusStrip");
-    const elFooter = $("#footerMeta");
+const state = {
+  cfg: { ...DEFAULTS },
+  data: null,
+  errors: [],
+  route: "#calendar",
+  calendarCursor: new Date(),
+  calendarItemsByDate: new Map(),
+  lastFocusEl: null
+};
 
-    const views = {
-      calendar: $("#view-calendar"),
-      shows: $("#view-shows"),
-      movies: $("#view-movies"),
-      livetv: $("#view-livetv"),
-      config: $("#view-config"),
-      explore: $("#view-explore"),
-      profiles: $("#view-profiles"),
-    };
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
 
-    // ---------- Utilities ----------
-    function safeText(v, fallback = "—") {
-      if (v === null || v === undefined) return fallback;
-      const s = String(v).trim();
-      return s ? s : fallback;
+const elStatus = $("#v2-status");
+const elDiag = $("#v2-diag");
+const elFooter = $("#v2-footer");
+
+function setStatus(msg) { elStatus.textContent = msg; }
+function setFooter(msg) { elFooter.textContent = msg; }
+
+function log(line) {
+  if (!elDiag.textContent) elDiag.textContent = "";
+  elDiag.textContent += (elDiag.textContent ? "\n" : "") + line;
+  elDiag.scrollTop = elDiag.scrollHeight;
+}
+
+function pushError(code, message, ctx={}) {
+  state.errors.push({ code, message, ctx, ts: new Date().toISOString() });
+  log(`ERROR ${code}: ${message}` + (Object.keys(ctx).length ? ` | ${JSON.stringify(ctx)}` : ""));
+}
+
+function safeText(v, fallback="—") {
+  if (v === null || v === undefined) return fallback;
+  const s = String(v).trim();
+  return s ? s : fallback;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
+
+function resolveImg(src, fallbackDataUri) {
+  const s = (src || "").toString().trim();
+  return s ? s : fallbackDataUri;
+}
+
+/* Normalize values that sometimes appear as objects */
+function normText(x) {
+  if (x === null || x === undefined) return "";
+  if (typeof x === "string" || typeof x === "number" || typeof x === "boolean") return String(x);
+  if (typeof x === "object") {
+    return String(x.name || x.title || x.label || x.value || "");
+  }
+  return "";
+}
+
+function normGenreArray(genres) {
+  if (!Array.isArray(genres)) return [];
+  return genres.map(g => normText(g)).filter(Boolean);
+}
+
+function normLinks(obj) {
+  // Accept links as strings or nested objects.
+  const links = obj?.links || obj?.streaming_links || {};
+  const pick = (v) => {
+    if (!v) return "";
+    if (typeof v === "string") return v;
+    if (typeof v === "object") return String(v.url || v.href || v.link || "");
+    return "";
+  };
+  return {
+    vidsrc: pick(links.vidsrc || links.vidsrc_url),
+    videasy: pick(links.videasy || links.videasy_url),
+    local: pick(links.local || links.local_url),
+  };
+}
+
+/* ---------- Header height coordination for sticky calendar header ---------- */
+function updateHeaderHeightVar() {
+  const hdr = $("#v2-header");
+  const h = hdr ? hdr.getBoundingClientRect().height : 0;
+  $("#v2-root").style.setProperty("--v2-header-h", `${Math.ceil(h)}px`);
+}
+
+/* ---------- Routing ---------- */
+function normalizeRoute(hash) {
+  const h = (hash || "#calendar").toLowerCase();
+  const allowed = ["#calendar","#shows","#movies","#livetv","#config","#explore","#profiles"];
+  return allowed.includes(h) ? h : "#calendar";
+}
+
+function setRoute(hash) {
+  state.route = normalizeRoute(hash);
+  window.location.hash = state.route;
+  renderRoute();
+}
+
+function renderRoute() {
+  const route = state.route.slice(1);
+
+  const map = {
+    calendar: "#v2-view-calendar",
+    shows: "#v2-view-shows",
+    movies: "#v2-view-movies",
+    livetv: "#v2-view-livetv",
+    config: "#v2-view-config",
+    explore: "#v2-view-explore",
+    profiles: "#v2-view-profiles"
+  };
+
+  $$(".v2-view").forEach(v => v.classList.remove("is-active"));
+  const active = $(map[route] || map.calendar);
+  if (active) active.classList.add("is-active");
+
+  setFooter(`indexV2 ${V2_VERSION} • view=${route} • errors=${state.errors.length} • shows=${Array.isArray(state.data?.shows)?state.data.shows.length:0} • movies=${Array.isArray(state.data?.movies)?state.data.movies.length:0}`);
+}
+
+/* ---------- Config + Data ---------- */
+async function loadConfigJson() {
+  try {
+    const res = await fetch("./config.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`config.json HTTP ${res.status}`);
+    const j = await res.json();
+
+    // Lean merge only if present
+    if (j && typeof j === "object") {
+      if (j.data_url) state.cfg.data_url_primary = j.data_url;
+      if (j.data_url_primary) state.cfg.data_url_primary = j.data_url_primary;
+      if (j.data_url_fallback) state.cfg.data_url_fallback = j.data_url_fallback;
+      if (j.calendar_max_items_per_day) state.cfg.calendar_max_items_per_day = Number(j.calendar_max_items_per_day) || DEFAULTS.calendar_max_items_per_day;
     }
 
-    function pushError(code, message, ctx = {}) {
-      state.errors.push({ code, message, ctx, ts: new Date().toISOString() });
-    }
-
-    function setStatus(msg) {
-      elStatus.textContent = msg;
-    }
-
-    function setFooter(msg) {
-      elFooter.textContent = msg;
-    }
-
-    function isFocusable(el) {
-      return el && el.getAttribute && el.getAttribute("data-focusable") === "1";
-    }
-
-    // Basic DPAD / keyboard mapping
-    function attachDpadNav() {
-      document.addEventListener("keydown", (e) => {
-        const k = e.key;
-        const active = document.activeElement;
-        const isPopupOpen = $("#popupLayer").style.display === "block";
-
-        // Escape closes popup
-        if (k === "Escape" && isPopupOpen) {
-          e.preventDefault();
-          closePopup();
-          return;
-        }
-
-        // Enter / Space activate buttons/links
-        if ((k === "Enter" || k === " ") && active) {
-          // allow native behavior
-          return;
-        }
-
-        // Route shortcuts (optional)
-        if (e.altKey) return;
-
-        // Arrow navigation: rely on browser default unless we are inside a roving grid later.
-        // (We’ll implement deterministic grid focus in next steps per-view.)
-      }, { passive: false });
-    }
-
-    // ---------- Routing ----------
-    function normalizeRoute(hash) {
-      const h = (hash || "#calendar").toLowerCase();
-      const allowed = ["#calendar", "#shows", "#movies", "#livetv", "#config", "#explore", "#profiles"];
-      return allowed.includes(h) ? h : "#calendar";
-    }
-
-    function setRoute(hash) {
-      state.route = normalizeRoute(hash);
-      window.location.hash = state.route;
-      renderRoute();
-    }
-
-    function renderRoute() {
-      const route = state.route.slice(1);
-      Object.entries(views).forEach(([k, el]) => {
-        el.classList.toggle("is-active", k === route);
-      });
-
-      // focus first control in view (DPAD friendly)
-      const activeView = views[route];
-      const first = $$("[data-focusable='1']", activeView)[0];
-      if (first) first.focus();
-
-      setFooter(`View: ${route} • Errors: ${state.errors.length}`);
-    }
-
-    // ---------- Data loading ----------
-    async function loadConfigJson() {
-      try {
-        const res = await fetch("./config.json", { cache: "no-cache" });
-        if (!res.ok) throw new Error(`config.json HTTP ${res.status}`);
-        const j = await res.json();
-        state.config_json = j;
-
-        // Merge known overrides if present (do not assume schema)
-        if (j && typeof j === "object") {
-          if (j.data_url) state.cfg.data_url_primary = j.data_url;
-          if (j.data_url_primary) state.cfg.data_url_primary = j.data_url_primary;
-          if (j.data_url_fallback) state.cfg.data_url_fallback = j.data_url_fallback;
-          if (j.fallback_poster) state.cfg.fallback_poster = j.fallback_poster;
-          if (j.fallback_backdrop) state.cfg.fallback_backdrop = j.fallback_backdrop;
-          if (j.calendar_max_items_per_day) state.cfg.calendar_max_items_per_day = Number(j.calendar_max_items_per_day) || DEFAULTS.calendar_max_items_per_day;
-        }
-      } catch (err) {
-        pushError("CONFIG_JSON_LOAD_FAILED", String(err));
-      }
-    }
-
-    async function fetchJsonWithFallback(primaryUrl, fallbackUrl) {
-      try {
-        const r1 = await fetch(primaryUrl, { cache: "no-cache" });
-        if (!r1.ok) throw new Error(`primary HTTP ${r1.status}`);
-        return await r1.json();
-      } catch (e1) {
-        pushError("DATA_PRIMARY_FAILED", String(e1), { primaryUrl });
-        const r2 = await fetch(fallbackUrl, { cache: "no-cache" });
-        if (!r2.ok) throw new Error(`fallback HTTP ${r2.status}`);
-        return await r2.json();
-      }
-    }
-
-    async function loadData() {
-      const d = await fetchJsonWithFallback(state.cfg.data_url_primary, state.cfg.data_url_fallback);
-      state.data = d;
-
-      // Merge upstream errors[] if present
-      if (d && Array.isArray(d.errors)) {
-        d.errors.forEach(e => state.errors.push(e));
-      }
-
-      // Minimal schema validation (no hard fail)
-      if (!d || typeof d !== "object") pushError("DATA_SCHEMA_INVALID", "data.json is not an object");
-      if (!Array.isArray(d.movies)) pushError("DATA_MOVIES_MISSING", "data.movies[] missing");
-      if (!Array.isArray(d.shows)) pushError("DATA_SHOWS_MISSING", "data.shows[] missing");
-    }
-
-    // ---------- Assets / fallbacks ----------
-    function resolveImg(src, fallback) {
-      const s = (src || "").trim();
-      return s ? s : fallback;
-    }
-
-    // ---------- Cards ----------
-    function createShowCard(show) {
-      const title = safeText(show?.name || show?.title, "Missing Title");
-      const poster = resolveImg(show?.poster_local || show?.poster, state.cfg.fallback_poster);
-
-      if (title === "Missing Title") pushError("SHOW_MISSING_TITLE", "Show missing title", { id: show?.id });
-      if (!show?.poster_local && !show?.poster) pushError("SHOW_MISSING_POSTER", "Show missing poster", { id: show?.id });
-
-      const card = document.createElement("div");
-      card.className = "v2-card";
-      card.tabIndex = 0;
-      card.setAttribute("data-focusable", "1");
-      card.addEventListener("click", () => openPopup("show", show));
-
-      card.innerHTML = `
-        <img class="v2-card__img" src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />
-        <div class="v2-card__body">
-          <div style="font-weight:800;">${escapeHtml(title)}</div>
-          <div style="opacity:.85;font-size:12px;">
-            ${escapeHtml(safeText(show?.status, "—"))}
-            ${show?.vote_average ? ` • ★ ${escapeHtml(String(show.vote_average))}` : ""}
-          </div>
-        </div>
-      `;
-      return card;
-    }
-
-    function createMovieCard(movie) {
-      const title = safeText(movie?.title || movie?.name, "Missing Title");
-      const poster = resolveImg(movie?.poster_local || movie?.poster, state.cfg.fallback_poster);
-
-      if (title === "Missing Title") pushError("MOVIE_MISSING_TITLE", "Movie missing title", { id: movie?.id });
-      if (!movie?.poster_local && !movie?.poster) pushError("MOVIE_MISSING_POSTER", "Movie missing poster", { id: movie?.id });
-
-      const card = document.createElement("div");
-      card.className = "v2-card";
-      card.tabIndex = 0;
-      card.setAttribute("data-focusable", "1");
-      card.addEventListener("click", () => openPopup("movie", movie));
-
-      card.innerHTML = `
-        <img class="v2-card__img" src="${poster}" alt="${escapeHtml(title)}" loading="lazy" />
-        <div class="v2-card__body">
-          <div style="font-weight:800;">${escapeHtml(title)}</div>
-          <div style="opacity:.85;font-size:12px;">
-            ${movie?.release_date ? escapeHtml(movie.release_date) : "—"}
-            ${movie?.vote_average ? ` • ★ ${escapeHtml(String(movie.vote_average))}` : ""}
-            ${movie?.runtime ? ` • ${escapeHtml(String(movie.runtime))}m` : ""}
-          </div>
-        </div>
-      `;
-      return card;
-    }
-
-    // ---------- Popup (Show / Season / Movie) ----------
-    function openPopup(kind, obj) {
-      state.lastFocusEl = document.activeElement;
-
-      const layer = $("#popupLayer");
-      const title = $("#popupTitle");
-      const body = $("#popupBody");
-
-      title.textContent = kind === "show" ? "Show" : (kind === "movie" ? "Movie" : "Details");
-      body.innerHTML = renderPopupHtml(kind, obj);
-
-      layer.style.display = "block";
-      $("#popupClose").focus();
-    }
-
-    function closePopup() {
-      $("#popupLayer").style.display = "none";
-      $("#popupBody").innerHTML = "";
-      if (state.lastFocusEl && state.lastFocusEl.focus) state.lastFocusEl.focus();
-    }
-
-    function renderPopupHtml(kind, obj) {
-      // Strips:
-      // - Info strip: links like TMDB/RT/homepage where available
-      // - Reference strip: genres, rating, service/network, premiered
-      // - URL strip: vidsrc, videasy, local
-      const name = safeText(obj?.name || obj?.title, "Missing Title");
-      const overview = safeText(obj?.overview, "—");
-      const genres = Array.isArray(obj?.genres) ? obj.genres : [];
-      const vote = obj?.vote_average ? `★ ${obj.vote_average}` : "";
-      const homepage = obj?.homepage || "";
-      const links = obj?.links || obj?.streaming_links || {};
-
-      const infoStrip = [
-        homepage ? `<a href="${escapeAttr(homepage)}" target="_blank" rel="noreferrer">Home</a>` : "",
-        obj?.tmdb_url ? `<a href="${escapeAttr(obj.tmdb_url)}" target="_blank" rel="noreferrer">TMDB</a>` : "",
-        obj?.rottentomatoes_url ? `<a href="${escapeAttr(obj.rottentomatoes_url)}" target="_blank" rel="noreferrer">RT</a>` : "",
-      ].filter(Boolean).join(" • ");
-
-      const refStrip = [
-        genres.length ? genres.map(g => escapeHtml(g)).join(" • ") : "",
-        vote,
-        obj?.release_date ? `Released ${escapeHtml(obj.release_date)}` : "",
-        obj?.first_air_date ? `Premiered ${escapeHtml(obj.first_air_date)}` : "",
-      ].filter(Boolean).join(" • ");
-
-      const urlStrip = [
-        links?.vidsrc ? `<a href="${escapeAttr(links.vidsrc)}" target="_blank" rel="noreferrer">VidSRC</a>` : "",
-        links?.videasy ? `<a href="${escapeAttr(links.videasy)}" target="_blank" rel="noreferrer">VidEasy</a>` : "",
-        links?.local ? `<a href="${escapeAttr(links.local)}" target="_blank" rel="noreferrer">Local</a>` : "",
-      ].filter(Boolean).join(" • ");
-
-      return `
-        <div style="display:grid;gap:10px;">
-          <div style="font-weight:900;font-size:18px;">${escapeHtml(name)}</div>
-
-          <div style="opacity:.9;font-size:12px;">
-            <div><strong>Info:</strong> ${infoStrip || "—"}</div>
-            <div><strong>Ref:</strong> ${refStrip || "—"}</div>
-            <div><strong>URLs:</strong> ${urlStrip || "—"}</div>
-          </div>
-
-          <div style="line-height:1.4;">${escapeHtml(overview)}</div>
-
-          <div style="opacity:.85;font-size:12px;">
-            <div><strong>ID:</strong> ${escapeHtml(safeText(obj?.id, "—"))}</div>
-            <div><strong>Collections:</strong> ${Array.isArray(obj?.collections) ? escapeHtml(obj.collections.join(", ")) : "—"}</div>
-          </div>
-        </div>
-      `;
-    }
-
-    // ---------- Calendar (scaffold: grid + header + empty items for now) ----------
-    function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
-    function endOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
-
-    function mondayIndex(jsDay) {
-      // JS: 0=Sun..6=Sat; we need Mon=0..Sun=6
-      return (jsDay + 6) % 7;
-    }
-
-    function buildCalendarGrid(cursorDate) {
-      const grid = $("#calGrid");
-      grid.innerHTML = "";
-
-      const m0 = startOfMonth(cursorDate);
-      const m1 = endOfMonth(cursorDate);
-
-      const monthName = m0.toLocaleString(undefined, { month: "long" });
-      $("#calTitle").textContent = `${monthName} ${m0.getFullYear()}`;
-
-      const lead = mondayIndex(m0.getDay()); // number of cells before day 1
-      const daysInMonth = m1.getDate();
-      const totalCells = 42; // 7x6
-
-      // Collect items later (episodes/movies) – placeholder now
-      const dayItems = new Map(); // key=YYYY-MM-DD -> array
-
-      for (let i = 0; i < totalCells; i++) {
-        const cell = document.createElement("div");
-        cell.className = "v2-cal-cell";
-        cell.setAttribute("role", "gridcell");
-        cell.tabIndex = 0;
-        cell.setAttribute("data-focusable", "1");
-
-        const dayNum = i - lead + 1;
-        const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
-
-        let dateKey = "";
-        if (inMonth) {
-          const d = new Date(m0.getFullYear(), m0.getMonth(), dayNum);
-          dateKey = d.toISOString().slice(0,10);
-        }
-
-        cell.innerHTML = `
-          <div class="v2-cal-date">${inMonth ? dayNum : ""}</div>
-          <div class="v2-cal-items" data-datekey="${escapeAttr(dateKey)}"></div>
-        `;
-
-        if (!inMonth) {
-          cell.style.opacity = "0.35";
-          cell.removeAttribute("data-focusable");
-          cell.tabIndex = -1;
-        }
-
-        grid.appendChild(cell);
-      }
-
-      // Next step: populate items from data.json into correct day cells with sorting + overflow
-      // (Episodes sorted by air time; Movies by release time; overflow indicator if >4)
-    }
-
-    // ---------- Filters + list rendering ----------
-    function uniqueSorted(arr) {
-      return Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>String(a).localeCompare(String(b)));
-    }
-
-    function populateFilters() {
-      const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
-      const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
-
-      const showGenres = uniqueSorted(shows.flatMap(s => Array.isArray(s.genres) ? s.genres : []));
-      const movieGenres = uniqueSorted(movies.flatMap(m => Array.isArray(m.genres) ? m.genres : []));
-
-      const showCountries = uniqueSorted(shows.map(s => s.origin_country || s.origin_country_code || s.country).flat());
-
-      const elShowsGenre = $("#showsGenre");
-      elShowsGenre.innerHTML = showGenres.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`).join("");
-
-      const elMoviesGenre = $("#moviesGenre");
-      elMoviesGenre.innerHTML = movieGenres.map(g => `<option value="${escapeAttr(g)}">${escapeHtml(g)}</option>`).join("");
-
-      const elShowsCountry = $("#showsCountry");
-      elShowsCountry.innerHTML = `<option value="">All</option>` + showCountries.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join("");
-    }
-
-    function getSelectedMulti(selectEl) {
-      return Array.from(selectEl.selectedOptions).map(o => o.value).filter(Boolean);
-    }
-
-    function applyShowsFiltersSort() {
-      const shows = Array.isArray(state.data?.shows) ? state.data.shows.slice() : [];
-
-      const genres = getSelectedMulti($("#showsGenre"));
-      const status = $("#showsStatus").value;
-      const country = $("#showsCountry").value;
-      const watched = $("#showsWatched").value;
-      const sort = $("#showsSort").value;
-
-      let out = shows;
-
-      if (genres.length) {
-        out = out.filter(s => {
-          const gs = Array.isArray(s.genres) ? s.genres : [];
-          return genres.every(g => gs.includes(g));
-        });
-      }
-
-      if (status) out = out.filter(s => String(s.status || "") === status);
-
-      if (country) {
-        out = out.filter(s => {
-          const c = s.origin_country || s.origin_country_code || s.country;
-          if (Array.isArray(c)) return c.includes(country);
-          return String(c || "") === country;
-        });
-      }
-
-      if (watched) {
-        out = out.filter(s => {
-          const w = s.trakt?.watched ?? s.watched ?? null;
-          return watched === "watched" ? !!w : !w;
-        });
-      }
-
-      const cmpText = (a,b,ka,kb)=> safeText(a?.[ka]||a?.[kb],"").localeCompare(safeText(b?.[ka]||b?.[kb],""));
-      const cmpNum = (a,b,k)=> (Number(b?.[k])||0)-(Number(a?.[k])||0);
-
-      if (sort === "az") out.sort((a,b)=>cmpText(a,b,"name","title"));
-      if (sort === "za") out.sort((a,b)=>cmpText(b,a,"name","title"));
-      if (sort === "popularity") out.sort((a,b)=>cmpNum(a,b,"popularity"));
-      if (sort === "vote_average") out.sort((a,b)=>cmpNum(a,b,"vote_average"));
-      if (sort === "first_air_date") out.sort((a,b)=> safeText(a?.first_air_date,"").localeCompare(safeText(b?.first_air_date,"")));
-      if (sort === "last_air_date") out.sort((a,b)=> safeText(a?.last_air_date,"").localeCompare(safeText(b?.last_air_date,"")));
-
-      return out;
-    }
-
-    function applyMoviesFiltersSort() {
-      const movies = Array.isArray(state.data?.movies) ? state.data.movies.slice() : [];
-
-      const genres = getSelectedMulti($("#moviesGenre"));
-      const watched = $("#moviesWatched").value;
-      const sort = $("#moviesSort").value;
-
-      let out = movies;
-
-      if (genres.length) {
-        out = out.filter(m => {
-          const gs = Array.isArray(m.genres) ? m.genres : [];
-          return genres.every(g => gs.includes(g));
-        });
-      }
-
-      if (watched) {
-        out = out.filter(m => {
-          const w = m.trakt?.watched ?? m.watched ?? null;
-          return watched === "watched" ? !!w : !w;
-        });
-      }
-
-      const cmpText = (a,b)=> safeText(a?.title||a?.name,"").localeCompare(safeText(b?.title||b?.name,""));
-      const cmpNum = (a,b,k)=> (Number(b?.[k])||0)-(Number(a?.[k])||0);
-
-      if (sort === "az") out.sort((a,b)=>cmpText(a,b));
-      if (sort === "za") out.sort((a,b)=>cmpText(b,a));
-      if (sort === "popularity") out.sort((a,b)=>cmpNum(a,b,"popularity"));
-      if (sort === "vote_average") out.sort((a,b)=>cmpNum(a,b,"vote_average"));
-      if (sort === "release_date") out.sort((a,b)=> safeText(a?.release_date,"").localeCompare(safeText(b?.release_date,"")));
-      if (sort === "runtime") out.sort((a,b)=> (Number(b?.runtime)||0)-(Number(a?.runtime)||0));
-
-      return out;
-    }
-
-    function renderShows() {
-      const grid = $("#showsGrid");
-      grid.innerHTML = "";
-      const rows = applyShowsFiltersSort();
-      rows.forEach(s => grid.appendChild(createShowCard(s)));
-      setStatus(`Shows: ${rows.length} • Errors: ${state.errors.length}`);
-    }
-
-    function renderMovies() {
-      const grid = $("#moviesGrid");
-      grid.innerHTML = "";
-      const rows = applyMoviesFiltersSort();
-      rows.forEach(m => grid.appendChild(createMovieCard(m)));
-      setStatus(`Movies: ${rows.length} • Errors: ${state.errors.length}`);
-    }
-
-    // ---------- Config view import (basis = config.html) ----------
-    async function loadConfigViewHtml() {
-      try {
-        const res = await fetch("./config.html", { cache: "no-cache" });
-        if (!res.ok) throw new Error(`config.html HTTP ${res.status}`);
-        const html = await res.text();
-
-        // Import body-ish content safely (no execution). We keep it simple:
-        $("#configRoot").innerHTML = html;
-      } catch (err) {
-        pushError("CONFIG_HTML_LOAD_FAILED", String(err));
-        $("#configRoot").textContent = "Config view failed to load config.html";
-      }
-    }
-
-    // ---------- Escaping ----------
-    function escapeHtml(s) {
-      return String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
-    }
-    function escapeAttr(s) { return escapeHtml(s).replace(/"/g, "&quot;"); }
-
-    // ---------- Boot ----------
-    async function boot() {
-      setStatus("Booting indexV2…");
-
-      // Wire top nav
-      $$("[data-route]").forEach(btn => {
-        btn.addEventListener("click", () => setRoute(btn.getAttribute("data-route")));
-      });
-
-      $("#popupClose").addEventListener("click", closePopup);
-      $("#popupBackdrop").addEventListener("click", closePopup);
-
-      // Calendar controls
-      $("#calPrev").addEventListener("click", () => {
-        const d = state.calendarCursor;
-        state.calendarCursor = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-        buildCalendarGrid(state.calendarCursor);
-      });
-      $("#calNext").addEventListener("click", () => {
-        const d = state.calendarCursor;
-        state.calendarCursor = new Date(d.getFullYear(), d.getMonth() + 1, 1);
-        buildCalendarGrid(state.calendarCursor);
-      });
-      $("#calToday").addEventListener("click", () => {
-        state.calendarCursor = new Date();
-        buildCalendarGrid(state.calendarCursor);
-      });
-
-      attachDpadNav();
-
-      // Load config.json (optional overrides)
-      await loadConfigJson();
-
-      // Load data.json
-      setStatus("Loading data.json…");
-      await loadData();
-
-      // Load config view html
-      await loadConfigViewHtml();
-
-      // Populate filters + render lists
-      populateFilters();
-      renderShows();
-      renderMovies();
-
-      // Calendar scaffold
-      buildCalendarGrid(state.calendarCursor);
-
-      // Bind filter change events
-      ["showsGenre","showsStatus","showsCountry","showsWatched","showsSort"].forEach(id => {
-        const el = $("#"+id);
-        if (el) el.addEventListener("change", renderShows);
-      });
-      ["moviesGenre","moviesWatched","moviesSort"].forEach(id => {
-        const el = $("#"+id);
-        if (el) el.addEventListener("change", renderMovies);
-      });
-
-      // Route init
-      state.route = normalizeRoute(window.location.hash);
-      window.addEventListener("hashchange", () => {
-        state.route = normalizeRoute(window.location.hash);
-        renderRoute();
-      });
-      renderRoute();
-
-      setStatus(`Loaded • Shows: ${(state.data?.shows||[]).length} • Movies: ${(state.data?.movies||[]).length} • Errors: ${state.errors.length}`);
-    }
-
-    boot().catch(err => {
-      pushError("BOOT_FAILED", String(err));
-      setStatus("Boot failed (see errors[]).");
-      setFooter(`Errors: ${state.errors.length}`);
-      console.error(err);
+    log("config.json: loaded");
+  } catch (err) {
+    pushError("CONFIG_JSON_LOAD_FAILED", String(err));
+  }
+}
+
+async function loadConfigViewHtml() {
+  try {
+    const res = await fetch("./config.html", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`config.html HTTP ${res.status}`);
+    const html = await res.text();
+    $("#v2-config-root").innerHTML = html;
+    log("config.html: loaded into Config view");
+  } catch (err) {
+    pushError("CONFIG_HTML_LOAD_FAILED", String(err));
+    $("#v2-config-root").textContent = "Config view failed to load config.html";
+  }
+}
+
+async function fetchJsonWithFallback(primaryUrl, fallbackUrl) {
+  try {
+    const r1 = await fetch(primaryUrl, { cache: "no-cache" });
+    if (!r1.ok) throw new Error(`primary HTTP ${r1.status}`);
+    return await r1.json();
+  } catch (e1) {
+    pushError("DATA_PRIMARY_FAILED", String(e1), { primaryUrl });
+    const r2 = await fetch(fallbackUrl, { cache: "no-cache" });
+    if (!r2.ok) throw new Error(`fallback HTTP ${r2.status}`);
+    return await r2.json();
+  }
+}
+
+async function loadData() {
+  const d = await fetchJsonWithFallback(state.cfg.data_url_primary, state.cfg.data_url_fallback);
+  state.data = d;
+
+  if (Array.isArray(d?.errors)) state.errors.push(...d.errors);
+
+  if (!Array.isArray(d?.shows)) pushError("DATA_SHOWS_MISSING", "data.shows[] missing");
+  if (!Array.isArray(d?.movies)) pushError("DATA_MOVIES_MISSING", "data.movies[] missing");
+
+  log("data.json: loaded");
+  log(`counts: shows=${Array.isArray(d?.shows)?d.shows.length:0}, movies=${Array.isArray(d?.movies)?d.movies.length:0}, upstream_errors=${Array.isArray(d?.errors)?d.errors.length:0}`);
+}
+
+/* ---------- Calendar indexing ---------- */
+function toDateKey(s) {
+  if (!s) return "";
+  const t = String(s).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0,10);
+  return "";
+}
+function pickDate(obj, keys) {
+  for (const k of keys) {
+    const v = obj?.[k];
+    const dk = toDateKey(v);
+    if (dk) return dk;
+  }
+  return "";
+}
+function pickTime(obj, keys) {
+  for (const k of keys) {
+    const v = obj?.[k];
+    if (!v) continue;
+    const t = String(v).trim();
+    if (/^\d{1,2}:\d{2}$/.test(t)) return t.padStart(5,"0");
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(t)) return t.slice(11,16);
+  }
+  return "";
+}
+function seasonEpisodeTag(season_number, episode_number) {
+  const s = Number(season_number);
+  const e = Number(episode_number);
+  if (!Number.isFinite(s) || !Number.isFinite(e)) return "";
+  return `S${String(s).padStart(2,"0")}E${String(e).padStart(2,"0")}`;
+}
+function addCalendarItem(item) {
+  if (!item?.dateKey) return;
+  const arr = state.calendarItemsByDate.get(item.dateKey) || [];
+  arr.push(item);
+  state.calendarItemsByDate.set(item.dateKey, arr);
+}
+
+function buildCalendarItems() {
+  state.calendarItemsByDate = new Map();
+
+  const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+  const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
+
+  // Movies: release_date
+  for (const m of movies) {
+    const dk = pickDate(m, ["release_date","released","date"]);
+    if (!dk) continue;
+
+    const title = safeText(m?.title || m?.name, "Missing Title");
+    if (title === "Missing Title") pushError("MOVIE_MISSING_TITLE", "Movie missing title", { id: m?.id });
+
+    addCalendarItem({
+      kind: "movie",
+      dateKey: dk,
+      time: pickTime(m, ["release_time","time","release_datetime","released_at"]) || "23:59",
+      title1: title,
+      title2: [m?.runtime ? `${m.runtime}m` : "", m?.vote_average ? `★ ${m.vote_average}` : ""].filter(Boolean).join(" • "),
+      img: resolveImg(m?.backdrop_local || m?.backdrop || m?.poster_local || m?.poster, SVG_BACKDROP_FALLBACK),
+      ref: m
     });
-  </script>
+  }
+
+  // Episodes: tolerant traversal
+  for (const sh of shows) {
+    const showTitle = safeText(sh?.name || sh?.title, "Missing Title");
+
+    const seasons = Array.isArray(sh?.seasons) ? sh.seasons : (Array.isArray(sh?.season_list) ? sh.season_list : []);
+    for (const se of seasons) {
+      const eps = Array.isArray(se?.episodes) ? se.episodes : (Array.isArray(se?.episode_list) ? se.episode_list : []);
+      for (const ep of eps) {
+        const dk = pickDate(ep, ["air_date","airdate","first_aired","date","premiere_date","released","airstamp","air_datetime"]);
+        if (!dk) continue;
+
+        const tag = seasonEpisodeTag(se?.season_number ?? se?.season ?? ep?.season_number, ep?.episode_number ?? ep?.number);
+        const epTitle = safeText(ep?.name || ep?.title, "Episode");
+
+        addCalendarItem({
+          kind: "episode",
+          dateKey: dk,
+          time: pickTime(ep, ["air_time","air_datetime","aired_at","airstamp","datetime","time"]) || "20:00",
+          title1: showTitle,
+          title2: `${tag ? tag + " • " : ""}${epTitle}`,
+          img: resolveImg(ep?.still_local || ep?.still || sh?.backdrop_local || sh?.backdrop || sh?.poster_local || sh?.poster, SVG_BACKDROP_FALLBACK),
+          ref: { show: sh, season: se, episode: ep }
+        });
+      }
+    }
+
+    // next_episode_to_air (if present)
+    const nextEp = sh?.next_episode_to_air;
+    if (nextEp && typeof nextEp === "object") {
+      const dk = pickDate(nextEp, ["air_date","airdate","first_aired","date","airstamp","air_datetime"]);
+      if (dk) {
+        const tag = seasonEpisodeTag(nextEp?.season_number, nextEp?.episode_number);
+        addCalendarItem({
+          kind: "episode",
+          dateKey: dk,
+          time: pickTime(nextEp, ["air_time","air_datetime","airstamp","datetime","time"]) || "20:00",
+          title1: showTitle,
+          title2: `${tag ? tag + " • " : ""}${safeText(nextEp?.name || nextEp?.title, "Episode")}`,
+          img: resolveImg(nextEp?.still_local || nextEp?.still || sh?.backdrop_local || sh?.backdrop || sh?.poster_local || sh?.poster, SVG_BACKDROP_FALLBACK),
+          ref: { show: sh, season: null, episode: nextEp }
+        });
+      }
+    }
+  }
+
+  // Sort: episodes first by time, then movies by time
+  for (const [k, arr] of state.calendarItemsByDate.entries()) {
+    arr.sort((a,b) => {
+      const ak = (a.kind === "episode") ? 0 : 1;
+      const bk = (b.kind === "episode") ? 0 : 1;
+      if (ak !== bk) return ak - bk;
+      return String(a.time).localeCompare(String(b.time));
+    });
+  }
+
+  const total = Array.from(state.calendarItemsByDate.values()).reduce((n,a)=>n+a.length,0);
+  log(`calendar: indexed ${total} items across ${state.calendarItemsByDate.size} dates`);
+}
+
+/* ---------- Calendar render ---------- */
+function mondayIndex(jsDay) { return (jsDay + 6) % 7; }
+
+function calendarItemHtml(it, dateKey, idx) {
+  const badge = (it.kind === "episode") ? "EP" : "MOV";
+  const img = resolveImg(it.img, SVG_BACKDROP_FALLBACK);
+
+  return `
+    <div class="v2-cal-item" tabindex="0" data-focusable="1"
+         data-v2-cal-item="1" data-datekey="${escapeAttr(dateKey)}" data-idx="${escapeAttr(String(idx))}">
+      <div class="v2-cal-item__top">
+        <img class="v2-cal-item__img" src="${escapeAttr(img)}" alt="" loading="lazy" />
+        <div class="v2-cal-item__text">
+          <div class="v2-cal-item__line1">${escapeHtml(it.time)} • ${escapeHtml(badge)} • ${escapeHtml(it.title1)}</div>
+          <div class="v2-cal-item__line2">${escapeHtml(it.title2 || "")}</div>
+        </div>
+      </div>
+      <div class="v2-strip"><strong style="opacity:.85;">URLs:</strong> ${urlStripHtml(it.ref)}</div>
+    </div>
+  `;
+}
+
+function buildCalendarGrid(cursorDate) {
+  const grid = $("#v2-cal-grid");
+  grid.innerHTML = "";
+
+  const m0 = new Date(cursorDate.getFullYear(), cursorDate.getMonth(), 1);
+  const m1 = new Date(cursorDate.getFullYear(), cursorDate.getMonth() + 1, 0);
+
+  const monthName = m0.toLocaleString(undefined, { month: "long" });
+  $("#v2-cal-title").textContent = `${monthName} ${m0.getFullYear()}`;
+
+  const lead = mondayIndex(m0.getDay());
+  const daysInMonth = m1.getDate();
+  const totalCells = 42;
+
+  for (let i = 0; i < totalCells; i++) {
+    const dayNum = i - lead + 1;
+    const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
+
+    const cell = document.createElement("div");
+    cell.className = "v2-cal-cell";
+    cell.setAttribute("role", "gridcell");
+
+    if (!inMonth) {
+      cell.style.opacity = "0.35";
+      cell.innerHTML = `<div class="v2-cal-date"></div><div class="v2-cal-items"></div>`;
+      grid.appendChild(cell);
+      continue;
+    }
+
+    const d = new Date(m0.getFullYear(), m0.getMonth(), dayNum);
+    const dateKey = d.toISOString().slice(0,10);
+
+    const items = state.calendarItemsByDate.get(dateKey) || [];
+    const max = state.cfg.calendar_max_items_per_day;
+    const showItems = items.slice(0, max);
+    const overflow = items.length - showItems.length;
+
+    const itemsHtml = showItems.map((it, idx) => calendarItemHtml(it, dateKey, idx)).join("");
+    const overflowHtml = overflow > 0 ? `<div class="v2-cal-overflow">+${overflow} more</div>` : "";
+
+    cell.innerHTML = `
+      <div class="v2-cal-date">${dayNum}</div>
+      <div class="v2-cal-items">
+        ${itemsHtml}
+        ${overflowHtml}
+      </div>
+    `;
+
+    grid.appendChild(cell);
+  }
+
+  // handlers
+  $$("[data-v2-cal-item='1']", grid).forEach(el => {
+    el.addEventListener("click", () => openCalendarItem(el));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openCalendarItem(el); }
+    });
+  });
+}
+
+function openCalendarItem(el) {
+  const dateKey = el.getAttribute("data-datekey") || "";
+  const idx = Number(el.getAttribute("data-idx") || "0");
+  const items = state.calendarItemsByDate.get(dateKey) || [];
+  const it = items[idx];
+  if (!it) return;
+
+  if (it.kind === "movie") openPopup("movie", it.ref);
+  else openPopup("season", it.ref);
+}
+
+/* ---------- Cards ---------- */
+function createShowCard(show) {
+  const title = safeText(show?.name || show?.title, "Missing Title");
+  const poster = resolveImg(show?.poster_local || show?.poster, SVG_POSTER_FALLBACK);
+  if (title === "Missing Title") pushError("SHOW_MISSING_TITLE", "Show missing title", { id: show?.id });
+
+  const status = safeText(show?.status, "—");
+  const vote = show?.vote_average ? `★ ${show.vote_average}` : "";
+  const first = show?.first_air_date ? `First ${show.first_air_date}` : "";
+  const last = show?.last_air_date ? `Last ${show.last_air_date}` : "";
+  const sub = [status, vote, first, last].filter(Boolean).join(" • ");
+
+  const card = document.createElement("div");
+  card.className = "v2-card";
+  card.tabIndex = 0;
+  card.setAttribute("data-focusable","1");
+  card.addEventListener("click", () => openPopup("show", show));
+
+  card.innerHTML = `
+    <img class="v2-card__img" src="${escapeAttr(poster)}" alt="${escapeAttr(title)}" loading="lazy" />
+    <div class="v2-card__body">
+      <div class="v2-title">${escapeHtml(title)}</div>
+      <div class="v2-sub">${escapeHtml(sub || "—")}</div>
+      <div class="v2-strip"><strong style="opacity:.85;">URLs:</strong> ${urlStripHtml(show)}</div>
+    </div>
+  `;
+  return card;
+}
+
+function createMovieCard(movie) {
+  const title = safeText(movie?.title || movie?.name, "Missing Title");
+  const poster = resolveImg(movie?.poster_local || movie?.poster, SVG_POSTER_FALLBACK);
+  if (title === "Missing Title") pushError("MOVIE_MISSING_TITLE", "Movie missing title", { id: movie?.id });
+
+  const rel = movie?.release_date || "";
+  const runtime = movie?.runtime ? `${movie.runtime}m` : "";
+  const vote = movie?.vote_average ? `★ ${movie.vote_average}` : "";
+  const sub = [rel, runtime, vote].filter(Boolean).join(" • ");
+
+  const card = document.createElement("div");
+  card.className = "v2-card";
+  card.tabIndex = 0;
+  card.setAttribute("data-focusable","1");
+  card.addEventListener("click", () => openPopup("movie", movie));
+
+  card.innerHTML = `
+    <img class="v2-card__img" src="${escapeAttr(poster)}" alt="${escapeAttr(title)}" loading="lazy" />
+    <div class="v2-card__body">
+      <div class="v2-title">${escapeHtml(title)}</div>
+      <div class="v2-sub">${escapeHtml(sub || "—")}</div>
+      <div class="v2-strip"><strong style="opacity:.85;">URLs:</strong> ${urlStripHtml(movie)}</div>
+    </div>
+  `;
+  return card;
+}
+
+/* ---------- Filters + render ---------- */
+function applyShowsFiltersSort() {
+  const shows = Array.isArray(state.data?.shows) ? state.data.shows.slice() : [];
+  const q = ($("#v2-shows-search").value || "").trim().toLowerCase();
+  const status = $("#v2-shows-status").value;
+  const watched = $("#v2-shows-watched").value;
+  const sort = $("#v2-shows-sort").value;
+
+  let out = shows;
+  if (q) out = out.filter(s => safeText(s?.name || s?.title, "").toLowerCase().includes(q));
+  if (status) out = out.filter(s => String(s?.status || "") === status);
+
+  if (watched) {
+    out = out.filter(s => {
+      const w = s?.trakt?.watched ?? s?.watched ?? null;
+      return watched === "watched" ? !!w : !w;
+    });
+  }
+
+  const cmpText = (a,b)=> safeText(a?.name||a?.title,"").localeCompare(safeText(b?.name||b?.title,""));
+  const cmpNum = (a,b,k)=> (Number(b?.[k])||0) - (Number(a?.[k])||0);
+
+  if (sort === "az") out.sort((a,b)=>cmpText(a,b));
+  if (sort === "za") out.sort((a,b)=>cmpText(b,a));
+  if (sort === "popularity") out.sort((a,b)=>cmpNum(a,b,"popularity"));
+  if (sort === "vote_average") out.sort((a,b)=>cmpNum(a,b,"vote_average"));
+  if (sort === "first_air_date") out.sort((a,b)=> safeText(a?.first_air_date,"").localeCompare(safeText(b?.first_air_date,"")));
+  if (sort === "last_air_date") out.sort((a,b)=> safeText(a?.last_air_date,"").localeCompare(safeText(b?.last_air_date,"")));
+
+  return out;
+}
+
+function applyMoviesFiltersSort() {
+  const movies = Array.isArray(state.data?.movies) ? state.data.movies.slice() : [];
+  const q = ($("#v2-movies-search").value || "").trim().toLowerCase();
+  const watched = $("#v2-movies-watched").value;
+  const sort = $("#v2-movies-sort").value;
+
+  let out = movies;
+  if (q) out = out.filter(m => safeText(m?.title||m?.name,"").toLowerCase().includes(q));
+
+  if (watched) {
+    out = out.filter(m => {
+      const w = m?.trakt?.watched ?? m?.watched ?? null;
+      return watched === "watched" ? !!w : !w;
+    });
+  }
+
+  const cmpText = (a,b)=> safeText(a?.title||a?.name,"").localeCompare(safeText(b?.title||b?.name,""));
+  const cmpNum = (a,b,k)=> (Number(b?.[k])||0) - (Number(a?.[k])||0);
+
+  if (sort === "az") out.sort((a,b)=>cmpText(a,b));
+  if (sort === "za") out.sort((a,b)=>cmpText(b,a));
+  if (sort === "popularity") out.sort((a,b)=>cmpNum(a,b,"popularity"));
+  if (sort === "vote_average") out.sort((a,b)=>cmpNum(a,b,"vote_average"));
+  if (sort === "release_date") out.sort((a,b)=> safeText(a?.release_date,"").localeCompare(safeText(b?.release_date,"")));
+  if (sort === "runtime") out.sort((a,b)=> (Number(b?.runtime)||0) - (Number(a?.runtime)||0));
+
+  return out;
+}
+
+function renderShows() {
+  const grid = $("#v2-shows-grid");
+  grid.innerHTML = "";
+  const rows = applyShowsFiltersSort();
+  rows.forEach(s => grid.appendChild(createShowCard(s)));
+  setStatus(`indexV2 ${V2_VERSION} • Shows shown: ${rows.length} • errors: ${state.errors.length}`);
+}
+
+function renderMovies() {
+  const grid = $("#v2-movies-grid");
+  grid.innerHTML = "";
+  const rows = applyMoviesFiltersSort();
+  rows.forEach(m => grid.appendChild(createMovieCard(m)));
+  setStatus(`indexV2 ${V2_VERSION} • Movies shown: ${rows.length} • errors: ${state.errors.length}`);
+}
+
+/* ---------- URL Strip ---------- */
+function urlStripHtml(obj) {
+  const target = (obj && obj.show && obj.episode) ? obj.episode : obj;
+  const L = normLinks(target || obj || {});
+  const a = [];
+  if (L.vidsrc) a.push(`<a href="${escapeAttr(L.vidsrc)}" target="_blank" rel="noreferrer">VidSRC</a>`);
+  if (L.videasy) a.push(`<a href="${escapeAttr(L.videasy)}" target="_blank" rel="noreferrer">VidEasy</a>`);
+  if (L.local) a.push(`<a href="${escapeAttr(L.local)}" target="_blank" rel="noreferrer">Local</a>`);
+  return a.join(" • ") || "—";
+}
+
+/* ---------- Popup (modal) ---------- */
+function openPopup(kind, obj) {
+  state.lastFocusEl = document.activeElement;
+
+  $("#v2-popup-title").textContent =
+    (kind === "show") ? "Show" :
+    (kind === "movie") ? "Movie" :
+    (kind === "season") ? "Season / Episode" : "Details";
+
+  $("#v2-popup-body").innerHTML = renderPopupHtml(kind, obj);
+
+  const layer = $("#v2-popup-layer");
+  layer.style.display = "block";
+  layer.setAttribute("aria-hidden", "false");
+
+  // lock background scroll
+  document.body.style.overflow = "hidden";
+
+  $("#v2-popup-close").focus();
+}
+
+function closePopup() {
+  const layer = $("#v2-popup-layer");
+  layer.style.display = "none";
+  layer.setAttribute("aria-hidden", "true");
+  $("#v2-popup-body").innerHTML = "";
+
+  document.body.style.overflow = "";
+
+  if (state.lastFocusEl && state.lastFocusEl.focus) state.lastFocusEl.focus();
+}
+
+function infoStripHtml(obj) {
+  const homepage = obj?.homepage || "";
+  const tmdb = obj?.tmdb_url || "";
+  const rt = obj?.rottentomatoes_url || "";
+  const a = [];
+  if (tmdb) a.push(`<a href="${escapeAttr(tmdb)}" target="_blank" rel="noreferrer">TMDB</a>`);
+  if (rt) a.push(`<a href="${escapeAttr(rt)}" target="_blank" rel="noreferrer">Rotten Tomatoes</a>`);
+  if (homepage) a.push(`<a href="${escapeAttr(homepage)}" target="_blank" rel="noreferrer">Home</a>`);
+  return a.join(" • ") || "—";
+}
+
+function renderPopupHtml(kind, obj) {
+  if (kind === "season") {
+    const sh = obj?.show || {};
+    const ep = obj?.episode || {};
+
+    const showTitle = safeText(sh?.name || sh?.title, "Missing Title");
+    const epName = safeText(ep?.name || ep?.title, "Episode");
+    const tag = seasonEpisodeTag(ep?.season_number, ep?.episode_number);
+    const dk = pickDate(ep, ["air_date","airdate","first_aired","date","airstamp","air_datetime"]);
+    const overview = safeText(ep?.overview || sh?.overview, "—");
+
+    const poster = resolveImg(sh?.poster_local || sh?.poster, SVG_POSTER_FALLBACK);
+    const genres = normGenreArray(sh?.genres);
+    const vote = sh?.vote_average ? `★ ${sh.vote_average}` : "";
+
+    const ref = [
+      genres.length ? genres.join(" • ") : "",
+      vote,
+      dk ? `Airs ${dk}` : ""
+    ].filter(Boolean).join(" • ") || "—";
+
+    return `
+      <div class="v2-popup-hero">
+        <img class="v2-popup-poster" src="${escapeAttr(poster)}" alt="" loading="lazy" />
+        <div style="display:grid;gap:10px;">
+          <div class="v2-popup-h1">${escapeHtml(showTitle)} — ${escapeHtml(tag ? tag + " • " : "")}${escapeHtml(epName)}</div>
+          <div class="v2-strip"><strong style="opacity:.85;">Info:</strong> ${infoStripHtml(sh)}</div>
+          <div class="v2-strip"><strong style="opacity:.85;">Ref:</strong> ${escapeHtml(ref)}</div>
+          <div class="v2-strip"><strong style="opacity:.85;">URLs:</strong> ${urlStripHtml(obj)}</div>
+          <div class="v2-popup-overview">${escapeHtml(overview)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  // show/movie
+  const title = safeText(obj?.name || obj?.title, "Missing Title");
+  const overview = safeText(obj?.overview, "—");
+  const poster = resolveImg(obj?.poster_local || obj?.poster, SVG_POSTER_FALLBACK);
+
+  const genres = normGenreArray(obj?.genres);
+  const vote = obj?.vote_average ? `★ ${obj.vote_average}` : "";
+  const premiered = obj?.release_date ? `Released ${obj.release_date}` : (obj?.first_air_date ? `Premiered ${obj.first_air_date}` : "");
+
+  const ref = [
+    genres.length ? genres.join(" • ") : "",
+    vote,
+    premiered
+  ].filter(Boolean).join(" • ") || "—";
+
+  return `
+    <div class="v2-popup-hero">
+      <img class="v2-popup-poster" src="${escapeAttr(poster)}" alt="" loading="lazy" />
+      <div style="display:grid;gap:10px;">
+        <div class="v2-popup-h1">${escapeHtml(title)}</div>
+        <div class="v2-strip"><strong style="opacity:.85;">Info:</strong> ${infoStripHtml(obj)}</div>
+        <div class="v2-strip"><strong style="opacity:.85;">Ref:</strong> ${escapeHtml(ref)}</div>
+        <div class="v2-strip"><strong style="opacity:.85;">URLs:</strong> ${urlStripHtml(obj)}</div>
+        <div class="v2-popup-overview">${escapeHtml(overview)}</div>
+        <div class="v2-sub">
+          <div><strong>ID:</strong> ${escapeHtml(safeText(obj?.id,"—"))}</div>
+          <div><strong>Collections:</strong> ${escapeHtml(Array.isArray(obj?.collections)?obj.collections.map(normText).filter(Boolean).join(", "):"—")}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* ---------- Keyboard/DPAD basics ---------- */
+function attachKeyHandlers() {
+  document.addEventListener("keydown", (e) => {
+    const popupOpen = ($("#v2-popup-layer").style.display === "block");
+    if (popupOpen && e.key === "Escape") { e.preventDefault(); closePopup(); }
+  }, { passive: false });
+}
+
+/* ---------- Boot ---------- */
+async function boot() {
+  elDiag.textContent = "";
+  log(`indexV2 boot start (${V2_VERSION})`);
+
+  updateHeaderHeightVar();
+  window.addEventListener("resize", updateHeaderHeightVar);
+
+  // nav
+  $$("[data-route]").forEach(btn => btn.addEventListener("click", () => setRoute(btn.getAttribute("data-route"))));
+  window.addEventListener("hashchange", () => { state.route = normalizeRoute(window.location.hash); renderRoute(); });
+
+  // popup close
+  $("#v2-popup-close").addEventListener("click", closePopup);
+  $("#v2-popup-layer").addEventListener("click", (e) => {
+    if (e.target && e.target.id === "v2-popup-layer") closePopup();
+  });
+
+  // calendar buttons
+  $("#v2-cal-prev").addEventListener("click", () => {
+    const d = state.calendarCursor;
+    state.calendarCursor = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+    buildCalendarGrid(state.calendarCursor);
+  });
+  $("#v2-cal-next").addEventListener("click", () => {
+    const d = state.calendarCursor;
+    state.calendarCursor = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    buildCalendarGrid(state.calendarCursor);
+  });
+  $("#v2-cal-today").addEventListener("click", () => {
+    state.calendarCursor = new Date();
+    buildCalendarGrid(state.calendarCursor);
+  });
+
+  attachKeyHandlers();
+
+  setStatus("Loading config.json…");
+  await loadConfigJson();
+
+  setStatus("Loading data.json…");
+  await loadData();
+
+  setStatus("Loading config.html…");
+  await loadConfigViewHtml();
+
+  // build calendar + render grids
+  buildCalendarItems();
+  buildCalendarGrid(state.calendarCursor);
+
+  renderShows();
+  renderMovies();
+
+  // filter bindings
+  ["v2-shows-search","v2-shows-status","v2-shows-watched","v2-shows-sort"].forEach(id => {
+    const el = $("#"+id);
+    if (!el) return;
+    el.addEventListener("input", renderShows);
+    el.addEventListener("change", renderShows);
+  });
+  ["v2-movies-search","v2-movies-watched","v2-movies-sort"].forEach(id => {
+    const el = $("#"+id);
+    if (!el) return;
+    el.addEventListener("input", renderMovies);
+    el.addEventListener("change", renderMovies);
+  });
+
+  // route init
+  state.route = normalizeRoute(window.location.hash);
+  renderRoute();
+
+  setStatus(`indexV2 ${V2_VERSION} • loaded • errors=${state.errors.length} • shows=${Array.isArray(state.data?.shows)?state.data.shows.length:0} • movies=${Array.isArray(state.data?.movies)?state.data.movies.length:0}`);
+  log("indexV2 boot complete");
+}
+
+boot().catch(err => {
+  pushError("BOOT_FAILED", String(err));
+  setStatus("Boot failed (see diagnostics).");
+  console.error(err);
+});
+</script>
 </body>
 </html>
