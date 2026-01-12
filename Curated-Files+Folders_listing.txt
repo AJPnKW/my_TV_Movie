@@ -1,0 +1,99 @@
+Folder PATH listing
+Volume serial number is F80F-AA29
+C:.
+│   .gitattributes
+│   .gitignore
+│   .gitignore.bak
+│   README.md
+├───assets
+│   ├───backdrops
+│   │   ├───movies
+│   │   └───shows
+│   ├───collections
+│   ├───fallback
+│   ├───HR
+│   ├───icons
+│   ├───logos
+│   │   └───services
+│   ├───posters
+│   │   ├───movies
+│   │   ├───seasons
+│   │   └───shows
+│   └───stills
+│       └───episodes
+├───data
+│   │   data.json
+│   │   inputs_parsed.json
+│   │   omdb_movies.json
+│   │   trakt_watched.json
+│   │   tvmaze_raw.json
+│   │   version_inventory.json
+├───docs
+│   ├───spec
+│   └───_patch_notes
+├───inputs
+│       livetv_list.txt
+│       movies_list.txt
+│       schema.json
+│       tv_list.txt
+│       watchlist.txt
+├───logs
+├───reports
+├───scripts
+│       apply_ai_patch.ps1
+│       apply_poster_fix.ps1
+│       audit_versions.py
+│       clean_ui_files.py
+│       create_asset_folders.vbs
+│       download_service_logos.py
+│       extract_schema.py
+│       fetch_live_tv.py
+│       fetch_omdb.py
+│       fetch_tmdb.py
+│       fetch_tmdb.updated.py
+│       fetch_trakt.py
+│       fetch_tvmaze.py
+│       find_asset_references.ps1
+│       generate_repo_file_map.py
+│       generate_schema.py
+│       get_tv_pages.py
+│       inspect_image_key_paths.ps1
+│       migrate_assets.ps1
+│       pack_my_tv_movie_pipeline_baseline.py
+│       parse_txt_to_json.py
+│       patch_inputs_cleanup_headers.ps1
+│       patch_inputs_tmdb_ids.ps1
+│       print_missing_trakt_shows.py
+│       qa_inputs_parsed_missing_trakt.py
+│       qa_missing_trakt_ids.py
+│       qa_pipeline_integrity.py
+│       qa_test_tmdb_tv_movie.py
+│       run_pipeline_full.py
+│       run_pipeline_tmdb_trakt.py
+│       scan_media_integrity_v2.ps1
+│       schema_report.py
+│       sync_trakt.py
+│       trakt_debug_tmdb_lookup.py
+│       trakt_get_tokens_from_pin.py
+│       trakt_test_tokens.py
+├───tools
+│   └───library_manager
+│       │   library_manager.py
+│       │   library_manager_app.py
+│       │   parse_txt_to_json.py
+│       │   requirements.txt
+│       │   run_library_manager.ps1
+│       ├───logs
+│       └───out
+└───web
+    │   config.html
+    │   config.js
+    │   config.json
+    │   heated-rivalry.html
+    │   index.html
+    │   show.html
+    │   watchlist.html
+    └───css
+            my_tv_hub.bak
+            my_tv_hub.css
+            
