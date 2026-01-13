@@ -3,8 +3,8 @@
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
-# [VERSION] v2.6.6
-# [UPDATED] 2025-12-29_22-30-00
+# [VERSION] v2.7.1
+# [UPDATED] 2026-01-13
 # [BUILD]   14.01.07
 #
 # [PATCH GOALS]
@@ -19,7 +19,7 @@
 # - Preserve existing minimal fields and placeholders (seasons:[], links:{} for TV)
 #
 # [NOTE]
-# Deep-build of seasons/episodes is NOT implemented here (still a separate stage if you add it later).
+# Deep-build of seasons/episodes IS implemented here (show -> seasons -> episodes).
 # ==============================================================================
 
 import dataclasses
@@ -64,12 +64,7 @@ REPO_ROOT = SCRIPT_PATH.parents[1]
 WEB_DIR = REPO_ROOT / "web"
 DATA_DIR = REPO_ROOT / "data"
 
-# Inputs (support both legacy and inputs/)
-TV_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "tv_list.txt", REPO_ROOT / "tv_list.txt"]
-MOVIES_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "movies_list.txt", REPO_ROOT / "movies_list.txt"]
-WATCHLIST_CANDIDATES = [REPO_ROOT / "inputs" / "watchlist.txt", REPO_ROOT / "watchlist.txt"]
-
-# Optional intermediate JSON from parse_txt_to_json.py
+# Inputs
 PARSED_INPUTS_JSON = DATA_DIR / "inputs_parsed.json"
 
 OUT_DATA_JSON = DATA_DIR / "data.json"
@@ -89,7 +84,7 @@ RE_WS = re.compile(r"\s+")
 # -------------------------
 def setup_logging() -> None:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    ts = _dt.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    ts = _dt.datetime.now(_dt.UTC).strftime("%Y%m%d_%H%M%S")
     log_path = LOG_DIR / f"fetch_tmdb.{ts}.log.txt"
 
     logging.basicConfig(
@@ -342,11 +337,109 @@ class TMDBClient:
 # -------------------------
 # Inputs parsing
 # -------------------------
-def _first_existing(candidates: List[Path]) -> Optional[Path]:
-    for p in candidates:
-        if p.exists():
-            return p
-    return None
+
+
+def compute_local_season_poster(cfg: Config, poster_path: Optional[str]) -> Optional[str]:
+    name = _basename_from_tmdb_path(poster_path)
+    if not name:
+        return None
+    d = _folder(cfg, "seasons_poster")
+    return f"{d}/{name}" if d else None
+
+
+def compute_local_episode_still(cfg: Config, still_path: Optional[str]) -> Optional[str]:
+    name = _basename_from_tmdb_path(still_path)
+    if not name:
+        return None
+    d = _folder(cfg, "episodes_stills")
+    return f"{d}/{name}" if d else None
+
+
+def build_tv_seasons_episodes(
+    client: "TMDBClient",
+    cfg: Config,
+    show_tmdb_id: int,
+    season_mode: str,
+    season_filter: Optional[List[int]],
+    season_min: Optional[int],
+) -> List[Dict[str, Any]]:
+    """Build full Season -> Episode hierarchy via /tv/{id}/season/{season_number}."""
+    try:
+        show = client.get_json(f"/tv/{int(show_tmdb_id)}", params={"language": "en-US"})
+    except Exception:
+        show = None
+
+    available: List[int] = []
+    for ss in (show or {}).get("seasons") or []:
+        try:
+            available.append(int(ss.get("season_number")))
+        except Exception:
+            continue
+
+    # Decide which seasons to fetch WITHOUT ever calling non-existent seasons
+    available_set = sorted({int(x) for x in available if isinstance(x, int)})
+
+    wanted: List[int] = []
+    if (season_mode or "all") == "min" and season_min is not None:
+        wanted = [sn for sn in available_set if sn >= int(season_min)]
+    elif (season_mode or "all") == "filter" and season_filter:
+        wanted = [sn for sn in season_filter if int(sn) in set(available_set)]
+    else:
+        wanted = available_set
+
+    seasons_out: List[Dict[str, Any]] = []
+    for sn in wanted:
+        try:
+            season = client.get_json(f"/tv/{int(show_tmdb_id)}/season/{int(sn)}", params={"language": "en-US"})
+        except Exception as ex:
+            logging.warning("[season] fetch failed show=%s season=%s err=%s", show_tmdb_id, sn, ex)
+            continue
+
+        poster_path = season.get("poster_path")
+        season_obj: Dict[str, Any] = {
+            "id": season.get("id"),
+            "_id": season.get("_id"),
+            "name": season.get("name"),
+            "overview": season.get("overview"),
+            "air_date": season.get("air_date"),
+            "season_number": season.get("season_number", sn),
+            "vote_average": season.get("vote_average"),
+            "vote_count": season.get("vote_count"),
+            "poster_path": poster_path,
+            "poster_local": compute_local_season_poster(cfg, poster_path),
+            "episodes": [],
+        }
+
+        for ep in (season.get("episodes") or []):
+            try:
+                ep_num = int(ep.get("episode_number"))
+            except Exception:
+                continue
+            still_path = ep.get("still_path")
+            season_number = int(ep.get("season_number") or sn)
+            ep_obj: Dict[str, Any] = {
+                "id": ep.get("id"),
+                "show_id": ep.get("show_id", show_tmdb_id),
+                "season_number": season_number,
+                "episode_number": ep_num,
+                "episode_type": ep.get("episode_type"),
+                "name": ep.get("name"),
+                "overview": ep.get("overview"),
+                "air_date": ep.get("air_date"),
+                "runtime": ep.get("runtime"),
+                "production_code": ep.get("production_code"),
+                "still_path": still_path,
+                "still_local": compute_local_episode_still(cfg, still_path),
+                "vote_average": ep.get("vote_average"),
+                "vote_count": ep.get("vote_count"),
+                "links": build_tv_links(cfg, int(show_tmdb_id), int(season_number), int(ep_num)),
+            }
+            season_obj["episodes"].append(ep_obj)
+
+        seasons_out.append(season_obj)
+
+    return seasons_out
+
 
 
 def parse_pipe_lines(path: Path, media: str) -> List[Dict[str, Any]]:
@@ -389,18 +482,30 @@ def parse_pipe_lines(path: Path, media: str) -> List[Dict[str, Any]]:
     return out
 
 
-def parse_season_spec(spec: str) -> Optional[List[int]]:
-    spec = (spec or "").strip()
-    if not spec:
-        return None  # all seasons
+def parse_season_rule(spec: str) -> Tuple[str, Optional[List[int]], Optional[int]]:
+    """
+    Season spec rules:
+      - "" or "*"      => ("all", None, None)
+      - "1,2,3"        => ("filter", [1,2,3], None)
+      - "1-3"          => ("filter", [1,2,3], None)
+      - "7+"           => ("min", None, 7)
 
-    spec = spec.upper().replace("SEASON", "S")
-    spec = spec.replace(" ", "")
+    Returns:
+      (season_mode, season_filter, season_min)
+    """
+    s = (spec or "").strip()
+    if not s or s == "*":
+        return "all", None, None
 
-    # split commas
-    parts = [p for p in spec.split(",") if p]
+    s = s.upper().replace("SEASON", "S").replace(" ", "")
+
+    if s.endswith("+") and s[:-1].lstrip("S").isdigit():
+        n = int(s[:-1].lstrip("S"))
+        return ("min", None, n if n > 0 else None)
+
+    s = s.lstrip("S")
+    parts = [p for p in s.split(",") if p]
     seasons: List[int] = []
-
     for p in parts:
         p = p.lstrip("S")
         if "-" in p:
@@ -419,30 +524,35 @@ def parse_season_spec(spec: str) -> Optional[List[int]]:
                 seasons.append(int(p))
             except Exception:
                 continue
+    seasons = sorted({x for x in seasons if x > 0})
+    return ("filter", seasons or None, None)
 
-    # unique + sorted
-    seasons = sorted({s for s in seasons if s > 0})
-    return seasons or None
 
+def parse_season_spec(spec: str) -> Optional[List[int]]:
+    """Legacy helper: returns explicit season list or None for all/min."""
+    mode, flt, _mn = parse_season_rule(spec)
+    return flt if mode == "filter" else None
 
 def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    if PARSED_INPUTS_JSON.exists():
-        js = json.loads(read_text_file(PARSED_INPUTS_JSON))
-        tv = js.get("tv_list") or js.get("shows") or js.get("tv") or []
-        mv = js.get("movies_list") or js.get("movies") or []
-        if isinstance(tv, list) and isinstance(mv, list):
-            logging.info("[inputs] using parsed: %s", PARSED_INPUTS_JSON)
-            return tv, mv
+    """
+    Canonical inputs come ONLY from data/inputs_parsed.json produced by parse_txt_to_json.py.
+    This function intentionally does NOT read any *.txt sources (single source of truth).
+    """
+    if not PARSED_INPUTS_JSON.exists():
+        raise FileNotFoundError(f"Missing required file: {PARSED_INPUTS_JSON}. Run: scripts/parse_txt_to_json.py")
 
-    tv_path = _first_existing(TV_LIST_CANDIDATES)
-    mv_path = _first_existing(MOVIES_LIST_CANDIDATES)
+    js = json.loads(read_text_file(PARSED_INPUTS_JSON))
 
-    tv_list: List[Dict[str, Any]] = parse_pipe_lines(tv_path, "show") if tv_path else []
-    mv_list: List[Dict[str, Any]] = parse_pipe_lines(mv_path, "movie") if mv_path else []
+    tv = js.get("tv_list") or js.get("shows") or js.get("tv") or []
+    mv = js.get("movies_list") or js.get("movies") or []
 
-    logging.info("[inputs] tv_list=%s (%s)", len(tv_list), tv_path)
-    logging.info("[inputs] movies_list=%s (%s)", len(mv_list), mv_path)
-    return tv_list, mv_list
+    if not isinstance(tv, list) or not isinstance(mv, list):
+        raise ValueError(f"Invalid structure in {PARSED_INPUTS_JSON}: expected lists at tv/movies keys")
+
+    logging.info("[inputs] using parsed: %s", PARSED_INPUTS_JSON)
+    logging.info("[inputs] tv=%s movies=%s", len(tv), len(mv))
+    return tv, mv
+
 
 
 # -------------------------
@@ -484,10 +594,10 @@ def main() -> int:
 
     data: Dict[str, Any] = {
         "meta": {
-            "generated_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "generated_utc": _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "builder": {
                 "script": "scripts/fetch_tmdb.py",
-                "version": "v2.6.5",
+                "version": "v2.7.0",
                 "config_sha1": sha1_text(read_text_file(CONFIG_JSON)),
             },
         },
@@ -512,10 +622,29 @@ def main() -> int:
         title = (item.get("title") or item.get("name") or "").strip()
         tmdb_id_raw = str(item.get("tmdb_id") or "").strip()
         season_spec = str(item.get("season_spec") or item.get("seasons") or "").strip()
-        seasons = parse_season_spec(season_spec)
+
+        # Prefer parsed rule fields if present (from parse_txt_to_json.py)
+        season_mode = str(item.get("season_mode") or "").strip().lower() or ""
+        season_min = item.get("season_min")
+        parsed_filter = item.get("season_filter")
+
+        # Backward-compat: compute rule from season_spec if not provided
+        if season_mode not in ("all", "filter", "min"):
+            season_mode2, season_filter2, season_min2 = parse_season_rule(season_spec)
+            season_mode = season_mode2
+            seasons = season_filter2
+            season_min = season_min2
+        else:
+            seasons = parsed_filter if isinstance(parsed_filter, list) else parse_season_spec(season_spec)
 
         # UI flags (preserve)
-        season_mode = "filter" if seasons else "all"
+        if season_mode == "filter":
+            season_mode = "filter" if seasons else "all"
+        if season_mode == "min":
+            try:
+                season_min = int(season_min) if season_min is not None else None
+            except Exception:
+                season_min = None
 
         try:
             tmdb_id: Optional[int] = int(tmdb_id_raw) if tmdb_id_raw else None
@@ -558,8 +687,8 @@ def main() -> int:
                 "first_air_date": show.get("first_air_date"),
                 "poster_local": poster_local,
                 "backdrop_local": backdrop_local,
-                "seasons": [],  # deep build later
-                "links": {},    # deep build later (episode links)
+                "seasons": [],  # built below
+                "links": {},
                 "season_mode": season_mode,
                 "season_filter": seasons,  # None => all
 
@@ -590,6 +719,19 @@ def main() -> int:
                 "created_by": show.get("created_by") or [],
                 "networks": show.get("networks") or [],
             }
+
+            # Deep build seasons + episodes (required for UI + Trakt mapping)
+            try:
+                show_obj["seasons"] = build_tv_seasons_episodes(
+                    client=client,
+                    cfg=cfg,
+                    show_tmdb_id=int(tmdb_id),
+                    season_mode=season_mode,
+                    season_filter=seasons,
+                    season_min=season_min,
+                )
+            except Exception as _ex_deep:
+                logging.warning("[show] deep build failed tmdb_id=%s err=%s", tmdb_id, _ex_deep)
 
             data["shows"].append(show_obj)
             shows_ok += 1

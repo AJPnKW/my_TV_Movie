@@ -41,6 +41,10 @@ jobs:
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
           API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
           API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
+          API_TRAKT_ACCESS_TOKEN: ${{ secrets.API_TRAKT_ACCESS_TOKEN }}
+          API_TRAKT_REFRESH_TOKEN: ${{ secrets.API_TRAKT_REFRESH_TOKEN }}
+          API_TRAKT_REDIRECT_URL: ${{ secrets.API_TRAKT_REDIRECT_URL }}
+          API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
 
       - name: Commit changes (if any)
         run: |

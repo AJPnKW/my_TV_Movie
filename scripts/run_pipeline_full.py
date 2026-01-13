@@ -3,7 +3,7 @@
 # [FILE]    scripts/run_pipeline_full.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Orchestrate: TXT->inputs_parsed -> TMDB -> Trakt -> QA
-# [VERSION] v1.2.0
+# [VERSION] v1.3.0
 # [UPDATED] 2026-01-03_00-00-00
 # [BUILD]   14.01.07
 # ==============================================================================
@@ -65,6 +65,12 @@ def main() -> int:
     if rc_trakt != 0:
         _write_line(logfp, f"RESULT    : FAIL (trakt exit_code={rc_trakt})")
         return rc_trakt
+
+    # 3b) Trakt watch-state sync (OAuth; optional)
+    rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
+    if rc_watch != 0:
+        _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
+        return rc_watch
 
     # 4) QA missing trakt ids
     rc_qa1 = _run("QA_MISSING_TRAKT", [py, os.path.join("scripts", "qa_missing_trakt_ids.py")], logfp)

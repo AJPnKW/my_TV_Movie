@@ -71,6 +71,24 @@ def _norm_title(s: str) -> str:
     return _WS.sub(" ", (s or "").strip())
 
 
+
+def _dedup_by_tmdb_id(items: List[Dict[str, Any]], label: str) -> Tuple[List[Dict[str, Any]], int]:
+    """Deduplicate per list using tmdb_id as the stable key. Keeps first occurrence."""
+    seen: set[int] = set()
+    out: List[Dict[str, Any]] = []
+    dups = 0
+    for it in items:
+        tid = it.get("tmdb_id")
+        if isinstance(tid, int):
+            if tid in seen:
+                dups += 1
+                continue
+            seen.add(tid)
+        out.append(it)
+    if dups:
+        _log(f"[dedup] {label}: removed_duplicates={dups}")
+    return out, dups
+
 def _parse_tv_lines(text: str) -> Tuple[List[Dict[str, Any]], int]:
     out: List[Dict[str, Any]] = []
     errors = 0
@@ -185,9 +203,15 @@ def main() -> int:
         wl_items, e = _parse_watchlist_lines(_read_text(wl_path))
         err += e
 
+
+    # Deduplicate per list (stable key: tmdb_id)
+    tv_items, _ = _dedup_by_tmdb_id(tv_items, "tv")
+    mv_items, _ = _dedup_by_tmdb_id(mv_items, "movies")
+    wl_items, _ = _dedup_by_tmdb_id(wl_items, "watchlist")
+
     payload: Dict[str, Any] = {
         "generated_local": _dt.datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
-        "generated_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "generated_utc": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "tv": tv_items,
         "movies": mv_items,
         "watchlist": wl_items,
