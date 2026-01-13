@@ -67,8 +67,7 @@ def _now_stamp() -> str:
 
 def _utc_iso() -> str:
     # keep existing style; avoid introducing new time semantics
-    return _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-
+    return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 def setup_logging() -> Path:
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
