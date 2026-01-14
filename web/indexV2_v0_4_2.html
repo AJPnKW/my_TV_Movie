@@ -1,0 +1,974 @@
+<!doctype html>
+<!--
+================================================================================
+my_TV_Movie / web / indexV2.html
+
+GOAL
+  Minimal, incremental data-mapping update so indexV2 correctly resolves asset paths
+  produced by the pipeline, WITHOUT changing UI/DOM or architecture.
+
+  REQUIRED FIX (ONLY CHANGE IN v0.4.2)
+    data.json provides local asset paths under:
+      /assets/images/tmdb/...
+
+    Repo on-disk asset folders are:
+      /assets/posters/movies/
+      /assets/posters/shows/
+      /assets/posters/seasons/
+      /assets/backdrops/movies/
+      /assets/backdrops/shows/
+      /assets/stills/episodes/
+
+    Therefore, indexV2 remaps /assets/images/tmdb/... to the repo folders above.
+
+VERSION
+  - v0.4.2 (2026-01-13 America/Toronto)
+  - Change from v0.4.1:
+      * Asset path remap for /assets/images/tmdb/... (ONLY)
+
+================================================================================
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="dark light" />
+  <title>My TV Movie Hub (indexV2)</title>
+
+  <!-- REQUIRED REFERENCES -->
+  <link rel="stylesheet" href="./css/my_tv_hub.css" />
+  <script defer src="./config.js"></script>
+
+  <style>
+    #v2-root, #v2-root * { box-sizing: border-box; }
+    #v2-root{
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      background:#0b0f14;
+      color:#e8eef7;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      scrollbar-color: rgba(255,255,255,0.25) rgba(255,255,255,0.06);
+      scrollbar-width: auto;
+    }
+    #v2-root a{ color:inherit; }
+    #v2-root::-webkit-scrollbar{ width:18px; height:18px; }
+    #v2-root::-webkit-scrollbar-track{ background:rgba(255,255,255,0.06); }
+    #v2-root::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.22);
+      border-radius:18px;
+      border:4px solid rgba(255,255,255,0.06);
+    }
+    #v2-root [data-focusable="1"]:focus{ outline:3px solid #ffffff; outline-offset:2px; }
+
+    #v2-header{
+      position:sticky; top:0; z-index:200;
+      padding:10px 12px;
+      background:rgba(11,15,20,0.96);
+      backdrop-filter:blur(6px);
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+    #v2-title{ font-weight:950; font-size:20px; letter-spacing:0.2px; }
+    #v2-header_nav{ margin-top:10px; display:flex; justify-content:flex-start; }
+    .v2-tabs{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .v2-tabs button{
+      padding:8px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.06);
+      cursor:pointer;
+    }
+    .v2-tabs button:hover{ background:rgba(255,255,255,0.10); }
+    .v2-tab-active{
+      background:#ffffff !important;
+      color:#0b0f14 !important;
+      border-color:#ffffff !important;
+      font-weight:900;
+    }
+    #v2-main{ flex:1; overflow:scroll; padding:12px; }
+    #v2-footer{
+      padding:10px 12px;
+      font-size:12px;
+      opacity:0.9;
+      border-top:1px solid rgba(255,255,255,0.08);
+      background:rgba(11,15,20,0.96);
+    }
+    .v2-view{ display:none; }
+    .v2-view.is-active{ display:block; }
+
+    .v2-bar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin:0 0 12px 0;
+      padding:10px 12px;
+      border:1px solid rgba(255,255,255,0.10);
+      border-radius:14px;
+      background:rgba(255,255,255,0.03);
+    }
+    .v2-bar label{ display:flex; gap:8px; align-items:center; font-size:12px; opacity:0.95; }
+    .v2-bar input, .v2-bar select{
+      padding:6px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.06);
+      min-width:160px;
+      color:inherit;
+    }
+
+    .v2-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+      gap:12px;
+    }
+    .v2-card{
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.03);
+      cursor:pointer;
+    }
+    .v2-card__img{
+      width:100%;
+      aspect-ratio:2/3;
+      object-fit:cover;
+      display:block;
+      background:rgba(255,255,255,0.05);
+    }
+    .v2-card__body{ padding:10px 12px; display:grid; gap:6px; }
+    .v2-title_text{ font-weight:900; letter-spacing:0.2px; }
+    .v2-sub{ font-size:12px; opacity:0.86; line-height:1.25; }
+
+    .v2-urlstrip{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:4px; }
+    .v2-urlbtn{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(255,255,255,0.06);
+      text-decoration:none;
+      font-size:12px;
+      font-weight:850;
+      letter-spacing:0.2px;
+    }
+    .v2-urlbtn:hover{ background:rgba(255,255,255,0.10); }
+
+    #v2-cal-header{
+      position:sticky; top:0; z-index:150;
+      padding:10px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.03);
+      backdrop-filter:blur(6px);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      margin-bottom:10px;
+    }
+    #v2-cal-todaylabel{ font-weight:950; opacity:0.95; white-space:nowrap; }
+    #v2-cal-title{ font-weight:950; white-space:nowrap; }
+    #v2-cal-header button{
+      padding:6px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.06);
+      cursor:pointer;
+    }
+    .v2-cal-dow{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      gap:10px;
+      opacity:0.9;
+      font-size:12px;
+      padding:0 2px 8px 2px;
+    }
+    #v2-cal-grid{
+      display:grid;
+      grid-template-columns:repeat(7, 1fr);
+      grid-auto-rows:minmax(120px, auto);
+      gap:10px;
+    }
+    .v2-cal-cell{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.02);
+      padding:8px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      overflow:hidden;
+    }
+    .v2-cal-date{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:26px;
+      height:26px;
+      border-radius:10px;
+      font-weight:950;
+      letter-spacing:0.2px;
+      opacity:0.95;
+      background:rgba(255,255,255,0.05);
+    }
+    .v2-cal-cell.v2-is-today{
+      border-color:rgba(255,255,255,0.28);
+      background:rgba(255,255,255,0.06);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.08) inset;
+    }
+    .v2-cal-cell.v2-is-today .v2-cal-date{
+      background:#ffffff;
+      color:#0b0f14;
+      font-weight:1000;
+    }
+    .v2-cal-items{ display:grid; gap:8px; }
+    .v2-cal-item{
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.03);
+      padding:8px;
+      display:grid;
+      gap:6px;
+      cursor:pointer;
+    }
+    .v2-cal-item__top{ display:flex; gap:10px; align-items:flex-start; }
+    .v2-cal-item__img{
+      width:72px; height:44px;
+      border-radius:12px;
+      object-fit:cover;
+      background:rgba(255,255,255,0.06);
+      display:block;
+      flex:0 0 auto;
+    }
+    .v2-cal-item__text{ min-width:0; display:grid; gap:2px; }
+    .v2-cal-line1{ font-weight:950; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .v2-cal-line2{ font-weight:850; font-size:12px; opacity:0.92; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .v2-cal-line3{ font-size:12px; opacity:0.82; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .v2-cal-overflow{ font-size:12px; opacity:0.80; }
+
+    #v2-popup-layer{
+      position:fixed; inset:0;
+      display:none; z-index:2000;
+      background:rgba(0,0,0,0.72);
+      backdrop-filter:blur(6px);
+      padding:4vh 4vw;
+    }
+    #v2-popup-panel{
+      margin:0 auto;
+      width:min(1100px, 92vw);
+      max-height:92vh;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(11,15,20,0.98);
+      box-shadow:0 20px 60px rgba(0,0,0,0.65);
+      display:grid;
+      grid-template-rows:auto 1fr;
+    }
+    #v2-popup-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,0.10);
+    }
+    #v2-popup-close{
+      padding:6px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.06);
+      cursor:pointer;
+    }
+    #v2-popup-body{
+      padding:12px;
+      overflow:auto;
+      max-height:calc(92vh - 52px);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="v2-root">
+    <header id="v2-header">
+      <div id="v2-header_top">
+        <div id="v2-title">My TV Movie Hub</div>
+      </div>
+      <div id="v2-header_nav">
+        <nav class="v2-tabs" aria-label="Primary">
+          <button data-route="#calendar" data-focusable="1">Calendar</button>
+          <button data-route="#shows" data-focusable="1">Shows</button>
+          <button data-route="#movies" data-focusable="1">Movies</button>
+          <button data-route="#livetv" data-focusable="1">Live TV</button>
+          <button data-route="#config" data-focusable="1">Config</button>
+          <button data-route="#explore" data-focusable="1">Explore</button>
+          <button data-route="#profiles" data-focusable="1">Profiles</button>
+        </nav>
+      </div>
+    </header>
+
+    <main id="v2-main">
+      <section class="v2-view" id="v2-view-calendar" aria-label="Calendar">
+        <div id="v2-cal-header">
+          <div id="v2-cal-todaylabel">—</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <button id="v2-cal-prev" data-focusable="1" aria-label="Previous month">◀</button>
+            <div id="v2-cal-title">—</div>
+            <button id="v2-cal-next" data-focusable="1" aria-label="Next month">▶</button>
+          </div>
+          <div style="margin-left:auto;">
+            <button id="v2-cal-today" data-focusable="1" aria-label="Go to current month">Today</button>
+          </div>
+        </div>
+        <div class="v2-cal-dow">
+          <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+        </div>
+        <div id="v2-cal-grid" role="grid" aria-label="Month grid"></div>
+      </section>
+
+      <section class="v2-view" id="v2-view-shows" aria-label="Shows">
+        <div class="v2-bar">
+          <label>Search <input id="v2-shows-search" data-focusable="1" placeholder="title…" /></label>
+          <label>Status
+            <select id="v2-shows-status" data-focusable="1">
+              <option value="">All</option>
+              <option value="Running">Running</option>
+              <option value="Ended">Ended</option>
+              <option value="Canceled">Canceled</option>
+              <option value="Upcoming">Upcoming</option>
+            </select>
+          </label>
+          <label>Watched
+            <select id="v2-shows-watched" data-focusable="1">
+              <option value="">All</option>
+              <option value="watched">Watched</option>
+              <option value="unwatched">Unwatched</option>
+            </select>
+          </label>
+          <label>Sort
+            <select id="v2-shows-sort" data-focusable="1">
+              <option value="az">A→Z</option>
+              <option value="za">Z→A</option>
+              <option value="popularity">Popularity</option>
+              <option value="vote_average">Vote Average</option>
+              <option value="first_air_date">First Air Date</option>
+              <option value="last_air_date">Last Air Date</option>
+            </select>
+          </label>
+        </div>
+        <div class="v2-grid" id="v2-shows-grid" aria-label="Show cards"></div>
+      </section>
+
+      <section class="v2-view" id="v2-view-movies" aria-label="Movies">
+        <div class="v2-bar">
+          <label>Search <input id="v2-movies-search" data-focusable="1" placeholder="title…" /></label>
+          <label>Watched
+            <select id="v2-movies-watched" data-focusable="1">
+              <option value="">All</option>
+              <option value="watched">Watched</option>
+              <option value="unwatched">Unwatched</option>
+            </select>
+          </label>
+          <label>Sort
+            <select id="v2-movies-sort" data-focusable="1">
+              <option value="az">A→Z</option>
+              <option value="za">Z→A</option>
+              <option value="popularity">Popularity</option>
+              <option value="vote_average">Vote Average</option>
+              <option value="release_date">Release Date</option>
+              <option value="runtime">Runtime</option>
+            </select>
+          </label>
+        </div>
+        <div class="v2-grid" id="v2-movies-grid" aria-label="Movie cards"></div>
+      </section>
+
+      <section class="v2-view" id="v2-view-livetv" aria-label="Live TV"><div style="opacity:.9;">Live TV (placeholder)</div></section>
+      <section class="v2-view" id="v2-view-config" aria-label="Config"><div id="v2-config-root" style="opacity:.9;">Loading config.html…</div></section>
+      <section class="v2-view" id="v2-view-explore" aria-label="Explore"><div style="opacity:.9;">Explore (placeholder)</div></section>
+      <section class="v2-view" id="v2-view-profiles" aria-label="Profiles"><div style="opacity:.9;">Profiles (placeholder)</div></section>
+    </main>
+
+    <footer id="v2-footer">
+      <span id="v2-footer_status">loading…</span>
+    </footer>
+
+    <div id="v2-popup-layer" aria-hidden="true">
+      <div id="v2-popup-panel" role="dialog" aria-modal="true">
+        <div id="v2-popup-head">
+          <div id="v2-popup-title" style="font-weight:950;">Details</div>
+          <button id="v2-popup-close" data-focusable="1" aria-label="Close">✕</button>
+        </div>
+        <div id="v2-popup-body"></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const V2_VERSION = "v0.4.2";
+
+const SVG_POSTER_FALLBACK = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="600" height="900">
+    <rect width="100%" height="100%" fill="#121a24"/>
+    <text x="50%" y="45%" fill="#e8eef7" font-family="Arial" font-size="42" text-anchor="middle">No Poster</text>
+    <text x="50%" y="55%" fill="#9fb0c6" font-family="Arial" font-size="28" text-anchor="middle">indexV2</text>
+  </svg>
+`);
+const SVG_BACKDROP_FALLBACK = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(`
+  <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720">
+    <rect width="100%" height="100%" fill="#121a24"/>
+    <text x="50%" y="50%" fill="#e8eef7" font-family="Arial" font-size="42" text-anchor="middle">No Image</text>
+  </svg>
+`);
+
+const DEFAULTS = {
+  data_url_primary: "./data/data.json",
+  data_url_fallback: "https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/data/data.json",
+  calendar_max_items_per_day: 4
+};
+
+const state = {
+  cfg: { ...DEFAULTS },
+  data: null,
+  errors: [],
+  route: "#calendar",
+  calendarCursor: new Date(),
+  calendarItemsByDate: new Map(),
+  lastFocusEl: null
+};
+
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+
+function setFooterStatus(msg){ $("#v2-footer_status").textContent = msg; }
+function safeText(v, fallback="—"){ if (v === null || v === undefined) return fallback; const s = String(v).trim(); return s ? s : fallback; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+function escapeAttr(s){ return escapeHtml(s).replace(/"/g, "&quot;"); }
+
+async function loadConfigJson(){
+  try{
+    const res = await fetch("./config.json", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`config.json HTTP ${res.status}`);
+    const j = await res.json();
+    if (j && typeof j === "object"){
+      if (j.data_url) state.cfg.data_url_primary = j.data_url;
+      if (j.data_url_primary) state.cfg.data_url_primary = j.data_url_primary;
+      if (j.data_url_fallback) state.cfg.data_url_fallback = j.data_url_fallback;
+      if (j.calendar_max_items_per_day) state.cfg.calendar_max_items_per_day = Number(j.calendar_max_items_per_day) || DEFAULTS.calendar_max_items_per_day;
+    }
+  }catch(err){
+    state.errors.push({ code:"CONFIG_JSON_LOAD_FAILED", message:String(err) });
+  }
+}
+
+async function fetchJsonWithFallback(primaryUrl, fallbackUrl){
+  try{
+    const r1 = await fetch(primaryUrl, { cache: "no-cache" });
+    if (!r1.ok) throw new Error(`primary HTTP ${r1.status}`);
+    return await r1.json();
+  }catch(e1){
+    state.errors.push({ code:"DATA_PRIMARY_FAILED", message:String(e1), ctx:{primaryUrl} });
+    const r2 = await fetch(fallbackUrl, { cache: "no-cache" });
+    if (!r2.ok) throw new Error(`fallback HTTP ${r2.status}`);
+    return await r2.json();
+  }
+}
+
+async function loadData(){
+  const d = await fetchJsonWithFallback(state.cfg.data_url_primary, state.cfg.data_url_fallback);
+  state.data = (d && typeof d === "object") ? d : {};
+  if (Array.isArray(state.data.errors)) state.errors.push(...state.data.errors);
+  if (!Array.isArray(state.data.movies)) state.data.movies = [];
+  if (!Array.isArray(state.data.shows)) state.data.shows = [];
+}
+
+async function loadConfigViewHtml(){
+  try{
+    const res = await fetch("./config.html", { cache: "no-cache" });
+    if (!res.ok) throw new Error(`config.html HTTP ${res.status}`);
+    const html = await res.text();
+    $("#v2-config-root").innerHTML = html;
+  }catch(err){
+    state.errors.push({ code:"CONFIG_HTML_LOAD_FAILED", message:String(err) });
+    $("#v2-config-root").textContent = "Config view failed to load config.html";
+  }
+}
+
+function getMovieTitle(m){ return safeText(m?.title, "Missing Title"); }
+function getShowTitle(s){ return safeText(s?.title, "Missing Title"); }
+
+function getGenreNames(obj){
+  const arr = Array.isArray(obj?.genres) ? obj.genres : [];
+  return arr.map(g => (g && typeof g === "object") ? String(g.name || "") : "").filter(Boolean);
+}
+
+function extractLinks(obj){
+  const links = (obj && typeof obj.links === "object" && obj.links) ? obj.links : {};
+  const vidsrc = (typeof links.vidsrc === "string") ? links.vidsrc : "";
+  const videasy = (typeof links.videasy === "string") ? links.videasy : "";
+  return { vidsrc, videasy };
+}
+
+function getPosterPath(obj){
+  const local = (typeof obj?.poster_local === "string") ? obj.poster_local : "";
+  const path = (typeof obj?.poster_path === "string") ? obj.poster_path : "";
+  return local || path || "";
+}
+
+function basename(p){
+  if (!p) return "";
+  const s = String(p);
+  const parts = s.split("/");
+  return parts[parts.length - 1] || "";
+}
+
+/* ONLY CHANGE IN v0.4.2: remap /assets/images/tmdb/... */
+function normalizeAssetPath(kind, role, p){
+  if (!p) return "";
+  const s = String(p).trim();
+  if (!s) return "";
+
+  if (s.startsWith("/assets/images/tmdb/")){
+    const file = basename(s);
+    if (!file) return s;
+
+    if (s.includes("/movies/poster/")) return `/assets/posters/movies/${file}`;
+    if (s.includes("/movies/backdrop/")) return `/assets/backdrops/movies/${file}`;
+    if (s.includes("/shows/poster/")) return `/assets/posters/shows/${file}`;
+    if (s.includes("/shows/backdrop/")) return `/assets/backdrops/shows/${file}`;
+    if (s.includes("/shows/seasons/poster/")) return `/assets/posters/seasons/${file}`;
+    if (s.includes("/shows/episodes/stills/")) return `/assets/stills/episodes/${file}`;
+
+    return s;
+  }
+
+  if (s.startsWith("/assets/")) return s;
+
+  if (s.startsWith("/") && s.includes(".") && !s.includes("/assets/")){
+    const file = basename(s);
+    if (!file) return s;
+    if (kind === "movie" && role === "poster") return `/assets/posters/movies/${file}`;
+    if (kind === "show" && role === "poster") return `/assets/posters/shows/${file}`;
+    if (kind === "episode" && role === "still") return `/assets/stills/episodes/${file}`;
+  }
+
+  return s;
+}
+
+function imgTag(src, fallbackDataUri, className, altText){
+  const s = src ? escapeAttr(src) : "";
+  const alt = escapeAttr(altText || "");
+  const cls = escapeAttr(className || "");
+  return `<img class="${cls}" src="${s || fallbackDataUri}" alt="${alt}" loading="lazy"
+           onerror="this.onerror=null;this.src='${fallbackDataUri}';" />`;
+}
+
+function normalizeRoute(hash){
+  const h = (hash || "#calendar").toLowerCase();
+  const allowed = ["#calendar","#shows","#movies","#livetv","#config","#explore","#profiles"];
+  return allowed.includes(h) ? h : "#calendar";
+}
+
+function setRoute(hash){
+  state.route = normalizeRoute(hash);
+  window.location.hash = state.route;
+  renderRoute();
+}
+
+function buildFooterStatus(){
+  const showsCount = Array.isArray(state.data?.shows) ? state.data.shows.length : 0;
+  const moviesCount = Array.isArray(state.data?.movies) ? state.data.movies.length : 0;
+  return `indexV2 ${V2_VERSION} • loaded • errors=${state.errors.length} • shows=${showsCount} • movies=${moviesCount}`;
+}
+
+function renderRoute(){
+  const route = state.route.slice(1);
+  const map = {
+    calendar: "#v2-view-calendar",
+    shows: "#v2-view-shows",
+    movies: "#v2-view-movies",
+    livetv: "#v2-view-livetv",
+    config: "#v2-view-config",
+    explore: "#v2-view-explore",
+    profiles: "#v2-view-profiles"
+  };
+
+  $$(".v2-view").forEach(v => v.classList.remove("is-active"));
+  const active = $(map[route] || map.calendar);
+  if (active) active.classList.add("is-active");
+
+  const tabs = $$("[data-route]");
+  tabs.forEach(b => b.classList.remove("v2-tab-active"));
+  const activeBtn = tabs.find(b => (b.getAttribute("data-route") || "").toLowerCase() === `#${route}`);
+  if (activeBtn) activeBtn.classList.add("v2-tab-active");
+
+  setFooterStatus(buildFooterStatus());
+}
+
+function urlStripHtml(obj){
+  const L = extractLinks(obj);
+  const btns = [];
+  if (L.vidsrc) btns.push(`<a class="v2-urlbtn" href="${escapeAttr(L.vidsrc)}" target="_blank" rel="noreferrer">VidSRC</a>`);
+  if (L.videasy) btns.push(`<a class="v2-urlbtn" href="${escapeAttr(L.videasy)}" target="_blank" rel="noreferrer">VidEasy</a>`);
+  if (!btns.length) return `<div class="v2-urlstrip"></div>`;
+  return `<div class="v2-urlstrip">${btns.join("")}</div>`;
+}
+
+function toDateKey(s){
+  if (!s) return "";
+  const t = String(s).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0,10);
+  return "";
+}
+
+function seasonEpisodeTag(season_number, episode_number){
+  const s = Number(season_number);
+  const e = Number(episode_number);
+  if (!Number.isFinite(s) || !Number.isFinite(e)) return "";
+  return `S${String(s).padStart(2,"0")}E${String(e).padStart(2,"0")}`;
+}
+
+function addCalendarItem(item){
+  if (!item?.dateKey) return;
+  const arr = state.calendarItemsByDate.get(item.dateKey) || [];
+  arr.push(item);
+  state.calendarItemsByDate.set(item.dateKey, arr);
+}
+
+function buildCalendarItems(){
+  state.calendarItemsByDate = new Map();
+
+  for (const m of state.data.movies){
+    const dk = toDateKey(m?.release_date);
+    if (!dk) continue;
+    addCalendarItem({ kind: "movie", dateKey: dk, movie: m });
+  }
+
+  for (const sh of state.data.shows){
+    const seasons = Array.isArray(sh?.seasons) ? sh.seasons : [];
+    for (const se of seasons){
+      const eps = Array.isArray(se?.episodes) ? se.episodes : [];
+      for (const ep of eps){
+        const dk = toDateKey(ep?.air_date);
+        if (!dk) continue;
+        addCalendarItem({ kind: "episode", dateKey: dk, show: sh, season: se, episode: ep });
+      }
+    }
+  }
+}
+
+function formatTodayLabel(d){
+  const dow = d.toLocaleString(undefined, { weekday: "short" });
+  const mon = d.toLocaleString(undefined, { month: "short" });
+  const day = d.getDate();
+  const year = d.getFullYear();
+  return `${dow} ${mon} ${String(day).padStart(2,"0")}, ${year}`;
+}
+
+function mondayIndex(jsDay){ return (jsDay + 6) % 7; }
+
+function calendarItemHtml(it){
+  if (it.kind === "movie"){
+    const m = it.movie;
+    const title = getMovieTitle(m);
+    const poster = normalizeAssetPath("movie", "poster", getPosterPath(m));
+    const genres = getGenreNames(m);
+    const line3 = genres.length ? genres.join(" • ") : "";
+    return `
+      <div class="v2-cal-item" tabindex="0" data-focusable="1" data-v2-cal-item="1"
+           data-kind="movie" data-tmdb="${escapeAttr(String(m?.tmdb_id ?? ""))}">
+        <div class="v2-cal-item__top">
+          ${imgTag(poster, SVG_BACKDROP_FALLBACK, "v2-cal-item__img", "")}
+          <div class="v2-cal-item__text">
+            <div class="v2-cal-line1">${escapeHtml(title)}</div>
+            <div class="v2-cal-line2">Movie</div>
+            <div class="v2-cal-line3">${escapeHtml(line3)}</div>
+          </div>
+        </div>
+        ${urlStripHtml(m)}
+      </div>
+    `;
+  }
+
+  const sh = it.show || {};
+  const se = it.season || {};
+  const ep = it.episode || {};
+
+  const showTitle = getShowTitle(sh);
+  const epTitle = safeText(ep?.title || ep?.name, "Episode");
+  const tag = seasonEpisodeTag(se?.season_number ?? ep?.season_number, ep?.episode_number);
+  const runtime = (ep?.runtime ? `${ep.runtime}m` : "");
+  const line3 = [tag, runtime].filter(Boolean).join(" • ");
+
+  const stillRaw = (typeof ep?.still_local === "string") ? ep.still_local : ((typeof ep?.still_path === "string") ? ep.still_path : "");
+  const still = normalizeAssetPath("episode", "still", stillRaw);
+
+  return `
+    <div class="v2-cal-item" tabindex="0" data-focusable="1" data-v2-cal-item="1"
+         data-kind="episode" data-showtmdb="${escapeAttr(String(sh?.tmdb_id ?? ""))}"
+         data-season="${escapeAttr(String(se?.season_number ?? ""))}"
+         data-ep="${escapeAttr(String(ep?.episode_number ?? ""))}">
+      <div class="v2-cal-item__top">
+        ${imgTag(still, SVG_BACKDROP_FALLBACK, "v2-cal-item__img", "")}
+        <div class="v2-cal-item__text">
+          <div class="v2-cal-line1">${escapeHtml(showTitle)}</div>
+          <div class="v2-cal-line2">${escapeHtml(epTitle)}</div>
+          <div class="v2-cal-line3">${escapeHtml(line3)}</div>
+        </div>
+      </div>
+      ${urlStripHtml(ep)}
+    </div>
+  `;
+}
+
+function buildCalendarGrid(cursorDate){
+  const grid = $("#v2-cal-grid");
+  grid.innerHTML = "";
+
+  const now = new Date();
+  $("#v2-cal-todaylabel").textContent = formatTodayLabel(now);
+
+  const m0 = new Date(cursorDate.getFullYear(), cursorDate.getMonth(), 1);
+  const m1 = new Date(cursorDate.getFullYear(), cursorDate.getMonth() + 1, 0);
+  const monthName = m0.toLocaleString(undefined, { month: "long" });
+  $("#v2-cal-title").textContent = `${monthName} ${m0.getFullYear()}`;
+
+  const lead = mondayIndex(m0.getDay());
+  const daysInMonth = m1.getDate();
+  const totalCells = 42;
+  const todayKey = new Date().toISOString().slice(0,10);
+
+  for (let i=0; i<totalCells; i++){
+    const dayNum = i - lead + 1;
+    const inMonth = dayNum >= 1 && dayNum <= daysInMonth;
+
+    const cell = document.createElement("div");
+    cell.className = "v2-cal-cell";
+    cell.setAttribute("role","gridcell");
+
+    if (!inMonth){
+      cell.style.opacity = "0.35";
+      cell.innerHTML = `<div class="v2-cal-date"></div><div class="v2-cal-items"></div>`;
+      grid.appendChild(cell);
+      continue;
+    }
+
+    const d = new Date(m0.getFullYear(), m0.getMonth(), dayNum);
+    const dateKey = d.toISOString().slice(0,10);
+    if (dateKey === todayKey) cell.classList.add("v2-is-today");
+
+    const items = state.calendarItemsByDate.get(dateKey) || [];
+    const max = state.cfg.calendar_max_items_per_day;
+    const showItems = items.slice(0, max);
+    const overflow = items.length - showItems.length;
+
+    const itemsHtml = showItems.map(it => calendarItemHtml(it)).join("");
+    const overflowHtml = overflow > 0 ? `<div class="v2-cal-overflow">+${overflow} more</div>` : "";
+
+    cell.innerHTML = `<div class="v2-cal-date">${dayNum}</div><div class="v2-cal-items">${itemsHtml}${overflowHtml}</div>`;
+    grid.appendChild(cell);
+  }
+
+  $$("[data-v2-cal-item='1']", grid).forEach(el => {
+    el.addEventListener("click", () => openCalendarItem(el));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openCalendarItem(el); }
+    });
+  });
+}
+
+function openCalendarItem(el){
+  const kind = el.getAttribute("data-kind") || "";
+  if (kind === "movie"){
+    const tmdb = el.getAttribute("data-tmdb") || "";
+    const movie = state.data.movies.find(m => String(m?.tmdb_id ?? "") === String(tmdb));
+    if (movie) openPopup("movie", movie);
+    return;
+  }
+
+  const showtmdb = el.getAttribute("data-showtmdb") || "";
+  const show = state.data.shows.find(s => String(s?.tmdb_id ?? "") === String(showtmdb));
+  const seasonNum = Number(el.getAttribute("data-season") || "0");
+  const epNum = Number(el.getAttribute("data-ep") || "0");
+
+  let ep = null;
+  let se = null;
+  if (show && Array.isArray(show.seasons)){
+    se = show.seasons.find(x => Number(x?.season_number) === seasonNum) || null;
+    if (se && Array.isArray(se.episodes)){
+      ep = se.episodes.find(x => Number(x?.episode_number) === epNum) || null;
+    }
+  }
+
+  openPopup("season", { show: show || {}, season: se || {}, episode: ep || {} });
+}
+
+function applyShowsFiltersSort(){
+  const shows = state.data.shows.slice();
+  const q = ($("#v2-shows-search").value || "").trim().toLowerCase();
+  const status = $("#v2-shows-status").value;
+  const watched = $("#v2-shows-watched").value;
+  const sort = $("#v2-shows-sort").value;
+
+  let out = shows;
+  if (q) out = out.filter(s => getShowTitle(s).toLowerCase().includes(q));
+  if (status) out = out.filter(s => String(s?.status || "") === status);
+
+  if (watched){
+    out = out.filter(s => {
+      const w = s?.trakt?.watched ?? s?.watched ?? null;
+      return watched === "watched" ? !!w : !w;
+    });
+  }
+
+  const cmpText = (a,b)=> getShowTitle(a).localeCompare(getShowTitle(b));
+  if (sort === "az") out.sort((a,b)=>cmpText(a,b));
+  if (sort === "za") out.sort((a,b)=>cmpText(b,a));
+  return out;
+}
+
+function applyMoviesFiltersSort(){
+  const movies = state.data.movies.slice();
+  const q = ($("#v2-movies-search").value || "").trim().toLowerCase();
+  const watched = $("#v2-movies-watched").value;
+  const sort = $("#v2-movies-sort").value;
+
+  let out = movies;
+  if (q) out = out.filter(m => getMovieTitle(m).toLowerCase().includes(q));
+
+  if (watched){
+    out = out.filter(m => {
+      const w = m?.trakt?.watched ?? m?.watched ?? null;
+      return watched === "watched" ? !!w : !w;
+    });
+  }
+
+  const cmpText = (a,b)=> getMovieTitle(a).localeCompare(getMovieTitle(b));
+  if (sort === "az") out.sort((a,b)=>cmpText(a,b));
+  if (sort === "za") out.sort((a,b)=>cmpText(b,a));
+  return out;
+}
+
+function createShowCard(show){
+  const title = getShowTitle(show);
+  const poster = normalizeAssetPath("show", "poster", getPosterPath(show));
+
+  const card = document.createElement("div");
+  card.className = "v2-card";
+  card.tabIndex = 0;
+  card.setAttribute("data-focusable","1");
+  card.addEventListener("click", () => openPopup("show", show));
+
+  card.innerHTML = `${imgTag(poster, SVG_POSTER_FALLBACK, "v2-card__img", title)}
+    <div class="v2-card__body">
+      <div class="v2-title_text">${escapeHtml(title)}</div>
+      ${urlStripHtml(show)}
+    </div>`;
+  return card;
+}
+
+function createMovieCard(movie){
+  const title = getMovieTitle(movie);
+  const poster = normalizeAssetPath("movie", "poster", getPosterPath(movie));
+
+  const card = document.createElement("div");
+  card.className = "v2-card";
+  card.tabIndex = 0;
+  card.setAttribute("data-focusable","1");
+  card.addEventListener("click", () => openPopup("movie", movie));
+
+  card.innerHTML = `${imgTag(poster, SVG_POSTER_FALLBACK, "v2-card__img", title)}
+    <div class="v2-card__body">
+      <div class="v2-title_text">${escapeHtml(title)}</div>
+      ${urlStripHtml(movie)}
+    </div>`;
+  return card;
+}
+
+function renderShows(){
+  const grid = $("#v2-shows-grid");
+  grid.innerHTML = "";
+  applyShowsFiltersSort().forEach(s => grid.appendChild(createShowCard(s)));
+  setFooterStatus(buildFooterStatus());
+}
+
+function renderMovies(){
+  const grid = $("#v2-movies-grid");
+  grid.innerHTML = "";
+  applyMoviesFiltersSort().forEach(m => grid.appendChild(createMovieCard(m)));
+  setFooterStatus(buildFooterStatus());
+}
+
+function openPopup(kind, obj){
+  state.lastFocusEl = document.activeElement;
+  $("#v2-popup-title").textContent = (kind === "show") ? "Show" : (kind === "movie") ? "Movie" : "Season / Episode";
+
+  let title = "Details";
+  let overview = "—";
+  let urlHtml = "";
+
+  if (kind === "movie"){
+    title = getMovieTitle(obj);
+    overview = safeText(obj?.overview, "—");
+    urlHtml = urlStripHtml(obj);
+  } else if (kind === "show"){
+    title = getShowTitle(obj);
+    overview = safeText(obj?.overview, "—");
+    urlHtml = urlStripHtml(obj);
+  } else {
+    const sh = obj?.show || {};
+    const ep = obj?.episode || {};
+    title = `${getShowTitle(sh)} — ${safeText(ep?.title || ep?.name, "Episode")}`;
+    overview = safeText(ep?.overview || sh?.overview, "—");
+    urlHtml = urlStripHtml(ep);
+  }
+
+  $("#v2-popup-body").innerHTML = `
+    <div style="display:grid;gap:10px;">
+      <div style="font-weight:950;font-size:18px;">${escapeHtml(title)}</div>
+      ${urlHtml}
+      <div style="line-height:1.35;opacity:.96;">${escapeHtml(overview)}</div>
+    </div>
+  `;
+
+  $("#v2-popup-layer").style.display = "block";
+  document.body.style.overflow = "hidden";
+  $("#v2-popup-close").focus();
+}
+
+function closePopup(){
+  $("#v2-popup-layer").style.display = "none";
+  $("#v2-popup-body").innerHTML = "";
+  document.body.style.overflow = "";
+  if (state.lastFocusEl && state.lastFocusEl.focus) state.lastFocusEl.focus();
+}
+
+async function boot(){
+  $$("[data-route]").forEach(btn => btn.addEventListener("click", () => setRoute(btn.getAttribute("data-route"))));
+  window.addEventListener("hashchange", () => { state.route = normalizeRoute(window.location.hash); renderRoute(); });
+
+  $("#v2-popup-close").addEventListener("click", closePopup);
+  $("#v2-popup-layer").addEventListener("click", (e) => { if (e.target && e.target.id === "v2-popup-layer") closePopup(); });
+
+  $("#v2-cal-prev").addEventListener("click", () => { const d=state.calendarCursor; state.calendarCursor=new Date(d.getFullYear(), d.getMonth()-1, 1); buildCalendarGrid(state.calendarCursor); });
+  $("#v2-cal-next").addEventListener("click", () => { const d=state.calendarCursor; state.calendarCursor=new Date(d.getFullYear(), d.getMonth()+1, 1); buildCalendarGrid(state.calendarCursor); });
+  $("#v2-cal-today").addEventListener("click", () => { state.calendarCursor=new Date(); buildCalendarGrid(state.calendarCursor); });
+
+  await loadConfigJson();
+  await loadData();
+  await loadConfigViewHtml();
+
+  buildCalendarItems();
+  buildCalendarGrid(state.calendarCursor);
+  renderShows();
+  renderMovies();
+
+  state.route = normalizeRoute(window.location.hash);
+  renderRoute();
+}
+
+boot().catch(err => {
+  state.errors.push({ code:"BOOT_FAILED", message:String(err) });
+  setFooterStatus(`indexV2 ${V2_VERSION} • boot failed • errors=${state.errors.length}`);
+  console.error(err);
+});
+</script>
+</body>
+</html>
