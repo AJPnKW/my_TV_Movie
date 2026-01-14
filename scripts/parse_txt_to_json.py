@@ -1,24 +1,22 @@
+\
 #!/usr/bin/env python3
 # ==============================================================================
 # [FILE]    scripts/parse_txt_to_json.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Parse plain-text inputs/*.txt into data/inputs_parsed.json
-# [VERSION] v1.2.1
-# [UPDATED] 2026-01-13
-# [BUILD]   14.01.13
+# [VERSION] v1.2.0
+# [UPDATED] 2026-01-03
+# [BUILD]   14.01.07
 #
 # Fix: robustly locate tv + movies input files (filename drift tolerant) and
 #      parse both "name|id" and "name | id | ..." formats.
-#
-# Enhancement:
-# - When dedup occurs, print the duplicate entries to console so you can fix
-#   inputs without extra scripts.
 # ==============================================================================
 
 from __future__ import annotations
 
 import json
 import os
+import sys
 import re
 import datetime as _dt
 from typing import Any, Dict, List, Tuple
@@ -73,51 +71,23 @@ def _norm_title(s: str) -> str:
     return _WS.sub(" ", (s or "").strip())
 
 
-def _tv_display_key(it: Dict[str, Any]) -> str:
-    title = str(it.get("title") or "").strip()
-    tmdb_id = it.get("tmdb_id")
-    season_spec = str(it.get("season_spec") or "").strip()
-    # Always include the 3rd column so duplicates are obvious
-    return f"{title}|{tmdb_id}|{season_spec}"
-
-
-def _mv_display_key(it: Dict[str, Any]) -> str:
-    title = str(it.get("title") or "").strip()
-    tmdb_id = it.get("tmdb_id")
-    return f"{title}|{tmdb_id}"
-
 
 def _dedup_by_tmdb_id(items: List[Dict[str, Any]], label: str) -> Tuple[List[Dict[str, Any]], int]:
-    """
-    Deduplicate per list using tmdb_id as the stable key. Keeps first occurrence.
-    Enhancement: prints duplicate entries to console for easy cleanup.
-    """
+    """Deduplicate per list using tmdb_id as the stable key. Keeps first occurrence."""
     seen: set[int] = set()
     out: List[Dict[str, Any]] = []
-    dup_items: List[Dict[str, Any]] = []
-
+    dups = 0
     for it in items:
         tid = it.get("tmdb_id")
         if isinstance(tid, int):
             if tid in seen:
-                dup_items.append(it)
+                dups += 1
                 continue
             seen.add(tid)
         out.append(it)
-
-    dups = len(dup_items)
     if dups:
         _log(f"[dedup] {label}: removed_duplicates={dups}")
-        _log(f"[dedup] {label} duplicates (fix these in inputs/*.txt):")
-        if label == "tv":
-            for it in dup_items:
-                _log(f"  - {_tv_display_key(it)}")
-        else:
-            for it in dup_items:
-                _log(f"  - {_mv_display_key(it)}")
-
     return out, dups
-
 
 def _parse_tv_lines(text: str) -> Tuple[List[Dict[str, Any]], int]:
     out: List[Dict[str, Any]] = []
@@ -233,7 +203,8 @@ def main() -> int:
         wl_items, e = _parse_watchlist_lines(_read_text(wl_path))
         err += e
 
-    # Deduplicate per list (stable key: tmdb_id) + print duplicates
+
+    # Deduplicate per list (stable key: tmdb_id)
     tv_items, _ = _dedup_by_tmdb_id(tv_items, "tv")
     mv_items, _ = _dedup_by_tmdb_id(mv_items, "movies")
     wl_items, _ = _dedup_by_tmdb_id(wl_items, "watchlist")
