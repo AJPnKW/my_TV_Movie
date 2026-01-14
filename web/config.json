@@ -1,19 +1,12 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.3.0",
-    "updated_utc": "2025-12-23T00:00:00Z",
+    "version": "v1.3.20",
+    "updated_utc": "2026-01-13T00:00:00Z",
     "notes": "Authoritative config for streaming base URLs, image cache folders, and UI tuning. Canonical keys: streaming.* + image_cache.folders.*. Backward-compat preserved via streaming_services.* + image_cache.folders_legacy.*."
   },
 
   "streaming": {
-    "vidsrc_tv": "https://vidsrc.net/embed/tv/",
-    "vidsrc_movie": "https://vidsrc.net/embed/movie/",
-    "videasy_tv": "https://player.videasy.net/tv/",
-    "videasy_movie": "https://player.videasy.net/movie/"
-  },
-
-  "streaming_services": {
     "vidsrc_tv": "https://vidsrc.net/embed/tv/",
     "vidsrc_movie": "https://vidsrc.net/embed/movie/",
     "videasy_tv": "https://player.videasy.net/tv/",
@@ -39,21 +32,12 @@
     "tmdb_image_base": "https://image.tmdb.org/t/p",
 
     "folders": {
-      "shows_poster": "/assets/images/tmdb/shows/poster",
-      "shows_backdrop": "/assets/images/tmdb/shows/backdrop",
-      "seasons_poster": "/assets/images/tmdb/shows/seasons/poster",
-      "episodes_stills": "/assets/images/tmdb/shows/episodes/stills",
-      "movies_poster": "/assets/images/tmdb/movies/poster",
-      "movies_backdrop": "/assets/images/tmdb/movies/backdrop"
-    },
-
-    "folders_legacy": {
-      "shows_poster": "/image/shows/poster",
-      "shows_backdrop": "/image/shows/backdrop",
-      "seasons_poster": "/image/shows/seasons/poster",
-      "episodes_stills": "/image/shows/episodes/stills",
-      "movies_poster": "/image/movies/poster",
-      "movies_backdrop": "/image/movies/backdrop"
+	  "shows_poster": "/assets/posters/shows",
+	  "shows_backdrop": "/assets/backdrops/shows",
+	  "seasons_poster": "/assets/posters/seasons",
+	  "episodes_stills": "/assets/stills/episodes",
+	  "movies_poster": "/assets/posters/movies",
+	  "movies_backdrop": "/assets/backdrops/movies"
     }
   }
 }
