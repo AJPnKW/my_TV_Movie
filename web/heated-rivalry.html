@@ -4,16 +4,17 @@
 FILE: heated-rivalry.html
 PROJECT: my_TV_Movie
 PAGE: Heated Rivalry (single title page)
-VERSION: 1.0.1
-UPDATED: 2026-01-15 17:37:41
+VERSION: 1.0.2
+UPDATED: 2026-01-15 18:08:29
 
 CHANGELOG:
-- 1.0.1: Fix Watch streaming by switching Google Drive iframe URL to /file/d/<id>/preview (+ autoplay hint).
-          Adjust Download button to open in a new tab (remove forced download attribute).
+- 1.0.2: Watch now opens Google Drive /view in a new tab (reliable; avoids iframe spinner).
+          Download opens in a new tab (no forced download attribute).
+          Preview URL helper updated to /file/d/<id>/preview (embed-friendly, retained for title links if needed).
 - 1.0.0: Baseline page (pre-fix).
 
 NOTES:
-- File size may decrease if small redundant code/whitespace was removed by edits; functional parity is preserved except for the changes above.
+- Google Drive virus-scan interstitial on large downloads cannot be suppressed by site code.
 -->
 
 <html lang="en">
@@ -810,13 +811,21 @@ NOTES:
     let fadeTimers = {};
 
     function drivePreviewUrl(id) {
-      // Google Drive embed-friendly preview URL (streams in an iframe)
-      return `https://drive.google.com/file/d/${id}/preview`;
+      // Google Drive embed-friendly preview URL (streams in an iframe when allowed)
+      return `https://drive.google.com/file/d/${id}
+
+    function driveWatchUrl(id) {
+      // Google Drive watch page (most reliable)
+      return `https://drive.google.com/file/d/${id}/view`;
+    }
+/preview`;
+    }`;
     }
 
     function driveDownloadUrl(id) {
       // Direct download. Note: Google may still show a virus-scan interstitial for large files.
       return `https://drive.google.com/uc?export=download&id=${id}`;
+    }`;
     }
 
     function createRotatingStills(images, epIndex) {
@@ -930,9 +939,7 @@ NOTES:
       });
     }
     function openModal(driveId) {
-      const base = drivePreviewUrl(driveId);
-      // Autoplay hint (Drive may ignore it, but harmless)
-      modalIframe.src = `${base}?autoplay=1`;
+      modalIframe.src = drivePreviewUrl(driveId);
       modalBackdrop.classList.add("visible");
     }
 
