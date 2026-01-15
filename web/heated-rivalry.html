@@ -941,31 +941,32 @@
       const KEY = 'hr_anon_visitor_id';
       let id = localStorage.getItem(KEY);
       if (!id) {
-        id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2);
+        id = crypto.randomUUID
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2);
         localStorage.setItem(KEY, id);
       }
       return id;
     }
 
-    // === Send a visit event to your logging endpoint ===
+    // === Send visit event to your GitHub trigger endpoint ===
     async function logVisit() {
       const visitorId = getAnonymousVisitorId();
       const payload = {
-        visitorId,                 // anonymous, random
+        visitorId,
         path: window.location.pathname,
         ts: new Date().toISOString(),
         referrer: document.referrer || null
       };
 
       try {
-        await fetch('https://YOUR-LOG-ENDPOINT.example.com/track', {
+        await fetch('/.github/scripts/trigger-log.js', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           keepalive: true
         });
       } catch (e) {
-        // Fail silently – logging must never break the page
         console.warn('Visit logging failed (ignored).');
       }
     }
