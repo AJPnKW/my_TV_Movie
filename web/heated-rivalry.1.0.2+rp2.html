@@ -4,19 +4,13 @@
 FILE: heated-rivalry.html
 PROJECT: my_TV_Movie
 PAGE: Heated Rivalry (single title page)
-VERSION: 1.0.2
-UPDATED: 2026-01-15 18:08:29
+VERSION: 1.0.2+rp2
+UPDATED: 2026-01-16 22:30:38
 
 CHANGELOG:
-- 1.0.2: Watch now opens Google Drive /view in a new tab (reliable; avoids iframe spinner).
-          Download opens in a new tab (no forced download attribute).
-          Preview URL helper updated to /file/d/<id>/preview (embed-friendly, retained for title links if needed).
-- 1.0.0: Baseline page (pre-fix).
-
-NOTES:
-- Google Drive virus-scan interstitial on large downloads cannot be suppressed by site code.
+- 1.0.2+rp2: Add floating 'Report problem' button (Google Form link) with minimal drift.
+- 1.0.2: Prior baseline.
 -->
-
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -618,12 +612,62 @@ NOTES:
         aspect-ratio: 16 / 9;
       }
     }
-  </style>
+  
+    /* REPORT PROBLEM BUTTON */
+    .report-problem{
+      position:absolute;
+      top:10px;
+      right:14px;
+      z-index:50;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(148,163,184,0.65);
+      background:rgba(2,6,23,0.75);
+      color:rgba(248,250,252,0.95);
+      font-size:12px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      text-decoration:none;
+      backdrop-filter:blur(10px);
+      transition:transform 150ms ease-out, border-color 150ms ease-out, background 150ms ease-out;
+    }
+    .report-problem:hover{
+      transform:translateY(-0.5px);
+      border-color:rgba(125,211,252,0.85);
+      background:rgba(2,6,23,0.9);
+    }
+    .report-problem:focus{
+      outline:2px solid rgba(56,189,248,0.75);
+      outline-offset:2px;
+    }
+    .report-problem .rp-dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:rgba(248,113,113,0.95);
+      box-shadow:0 0 0 3px rgba(248,113,113,0.18);
+      flex:0 0 auto;
+    }
+
+
 
 </head>
 <body>
   <div class="app-shell">
-    <div class="backdrop-layer"></div>
+    
+
+    <a class="report-problem"
+       href="https://docs.google.com/forms/d/e/1FAIpQLSchZTE4DhJHImKfNzoc4_rk8bNZeeFaLGC7UY4CXiIe9P1xNQ/viewform"
+       target="_blank" rel="noopener noreferrer"
+       aria-label="Report a problem (opens Google Form in new tab)">
+      <span class="rp-dot" aria-hidden="true"></span>
+      <span>Report problem</span>
+    </a>
+
+<div class="backdrop-layer"></div>
     <div class="grain"></div>
 
     <!-- HERO -->
