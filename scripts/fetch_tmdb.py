@@ -3,9 +3,9 @@
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
-# [VERSION] v2.7.1
+# [VERSION] v2.7.2
 # [UPDATED] 2026-01-13
-# [BUILD]   14.01.07
+# [BUILD]   14.01.08
 #
 # [PATCH GOALS]
 # - Fix broken streaming links caused by config key mismatch (streaming vs streaming_services)
@@ -19,7 +19,7 @@
 # - Preserve existing minimal fields and placeholders (seasons:[], links:{} for TV)
 #
 # [NOTE]
-# Deep-build of seasons/episodes is NOT implemented here (still a separate stage if you add it later).
+# Deep-build of seasons/episodes IS implemented here (show -> seasons -> episodes).
 # ==============================================================================
 
 import dataclasses
@@ -64,12 +64,7 @@ REPO_ROOT = SCRIPT_PATH.parents[1]
 WEB_DIR = REPO_ROOT / "web"
 DATA_DIR = REPO_ROOT / "data"
 
-# Inputs (support both legacy and inputs/)
-TV_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "tv_list.txt", REPO_ROOT / "tv_list.txt"]
-MOVIES_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "movies_list.txt", REPO_ROOT / "movies_list.txt"]
-WATCHLIST_CANDIDATES = [REPO_ROOT / "inputs" / "watchlist.txt", REPO_ROOT / "watchlist.txt"]
-
-# Optional intermediate JSON from parse_txt_to_json.py
+# Inputs
 PARSED_INPUTS_JSON = DATA_DIR / "inputs_parsed.json"
 
 OUT_DATA_JSON = DATA_DIR / "data.json"
@@ -342,12 +337,6 @@ class TMDBClient:
 # -------------------------
 # Inputs parsing
 # -------------------------
-def _first_existing(candidates: List[Path]) -> Optional[Path]:
-    for p in candidates:
-        if p.exists():
-            return p
-    return None
-
 
 
 def compute_local_season_poster(cfg: Config, poster_path: Optional[str]) -> Optional[str]:
@@ -545,23 +534,25 @@ def parse_season_spec(spec: str) -> Optional[List[int]]:
     return flt if mode == "filter" else None
 
 def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    if PARSED_INPUTS_JSON.exists():
-        js = json.loads(read_text_file(PARSED_INPUTS_JSON))
-        tv = js.get("tv_list") or js.get("shows") or js.get("tv") or []
-        mv = js.get("movies_list") or js.get("movies") or []
-        if isinstance(tv, list) and isinstance(mv, list):
-            logging.info("[inputs] using parsed: %s", PARSED_INPUTS_JSON)
-            return tv, mv
+    """
+    Canonical inputs come ONLY from data/inputs_parsed.json produced by parse_txt_to_json.py.
+    This function intentionally does NOT read any *.txt sources (single source of truth).
+    """
+    if not PARSED_INPUTS_JSON.exists():
+        raise FileNotFoundError(f"Missing required file: {PARSED_INPUTS_JSON}. Run: scripts/parse_txt_to_json.py")
 
-    tv_path = _first_existing(TV_LIST_CANDIDATES)
-    mv_path = _first_existing(MOVIES_LIST_CANDIDATES)
+    js = json.loads(read_text_file(PARSED_INPUTS_JSON))
 
-    tv_list: List[Dict[str, Any]] = parse_pipe_lines(tv_path, "show") if tv_path else []
-    mv_list: List[Dict[str, Any]] = parse_pipe_lines(mv_path, "movie") if mv_path else []
+    tv = js.get("tv_list") or js.get("shows") or js.get("tv") or []
+    mv = js.get("movies_list") or js.get("movies") or []
 
-    logging.info("[inputs] tv_list=%s (%s)", len(tv_list), tv_path)
-    logging.info("[inputs] movies_list=%s (%s)", len(mv_list), mv_path)
-    return tv_list, mv_list
+    if not isinstance(tv, list) or not isinstance(mv, list):
+        raise ValueError(f"Invalid structure in {PARSED_INPUTS_JSON}: expected lists at tv/movies keys")
+
+    logging.info("[inputs] using parsed: %s", PARSED_INPUTS_JSON)
+    logging.info("[inputs] tv=%s movies=%s", len(tv), len(mv))
+    return tv, mv
+
 
 
 # -------------------------

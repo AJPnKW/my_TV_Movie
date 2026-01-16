@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # ==============================================================================
-# [FILE]    scripts/fetch_trakt.py
-# [PROJECT] my_TV_Movie
-# [ROLE]    Resolve Trakt IDs used for sync (movies/shows) + lightweight public metadata
-# [VERSION] v1.3.0
-# [UPDATED] 2025-12-29_00-00-00
-# [BUILD]   14.01.08
-#
+# File: scripts/fetch_trakt.py
+# Project: my_TV_Movie
+# [VERSION] v1.2.0
+# [UPDATED] 2025-12-29_22-30-00
+# [BUILD]   14.01.07
 # Purpose:
 #   Public Trakt enrichment using ONLY API_TRAKT_ID + API_TRAKT_KEY.
 #   - NO user context
@@ -16,12 +14,10 @@
 # Behavior:
 #   - Loads existing data/data.json (produced earlier in pipeline)
 #   - For each show/movie that has tmdb_id, attempts to resolve Trakt IDs via
-#     Trakt public search endpoint (tmdb lookup).
-#   - Writes back into data/data.json atomically ONLY if changes occurred:
-#       * missing/changed trakt_id on any item
-#       * new/changed metadata.trakt_public_enrichment block
-#       * new error appended
-#   - Preserves all existing keys/structure (non-destructive).
+#     public Trakt search endpoint (tmdb lookup).
+#   - Writes back into data/data.json atomically, preserving all existing keys.
+#   - Surfaces errors visually (stdout + log file) and records failures into
+#     data["errors"] without requiring any other env vars.
 #
 # Required env (ONLY):
 #   - API_TRAKT_ID
@@ -49,6 +45,7 @@ except Exception:
     print("ERROR: Missing dependency 'requests'. Install via requirements.txt.", file=sys.stderr)
     raise
 
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "data"
 DATA_JSON_PATH = DATA_DIR / "data.json"
@@ -57,7 +54,6 @@ LOGS_DIR = REPO_ROOT / "logs"
 TRAKT_API_BASE = "https://api.trakt.tv"
 TRAKT_API_VERSION = "2"
 DEFAULT_TIMEOUT = 30
-
 USER_AGENT = "my_TV_Movie fetch_trakt.py (public enrichment)"
 
 
@@ -107,6 +103,7 @@ def _safe_write_json_atomic(path: Path, data: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
     tmp.write_text(json.dumps(data, indent=2, sort_keys=True), encoding="utf-8")
+    # read-back validation
     _ = json.loads(tmp.read_text(encoding="utf-8"))
     tmp.replace(path)
 
@@ -119,12 +116,14 @@ def _env_required(name: str) -> str:
 
 
 def load_trakt_env() -> Tuple[str, str]:
+    # REQUIRED: both must exist (per requirements)
     trakt_id = _env_required("API_TRAKT_ID")
     trakt_key = _env_required("API_TRAKT_KEY")
     return trakt_id, trakt_key
 
 
 def trakt_headers(trakt_id: str) -> Dict[str, str]:
+    # Public Trakt API: client id in header
     return {
         "Content-Type": "application/json",
         "trakt-api-version": TRAKT_API_VERSION,
@@ -141,34 +140,52 @@ def trakt_get(trakt_id: str, path: str, params: Optional[Dict[str, Any]] = None)
     return r.json()
 
 
-def append_error(existing: Dict[str, Any], message: str) -> bool:
+def append_error(existing: Dict[str, Any], message: str) -> None:
     errs = existing.get("errors")
     if not isinstance(errs, list):
         existing["errors"] = []
         errs = existing["errors"]
-    errs.append({"source": "fetch_trakt.py", "timestamp_utc": _utc_iso(), "message": str(message)})
-    return True
+    errs.append(
+        {
+            "source": "fetch_trakt.py",
+            "timestamp_utc": _utc_iso(),
+            "message": str(message),
+        }
+    )
 
 
 def _resolve_trakt_by_tmdb(trakt_id: str, media_type: str, tmdb_id: int) -> Optional[Dict[str, Any]]:
+    """
+    Public lookup: search by tmdb id.
+    Endpoint: /search/tmdb/{tmdb_id}?type={movie|show}
+    Returns first match record dict or None.
+    """
     if tmdb_id <= 0:
         return None
+    # Public search endpoint; no user context
     data = trakt_get(trakt_id, f"/search/tmdb/{tmdb_id}", params={"type": media_type})
     if not isinstance(data, list) or not data:
         return None
     first = data[0]
-    return first if isinstance(first, dict) else None
+    if not isinstance(first, dict):
+        return None
+    return first
 
 
 def _extract_ids(search_hit: Dict[str, Any], media_type: str) -> Optional[Tuple[int, int]]:
+    """
+    Returns (trakt_id, tmdb_id) from search result for the given media_type.
+    """
     obj = search_hit.get(media_type)
     if not isinstance(obj, dict):
         return None
     ids = obj.get("ids")
     if not isinstance(ids, dict):
         return None
+
     trakt_val = ids.get("trakt")
     tmdb_val = ids.get("tmdb")
+
     if not isinstance(trakt_val, int) or trakt_val <= 0:
         return None
     if not isinstance(tmdb_val, int) or tmdb_val <= 0:
@@ -176,55 +193,70 @@ def _extract_ids(search_hit: Dict[str, Any], media_type: str) -> Optional[Tuple[
     return trakt_val, tmdb_val
 
 
-def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Tuple[Dict[str, int], bool]:
+def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Dict[str, int]:
+    """
+    Non-destructive enrichment:
+      - For each show/movie with tmdb_id, add/update trakt_id field if resolvable.
+    Returns counts.
+    """
     shows = existing.get("shows")
     movies = existing.get("movies")
+
     if not isinstance(shows, list):
         shows = []
     if not isinstance(movies, list):
         movies = []
 
-    updated_shows = updated_movies = 0
-    already_shows = already_movies = 0
-    looked_up = not_found = 0
-    changed = False
+    updated_shows = 0
+    updated_movies = 0
+    looked_up = 0
+    not_found = 0
 
+    # Shows
     for s in shows:
         if not isinstance(s, dict):
             continue
         tmdb = s.get("tmdb_id")
         if not isinstance(tmdb, int) or tmdb <= 0:
             continue
+
         looked_up += 1
         try:
             hit = _resolve_trakt_by_tmdb(trakt_id, "show", tmdb)
-            ids = _extract_ids(hit, "show") if hit else None
+            if not hit:
+                not_found += 1
+                continue
+            ids = _extract_ids(hit, "show")
             if not ids:
                 not_found += 1
                 continue
             trakt_val, tmdb_val = ids
             if tmdb_val != tmdb:
+                # defensive: don't set mismatched ids
                 not_found += 1
                 continue
             if s.get("trakt_id") != trakt_val:
                 s["trakt_id"] = trakt_val
                 updated_shows += 1
-                changed = True
-            else:
-                already_shows += 1
         except Exception as e:
-            changed = append_error(existing, f"Trakt lookup failed for show tmdb_id={tmdb}: {e}") or changed
+            append_error(existing, f"Trakt lookup failed for show tmdb_id={tmdb}: {e}")
+            continue
 
+    # Movies
     for m in movies:
         if not isinstance(m, dict):
             continue
         tmdb = m.get("tmdb_id")
         if not isinstance(tmdb, int) or tmdb <= 0:
             continue
+
         looked_up += 1
         try:
             hit = _resolve_trakt_by_tmdb(trakt_id, "movie", tmdb)
-            ids = _extract_ids(hit, "movie") if hit else None
+            if not hit:
+                not_found += 1
+                continue
+            ids = _extract_ids(hit, "movie")
             if not ids:
                 not_found += 1
                 continue
@@ -235,52 +267,45 @@ def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Tuple[Dict[str,
             if m.get("trakt_id") != trakt_val:
                 m["trakt_id"] = trakt_val
                 updated_movies += 1
-                changed = True
-            else:
-                already_movies += 1
         except Exception as e:
-            changed = append_error(existing, f"Trakt lookup failed for movie tmdb_id={tmdb}: {e}") or changed
+            append_error(existing, f"Trakt lookup failed for movie tmdb_id={tmdb}: {e}")
+            continue
 
-    counts = {
+    return {
         "looked_up": looked_up,
         "not_found": not_found,
         "updated_shows": updated_shows,
         "updated_movies": updated_movies,
-        "already_shows": already_shows,
-        "already_movies": already_movies,
     }
-    return counts, changed
 
 
-def update_metadata(existing: Dict[str, Any], trakt_id: str, counts: Dict[str, int]) -> bool:
+def update_metadata(existing: Dict[str, Any], trakt_id: str, counts: Dict[str, int]) -> None:
     meta = existing.get("metadata")
     if not isinstance(meta, dict):
         existing["metadata"] = {}
         meta = existing["metadata"]
 
-    new_block = {
+    # Record only what this script did; no auth/user semantics
+    meta["trakt_public_enrichment"] = {
         "timestamp_utc": _utc_iso(),
         "script": "fetch_trakt.py",
         "mode": "public_lookup",
         "counts": counts,
         "client_id_sha256": _sha256_text(trakt_id),
     }
-    prior = meta.get("trakt_public_enrichment")
-    if prior != new_block:
-        meta["trakt_public_enrichment"] = new_block
-        return True
-    return False
 
 
 def main() -> int:
     setup_logging()
 
+    # Load required env vars (ONLY the two allowed names)
     try:
         trakt_id, trakt_key = load_trakt_env()
     except Exception as e:
         logging.error("[fetch_trakt] %s", e)
         return 2
 
+    # Per requirements: API_TRAKT_KEY must exist. It is not used for public endpoints.
     logging.info("[fetch_trakt] API_TRAKT_ID present (len=%d)", len(trakt_id))
     logging.info("[fetch_trakt] API_TRAKT_KEY present (len=%d) [not transmitted]", len(trakt_key))
 
@@ -294,35 +319,31 @@ def main() -> int:
         logging.error("[fetch_trakt] %s", e)
         return 4
 
-    before_hash = _sha256_text(_read_text(DATA_JSON_PATH))
+    # Enrich
+    try:
+        counts = enrich_data_json(existing, trakt_id)
+    except Exception as e:
+        logging.error("[fetch_trakt] enrichment failed: %s", e)
+        append_error(existing, f"Trakt enrichment failed: {e}")
+        _safe_write_json_atomic(DATA_JSON_PATH, existing)
+        return 5
 
-    counts, changed_items = enrich_data_json(existing, trakt_id)
-    changed_meta = update_metadata(existing, trakt_id, counts)
-    changed = changed_items or changed_meta
+    update_metadata(existing, trakt_id, counts)
+
+    # Write atomically
+    try:
+        _safe_write_json_atomic(DATA_JSON_PATH, existing)
+    except Exception as e:
+        logging.error("[fetch_trakt] write failed: %s", e)
+        return 6
 
     logging.info(
-        "[fetch_trakt] DONE looked_up=%s not_found=%s updated_shows=%s updated_movies=%s already_shows=%s already_movies=%s changed=%s",
+        "[fetch_trakt] DONE looked_up=%s not_found=%s updated_shows=%s updated_movies=%s",
         counts.get("looked_up", 0),
         counts.get("not_found", 0),
         counts.get("updated_shows", 0),
         counts.get("updated_movies", 0),
-        counts.get("already_shows", 0),
-        counts.get("already_movies", 0),
-        "YES" if changed else "NO",
     )
-
-    if not changed:
-        logging.info("[fetch_trakt] no changes detected; skipped write (data.json untouched).")
-        return 0
-
-    _safe_write_json_atomic(DATA_JSON_PATH, existing)
-    after_hash = _sha256_text(_read_text(DATA_JSON_PATH))
-
-    if before_hash == after_hash:
-        logging.info("[fetch_trakt] write produced identical bytes; leaving file as-is.")
-    else:
-        logging.info("[fetch_trakt] wrote=%s", DATA_JSON_PATH)
-
     return 0
 
 

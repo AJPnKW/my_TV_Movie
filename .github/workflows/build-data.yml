@@ -9,16 +9,16 @@ on:
       - "scripts/**"
       - "web/**"
       - "data/**"
-      - "*.txt"
       - "inputs/**"
       - ".github/workflows/build-data.yml"
       - "requirements.txt"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Run full pipeline (TXT -> TMDB -> Trakt -> QA)
+      - name: Run full pipeline (TXT -> inputs_parsed -> TMDB -> Trakt -> QA)
         run: python scripts/run_pipeline_full.py
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
@@ -46,10 +46,13 @@ jobs:
           API_TRAKT_REDIRECT_URL: ${{ secrets.API_TRAKT_REDIRECT_URL }}
           API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
 
+      - name: Download TMDB assets referenced by data/data.json (missing-only)
+        run: python scripts/download_tmdb_assets.py
+
       - name: Commit changes (if any)
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "build: update data artifacts"
+          git diff --cached --quiet || git commit -m "build: update data + assets"
           git push
