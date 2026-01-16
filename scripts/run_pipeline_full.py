@@ -2,15 +2,10 @@
 # ==============================================================================
 # [FILE]    scripts/run_pipeline_full.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Orchestrate: TXT->inputs_parsed -> TMDB -> Trakt -> Assets -> QA
-# [VERSION] v1.3.1
-# [UPDATED] 2026-01-14_00-00-00
-# [BUILD]   14.01.14
-#
-# Change:
-# - Added mandatory TMDB assets download step:
-#     scripts/download_tmdb_assets.py
-#   so the pipeline is repeatable on GitHub Actions (no manual local fixes).
+# [ROLE]    Orchestrate: TXT->inputs_parsed -> TMDB -> Trakt -> QA
+# [VERSION] v1.3.0
+# [UPDATED] 2026-01-03_00-00-00
+# [BUILD]   14.01.07
 # ==============================================================================
 
 from __future__ import annotations
@@ -59,7 +54,7 @@ def main() -> int:
         _write_line(logfp, f"RESULT    : FAIL (parse exit_code={rc_parse})")
         return rc_parse
 
-    # 2) TMDB fetch (builds data/data.json)
+    # 2) TMDB fetch
     rc_tmdb = _run("TMDB", [py, os.path.join("scripts", "fetch_tmdb.py")], logfp)
     if rc_tmdb != 0:
         _write_line(logfp, f"RESULT    : FAIL (tmdb exit_code={rc_tmdb})")
@@ -76,12 +71,6 @@ def main() -> int:
     if rc_watch != 0:
         _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
         return rc_watch
-
-    # 3c) Download TMDB assets referenced by data/data.json (required for stable GitHub builds)
-    rc_assets = _run("ASSETS", [py, os.path.join("scripts", "download_tmdb_assets.py")], logfp)
-    if rc_assets != 0:
-        _write_line(logfp, f"RESULT    : FAIL (download_tmdb_assets exit_code={rc_assets})")
-        return rc_assets
 
     # 4) QA missing trakt ids
     rc_qa1 = _run("QA_MISSING_TRAKT", [py, os.path.join("scripts", "qa_missing_trakt_ids.py")], logfp)

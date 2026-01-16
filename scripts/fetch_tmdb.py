@@ -3,9 +3,9 @@
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
-# [VERSION] v2.7.2
-# [UPDATED] 2026-01-13
-# [BUILD]   14.01.08
+# [VERSION] v2.7.3
+# [UPDATED] 2026-01-15
+# [BUILD]   14.01.07
 #
 # [PATCH GOALS]
 # - Fix broken streaming links caused by config key mismatch (streaming vs streaming_services)
@@ -19,7 +19,7 @@
 # - Preserve existing minimal fields and placeholders (seasons:[], links:{} for TV)
 #
 # [NOTE]
-# Deep-build of seasons/episodes IS implemented here (show -> seasons -> episodes).
+# Deep-build of seasons/episodes is NOT implemented here (still a separate stage if you add it later).
 # ==============================================================================
 
 import dataclasses
@@ -64,7 +64,11 @@ REPO_ROOT = SCRIPT_PATH.parents[1]
 WEB_DIR = REPO_ROOT / "web"
 DATA_DIR = REPO_ROOT / "data"
 
-# Inputs
+# Inputs (support both legacy and inputs/)
+TV_LIST_CANDIDATES = []  # unused; inputs come from inputs_parsed.json
+MOVIES_LIST_CANDIDATES = []  # unused; inputs come from inputs_parsed.json
+WATCHLIST_CANDIDATES = []  # unused; inputs come from inputs_parsed.json
+# Optional intermediate JSON from parse_txt_to_json.py
 PARSED_INPUTS_JSON = DATA_DIR / "inputs_parsed.json"
 
 OUT_DATA_JSON = DATA_DIR / "data.json"
@@ -131,15 +135,28 @@ class StreamingConfig:
 
 
 @dataclass
+class ImageSizesConfig:
+    show_width: int
+    movie_width: int
+    season_width: int
+    episode_still_w: int
+    backdrop_w: int
+
+
+@dataclass
 class ImageCacheConfig:
     base_dir: str
     folders: Dict[str, str]
+    enabled: bool = True
+    download_missing_only: bool = True
+    tmdb_image_base: str = "https://image.tmdb.org/t/p"
 
 
 @dataclass
 class Config:
     streaming: StreamingConfig
     image_cache: ImageCacheConfig
+    image_sizes: ImageSizesConfig
 
 
 def _coalesce_streaming(cfg: Dict[str, Any]) -> Dict[str, Any]:
@@ -171,6 +188,25 @@ def load_config(path: Path) -> Config:
     folders = (image_cache.get("folders", {}) or {})
     base_dir = str(image_cache.get("base_dir", ""))
 
+    enabled = bool(image_cache.get("enabled", True))
+    download_missing_only = bool(image_cache.get("download_missing_only", True))
+    tmdb_image_base = str(image_cache.get("tmdb_image_base", "https://image.tmdb.org/t/p")).rstrip("/")
+
+    sizes = cfg.get("image_sizes", {}) or {}
+    def _int(v: Any, d: int) -> int:
+        try:
+            return int(v)
+        except Exception:
+            return int(d)
+
+    image_sizes = ImageSizesConfig(
+        show_width=_int(sizes.get("show_width", 185), 185),
+        movie_width=_int(sizes.get("movie_width", 185), 185),
+        season_width=_int(sizes.get("season_width", 185), 185),
+        episode_still_w=_int(sizes.get("episode_still_w", 300), 300),
+        backdrop_w=_int(sizes.get("backdrop_w", 780), 780),
+    )
+
     return Config(
         streaming=StreamingConfig(
             vidsrc_tv=str(streaming.get("vidsrc_tv", "")),
@@ -181,7 +217,11 @@ def load_config(path: Path) -> Config:
         image_cache=ImageCacheConfig(
             base_dir=base_dir,
             folders={str(k): str(v) for k, v in folders.items()},
+            enabled=enabled,
+            download_missing_only=download_missing_only,
+            tmdb_image_base=tmdb_image_base,
         ),
+        image_sizes=image_sizes,
     )
 
 
@@ -337,6 +377,12 @@ class TMDBClient:
 # -------------------------
 # Inputs parsing
 # -------------------------
+def _first_existing(candidates: List[Path]) -> Optional[Path]:
+    for p in candidates:
+        if p.exists():
+            return p
+    return None
+
 
 
 def compute_local_season_poster(cfg: Config, poster_path: Optional[str]) -> Optional[str]:
@@ -351,6 +397,69 @@ def compute_local_episode_still(cfg: Config, still_path: Optional[str]) -> Optio
     name = _basename_from_tmdb_path(still_path)
     if not name:
         return None
+
+# -------------------------
+# TMDB image download helpers (download missing only)
+# -------------------------
+def _site_path_to_fs(site_path: str) -> Path:
+    rel = site_path.lstrip("/").replace("/", os.sep)
+    return REPO_ROOT / rel
+
+def _tmdb_size_tag(kind: str, cfg: Config) -> str:
+    if kind == "show_poster":
+        w = cfg.image_sizes.show_width
+        return f"w{int(w)}" if w else "original"
+    if kind == "movie_poster":
+        w = cfg.image_sizes.movie_width
+        return f"w{int(w)}" if w else "original"
+    if kind == "season_poster":
+        w = cfg.image_sizes.season_width
+        return f"w{int(w)}" if w else "original"
+    if kind == "episode_still":
+        w = cfg.image_sizes.episode_still_w
+        return f"w{int(w)}" if w else "original"
+    w = cfg.image_sizes.backdrop_w
+    return f"w{int(w)}" if w else "original"
+
+def _tmdb_image_url(cfg: Config, kind: str, tmdb_path: str) -> str:
+    base = (cfg.image_cache.tmdb_image_base or "https://image.tmdb.org/t/p").rstrip("/")
+    size_tag = _tmdb_size_tag(kind, cfg)
+    p = (tmdb_path or "").strip()
+    if not p.startswith("/"):
+        p = "/" + p
+    return f"{base}/{size_tag}{p}"
+
+def download_if_missing(cfg: Config, kind: str, tmdb_path: Optional[str], site_path: Optional[str]) -> bool:
+    if not cfg.image_cache.enabled:
+        return False
+    if not tmdb_path or not site_path:
+        return False
+
+    sp = str(site_path).strip()
+    if not sp:
+        return False
+
+    dst = _site_path_to_fs(sp)
+    if cfg.image_cache.download_missing_only and dst.is_file():
+        return False
+
+    url = _tmdb_image_url(cfg, kind, str(tmdb_path))
+    dst.parent.mkdir(parents=True, exist_ok=True)
+
+    last_err: Optional[str] = None
+    for attempt in range(1, 4):
+        try:
+            r = requests.get(url, timeout=45)
+            if r.status_code == 200 and r.content:
+                dst.write_bytes(r.content)
+                return True
+            last_err = f"HTTP {r.status_code}"
+        except Exception as ex:
+            last_err = str(ex)
+        time.sleep(0.8 * attempt)
+
+    logging.warning("[img] download failed kind=%s url=%s dst=%s err=%s", kind, url, dst, last_err)
+    return False
     d = _folder(cfg, "episodes_stills")
     return f"{d}/{name}" if d else None
 
@@ -407,8 +516,11 @@ def build_tv_seasons_episodes(
             "vote_count": season.get("vote_count"),
             "poster_path": poster_path,
             "poster_local": compute_local_season_poster(cfg, poster_path),
-            "episodes": [],
+"episodes": [],
         }
+        # Download missing season poster (config-driven)
+        download_if_missing(cfg, "season_poster", poster_path, season_obj.get("poster_local"))
+
 
         for ep in (season.get("episodes") or []):
             try:
@@ -430,10 +542,13 @@ def build_tv_seasons_episodes(
                 "production_code": ep.get("production_code"),
                 "still_path": still_path,
                 "still_local": compute_local_episode_still(cfg, still_path),
-                "vote_average": ep.get("vote_average"),
+"vote_average": ep.get("vote_average"),
                 "vote_count": ep.get("vote_count"),
                 "links": build_tv_links(cfg, int(show_tmdb_id), int(season_number), int(ep_num)),
             }
+            # Download missing episode still (config-driven)
+            download_if_missing(cfg, "episode_still", still_path, ep_obj.get("still_local"))
+
             season_obj["episodes"].append(ep_obj)
 
         seasons_out.append(season_obj)
@@ -553,6 +668,15 @@ def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     logging.info("[inputs] tv=%s movies=%s", len(tv), len(mv))
     return tv, mv
 
+    tv_path = _first_existing(TV_LIST_CANDIDATES)
+    mv_path = _first_existing(MOVIES_LIST_CANDIDATES)
+
+    tv_list: List[Dict[str, Any]] = parse_pipe_lines(tv_path, "show") if tv_path else []
+    mv_list: List[Dict[str, Any]] = parse_pipe_lines(mv_path, "movie") if mv_path else []
+
+    logging.info("[inputs] tv_list=%s (%s)", len(tv_list), tv_path)
+    logging.info("[inputs] movies_list=%s (%s)", len(mv_list), mv_path)
+    return tv_list, mv_list
 
 
 # -------------------------
@@ -678,6 +802,8 @@ def main() -> int:
             poster_path = show.get("poster_path")
             backdrop_path = show.get("backdrop_path")
             poster_local, backdrop_local = compute_local_image_paths(cfg, "show", poster_path, backdrop_path)
+            download_if_missing(cfg, "show_poster", poster_path, poster_local)
+            download_if_missing(cfg, "backdrop", backdrop_path, backdrop_local)
 
             show_obj = {
                 # --- core / legacy ---
@@ -778,6 +904,8 @@ def main() -> int:
             poster_path = mv.get("poster_path")
             backdrop_path = mv.get("backdrop_path")
             poster_local, backdrop_local = compute_local_image_paths(cfg, "movie", poster_path, backdrop_path)
+            download_if_missing(cfg, "movie_poster", poster_path, poster_local)
+            download_if_missing(cfg, "backdrop", backdrop_path, backdrop_local)
 
             mv_obj = {
                 # --- core / legacy ---
