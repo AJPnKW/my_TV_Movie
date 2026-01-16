@@ -43,7 +43,7 @@ TRAKT_API_VERSION = "2"
 
 
 def _utc() -> str:
-    return _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def blank(s: str | None) -> bool:
