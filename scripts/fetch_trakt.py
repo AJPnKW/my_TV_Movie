@@ -2,7 +2,7 @@
 # ==============================================================================
 # [FILE]    scripts/fetch_trakt.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Resolve Trakt IDs used for sync (movies/shows) + lightweight public metadata
+# [ROLE]    Enrich data/data.json with Trakt IDs + lightweight Trakt metadata
 # [VERSION] v1.3.0
 # [UPDATED] 2025-12-29_00-00-00
 # [BUILD]   14.01.08
@@ -67,7 +67,7 @@ def _now_stamp() -> str:
 
 def _utc_iso() -> str:
     # keep existing style; avoid introducing new time semantics
-    return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def setup_logging() -> Path:
