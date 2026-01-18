@@ -3,7 +3,7 @@
     {
       "type": "trakt_watch_state",
       "message": "401 Unauthorized; refresh attempt failed: HTTP Error 400: Bad Request",
-      "utc": "2026-01-18T17:35:26Z"
+      "utc": "2026-01-18T18:59:53Z"
     }
   ],
   "meta": {
@@ -15,9 +15,9 @@
     "counts": {
       "errors": 0,
       "movies": 64,
-      "shows": 118
+      "shows": 119
     },
-    "generated_utc": "2026-01-18T17:34:49Z"
+    "generated_utc": "2026-01-18T18:59:32Z"
   },
   "metadata": {
     "trakt_public_enrichment": {
@@ -25,14 +25,14 @@
       "counts": {
         "already_movies": 64,
         "already_shows": 118,
-        "looked_up": 182,
+        "looked_up": 183,
         "not_found": 0,
         "updated_movies": 0,
-        "updated_shows": 0
+        "updated_shows": 1
       },
       "mode": "public_lookup",
       "script": "fetch_trakt.py",
-      "timestamp_utc": "2026-01-18T17:35:25Z"
+      "timestamp_utc": "2026-01-18T18:59:52Z"
     }
   },
   "movies": [
@@ -1244,7 +1244,7 @@
       "tmdb_id": 749170,
       "trakt_id": 589385,
       "vote_average": 6.846,
-      "vote_count": 921
+      "vote_count": 922
     },
     {
       "backdrop_local": null,
@@ -1389,8 +1389,8 @@
       "title": "Killers of the Flower Moon",
       "tmdb_id": 466420,
       "trakt_id": 313884,
-      "vote_average": 7.4,
-      "vote_count": 3921
+      "vote_average": 7.403,
+      "vote_count": 3922
     },
     {
       "backdrop_local": "/assets/backdrops/movies/5cRw2QHQz5bp7W2KLdSpZoFoTTw.jpg",
@@ -1782,8 +1782,8 @@
       "original_title": "Narnia",
       "overview": "The new upcoming film by Greta Gerwig.",
       "popularity": 1.9279,
-      "poster_local": null,
-      "poster_path": null,
+      "poster_local": "/assets/posters/movies/nivfPrUAhhvgXeZgy98Ii6TrSnF.jpg",
+      "poster_path": "/nivfPrUAhhvgXeZgy98Ii6TrSnF.jpg",
       "production_companies": [
         {
           "id": 84041,
@@ -2303,7 +2303,7 @@
       "tmdb_id": 945729,
       "trakt_id": 759594,
       "vote_average": 6.579,
-      "vote_count": 2700
+      "vote_count": 2701
     },
     {
       "backdrop_local": "/assets/backdrops/movies/bAtFhmRHp0f6aHqj1UGTZoPcmQo.jpg",
@@ -2371,8 +2371,8 @@
       "title": "Saltburn",
       "tmdb_id": 930564,
       "trakt_id": 746293,
-      "vote_average": 7.0,
-      "vote_count": 2772
+      "vote_average": 6.967,
+      "vote_count": 2773
     },
     {
       "backdrop_local": "/assets/backdrops/movies/xXFtetuwZkI3Byl7qmQ8DZXQqY.jpg",
@@ -23792,8 +23792,8 @@
         "season_number": 2,
         "show_id": 198102,
         "still_path": "/siwv9ppq5RB0LC0JQHsZ7TNFtuo.jpg",
-        "vote_average": 4.105,
-        "vote_count": 19
+        "vote_average": 4.25,
+        "vote_count": 20
       },
       "links": {},
       "name": "Hijack",
@@ -26730,7 +26730,8 @@
       "season_filter": [
         17,
         18,
-        19
+        19,
+        25
       ],
       "season_mode": "filter",
       "seasons": [
@@ -28155,6 +28156,480 @@
           "season_number": 19,
           "vote_average": 0.0,
           "vote_count": null
+        },
+        {
+          "_id": "67562e9e9bc20eaa4967ed36",
+          "air_date": "2025-11-16",
+          "episodes": [
+            {
+              "air_date": "2025-11-16",
+              "episode_number": 1,
+              "episode_type": "standard",
+              "id": 6348114,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/1",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/1"
+              },
+              "name": "Episode 1",
+              "overview": "The jungle is calling… Britain’s biggest reality show is back! A brand new batch of celebrities head Down Under, ready to face their fears and fight for the crown.",
+              "production_code": "",
+              "runtime": 72,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/wzUAVGghBsLSUSzA3hFDBcoraic.jpg",
+              "vote_average": 9.0,
+              "vote_count": 1
+            },
+            {
+              "air_date": "2025-11-17",
+              "episode_number": 2,
+              "episode_type": "standard",
+              "id": 6691333,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/2",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/2"
+              },
+              "name": "Episode 2",
+              "overview": "As the new batch of celebrities get used to their new surroundings, they must take on trials and challenges in the hope of winning food for the camp.",
+              "production_code": "",
+              "runtime": 65,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/4ieOFjVAyjaQ8Az9eU036Pod1gU.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-18",
+              "episode_number": 3,
+              "episode_type": "standard",
+              "id": 6691334,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/3",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/3"
+              },
+              "name": "Episode 3",
+              "overview": "It's time to head back to Australia as the celebrities continue to get to know each other while they settle into camp life.",
+              "production_code": "",
+              "runtime": 57,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/w09Uh5aupPOIV5yAZpkY3wjrjaN.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-19",
+              "episode_number": 4,
+              "episode_type": "standard",
+              "id": 6691335,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/4",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/4"
+              },
+              "name": "Episode 4",
+              "overview": "The celebrities battle it out to win stars for food in the hope of keeping spirits high in the camp.",
+              "production_code": "",
+              "runtime": 55,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/4T1l2W7WIKB7TntaK6FHQ5RiSh6.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-20",
+              "episode_number": 5,
+              "episode_type": "standard",
+              "id": 6691336,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/5",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/5"
+              },
+              "name": "Episode 5",
+              "overview": "The celebrities are starting to settle into camp life and taking on everything that the jungle throws at them - with stars and treats up for grabs, they must battle it out in trials and challenges.",
+              "production_code": "",
+              "runtime": 57,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/bcpyUAu3plGDzydpQ2AFvmcpRpa.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-21",
+              "episode_number": 6,
+              "episode_type": "standard",
+              "id": 6691337,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/6",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/6"
+              },
+              "name": "Episode 6",
+              "overview": "The celebrities are settling into jungle life away from their home comforts, but who can go the distance in the hope of being crowned as King or Queen of the Jungle?",
+              "production_code": "",
+              "runtime": 65,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/nhdOUTZXdxUgi8LlpIivjPHzozQ.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-22",
+              "episode_number": 7,
+              "episode_type": "standard",
+              "id": 6691338,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/7",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/7"
+              },
+              "name": "Episode 7",
+              "overview": "We're back in Australia as we get the latest instalment from life in the camp - the celebrities have endured one week, but they must try to go the distance.",
+              "production_code": "",
+              "runtime": 47,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/d4estKExpvOjfYFnKDvBs5X459E.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-23",
+              "episode_number": 8,
+              "episode_type": "standard",
+              "id": 6691339,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/8",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/8"
+              },
+              "name": "Episode 8",
+              "overview": "We're back in the Australian jungle with the celebrities who have lasted a week in their new surroundings - however, they must win enough stars to feed the camp and keep morale high.",
+              "production_code": "",
+              "runtime": 47,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/5ZbTKyTrsMMx0okdUoNueID8mim.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-24",
+              "episode_number": 9,
+              "episode_type": "standard",
+              "id": 6691340,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/9",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/9"
+              },
+              "name": "Episode 9",
+              "overview": "The campmates continue to brave everything that the jungle throws at them, but there can only be one winner who can stand the test of time and be crowned as the new King or Queen of the Jungle.",
+              "production_code": "",
+              "runtime": 55,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/5vJSs7FNPSswJT3W22IQXQTboTI.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-25",
+              "episode_number": 10,
+              "episode_type": "standard",
+              "id": 6691341,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/10",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/10"
+              },
+              "name": "Episode 10",
+              "overview": "The celebrities are settling into camp life and bonding with their fellow campmates, but the pressure is on to feed the camp and someone must bring home the goods with more stars on offer at another trial.",
+              "production_code": "",
+              "runtime": 49,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/kPzEc6my9CyopoS4xa8ilakw895.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-26",
+              "episode_number": 11,
+              "episode_type": "standard",
+              "id": 6691342,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/11",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/11"
+              },
+              "name": "Episode 11",
+              "overview": "The celebrities are miles away from their home comforts but are taking jungle life in their stride - with trials and challenges to take on in order to win food and treats, the pressure is on.",
+              "production_code": "",
+              "runtime": 56,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/3g4UqCLJrg84IUoD6jQnKQJkrIE.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-27",
+              "episode_number": 12,
+              "episode_type": "standard",
+              "id": 6691343,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/12",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/12"
+              },
+              "name": "Episode 12",
+              "overview": "The celebrities are really settling into life in the jungle, but they need to handle their nerves as the final week approaches so they can make it to the end and possibly be crowned as the new King or Queen of the Jungle.",
+              "production_code": "",
+              "runtime": 68,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/tzXuxZuvVS97fo9sl9GeP9XgeVG.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-28",
+              "episode_number": 13,
+              "episode_type": "standard",
+              "id": 6691344,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/13",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/13"
+              },
+              "name": "Episode 13",
+              "overview": "As more gruelling trials are thrown in the celebrities' direction, the pressure is on to win stars in order to feed the camp.",
+              "production_code": "",
+              "runtime": 58,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/3Yr70EAFngu8I8Zi5BjsXdzMVAX.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-29",
+              "episode_number": 14,
+              "episode_type": "standard",
+              "id": 6691345,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/14",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/14"
+              },
+              "name": "Episode 14",
+              "overview": "Ant and Dec are in Australia with the latest instalment and all the goings-on from life in the jungle.",
+              "production_code": "",
+              "runtime": 47,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/qVn1MOIcf8s1v19I53GO1akqnG3.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-11-30",
+              "episode_number": 15,
+              "episode_type": "standard",
+              "id": 6691346,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/15",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/15"
+              },
+              "name": "Episode 15",
+              "overview": "The celebrities are on the home straight now as the final week is in sight, but they must handle the pressure and hold their nerve to reach the bitter end.",
+              "production_code": "",
+              "runtime": 69,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/qBdcegZlNNgMk6JjS49okL2wss6.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-01",
+              "episode_number": 16,
+              "episode_type": "standard",
+              "id": 6691347,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/16",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/16"
+              },
+              "name": "Episode 16",
+              "overview": "It's the final stretch now as the celebrities continue to battle everything that the jungle throws at them - there can only be one winner in the race to be crowned as King or Queen of the Jungle.",
+              "production_code": "",
+              "runtime": 59,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/tLN45UCEhbw6x5uUPLjx4z7iYAA.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-02",
+              "episode_number": 17,
+              "episode_type": "standard",
+              "id": 6691348,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/17",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/17"
+              },
+              "name": "Episode 17",
+              "overview": "The pressure mounts as the celebrities hope to make it all the way to the final, but another campmate must pack their bags and say their goodbyes.",
+              "production_code": "",
+              "runtime": 67,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/uhKKwRsd5VPNOYJ8f4bao47A20v.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-03",
+              "episode_number": 18,
+              "episode_type": "standard",
+              "id": 6691349,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/18",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/18"
+              },
+              "name": "Episode 18",
+              "overview": "Ant and Dec are in Australia with another look at life in the camp - the countdown is now on as the celebrities are into their final days living in the jungle.",
+              "production_code": "",
+              "runtime": 58,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/AhBdAiNax3MMTP1qijXQXgMhfWB.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-04",
+              "episode_number": 19,
+              "episode_type": "standard",
+              "id": 6691350,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/19",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/19"
+              },
+              "name": "Episode 19",
+              "overview": "The end is in sight for the remaining celebrities who have now settled into life in the Australian outback, and everyone wants to make it to the end to be crowned as the new King or Queen of the Jungle.",
+              "production_code": "",
+              "runtime": 59,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/af3VgnjVIXicKY5Fu24E8qYEVxe.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-05",
+              "episode_number": 20,
+              "episode_type": "standard",
+              "id": 6691351,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/20",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/20"
+              },
+              "name": "Episode 20",
+              "overview": "Ant and Dec are in Australia as the battle to be crowned as the winner enters the final stretch.",
+              "production_code": "",
+              "runtime": 68,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/4hUo7McltnBP5IpNp0D4PJ9UoKo.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-06",
+              "episode_number": 21,
+              "episode_type": "standard",
+              "id": 6691352,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/21",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/21"
+              },
+              "name": "Episode 21",
+              "overview": "It's the penultimate episode of 2025 with Ant and Dec in the Australian jungle - there are 24 hours left in camp for our celebrities until one person is crowned as King or Queen of the Jungle.",
+              "production_code": "",
+              "runtime": 58,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/xQLXVNHSChCaggK1Hf0Y30e9JwP.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-07",
+              "episode_number": 22,
+              "episode_type": "finale",
+              "id": 6691353,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/22",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/22"
+              },
+              "name": "Episode 22",
+              "overview": "It's the final and the last three celebrities have made it all the way till the end - all that is left to do is crown the new King or Queen of the Jungle for 2025.",
+              "production_code": "",
+              "runtime": 75,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/6hnJhSyuTm1atOOrA83mHokmNgN.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2025-12-13",
+              "episode_number": 23,
+              "episode_type": "standard",
+              "id": 6757711,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/30901/25/23",
+                "vidsrc": "https://vidsrc.net/embed/tv/30901/25/23"
+              },
+              "name": "Coming Out!",
+              "overview": "After the celebs leave - what happens next? Go behind the scenes with Ant, Dec and all the 2025 campmates we've all been watching!",
+              "production_code": "",
+              "runtime": 46,
+              "season_number": 25,
+              "show_id": 30901,
+              "still_local": null,
+              "still_path": "/2rtTTz2g8eS8o4VHn0EVWVJldYA.jpg",
+              "vote_average": 0.0,
+              "vote_count": 0
+            }
+          ],
+          "id": 432323,
+          "name": "Season 25",
+          "overview": "",
+          "poster_local": "/assets/posters/seasons/sC7hd98Dq66uBPVHE6dNb229Tib.jpg",
+          "poster_path": "/sC7hd98Dq66uBPVHE6dNb229Tib.jpg",
+          "season_number": 25,
+          "vote_average": 9.0,
+          "vote_count": null
         }
       ],
       "status": "Returning Series",
@@ -28165,6 +28640,283 @@
       "type": "Reality",
       "vote_average": 6.1,
       "vote_count": 53
+    },
+    {
+      "backdrop_local": "/assets/backdrops/shows/gRa5eDYNOVEw60nRsJCri9Y9sun.jpg",
+      "backdrop_path": "/gRa5eDYNOVEw60nRsJCri9Y9sun.jpg",
+      "created_by": [],
+      "episode_run_time": [
+        90,
+        60
+      ],
+      "first_air_date": "2015-02-01",
+      "genres": [
+        {
+          "id": 10764,
+          "name": "Reality"
+        }
+      ],
+      "homepage": "http://tenplay.com.au/channel-ten/im-a-celebrity-get-me-out-of-here",
+      "id": 61913,
+      "imdb_id": "tt4422950",
+      "in_production": true,
+      "last_air_date": "2025-02-17",
+      "last_episode_to_air": {
+        "air_date": "2025-02-17",
+        "episode_number": 22,
+        "episode_type": "standard",
+        "id": 6752076,
+        "name": "Episode 22",
+        "overview": "",
+        "production_code": "",
+        "runtime": null,
+        "season_number": 11,
+        "show_id": 61913,
+        "still_path": null,
+        "vote_average": 0.0,
+        "vote_count": 0
+      },
+      "links": {},
+      "name": "I'm a Celebrity: Get Me Out of Here!",
+      "networks": [
+        {
+          "id": 38,
+          "logo_path": "/cUq4tWKFvubij22k2v3gGu0cniX.png",
+          "name": "10",
+          "origin_country": "AU"
+        }
+      ],
+      "next_episode_to_air": {
+        "air_date": "2026-01-18",
+        "episode_number": 1,
+        "episode_type": "standard",
+        "id": 6850254,
+        "name": "Episode 1",
+        "overview": "The Year of Tough Calls. I'm A Celebrity Australia gets harder as stars face brutal choices in the South African jungle. Who will survive the toughest year yet?",
+        "production_code": "",
+        "runtime": null,
+        "season_number": 12,
+        "show_id": 61913,
+        "still_path": null,
+        "vote_average": 0.0,
+        "vote_count": 0
+      },
+      "number_of_episodes": 275,
+      "number_of_seasons": 12,
+      "origin_country": [
+        "AU"
+      ],
+      "original_name": "I'm a Celebrity: Get Me Out of Here!",
+      "overview": "Australian celebrities are dropped into the African jungle with little more than their wits, strength and willpower to survive the competition. How will they cope with African wildlife, a constant series of challenges and tests, basic rations and their fellow campmates? Who will survive the infamous Bush Tucker Trials? Who will win the hearts of viewers and be crowned King or Queen of the Jungle?",
+      "popularity": 3.5641,
+      "poster_local": "/assets/posters/shows/kFByXOpdP0aZokUPC16c9oWb5uN.jpg",
+      "poster_path": "/kFByXOpdP0aZokUPC16c9oWb5uN.jpg",
+      "season_filter": null,
+      "season_mode": "min",
+      "seasons": [
+        {
+          "_id": "6968b5cd4582e7d9192369ea",
+          "air_date": "2026-01-18",
+          "episodes": [
+            {
+              "air_date": "2026-01-18",
+              "episode_number": 1,
+              "episode_type": "standard",
+              "id": 6850254,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/1",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/1"
+              },
+              "name": "Episode 1",
+              "overview": "The Year of Tough Calls. I'm A Celebrity Australia gets harder as stars face brutal choices in the South African jungle. Who will survive the toughest year yet?",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-01-19",
+              "episode_number": 2,
+              "episode_type": "standard",
+              "id": 6850256,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/2",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/2"
+              },
+              "name": "Episode 2",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-01-20",
+              "episode_number": 3,
+              "episode_type": "standard",
+              "id": 6850259,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/3",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/3"
+              },
+              "name": "Episode 3",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-01-21",
+              "episode_number": 4,
+              "episode_type": "standard",
+              "id": 6850267,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/4",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/4"
+              },
+              "name": "Episode 4",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-01-25",
+              "episode_number": 5,
+              "episode_type": "standard",
+              "id": 6850273,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/5",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/5"
+              },
+              "name": "Episode 5",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-01-26",
+              "episode_number": 6,
+              "episode_type": "standard",
+              "id": 6850275,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/6",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/6"
+              },
+              "name": "Episode 6",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-01-27",
+              "episode_number": 7,
+              "episode_type": "standard",
+              "id": 6850277,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/7",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/7"
+              },
+              "name": "Episode 7",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-01-28",
+              "episode_number": 8,
+              "episode_type": "standard",
+              "id": 6850278,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/8",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/8"
+              },
+              "name": "Episode 8",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            },
+            {
+              "air_date": "2026-02-01",
+              "episode_number": 9,
+              "episode_type": "standard",
+              "id": 6850281,
+              "links": {
+                "videasy": "https://player.videasy.net/tv/61913/12/9",
+                "vidsrc": "https://vidsrc.net/embed/tv/61913/12/9"
+              },
+              "name": "Episode 9",
+              "overview": "",
+              "production_code": "",
+              "runtime": null,
+              "season_number": 12,
+              "show_id": 61913,
+              "still_local": null,
+              "still_path": null,
+              "vote_average": 0.0,
+              "vote_count": 0
+            }
+          ],
+          "id": 494762,
+          "name": "Season 12",
+          "overview": "",
+          "poster_local": null,
+          "poster_path": null,
+          "season_number": 12,
+          "vote_average": 0.0,
+          "vote_count": null
+        }
+      ],
+      "status": "Returning Series",
+      "title": "I'm a Celebrity: Get Me Out of Here!",
+      "tmdb_id": 61913,
+      "trakt_id": 94999,
+      "tvdb_id": 288285,
+      "type": "Reality",
+      "vote_average": 5.0,
+      "vote_count": 13
     },
     {
       "backdrop_local": "/assets/backdrops/shows/2fOKVDoc2O3eZmBZesWPuE5kgPN.jpg",
@@ -35351,8 +36103,8 @@
               "show_id": 110492,
               "still_local": null,
               "still_path": "/6bdIgolsJzPHyJE7RLGeca1YKLn.jpg",
-              "vote_average": 6.433,
-              "vote_count": 52
+              "vote_average": 6.443,
+              "vote_count": 53
             },
             {
               "air_date": "2025-09-18",
@@ -47756,8 +48508,8 @@
               "show_id": 95396,
               "still_local": null,
               "still_path": "/sP3GZe9j7BY3CAyZGFuZxxnGpN1.jpg",
-              "vote_average": 8.069,
-              "vote_count": 130
+              "vote_average": 8.084,
+              "vote_count": 131
             },
             {
               "air_date": "2022-02-17",
@@ -51982,7 +52734,7 @@
       "tvdb_id": 305288,
       "type": "Scripted",
       "vote_average": 8.6,
-      "vote_count": 20324
+      "vote_count": 20326
     },
     {
       "backdrop_local": "/assets/backdrops/shows/8M0rS9KsWACnua82zmlVOjUGKXD.jpg",
@@ -66481,7 +67233,7 @@
               "show_id": 221079,
               "still_local": null,
               "still_path": "/oVi82txNurQQK0nghDKGINaFW0Y.jpg",
-              "vote_average": 8.194,
+              "vote_average": 8.2,
               "vote_count": 18
             },
             {
@@ -66501,7 +67253,7 @@
               "show_id": 221079,
               "still_local": null,
               "still_path": "/blbOrV9ZfyA4E3lB1qYF3KAwDJE.jpg",
-              "vote_average": 8.211,
+              "vote_average": 8.2,
               "vote_count": 19
             },
             {
@@ -66521,7 +67273,7 @@
               "show_id": 221079,
               "still_local": null,
               "still_path": "/orl3lIpg3TJk7n7vlsaUZD51muD.jpg",
-              "vote_average": 8.143,
+              "vote_average": 8.1,
               "vote_count": 14
             },
             {
@@ -66541,7 +67293,7 @@
               "show_id": 221079,
               "still_local": null,
               "still_path": "/3k9cfe8bDE0dRWj9jx3VmLHgmjU.jpg",
-              "vote_average": 8.107,
+              "vote_average": 8.1,
               "vote_count": 14
             },
             {
@@ -66581,7 +67333,7 @@
               "show_id": 221079,
               "still_local": null,
               "still_path": "/pR3vqxu8hZmbSqPdXXaMvoEUBUu.jpg",
-              "vote_average": 8.056,
+              "vote_average": 8.1,
               "vote_count": 9
             },
             {
@@ -66641,7 +67393,7 @@
               "show_id": 221079,
               "still_local": null,
               "still_path": "/uzDURDcNyWS7q9ifGNCgXbGmgBB.jpg",
-              "vote_average": 8.038,
+              "vote_average": 8.0,
               "vote_count": 13
             },
             {
@@ -66661,7 +67413,7 @@
               "show_id": 221079,
               "still_local": null,
               "still_path": "/oIxPIgs38rTzZj3bvcQqIrvdQzn.jpg",
-              "vote_average": 7.35,
+              "vote_average": 7.3,
               "vote_count": 10
             }
           ],
