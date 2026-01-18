@@ -75,6 +75,59 @@
     .row .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
     .row .name{font-weight:900}
     .row .sub{opacity:.8;font-size:12px}
+  
+    /* Show View (series-only; Heated-Rivalry-style) */
+    .showview{position:relative;border-radius:22px;overflow:hidden;background:#0b1220;border:1px solid rgba(255,255,255,.10)}
+    .showview .backdrop{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(6px);transform:scale(1.05);opacity:.55}
+    .showview .shade{position:absolute;inset:0;background:linear-gradient(90deg, rgba(7,11,18,.92) 0%, rgba(7,11,18,.72) 55%, rgba(7,11,18,.92) 100%)}
+    .showview .grain{position:absolute;inset:0;opacity:.08;mix-blend-mode:overlay;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" stitchTiles="stitch"/></filter><rect width="140" height="140" filter="url(%23n)" opacity=".55"/></svg>')}
+    .showview .content{position:relative;z-index:2;padding:18px}
+    .sv-top{display:flex;align-items:flex-start;gap:16px}
+    .sv-poster{width:220px;max-width:34vw;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:#0b1220}
+    .sv-poster img{display:block;width:100%;height:auto}
+    .sv-meta{flex:1;min-width:0}
+    .sv-kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
+    .sv-title{font-size:34px;font-weight:1000;margin:6px 0 6px 0;line-height:1.08}
+    .sv-pills{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 10px 0}
+    .sv-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10)}
+    .sv-overview{opacity:.9;font-size:13px;line-height:1.45;max-width:72ch}
+    .sv-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .sv-actions .btn{max-width:160px}
+    .sv-utility{position:absolute;top:12px;right:12px;display:flex;gap:10px;align-items:center;z-index:3}
+    .sv-badge{font-weight:900;font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);opacity:.95}
+    .sv-report{font-weight:900;font-size:12px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);color:#e8eefc;text-decoration:none}
+
+    .sv-seasonwrap{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.10)}
+    .sv-seasonhead{display:flex;align-items:center;gap:12px}
+    .sv-seasonlabel{font-weight:1000;font-size:14px;opacity:.85;margin-left:auto}
+    .sv-seasonlist{margin-left:auto;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto;padding:6px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);min-width:240px}
+    .sv-seasonitem{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+    .sv-seasonitem input{width:auto}
+    .sv-seasonitem span{font-weight:900;font-size:12px}
+
+    .sv-seasondetails{margin-top:12px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
+    .sv-seasondetails .h{font-weight:1000}
+    .sv-seasondetails .d{opacity:.85;font-size:12px;margin-top:6px;line-height:1.4}
+
+    .sv-episodes{margin-top:14px}
+    .sv-epgrid{display:flex;gap:12px;overflow:auto;padding-bottom:8px}
+    .sv-ep{min-width:280px;max-width:320px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);overflow:hidden}
+    .sv-epimg{height:140px;background:#0b1220;opacity:.95}
+    .sv-epimg img{width:100%;height:100%;object-fit:cover;display:block}
+    .sv-epbody{padding:12px}
+    .sv-eptag{font-weight:1000;font-size:11px;opacity:.8}
+    .sv-eptitle{font-weight:1000;margin-top:6px;line-height:1.2}
+    .sv-epmeta{opacity:.8;font-size:12px;margin-top:6px}
+    .sv-epbtns{display:flex;gap:8px;margin-top:10px}
+    .sv-epbtns .btn{padding:8px 10px;font-size:12px}
+
+    @media (max-width:860px){
+      .sv-top{flex-direction:column}
+      .sv-poster{width:180px}
+      .sv-seasonlist{min-width:0;width:100%}
+    }
+
+  
   </style>
 </head>
 <body>
@@ -188,6 +241,200 @@
     $("#modalBack").setAttribute("aria-hidden", "true");
     $("#modalBody").innerHTML = "";
   }
+
+
+  // ------------------------------
+  // Show View (series-only)
+  // ------------------------------
+  function getShowById(tmdbId){
+    const shows = state.data?.shows || [];
+    return shows.find(s => String(s.tmdb_id) === String(tmdbId)) || null;
+  }
+
+  function getSeasons(show){
+    const seasons = (show?.seasons || []).slice();
+    seasons.sort((a,b) => (a.season_number ?? 0) - (b.season_number ?? 0));
+    return seasons;
+  }
+
+  function getDefaultSeasonIndex(show){
+    const seasons = getSeasons(show);
+    if (!seasons.length) return -1;
+    // prefer highest season_number that has episodes
+    for (let i=seasons.length-1;i>=0;i--){
+      const eps = seasons[i]?.episodes || [];
+      if (eps && eps.length) return i;
+    }
+    return 0;
+  }
+
+  function pill(label){
+    return `<span class="sv-pill">${label}</span>`;
+  }
+
+  function showBackdrop(show){
+    return show?.backdrop_local || show?.backdrop_path || "";
+  }
+  function showPoster(show){
+    return show?.poster_local || show?.poster_path || "";
+  }
+
+  function formatYear(d){
+    if (!d) return "";
+    return String(d).slice(0,4);
+  }
+
+  function openShowView(tmdbId){
+    const show = getShowById(tmdbId);
+    if (!show){
+      openModal("Show", `<div class="row"><div class="name">Show not found for tmdb_id=${safeText(tmdbId)}</div></div>`);
+      return;
+    }
+
+    const bd = showBackdrop(show);
+    const ps = showPoster(show);
+    const genres = (show.genres || []).map(g => g?.name ? g.name : String(g)).filter(Boolean);
+    const nets = (show.networks || []).map(n => n?.name ? n.name : String(n)).filter(Boolean);
+
+    const rating = (show.vote_average != null) ? `${show.vote_average}` : "";
+    const year = formatYear(show.first_air_date);
+
+    const seasons = getSeasons(show);
+    const defIdx = getDefaultSeasonIndex(show);
+
+    const version = state.data?.meta?.version || "";
+    const reportUrl = state.cfg?.links?.report_problem_url || state.cfg?.report_problem_url || "";
+
+    const seasonListHtml = seasons.length ? seasons.map((s, i) => {
+      const sn = s.season_number ?? "";
+      const label = safeText(s.name || (sn!=="" ? `Season ${sn}` : "Season"));
+      const checked = (i===defIdx) ? "checked" : "";
+      return `
+        <label class="sv-seasonitem">
+          <input type="radio" name="svSeason" value="${i}" ${checked}>
+          <span>${label}</span>
+        </label>`;
+    }).join("") : `<div class="row"><div class="sub">No seasons found in data.json</div></div>`;
+
+    const pillsHtml = [
+      ...(genres.slice(0,4).map(g => pill(g))),
+      ...(rating ? [pill(`★ ${rating}`)] : []),
+      ...(nets.length ? [pill(nets.slice(0,2).join(" • "))] : []),
+      ...(show.first_air_date ? [pill(`Premiered ${fmtDate(show.first_air_date)}`)] : [])
+    ].join(" ");
+
+    const html = `
+      <div class="showview" id="showview" data-tmdb="${safeText(show.tmdb_id)}">
+        ${bd ? `<div class="backdrop" style="background-image:url('${bd}')"></div>` : `<div class="backdrop"></div>`}
+        <div class="shade"></div>
+        <div class="grain"></div>
+
+        <div class="sv-utility">
+          ${reportUrl ? `<a class="sv-report" href="${reportUrl}" target="_blank" rel="noreferrer">Report problem</a>` : ``}
+          ${version ? `<span class="sv-badge">${safeText(version)}</span>` : ``}
+        </div>
+
+        <div class="content">
+          <div class="sv-top">
+            <div class="sv-poster">
+              ${ps ? `<img src="${ps}" alt="">` : ``}
+            </div>
+            <div class="sv-meta">
+              <div class="sv-kicker">Original series</div>
+              <div class="sv-title">${safeText(show.title || show.name)}</div>
+              <div class="sv-pills">${pillsHtml}</div>
+              <div class="sv-actions">
+                ${show.tmdb_id ? `<a class="btn tmdb" href="${tmdbShowUrl(show.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>` : ``}
+              </div>
+              ${show.overview ? `<div class="sv-overview" style="margin-top:10px;">${safeText(show.overview)}</div>` : ``}
+            </div>
+          </div>
+
+          <div class="sv-seasonwrap">
+            <div class="sv-seasonhead">
+              <div class="sv-seasonlabel">Season</div>
+            </div>
+            <div class="sv-seasonlist" id="svSeasonList">${seasonListHtml}</div>
+
+            <div class="sv-seasondetails" id="svSeasonDetails"></div>
+
+            <div class="sv-episodes">
+              <div class="sv-epgrid" id="svEpisodeGrid"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    openModal(`${safeText(show.title || show.name)}`, html);
+
+    // wire
+    const radios = Array.from(document.querySelectorAll('input[name="svSeason"]'));
+    const applySeason = (idx) => {
+      const s = seasons[idx];
+      if (!s) return;
+      const sn = s.season_number ?? "";
+      const sLabel = safeText(s.name || (sn!=="" ? `Season ${sn}` : "Season"));
+      const sAir = s.air_date ? fmtDate(s.air_date) : "";
+      const sOverview = safeText(s.overview || "");
+
+      const details = `
+        <div class="h">${sLabel}${sAir ? ` • ${sAir}` : ``}</div>
+        ${sOverview ? `<div class="d">${sOverview}</div>` : `<div class="d" style="opacity:.7;">No season overview</div>`}
+      `;
+      const detailsEl = document.getElementById('svSeasonDetails');
+      if (detailsEl) detailsEl.innerHTML = details;
+
+      const eps = (s.episodes || []).slice();
+      eps.sort((a,b) => (a.episode_number ?? 0) - (b.episode_number ?? 0));
+
+      const gridEl = document.getElementById('svEpisodeGrid');
+      if (!gridEl) return;
+      if (!eps.length){
+        gridEl.innerHTML = `<div class="row"><div class="sub">No episodes found for this season</div></div>`;
+        return;
+      }
+
+      const epHtml = eps.map(ep => {
+        const en = ep.episode_number ?? "";
+        const tag = (sn!=="" && en!=="") ? seTag(sn, en) : "";
+        const name = safeText(ep.title || ep.name || "Episode");
+        const air = ep.air_date ? fmtDate(ep.air_date) : "";
+        const rt  = ep.runtime ? `${ep.runtime} min` : "";
+        const still = ep.still_local || ep.still_path || (Array.isArray(ep.stills) ? ep.stills[0] : "");
+
+        const canWatch = !!show.tmdb_id && sn!=="" && en!=="";
+        const ve = canWatch ? videasyTvUrl(show.tmdb_id, sn, en) : "#";
+        const vs = canWatch ? vidsrcTvUrl(show.tmdb_id, sn, en) : "#";
+
+        return `
+          <div class="sv-ep">
+            <div class="sv-epimg">${still ? `<img src="${still}" alt="">` : ``}</div>
+            <div class="sv-epbody">
+              <div class="sv-eptag">${tag}${air ? ` • ${air}` : ``}${rt ? ` • ${rt}` : ``}</div>
+              <div class="sv-eptitle">${name}</div>
+              <div class="sv-epbtns">
+                <a class="btn tmdb" href="${tmdbShowUrl(show.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
+                <a class="btn videasy ${canWatch ? "" : "disabled"}" href="${ve}" target="_blank" rel="noreferrer">VidEasy</a>
+                <a class="btn vidsrc ${canWatch ? "" : "disabled"}" href="${vs}" target="_blank" rel="noreferrer">VidSrc</a>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      gridEl.innerHTML = epHtml;
+    };
+
+    radios.forEach(r => {
+      r.onchange = () => applySeason(parseInt(r.value,10));
+    });
+
+    if (defIdx >= 0) applySeason(defIdx);
+  }
+
+  // expose for inline handlers if needed
+  window.__openShowView = openShowView;
 
   function footerText() {
     const meta = state.data?.meta || {};
@@ -354,7 +601,7 @@
     $("#calPrev").onclick = () => { state.calendarMonth = new Date(m.getFullYear(), m.getMonth()-1, 1); render(); };
     $("#calNext").onclick = () => { state.calendarMonth = new Date(m.getFullYear(), m.getMonth()+1, 1); render(); };
 
-    // chip click -> open episode/movie modal
+    // chip click -> open show view (series-only) / movie modal
     $$(".chip").forEach(ch => {
       ch.onclick = () => {
         const day = ch.getAttribute("data-day");
@@ -363,22 +610,7 @@
         const it = list[idx];
         if (!it) return;
         if (it.type === "show") {
-          const s = it.season, e = it.episode;
-          const html = `
-            <div class="row">
-              <div class="top">
-                <div class="name"><a href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer" style="color:#e8eefc;text-decoration:none;">${safeText(it.title)}</a></div>
-                <div class="sub">• ${fmtDate(it.air_date)} • ${seTag(s,e)}</div>
-              </div>
-              <div class="sub" style="margin-top:6px;">${safeText(it.ep_name)}</div>
-              <div class="btnrow" style="margin-top:12px;">
-                <a class="btn tmdb" href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Info at TMDB</a>
-                <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Watch on Videasy</a>
-                <a class="btn vidsrc" href="${vidsrcTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
-              </div>
-            </div>
-          `;
-          openModal(`${safeText(it.title)} • ${seTag(s,e)}`, html);
+          openShowView(it.tmdb_id);
         } else {
           const html = `
             <div class="row">
@@ -387,9 +619,9 @@
                 <div class="sub">• ${fmtDate(it.release_date)}</div>
               </div>
               <div class="btnrow" style="margin-top:12px;">
-                <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Info at TMDB</a>
-                <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Watch on Videasy</a>
-                <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+                <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
+                <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidEasy</a>
+                <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidSrc</a>
               </div>
             </div>
           `;
@@ -413,7 +645,7 @@
                 </div>
                 <div class="btnrow" style="margin-top:10px;">
                   <a class="btn tmdb" href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
-                  <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Videasy</a>
+                  <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">VidEasy</a>
                   <a class="btn vidsrc" href="${vidsrcTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">VidSrc</a>
                 </div>
               </div>
@@ -427,7 +659,7 @@
                 </div>
                 <div class="btnrow" style="margin-top:10px;">
                   <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
-                  <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Videasy</a>
+                  <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidEasy</a>
                   <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidSrc</a>
                 </div>
               </div>
@@ -466,7 +698,7 @@
       const vidsrc = canWatch ? vidsrcTvUrl(s.tmdb_id, nea.season_number, nea.episode_number) : "#";
 
       return `
-        <div class="card">
+        <div class="card" data-show-id="${safeText(s.tmdb_id)}" role="button" tabindex="0">
           ${poster ? `<img class="poster" src="${poster}" alt="">` : `<div class="poster"></div>`}
           <div class="card-body">
             <div class="card-title">${safeText(s.title)}</div>
@@ -474,9 +706,9 @@
             ${genres ? `<div class="meta" style="margin-top:6px;">${genres}</div>` : ``}
             ${nextLine ? `<div class="meta" style="margin-top:8px;font-weight:800;">${nextLine}</div>` : ``}
             <div class="btnrow">
-              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">Info at TMDB</a>
-              <a class="btn videasy ${canWatch ? "" : "disabled"}" href="${videasy}" target="_blank" rel="noreferrer">Watch on Videasy</a>
-              <a class="btn vidsrc ${canWatch ? "" : "disabled"}" href="${vidsrc}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">TMDB</a>
+              <a class="btn videasy ${canWatch ? "" : "disabled"}" href="${videasy}" target="_blank" rel="noreferrer">VidEasy</a>
+              <a class="btn vidsrc ${canWatch ? "" : "disabled"}" href="${vidsrc}" target="_blank" rel="noreferrer">VidSrc</a>
             </div>
           </div>
         </div>
@@ -499,6 +731,23 @@
     `;
 
     $("#showSearch").oninput = (e) => { state.search.shows = e.target.value; renderShows(); };
+
+    // show card click -> show view (ignore button clicks)
+    $$(".card[data-show-id]").forEach(c => {
+      const id = c.getAttribute("data-show-id");
+      if (!id) return;
+      c.onclick = (ev) => {
+        if (ev && ev.target && ev.target.closest && ev.target.closest('.btn')) return;
+        openShowView(id);
+      };
+      c.onkeydown = (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') {
+          ev.preventDefault();
+          openShowView(id);
+        }
+      };
+    });
+
   }
 
   function renderMovies() {
@@ -530,9 +779,9 @@
             <div class="meta">${year ? `Since ${year}` : ""}${runtime ? ` • ${runtime}` : ""}</div>
             ${genres ? `<div class="meta" style="margin-top:6px;">${genres}</div>` : ``}
             <div class="btnrow">
-              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">Info at TMDB</a>
-              <a class="btn videasy" href="${videasy}" target="_blank" rel="noreferrer">Watch on Videasy</a>
-              <a class="btn vidsrc" href="${vidsrc}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">TMDB</a>
+              <a class="btn videasy" href="${videasy}" target="_blank" rel="noreferrer">VidEasy</a>
+              <a class="btn vidsrc" href="${vidsrc}" target="_blank" rel="noreferrer">VidSrc</a>
             </div>
           </div>
         </div>

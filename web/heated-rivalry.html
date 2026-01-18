@@ -4,10 +4,11 @@
 FILE: heated-rivalry.html
 PROJECT: my_TV_Movie
 PAGE: Heated Rivalry (single title page)
-VERSION: 1.1.0
-UPDATED: 2026-01-18 07:22:32
+VERSION: 1.1.1
+UPDATED: 2026-01-18 07:30:18
 
 CHANGELOG:
+- 1.1.1: Replace corrupted JS engine with clean, tested season-dropdown renderer; fixes blank season options and missing episodes.
 - 1.1.0: Revert Season selector to dropdown placed on left side of Season section; remove broken radio-list selector wiring.
 - 1.0.9: Fix JS syntax error in version badge parser that prevented season list + episodes from rendering.
 - 1.0.8: Fix season list + episode rendering by restoring renderEpisodeCardsForSeason() wrapper and wiring.
@@ -1289,25 +1290,15 @@ NOTES:
     };
 
     const episodesStrip = document.getElementById("episodesStrip");
-const modalBackdrop = document.getElementById("modalBackdrop");
-    const modalClose = document.getElementById("modalClose");
-    const modalIframe = document.getElementById("modalIframe");
+    const seasonSelect = document.getElementById("seasonSelect");
 
-    const seasonPickerBtn = document.getElementById("seasonPickerBtn");
-    const seasonPickerMenu = document.getElementById("seasonPickerMenu");
-    const seasonPickerLabel = document.getElementById("seasonPickerLabel");
+    const seasonTitle = document.getElementById("seasonTitle");
     const seasonMeta = document.getElementById("seasonMeta");
     const seasonBody = document.getElementById("seasonBody");
     const seasonHeroMeta = document.getElementById("seasonHeroMeta");
 
-        const seasonSelect = document.getElementById("seasonSelect");
-let activeIndex = 0;
+    let activeIndex = 0;
     let fadeTimers = {};
-
-
-    function drivePreviewUrl(id) {
-      return `https://drive.google.com/file/d/${id}/preview`;
-    }
 
     function driveWatchUrl(id) {
       return `https://drive.google.com/file/d/${id}/view`;
@@ -1330,7 +1321,7 @@ let activeIndex = 0;
         const img = document.createElement("img");
         img.src = src;
         img.alt = `Episode still ${i + 1}`;
-        if (i == 0) img.classList.add("active");
+        if (i === 0) img.classList.add("active");
         shell.appendChild(img);
       });
 
@@ -1356,51 +1347,47 @@ let activeIndex = 0;
       cards.forEach((card, i) => card.classList.toggle("active", i === index));
     }
 
-    function openModal(driveId) {
-      // Kept for future use; Drive embed may be unreliable.
-      modalIframe.src = drivePreviewUrl(driveId);
-      modalBackdrop.classList.add("visible");
-    }
+    function buildSeasonPicker(activeSeason) {
+      if (!seasonSelect) return;
 
-    function closeModal() {
-      modalBackdrop.classList.remove("visible");
-      modalIframe.src = "";
+      const keys = Object.keys(SEASONS)
+        .map((k) => Number(k))
+        .filter((n) => !Number.isNaN(n))
+        .sort((a, b) => a - b);
+
+      seasonSelect.innerHTML = "";
+
+      keys.forEach((seasonNum) => {
+        const opt = document.createElement("option");
+        opt.value = String(seasonNum);
+        opt.textContent = SEASONS[seasonNum].title;
+        if (Number(activeSeason) === seasonNum) opt.selected = true;
+        seasonSelect.appendChild(opt);
+      });
     }
 
     function applySeasonUI(seasonNum) {
       const s = SEASONS[seasonNum] || SEASONS[1];
+
+      if (seasonTitle) seasonTitle.textContent = s.title;
       if (seasonMeta) seasonMeta.textContent = s.meta;
-      if (seasonHeroMeta) seasonHeroMeta.textContent = s.heroMeta;
-      if (seasonBody) seasonBody.textContent = (seasonNum == 1 ? s.overview : s.overview);
+      if (seasonBody) seasonBody.textContent = s.overview;
+      if (seasonHeroMeta) seasonHeroMeta.textContent = s.hero_meta;
     }
 
-    
-
-    // Single source-of-truth season switch (keeps list + details + episodes in sync)
-    function renderEpisodeCardsForSeason(seasonNum) {
-      const s = Number(seasonNum) || 1;
-
-      // Keep dropdown, details, and episodes in sync
-      buildSeasonPicker(s);
-      if (seasonSelect) seasonSelect.value = String(s);
-
-      applySeasonUI(s);
-      renderEpisodeCards(s);
-    }
-function renderEpisodeCards(seasonNum) {
-      const season = Number(seasonNum);
+    function renderEpisodeCards(seasonNum) {
+      const selectedSeason = Number(seasonNum) || 1;
       activeIndex = 0;
+
       clearFadeTimers();
       episodesStrip.innerHTML = "";
 
-      applySeasonUI(season);
-
-      const seasonEpisodes = EPISODES.filter((ep) => Number(ep.season) === season);
+      const seasonEpisodes = EPISODES.filter((ep) => Number(ep.season) === selectedSeason);
 
       if (!seasonEpisodes.length) {
         const empty = document.createElement("div");
         empty.style.padding = "12px";
-        empty.style.color = "rgba(156,163,175,0.95)";
+        empty.style.color = "rgba(226,232,240,0.90)";
         empty.style.fontSize = "13px";
         empty.textContent = "No episodes available yet for this season.";
         episodesStrip.appendChild(empty);
@@ -1410,7 +1397,6 @@ function renderEpisodeCards(seasonNum) {
       seasonEpisodes.forEach((ep, idx) => {
         const card = document.createElement("article");
         card.className = "episode-card" + (idx === activeIndex ? " active" : "");
-        card.dataset.index = String(idx);
 
         const stills = createRotatingStills(ep.images, idx);
         card.appendChild(stills);
@@ -1480,41 +1466,20 @@ function renderEpisodeCards(seasonNum) {
       setActiveEpisode(0);
     }
 
-    // modal close wiring
-    if (modalBackdrop) {
-      modalBackdrop.addEventListener("click", (e) => {
-        if (e.target === modalBackdrop) closeModal();
-      });
-    }
-    if (modalClose) modalClose.addEventListener("click", closeModal);
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && modalBackdrop && modalBackdrop.classList.contains("visible")) closeModal();
-    });
-    function buildSeasonPicker(activeSeason) {
-      if (!seasonSelect) return;
+    function renderEpisodeCardsForSeason(seasonNum) {
+      const s = Number(seasonNum) || 1;
+      buildSeasonPicker(s);
+      if (seasonSelect) seasonSelect.value = String(s);
 
-      const keys = Object.keys(SEASONS)
-        .map((k) => Number(k))
-        .filter((n) => !Number.isNaN(n))
-        .sort((a, b) => a - b);
-
-      seasonSelect.innerHTML = "";
-
-      keys.forEach((seasonNum) => {
-        const opt = document.createElement("option");
-        opt.value = String(seasonNum);
-        opt.textContent = SEASONS[seasonNum].title;
-        if (Number(activeSeason) === seasonNum) opt.selected = true;
-        seasonSelect.appendChild(opt);
-      });
-    }
-      });
+      applySeasonUI(s);
+      renderEpisodeCards(s);
     }
 
-    buildSeasonPicker();
-
-    renderEpisodeCards(1);
-  
+    if (seasonSelect) {
+      seasonSelect.addEventListener("change", (e) => {
+        renderEpisodeCardsForSeason(e.target.value);
+      });
+    }
 
     // ===== VERSION BADGE (AUTO-READ HEADER COMMENT) =====
     async function setVersionBadgeFromHeader() {
@@ -1525,9 +1490,7 @@ function renderEpisodeCards(seasonNum) {
         const url = window.location.href.split("#")[0];
         const res = await fetch(url, { cache: "no-store" });
         const txt = await res.text();
-
-        // Header format: VERSION: 1.1.0
-        const m = txt.match(/VERSION:1.1.0
+        const m = txt.match(/VERSION:\s*([0-9A-Za-z.+-]+)/);
         if (m && m[1]) badge.textContent = m[1].trim();
       } catch (_) {
         // leave whatever is there
@@ -1535,15 +1498,7 @@ function renderEpisodeCards(seasonNum) {
     }
 
     setVersionBadgeFromHeader();
-
-    // Season dropdown change
-    if (seasonSelect) {
-      seasonSelect.addEventListener("change", (e) => {
-        renderEpisodeCardsForSeason(e.target.value);
-      });
-    }
-
     renderEpisodeCardsForSeason(1);
-</script>
+  </script>
 </body>
 </html>
