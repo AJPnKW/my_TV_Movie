@@ -1,0 +1,1031 @@
+<!--
+FILE: web/library_editor.html
+PROJECT: my_TV_Movie
+VERSION: 0.3.0
+DATE: 2026-01-18
+
+GOAL:
+  Human-centric, single-view editor.
+
+LAYOUT:
+  LEFT  = TMDB lookup (search results)
+  RIGHT = inputs_parsed.json listing (in-scope library)
+
+RULES:
+  - inputs_parsed.json is the only persisted target
+  - title + tmdb_id are NOT editable
+  - only in_scope + seasons editable
+  - auto-load on launch from /data/inputs_parsed.json
+  - TMDB calls go to local proxy: /api/tmdb/* (no keys in UI)
+
+RUN:
+  Use the provided run_editor_server.ps1 to host this page + proxy.
+
+-->
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>My TV Movie • Library Editor</title>
+
+  <link rel="stylesheet" href="../my_tv_hub.css"/>
+
+  <style>
+    :root{
+      --bg:#0f1116; --text:#e8ecf3; --muted:#a6b0c3; --line:#263049;
+      --accent:#77b6ff; --good:#63f0a5; --warn:#ffcf5a; --bad:#ff6b6b;
+      --r:14px; --gap:12px; --pad:14px;
+      --shadow: 0 10px 28px rgba(0,0,0,.45);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    html,body{height:auto}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);overflow:auto;}
+    .page{max-width: 1320px;margin:0 auto;padding:14px;box-sizing:border-box;}
+
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .brand{display:flex;align-items:baseline;gap:10px;font-weight:900;letter-spacing:.2px;}
+    .badge{
+      font-size:12px;color:var(--muted);
+      border:1px solid var(--line);padding:3px 8px;border-radius:999px;
+      background: rgba(0,0,0,.25);font-family:var(--mono);white-space:nowrap;
+    }
+    .badge.good{border-color: rgba(99,240,165,.4); color:#bfffe0;}
+    .badge.warn{border-color: rgba(255,207,90,.4); color:#ffe4a6;}
+    .badge.bad{border-color: rgba(255,107,107,.4); color:#ffd1d1;}
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .hd{
+      padding:12px 14px;border-bottom:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .hd .title{font-weight:900;}
+    .bd{padding: var(--pad); display:flex; flex-direction:column; gap: var(--gap);}
+
+    .grid{
+      display:grid;grid-template-columns: 1fr 1fr; gap: var(--gap);
+      align-items:start;
+    }
+    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
+
+    .panel{
+      border:1px solid var(--line); border-radius:12px;
+      background: rgba(0,0,0,.18);
+      padding:12px;
+    }
+
+    button{
+      background: rgba(255,255,255,.06);color:var(--text);
+      border:1px solid var(--line);border-radius:12px;
+      padding:10px 12px;font-weight:800;cursor:pointer;user-select:none;
+      display:inline-flex;align-items:center;gap:10px;
+    }
+    button:hover{background: rgba(255,255,255,.09);}
+    button:disabled{opacity:.5;cursor:not-allowed;}
+    button.primary{background: rgba(119,182,255,.14); border-color: rgba(119,182,255,.45);}
+    button.danger{background: rgba(255,107,107,.08); border-color: rgba(255,107,107,.5);}
+    button.ghost{background: transparent;}
+    input[type="search"], input[type="text"], select{
+      background: rgba(0,0,0,.28);color:var(--text);
+      border:1px solid var(--line);border-radius:12px;
+      padding:10px 12px;outline:none;box-sizing:border-box;
+      width:100%;
+    }
+    input[type="checkbox"]{width:18px;height:18px;accent-color: var(--accent);}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+    .spacer{flex:1;}
+    .tiny{font-size:12px;}
+    .muted{color:var(--muted);}
+    .mono{font-family:var(--mono);}
+
+    .list{
+      border:1px solid var(--line); border-radius:12px;
+      background: rgba(0,0,0,.18);
+      overflow:auto;
+      max-height: 62vh;
+    }
+    .item{
+      display:flex;gap:10px;align-items:center;
+      padding:10px 12px;border-bottom:1px solid rgba(38,48,73,.7);
+      cursor:pointer;
+    }
+    .item:last-child{border-bottom:0;}
+    .item:hover{background: rgba(255,255,255,.03);}
+    .item.on{background: rgba(119,182,255,.12);}
+    .meta{min-width:0;flex:1;}
+    .name{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .sub{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;}
+    .tag{
+      font-size:11px;border:1px solid var(--line);
+      padding:2px 8px;border-radius:999px;
+      color:var(--muted);background: rgba(0,0,0,.25);
+      white-space:nowrap;font-family:var(--mono);
+    }
+
+    .poster{width:56px;height:84px;border-radius:10px;border:1px solid rgba(38,48,73,.9);
+      overflow:hidden;background: rgba(0,0,0,.25);flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+    .poster img{width:100%;height:100%;object-fit:cover;display:block;}
+
+    details summary{cursor:pointer;font-weight:900;}
+    details{border:1px solid rgba(38,48,73,.55);border-radius:12px;padding:10px;background: rgba(0,0,0,.12);}
+
+    .toast{
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      background: rgba(10,12,18,.92);
+      border: 1px solid rgba(38,48,73,.9);
+      padding: 10px 14px; border-radius: 14px; box-shadow: var(--shadow);
+      display:none; max-width:min(980px, calc(100% - 28px)); z-index: 99;
+    }
+
+    .editBox{display:flex;flex-direction:column;gap:10px;}
+    .seasonList{
+      border:1px solid var(--line);border-radius:12px;background: rgba(0,0,0,.18);
+      padding:10px;max-height: 260px;overflow:auto;
+    }
+    .seasonRow{
+      display:flex;align-items:center;gap:10px;padding:8px 6px;
+      border-bottom:1px solid rgba(38,48,73,.55);
+    }
+    .seasonRow:last-child{border-bottom:0;}
+    .seasonRow label{font-weight:800;}
+    .pillOk{border:1px solid rgba(99,240,165,.35); background: rgba(99,240,165,.06); padding:8px 10px; border-radius:12px; color:#bfffe0; font-size:12px;}
+    .pillWarn{border:1px solid rgba(255,207,90,.45); background: rgba(255,207,90,.08); padding:8px 10px; border-radius:12px; color:#ffe4a6; font-size:12px;}
+    .pillBad{border:1px solid rgba(255,107,107,.45); background: rgba(255,107,107,.08); padding:8px 10px; border-radius:12px; color:#ffd1d1; font-size:12px;}
+  </style>
+</head>
+
+<body>
+<div class="page">
+
+  <div class="topbar">
+    <div class="brand">
+      <span>Library Editor</span>
+      <span class="badge">v0.3.0</span>
+      <span class="badge" id="stInputs">inputs_parsed: loading…</span>
+      <span class="badge" id="stDirty">changes: none</span>
+    </div>
+
+    <div class="row">
+      <button id="btnReload" type="button">Reload</button>
+      <button id="btnExport" class="primary" type="button" disabled>Export inputs_parsed.json</button>
+      <button id="btnBackup" type="button" disabled>Export backup</button>
+    </div>
+  </div>
+
+  <div class="grid">
+
+    <!-- LEFT: TMDB LOOKUP -->
+    <section class="card">
+      <div class="hd">
+        <div class="title">TMDB lookup</div>
+        <div class="row">
+          <span class="badge" id="stTMDB">proxy: checking…</span>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div class="panel">
+          <div class="row">
+            <div style="flex:1;min-width:260px;">
+              <input id="qTmdb" type="search" placeholder="Search TMDB: star trek, st*r, typos ok" />
+            </div>
+            <button id="btnTmdbSearch" class="primary" type="button">Search</button>
+          </div>
+
+          <details style="margin-top:10px;">
+            <summary>Filters (optional)</summary>
+            <div class="row" style="margin-top:10px;">
+              <label class="row tiny"><input id="fShows" type="checkbox" checked/> Shows</label>
+              <label class="row tiny"><input id="fMovies" type="checkbox" checked/> Movies</label>
+              <label class="row tiny"><input id="fAdult" type="checkbox"/> Adult</label>
+              <select id="fLang" style="max-width:240px;">
+                <option value="en" selected>English (en)</option>
+                <option value="fr">French (fr)</option>
+                <option value="es">Spanish (es)</option>
+                <option value="de">German (de)</option>
+              </select>
+              <select id="fRegion" style="max-width:240px;">
+                <option value="CA" selected>CA</option>
+                <option value="US">US</option>
+                <option value="GB">UK (GB)</option>
+                <option value="AU">AU</option>
+              </select>
+            </div>
+          </details>
+
+          <div class="tiny muted" style="margin-top:10px;">
+            Add = selects the TMDB item and inserts/updates it in <span class="mono">inputs_parsed.json</span>.
+          </div>
+        </div>
+
+        <div class="row">
+          <div style="font-weight:900;">Results</div>
+          <span class="spacer"></span>
+          <span class="badge" id="tmdbCount">0</span>
+        </div>
+
+        <div class="list" id="tmdbList"></div>
+      </div>
+    </section>
+
+    <!-- RIGHT: inputs_parsed.json -->
+    <section class="card">
+      <div class="hd">
+        <div class="title">inputs_parsed.json</div>
+        <div class="row">
+          <span class="badge" id="inCount">0</span>
+          <select id="sortBy" style="max-width:220px;">
+            <option value="title" selected>Sort: title</option>
+            <option value="type">Sort: type</option>
+            <option value="tmdb_id">Sort: tmdb_id</option>
+            <option value="in_scope">Sort: in_scope</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="bd">
+
+        <div class="panel">
+          <div class="row">
+            <div style="flex:1;min-width:260px;">
+              <input id="qInputs" type="search" placeholder="Search in inputs_parsed: star trek…" />
+            </div>
+            <button id="btnInputsSearch" type="button" class="primary">Search</button>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <label class="row tiny"><input id="iShows" type="checkbox" checked/> Shows</label>
+            <label class="row tiny"><input id="iMovies" type="checkbox" checked/> Movies</label>
+            <span class="spacer"></span>
+            <span class="tiny muted">Select an item to edit (in_scope / seasons only).</span>
+          </div>
+        </div>
+
+        <div class="twoCol" style="display:grid;grid-template-columns:1fr;gap:12px;">
+          <div class="list" id="inputsList"></div>
+
+          <div class="panel" id="editPanel">
+            <div style="font-weight:900;margin-bottom:6px;">Edit</div>
+            <div id="editEmpty" class="pillWarn">Select an item from the right list, or click “Add” on a TMDB result.</div>
+
+            <div id="editBody" class="hidden editBox">
+              <div class="name" id="eTitle">-</div>
+              <div class="sub">
+                <span class="tag" id="eType">-</span>
+                <span class="tag" id="eId">-</span>
+                <span class="tag" id="eLocked">locked: title + id</span>
+              </div>
+
+              <label class="row" style="margin-top:6px;">
+                <input id="eInScope" type="checkbox"/>
+                <span style="font-weight:900;">In scope</span>
+              </label>
+
+              <div id="eShowOnly" class="hidden">
+                <div class="row" style="margin-top:8px;">
+                  <label class="row tiny"><input id="ePlus" type="checkbox"/> Use N+ rule</label>
+                  <select id="ePlusStart" style="max-width:120px;"></select>
+                  <span class="tiny muted">N+ means start at N and include future seasons.</span>
+                </div>
+
+                <div class="seasonList" id="eSeasons"></div>
+
+                <div class="row">
+                  <button id="eAll" type="button">All (0–12)</button>
+                  <button id="eNone" type="button">None</button>
+                  <button id="eCommon" type="button">Common (1–3)</button>
+                </div>
+              </div>
+
+              <div class="row">
+                <button id="btnSaveEdit" class="primary" type="button">Save</button>
+                <button id="btnDelete" class="danger" type="button">Delete</button>
+              </div>
+
+              <div class="tiny muted">Save updates the right list immediately.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== helpers ===================== */
+const $ = (s)=>document.querySelector(s);
+const $$ = (s)=>Array.from(document.querySelectorAll(s));
+
+function toast(msg, ms=2200){
+  const t=$("#toast");
+  t.textContent=msg;
+  t.style.display="block";
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.style.display="none", ms);
+}
+
+function norm(s){
+  return (s ?? "").toString()
+    .normalize("NFKD").replace(/[\\u0300-\\u036f]/g,"")
+    .toLowerCase()
+    .replace(/['’]/g,"")
+    .replace(/[^a-z0-9\\s*]/g," ")
+    .replace(/\\s+/g," ")
+    .trim();
+}
+
+function tokenize(s){
+  const n=norm(s);
+  if(!n) return [];
+  const stop=new Set(["the","a","an"]);
+  return n.split(" ").filter(w=>w && !stop.has(w));
+}
+
+function wildcardMatch(text, pat){
+  const t=norm(text);
+  const p=norm(pat);
+  if(!p) return true;
+  if(!p.includes("*")) return t.includes(p);
+  const esc=p.replace(/[.+?^${}()|[\\]\\\\]/g,"\\\\$&").replace(/\\*/g,".*");
+  return new RegExp("^"+esc+"$").test(t);
+}
+
+function levenshtein(a,b){
+  a=norm(a); b=norm(b);
+  const m=a.length,n=b.length;
+  if(!m) return n; if(!n) return m;
+  const dp=new Array(n+1);
+  for(let j=0;j<=n;j++) dp[j]=j;
+  for(let i=1;i<=m;i++){
+    let prev=dp[0]; dp[0]=i;
+    for(let j=1;j<=n;j++){
+      const tmp=dp[j];
+      dp[j]=Math.min(dp[j]+1, dp[j-1]+1, prev+(a[i-1]===b[j-1]?0:1));
+      prev=tmp;
+    }
+  }
+  return dp[n];
+}
+
+function scoreMatch(title, query){
+  const qt=tokenize(query);
+  const tt=tokenize(title);
+  const qn=qt.join(" ");
+  const tn=tt.join(" ");
+  if(!qn) return 0;
+  if(tn===qn) return 1.0;
+
+  if(query.includes("*")) return wildcardMatch(title, query) ? 0.92 : 0;
+  if(tn.includes(qn)) return 0.90;
+
+  const d=levenshtein(tn, qn);
+  const denom=Math.max(4, Math.max(tn.length, qn.length));
+  return Math.max(0, Math.min(0.89, 1 - (d/denom)));
+}
+
+function uniqStr(arr){
+  const out=[]; const seen=new Set();
+  for(const x of (arr||[])){
+    const s=(x??"").toString().trim();
+    if(!s) continue;
+    if(seen.has(s)) continue;
+    seen.add(s); out.push(s);
+  }
+  return out;
+}
+
+function seasonSort(a,b){
+  const pa=a.toString(), pb=b.toString();
+  const aPlus=pa.endsWith("+"), bPlus=pb.endsWith("+");
+  const na=parseInt(pa.replace("+",""),10), nb=parseInt(pb.replace("+",""),10);
+  if(aPlus && !bPlus) return 1;
+  if(!aPlus && bPlus) return -1;
+  return (na-nb);
+}
+
+function dlJson(obj, filename){
+  const blob=new Blob([JSON.stringify(obj,null,2)], {type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1500);
+}
+
+/* ===================== app state ===================== */
+const state = {
+  inputs_raw: null,
+  adapter: null,
+  canon: {shows:[], movies:[]},
+  dirty: false,
+
+  tmdb_img_base: "",
+  tmdb_ready: false,
+
+  tmdb_results: [],
+  inputs_view: [],
+  selected: null,      // selected item in inputs (canonical)
+};
+
+function setDirty(v){
+  state.dirty=v;
+  $("#stDirty").textContent = "changes: " + (v ? "pending" : "none");
+  $("#stDirty").className = "badge " + (v ? "warn" : "");
+  $("#btnExport").disabled = !state.inputs_raw;
+  $("#btnBackup").disabled = !state.inputs_raw;
+}
+
+function setInputsStatus(kind, text){
+  $("#stInputs").textContent = text;
+  $("#stInputs").className = "badge " + (kind==="good" ? "good" : kind==="bad" ? "bad" : kind==="warn" ? "warn" : "");
+}
+
+function setTMDBStatus(kind, text){
+  $("#stTMDB").textContent = text;
+  $("#stTMDB").className = "badge " + (kind==="good" ? "good" : kind==="bad" ? "bad" : kind==="warn" ? "warn" : "");
+}
+
+/* ===================== inputs adapter (best-effort) ===================== */
+function detectInputsAdapter(raw){
+  const isObj = raw && typeof raw==="object" && !Array.isArray(raw);
+  if(!isObj) return adapterUnknown;
+
+  if(Array.isArray(raw.shows) || Array.isArray(raw.movies)) return makeAdapterPaths("shows","movies");
+  if(Array.isArray(raw.tv) || Array.isArray(raw.movies)) return makeAdapterPaths("tv","movies");
+  if(Array.isArray(raw.items)) return makeAdapterItems();
+  return adapterUnknown;
+
+  function makeAdapterPaths(showKey, movieKey){
+    return {
+      name:`${showKey}/${movieKey}`,
+      extract(r){
+        const shows = Array.isArray(r[showKey]) ? r[showKey].map(x=>canonFromAny(x,"tv")) : [];
+        const movies= Array.isArray(r[movieKey]) ? r[movieKey].map(x=>canonFromAny(x,"movie")) : [];
+        return { shows, movies };
+      },
+      apply(r, canon){
+        const out = structuredClone(r);
+        if(showKey){
+          const orig = Array.isArray(r[showKey]) ? r[showKey] : [];
+          out[showKey] = canon.shows.map((c,i)=>rawFromCanon(c, orig[i] ?? null));
+        }
+        if(movieKey){
+          const orig = Array.isArray(r[movieKey]) ? r[movieKey] : [];
+          out[movieKey] = canon.movies.map((c,i)=>rawFromCanon(c, orig[i] ?? null));
+        }
+        return out;
+      }
+    };
+  }
+
+  function makeAdapterItems(){
+    return {
+      name:"items[]",
+      extract(r){
+        const items = Array.isArray(r.items) ? r.items : [];
+        const shows=[]; const movies=[];
+        for(const it of items){
+          const t = (it?.type==="show") ? "tv" : (it?.type || "");
+          if(t==="tv") shows.push(canonFromAny(it,"tv"));
+          if(t==="movie") movies.push(canonFromAny(it,"movie"));
+        }
+        return { shows, movies };
+      },
+      apply(r, canon){
+        const out = structuredClone(r);
+        const items = Array.isArray(r.items) ? r.items : [];
+        const other = items.filter(it => !(it?.type==="tv" || it?.type==="show" || it?.type==="movie"));
+        const showShapes = items.filter(it => (it?.type==="tv" || it?.type==="show"));
+        const movieShapes= items.filter(it => it?.type==="movie");
+        const newShows = canon.shows.map((c,i)=>rawFromCanon(c, showShapes[i] ?? null));
+        const newMovies= canon.movies.map((c,i)=>rawFromCanon(c, movieShapes[i] ?? null));
+        out.items = [...newShows, ...newMovies, ...other];
+        return out;
+      }
+    };
+  }
+}
+
+function pick(o, keys, def=""){
+  for(const k of keys){
+    if(o && Object.prototype.hasOwnProperty.call(o,k)) return o[k];
+  }
+  return def;
+}
+
+function canonFromAny(o, typeHint){
+  const tmdb_id = (pick(o, ["tmdb_id","tmdbId","tmdb","id"], "") ?? "").toString();
+  const title = (pick(o, ["title","name","display_title","displayTitle","show","movie"], "") ?? "").toString();
+  const in_scope = !!pick(o, ["in_scope","inScope","active","enabled"], true);
+
+  const seasonsRaw = pick(o, ["seasons","season_selection","seasonSelection","season"], []);
+  let seasons=[];
+  if(typeHint==="tv"){
+    if(Array.isArray(seasonsRaw)) seasons = seasonsRaw.map(x=>x.toString());
+    else if(typeof seasonsRaw==="string") seasons = seasonsRaw.split(",").map(s=>s.trim()).filter(Boolean);
+    else if(typeof seasonsRaw==="number") seasons=[String(seasonsRaw)];
+  }
+
+  const extra = {};
+  if(o && typeof o==="object" && !Array.isArray(o)){
+    for(const k of Object.keys(o)){
+      if(["type","tmdb_id","tmdbId","tmdb","id","title","name","display_title","displayTitle","show","movie",
+          "seasons","season_selection","seasonSelection","season","in_scope","inScope","active","enabled"].includes(k)) continue;
+      extra[k]=o[k];
+    }
+  }
+
+  return { type:typeHint, tmdb_id, title, in_scope, seasons: uniqStr(seasons).sort(seasonSort), extra };
+}
+
+function rawFromCanon(c, shape){
+  const o = (shape && typeof shape==="object" && !Array.isArray(shape)) ? structuredClone(shape) : {};
+  const put=(k,v)=>{ if(v!==undefined && v!==null && v!=="" && !(Array.isArray(v)&&v.length===0)) o[k]=v; };
+
+  const idKey = ("tmdbId" in o) ? "tmdbId" : ("tmdb" in o ? "tmdb" : ("id" in o ? "id" : "tmdb_id"));
+  const titleKey = ("name" in o && !("title" in o)) ? "name" : "title";
+  const scopeKey = ("inScope" in o) ? "inScope" : ("active" in o ? "active" : ("enabled" in o ? "enabled" : "in_scope"));
+
+  put("type", c.type);
+  put(idKey, c.tmdb_id);
+  put(titleKey, c.title);
+  put(scopeKey, !!c.in_scope);
+  if(c.type==="tv") put("seasons", c.seasons);
+
+  if(c.extra && typeof c.extra==="object"){
+    for(const [k,v] of Object.entries(c.extra)){
+      if(!(k in o)) o[k]=v;
+    }
+  }
+  return o;
+}
+
+const adapterUnknown = { name:"unknown", extract(){ return {shows:[], movies:[]}; }, apply(r){ return structuredClone(r);} };
+
+/* ===================== load inputs on launch ===================== */
+async function loadInputsAuto(){
+  try{
+    setInputsStatus("warn","inputs_parsed: loading…");
+    const res = await fetch("/data/inputs_parsed.json", {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    state.inputs_raw = await res.json();
+
+    state.adapter = detectInputsAdapter(state.inputs_raw);
+    state.canon = state.adapter.extract(state.inputs_raw);
+
+    setInputsStatus("good",`inputs_parsed: loaded (${state.adapter.name})`);
+    setDirty(false);
+
+    rebuildInputsView();
+    toast("inputs_parsed.json loaded");
+  }catch(e){
+    state.inputs_raw = null;
+    setInputsStatus("bad","inputs_parsed: not found");
+    setDirty(false);
+    rebuildInputsView();
+  }
+}
+
+/* ===================== TMDB proxy ===================== */
+async function tmdbInit(){
+  try{
+    setTMDBStatus("warn","proxy: checking…");
+    const res = await fetch("/api/tmdb/ping", {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const j = await res.json();
+    state.tmdb_ready = !!j.ok;
+    state.tmdb_img_base = j.img_base || "";
+    setTMDBStatus(state.tmdb_ready ? "good" : "bad", state.tmdb_ready ? "proxy: ready" : "proxy: not ready");
+  }catch(_){
+    state.tmdb_ready = false;
+    setTMDBStatus("bad","proxy: not ready");
+  }
+}
+
+function imgUrl(path){
+  if(!path) return "";
+  if(!state.tmdb_img_base) return "";
+  return state.tmdb_img_base + "w185" + path;
+}
+
+async function tmdbSearch(){
+  if(!state.tmdb_ready){ toast("TMDB proxy not ready"); return; }
+  const q = $("#qTmdb").value.trim();
+  if(!q){ state.tmdb_results=[]; renderTmdb(); return; }
+
+  const wantShows = $("#fShows").checked;
+  const wantMovies = $("#fMovies").checked;
+  const lang = $("#fLang").value;
+  const region = $("#fRegion").value;
+  const adult = $("#fAdult").checked ? "true" : "false";
+
+  const url = new URL(location.origin + "/api/tmdb/search");
+  url.searchParams.set("q", q);
+  url.searchParams.set("lang", lang);
+  url.searchParams.set("region", region);
+  url.searchParams.set("adult", adult);
+  url.searchParams.set("shows", wantShows ? "1":"0");
+  url.searchParams.set("movies", wantMovies ? "1":"0");
+
+  try{
+    const res = await fetch(url.toString(), {cache:"no-store"});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const j = await res.json();
+    state.tmdb_results = j.results || [];
+    renderTmdb();
+  }catch(_){
+    toast("TMDB search failed");
+  }
+}
+
+/* ===================== render TMDB list ===================== */
+function renderTmdb(){
+  $("#tmdbCount").textContent = String(state.tmdb_results.length);
+  const box = $("#tmdbList");
+  box.innerHTML = "";
+
+  for(const r of state.tmdb_results){
+    const el=document.createElement("div");
+    el.className="item";
+
+    const p=document.createElement("div");
+    p.className="poster";
+    if(r.poster_path){
+      const img=document.createElement("img");
+      img.alt=r.title;
+      img.src = imgUrl(r.poster_path);
+      p.appendChild(img);
+    }else{
+      p.textContent = r.type==="tv" ? "TV" : "MOV";
+      p.style.color="rgba(255,255,255,.25)";
+      p.style.fontWeight="900";
+    }
+
+    const meta=document.createElement("div");
+    meta.className="meta";
+    const name=document.createElement("div");
+    name.className="name";
+    name.textContent = r.title || "(untitled)";
+    const sub=document.createElement("div");
+    sub.className="sub";
+    sub.innerHTML = `
+      <span class="tag">${r.type==="tv" ? "Show" : "Movie"}</span>
+      <span class="tag">TMDB ${r.tmdb_id}</span>
+      ${r.year ? `<span class="tag">${r.year}</span>`:""}
+    `;
+    meta.appendChild(name); meta.appendChild(sub);
+
+    const btn=document.createElement("button");
+    btn.className="primary";
+    btn.type="button";
+    btn.textContent="Add";
+    btn.onclick=(e)=>{ e.stopPropagation(); addFromTMDB(r); };
+
+    el.appendChild(p);
+    el.appendChild(meta);
+    el.appendChild(btn);
+    box.appendChild(el);
+  }
+}
+
+/* ===================== inputs list view + sorting ===================== */
+function allCanonItems(){
+  const out=[];
+  for(const s of state.canon.shows) out.push({...s, type:"tv"});
+  for(const m of state.canon.movies) out.push({...m, type:"movie"});
+  return out;
+}
+
+function rebuildInputsView(){
+  const q = $("#qInputs").value.trim();
+  const wantShows = $("#iShows").checked;
+  const wantMovies= $("#iMovies").checked;
+  const sortBy = $("#sortBy").value;
+
+  const src = allCanonItems().filter(it => (it.type==="tv" ? wantShows : wantMovies));
+  const filtered = !q ? src : src.map(it=>({it, s: scoreMatch(it.title, q)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).map(x=>x.it);
+
+  filtered.sort((a,b)=>{
+    if(sortBy==="title") return (a.title||"").localeCompare(b.title||"");
+    if(sortBy==="type") return (a.type||"").localeCompare(b.type||"") || (a.title||"").localeCompare(b.title||"");
+    if(sortBy==="tmdb_id") return (a.tmdb_id||"").localeCompare(b.tmdb_id||"");
+    if(sortBy==="in_scope") return (Number(b.in_scope)-Number(a.in_scope)) || (a.title||"").localeCompare(b.title||"");
+    return 0;
+  });
+
+  state.inputs_view = filtered;
+  renderInputs();
+}
+
+function renderInputs(){
+  const box=$("#inputsList");
+  box.innerHTML="";
+
+  $("#inCount").textContent = String(state.canon.shows.length + state.canon.movies.length);
+
+  for(const it of state.inputs_view){
+    const el=document.createElement("div");
+    el.className="item" + (state.selected && state.selected.type===it.type && state.selected.tmdb_id===it.tmdb_id ? " on":"");
+    el.onclick=()=>selectForEdit(it);
+
+    const meta=document.createElement("div");
+    meta.className="meta";
+
+    const name=document.createElement("div");
+    name.className="name";
+    name.textContent = it.title || "(untitled)";
+
+    const sub=document.createElement("div");
+    sub.className="sub";
+    sub.innerHTML = `
+      <span class="tag">${it.type==="tv"?"Show":"Movie"}</span>
+      <span class="tag">TMDB ${it.tmdb_id || "n/a"}</span>
+      <span class="tag">${it.in_scope ? "in_scope:true" : "in_scope:false"}</span>
+      ${it.type==="tv" ? `<span class="tag">${(it.seasons||[]).length ? (it.seasons.join(",")) : "(no seasons)"}</span>`:""}
+    `;
+
+    meta.appendChild(name);
+    meta.appendChild(sub);
+    el.appendChild(meta);
+    box.appendChild(el);
+  }
+}
+
+/* ===================== edit panel ===================== */
+function selectForEdit(it){
+  state.selected = structuredClone(it);
+
+  $("#editEmpty").classList.add("hidden");
+  $("#editBody").classList.remove("hidden");
+
+  $("#eTitle").textContent = state.selected.title || "(untitled)";
+  $("#eType").textContent = state.selected.type==="tv" ? "Show" : "Movie";
+  $("#eId").textContent = "TMDB " + (state.selected.tmdb_id || "n/a");
+  $("#eInScope").checked = !!state.selected.in_scope;
+
+  $("#eShowOnly").classList.toggle("hidden", state.selected.type!=="tv");
+
+  if(state.selected.type==="tv"){
+    const plusSel=$("#ePlusStart");
+    plusSel.innerHTML="";
+    for(let n=1;n<=30;n++){
+      const opt=document.createElement("option");
+      opt.value=String(n);
+      opt.textContent=String(n);
+      plusSel.appendChild(opt);
+    }
+
+    const tokens = uniqStr(state.selected.seasons || []).sort(seasonSort);
+    const plusTok = tokens.find(x=>/\\+$/.test(x));
+    if(plusTok){
+      $("#ePlus").checked = true;
+      plusSel.value = plusTok.replace("+","");
+    }else{
+      $("#ePlus").checked = false;
+      plusSel.value = "1";
+    }
+
+    renderSeasonEditor();
+  }
+}
+
+function renderSeasonEditor(){
+  const box=$("#eSeasons");
+  box.innerHTML="";
+
+  const plusOn = $("#ePlus").checked;
+  const plusStart = parseInt($("#ePlusStart").value,10) || 1;
+
+  let tokens = uniqStr(state.selected.seasons || []).sort(seasonSort);
+
+  // If plus mode: store exactly (optional 0) + N+
+  if(plusOn){
+    const keep0 = tokens.includes("0");
+    tokens = [];
+    if(keep0) tokens.push("0");
+    tokens.push(String(plusStart)+"+");
+    state.selected.seasons = tokens;
+  }
+
+  // seasons displayed: 0..12 (simple)
+  const seasons = [{n:0,label:"Season 0 (Specials)"}];
+  for(let i=1;i<=12;i++) seasons.push({n:i,label:"Season "+i});
+
+  function isChecked(n){
+    const cur = uniqStr(state.selected.seasons || []);
+    if(n===0) return cur.includes("0");
+    if(plusOn) return n>=plusStart;
+    return cur.includes(String(n));
+  }
+
+  for(const s of seasons){
+    const row=document.createElement("div");
+    row.className="seasonRow";
+
+    const cb=document.createElement("input");
+    cb.type="checkbox";
+    cb.checked = isChecked(s.n);
+
+    const lab=document.createElement("label");
+    lab.textContent = s.label;
+
+    if(plusOn && s.n!==0){
+      cb.disabled=true;
+      lab.style.opacity=".75";
+    }
+
+    cb.onchange=()=>{
+      let cur = uniqStr(state.selected.seasons || []).sort(seasonSort);
+
+      if(s.n===0){
+        if(cb.checked){ if(!cur.includes("0")) cur.push("0"); }
+        else{ cur = cur.filter(x=>x!=="0"); }
+      }else{
+        const key=String(s.n);
+        if(cb.checked){ if(!cur.includes(key)) cur.push(key); }
+        else{ cur = cur.filter(x=>x!==key); }
+      }
+
+      state.selected.seasons = uniqStr(cur).sort(seasonSort);
+      setDirty(true);
+    };
+
+    row.appendChild(cb);
+    row.appendChild(lab);
+    box.appendChild(row);
+  }
+}
+
+$("#ePlus").onchange=()=>{ renderSeasonEditor(); setDirty(true); };
+$("#ePlusStart").onchange=()=>{ if($("#ePlus").checked){ renderSeasonEditor(); setDirty(true); } };
+
+$("#eAll").onclick=()=>{
+  $("#ePlus").checked=false;
+  state.selected.seasons=["0","1","2","3","4","5","6","7","8","9","10","11","12"];
+  renderSeasonEditor();
+  setDirty(true);
+};
+$("#eNone").onclick=()=>{
+  $("#ePlus").checked=false;
+  state.selected.seasons=[];
+  renderSeasonEditor();
+  setDirty(true);
+};
+$("#eCommon").onclick=()=>{
+  $("#ePlus").checked=false;
+  state.selected.seasons=["0","1","2","3"];
+  renderSeasonEditor();
+  setDirty(true);
+};
+
+function upsertSelectedIntoCanon(){
+  const it = state.selected;
+  if(!it) return;
+
+  if(it.type==="movie"){
+    state.canon.movies = state.canon.movies.filter(x=>x.tmdb_id!==it.tmdb_id);
+    if(it.in_scope){
+      state.canon.movies.push({...it, seasons:[]});
+      state.canon.movies.sort((a,b)=>(a.title||"").localeCompare(b.title||""));
+    }
+  }else{
+    state.canon.shows = state.canon.shows.filter(x=>x.tmdb_id!==it.tmdb_id);
+    if(it.in_scope){
+      const seasons = uniqStr(it.seasons || []).sort(seasonSort);
+      state.canon.shows.push({...it, seasons});
+      state.canon.shows.sort((a,b)=>(a.title||"").localeCompare(b.title||""));
+    }
+  }
+
+  // Apply back into raw
+  state.inputs_raw = state.adapter.apply(state.inputs_raw, state.canon);
+}
+
+$("#btnSaveEdit").onclick=()=>{
+  if(!state.inputs_raw || !state.selected) return;
+
+  state.selected.in_scope = $("#eInScope").checked;
+
+  if(state.selected.type==="tv"){
+    // seasons already kept updated via UI; ensure sort
+    state.selected.seasons = uniqStr(state.selected.seasons || []).sort(seasonSort);
+  }else{
+    state.selected.seasons = [];
+  }
+
+  upsertSelectedIntoCanon();
+  setDirty(true);
+  rebuildInputsView();
+  toast("Saved");
+};
+
+$("#btnDelete").onclick=()=>{
+  if(!state.inputs_raw || !state.selected) return;
+
+  const it = state.selected;
+  if(it.type==="movie"){
+    state.canon.movies = state.canon.movies.filter(x=>x.tmdb_id!==it.tmdb_id);
+  }else{
+    state.canon.shows = state.canon.shows.filter(x=>x.tmdb_id!==it.tmdb_id);
+  }
+  state.inputs_raw = state.adapter.apply(state.inputs_raw, state.canon);
+
+  state.selected = null;
+  $("#editBody").classList.add("hidden");
+  $("#editEmpty").classList.remove("hidden");
+
+  setDirty(true);
+  rebuildInputsView();
+  toast("Deleted");
+};
+
+/* ===================== add from TMDB ===================== */
+function addFromTMDB(r){
+  if(!state.inputs_raw){
+    toast("inputs_parsed.json not loaded");
+    return;
+  }
+
+  // If already exists, select it; else insert new record.
+  const exists = (r.type==="tv")
+    ? state.canon.shows.find(x=>x.tmdb_id===r.tmdb_id)
+    : state.canon.movies.find(x=>x.tmdb_id===r.tmdb_id);
+
+  if(exists){
+    selectForEdit(exists);
+    toast("Already in inputs → selected");
+    return;
+  }
+
+  const item = {
+    type: r.type,
+    tmdb_id: r.tmdb_id,
+    title: r.title,
+    in_scope: true,
+    seasons: (r.type==="tv") ? ["1+"] : [],
+    extra: {}
+  };
+
+  state.selected = structuredClone(item);
+  upsertSelectedIntoCanon();
+
+  setDirty(true);
+  rebuildInputsView();
+  selectForEdit(item);
+  toast("Added");
+}
+
+/* ===================== export ===================== */
+function exportInputs(filename){
+  if(!state.inputs_raw){ toast("Nothing to export"); return; }
+  dlJson(state.inputs_raw, filename);
+  toast("Exported");
+}
+
+$("#btnExport").onclick=()=>exportInputs("inputs_parsed.json");
+$("#btnBackup").onclick=()=>{
+  const stamp = new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+  exportInputs(`inputs_parsed.backup.${stamp}.json`);
+};
+
+/* ===================== wiring ===================== */
+$("#btnReload").onclick=()=>{ loadInputsAuto().then(rebuildInputsView); };
+$("#btnTmdbSearch").onclick=tmdbSearch;
+$("#qTmdb").addEventListener("keydown",(e)=>{ if(e.key==="Enter") tmdbSearch(); });
+
+$("#btnInputsSearch").onclick=rebuildInputsView;
+$("#qInputs").addEventListener("keydown",(e)=>{ if(e.key==="Enter") rebuildInputsView(); });
+$("#iShows").onchange=rebuildInputsView;
+$("#iMovies").onchange=rebuildInputsView;
+$("#sortBy").onchange=rebuildInputsView;
+
+/* ===================== boot ===================== */
+(async function boot(){
+  setDirty(false);
+  setInputsStatus("warn","inputs_parsed: loading…");
+  await tmdbInit();
+  await loadInputsAuto();
+  rebuildInputsView();
+
+  $("#btnExport").disabled = !state.inputs_raw;
+  $("#btnBackup").disabled = !state.inputs_raw;
+})();
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- VERSION: 1.1.1 -->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -18,14 +19,19 @@
     .app{max-width:1400px;margin:0 auto;padding:14px;}
     .topbar{display:flex;align-items:center;gap:12px}
     .brand{display:flex;align-items:center;gap:10px}
-    .logo{width:34px;height:34px;border-radius:10px;background:#0f172a;display:grid;place-items:center;border:1px solid rgba(255,255,255,.08)}
+    .logo{width:68px;height:68px;border-radius:16px;background:rgba(236,72,153,.44);display:grid;place-items:center;border:1px solid rgba(236,72,153,.65);box-shadow:0 0 0 1px rgba(236,72,153,.20) inset}
     .title{font-weight:800;font-size:22px;letter-spacing:.2px}
     .subtitle{opacity:.8;font-size:12px;margin-top:2px}
     .status{margin-left:auto;display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)}
+    .version-badge{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);opacity:.9}
     .dot{width:10px;height:10px;border-radius:50%;background:#16a34a}
     .dot.bad{background:#dc2626}
     .nav{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;padding:10px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
     .tab{cursor:pointer;user-select:none;padding:10px 16px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-weight:700}
+    .tab{min-width:84px;text-align:center}
+    .tab[data-tab="calendar"]::before{content:"Calendar"}
+    .tab[data-tab="shows"]::before{content:"Shows"}
+    .tab[data-tab="movies"]::before{content:"Movies"}
     .tab.active{background:rgba(59,130,246,.25);border-color:rgba(59,130,246,.5)}
     .panel{margin-top:14px;border-radius:22px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);padding:18px;min-height:0;max-height:calc(100vh - 190px);overflow:auto;-webkit-overflow-scrolling:touch;}
     .panel h2{margin:0 0 6px 0;font-size:34px}
@@ -57,8 +63,13 @@
     .dow{opacity:.75;font-size:12px;letter-spacing:.12em;text-transform:uppercase;padding:0 4px}
     .day{min-height:110px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);padding:10px;position:relative}
     .day.dim{opacity:.45}
-    .daynum{position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:grid;place-items:center;font-weight:900;font-size:13px}
+    .daynum{position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:10px;background:rgba(236,72,153,.30);border: 1px solid rgba(236,72,153,.45);display:grid;place-items:center;font-weight:900;font-size:13px}
     .chips{margin-top:34px;display:flex;flex-direction:column;gap:8px}
+    .chipbtns{display:flex;gap:8px;margin-top:8px}
+    .chipbtns .btn{padding:6px 10px;border-radius:999px;font-size:12px;line-height:1}
+    .cal-head{justify-content:center}
+    .day.today{border:1px solid rgba(236,72,153,.45);box-shadow:0 0 0 1px rgba(236,72,153,.20) inset}
+    .day.today .daynum{background:rgba(236,72,153,.44);border:1px solid rgba(236,72,153,.65)}
     .chip{display:flex;gap:8px;align-items:center;padding:8px 10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);cursor:pointer}
     .chip .t{font-weight:900;font-size:12px;line-height:1.2}
     .chip .s{opacity:.8;font-size:11px;line-height:1.2}
@@ -75,59 +86,6 @@
     .row .top{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
     .row .name{font-weight:900}
     .row .sub{opacity:.8;font-size:12px}
-  
-    /* Show View (series-only; Heated-Rivalry-style) */
-    .showview{position:relative;border-radius:22px;overflow:hidden;background:#0b1220;border:1px solid rgba(255,255,255,.10)}
-    .showview .backdrop{position:absolute;inset:0;background-size:cover;background-position:center;filter:blur(6px);transform:scale(1.05);opacity:.55}
-    .showview .shade{position:absolute;inset:0;background:linear-gradient(90deg, rgba(7,11,18,.92) 0%, rgba(7,11,18,.72) 55%, rgba(7,11,18,.92) 100%)}
-    .showview .grain{position:absolute;inset:0;opacity:.08;mix-blend-mode:overlay;background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="140" height="140"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" stitchTiles="stitch"/></filter><rect width="140" height="140" filter="url(%23n)" opacity=".55"/></svg>')}
-    .showview .content{position:relative;z-index:2;padding:18px}
-    .sv-top{display:flex;align-items:flex-start;gap:16px}
-    .sv-poster{width:220px;max-width:34vw;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.10);background:#0b1220}
-    .sv-poster img{display:block;width:100%;height:auto}
-    .sv-meta{flex:1;min-width:0}
-    .sv-kicker{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.7}
-    .sv-title{font-size:34px;font-weight:1000;margin:6px 0 6px 0;line-height:1.08}
-    .sv-pills{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 10px 0}
-    .sv-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10)}
-    .sv-overview{opacity:.9;font-size:13px;line-height:1.45;max-width:72ch}
-    .sv-actions{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
-    .sv-actions .btn{max-width:160px}
-    .sv-utility{position:absolute;top:12px;right:12px;display:flex;gap:10px;align-items:center;z-index:3}
-    .sv-badge{font-weight:900;font-size:12px;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);opacity:.95}
-    .sv-report{font-weight:900;font-size:12px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.10);color:#e8eefc;text-decoration:none}
-
-    .sv-seasonwrap{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.10)}
-    .sv-seasonhead{display:flex;align-items:center;gap:12px}
-    .sv-seasonlabel{font-weight:1000;font-size:14px;opacity:.85;margin-left:auto}
-    .sv-seasonlist{margin-left:auto;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow:auto;padding:6px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);min-width:240px}
-    .sv-seasonitem{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
-    .sv-seasonitem input{width:auto}
-    .sv-seasonitem span{font-weight:900;font-size:12px}
-
-    .sv-seasondetails{margin-top:12px;padding:12px 14px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)}
-    .sv-seasondetails .h{font-weight:1000}
-    .sv-seasondetails .d{opacity:.85;font-size:12px;margin-top:6px;line-height:1.4}
-
-    .sv-episodes{margin-top:14px}
-    .sv-epgrid{display:flex;gap:12px;overflow:auto;padding-bottom:8px}
-    .sv-ep{min-width:280px;max-width:320px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);overflow:hidden}
-    .sv-epimg{height:140px;background:#0b1220;opacity:.95}
-    .sv-epimg img{width:100%;height:100%;object-fit:cover;display:block}
-    .sv-epbody{padding:12px}
-    .sv-eptag{font-weight:1000;font-size:11px;opacity:.8}
-    .sv-eptitle{font-weight:1000;margin-top:6px;line-height:1.2}
-    .sv-epmeta{opacity:.8;font-size:12px;margin-top:6px}
-    .sv-epbtns{display:flex;gap:8px;margin-top:10px}
-    .sv-epbtns .btn{padding:8px 10px;font-size:12px}
-
-    @media (max-width:860px){
-      .sv-top{flex-direction:column}
-      .sv-poster{width:180px}
-      .sv-seasonlist{min-width:0;width:100%}
-    }
-
-  
   </style>
 </head>
 <body>
@@ -135,19 +93,25 @@
     <div class="topbar">
       <div class="brand">
         <div class="logo"><span style="font-weight:1000;">TV</span></div>
-        <div>
-          <div class="title">My TV Hub</div>
-          <div class="subtitle" id="subtitle">Single-page • DPAD-first • Local assets</div>
+        <div class="nav" role="tablist" aria-label="Views">
+          <div class="tab active" data-tab="calendar" tabindex="0" aria-label="Calendar view"></div>
+          <div class="tab" data-tab="shows" tabindex="0" aria-label="Shows view"></div>
+          <div class="tab" data-tab="movies" tabindex="0" aria-label="Movies view"></div>
+          <div class="tab" aria-disabled="true" title="Not in this page build" style="opacity:.55;cursor:not-allowed;">Live TV</div>
+          <div class="tab" aria-disabled="true" title="Not in this page build" style="opacity:.55;cursor:not-allowed;">Watchlist</div>
+          <div class="tab" aria-disabled="true" title="Not in this page build" style="opacity:.55;cursor:not-allowed;">Explore</div>
+          <div class="tab" aria-disabled="true" title="Not in this page build" style="opacity:.55;cursor:not-allowed;">Profiles</div>
+          <div class="tab" aria-disabled="true" title="Not in this page build" style="opacity:.55;cursor:not-allowed;">Config</div>
         </div>
       </div>
-      <div class="status" id="statusPill" title="Data status">
-        <div class="dot" id="statusDot"></div>
-        <div id="statusText">Ready</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="status" id="statusPill" title="Data status">
+          <div class="dot" id="statusDot"></div>
+          <div id="statusText">Ready</div>
+        </div>
+        <div class="version-badge">0.0.0</div>
       </div>
     </div>
-
-    <div class="nav" role="tablist" aria-label="Views">
-      <div class="tab active" data-tab="calendar" tabindex="0">Calendar</div>
       <div class="tab" data-tab="shows" tabindex="0">Shows</div>
       <div class="tab" data-tab="movies" tabindex="0">Movies</div>
       <div class="tab" aria-disabled="true" title="Not in this single-page build" style="opacity:.55;cursor:not-allowed;">Live TV</div>
@@ -242,200 +206,6 @@
     $("#modalBody").innerHTML = "";
   }
 
-
-  // ------------------------------
-  // Show View (series-only)
-  // ------------------------------
-  function getShowById(tmdbId){
-    const shows = state.data?.shows || [];
-    return shows.find(s => String(s.tmdb_id) === String(tmdbId)) || null;
-  }
-
-  function getSeasons(show){
-    const seasons = (show?.seasons || []).slice();
-    seasons.sort((a,b) => (a.season_number ?? 0) - (b.season_number ?? 0));
-    return seasons;
-  }
-
-  function getDefaultSeasonIndex(show){
-    const seasons = getSeasons(show);
-    if (!seasons.length) return -1;
-    // prefer highest season_number that has episodes
-    for (let i=seasons.length-1;i>=0;i--){
-      const eps = seasons[i]?.episodes || [];
-      if (eps && eps.length) return i;
-    }
-    return 0;
-  }
-
-  function pill(label){
-    return `<span class="sv-pill">${label}</span>`;
-  }
-
-  function showBackdrop(show){
-    return show?.backdrop_local || show?.backdrop_path || "";
-  }
-  function showPoster(show){
-    return show?.poster_local || show?.poster_path || "";
-  }
-
-  function formatYear(d){
-    if (!d) return "";
-    return String(d).slice(0,4);
-  }
-
-  function openShowView(tmdbId){
-    const show = getShowById(tmdbId);
-    if (!show){
-      openModal("Show", `<div class="row"><div class="name">Show not found for tmdb_id=${safeText(tmdbId)}</div></div>`);
-      return;
-    }
-
-    const bd = showBackdrop(show);
-    const ps = showPoster(show);
-    const genres = (show.genres || []).map(g => g?.name ? g.name : String(g)).filter(Boolean);
-    const nets = (show.networks || []).map(n => n?.name ? n.name : String(n)).filter(Boolean);
-
-    const rating = (show.vote_average != null) ? `${show.vote_average}` : "";
-    const year = formatYear(show.first_air_date);
-
-    const seasons = getSeasons(show);
-    const defIdx = getDefaultSeasonIndex(show);
-
-    const version = state.data?.meta?.version || "";
-    const reportUrl = state.cfg?.links?.report_problem_url || state.cfg?.report_problem_url || "";
-
-    const seasonListHtml = seasons.length ? seasons.map((s, i) => {
-      const sn = s.season_number ?? "";
-      const label = safeText(s.name || (sn!=="" ? `Season ${sn}` : "Season"));
-      const checked = (i===defIdx) ? "checked" : "";
-      return `
-        <label class="sv-seasonitem">
-          <input type="radio" name="svSeason" value="${i}" ${checked}>
-          <span>${label}</span>
-        </label>`;
-    }).join("") : `<div class="row"><div class="sub">No seasons found in data.json</div></div>`;
-
-    const pillsHtml = [
-      ...(genres.slice(0,4).map(g => pill(g))),
-      ...(rating ? [pill(`★ ${rating}`)] : []),
-      ...(nets.length ? [pill(nets.slice(0,2).join(" • "))] : []),
-      ...(show.first_air_date ? [pill(`Premiered ${fmtDate(show.first_air_date)}`)] : [])
-    ].join(" ");
-
-    const html = `
-      <div class="showview" id="showview" data-tmdb="${safeText(show.tmdb_id)}">
-        ${bd ? `<div class="backdrop" style="background-image:url('${bd}')"></div>` : `<div class="backdrop"></div>`}
-        <div class="shade"></div>
-        <div class="grain"></div>
-
-        <div class="sv-utility">
-          ${reportUrl ? `<a class="sv-report" href="${reportUrl}" target="_blank" rel="noreferrer">Report problem</a>` : ``}
-          ${version ? `<span class="sv-badge">${safeText(version)}</span>` : ``}
-        </div>
-
-        <div class="content">
-          <div class="sv-top">
-            <div class="sv-poster">
-              ${ps ? `<img src="${ps}" alt="">` : ``}
-            </div>
-            <div class="sv-meta">
-              <div class="sv-kicker">Original series</div>
-              <div class="sv-title">${safeText(show.title || show.name)}</div>
-              <div class="sv-pills">${pillsHtml}</div>
-              <div class="sv-actions">
-                ${show.tmdb_id ? `<a class="btn tmdb" href="${tmdbShowUrl(show.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>` : ``}
-              </div>
-              ${show.overview ? `<div class="sv-overview" style="margin-top:10px;">${safeText(show.overview)}</div>` : ``}
-            </div>
-          </div>
-
-          <div class="sv-seasonwrap">
-            <div class="sv-seasonhead">
-              <div class="sv-seasonlabel">Season</div>
-            </div>
-            <div class="sv-seasonlist" id="svSeasonList">${seasonListHtml}</div>
-
-            <div class="sv-seasondetails" id="svSeasonDetails"></div>
-
-            <div class="sv-episodes">
-              <div class="sv-epgrid" id="svEpisodeGrid"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    openModal(`${safeText(show.title || show.name)}`, html);
-
-    // wire
-    const radios = Array.from(document.querySelectorAll('input[name="svSeason"]'));
-    const applySeason = (idx) => {
-      const s = seasons[idx];
-      if (!s) return;
-      const sn = s.season_number ?? "";
-      const sLabel = safeText(s.name || (sn!=="" ? `Season ${sn}` : "Season"));
-      const sAir = s.air_date ? fmtDate(s.air_date) : "";
-      const sOverview = safeText(s.overview || "");
-
-      const details = `
-        <div class="h">${sLabel}${sAir ? ` • ${sAir}` : ``}</div>
-        ${sOverview ? `<div class="d">${sOverview}</div>` : `<div class="d" style="opacity:.7;">No season overview</div>`}
-      `;
-      const detailsEl = document.getElementById('svSeasonDetails');
-      if (detailsEl) detailsEl.innerHTML = details;
-
-      const eps = (s.episodes || []).slice();
-      eps.sort((a,b) => (a.episode_number ?? 0) - (b.episode_number ?? 0));
-
-      const gridEl = document.getElementById('svEpisodeGrid');
-      if (!gridEl) return;
-      if (!eps.length){
-        gridEl.innerHTML = `<div class="row"><div class="sub">No episodes found for this season</div></div>`;
-        return;
-      }
-
-      const epHtml = eps.map(ep => {
-        const en = ep.episode_number ?? "";
-        const tag = (sn!=="" && en!=="") ? seTag(sn, en) : "";
-        const name = safeText(ep.title || ep.name || "Episode");
-        const air = ep.air_date ? fmtDate(ep.air_date) : "";
-        const rt  = ep.runtime ? `${ep.runtime} min` : "";
-        const still = ep.still_local || ep.still_path || (Array.isArray(ep.stills) ? ep.stills[0] : "");
-
-        const canWatch = !!show.tmdb_id && sn!=="" && en!=="";
-        const ve = canWatch ? videasyTvUrl(show.tmdb_id, sn, en) : "#";
-        const vs = canWatch ? vidsrcTvUrl(show.tmdb_id, sn, en) : "#";
-
-        return `
-          <div class="sv-ep">
-            <div class="sv-epimg">${still ? `<img src="${still}" alt="">` : ``}</div>
-            <div class="sv-epbody">
-              <div class="sv-eptag">${tag}${air ? ` • ${air}` : ``}${rt ? ` • ${rt}` : ``}</div>
-              <div class="sv-eptitle">${name}</div>
-              <div class="sv-epbtns">
-                <a class="btn tmdb" href="${tmdbShowUrl(show.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
-                <a class="btn videasy ${canWatch ? "" : "disabled"}" href="${ve}" target="_blank" rel="noreferrer">VidEasy</a>
-                <a class="btn vidsrc ${canWatch ? "" : "disabled"}" href="${vs}" target="_blank" rel="noreferrer">VidSrc</a>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("");
-
-      gridEl.innerHTML = epHtml;
-    };
-
-    radios.forEach(r => {
-      r.onchange = () => applySeason(parseInt(r.value,10));
-    });
-
-    if (defIdx >= 0) applySeason(defIdx);
-  }
-
-  // expose for inline handlers if needed
-  window.__openShowView = openShowView;
-
   function footerText() {
     const meta = state.data?.meta || {};
     const counts = meta.counts || {};
@@ -468,7 +238,7 @@
       setStatus(false, "Failed");
       const msg = safeText(e?.message || e);
       $("#panel").innerHTML = `
-        <h2>Calendar</h2>
+        
         <div style="margin-top:10px;padding:12px 14px;border-radius:16px;border:1px solid rgba(220,38,38,.35);background:rgba(220,38,38,.10);">
           Failed to fetch data/config. Fix: run a local server from repo root: <code> .\.venv\Scripts\python.exe -m http.server 8000 </code>
           Then open: <code> http://127.0.0.1:8000/web/index.html </code><br/>
@@ -484,48 +254,53 @@
   }
 
   function buildCalendarEvents() {
-    // Events: show.next_episode_to_air.air_date and movies.release_date
-    const eventsByDate = new Map(); // yyyy-mm-dd -> [{type, ...}]
+    const eventsByDate = new Map(); // yyyy-mm-dd -> [{type,...}]
     const shows = state.data?.shows || [];
     const movies = state.data?.movies || [];
 
-    for (const s of shows) {
-      const nea = s?.next_episode_to_air;
-      const ad = nea?.air_date;
-      if (!ad) continue;
-      const k = ad;
-      const arr = eventsByDate.get(k) || [];
-      arr.push({
-        type: "show",
-        title: s.title,
-        tmdb_id: s.tmdb_id,
-        poster: s.poster_local,
-        season: nea.season_number,
-        episode: nea.episode_number,
-        ep_name: nea.name,
-        air_date: ad
-      });
-      eventsByDate.set(k, arr);
+    // Shows: include ALL episode air_dates from show.seasons[n].episodes[]
+    for (const sh of shows) {
+      const showTitle = sh?.title || sh?.name || "Show";
+      const seasons = sh?.seasons || [];
+      for (const season of seasons) {
+        const sn = season?.season_number;
+        const eps = season?.episodes || [];
+        for (const ep of eps) {
+          const ad = ep?.air_date;
+          if (!ad) continue;
+          const arr = eventsByDate.get(ad) || [];
+          arr.push({
+            type: "show",
+            title: showTitle,
+            season: sn,
+            episode: ep?.episode_number,
+            ep_name: ep?.name || ep?.title || "",
+            runtime: ep?.runtime || ""
+          });
+          eventsByDate.set(ad, arr);
+        }
+      }
     }
 
-    for (const m of movies) {
-      const rd = m?.release_date;
+    // Movies: release_date
+    for (const mv of movies) {
+      const rd = mv?.release_date;
       if (!rd) continue;
-      const k = rd;
-      const arr = eventsByDate.get(k) || [];
-      arr.push({
-        type: "movie",
-        title: m.title,
-        tmdb_id: m.tmdb_id,
-        poster: m.poster_local,
-        release_date: rd
-      });
-      eventsByDate.set(k, arr);
+      const arr = eventsByDate.get(rd) || [];
+      arr.push({ type: "movie", title: mv?.title || mv?.name || "Movie" });
+      eventsByDate.set(rd, arr);
     }
 
-    // Stable sort per date
+    // Sort within each day
     for (const [k, arr] of eventsByDate.entries()) {
-      arr.sort((a,b) => (a.type === b.type ? safeText(a.title).localeCompare(safeText(b.title)) : (a.type === "show" ? -1 : 1)));
+      arr.sort((a,b) => {
+        if (a.type !== b.type) return a.type === "show" ? -1 : 1;
+        const as = Number(a.season||0), bs = Number(b.season||0);
+        if (as !== bs) return as - bs;
+        const ae = Number(a.episode||0), be = Number(b.episode||0);
+        return ae - be;
+      });
+      eventsByDate.set(k, arr);
     }
 
     return eventsByDate;
@@ -555,40 +330,41 @@
 
     const dayHtml = days.map(({d,key,inMonth}) => {
       const ev = eventsByDate.get(key) || [];
-      const top = ev.slice(0,3);
-      const rest = Math.max(0, ev.length - top.length);
-
-      const chips = top.map((it, idx) => {
-        const sub = it.type === "show"
-          ? `${seTag(it.season, it.episode)} • ${safeText(it.ep_name)}`
-          : `Movie • Release`;
+      const chips = ev.map((it, idx) => {
         const t = safeText(it.title);
+        const epName = it.type === "show" ? safeText(it.ep_name || "") : "";
+        const se = it.type === "show" ? seTag(it.season, it.episode) : "";
+        const rt = (it.type === "show" && it.runtime) ? `${it.runtime} min` : "";
+        const line2 = it.type === "show" ? `${epName}` : "";
+        const line3 = it.type === "show" ? `${se}${rt ? " • " + rt : ""}` : "Movie • Release";
         return `
           <div class="chip" data-day="${key}" data-idx="${idx}">
             <div>
               <div class="t">${t}</div>
-              <div class="s">${sub}</div>
+              ${line2 ? `<div class="s">${line2}</div>` : ""}
+              <div class="s">${line3}</div>
+              ${it.type === "show" ? `<div class="chipbtns"><span class="btn videasy">VidEasy</span><span class="btn vidsrc">VidSrc</span></div>` : ""}
             </div>
           </div>
         `;
       }).join("");
 
-      const more = rest > 0 ? `<div class="more" data-more="${key}">+${rest} more</div>` : "";
-
       const dim = inMonth ? "" : "dim";
+      const isToday = key === todayKey;
       return `
-        <div class="day ${dim}">
+        <div class="day ${dim} ${isToday ? "today" : ""}">
           <div class="daynum">${d.getDate()}</div>
-          <div class="chips">${chips}${more}</div>
+          <div class="chips">${chips}</div>
         </div>
       `;
     }).join("");
 
     $("#panel").innerHTML = `
-      <h2>Calendar</h2>
+      
       <div class="cal-head">
-        <button class="cal-navbtn" id="calPrev" aria-label="Previous month">◀</button>
-        <button class="cal-navbtn" id="calNext" aria-label="Next month">▶</button>
+        <button class="cal-navbtn" id="calPrev" aria-label="Previous month">&lt;</button>
+        <div class="cal-month" aria-live="polite">${monthName}</div>
+        <button class="cal-navbtn" id="calNext" aria-label="Next month">&gt;</button>
         <div class="cal-month">${monthName}</div>
         <div class="cal-today">Today ${todayKey}</div>
       </div>
@@ -601,7 +377,7 @@
     $("#calPrev").onclick = () => { state.calendarMonth = new Date(m.getFullYear(), m.getMonth()-1, 1); render(); };
     $("#calNext").onclick = () => { state.calendarMonth = new Date(m.getFullYear(), m.getMonth()+1, 1); render(); };
 
-    // chip click -> open show view (series-only) / movie modal
+    // chip click -> open episode/movie modal
     $$(".chip").forEach(ch => {
       ch.onclick = () => {
         const day = ch.getAttribute("data-day");
@@ -610,7 +386,22 @@
         const it = list[idx];
         if (!it) return;
         if (it.type === "show") {
-          openShowView(it.tmdb_id);
+          const s = it.season, e = it.episode;
+          const html = `
+            <div class="row">
+              <div class="top">
+                <div class="name"><a href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer" style="color:#e8eefc;text-decoration:none;">${safeText(it.title)}</a></div>
+                <div class="sub">• ${fmtDate(it.air_date)} • ${seTag(s,e)}</div>
+              </div>
+              <div class="sub" style="margin-top:6px;">${safeText(it.ep_name)}</div>
+              <div class="btnrow" style="margin-top:12px;">
+                <a class="btn tmdb" href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Info at TMDB</a>
+                <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+                <a class="btn vidsrc" href="${vidsrcTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
+              </div>
+            </div>
+          `;
+          openModal(`${safeText(it.title)} • ${seTag(s,e)}`, html);
         } else {
           const html = `
             <div class="row">
@@ -619,9 +410,9 @@
                 <div class="sub">• ${fmtDate(it.release_date)}</div>
               </div>
               <div class="btnrow" style="margin-top:12px;">
-                <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
-                <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidEasy</a>
-                <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidSrc</a>
+                <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Info at TMDB</a>
+                <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+                <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
               </div>
             </div>
           `;
@@ -645,7 +436,7 @@
                 </div>
                 <div class="btnrow" style="margin-top:10px;">
                   <a class="btn tmdb" href="${tmdbShowUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
-                  <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">VidEasy</a>
+                  <a class="btn videasy" href="${videasyTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">Videasy</a>
                   <a class="btn vidsrc" href="${vidsrcTvUrl(it.tmdb_id,s,e)}" target="_blank" rel="noreferrer">VidSrc</a>
                 </div>
               </div>
@@ -659,7 +450,7 @@
                 </div>
                 <div class="btnrow" style="margin-top:10px;">
                   <a class="btn tmdb" href="${tmdbMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">TMDB</a>
-                  <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidEasy</a>
+                  <a class="btn videasy" href="${videasyMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">Videasy</a>
                   <a class="btn vidsrc" href="${vidsrcMovieUrl(it.tmdb_id)}" target="_blank" rel="noreferrer">VidSrc</a>
                 </div>
               </div>
@@ -698,7 +489,7 @@
       const vidsrc = canWatch ? vidsrcTvUrl(s.tmdb_id, nea.season_number, nea.episode_number) : "#";
 
       return `
-        <div class="card" data-show-id="${safeText(s.tmdb_id)}" role="button" tabindex="0">
+        <div class="card">
           ${poster ? `<img class="poster" src="${poster}" alt="">` : `<div class="poster"></div>`}
           <div class="card-body">
             <div class="card-title">${safeText(s.title)}</div>
@@ -706,9 +497,9 @@
             ${genres ? `<div class="meta" style="margin-top:6px;">${genres}</div>` : ``}
             ${nextLine ? `<div class="meta" style="margin-top:8px;font-weight:800;">${nextLine}</div>` : ``}
             <div class="btnrow">
-              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">TMDB</a>
-              <a class="btn videasy ${canWatch ? "" : "disabled"}" href="${videasy}" target="_blank" rel="noreferrer">VidEasy</a>
-              <a class="btn vidsrc ${canWatch ? "" : "disabled"}" href="${vidsrc}" target="_blank" rel="noreferrer">VidSrc</a>
+              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">Info at TMDB</a>
+              <a class="btn videasy ${canWatch ? "" : "disabled"}" href="${videasy}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+              <a class="btn vidsrc ${canWatch ? "" : "disabled"}" href="${vidsrc}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
             </div>
           </div>
         </div>
@@ -718,7 +509,7 @@
     $("#panel").innerHTML = `
       <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
         <div style="flex:1;min-width:260px;">
-          <h2>Shows</h2>
+          
         </div>
         <div style="flex:2;min-width:260px;">
           <div class="toolbar" style="margin:0;">
@@ -731,23 +522,6 @@
     `;
 
     $("#showSearch").oninput = (e) => { state.search.shows = e.target.value; renderShows(); };
-
-    // show card click -> show view (ignore button clicks)
-    $$(".card[data-show-id]").forEach(c => {
-      const id = c.getAttribute("data-show-id");
-      if (!id) return;
-      c.onclick = (ev) => {
-        if (ev && ev.target && ev.target.closest && ev.target.closest('.btn')) return;
-        openShowView(id);
-      };
-      c.onkeydown = (ev) => {
-        if (ev.key === 'Enter' || ev.key === ' ') {
-          ev.preventDefault();
-          openShowView(id);
-        }
-      };
-    });
-
   }
 
   function renderMovies() {
@@ -779,9 +553,9 @@
             <div class="meta">${year ? `Since ${year}` : ""}${runtime ? ` • ${runtime}` : ""}</div>
             ${genres ? `<div class="meta" style="margin-top:6px;">${genres}</div>` : ``}
             <div class="btnrow">
-              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">TMDB</a>
-              <a class="btn videasy" href="${videasy}" target="_blank" rel="noreferrer">VidEasy</a>
-              <a class="btn vidsrc" href="${vidsrc}" target="_blank" rel="noreferrer">VidSrc</a>
+              <a class="btn tmdb" href="${tmdb}" target="_blank" rel="noreferrer">Info at TMDB</a>
+              <a class="btn videasy" href="${videasy}" target="_blank" rel="noreferrer">Watch on Videasy</a>
+              <a class="btn vidsrc" href="${vidsrc}" target="_blank" rel="noreferrer">Watch on VidSrc</a>
             </div>
           </div>
         </div>
@@ -791,7 +565,7 @@
     $("#panel").innerHTML = `
       <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;">
         <div style="flex:1;min-width:260px;">
-          <h2>Movies</h2>
+          
         </div>
         <div style="flex:2;min-width:260px;">
           <div class="toolbar" style="margin:0;">
@@ -838,6 +612,21 @@
   bindNav();
   loadAll();
 })();
+
+// ===== VERSION BADGE (AUTO-READ HEADER COMMENT) =====
+async function setVersionBadgeFromHeader() {
+  const badge = document.querySelector(".version-badge");
+  if (!badge) return;
+  try {
+    const url = window.location.href.split("#")[0];
+    const res = await fetch(url, { cache: "no-store" });
+    const txt = await res.text();
+    const m = txt.match(/VERSION:\s*([0-9A-Za-z.+-]+)/);
+    if (m && m[1]) badge.textContent = m[1].trim();
+  } catch (_) {}
+}
+setVersionBadgeFromHeader();
+
 </script>
 </body>
 </html>
