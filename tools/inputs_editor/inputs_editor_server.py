@@ -1,11 +1,14 @@
 """
 FILE: tools/inputs_editor/inputs_editor_server.py
-VERSION: 1.0.0
+VERSION: 1.0.1
 DATE: 2026-01-19
 
+CHANGELOG
+- 1.0.1: Add explicit version header + section comments. No functional changes.
+
 PURPOSE
-- Single-purpose local utility server for my_TV_Movie to manage data/inputs.json
-- Serves one-page UI at /web/inputs_editor.html
+- Local utility server to manage data/inputs.json (canonical scope definition).
+- Serves one-page UI at /web/inputs_editor.html.
 - Provides API:
     GET  /api/inputs              -> returns current data/inputs.json
     POST /api/inputs              -> saves data/inputs.json (atomic)
@@ -14,7 +17,7 @@ PURPOSE
 
 CONSTRAINTS
 - No legacy txt inputs.
-- Canonical scope file: data/inputs.json
+- Canonical scope file: data/inputs.json.
 - Browser cannot write to disk directly; this server provides the write endpoint.
 
 RUN
@@ -22,6 +25,9 @@ RUN
 """
 from __future__ import annotations
 
+# -----------------------------
+# Imports
+# -----------------------------
 import argparse
 import json
 import os
@@ -32,6 +38,9 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs, quote
 import urllib.request
 
+# -----------------------------
+# Paths / constants
+# -----------------------------
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
 INPUTS_JSON = DATA_DIR / "inputs.json"
@@ -42,6 +51,9 @@ TMDB_KEY_ENV = "API_TMDB_KEY"
 TMDB_BASE = "https://api.themoviedb.org/3"
 TMDB_IMG_BASE = "https://image.tmdb.org/t/p/"
 
+# -----------------------------
+# Helpers: HTTP responses
+# -----------------------------
 def _json(handler: BaseHTTPRequestHandler, code: int, obj: dict):
     data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
     handler.send_response(code)
@@ -60,6 +72,9 @@ def _text(handler: BaseHTTPRequestHandler, code: int, text: str, ctype="text/pla
     handler.end_headers()
     handler.wfile.write(data)
 
+# -----------------------------
+# Helpers: inputs.json read/write
+# -----------------------------
 def _read_inputs() -> dict:
     if not INPUTS_JSON.exists():
         return {"tv": [], "movies": [], "watchlist": [], "generated_local": "", "generated_utc": ""}
@@ -85,6 +100,9 @@ def _now_utc_iso() -> str:
     import datetime as _dt
     return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+# -----------------------------
+# TMDB proxy (search only)
+# -----------------------------
 def _tmdb_get(path: str, qs: dict) -> dict:
     key = os.environ.get(TMDB_KEY_ENV, "").strip()
     if not key:
@@ -104,6 +122,9 @@ def _tmdb_get(path: str, qs: dict) -> dict:
         raw = resp.read().decode("utf-8", errors="replace")
     return {"ok": True, "data": json.loads(raw), "img_base": TMDB_IMG_BASE}
 
+# -----------------------------
+# Request handler
+# -----------------------------
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stdout.write("%s - %s\n" % (self.address_string(), fmt % args))
@@ -166,7 +187,6 @@ class Handler(BaseHTTPRequestHandler):
             if f.suffix.lower() == ".js":
                 _text(self, 200, f.read_text(encoding="utf-8", errors="replace"), "application/javascript; charset=utf-8")
                 return
-            # simple binary fallthrough
             data = f.read_bytes()
             self.send_response(200)
             self.send_header("Content-Type", "application/octet-stream")
@@ -183,6 +203,7 @@ class Handler(BaseHTTPRequestHandler):
         if p.path != "/api/inputs":
             _json(self, 404, {"ok": False, "error": "Not found"})
             return
+
         n = int(self.headers.get("Content-Length") or "0")
         body = self.rfile.read(n).decode("utf-8", errors="replace")
         try:
@@ -201,6 +222,9 @@ class Handler(BaseHTTPRequestHandler):
         _atomic_write(INPUTS_JSON, obj)
         _json(self, 200, {"ok": True, "saved": str(INPUTS_JSON), "utc": obj["generated_utc"]})
 
+# -----------------------------
+# Entrypoint
+# -----------------------------
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8787)

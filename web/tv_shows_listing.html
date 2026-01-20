@@ -1,0 +1,702 @@
+<!doctype html>
+<!--
+FILE: web/tv_shows_listing.html
+PROJECT: my_TV_Movie
+VERSION: 0.1.1
+DATE: 2026-01-20
+
+PURPOSE:
+- Single-page listing utility sourced ONLY from data/data.json
+- Two views: TV Shows | Movies
+- TV Shows view:
+    Show (twisty) → Seasons (twisty) → Episodes (rows)
+    Episode row format:
+      S##E## - Episode Name - Air Date - Runtime   [Vidsrc] [Videasy]
+- Movies view:
+    Movie rows with similar metadata + [Vidsrc] [Videasy]
+
+LINKS (HARD):
+- Use prebuilt URLs stored in data.json:
+    links.vidsrc
+    links.videasy
+- No URL construction/inference unless links are missing.
+
+SEASONS/EPISODES (HARD):
+- Support BOTH data layouts without asking:
+    A) Nested: show.seasons[].episodes[]
+    B) Flat: root tv_seasons[] + tv_episodes[] joined by show_id/tv_id and season_number
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TV Shows + Movies Listing</title>
+
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 14px 14px 40px; }
+    .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .title { font-size: 18px; font-weight: 650; margin-right: 10px; }
+    .tabs { display: inline-flex; gap: 6px; }
+    .tabbtn {
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      font-size: 13px;
+    }
+    .tabbtn[aria-selected="true"] { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.28); }
+    .spacer { flex: 1; }
+    .version-button {
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .status { margin-top: 12px; font-size: 13px; opacity: 0.85; }
+    .error { margin-top: 12px; font-size: 13px; color: #ffb4b4; white-space: pre-wrap; }
+
+    .panel { margin-top: 12px; }
+    .list { display: flex; flex-direction: column; gap: 8px; }
+
+    .card {
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.04);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 10px;
+    }
+
+    .twisty {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      cursor: pointer;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex: 0 0 auto;
+    }
+
+    .meta { min-width: 0; flex: 1; }
+    .primary { font-size: 14px; font-weight: 600; line-height: 1.25; }
+    .secondary { font-size: 12px; opacity: 0.8; margin-top: 2px; line-height: 1.25; }
+    .pillbar { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+    .btn {
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      color: inherit;
+      padding: 6px 8px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      user-select: none;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+    .children { padding: 0 10px 10px 44px; display: none; }
+    .children[data-open="true"] { display: block; }
+
+    .subcard { border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.12); border-radius: 10px; margin-top: 8px; overflow: hidden; }
+    .subrow { display: flex; align-items: center; gap: 10px; padding: 9px 10px; }
+    .ep-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-top: 1px solid rgba(255,255,255,0.10);
+    }
+    .ep-meta { min-width: 0; flex: 1; font-size: 12.5px; opacity: 0.92; line-height: 1.25; }
+    .muted { opacity: 0.75; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  </style>
+</head>
+
+<body>
+  <pre id="ajp_page_header" style="display:none">
+FILE: web/tv_shows_listing.html
+PROJECT: my_TV_Movie
+VERSION: 0.1.1
+DATE: 2026-01-20
+  </pre>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">Listing</div>
+
+      <div class="tabs" role="tablist" aria-label="Listing views">
+        <button id="tab-tv" class="tabbtn" role="tab" aria-selected="true" aria-controls="panel-tv" type="button">TV Shows</button>
+        <button id="tab-movies" class="tabbtn" role="tab" aria-selected="false" aria-controls="panel-movies" type="button">Movies</button>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button id="page-version-btn" class="version-button" type="button" title="Page version"></button>
+    </div>
+
+    <div id="status" class="status">Loading data/data.json…</div>
+    <div id="error" class="error" style="display:none"></div>
+
+    <div class="panel" id="panel-tv" role="tabpanel" aria-labelledby="tab-tv">
+      <div id="tv-list" class="list"></div>
+    </div>
+
+    <div class="panel" id="panel-movies" role="tabpanel" aria-labelledby="tab-movies" style="display:none">
+      <div id="movies-list" class="list"></div>
+    </div>
+  </div>
+
+  <script>
+  /* ============================================================================
+     Version parsing (from defined header section)
+  ============================================================================ */
+  function parseHeaderBlock() {
+    const el = document.getElementById("ajp_page_header");
+    const raw = (el && el.textContent ? el.textContent : "").trim();
+    const out = {};
+    raw.split(/\r?\n/).forEach(line => {
+      const m = line.match(/^\s*([A-Z_]+)\s*:\s*(.+?)\s*$/);
+      if (!m) return;
+      out[m[1]] = m[2];
+    });
+    return out;
+  }
+
+  function wireVersionButton() {
+    const hdr = parseHeaderBlock();
+    const btn = document.getElementById("page-version-btn");
+    if (!btn) return;
+
+    const version = hdr.VERSION ? hdr.VERSION : "0.0.0";
+    btn.textContent = "v" + version;
+
+    btn.addEventListener("click", () => {
+      const file = hdr.FILE ? hdr.FILE : "tv_shows_listing.html";
+      const proj = hdr.PROJECT ? hdr.PROJECT : "my_TV_Movie";
+      const date = hdr.DATE ? hdr.DATE : "";
+      alert(
+        file + "\n" +
+        proj + "\n" +
+        "VERSION: " + version + (date ? ("\nDATE: " + date) : "")
+      );
+    });
+  }
+
+  /* ============================================================================
+     Data loading
+  ============================================================================ */
+  async function loadJson(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("HTTP " + res.status + " while fetching " + url);
+    return await res.json();
+  }
+
+  /* ============================================================================
+     Schema helpers (data/data.json only)
+  ============================================================================ */
+  function pickFirstExistingKey(obj, keys) {
+    if (!obj || typeof obj !== "object") return null;
+    for (const k of keys) if (Object.prototype.hasOwnProperty.call(obj, k)) return k;
+    return null;
+  }
+
+  function ensureArray(x) {
+    if (!x) return [];
+    if (Array.isArray(x)) return x;
+    if (typeof x === "object") {
+      if (Array.isArray(x.items)) return x.items;
+      return Object.values(x).filter(v => v && typeof v === "object");
+    }
+    return [];
+  }
+
+  function asInt(x) {
+    const n = Number(x);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function pad2(n) {
+    const v = asInt(n);
+    if (v === null) return "??";
+    return String(v).padStart(2, "0");
+  }
+
+  function fmtDate(x) {
+    if (!x) return "";
+    return String(x).trim();
+  }
+
+  function fmtRuntime(x) {
+    const n = asInt(x);
+    if (n === null) return "";
+    return n + "m";
+  }
+
+  function getTitle(obj) {
+    if (!obj) return "";
+    return (
+      obj.name ??
+      obj.title ??
+      obj.show_name ??
+      obj.movie_title ??
+      obj.original_name ??
+      obj.original_title ??
+      ""
+    ).toString();
+  }
+
+  function getYear(obj) {
+    const d =
+      obj.first_air_date ??
+      obj.release_date ??
+      obj.air_date ??
+      obj.date ??
+      "";
+    const m = String(d).match(/^(\d{4})/);
+    return m ? m[1] : "";
+  }
+
+  function getTmdbId(obj) {
+    if (!obj) return null;
+    const v =
+      obj.tmdb_id ??
+      obj.tmdbId ??
+      obj.tmdb ??
+      obj.id_tmdb ??
+      obj.id ??
+      null;
+    const n = asInt(v);
+    return n === null ? null : n;
+  }
+
+  function getImdbId(obj) {
+    if (!obj) return "";
+    return (obj.imdb_id ?? obj.imdbId ?? obj.imdb ?? "").toString();
+  }
+
+  function getLinks(obj) {
+    // HARD: prefer prebuilt data.json links.* (your example)
+    if (obj && obj.links && typeof obj.links === "object") {
+      const vidsrc = obj.links.vidsrc ? String(obj.links.vidsrc) : "";
+      const videasy = obj.links.videasy ? String(obj.links.videasy) : "";
+      return { vidsrc, videasy };
+    }
+    // tolerated variants
+    const vidsrc =
+      (obj && (obj.vidsrc_url ?? obj.vidsrcUrl ?? obj.vidsrc)) ? String(obj.vidsrc_url ?? obj.vidsrcUrl ?? obj.vidsrc) : "";
+    const videasy =
+      (obj && (obj.videasy_url ?? obj.videasyUrl ?? obj.videasy)) ? String(obj.videasy_url ?? obj.videasyUrl ?? obj.videasy) : "";
+    return { vidsrc, videasy };
+  }
+
+  function getSeasonNumber(season) {
+    return season.season_number ?? season.seasonNumber ?? season.number ?? season.season ?? null;
+  }
+
+  function getEpisodeNumber(ep) {
+    return ep.episode_number ?? ep.episodeNumber ?? ep.number ?? ep.episode ?? null;
+  }
+
+  function getEpisodeRuntime(ep) {
+    return ep.runtime ?? ep.episode_runtime ?? ep.episodeRuntime ?? null;
+  }
+
+  function getEpisodeAirDate(ep) {
+    return ep.air_date ?? ep.airDate ?? ep.date ?? null;
+  }
+
+  function getShowSeasonsNested(show) {
+    const key = pickFirstExistingKey(show, ["seasons", "season_list", "seasonList"]);
+    return ensureArray(key ? show[key] : []);
+  }
+
+  function getSeasonEpisodesNested(season) {
+    const key = pickFirstExistingKey(season, ["episodes", "episode_list", "episodeList"]);
+    return ensureArray(key ? season[key] : []);
+  }
+
+  function detectRootCollections(data) {
+    const tvKey       = pickFirstExistingKey(data, ["tv_shows", "tv", "shows", "series"]);
+    const movieKey    = pickFirstExistingKey(data, ["movies", "movie", "films"]);
+    const tvSeasonKey = pickFirstExistingKey(data, ["tv_seasons", "seasons_tv", "seasons"]);
+    const tvEpKey     = pickFirstExistingKey(data, ["tv_episodes", "episodes_tv", "episodes"]);
+
+    return {
+      tv: ensureArray(tvKey ? data[tvKey] : []),
+      movies: ensureArray(movieKey ? data[movieKey] : []),
+      tv_seasons: ensureArray(tvSeasonKey ? data[tvSeasonKey] : []),
+      tv_episodes: ensureArray(tvEpKey ? data[tvEpKey] : [])
+    };
+  }
+
+  function buildTvIndexes(root) {
+    // Supports flat layouts where seasons/episodes are not nested on the show object.
+    // Join keys tolerated: tv_id, show_id, series_id, tmdb_id.
+    const seasonsByShowId = new Map(); // show_tmdb -> seasons[]
+    const episodesByShowSeason = new Map(); // `${show_tmdb}::${season_number}` -> episodes[]
+
+    const addSeason = (showId, season) => {
+      if (!showId) return;
+      const key = String(showId);
+      const arr = seasonsByShowId.get(key) || [];
+      arr.push(season);
+      seasonsByShowId.set(key, arr);
+    };
+
+    const addEpisode = (showId, seasonNum, ep) => {
+      if (!showId || seasonNum == null) return;
+      const key = String(showId) + "::" + String(seasonNum);
+      const arr = episodesByShowSeason.get(key) || [];
+      arr.push(ep);
+      episodesByShowSeason.set(key, arr);
+    };
+
+    root.tv_seasons.forEach(season => {
+      const showId =
+        asInt(season.tv_id ?? season.show_id ?? season.series_id ?? season.tmdb_show_id ?? season.tmdb_id) ??
+        null;
+      addSeason(showId, season);
+    });
+
+    root.tv_episodes.forEach(ep => {
+      const showId =
+        asInt(ep.tv_id ?? ep.show_id ?? ep.series_id ?? ep.tmdb_show_id ?? ep.tmdb_id) ??
+        null;
+
+      const seasonNum = asInt(ep.season_number ?? ep.seasonNumber ?? ep.season ?? null);
+      addEpisode(showId, seasonNum, ep);
+    });
+
+    // sort deterministically
+    for (const [k, arr] of seasonsByShowId.entries()) {
+      arr.sort((a,b) => (asInt(getSeasonNumber(a)) ?? 9999) - (asInt(getSeasonNumber(b)) ?? 9999));
+      seasonsByShowId.set(k, arr);
+    }
+    for (const [k, arr] of episodesByShowSeason.entries()) {
+      arr.sort((a,b) => (asInt(getEpisodeNumber(a)) ?? 9999) - (asInt(getEpisodeNumber(b)) ?? 9999));
+      episodesByShowSeason.set(k, arr);
+    }
+
+    return { seasonsByShowId, episodesByShowSeason };
+  }
+
+  /* ============================================================================
+     UI builders
+  ============================================================================ */
+  function el(tag, attrs, ...children) {
+    const n = document.createElement(tag);
+    if (attrs) {
+      for (const [k, v] of Object.entries(attrs)) {
+        if (k === "class") n.className = v;
+        else if (k === "dataset") { for (const [dk,dv] of Object.entries(v)) n.dataset[dk] = dv; }
+        else if (k.startsWith("aria-")) n.setAttribute(k, v);
+        else if (k === "text") n.textContent = v;
+        else n.setAttribute(k, v);
+      }
+    }
+    for (const c of children) {
+      if (c == null) continue;
+      if (typeof c === "string") n.appendChild(document.createTextNode(c));
+      else n.appendChild(c);
+    }
+    return n;
+  }
+
+  function makeLinkButton(label, url) {
+    const a = el("a", { class: "btn", href: url || "#", target: "_blank", rel: "noreferrer noopener" }, label);
+    if (!url) a.setAttribute("aria-disabled", "true");
+    return a;
+  }
+
+  function makeTwistyButton(isOpen) {
+    return el("button", { class: "twisty", type: "button", "aria-label": isOpen ? "Collapse" : "Expand", text: isOpen ? "−" : "+" });
+  }
+
+  function setOpen(childrenEl, twistyBtn, open) {
+    childrenEl.dataset.open = open ? "true" : "false";
+    twistyBtn.textContent = open ? "−" : "+";
+    twistyBtn.setAttribute("aria-label", open ? "Collapse" : "Expand");
+  }
+
+  function buildEpisodeRow(show, season, ep) {
+    const sNum = getSeasonNumber(season) ?? (ep ? (ep.season_number ?? ep.seasonNumber ?? ep.season ?? null) : null);
+    const eNum = getEpisodeNumber(ep);
+    const epTitle = getTitle(ep) || "(untitled)";
+    const air = fmtDate(getEpisodeAirDate(ep));
+    const rt = fmtRuntime(getEpisodeRuntime(ep));
+
+    const label =
+      "S" + pad2(sNum) + "E" + pad2(eNum) +
+      " - " + epTitle +
+      (air ? (" - " + air) : "") +
+      (rt ? (" - " + rt) : "");
+
+    const links = getLinks(ep);
+    return el("div", { class: "ep-row" },
+      el("div", { class: "ep-meta" }, label),
+      el("div", { class: "pillbar" },
+        makeLinkButton("Vidsrc", links.vidsrc),
+        makeLinkButton("Videasy", links.videasy)
+      )
+    );
+  }
+
+  function buildSeasonCard(show, season, episodes) {
+    const sNum = getSeasonNumber(season);
+    const title = getTitle(season) || ("Season " + (sNum ?? "?"));
+    const eps = ensureArray(episodes);
+
+    const sub = el("div", { class: "subcard" });
+    const headerRow = el("div", { class: "subrow" });
+
+    const twisty = makeTwistyButton(false);
+    const children = el("div", { class: "children", dataset: { open: "false" } });
+
+    const sec = [];
+    sec.push(el("span", { class: "mono muted" }, "S" + pad2(sNum)));
+    sec.push(el("span", { class: "muted" }, "•"));
+    sec.push(el("span", { class: "muted" }, (eps.length ? (eps.length + " eps") : "no episodes")));
+
+    headerRow.appendChild(twisty);
+    headerRow.appendChild(
+      el("div", { class: "meta" },
+        el("div", { class: "primary" }, title),
+        el("div", { class: "secondary" }, ...sec)
+      )
+    );
+
+    if (!eps.length) {
+      children.appendChild(el("div", { class: "ep-row" },
+        el("div", { class: "ep-meta muted" }, "No episodes available in this season.")
+      ));
+    } else {
+      eps.forEach(ep => children.appendChild(buildEpisodeRow(show, season, ep)));
+    }
+
+    twisty.addEventListener("click", () => {
+      const open = children.dataset.open !== "true";
+      setOpen(children, twisty, open);
+    });
+
+    sub.appendChild(headerRow);
+    sub.appendChild(children);
+    return sub;
+  }
+
+  function buildShowCard(show, tvIndex) {
+    const name = getTitle(show) || "(untitled show)";
+    const year = getYear(show);
+    const tmdbId = getTmdbId(show);
+    const imdbId = getImdbId(show);
+
+    // Two-hypothesis support:
+    // H1: nested seasons exist on show.seasons
+    // H2: flat seasons live in root tv_seasons joined by show tmdb id
+    const nestedSeasons = getShowSeasonsNested(show);
+    const flatSeasons = tmdbId != null ? (tvIndex.seasonsByShowId.get(String(tmdbId)) || []) : [];
+    const seasons = nestedSeasons.length ? nestedSeasons : flatSeasons;
+
+    const card = el("div", { class: "card" });
+    const row = el("div", { class: "row" });
+
+    const twisty = makeTwistyButton(false);
+    const children = el("div", { class: "children", dataset: { open: "false" } });
+
+    const secParts = [];
+    if (year) secParts.push(year);
+    if (tmdbId) secParts.push("tmdb:" + tmdbId);
+    if (imdbId) secParts.push("imdb:" + imdbId);
+    secParts.push(seasons.length ? (seasons.length + " seasons") : "no seasons");
+
+    row.appendChild(twisty);
+    row.appendChild(
+      el("div", { class: "meta" },
+        el("div", { class: "primary" }, name),
+        el("div", { class: "secondary" }, secParts.join(" • "))
+      )
+    );
+
+    if (!seasons.length) {
+      children.appendChild(el("div", { class: "subcard" },
+        el("div", { class: "subrow" },
+          el("div", { class: "meta" },
+            el("div", { class: "primary" }, "Seasons"),
+            el("div", { class: "secondary" }, "No seasons available.")
+          )
+        )
+      ));
+    } else {
+      seasons
+        .slice()
+        .sort((a,b) => (asInt(getSeasonNumber(a)) ?? 9999) - (asInt(getSeasonNumber(b)) ?? 9999))
+        .forEach(season => {
+          // Episodes: nested first, else flat index by showId+seasonNum
+          const nestedEps = getSeasonEpisodesNested(season);
+          const sNum = asInt(getSeasonNumber(season));
+          const flatEps =
+            (tmdbId != null && sNum != null)
+              ? (tvIndex.episodesByShowSeason.get(String(tmdbId) + "::" + String(sNum)) || [])
+              : [];
+          const eps = nestedEps.length ? nestedEps : flatEps;
+          children.appendChild(buildSeasonCard(show, season, eps));
+        });
+    }
+
+    twisty.addEventListener("click", () => {
+      const open = children.dataset.open !== "true";
+      setOpen(children, twisty, open);
+    });
+
+    card.appendChild(row);
+    card.appendChild(children);
+    return card;
+  }
+
+  function buildMovieCard(movie) {
+    const name = getTitle(movie) || "(untitled movie)";
+    const year = getYear(movie);
+    const rt = fmtRuntime(movie.runtime ?? movie.movie_runtime ?? null);
+    const tmdbId = getTmdbId(movie);
+    const imdbId = getImdbId(movie);
+    const links = getLinks(movie);
+
+    const secParts = [];
+    if (year) secParts.push(year);
+    if (rt) secParts.push(rt);
+    if (tmdbId) secParts.push("tmdb:" + tmdbId);
+    if (imdbId) secParts.push("imdb:" + imdbId);
+
+    return el("div", { class: "card" },
+      el("div", { class: "row" },
+        el("div", { class: "meta" },
+          el("div", { class: "primary" }, name),
+          el("div", { class: "secondary" }, secParts.length ? secParts.join(" • ") : "—")
+        ),
+        el("div", { class: "pillbar" },
+          makeLinkButton("Vidsrc", links.vidsrc),
+          makeLinkButton("Videasy", links.videasy)
+        )
+      )
+    );
+  }
+
+  /* ============================================================================
+     Tabs
+  ============================================================================ */
+  function setTab(tab) {
+    const tvBtn = document.getElementById("tab-tv");
+    const mvBtn = document.getElementById("tab-movies");
+    const tvPanel = document.getElementById("panel-tv");
+    const mvPanel = document.getElementById("panel-movies");
+
+    const isTv = tab === "tv";
+    tvBtn.setAttribute("aria-selected", isTv ? "true" : "false");
+    mvBtn.setAttribute("aria-selected", isTv ? "false" : "true");
+    tvPanel.style.display = isTv ? "" : "none";
+    mvPanel.style.display = isTv ? "none" : "";
+  }
+
+  function wireTabs() {
+    document.getElementById("tab-tv").addEventListener("click", () => setTab("tv"));
+    document.getElementById("tab-movies").addEventListener("click", () => setTab("movies"));
+  }
+
+  /* ============================================================================
+     Boot
+  ============================================================================ */
+  function showError(msg) {
+    const err = document.getElementById("error");
+    err.style.display = "";
+    err.textContent = msg;
+  }
+
+  function setStatus(msg) {
+    document.getElementById("status").textContent = msg;
+  }
+
+  async function main() {
+    wireVersionButton();
+    wireTabs();
+
+    try {
+      const data = await loadJson("../data/data.json");
+      const root = detectRootCollections(data);
+      const tvIndex = buildTvIndexes(root);
+
+      const tvList = document.getElementById("tv-list");
+      tvList.innerHTML = "";
+
+      const tvSorted = root.tv.slice().sort((a,b) =>
+        (getTitle(a) || "").localeCompare(getTitle(b) || "", undefined, { sensitivity: "base" })
+      );
+
+      if (!tvSorted.length) {
+        tvList.appendChild(el("div", { class: "card" },
+          el("div", { class: "row" },
+            el("div", { class: "meta" },
+              el("div", { class: "primary" }, "TV Shows"),
+              el("div", { class: "secondary" }, "No TV shows detected in data/data.json.")
+            )
+          )
+        ));
+      } else {
+        tvSorted.forEach(show => tvList.appendChild(buildShowCard(show, tvIndex)));
+      }
+
+      const mvList = document.getElementById("movies-list");
+      mvList.innerHTML = "";
+
+      const mvSorted = root.movies.slice().sort((a,b) =>
+        (getTitle(a) || "").localeCompare(getTitle(b) || "", undefined, { sensitivity: "base" })
+      );
+
+      if (!mvSorted.length) {
+        mvList.appendChild(el("div", { class: "card" },
+          el("div", { class: "row" },
+            el("div", { class: "meta" },
+              el("div", { class: "primary" }, "Movies"),
+              el("div", { class: "secondary" }, "No movies detected in data/data.json.")
+            )
+          )
+        ));
+      } else {
+        mvSorted.forEach(movie => mvList.appendChild(buildMovieCard(movie)));
+      }
+
+      setStatus("Loaded: " + tvSorted.length + " TV shows, " + mvSorted.length + " movies.");
+    } catch (e) {
+      setStatus("Failed.");
+      showError(String(e && e.stack ? e.stack : e));
+    }
+  }
+
+  main();
+  </script>
+</body>
+</html>

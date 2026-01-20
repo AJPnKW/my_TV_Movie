@@ -1,3 +1,11 @@
+<!--
+FILE: web/inputs_editor.html
+VERSION: 1.0.1
+DATE: 2026-01-19
+
+CHANGELOG
+- 1.0.1: Add explicit header + section comments. No functional changes.
+-->
 <!doctype html>
 <html lang="en">
 <head>
@@ -79,7 +87,6 @@ function setDirty(v){
   document.getElementById("dirty").textContent = "Unsaved: " + (dirty ? "yes" : "no");
 }
 function norm(s){ return (s||"").toString().toLowerCase().trim(); }
-
 function counts(){
   const tv = (inputs?.tv||[]).length;
   const mv = (inputs?.movies||[]).length;
@@ -184,17 +191,14 @@ function setInScope(type, tmdb_id, val){
   const i = list.findIndex(x=>x.tmdb_id===tmdb_id);
   if(i>=0) list[i].in_scope = val;
 }
-
 function setSeasonSpec(tmdb_id, spec){
   const i = inputs.tv.findIndex(x=>x.tmdb_id===tmdb_id);
   if(i>=0) inputs.tv[i].season_spec = (spec||"*").trim();
 }
-
 function removeItem(type, tmdb_id){
   if(type==="tv") inputs.tv = inputs.tv.filter(x=>x.tmdb_id!==tmdb_id);
   else inputs.movies = inputs.movies.filter(x=>x.tmdb_id!==tmdb_id);
 }
-
 function addItem(type, tmdb_id, title){
   if(type==="tv"){
     if(inputs.tv.some(x=>x.tmdb_id===tmdb_id)) return;
