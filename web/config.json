@@ -1,49 +1,38 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.3.20",
-    "updated_utc": "2026-01-13T00:00:00Z",
-    "notes": "Authoritative config for streaming base URLs, image cache folders, and UI tuning. Canonical keys: streaming.* + image_cache.folders.*. Backward-compat preserved via streaming_services.* + image_cache.folders_legacy.*."
+    "version": "v1.3.21",
+    "updated_utc": "2026-01-20T00:00:00Z",
+    "notes": "Authoritative config for streaming base URLs, image cache folders, and UI tuning. Canonical keys: streaming.* + image_cache.folders.*. Backward-compat note: do not use streaming_services or folders_legacy."
   },
-
   "streaming": {
     "vidsrc_tv": "https://vidsrc.net/embed/tv/",
     "vidsrc_movie": "https://vidsrc.net/embed/movie/",
     "videasy_tv": "https://player.videasy.net/tv/",
     "videasy_movie": "https://player.videasy.net/movie/"
   },
-
   "image_sizes": {
-    "show_width": 100,
-    "movie_width": 100,
-    "season_width": 100,
-    "episode_still_w": 200,
+    "show_width": 185,
+    "movie_width": 185,
+    "season_width": 185,
+    "episode_still_w": 300,
     "backdrop_w": 780
   },
-
-  .poster img {
-    width: 100%;
-    height: auto;
-    object-fit: contain; /* NOT cover */
-  }
-
   "ui_tuning": {
     "calendar_button_scale": 0.75,
     "calendar_card_density": 1.0
   },
-
   "image_cache": {
     "enabled": true,
     "download_missing_only": true,
     "tmdb_image_base": "https://image.tmdb.org/t/p",
-
     "folders": {
-	  "shows_poster": "/assets/posters/shows",
-	  "shows_backdrop": "/assets/backdrops/shows",
-	  "seasons_poster": "/assets/posters/seasons",
-	  "episodes_stills": "/assets/stills/episodes",
-	  "movies_poster": "/assets/posters/movies",
-	  "movies_backdrop": "/assets/backdrops/movies"
+      "shows_poster": "/assets/posters/shows",
+      "shows_backdrop": "/assets/backdrops/shows",
+      "seasons_poster": "/assets/posters/seasons",
+      "episodes_stills": "/assets/stills/episodes",
+      "movies_poster": "/assets/posters/movies",
+      "movies_backdrop": "/assets/backdrops/movies"
     }
   }
 }
