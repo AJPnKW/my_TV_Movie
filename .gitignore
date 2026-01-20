@@ -35,3 +35,12 @@ scripts/.debug_only/
 # --- Specific project patterns ---
 Audit-AI*
 audit_AI*
+# --- local-only protected folders (keep ignored, but keep the sentinel) ---
+.my_notes/**
+!.my_notes/.keep
+
+.ai_downloads/**
+!.ai_downloads/.keep
+
+.ai_state/**
+!.ai_state/.keep
