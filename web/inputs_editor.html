@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>my_TV_Movie • Inputs Editor</title>
+  <link rel="stylesheet" href="/web/css/my_tv_hub.css"/>
+  <style>
+    body{margin:0;padding:0}
+    .wrap{max-width:1320px;margin:0 auto;padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:980px){.wrap{grid-template-columns:1fr}}
+    .card{border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(0,0,0,.22);overflow:hidden}
+    .hd{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .hd h2{margin:0;font-size:16px}
+    .bd{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    input[type="search"], input[type="text"]{flex:1;min-width:220px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);color:#fff}
+    button{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-weight:800;cursor:pointer}
+    button.primary{background:rgba(120,180,255,.18);border-color:rgba(120,180,255,.40)}
+    button.danger{background:rgba(255,90,90,.12);border-color:rgba(255,90,90,.40)}
+    .meta{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:12px;opacity:.85}
+    .list{border:1px solid rgba(255,255,255,.10);border-radius:12px;max-height:62vh;overflow:auto}
+    .item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .item:last-child{border-bottom:0}
+    .title{font-weight:900}
+    .tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .tag{font-family:ui-monospace,monospace;font-size:11px;border:1px solid rgba(255,255,255,.12);padding:2px 8px;border-radius:999px;opacity:.9}
+    .poster{width:52px;height:78px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);overflow:hidden;flex:0 0 auto}
+    .poster img{width:100%;height:100%;object-fit:cover}
+    .controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    select{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);color:#fff}
+    .small{font-size:12px;opacity:.85}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <div class="hd">
+        <h2>Find on TMDB</h2>
+        <span class="meta" id="tmdbStatus">Server: …</span>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <input id="q" type="search" placeholder="Search TMDB (tv + movie) …"/>
+          <button class="primary" id="btnSearch">Search</button>
+        </div>
+        <div class="row small">
+          <span class="meta" id="tmdbCount">0 results</span>
+        </div>
+        <div class="list" id="tmdbList"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="hd">
+        <h2>My List (data/inputs.json)</h2>
+        <span class="meta" id="counts">TV: 0 • Movies: 0</span>
+        <span class="meta" id="dirty">Unsaved: no</span>
+      </div>
+      <div class="bd">
+        <div class="row">
+          <input id="qMine" type="search" placeholder="Filter my list…"/>
+          <button id="btnReload">Reload</button>
+          <button class="primary" id="btnSave">Save</button>
+        </div>
+        <div class="row small meta" id="saveMsg"></div>
+        <div class="list" id="mineList"></div>
+      </div>
+    </section>
+  </div>
+
+<script>
+let inputs = null;
+let imgBase = "https://image.tmdb.org/t/p/";
+let dirty = false;
+
+function setDirty(v){
+  dirty = v;
+  document.getElementById("dirty").textContent = "Unsaved: " + (dirty ? "yes" : "no");
+}
+function norm(s){ return (s||"").toString().toLowerCase().trim(); }
+
+function counts(){
+  const tv = (inputs?.tv||[]).length;
+  const mv = (inputs?.movies||[]).length;
+  document.getElementById("counts").textContent = `TV: ${tv} • Movies: ${mv}`;
+}
+
+async function apiGet(path){
+  const r = await fetch(path, {cache:"no-store"});
+  return await r.json();
+}
+async function apiPost(path, obj){
+  const r = await fetch(path, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(obj)});
+  return await r.json();
+}
+
+async function loadInputs(){
+  const j = await apiGet("/api/inputs");
+  if(!j.ok){ alert("Failed to load inputs"); return; }
+  inputs = j.inputs;
+  inputs.tv = inputs.tv || [];
+  inputs.movies = inputs.movies || [];
+  inputs.watchlist = inputs.watchlist || [];
+  setDirty(false);
+  counts();
+  renderMine();
+}
+
+function renderMine(){
+  const q = norm(document.getElementById("qMine").value);
+  const box = document.getElementById("mineList");
+  box.innerHTML = "";
+
+  const tv = (inputs.tv||[]).map(x=>({...x, _type:"tv"}));
+  const mv = (inputs.movies||[]).map(x=>({...x, _type:"movie"}));
+  let all = [...tv, ...mv];
+
+  if(q){
+    all = all.filter(x => norm(x.title).includes(q) || String(x.tmdb_id||"").includes(q));
+  }
+  all.sort((a,b)=>(a.title||"").localeCompare(b.title||""));
+
+  for(const it of all){
+    const row = document.createElement("div");
+    row.className = "item";
+
+    const meta = document.createElement("div");
+    meta.style.flex="1";
+
+    const title = document.createElement("div");
+    title.className="title";
+    title.textContent = it.title || "(untitled)";
+
+    const tags = document.createElement("div");
+    tags.className="tags";
+    tags.innerHTML = `<span class="tag">${it._type==="tv"?"Show":"Movie"}</span><span class="tag">TMDB ${it.tmdb_id}</span>`;
+
+    const controls = document.createElement("div");
+    controls.className="controls";
+
+    const scope = document.createElement("select");
+    scope.innerHTML = `<option value="true">In scope</option><option value="false">Out of scope</option>`;
+    scope.value = (it.in_scope===false) ? "false" : "true";
+    scope.onchange = ()=>{
+      setInScope(it._type, it.tmdb_id, scope.value==="true");
+      setDirty(true);
+    };
+    controls.appendChild(scope);
+
+    if(it._type==="tv"){
+      const ss = document.createElement("input");
+      ss.type="text";
+      ss.placeholder='season_spec (e.g., 1,2,3 or 5+ or *)';
+      ss.value = it.season_spec || "*";
+      ss.onchange = ()=>{
+        setSeasonSpec(it.tmdb_id, ss.value);
+        setDirty(true);
+      };
+      controls.appendChild(ss);
+    }
+
+    const del = document.createElement("button");
+    del.className="danger";
+    del.textContent="Remove";
+    del.onclick=()=>{
+      removeItem(it._type, it.tmdb_id);
+      setDirty(true);
+      renderMine(); counts();
+    };
+    controls.appendChild(del);
+
+    meta.appendChild(title);
+    meta.appendChild(tags);
+    meta.appendChild(controls);
+
+    row.appendChild(meta);
+    box.appendChild(row);
+  }
+}
+
+function setInScope(type, tmdb_id, val){
+  const list = (type==="tv") ? inputs.tv : inputs.movies;
+  const i = list.findIndex(x=>x.tmdb_id===tmdb_id);
+  if(i>=0) list[i].in_scope = val;
+}
+
+function setSeasonSpec(tmdb_id, spec){
+  const i = inputs.tv.findIndex(x=>x.tmdb_id===tmdb_id);
+  if(i>=0) inputs.tv[i].season_spec = (spec||"*").trim();
+}
+
+function removeItem(type, tmdb_id){
+  if(type==="tv") inputs.tv = inputs.tv.filter(x=>x.tmdb_id!==tmdb_id);
+  else inputs.movies = inputs.movies.filter(x=>x.tmdb_id!==tmdb_id);
+}
+
+function addItem(type, tmdb_id, title){
+  if(type==="tv"){
+    if(inputs.tv.some(x=>x.tmdb_id===tmdb_id)) return;
+    inputs.tv.push({title, tmdb_id, season_spec:"*", in_scope:true});
+  } else {
+    if(inputs.movies.some(x=>x.tmdb_id===tmdb_id)) return;
+    inputs.movies.push({title, tmdb_id, in_scope:true});
+  }
+  setDirty(true);
+  renderMine(); counts();
+}
+
+async function tmdbSearch(){
+  const q = document.getElementById("q").value.trim();
+  if(!q){ return; }
+  const j = await apiGet("/api/tmdb/search?q=" + encodeURIComponent(q));
+  if(!j.ok){
+    document.getElementById("tmdbStatus").textContent = "TMDB: not connected";
+    alert(j.error || "TMDB search failed");
+    return;
+  }
+  imgBase = j.img_base || imgBase;
+  document.getElementById("tmdbStatus").textContent = "TMDB: connected";
+  document.getElementById("tmdbCount").textContent = `${j.results.length} results`;
+  renderTmdb(j.results || []);
+}
+
+function renderTmdb(results){
+  const box = document.getElementById("tmdbList");
+  box.innerHTML = "";
+  for(const r of results){
+    const row = document.createElement("div");
+    row.className="item";
+
+    const poster = document.createElement("div");
+    poster.className="poster";
+    if(r.poster_path){
+      const img=document.createElement("img");
+      img.src = imgBase + "w185" + r.poster_path;
+      poster.appendChild(img);
+    }
+    row.appendChild(poster);
+
+    const meta = document.createElement("div");
+    meta.style.flex="1";
+    const title=document.createElement("div");
+    title.className="title";
+    title.textContent = r.title || "(untitled)";
+    const tags=document.createElement("div");
+    tags.className="tags";
+    tags.innerHTML = `<span class="tag">${r.type==="tv"?"Show":"Movie"}</span><span class="tag">TMDB ${r.tmdb_id}</span>${r.year?`<span class="tag">${r.year}</span>`:""}`;
+    const controls=document.createElement("div");
+    controls.className="controls";
+    const btn=document.createElement("button");
+    btn.className="primary";
+    btn.textContent="Add";
+    btn.onclick=()=> addItem(r.type, r.tmdb_id, r.title || "");
+    controls.appendChild(btn);
+
+    meta.appendChild(title);
+    meta.appendChild(tags);
+    meta.appendChild(controls);
+
+    row.appendChild(meta);
+    box.appendChild(row);
+  }
+}
+
+async function saveInputs(){
+  const msg = document.getElementById("saveMsg");
+  msg.textContent = "";
+  const j = await apiPost("/api/inputs", inputs);
+  if(!j.ok){
+    msg.textContent = "Save failed: " + (j.error || "unknown");
+    return;
+  }
+  msg.textContent = "Saved @ " + j.utc;
+  setDirty(false);
+}
+
+(async function boot(){
+  await loadInputs();
+  document.getElementById("btnSearch").onclick = tmdbSearch;
+  document.getElementById("q").addEventListener("keydown", e=>{ if(e.key==="Enter") tmdbSearch(); });
+  document.getElementById("btnReload").onclick = loadInputs;
+  document.getElementById("btnSave").onclick = saveInputs;
+  document.getElementById("qMine").addEventListener("input", ()=>renderMine());
+
+  try{
+    const h = await apiGet("/api/health");
+    document.getElementById("tmdbStatus").textContent = h.ok ? "Server: ok" : "Server: error";
+  }catch(_){
+    document.getElementById("tmdbStatus").textContent = "Server: not running";
+  }
+})();
+</script>
+</body>
+</html>

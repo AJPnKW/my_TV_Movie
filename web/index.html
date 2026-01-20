@@ -4,7 +4,7 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.2.0 (2026-01-19)
+  - v1.2.1 (2026-01-19)
 
 CHANGE NOTES
   - scroll fix
@@ -33,6 +33,9 @@ CHANGE NOTES
       --accent:#3b82f6;
       --good:#22c55e;
       --bad:#ef4444;
+      --show_card_min:240px;
+      --movie_card_min:240px;
+      --episode_thumb:34px;
     }
 
     *{ box-sizing:border-box; }
@@ -73,13 +76,19 @@ CHANGE NOTES
     }
 
     .brand{ display:flex; align-items:center; gap:10px; }
+
     .logo{
-      width:34px;height:34px;border-radius:10px;
+      width:64px;height:44px;border-radius:12px;
       display:grid;place-items:center;
-      font-weight:900;
-      background:rgba(255,255,255,0.08);
-      border:1px solid var(--line);
+      font-weight:1000;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.18);
+      box-shadow:0 0 0 2px rgba(255,255,255,0.06) inset;
     }
+    .logo_txt{display:grid;gap:2px;line-height:1.0;text-align:center;letter-spacing:.14em;}
+    .logo_txt div:first-child{font-size:11px;opacity:.95;}
+    .logo_txt div:last-child{font-size:13px;opacity:1;}
+
     .titlebox{ display:flex; flex-direction:column; line-height:1.1; }
     .title{ font-weight:900; letter-spacing:0.2px; font-size:18px; }
     .subtitle{ color:var(--muted); font-size:12px; }
@@ -145,7 +154,7 @@ CHANGE NOTES
 
     .grid{
       display:grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(var(--card_min, 240px), 1fr));
       gap:12px;
       margin-top:12px;
     }
@@ -189,6 +198,10 @@ CHANGE NOTES
     }
     .btn:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .btn[aria-disabled="true"]{ opacity:0.45; pointer-events:none; }
+
+    .btn.tmdb{ background:rgba(56,189,248,0.18); border-color:rgba(56,189,248,0.30); }
+    .btn.videasy{ background:rgba(236,72,153,0.16); border-color:rgba(236,72,153,0.28); }
+    .btn.vidsrc{ background:rgba(34,197,94,0.14); border-color:rgba(34,197,94,0.26); }
 
     /* CALENDAR */
     .calbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -252,7 +265,7 @@ CHANGE NOTES
     }
     .chip:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .chip .thumb{
-      width:34px; height:34px;
+      width:var(--episode_thumb,34px); height:var(--episode_thumb,34px);
       border-radius:10px;
       background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.10);
@@ -527,10 +540,10 @@ CHANGE NOTES
   <div class="app">
     <div class="top">
       <div class="brand">
-        <div class="logo">TV</div>
+        <div class="logo" aria-label="MY TV HUB"><div class="logo_txt"><div>MY TV</div><div>HUB</div></div></div>
         <div class="titlebox">
-          <div class="title">My TV Hub</div>
-          <div class="subtitle">Single-page • DPAD-first • Local assets</div>
+          <div class="title" style="display:none"></div>
+          <div class="subtitle" style="display:none"></div>
         </div>
       </div>
 
@@ -559,7 +572,7 @@ CHANGE NOTES
           <button id="calNext" class="calbtn" type="button" aria-label="Next month">▶</button>
           <div id="calMonth" class="month">—</div>
         </div>
-        <div style="color:var(--muted);font-size:12px;font-weight:900;">DPAD: arrows • OK/Enter open</div>
+        <div style="color:var(--muted);font-size:12px;font-weight:900;"></div>
       </div>
       <div class="calendar" id="calendar"></div>
     </div>
@@ -575,7 +588,7 @@ CHANGE NOTES
           </select>
         </div>
       </div>
-      <div id="showsGrid" class="grid"></div>
+      <div id="showsGrid" class="grid" style="--card_min: var(--show_card_min, 240px);"></div>
     </div>
 
     <div id="panel-movies" class="panel hidden">
@@ -589,7 +602,7 @@ CHANGE NOTES
           </select>
         </div>
       </div>
-      <div id="moviesGrid" class="grid"></div>
+      <div id="moviesGrid" class="grid" style="--card_min: var(--movie_card_min, 240px);"></div>
     </div>
 
     <div id="panel-show" class="panel hidden">
@@ -612,7 +625,7 @@ CHANGE NOTES
 
 <script>
 (() => {
-  const APP_VERSION = "v1.2.0";
+  const APP_VERSION = "v1.2.1";
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -681,7 +694,7 @@ CHANGE NOTES
   function linkOrDisabled(label, href){
     const ok = !!href;
     const safeHref = ok ? href : "#";
-    return `<a class="btn" href="${escHtml(safeHref)}" target="_blank" rel="noopener" aria-disabled="${ok?"false":"true"}">${label}</a>`;
+    return `<a class="btn ${label === "TMDB" ? "tmdb" : (label === "VidEasy" ? "videasy" : (label === "VidSrc" ? "vidsrc" : ""))}" href="${escHtml(safeHref)}" target="_blank" rel="noopener" aria-disabled="${ok?"false":"true"}">${label}</a>`;
   }
 
   function openModal(title, html) {
@@ -726,6 +739,20 @@ CHANGE NOTES
         "./config.json",
         "../web/config.json",
       ]);
+
+      // Apply config.json image sizing (cards + calendar thumbs)
+      try{
+        const sz = (state.cfg && typeof state.cfg === 'object') ? state.cfg.image_sizes : null;
+        if (sz && typeof sz === 'object'){
+          const sw = Number(sz.show_width);
+          const mw = Number(sz.movie_width);
+          const ew = Number(sz.episode_still_w);
+          if (Number.isFinite(sw) && sw > 0) document.documentElement.style.setProperty('--show_card_min', `${sw}px`);
+          if (Number.isFinite(mw) && mw > 0) document.documentElement.style.setProperty('--movie_card_min', `${mw}px`);
+          if (Number.isFinite(ew) && ew > 0) document.documentElement.style.setProperty('--episode_thumb', `${ew}px`);
+        }
+      }catch(_){/* noop */}
+
 
       // AUTHORITATIVE: data.json is loaded once and kept in memory
       state.data = await fetchJsonFirst([
@@ -868,7 +895,7 @@ CHANGE NOTES
           };
 
           const arr = (eventsByDate.get(ad) || [])
-          arr.append(item)
+          arr.push(item)
           eventsByDate.set(ad, arr)
         }
       }
@@ -895,7 +922,7 @@ CHANGE NOTES
       };
 
       const arr = (eventsByDate.get(rd) || [])
-      arr.append(item)
+      arr.push(item)
       eventsByDate.set(rd, arr)
     }
 
@@ -1318,9 +1345,9 @@ CHANGE NOTES
             <div class="ep-title">${escHtml(epName)}</div>
             ${epOverview ? `<div class="ep-overview">${escHtml(epOverview)}</div>` : ""}
             <div class="btnrow">
-              ${tmdbUrl ? `<a class="btn" href="${escHtml(tmdbUrl)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-              ${vsrc ? `<a class="btn" href="${escHtml(vsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-              ${vezy ? `<a class="btn" href="${escHtml(vezy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
+              ${tmdbUrl ? `<a class="btn tmdb" href="${escHtml(tmdbUrl)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+              ${vsrc ? `<a class="btn vidsrc" href="${escHtml(vsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+              ${vezy ? `<a class="btn videasy" href="${escHtml(vezy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
             </div>
           </div>
         </div>`;
@@ -1349,9 +1376,9 @@ CHANGE NOTES
               <div class="show-pills">${pillHtml}</div>
 
               <div class="btnrow" style="margin-top:10px;">
-                ${show.tmdb_id != null ? `<a class="btn" href="https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                ${heroVidSrc ? `<a class="btn" href="${escHtml(heroVidSrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-                ${heroVidEasy ? `<a class="btn" href="${escHtml(heroVidEasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
+                ${show.tmdb_id != null ? `<a class="btn tmdb" href="https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+                ${heroVidSrc ? `<a class="btn vidsrc" href="${escHtml(heroVidSrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                ${heroVidEasy ? `<a class="btn videasy" href="${escHtml(heroVidEasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
               </div>
 
               ${overview ? `<div class="show-overview">${escHtml(overview)}</div>` : ""}

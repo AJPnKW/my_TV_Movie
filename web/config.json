@@ -21,6 +21,12 @@
     "backdrop_w": 780
   },
 
+  .poster img {
+    width: 100%;
+    height: auto;
+    object-fit: contain; /* NOT cover */
+  }
+
   "ui_tuning": {
     "calendar_button_scale": 0.75,
     "calendar_card_density": 1.0

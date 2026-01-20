@@ -1,20 +1,37 @@
+# --- Project-specific folders ---
 .my_notes/
+.txt_files_4_AI_attachments/
+.ai_downloads/
+.ai_state/
+.venv/
+
+# --- Repo-level output & logs ---
+reports/
+logs/
+out/
+
+# --- Script-related folders ---
+scripts/.outputs/
+scripts/.archive/
+scripts/.debug_only/
+
+# --- Archive folders (any depth, with or without dot) ---
+**/archive/
+**/.archive/
+**/archived/
+**/.archived/
+
+# --- File patterns ---
 *.bak
-image/services_logos/.archieve
-.venv
-.txt_files_4_AI_attachments
-web/.archieve
-reports
-logs
+*.zip
+
+# Files containing "copy" anywhere
 *copy*
-Audit-AI*
-audit_AI*
+
+# Files containing "compare" (case-insensitive)
 *compare*
 *Compare*
-.zip
-*.zip
-.ai_downloads
-/scripts/.ouputs and reports
-/scripts/.archive
-/scripts/.debug_only
-.ai_state/
+
+# --- Specific project patterns ---
+Audit-AI*
+audit_AI*
