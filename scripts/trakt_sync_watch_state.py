@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 # ==============================================================================
 # [FILE]    scripts/trakt_sync_watch_state.py
 # [PROJECT] my_TV_Movie
@@ -43,7 +43,7 @@ TRAKT_API_VERSION = "2"
 
 
 def _utc() -> str:
-    return _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+    return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def blank(s: str | None) -> bool:
@@ -217,3 +217,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

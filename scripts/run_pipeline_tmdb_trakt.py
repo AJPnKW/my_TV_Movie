@@ -3,8 +3,8 @@
 # [FILE]    scripts/run_pipeline_tmdb_trakt.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    One-command local runner: TMDB build -> Trakt enrich
-# [VERSION] v1.2.0
-# [UPDATED] 2025-12-29_00-00-00
+# [VERSION] v1.3.0
+# [UPDATED] 2026-01-19_00-00-00
 # [BUILD]   14.01.08
 # ==============================================================================
 from __future__ import annotations
@@ -55,6 +55,12 @@ def _run_one(label: str, script_path: Path) -> int:
 
 def main() -> int:
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Required scope file (canonical)
+    inputs_json = REPO_ROOT / 'data' / 'inputs.json'
+    if not inputs_json.exists():
+        print(f"[INIT] ERROR missing scope file: {inputs_json}")
+        return 2
 
     started = _ts()
     rc = _run_one("TMDB", FETCH_TMDB)

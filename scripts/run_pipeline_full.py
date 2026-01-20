@@ -2,9 +2,9 @@
 # ==============================================================================
 # [FILE]    scripts/run_pipeline_full.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Orchestrate: TXT->inputs_parsed -> TMDB -> Trakt -> QA
-# [VERSION] v1.3.0
-# [UPDATED] 2026-01-03_00-00-00
+# [ROLE]    Orchestrate: data/inputs.json -> TMDB -> Trakt -> QA
+# [VERSION] v1.4.0
+# [UPDATED] 2026-01-19_00-00-00
 # [BUILD]   14.01.07
 # ==============================================================================
 
@@ -48,13 +48,13 @@ def main() -> int:
     _write_line(logfp, f"python    : {py}")
     _write_line(logfp, f"log       : {logfp}")
 
-    # 1) Parse TXT inputs
-    rc_parse = _run("PARSE", [py, os.path.join("scripts", "parse_txt_to_json.py")], logfp)
-    if rc_parse != 0:
-        _write_line(logfp, f"RESULT    : FAIL (parse exit_code={rc_parse})")
-        return rc_parse
+    # Required scope file (canonical)
+    inputs_json = os.path.join(REPO_ROOT, 'data', 'inputs.json')
+    if not os.path.isfile(inputs_json):
+        _write_line(logfp, f"RESULT    : FAIL (missing scope file: {inputs_json})")
+        return 2
 
-    # 2) TMDB fetch
+    # 1) TMDB fetch
     rc_tmdb = _run("TMDB", [py, os.path.join("scripts", "fetch_tmdb.py")], logfp)
     if rc_tmdb != 0:
         _write_line(logfp, f"RESULT    : FAIL (tmdb exit_code={rc_tmdb})")

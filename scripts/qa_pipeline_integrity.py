@@ -2,9 +2,9 @@
 # ==============================================================================
 # [FILE]    scripts/qa_pipeline_integrity.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Sanity + consistency checks across inputs_parsed.json and data/data.json
-# [VERSION] v1.0.0
-# [UPDATED] 2026-01-03_00-00-00
+# [ROLE]    Sanity + consistency checks across inputs.json and data/data.json
+# [VERSION] v1.1.0
+# [UPDATED] 2026-01-19_00-00-00
 # [BUILD]   14.01.07
 # ==============================================================================
 
@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Tuple
 
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA_JSON = os.path.join(REPO_ROOT, "data", "data.json")
-INPUTS_PARSED = os.path.join(REPO_ROOT, "data", "inputs_parsed.json")
+INPUTS_JSON = os.path.join(REPO_ROOT, 'data', 'inputs.json')
 LOG_DIR = os.path.join(REPO_ROOT, "logs")
 REPORT_DIR = os.path.join(REPO_ROOT, "reports")
 
@@ -80,29 +80,29 @@ def main() -> int:
     try:
         _log(logf, f"[qa_pipeline_integrity] START repo_root={REPO_ROOT}")
         _log(logf, f"[qa_pipeline_integrity] data_json={DATA_JSON}")
-        _log(logf, f"[qa_pipeline_integrity] inputs_parsed={INPUTS_PARSED}")
+        _log(logf, f"[qa_pipeline_integrity] inputs_json={INPUTS_JSON}")
         _log(logf, f"[qa_pipeline_integrity] log={log_path}")
 
         if not os.path.isfile(DATA_JSON):
             _log(logf, f"[qa_pipeline_integrity] ERROR missing file: {DATA_JSON}")
             return 2
-        if not os.path.isfile(INPUTS_PARSED):
-            _log(logf, f"[qa_pipeline_integrity] ERROR missing file: {INPUTS_PARSED}")
+        if not os.path.isfile(INPUTS_JSON):
+            _log(logf, f"[qa_pipeline_integrity] ERROR missing file: {INPUTS_JSON}")
             return 2
 
         data = _load_json(DATA_JSON)
-        inp = _load_json(INPUTS_PARSED)
+        inp = _load_json(INPUTS_JSON)
 
         shows = data.get("shows", []) or []
         movies = data.get("movies", []) or []
-        tv_inp = inp.get("tv", []) or []
+        tv_inp = inp.get('tv', []) or inp.get('shows', []) or []
         mv_inp = inp.get("movies", []) or []
 
         # Core counts
         checks: List[Tuple[str, bool, str]] = []
         checks.append(("top_level_keys", isinstance(shows, list) and isinstance(movies, list), "data.json must contain shows[] and movies[] lists"))
-        checks.append(("count_tv_matches_inputs", len(shows) == len(tv_inp), f"shows count mismatch: data={len(shows)} inputs_parsed={len(tv_inp)}"))
-        checks.append(("count_movies_matches_inputs", len(movies) == len(mv_inp), f"movies count mismatch: data={len(movies)} inputs_parsed={len(mv_inp)}"))
+        checks.append(("count_tv_matches_inputs", len(shows) == len(tv_inp), f"shows count mismatch: data={len(shows)} inputs_json={len(tv_inp)}"))
+        checks.append(("count_movies_matches_inputs", len(movies) == len(mv_inp), f"movies count mismatch: data={len(movies)} inputs_json={len(mv_inp)}"))
 
         # Missing trakt ids (post-trakt run should usually be 0/0)
         ms = _count_missing_trakt(shows)
@@ -124,7 +124,7 @@ def main() -> int:
         field_errs = _req_fields(shows, "shows") + _req_fields(movies, "movies")
         checks.append(("required_fields_present", len(field_errs) == 0, f"{len(field_errs)} items missing required fields (tmdb_id/title)"))
 
-        # Spot-check: inputs_parsed tmdb_id set should match output tmdb_id set
+        # Spot-check: inputs_json tmdb_id set should match output tmdb_id set
         out_tv_ids = set(_index_by_tmdb(shows).keys())
         inp_tv_ids = set(_index_by_tmdb(tv_inp).keys())
         out_mv_ids = set(_index_by_tmdb(movies).keys())
@@ -132,8 +132,8 @@ def main() -> int:
 
         tv_missing = sorted(list(inp_tv_ids - out_tv_ids))
         mv_missing = sorted(list(inp_mv_ids - out_mv_ids))
-        checks.append(("tmdb_id_set_tv_matches", len(tv_missing) == 0, f"data.json missing {len(tv_missing)} tv tmdb_id(s) present in inputs_parsed"))
-        checks.append(("tmdb_id_set_movies_matches", len(mv_missing) == 0, f"data.json missing {len(mv_missing)} movie tmdb_id(s) present in inputs_parsed"))
+        checks.append(("tmdb_id_set_tv_matches", len(tv_missing) == 0, f"data.json missing {len(tv_missing)} tv tmdb_id(s) present in inputs_json"))
+        checks.append(("tmdb_id_set_movies_matches", len(mv_missing) == 0, f"data.json missing {len(mv_missing)} movie tmdb_id(s) present in inputs_json"))
 
         ok = True
         for name, passed, detail in checks:
@@ -144,7 +144,7 @@ def main() -> int:
             "generated_utc": _utc_ts(),
             "repo_root": REPO_ROOT,
             "data_json": DATA_JSON,
-            "inputs_parsed": INPUTS_PARSED,
+            "inputs_json": INPUTS_JSON,
             "counts": {
                 "shows": len(shows),
                 "movies": len(movies),

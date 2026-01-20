@@ -22,6 +22,18 @@
 # Deep-build of seasons/episodes is NOT implemented here (still a separate stage if you add it later).
 # ==============================================================================
 
+def _strip_unwanted_fields_in_place(obj):
+    """Remove noisy TMDB fields from final payload before writing data.json."""
+    if isinstance(obj, dict):
+        for k in ['production_countries', 'production_companies', 'created_by', 'credit_id']:
+            obj.pop(k, None)
+        for v in obj.values():
+            _strip_unwanted_fields_in_place(v)
+    elif isinstance(obj, list):
+        for i in obj:
+            _strip_unwanted_fields_in_place(i)
+
+
 import dataclasses
 import datetime as _dt
 import hashlib
@@ -64,13 +76,8 @@ REPO_ROOT = SCRIPT_PATH.parents[1]
 WEB_DIR = REPO_ROOT / "web"
 DATA_DIR = REPO_ROOT / "data"
 
-# Inputs (support both legacy and inputs/)
-TV_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "tv_list.txt", REPO_ROOT / "tv_list.txt"]
-MOVIES_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "movies_list.txt", REPO_ROOT / "movies_list.txt"]
-WATCHLIST_CANDIDATES = [REPO_ROOT / "inputs" / "watchlist.txt", REPO_ROOT / "watchlist.txt"]
-
-# Optional intermediate JSON from parse_txt_to_json.py
-PARSED_INPUTS_JSON = DATA_DIR / "inputs_parsed.json"
+# Inputs (canonical: data/inputs.json only)
+INPUTS_JSON = DATA_DIR / "inputs.json"
 
 OUT_DATA_JSON = DATA_DIR / "data.json"
 LOG_DIR = REPO_ROOT / "logs"
@@ -89,7 +96,7 @@ RE_WS = re.compile(r"\s+")
 # -------------------------
 def setup_logging() -> None:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    ts = _dt.datetime.utcnow().strftime("%Y%m%d_%H%M%S")
+    ts = _dt.datetime.now(_dt.UTC).strftime("%Y%m%d_%H%M%S")
     log_path = LOG_DIR / f"fetch_tmdb.{ts}.log.txt"
 
     logging.basicConfig(
@@ -426,13 +433,17 @@ def parse_season_spec(spec: str) -> Optional[List[int]]:
 
 
 def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    if PARSED_INPUTS_JSON.exists():
-        js = json.loads(read_text_file(PARSED_INPUTS_JSON))
-        tv = js.get("tv_list") or js.get("shows") or js.get("tv") or []
-        mv = js.get("movies_list") or js.get("movies") or []
-        if isinstance(tv, list) and isinstance(mv, list):
-            logging.info("[inputs] using parsed: %s", PARSED_INPUTS_JSON)
-            return tv, mv
+    if not INPUTS_JSON.exists():
+        logging.error("[inputs] missing: %s", INPUTS_JSON)
+        return [], []
+    js = json.loads(read_text_file(INPUTS_JSON))
+    tv = js.get("tv") or js.get("shows") or []
+    mv = js.get("movies") or []
+    if not isinstance(tv, list) or not isinstance(mv, list):
+        logging.error("[inputs] invalid structure in: %s", INPUTS_JSON)
+        return [], []
+    logging.info("[inputs] using: %s", INPUTS_JSON)
+    return tv, mv
 
     tv_path = _first_existing(TV_LIST_CANDIDATES)
     mv_path = _first_existing(MOVIES_LIST_CANDIDATES)
@@ -484,7 +495,7 @@ def main() -> int:
 
     data: Dict[str, Any] = {
         "meta": {
-            "generated_utc": _dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "generated_utc": _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "builder": {
                 "script": "scripts/fetch_tmdb.py",
                 "version": "v2.6.5",
@@ -710,6 +721,7 @@ def main() -> int:
                     s["trakt_id"] = prev_shows[k]
     except Exception as ex:
         logging.warning("[merge] preserve trakt_id skipped: %s", ex)
+    _strip_unwanted_fields_in_place(data)
     write_json_atomic(OUT_DATA_JSON, data)
     logging.info("[done] wrote=%s shows=%s movies=%s errors=%s", OUT_DATA_JSON, shows_ok, movies_ok, len(data["errors"]))
     return 0
