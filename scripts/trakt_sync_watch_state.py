@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 # ==============================================================================
 # [FILE]    scripts/trakt_sync_watch_state.py
 # [PROJECT] my_TV_Movie
@@ -217,4 +217,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

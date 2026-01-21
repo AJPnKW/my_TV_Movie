@@ -2,7 +2,7 @@
 # ==============================================================================
 # [FILE]    scripts/fetch_trakt.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Enrich data/data.json with Trakt IDs + lightweight Trakt metadata
+# [ROLE]    Resolve Trakt IDs used for sync (movies/shows) + lightweight public metadata
 # [VERSION] v1.3.0
 # [UPDATED] 2025-12-29_00-00-00
 # [BUILD]   14.01.08
