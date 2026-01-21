@@ -77,7 +77,7 @@
     .row .sub{opacity:.8;font-size:12px}
   
     /* =====================================================================
-       v1.2.4 GAP FIXES (TARGETED, NO ARCH CHANGES)
+       v1.2.5 GAP FIXES (TARGETED, NO ARCH CHANGES)
        - config.json image_sizes applied (show/movie/episode still)
        - button label styling (TMDB / VidSrc / VidEasy)
        - logo "MY TV / HUB"
@@ -119,6 +119,12 @@
       flex:0 0 auto;
     }
 
+  
+    /* v1.2.5: remove redundant in-view headings */
+    .view h1, .view h2{display:none!important}
+  
+    .chip{display:flex;gap:10px;align-items:flex-start}
+    .chiptext{min-width:0}
   </style>
 </head>
 <body>
@@ -237,7 +243,7 @@
     const meta = state.data?.meta || {};
     const counts = meta.counts || {};
     const dataOk = state.data ? "ok" : "fail";
-    const cfgOk  = (state.cfg && Object.keys(state.cfg).length) ? "ok" : "fail";
+    const cfgOk  = (state.cfgFetchOk === true) ? "ok" : "fail";
     const showsN = counts.shows ?? (state.data?.shows?.length ?? 0);
     const moviesN = counts.movies ?? (state.data?.movies?.length ?? 0);
     return ` • data: ${dataOk} • cfg: ${cfgOk} • shows: ${showsN} • movies: ${moviesN}`;
@@ -252,7 +258,7 @@
       ]);
       if (!cfgRes.ok) throw new Error(`config.json HTTP ${cfgRes.status}`);
       if (!dataRes.ok) throw new Error(`data.json HTTP ${dataRes.status}`);
-      // v1.2.4: config.json is OPTIONAL; if invalid JSON, continue with defaults
+      // v1.2.5: config.json is OPTIONAL; if invalid JSON, continue with defaults
       try {
         state.cfg = await cfgRes.json();
       } catch (cfgErr) {
@@ -263,7 +269,7 @@
       state.data = await dataRes.json();
 
       $("#footer").textContent = footerText();
-      setStatus(true, window.__cfg_invalid ? "Ready (cfg invalid)" : "Ready");
+      setStatus(true, "Ready");
       initCalendarMonth();
       render();
     } catch (e) {
@@ -491,7 +497,7 @@
   }
 
   function renderShows() {
-    // v1.2.4: config-driven show card sizing
+    // v1.2.5: config-driven show card sizing
     try{ document.documentElement.style.setProperty("--card_min", getComputedStyle(document.documentElement).getPropertyValue("--show_width").trim() || "240px"); }catch(_){ }
 
     const shows = (state.data?.shows || []).slice();
@@ -556,7 +562,7 @@
   }
 
   function renderMovies() {
-    // v1.2.4: config-driven movie card sizing
+    // v1.2.5: config-driven movie card sizing
     try{ document.documentElement.style.setProperty("--card_min", getComputedStyle(document.documentElement).getPropertyValue("--movie_width").trim() || "240px"); }catch(_){ }
 
     const movies = (state.data?.movies || []).slice();

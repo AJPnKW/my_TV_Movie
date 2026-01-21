@@ -1,33 +1,30 @@
+Set-Location "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
+New-Item -ItemType Directory -Force ".\tools\inputs_editor" | Out-Null
+
+@'
 """
 FILE: tools/inputs_editor/inputs_editor_server.py
-VERSION: 1.0.1
-DATE: 2026-01-19
-
-CHANGELOG
-- 1.0.1: Add explicit version header + section comments. No functional changes.
+VERSION: 1.0.2
+DATE: 2026-01-20
 
 PURPOSE
-- Local utility server to manage data/inputs.json (canonical scope definition).
-- Serves one-page UI at /web/inputs_editor.html.
-- Provides API:
-    GET  /api/inputs              -> returns current data/inputs.json
-    POST /api/inputs              -> saves data/inputs.json (atomic)
-    GET  /api/tmdb/search?q=...    -> TMDB multi-search via API_TMDB_KEY env var
-    GET  /api/health              -> ok
+- Local utility server to manage canonical scope file: data/inputs.json
+- UI:  http://127.0.0.1:8787/web/inputs_editor.html
+- API:
+    GET  /api/health
+    GET  /api/inputs
+    POST /api/inputs
+    GET  /api/tmdb/search?q=...
 
-CONSTRAINTS
-- No legacy txt inputs.
-- Canonical scope file: data/inputs.json.
-- Browser cannot write to disk directly; this server provides the write endpoint.
+REQUIREMENTS
+- Python 3.12+
+- Optional TMDB search: API_TMDB_KEY env var (if missing, TMDB search disabled cleanly)
 
 RUN
   python tools/inputs_editor/inputs_editor_server.py --port 8787
 """
 from __future__ import annotations
 
-# -----------------------------
-# Imports
-# -----------------------------
 import argparse
 import json
 import os
@@ -38,9 +35,6 @@ from pathlib import Path
 from urllib.parse import urlparse, parse_qs, quote
 import urllib.request
 
-# -----------------------------
-# Paths / constants
-# -----------------------------
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
 INPUTS_JSON = DATA_DIR / "inputs.json"
@@ -51,9 +45,12 @@ TMDB_KEY_ENV = "API_TMDB_KEY"
 TMDB_BASE = "https://api.themoviedb.org/3"
 TMDB_IMG_BASE = "https://image.tmdb.org/t/p/"
 
-# -----------------------------
-# Helpers: HTTP responses
-# -----------------------------
+
+def _now_utc_iso() -> str:
+    import datetime as _dt
+    return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def _json(handler: BaseHTTPRequestHandler, code: int, obj: dict):
     data = json.dumps(obj, ensure_ascii=False).encode("utf-8")
     handler.send_response(code)
@@ -62,6 +59,7 @@ def _json(handler: BaseHTTPRequestHandler, code: int, obj: dict):
     handler.send_header("Cache-Control", "no-store")
     handler.end_headers()
     handler.wfile.write(data)
+
 
 def _text(handler: BaseHTTPRequestHandler, code: int, text: str, ctype="text/plain; charset=utf-8"):
     data = text.encode("utf-8")
@@ -72,13 +70,12 @@ def _text(handler: BaseHTTPRequestHandler, code: int, text: str, ctype="text/pla
     handler.end_headers()
     handler.wfile.write(data)
 
-# -----------------------------
-# Helpers: inputs.json read/write
-# -----------------------------
+
 def _read_inputs() -> dict:
     if not INPUTS_JSON.exists():
         return {"tv": [], "movies": [], "watchlist": [], "generated_local": "", "generated_utc": ""}
     return json.loads(INPUTS_JSON.read_text(encoding="utf-8"))
+
 
 def _atomic_write(path: Path, obj: dict):
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -96,35 +93,45 @@ def _atomic_write(path: Path, obj: dict):
             except Exception:
                 pass
 
-def _now_utc_iso() -> str:
-    import datetime as _dt
-    return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
 
-# -----------------------------
-# TMDB proxy (search only)
-# -----------------------------
-def _tmdb_get(path: str, qs: dict) -> dict:
+def _tmdb_search(query: str) -> dict:
     key = os.environ.get(TMDB_KEY_ENV, "").strip()
     if not key:
-        return {"ok": False, "error": f"Missing env var {TMDB_KEY_ENV}"}
+        return {"ok": False, "error": f"Missing env var {TMDB_KEY_ENV} (TMDB search disabled)"}
 
-    q = dict(qs)
-    q["api_key"] = key
-    q.setdefault("include_adult", "false")
-    q.setdefault("language", "en-US")
-    q.setdefault("region", "CA")
-
-    query = "&".join([f"{k}={quote(str(v))}" for k, v in q.items() if v is not None])
-    url = f"{TMDB_BASE}{path}?{query}"
+    qs = {
+        "api_key": key,
+        "query": query,
+        "include_adult": "false",
+        "language": "en-US",
+        "region": "CA",
+    }
+    q = "&".join([f"{k}={quote(str(v))}" for k, v in qs.items() if v is not None])
+    url = f"{TMDB_BASE}/search/multi?{q}"
 
     req = urllib.request.Request(url, headers={"Accept": "application/json"})
     with urllib.request.urlopen(req, timeout=25) as resp:
         raw = resp.read().decode("utf-8", errors="replace")
-    return {"ok": True, "data": json.loads(raw), "img_base": TMDB_IMG_BASE}
+    data = json.loads(raw)
 
-# -----------------------------
-# Request handler
-# -----------------------------
+    results = []
+    for r in data.get("results", []):
+        mt = r.get("media_type")
+        if mt not in ("tv", "movie"):
+            continue
+        title = r.get("name") if mt == "tv" else r.get("title")
+        tmdb_id = r.get("id")
+        year = (r.get("first_air_date") or r.get("release_date") or "")[:4]
+        results.append({
+            "type": mt,
+            "tmdb_id": tmdb_id,
+            "title": title or "",
+            "year": year,
+            "poster_path": r.get("poster_path") or ""
+        })
+    return {"ok": True, "results": results, "img_base": TMDB_IMG_BASE}
+
+
 class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stdout.write("%s - %s\n" % (self.address_string(), fmt % args))
@@ -135,13 +142,13 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/" or path == "/web/inputs_editor.html":
             if not UI_FILE.exists():
-                _text(self, 404, "Missing web/inputs_editor.html")
+                _text(self, 404, "Missing: web/inputs_editor.html")
                 return
             _text(self, 200, UI_FILE.read_text(encoding="utf-8", errors="replace"), "text/html; charset=utf-8")
             return
 
         if path == "/api/health":
-            _json(self, 200, {"ok": True, "utc": _now_utc_iso()})
+            _json(self, 200, {"ok": True, "utc": _now_utc_iso(), "repo_root": str(REPO_ROOT)})
             return
 
         if path == "/api/inputs":
@@ -154,26 +161,8 @@ class Handler(BaseHTTPRequestHandler):
             if not query:
                 _json(self, 400, {"ok": False, "error": "Missing q"})
                 return
-            res = _tmdb_get("/search/multi", {"query": query})
-            if not res.get("ok"):
-                _json(self, 500, res)
-                return
-            items = []
-            for r in res["data"].get("results", []):
-                mt = r.get("media_type")
-                if mt not in ("tv", "movie"):
-                    continue
-                title = r.get("name") if mt == "tv" else r.get("title")
-                tmdb_id = r.get("id")
-                year = (r.get("first_air_date") or r.get("release_date") or "")[:4]
-                items.append({
-                    "type": mt,
-                    "tmdb_id": tmdb_id,
-                    "title": title or "",
-                    "year": year,
-                    "poster_path": r.get("poster_path") or ""
-                })
-            _json(self, 200, {"ok": True, "results": items, "img_base": res["img_base"]})
+            res = _tmdb_search(query)
+            _json(self, 200 if res.get("ok") else 400, res)
             return
 
         if path.startswith("/web/"):
@@ -181,10 +170,11 @@ class Handler(BaseHTTPRequestHandler):
             if not f.exists() or not f.is_file():
                 _text(self, 404, "Not found")
                 return
-            if f.suffix.lower() == ".css":
+            suf = f.suffix.lower()
+            if suf == ".css":
                 _text(self, 200, f.read_text(encoding="utf-8", errors="replace"), "text/css; charset=utf-8")
                 return
-            if f.suffix.lower() == ".js":
+            if suf == ".js":
                 _text(self, 200, f.read_text(encoding="utf-8", errors="replace"), "application/javascript; charset=utf-8")
                 return
             data = f.read_bytes()
@@ -222,20 +212,27 @@ class Handler(BaseHTTPRequestHandler):
         _atomic_write(INPUTS_JSON, obj)
         _json(self, 200, {"ok": True, "saved": str(INPUTS_JSON), "utc": obj["generated_utc"]})
 
-# -----------------------------
-# Entrypoint
-# -----------------------------
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8787)
     args = ap.parse_args()
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
+
     host = "127.0.0.1"
     httpd = HTTPServer((host, args.port), Handler)
-    print(f"Inputs Editor: http://{host}:{args.port}/web/inputs_editor.html")
-    print(f"TMDB key env var: {TMDB_KEY_ENV}")
+
+    print("------------------------------------------------------------")
+    print("my_TV_Movie • Inputs Editor Server")
+    print(f"Repo:  {REPO_ROOT}")
+    print(f"File:  {INPUTS_JSON}")
+    print(f"URL:   http://{host}:{args.port}/web/inputs_editor.html")
+    print(f"TMDB:  env {TMDB_KEY_ENV} {'present' if os.environ.get(TMDB_KEY_ENV) else 'missing'}")
+    print("------------------------------------------------------------")
     httpd.serve_forever()
+
 
 if __name__ == "__main__":
     main()
+'@ | Set-Content -Encoding UTF8 ".\tools\inputs_editor\inputs_editor_server.py"
