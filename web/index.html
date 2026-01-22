@@ -77,7 +77,7 @@
     .row .sub{opacity:.8;font-size:12px}
   
     /* =====================================================================
-       v1.2.5 GAP FIXES (TARGETED, NO ARCH CHANGES)
+       v1.2.6 GAP FIXES (TARGETED, NO ARCH CHANGES)
        - config.json image_sizes applied (show/movie/episode still)
        - button label styling (TMDB / VidSrc / VidEasy)
        - logo "MY TV / HUB"
@@ -120,11 +120,47 @@
     }
 
   
-    /* v1.2.5: remove redundant in-view headings */
+    /* v1.2.6: remove redundant in-view headings */
     .view h1, .view h2{display:none!important}
   
     .chip{display:flex;gap:10px;align-items:flex-start}
     .chiptext{min-width:0}
+  
+    /* v1.2.6: remove redundant panel headings */
+    .panel h2{display:none!important}
+  
+    .chiptext{min-width:0}
+    .chipbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+
+    .panel[data-panel="showpage"]{padding:0}
+    .showpage{border-radius:16px;overflow:hidden;background-size:cover;background-position:center}
+    .showwrap{padding:18px;border:1px solid rgba(255,255,255,.08);border-radius:16px;background:rgba(0,0,0,.45);backdrop-filter:blur(6px)}
+    .hero{display:grid;grid-template-columns:260px 1fr;gap:16px}
+    .poster{width:260px;border-radius:16px;border:1px solid rgba(255,255,255,.12)}
+    .kicker{font-size:12px;letter-spacing:.18em;opacity:.75}
+    .titlebig{font-size:34px;font-weight:950;letter-spacing:.04em;margin-top:6px}
+    .pills{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+    .pill{padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);font-size:12px}
+    .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+    .overview{opacity:.92;line-height:1.35;max-width:980px}
+    .seasonblock{display:grid;grid-template-columns:360px 1fr;gap:16px;margin-top:16px}
+    .seasonlabel{font-weight:900;margin-bottom:8px;text-align:right}
+    .radios{max-height:210px;overflow:auto;padding-right:6px}
+    .radio{display:flex;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);margin-bottom:8px}
+    .seasoninfo{display:grid;grid-template-columns:180px 1fr;gap:12px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);padding:12px}
+    .poster_sm{width:180px;border-radius:14px;border:1px solid rgba(255,255,255,.12)}
+    .epslabel{font-weight:900;margin:16px 0 10px}
+    .epsrow{display:flex;gap:14px;overflow:auto;padding-bottom:8px}
+    .epcard{min-width:320px;max-width:320px;border:1px solid rgba(255,255,255,.10);border-radius:14px;background:rgba(255,255,255,.04);overflow:hidden}
+    .epstill{width:100%;height:160px;object-fit:cover}
+    .epmeta{padding:10px 12px}
+    .eptop{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .badge{padding:4px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);font-size:12px;font-weight:900}
+    .eptitle{font-weight:900}
+    .muted{opacity:.75}
+    .clamp2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .epbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+
   </style>
 </head>
 <body>
@@ -251,6 +287,7 @@
 
   async function loadAll() {
     setStatus(true, "Loading");
+    state.cfg_ok = false;
     try {
       const [cfgRes, dataRes] = await Promise.all([
         fetch("./config.json", {cache:"no-store"}),
@@ -258,7 +295,7 @@
       ]);
       if (!cfgRes.ok) throw new Error(`config.json HTTP ${cfgRes.status}`);
       if (!dataRes.ok) throw new Error(`data.json HTTP ${dataRes.status}`);
-      // v1.2.5: config.json is OPTIONAL; if invalid JSON, continue with defaults
+      // v1.2.6: config.json is OPTIONAL; if invalid JSON, continue with defaults
       try {
         state.cfg = await cfgRes.json();
       } catch (cfgErr) {
@@ -272,6 +309,7 @@
       setStatus(true, "Ready");
       initCalendarMonth();
       render();
+    handleHashRoute();
     } catch (e) {
       console.error(e);
       $("#footer").textContent = footerText();
@@ -294,48 +332,62 @@
   }
 
   function buildCalendarEvents() {
-    // Events: show.next_episode_to_air.air_date and movies.release_date
+    // v1.2.6: Calendar must include ALL episodes (all seasons) + ALL movies (no future-only scoping)
+    // Index key: YYYY-MM-DD (normalize any timestamp to first 10 chars)
     const eventsByDate = new Map(); // yyyy-mm-dd -> [{type, ...}]
     const shows = state.data?.shows || [];
     const movies = state.data?.movies || [];
 
     for (const s of shows) {
-      const nea = s?.next_episode_to_air;
-      const ad = nea?.air_date;
-      if (!ad) continue;
-      const k = ad;
-      const arr = eventsByDate.get(k) || [];
-      arr.push({
-        type: "show",
-        title: s.title,
-        tmdb_id: s.tmdb_id,
-        poster: s.poster_local,
-        season: nea.season_number,
-        episode: nea.episode_number,
-        ep_name: nea.name,
-        air_date: ad
-      });
-      eventsByDate.set(k, arr);
+      const seasons = Array.isArray(s?.seasons) ? s.seasons : [];
+      for (const se of seasons) {
+        const eps = Array.isArray(se?.episodes) ? se.episodes : [];
+        for (const ep of eps) {
+          const adRaw = safeText(ep?.air_date, "").trim();
+          const ad = adRaw ? adRaw.slice(0,10) : "";
+          if (!ad || !/^\d{4}-\d{2}-\d{2}$/.test(ad)) continue;
+
+          const arr = eventsByDate.get(ad) || [];
+          arr.push({
+            type: "episode",
+            title: s.title,
+            tmdb_id: s.tmdb_id,
+            season: ep.season_number ?? se.season_number,
+            episode: ep.episode_number,
+            ep_name: ep.name,
+            runtime: ep.runtime,
+            still: ep.still_local || ep.still_path || "",
+            links: ep.links || {}
+          });
+          eventsByDate.set(ad, arr);
+        }
+      }
     }
 
-    for (const m of movies) {
-      const rd = m?.release_date;
-      if (!rd) continue;
-      const k = rd;
-      const arr = eventsByDate.get(k) || [];
+    for (const movie of movies) {
+      const rdRaw = safeText(movie?.release_date, "").trim();
+      const rd = rdRaw ? rdRaw.slice(0,10) : "";
+      if (!rd || !/^\d{4}-\d{2}-\d{2}$/.test(rd)) continue;
+
+      const arr = eventsByDate.get(rd) || [];
       arr.push({
         type: "movie",
-        title: m.title,
-        tmdb_id: m.tmdb_id,
-        poster: m.poster_local,
-        release_date: rd
+        title: movie.title,
+        tmdb_id: movie.tmdb_id,
+        poster: movie.poster_local || movie.poster_path || "",
+        links: movie.links || {}
       });
-      eventsByDate.set(k, arr);
+      eventsByDate.set(rd, arr);
     }
 
-    // Stable sort per date
+    // Stable sort per date: episodes first, then movies, then title
     for (const [k, arr] of eventsByDate.entries()) {
-      arr.sort((a,b) => (a.type === b.type ? safeText(a.title).localeCompare(safeText(b.title)) : (a.type === "episode" ? -1 : 1)));
+      arr.sort((a,b) => {
+        const pa = a.type === "episode" ? 0 : 1;
+        const pb = b.type === "episode" ? 0 : 1;
+        if (pa !== pb) return pa - pb;
+        return safeText(a.title).localeCompare(safeText(b.title));
+      });
     }
 
     return eventsByDate;
@@ -497,7 +549,7 @@
   }
 
   function renderShows() {
-    // v1.2.5: config-driven show card sizing
+    // v1.2.6: config-driven show card sizing
     try{ document.documentElement.style.setProperty("--card_min", getComputedStyle(document.documentElement).getPropertyValue("--show_width").trim() || "240px"); }catch(_){ }
 
     const shows = (state.data?.shows || []).slice();
@@ -562,7 +614,7 @@
   }
 
   function renderMovies() {
-    // v1.2.5: config-driven movie card sizing
+    // v1.2.6: config-driven movie card sizing
     try{ document.documentElement.style.setProperty("--card_min", getComputedStyle(document.documentElement).getPropertyValue("--movie_width").trim() || "240px"); }catch(_){ }
 
     const movies = (state.data?.movies || []).slice();
@@ -649,9 +701,157 @@
   $("#modalBack").addEventListener("click", (e) => { if (e.target === $("#modalBack")) closeModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
-  bindNav();
+  bindNav
+  // v1.2.6: show card click -> #show/<tmdb_id>
+  document.addEventListener("click", (e) => {
+    const card = e.target && e.target.closest ? e.target.closest(".card") : null;
+    if (!card) return;
+    const kind = card.getAttribute("data-kind");
+    const id = card.getAttribute("data-id");
+    if (kind === "show" && id){
+      location.hash = "#show/" + id;
+    }
+  });
+();
   loadAll();
 })();
+
+  function tmdbShowUrl(id){ return id ? `https://www.themoviedb.org/tv/${id}` : "#"; }
+
+  function pickLatestSeason(show){
+    const seasons = Array.isArray(show?.seasons) ? show.seasons : [];
+    if (!seasons.length) return null;
+    return seasons.slice().sort((a,b)=>Number(b.season_number||0)-Number(a.season_number||0))[0];
+  }
+
+  function renderShowPage(tmdbId){
+    const panel = document.querySelector('.panel[data-panel="showpage"]');
+    if (!panel) return;
+    const show = (state.data?.shows || []).find(s => String(s.tmdb_id) === String(tmdbId));
+    if (!show){
+      panel.innerHTML = `<div class="empty">Show not found</div>`;
+      return;
+    }
+
+    const seasons = Array.isArray(show.seasons) ? show.seasons.slice().sort((a,b)=>Number(a.season_number||0)-Number(b.season_number||0)) : [];
+    const selected = state.showpage_season ?? (pickLatestSeason(show)?.season_number ?? (seasons[0]?.season_number ?? null));
+    const selSeason = seasons.find(s => Number(s.season_number)===Number(selected)) || seasons[seasons.length-1] || null;
+    state.showpage_season = selSeason ? selSeason.season_number : null;
+
+    const poster = resolveImg(show.poster_local || show.poster_path || "");
+    const backdrop = resolveImg(show.backdrop_local || show.backdrop_path || "");
+    const genres = Array.isArray(show.genres) ? show.genres.map(g=>g.name).filter(Boolean) : [];
+    const vote = (show.vote_average!=null) ? Number(show.vote_average).toFixed(1) : "";
+    const networks = Array.isArray(show.networks) ? show.networks.map(n=>n.name).filter(Boolean) : [];
+    const firstAir = safeText(show.first_air_date, "");
+
+    const firstEp = (selSeason && Array.isArray(selSeason.episodes) && selSeason.episodes.length) ? selSeason.episodes[0] : null;
+    const vidsrc = firstEp?.links?.vidsrc || "";
+    const videasy = firstEp?.links?.videasy || "";
+
+    const seasonPicker = seasons.map(s=>{
+      const sn = s.season_number;
+      const name = safeText(s.name, `Season ${sn}`);
+      const checked = Number(sn)===Number(selSeason?.season_number) ? "checked" : "";
+      return `<label class="radio"><input type="radio" name="seasonpick" value="${sn}" ${checked}/> ${escapeHtml(name)}</label>`;
+    }).join("");
+
+    const seasonPoster = resolveImg(selSeason?.poster_local || selSeason?.poster_path || "");
+    const seasonOverview = safeText(selSeason?.overview, "");
+    const seasonAir = safeText(selSeason?.air_date, "");
+
+    const eps = Array.isArray(selSeason?.episodes) ? selSeason.episodes : [];
+    const epCards = eps.map(ep=>{
+      const still = resolveImg(ep.still_local || ep.still_path || "");
+      const tag = seTag(ep.season_number ?? selSeason.season_number, ep.episode_number);
+      const rt = ep.runtime ? `${ep.runtime}m` : "";
+      const eov = safeText(ep.overview,"");
+      const e_vidsrc = ep.links?.vidsrc || "";
+      const e_videasy = ep.links?.videasy || "";
+      return `<div class="epcard">
+        ${still ? `<img class="epstill" src="${still}" alt=""/>` : ``}
+        <div class="epmeta">
+          <div class="eptop"><span class="badge">${escapeHtml(tag)}</span><span class="eptitle">${escapeHtml(safeText(ep.name))}</span><span class="muted">${escapeHtml(rt)}</span></div>
+          <div class="epov clamp2">${escapeHtml(eov)}</div>
+          <div class="epbtns">
+            <a class="btn tmdb" href="${escapeAttr(tmdbShowUrl(show.tmdb_id))}" target="_blank" rel="noreferrer">TMDB</a>
+            ${e_vidsrc ? `<a class="btn vidsrc" href="${escapeAttr(e_vidsrc)}" target="_blank" rel="noreferrer">VidSrc</a>` : ``}
+            ${e_videasy ? `<a class="btn videasy" href="${escapeAttr(e_videasy)}" target="_blank" rel="noreferrer">VidEasy</a>` : ``}
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+
+    panel.innerHTML = `
+      <div class="showpage" style="${backdrop ? `background-image:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.85)), url('${escapeAttr(backdrop)}');` : ''}">
+        <div class="showwrap">
+          <div class="hero">
+            <div class="posterbox">${poster ? `<img class="poster" src="${escapeAttr(poster)}" alt=""/>` : ``}</div>
+            <div class="herotext">
+              <div class="kicker">ORIGINAL SERIES</div>
+              <div class="titlebig">${escapeHtml(safeText(show.title||show.name))}</div>
+              <div class="pills">
+                ${genres.slice(0,6).map(g=>`<span class="pill">${escapeHtml(g)}</span>`).join("")}
+                ${vote ? `<span class="pill">★ ${escapeHtml(vote)}</span>` : ``}
+                ${networks.slice(0,2).map(n=>`<span class="pill">${escapeHtml(n)}</span>`).join("")}
+                ${firstAir ? `<span class="pill">Premiered ${escapeHtml(firstAir)}</span>` : ``}
+              </div>
+              <div class="btnrow">
+                <a class="btn tmdb" href="${escapeAttr(tmdbShowUrl(show.tmdb_id))}" target="_blank" rel="noreferrer">TMDB</a>
+                ${vidsrc ? `<a class="btn vidsrc" href="${escapeAttr(vidsrc)}" target="_blank" rel="noreferrer">VidSrc</a>` : ``}
+                ${videasy ? `<a class="btn videasy" href="${escapeAttr(videasy)}" target="_blank" rel="noreferrer">VidEasy</a>` : ``}
+              </div>
+              <div class="overview">${escapeHtml(safeText(show.overview))}</div>
+            </div>
+          </div>
+
+          <div class="seasonblock">
+            <div class="seasonpicker">
+              <div class="seasonlabel">Season</div>
+              <div class="radios">${seasonPicker}</div>
+            </div>
+            <div class="seasoninfo">
+              <div class="seasonposter">${seasonPoster ? `<img class="poster_sm" src="${escapeAttr(seasonPoster)}" alt=""/>` : ``}</div>
+              <div class="seasontext">
+                <div class="seasonname">${escapeHtml(safeText(selSeason?.name, `Season ${selSeason?.season_number||""}`))}</div>
+                <div class="muted">${escapeHtml(seasonAir)}</div>
+                <div class="seasonov">${escapeHtml(seasonOverview)}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="epsblock">
+            <div class="epslabel">Episodes</div>
+            <div class="epsrow">${epCards}</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    panel.querySelectorAll('input[name="seasonpick"]').forEach(inp=>{
+      inp.addEventListener("change", (e)=>{
+        state.showpage_season = Number(e.target.value);
+        renderShowPage(tmdbId);
+      });
+    });
+  }
+
+  function handleHashRoute(){
+    const h = String(location.hash || "");
+    const m = h.match(/^#show\/(\d+)/i);
+    if (m){
+      document.querySelectorAll(".panel").forEach(p=>p.style.display="none");
+      const sp = document.querySelector('.panel[data-panel="showpage"]');
+      if (sp) sp.style.display="block";
+      renderShowPage(m[1]);
+      return true;
+    }
+    document.querySelectorAll(".panel").forEach(p=>p.style.display="block");
+    const sp = document.querySelector('.panel[data-panel="showpage"]');
+    if (sp) sp.style.display="none";
+    return false;
+  }
+
 </script>
 </body>
 </html>
