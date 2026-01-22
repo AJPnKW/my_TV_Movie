@@ -2,8 +2,8 @@
 <!--
 FILE: web/tv_shows_listing.html
 PROJECT: my_TV_Movie
-VERSION: 0.1.2
-DATE: 2026-01-20
+VERSION: 0.1.4
+DATE: 2026-01-21
 
 PURPOSE
 - Single-page listing utility sourced ONLY from data/data.json
@@ -23,14 +23,16 @@ EVIDENCE (FROM YOUR SCHEMA DUMP)
 - TOP_KEYS: errors, meta, metadata, movies, shows
 - TV_KEY = shows, MOVIES_KEY = movies
 - show.seasons exists as a key, but SHOW.seasons.count = 0 on the sample object
-  → Seasons/Episodes are present elsewhere in the JSON graph (not in show.seasons array)
+  → NOTE (validated via screenshots): show.seasons[] and season.episodes[] DO exist in the canonical structure.
+    The earlier “count=0” observation was caused by unsafe inspection/selection, not by the schema.
 
 SEASONS/EPISODES EXTRACTION (NO GUESSING, NO NEW SOURCES)
-- Primary path (if present): show.seasons[] then season.episodes[]
-- Fallback path (schema-agnostic): deep-scan the loaded JSON object for:
-    * Season objects: have season_number + (tv_id/show_id/series_id/parent ids) or obvious season fields
-    * Episode objects: have episode_number + season_number + (tv_id/show_id/series_id/parent ids)
-  Then index them and join back to shows by TMDB show id + season_number.
+- Primary path (canonical): show.seasons[] then season.episodes[]
+- Fallback path: none (removed). If seasons/episodes are absent, the UI reports “No seasons available” / “No episodes”.
+
+CHANGE LOG
+- 0.1.4: Align strictly to canonical nested schema (shows[] → seasons[] → episodes[]),
+         remove key guessing and deep-scan fallback, keep header structure intact, add explicit code comments.
 -->
 <html lang="en">
 <head>
@@ -82,16 +84,10 @@ SEASONS/EPISODES EXTRACTION (NO GUESSING, NO NEW SOURCES)
       overflow: hidden;
     }
 
-    .row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 10px;
-    }
+    .row { display: flex; align-items: center; gap: 10px; padding: 10px 10px; }
 
     .twisty {
-      width: 28px;
-      height: 28px;
+      width: 28px; height: 28px;
       border-radius: 8px;
       border: 1px solid rgba(255,255,255,0.18);
       background: rgba(255,255,255,0.06);
@@ -133,9 +129,7 @@ SEASONS/EPISODES EXTRACTION (NO GUESSING, NO NEW SOURCES)
     .subcard { border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.12); border-radius: 10px; margin-top: 8px; overflow: hidden; }
     .subrow { display: flex; align-items: center; gap: 10px; padding: 9px 10px; }
     .ep-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      display: flex; align-items: center; gap: 10px;
       padding: 8px 10px;
       border-top: 1px solid rgba(255,255,255,0.10);
     }
@@ -149,8 +143,8 @@ SEASONS/EPISODES EXTRACTION (NO GUESSING, NO NEW SOURCES)
   <pre id="ajp_page_header" style="display:none">
 FILE: web/tv_shows_listing.html
 PROJECT: my_TV_Movie
-VERSION: 0.1.2
-DATE: 2026-01-20
+VERSION: 0.1.4
+DATE: 2026-01-21
   </pre>
 
   <div class="wrap">
@@ -181,7 +175,7 @@ DATE: 2026-01-20
 
   <script>
   /* ============================================================================
-     VERSION BUTTON (parses your FILE/PROJECT/VERSION/DATE header block)
+     VERSION BUTTON (parses FILE/PROJECT/VERSION/DATE from header block)
   ============================================================================ */
   function parseHeaderBlock() {
     const el = document.getElementById("ajp_page_header");
@@ -204,19 +198,16 @@ DATE: 2026-01-20
     btn.textContent = "v" + version;
 
     btn.addEventListener("click", () => {
-      const file = hdr.FILE ? hdr.FILE : "tv_shows_listing.html";
-      const proj = hdr.PROJECT ? hdr.PROJECT : "my_TV_Movie";
-      const date = hdr.DATE ? hdr.DATE : "";
       alert(
-        file + "\n" +
-        proj + "\n" +
-        "VERSION: " + version + (date ? ("\nDATE: " + date) : "")
+        (hdr.FILE || "web/tv_shows_listing.html") + "\n" +
+        (hdr.PROJECT || "my_TV_Movie") + "\n" +
+        "VERSION: " + version + (hdr.DATE ? ("\nDATE: " + hdr.DATE) : "")
       );
     });
   }
 
   /* ============================================================================
-     DATA LOADING (SOLE SOURCE OF TRUTH: data/data.json)
+     DATA LOADING (SOLE SOURCE: ../data/data.json)
   ============================================================================ */
   async function loadJson(url) {
     const res = await fetch(url, { cache: "no-store" });
@@ -225,55 +216,52 @@ DATE: 2026-01-20
   }
 
   /* ============================================================================
-     BASIC HELPERS (safe + deterministic)
+     CANONICAL ACCESSORS (NO KEY GUESSING)
+     Canonical:
+       data.shows[]  and  data.movies[]
+       show.seasons[] -> season.episodes[]
   ============================================================================ */
+  function ensureArray(x) { return Array.isArray(x) ? x : []; }
+
   function asInt(x) {
     const n = Number(x);
     return Number.isFinite(n) ? n : null;
   }
+
   function pad2(n) {
     const v = asInt(n);
     if (v === null) return "??";
     return String(v).padStart(2, "0");
   }
+
   function fmtDate(x) { return x ? String(x).trim() : ""; }
+
   function fmtRuntime(x) {
     const n = asInt(x);
     return n === null ? "" : (n + "m");
   }
-  function ensureArray(x) {
-    if (!x) return [];
-    if (Array.isArray(x)) return x;
-    if (typeof x === "object" && Array.isArray(x.items)) return x.items;
-    if (typeof x === "object") return Object.values(x).filter(v => v && typeof v === "object");
-    return [];
+
+  function showTitle(show) {
+    const v = show && (show.name ?? show.title ?? show.original_name ?? "");
+    return v ? String(v) : "";
   }
 
-  function getTitle(obj) {
-    if (!obj) return "";
-    return (
-      obj.name ??
-      obj.title ??
-      obj.original_name ??
-      obj.original_title ??
-      ""
-    ).toString();
+  function movieTitle(movie) {
+    const v = movie && (movie.title ?? movie.name ?? movie.original_title ?? "");
+    return v ? String(v) : "";
   }
-  function getYear(obj) {
-    const d = obj.first_air_date ?? obj.release_date ?? obj.air_date ?? obj.date ?? "";
+
+  function getYearFromObj(obj) {
+    const d = obj ? (obj.first_air_date ?? obj.release_date ?? "") : "";
     const m = String(d).match(/^(\d{4})/);
     return m ? m[1] : "";
   }
-  function getTmdbId(obj) {
-    if (!obj) return null;
-    const v = obj.tmdb_id ?? obj.id ?? null;
-    const n = asInt(v);
-    return n === null ? null : n;
-  }
-  function getImdbId(obj) { return (obj && (obj.imdb_id ?? "")) ? String(obj.imdb_id) : ""; }
 
   /* ============================================================================
-     LINKS (HARD): use obj.links.vidsrc + obj.links.videasy ONLY
+     LINKS (HARD): use obj.links.vidsrc + obj.links.videasy only
+     Notes:
+       - Movies: links are present (per your example).
+       - Episodes: links may or may not be present; buttons auto-disable if absent.
   ============================================================================ */
   function getLinks(obj) {
     if (obj && obj.links && typeof obj.links === "object") {
@@ -286,160 +274,15 @@ DATE: 2026-01-20
   }
 
   /* ============================================================================
-     ROOT COLLECTIONS (based on your dump: shows + movies)
+     TV FIELDS (canonical names shown in your screenshots)
   ============================================================================ */
-  function detectRootCollections(data) {
-    const shows = ensureArray(data && data.shows ? data.shows : []);
-    const movies = ensureArray(data && data.movies ? data.movies : []);
-    return { shows, movies };
-  }
+  function seasonNumber(season) { return season ? (season.season_number ?? null) : null; }
+  function seasonTitle(season)  { return season ? (season.title ?? season.name ?? null) : null; }
 
-  /* ============================================================================
-     SEASONS + EPISODES (THIS IS THE BROKEN PART IN YOUR CURRENT RUN)
-
-     Evidence you provided:
-       - show has a "seasons" key
-       - BUT show.seasons.count = 0 on the sample show object
-       - Root does NOT expose tv_seasons / tv_episodes keys
-       => Seasons/Episodes exist elsewhere in the JSON object graph.
-
-     Fix approach (two-path, no questions, no other files):
-       PATH A (nested):
-         show.seasons[]  +  season.episodes[]
-       PATH B (deep-scan + join):
-         deep-scan entire loaded JSON to find season/episode objects
-         build indexes:
-           seasonsByShowId[show_tmdb] -> seasons[]
-           episodesByShowSeason[show_tmdb::season_number] -> episodes[]
-  ============================================================================ */
-
-  function getSeasonNumber(season) {
-    return season ? (season.season_number ?? season.seasonNumber ?? season.number ?? season.season ?? null) : null;
-  }
-  function getEpisodeNumber(ep) {
-    return ep ? (ep.episode_number ?? ep.episodeNumber ?? ep.number ?? ep.episode ?? null) : null;
-  }
-  function getEpisodeAirDate(ep) { return ep ? (ep.air_date ?? ep.airDate ?? ep.date ?? null) : null; }
-  function getEpisodeRuntime(ep) { return ep ? (ep.runtime ?? ep.episode_runtime ?? ep.episodeRuntime ?? null) : null; }
-
-  function getShowSeasonsNested(show) {
-    // PATH A: nested show.seasons[]
-    // Your data shows "seasons" exists as a key on show objects, but may be empty.
-    const s = show && show.seasons ? show.seasons : [];
-    return ensureArray(s);
-  }
-  function getSeasonEpisodesNested(season) {
-    // PATH A: nested season.episodes[]
-    const e = season && season.episodes ? season.episodes : [];
-    return ensureArray(e);
-  }
-
-  function isPlainObject(x) {
-    return x !== null && typeof x === "object" && !Array.isArray(x);
-  }
-
-  function getPossibleParentShowId(obj) {
-    // join candidates commonly used across pipelines
-    const cands = [
-      obj.tv_id, obj.show_id, obj.series_id,
-      obj.tmdb_show_id, obj.tmdb_tv_id, obj.tmdb_series_id,
-      obj.parent_tmdb_id, obj.parent_id,
-      obj.show_tmdb_id
-    ];
-    for (const v of cands) {
-      const n = asInt(v);
-      if (n !== null) return n;
-    }
-
-    // occasionally the object includes a nested "show" or "series" object
-    if (obj.show && isPlainObject(obj.show)) {
-      const n = asInt(obj.show.tmdb_id ?? obj.show.id ?? null);
-      if (n !== null) return n;
-    }
-    if (obj.series && isPlainObject(obj.series)) {
-      const n = asInt(obj.series.tmdb_id ?? obj.series.id ?? null);
-      if (n !== null) return n;
-    }
-
-    return null;
-  }
-
-  function looksLikeSeason(obj) {
-    // minimal season signature: season_number exists and it's not an episode (no episode_number)
-    return obj && (obj.season_number != null || obj.seasonNumber != null || obj.season != null) &&
-           (obj.episode_number == null && obj.episodeNumber == null);
-  }
-
-  function looksLikeEpisode(obj) {
-    // minimal episode signature: episode_number + season_number
-    const hasEp = (obj && (obj.episode_number != null || obj.episodeNumber != null || obj.episode != null));
-    const hasS  = (obj && (obj.season_number != null || obj.seasonNumber != null || obj.season != null));
-    return !!(hasEp && hasS);
-  }
-
-  function deepScanForSeasonsAndEpisodes(root) {
-    // PATH B: deep-scan entire JSON graph
-    // Output is indexes to join back to shows.
-    const seasonsByShowId = new Map();        // show_tmdb -> season[]
-    const episodesByShowSeason = new Map();   // "show_tmdb::season_number" -> episode[]
-
-    let seasonCount = 0;
-    let episodeCount = 0;
-
-    const seen = new Set();
-    const stack = [root];
-
-    while (stack.length) {
-      const cur = stack.pop();
-      if (!cur || (typeof cur !== "object")) continue;
-
-      // prevent infinite loops if any
-      if (seen.has(cur)) continue;
-      seen.add(cur);
-
-      if (Array.isArray(cur)) {
-        for (let i = cur.length - 1; i >= 0; i--) stack.push(cur[i]);
-        continue;
-      }
-
-      // cur is object
-      if (looksLikeSeason(cur)) {
-        const showId = getPossibleParentShowId(cur);
-        const sNum = asInt(getSeasonNumber(cur));
-        if (showId !== null && sNum !== null) {
-          const key = String(showId);
-          const arr = seasonsByShowId.get(key) || [];
-          arr.push(cur);
-          seasonsByShowId.set(key, arr);
-          seasonCount++;
-        }
-      } else if (looksLikeEpisode(cur)) {
-        const showId = getPossibleParentShowId(cur);
-        const sNum = asInt(cur.season_number ?? cur.seasonNumber ?? cur.season ?? null);
-        if (showId !== null && sNum !== null) {
-          const key = String(showId) + "::" + String(sNum);
-          const arr = episodesByShowSeason.get(key) || [];
-          arr.push(cur);
-          episodesByShowSeason.set(key, arr);
-          episodeCount++;
-        }
-      }
-
-      for (const v of Object.values(cur)) stack.push(v);
-    }
-
-    // deterministic sorting
-    for (const [k, arr] of seasonsByShowId.entries()) {
-      arr.sort((a,b) => (asInt(getSeasonNumber(a)) ?? 9999) - (asInt(getSeasonNumber(b)) ?? 9999));
-      seasonsByShowId.set(k, arr);
-    }
-    for (const [k, arr] of episodesByShowSeason.entries()) {
-      arr.sort((a,b) => (asInt(getEpisodeNumber(a)) ?? 9999) - (asInt(getEpisodeNumber(b)) ?? 9999));
-      episodesByShowSeason.set(k, arr);
-    }
-
-    return { seasonsByShowId, episodesByShowSeason, seasonCount, episodeCount };
-  }
+  function episodeNumber(ep)    { return ep ? (ep.episode_number ?? null) : null; }
+  function episodeTitle(ep)     { return ep ? (ep.title ?? ep.name ?? null) : null; }
+  function episodeAirDate(ep)   { return ep ? (ep.air_date ?? null) : null; }
+  function episodeRuntime(ep)   { return ep ? (ep.runtime ?? null) : null; }
 
   /* ============================================================================
      DOM HELPERS
@@ -462,14 +305,17 @@ DATE: 2026-01-20
     }
     return n;
   }
+
   function makeLinkButton(label, url) {
     const a = el("a", { class: "btn", href: url || "#", target: "_blank", rel: "noreferrer noopener" }, label);
     if (!url) a.setAttribute("aria-disabled", "true");
     return a;
   }
+
   function makeTwistyButton(isOpen) {
     return el("button", { class: "twisty", type: "button", "aria-label": isOpen ? "Collapse" : "Expand", text: isOpen ? "−" : "+" });
   }
+
   function setOpen(childrenEl, twistyBtn, open) {
     childrenEl.dataset.open = open ? "true" : "false";
     twistyBtn.textContent = open ? "−" : "+";
@@ -478,19 +324,19 @@ DATE: 2026-01-20
 
   /* ============================================================================
      RENDER: EPISODE ROW
-     - uses ep.links.* (no URL construction)
+     - PULLS FROM season.episodes[] (canonical)
   ============================================================================ */
-  function buildEpisodeRow(show, season, ep) {
-    const sNum = asInt(getSeasonNumber(season)) ?? asInt(ep.season_number ?? ep.seasonNumber ?? ep.season ?? null);
-    const eNum = asInt(getEpisodeNumber(ep));
-    const epTitle = getTitle(ep) || "(untitled)";
-    const air = fmtDate(getEpisodeAirDate(ep));
-    const rt = fmtRuntime(getEpisodeRuntime(ep));
+  function buildEpisodeRow(ep, sNum) {
+    const eNum = episodeNumber(ep);
+    const name = episodeTitle(ep) || "(untitled)";
+    const air = fmtDate(episodeAirDate(ep));
+    const rt  = fmtRuntime(episodeRuntime(ep));
+
     const label =
       "S" + pad2(sNum) + "E" + pad2(eNum) +
-      " - " + epTitle +
+      " - " + name +
       (air ? (" - " + air) : "") +
-      (rt ? (" - " + rt) : "");
+      (rt  ? (" - " + rt)  : "");
 
     const links = getLinks(ep);
 
@@ -505,14 +351,16 @@ DATE: 2026-01-20
 
   /* ============================================================================
      RENDER: SEASON CARD
-     - episodes come from:
-         PATH A: season.episodes[]
-         PATH B: deep-scan index by show_tmdb + season_number
+     - PULLS FROM show.seasons[] (canonical)
+     - EPISODES PULL FROM season.episodes[] (canonical)
   ============================================================================ */
-  function buildSeasonCard(show, season, episodes) {
-    const sNum = getSeasonNumber(season);
-    const title = getTitle(season) || ("Season " + (sNum ?? "?"));
-    const eps = ensureArray(episodes);
+  function buildSeasonCard(season) {
+    const sNum  = seasonNumber(season);
+    const sName = seasonTitle(season) || ("Season " + (sNum ?? "?"));
+
+    // CANONICAL EPISODES PULL (key is literally "episodes" per your screenshots):
+    // season.episodes[] -> rendered below
+    const eps = ensureArray(season && season.episodes ? season.episodes : []);
 
     const sub = el("div", { class: "subcard" });
     const headerRow = el("div", { class: "subrow" });
@@ -522,7 +370,7 @@ DATE: 2026-01-20
     headerRow.appendChild(twisty);
     headerRow.appendChild(
       el("div", { class: "meta" },
-        el("div", { class: "primary" }, title),
+        el("div", { class: "primary" }, sName),
         el("div", { class: "secondary" }, "S" + pad2(sNum) + " • " + (eps.length ? (eps.length + " eps") : "no episodes"))
       )
     );
@@ -532,7 +380,11 @@ DATE: 2026-01-20
         el("div", { class: "ep-meta muted" }, "No episodes available in this season.")
       ));
     } else {
-      eps.forEach(ep => children.appendChild(buildEpisodeRow(show, season, ep)));
+      // deterministic sort by episode_number
+      eps
+        .slice()
+        .sort((a,b) => (asInt(episodeNumber(a)) ?? 9999) - (asInt(episodeNumber(b)) ?? 9999))
+        .forEach(ep => children.appendChild(buildEpisodeRow(ep, sNum)));
     }
 
     twisty.addEventListener("click", () => {
@@ -546,44 +398,36 @@ DATE: 2026-01-20
   }
 
   /* ============================================================================
-     RENDER: SHOW CARD  (THIS IS WHERE SEASONS ARE PULLED)
-     - seasons come from:
-         PATH A: show.seasons[]  (but you observed count=0)
-         PATH B: deep-scan index (seasonsByShowId[show.tmdb_id])
+     RENDER: SHOW CARD
+     - SEASONS PULL FROM show.seasons[] (canonical)
   ============================================================================ */
-  function buildShowCard(show, scanIndex) {
-    const name = getTitle(show) || "(untitled show)";
-    const year = getYear(show);
-    const tmdbId = getTmdbId(show);
-    const imdbId = getImdbId(show);
+  function buildShowCard(show) {
+    const name = showTitle(show) || "(untitled show)";
+    const year = getYearFromObj(show);
 
-    // ---- SEASONS PULL (PATH A then PATH B) ----
-    const nestedSeasons = getShowSeasonsNested(show); // show.seasons[]
-    const indexedSeasons = (tmdbId != null) ? (scanIndex.seasonsByShowId.get(String(tmdbId)) || []) : [];
-    const seasons = nestedSeasons.length ? nestedSeasons : indexedSeasons;
-    // -------------------------------------------
+    // CANONICAL SEASONS PULL:
+    // show.seasons[] -> rendered below
+    const seasons = ensureArray(show && show.seasons ? show.seasons : []);
 
     const card = el("div", { class: "card" });
     const row = el("div", { class: "row" });
-
     const twisty = makeTwistyButton(false);
     const children = el("div", { class: "children", dataset: { open: "false" } });
-
-    const secParts = [];
-    if (year) secParts.push(year);
-    if (tmdbId) secParts.push("tmdb:" + tmdbId);
-    if (imdbId) secParts.push("imdb:" + imdbId);
-    secParts.push(seasons.length ? (seasons.length + " seasons") : "no seasons");
 
     row.appendChild(twisty);
     row.appendChild(
       el("div", { class: "meta" },
         el("div", { class: "primary" }, name),
-        el("div", { class: "secondary" }, secParts.join(" • "))
+        el("div", { class: "secondary" },
+          (year ? (year + " • ") : "") +
+          (show && show.tmdb_id ? ("tmdb:" + show.tmdb_id + " • ") : "") +
+          (show && show.imdb_id ? ("imdb:" + show.imdb_id + " • ") : "") +
+          (seasons.length ? (seasons.length + " seasons") : "no seasons")
+        )
       )
     );
 
-    // Always render a Seasons section (your debugging requirement: confirm whether seasons exist)
+    // Always render a Seasons section for visibility
     if (!seasons.length) {
       children.appendChild(el("div", { class: "subcard" },
         el("div", { class: "subrow" },
@@ -594,20 +438,11 @@ DATE: 2026-01-20
         )
       ));
     } else {
-      seasons.forEach(season => {
-        const sNum = asInt(getSeasonNumber(season));
-
-        // ---- EPISODES PULL (PATH A then PATH B) ----
-        const nestedEps = getSeasonEpisodesNested(season); // season.episodes[]
-        const indexedEps =
-          (tmdbId != null && sNum != null)
-            ? (scanIndex.episodesByShowSeason.get(String(tmdbId) + "::" + String(sNum)) || [])
-            : [];
-        const eps = nestedEps.length ? nestedEps : indexedEps;
-        // -------------------------------------------
-
-        children.appendChild(buildSeasonCard(show, season, eps));
-      });
+      // deterministic sort by season_number
+      seasons
+        .slice()
+        .sort((a,b) => (asInt(seasonNumber(a)) ?? 9999) - (asInt(seasonNumber(b)) ?? 9999))
+        .forEach(season => children.appendChild(buildSeasonCard(season)));
     }
 
     twisty.addEventListener("click", () => {
@@ -621,27 +456,25 @@ DATE: 2026-01-20
   }
 
   /* ============================================================================
-     RENDER: MOVIE CARD  (links come from movie.links.*)
+     RENDER: MOVIE CARD (links from movie.links.*)
   ============================================================================ */
   function buildMovieCard(movie) {
-    const name = getTitle(movie) || "(untitled movie)";
-    const year = getYear(movie);
-    const rt = fmtRuntime(movie.runtime ?? null);
-    const tmdbId = getTmdbId(movie);
-    const imdbId = getImdbId(movie);
+    const name = movieTitle(movie) || "(untitled movie)";
+    const year = getYearFromObj(movie);
+    const rt   = fmtRuntime(movie && movie.runtime != null ? movie.runtime : null);
     const links = getLinks(movie);
 
-    const secParts = [];
-    if (year) secParts.push(year);
-    if (rt) secParts.push(rt);
-    if (tmdbId) secParts.push("tmdb:" + tmdbId);
-    if (imdbId) secParts.push("imdb:" + imdbId);
+    const metaBits = [];
+    if (year) metaBits.push(year);
+    if (rt) metaBits.push(rt);
+    if (movie && movie.tmdb_id) metaBits.push("tmdb:" + movie.tmdb_id);
+    if (movie && movie.imdb_id) metaBits.push("imdb:" + movie.imdb_id);
 
     return el("div", { class: "card" },
       el("div", { class: "row" },
         el("div", { class: "meta" },
           el("div", { class: "primary" }, name),
-          el("div", { class: "secondary" }, secParts.length ? secParts.join(" • ") : "—")
+          el("div", { class: "secondary" }, metaBits.length ? metaBits.join(" • ") : "—")
         ),
         el("div", { class: "pillbar" },
           makeLinkButton("Vidsrc", links.vidsrc),
@@ -666,6 +499,7 @@ DATE: 2026-01-20
     tvPanel.style.display = isTv ? "" : "none";
     mvPanel.style.display = isTv ? "none" : "";
   }
+
   function wireTabs() {
     document.getElementById("tab-tv").addEventListener("click", () => setTab("tv"));
     document.getElementById("tab-movies").addEventListener("click", () => setTab("movies"));
@@ -679,8 +513,25 @@ DATE: 2026-01-20
     err.style.display = "";
     err.textContent = msg;
   }
+
   function setStatus(msg) {
     document.getElementById("status").textContent = msg;
+  }
+
+  function getMetaCounts(data) {
+    // Optional: data.meta.counts (per your screenshots)
+    const counts = data && data.meta && data.meta.counts ? data.meta.counts : null;
+    if (!counts) return null;
+    const movies = (typeof counts.movies === "number") ? counts.movies : null;
+    const shows  = (typeof counts.shows === "number") ? counts.shows  : null;
+    const errors = (typeof counts.errors === "number") ? counts.errors : null;
+    return { movies, shows, errors };
+  }
+
+  function getGeneratedUtc(data) {
+    // Optional: data.meta.generated_utc (per your screenshots)
+    const v = data && data.meta ? data.meta.generated_utc : null;
+    return v ? String(v) : "";
   }
 
   async function main() {
@@ -689,57 +540,39 @@ DATE: 2026-01-20
 
     try {
       const data = await loadJson("../data/data.json");
-      const root = detectRootCollections(data);
 
-      // Build deep-scan indexes for seasons/episodes (PATH B)
-      const scanIndex = deepScanForSeasonsAndEpisodes(data);
+      // CANONICAL ROOT PULLS:
+      const shows  = ensureArray(data && data.shows  ? data.shows  : []);
+      const movies = ensureArray(data && data.movies ? data.movies : []);
 
-      // Render TV
+      // Render TV shows (sorted by name/title)
       const tvList = document.getElementById("tv-list");
       tvList.innerHTML = "";
 
-      const showsSorted = root.shows.slice().sort((a,b) =>
-        (getTitle(a) || "").localeCompare(getTitle(b) || "", undefined, { sensitivity: "base" })
+      const showsSorted = shows.slice().sort((a,b) =>
+        (showTitle(a) || "").localeCompare(showTitle(b) || "", undefined, { sensitivity: "base" })
       );
+      showsSorted.forEach(show => tvList.appendChild(buildShowCard(show)));
 
-      if (!showsSorted.length) {
-        tvList.appendChild(el("div", { class: "card" },
-          el("div", { class: "row" },
-            el("div", { class: "meta" },
-              el("div", { class: "primary" }, "TV Shows"),
-              el("div", { class: "secondary" }, "No shows detected in data/data.json.")
-            )
-          )
-        ));
-      } else {
-        showsSorted.forEach(show => tvList.appendChild(buildShowCard(show, scanIndex)));
-      }
-
-      // Render Movies
+      // Render Movies (sorted by title)
       const mvList = document.getElementById("movies-list");
       mvList.innerHTML = "";
 
-      const moviesSorted = root.movies.slice().sort((a,b) =>
-        (getTitle(a) || "").localeCompare(getTitle(b) || "", undefined, { sensitivity: "base" })
+      const moviesSorted = movies.slice().sort((a,b) =>
+        (movieTitle(a) || "").localeCompare(movieTitle(b) || "", undefined, { sensitivity: "base" })
       );
+      moviesSorted.forEach(movie => mvList.appendChild(buildMovieCard(movie)));
 
-      if (!moviesSorted.length) {
-        mvList.appendChild(el("div", { class: "card" },
-          el("div", { class: "row" },
-            el("div", { class: "meta" },
-              el("div", { class: "primary" }, "Movies"),
-              el("div", { class: "secondary" }, "No movies detected in data/data.json.")
-            )
-          )
-        ));
-      } else {
-        moviesSorted.forEach(movie => mvList.appendChild(buildMovieCard(movie)));
-      }
+      // Status (prefers meta.counts if present, otherwise uses computed lengths)
+      const counts = getMetaCounts(data);
+      const genUtc = getGeneratedUtc(data);
 
-      // Status includes evidence that the deep-scan found seasons/episodes
+      const showCount = (counts && counts.shows != null) ? counts.shows : showsSorted.length;
+      const movieCount = (counts && counts.movies != null) ? counts.movies : moviesSorted.length;
+
       setStatus(
-        "Loaded: " + showsSorted.length + " TV shows, " + moviesSorted.length + " movies. " +
-        "ScanIndex: " + scanIndex.seasonCount + " seasons, " + scanIndex.episodeCount + " episodes."
+        "Loaded: " + showCount + " TV shows, " + movieCount + " movies." +
+        (genUtc ? ("  Generated: " + genUtc) : "")
       );
 
     } catch (e) {
