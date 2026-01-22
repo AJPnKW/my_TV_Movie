@@ -1,7 +1,6 @@
-@'
 <!--
 FILE: web/inputs_editor.html
-VERSION: 1.0.2
+VERSION: 1.0.3
 DATE: 2026-01-20
 -->
 <!doctype html>
@@ -42,7 +41,7 @@ DATE: 2026-01-20
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
         <h2>Find on TMDB</h2>
-        <span class="inputs_editor_meta">v1.0.2</span>
+        <span class="inputs_editor_meta">v1.0.3</span>
         <span class="inputs_editor_meta" id="serverStatus">Server: …</span>
         <span class="inputs_editor_meta" id="tmdbStatus">TMDB: …</span>
       </div>
@@ -157,6 +156,7 @@ function renderTmdb(results){
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=r.title||"(untitled)";
     const tags=document.createElement("div"); tags.className="inputs_editor_tags";
     tags.innerHTML=`<span class="inputs_editor_tag">${r.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${r.tmdb_id}</span>${r.year?`<span class="inputs_editor_tag">${r.year}</span>`:""}`;
+
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const btn=document.createElement("button"); btn.className="primary"; btn.textContent="Add"; btn.onclick=()=>addItem(r.type,r.tmdb_id,r.title||"");
     controls.appendChild(btn);
@@ -179,7 +179,11 @@ async function saveInputs(){
     document.getElementById("serverStatus").textContent=h.ok?"Server: ok":"Server: error";
   }catch(_){
     document.getElementById("serverStatus").textContent="Server: not running";
-    showBanner(["Run in repo root:","python tools/inputs_editor/inputs_editor_server.py --port 8787","Then open: http://127.0.0.1:8787/web/inputs_editor.html"]);
+    showBanner([
+      "You opened this from the wrong server (ex: :8000). Save cannot work here.",
+      "Run:  python tools/inputs_editor/inputs_editor_server.py --port 8787",
+      "Open: http://127.0.0.1:8787/web/inputs_editor.html"
+    ]);
     return;
   }
 
@@ -195,4 +199,3 @@ async function saveInputs(){
 </script>
 </body>
 </html>
-'@ | Set-Content -Encoding UTF8 ".\web\inputs_editor.html"
