@@ -4,8 +4,8 @@
 FILE: watch.me.html
 PROJECT: my_TV_Movie
 PAGE: Universal Watch Page (TV + Movie)
-VERSION: 0.1.7
-UPDATED: 2026-01-22 02:48:42
+VERSION: 0.2.0
+UPDATED: 2026-01-22 05:17:12
 
 PURPOSE:
 - Universal page with the exact same visual design as the Heated Rivalry page.
@@ -29,7 +29,7 @@ NOTES:
 
   <style>
     :root {
-      --backdrop-url: url("");
+      --backdrop-url: none;
       --bg: #020617;
       --bg-elevated: #050b18;
       --bg-elevated-soft: #0b1222;
@@ -1124,6 +1124,16 @@ NOTES:
       width: 100%;
     }
 
+
+    /* MOVIE ACTIONS (buttons under movie info) */
+    .movie-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:14px;
+      align-items:center;
+    }
+
 </style>
 
 </head>
@@ -1145,7 +1155,7 @@ NOTES:
 
       <article class="hero-main">
         <div class="show-tagline" id="showTaglineBox"><span id="showTagline">Original Series</span></div>
-        <h1 class="show-title">Heated Rivalry</h1>
+        <h1 class="show-title"><span id="showTitle"></span></h1>
 
         <div class="meta-row" id="metaRow"></div>
 
@@ -1163,6 +1173,9 @@ NOTES:
         </div>
 
         <div class="series-synopsis"><span id="showOverview"></span></div>
+
+        <!-- MOVIE ACTIONS (MOVIE MODE ONLY) -->
+        <div class="movie-actions" id="movieActions" style="display:none;"></div>
       </article>
     </section>
     
@@ -1210,188 +1223,193 @@ NOTES:
 </div> <!-- end .app-shell -->
 
   
-  <!-- JAVASCRIPT ENGINE -->
+    <!-- JAVASCRIPT ENGINE -->
   <script>
     // =====================================================================
-    // watch.me.html
-    // SECTION MAP:
-    //  1) URL PARAMS + DATA LOAD
-    //  2) HEADER RENDER (poster/backdrop/title/overview/meta)
-    //  3) SEASON SELECTOR (TV only)
-    //  4) SEASON DETAILS (TV only)
-    //  5) EPISODE CAROUSEL (TV only)
-    // ===================================================================== — Universal data.json-driven watch page
-    // Input: ONLY ../data/data.json
-    // URL: ?tv=<tmdb_id> OR ?m=<tmdb_id>
+    // watch.me.html — Universal Watch Page (TV + Movie)
+    // VERSION: 0.2.0
+    //
+    // HARD RULE
+    // - NO hardcoded title/overview/season/episode content.
+    // - Everything is sourced from ../data/data.json using ?tv= or ?m=
     // =====================================================================
 
-    // ===== CONFIG =====
     const DATA_JSON_PATH = "../data/data.json";
-    const TMDB_IMG_BASE = "https://image.tmdb.org/t/p/original";
-    const TMDB_TV_BASE = "https://www.themoviedb.org/tv/";
-    const TMDB_MOVIE_BASE = "https://www.themoviedb.org/movie/";
+    const TMDB_IMG_BASE  = "https://image.tmdb.org/t/p/original";
+    const TMDB_TV_BASE   = "https://www.themoviedb.org/tv/";
+    const TMDB_MOVIE_BASE= "https://www.themoviedb.org/movie/";
 
-    // ===== DOM: HERO =====
-    const posterImg = document.getElementById("posterImg");
-    const showTitleEl = document.getElementById("showTitle");
+    // ----- GitHub Pages root fix for /assets/... -----
+    function getSiteRoot() {
+      const p = window.location.pathname;
+      const idx = p.indexOf("/web/");
+      if (idx >= 0) return p.slice(0, idx) || "";
+      return "";
+    }
+    const SITE_ROOT = getSiteRoot();
+
+    // ----- DOM -----
+    const posterImg      = document.getElementById("posterImg");
+    const showTitleEl    = document.getElementById("showTitle");
     const showOverviewEl = document.getElementById("showOverview");
-    const metaRow        = document.getElementById("metaRow");
+    const metaRow        = document.querySelector(".meta-row");
     const seasonHeroMeta = document.getElementById("seasonHeroMeta");
-    const tmdbLink      = document.getElementById("tmdbLink");
-    const rottenLink    = document.getElementById("rottenLink");
-    const showTaglineBox = document.getElementById("showTaglineBox");
 
-    // ===== DOM: SEASON BAND =====
     const seasonPanel = document.querySelector(".season-panel");
-    const seasonList = document.getElementById("seasonList");
+    const seasonList  = document.getElementById("seasonList");
     const seasonTitle = document.getElementById("seasonTitle");
-    const seasonMeta = document.getElementById("seasonMeta");
-    const seasonBody = document.getElementById("seasonBody");
+    const seasonMeta  = document.getElementById("seasonMeta");
+    const seasonBody  = document.getElementById("seasonBody");
 
-    // ===== DOM: EPISODES =====
     const episodesPanel = document.querySelector(".episodes-panel");
     const episodesStrip = document.getElementById("episodesStrip");
 
-    // ===== STATE =====
+    // ----- STATE -----
     let DATA = null;
     let MODE = null; // "tv" | "movie"
-    let ITEM = null; // selected show/movie
+    let ITEM = null;
     let ACTIVE_SEASON_NUM = 1;
 
-    // ---------------------------------------------------------------------
-    // URL + basic helpers
-    // ---------------------------------------------------------------------
     function qs() {
       return new URLSearchParams(window.location.search);
     }
-
-    function getParamId() {
+    function getParamSelection() {
       const p = qs();
       if (p.has("tv")) return { mode: "tv", id: Number(p.get("tv")) };
-      if (p.has("m")) return { mode: "movie", id: Number(p.get("m")) };
+      if (p.has("m"))  return { mode: "movie", id: Number(p.get("m")) };
       return { mode: null, id: null };
     }
 
-    function safeText(el, value) {
+    function safeText(el, v) {
       if (!el) return;
-      el.textContent = value == null ? "" : String(value);
+      el.textContent = v == null ? "" : String(v);
     }
 
-    function formatDate(d) {
-      if (!d) return "";
-      return d;
+    function setBackdrop(url) {
+      const u = url ? `url("${url}")` : "none";
+      document.documentElement.style.setProperty("--backdrop-url", u);
     }
 
-    function normalizeGenre(g) {
-      if (!g) return "";
-      if (typeof g === "string") return g;
-      if (typeof g === "object") return g.name || g.title || g.genre || "";
-      return String(g);
+    function normalizeLocalAssetPath(p) {
+      if (!p) return "";
+      const s = String(p).trim();
+      if (!s) return "";
+      if (s.startsWith("http://") || s.startsWith("https://")) return s;
+      if (s.startsWith("/assets/")) return SITE_ROOT + s;
+      if (s.startsWith("assets/")) return SITE_ROOT + "/" + s;
+      return s;
     }
 
     function imgUrl(localField, pathField) {
-      const local = (localField || "").trim();
+      const local = normalizeLocalAssetPath(localField);
       if (local) return local;
 
       const path = (pathField || "").trim();
       if (!path) return "";
 
       if (path.startsWith("http://") || path.startsWith("https://")) return path;
-      if (path.startsWith("../") || path.startsWith("./") || path.startsWith("/assets/")) return path;
+      if (path.startsWith("../") || path.startsWith("./")) return path;
 
       return TMDB_IMG_BASE + path;
     }
 
-    function setBackdrop(url) {
-      const u = url ? `url("${url}")` : 'url("")';
-      document.documentElement.style.setProperty("--backdrop-url", u);
+    function extractSeasons(show) {
+      return Array.isArray(show?.seasons) ? show.seasons : [];
     }
-
-    function buildPill(text, dot=true) {
-      const span = document.createElement("span");
-      span.className = "pill";
-      if (dot) {
-        const dotEl = document.createElement("span");
-        dotEl.className = "pill-dot";
-        span.appendChild(dotEl);
-      }
-      span.appendChild(document.createTextNode(text));
-      return span;
+    function extractEpisodes(season) {
+      return Array.isArray(season?.episodes) ? season.episodes : [];
     }
-
-    // ---------------------------------------------------------------------
-    // HERO META ROW
-    // ---------------------------------------------------------------------
-    function rebuildMetaRowForTV(show) {
-      if (!metaRow) return;
-      metaRow.innerHTML = "";
-
-      (show.genres || []).map(normalizeGenre).filter(Boolean).slice(0, 3).forEach((g) => {
-        metaRow.appendChild(buildPill(g, true));
-      });
-
-      if (show.vote_average != null) {
-        metaRow.appendChild(buildPill(`★ ${Number(show.vote_average).toFixed(1)}`, true));
-      }
-
-      const nets = (show.networks || [])
-        .map((n) => (typeof n === "string" ? n : (n.name || "")))
-        .filter(Boolean);
-
-      if (nets.length) {
-        metaRow.appendChild(buildPill(nets[0], true));
-      }
-
-      if (show.first_air_date) {
-        metaRow.appendChild(buildPill(`Premiered ${formatDate(show.first_air_date)}`, false));
-      }
-    }
-
-    function rebuildMetaRowForMovie(movie) {
-      if (!metaRow) return;
-      metaRow.innerHTML = "";
-
-      (movie.genres || []).map(normalizeGenre).filter(Boolean).slice(0, 3).forEach((g) => {
-        metaRow.appendChild(buildPill(g, true));
-      });
-
-      if (movie.vote_average != null) {
-        metaRow.appendChild(buildPill(`★ ${Number(movie.vote_average).toFixed(1)}`, true));
-      }
-
-      const rd = movie.release_date || movie.first_air_date || movie.date || "";
-      if (rd) {
-        metaRow.appendChild(buildPill(`Released ${formatDate(rd)}`, false));
-      }
-    }
-
-    // =====================================================================
-    // SEASON SECTION (TV ONLY)
-    // =====================================================================
 
     function labelSeason(s) {
-      return s.name ? String(s.name).replace(/^Series\s+/i, "Season ") : `Season ${s.season_number}`;
+      const raw = s?.title || s?.name || `Season ${s?.season_number ?? ""}`;
+      return String(raw).replace(/^Series\s+/i, "Season ");
     }
 
     function pickDefaultSeason(show) {
-      // default = Season 1 (lowest season number)
-      const seasons = show.seasons || [];
+      const seasons = extractSeasons(show);
       if (!seasons.length) return 1;
       const nums = seasons.map((s) => Number(s.season_number)).filter((n) => !Number.isNaN(n));
       return nums.length ? Math.min(...nums) : 1;
     }
 
     function getSeason(show, seasonNum) {
-      const seasons = show.seasons || [];
+      const seasons = extractSeasons(show);
+      if (!seasons.length) return null;
       return seasons.find((s) => Number(s.season_number) === Number(seasonNum)) || seasons[0] || null;
     }
 
-    // ===== SEASON LIST RENDERING (VERTICAL, RADIO) =====
+    function normalizeGenre(g) {
+      if (!g) return "";
+      if (typeof g === "string") return g;
+      if (typeof g === "object") return g.name || g.title || "";
+      return String(g);
+    }
+
+    function buildPill(text, dot=true) {
+      const span = document.createElement("span");
+      span.className = "pill";
+      if (dot) {
+        const d = document.createElement("span");
+        d.className = "pill-dot";
+        span.appendChild(d);
+      }
+      span.appendChild(document.createTextNode(text));
+      return span;
+    }
+
+    function rebuildMetaRowForTV(show) {
+      if (!metaRow) return;
+      metaRow.innerHTML = "";
+      (show.genres || []).map(normalizeGenre).filter(Boolean).slice(0, 4).forEach((g) => metaRow.appendChild(buildPill(g, true)));
+      if (show.vote_average != null) metaRow.appendChild(buildPill(`★ ${Number(show.vote_average).toFixed(1)}`, true));
+      const nets = (show.networks || []).map((n) => (typeof n === "string" ? n : (n.name || ""))).filter(Boolean);
+      if (nets.length) metaRow.appendChild(buildPill(nets[0], true));
+      if (show.first_air_date) metaRow.appendChild(buildPill(`Premiered ${show.first_air_date}`, false));
+    }
+
+    function rebuildMetaRowForMovie(movie) {
+      if (!metaRow) return;
+      metaRow.innerHTML = "";
+      (movie.genres || []).map(normalizeGenre).filter(Boolean).slice(0, 4).forEach((g) => metaRow.appendChild(buildPill(g, true)));
+      if (movie.vote_average != null) metaRow.appendChild(buildPill(`★ ${Number(movie.vote_average).toFixed(1)}`, true));
+      const rd = movie.release_date || "";
+      if (rd) metaRow.appendChild(buildPill(`Released ${rd}`, false));
+      const rt = movie.runtime != null ? `${movie.runtime} min` : "";
+      if (rt) metaRow.appendChild(buildPill(rt, false));
+    }
+
+    function tmdbHrefForItem() {
+      if (!ITEM) return "";
+      if (MODE === "tv")    return TMDB_TV_BASE + String(ITEM.tmdb_id || ITEM.id || "");
+      if (MODE === "movie") return TMDB_MOVIE_BASE + String(ITEM.tmdb_id || ITEM.id || "");
+      return "";
+    }
+
+    function renderNoData(msg) {
+      safeText(showTitleEl, msg);
+      safeText(showOverviewEl, "");
+      if (metaRow) metaRow.innerHTML = "";
+      if (posterImg) posterImg.removeAttribute("src");
+      setBackdrop("");
+      if (seasonPanel) seasonPanel.style.display = "none";
+      if (episodesPanel) episodesPanel.style.display = "none";
+    }
+
+    // ----- SEASON LIST -----
     function renderSeasonList(show, activeSeason) {
       if (!seasonList) return;
       seasonList.innerHTML = "";
 
-      const seasons = (show.seasons || []).slice().sort((a,b) => Number(a.season_number) - Number(b.season_number));
+      const seasons = extractSeasons(show).slice().sort((a,b) => Number(a.season_number) - Number(b.season_number));
+
+      if (!seasons.length) {
+        const note = document.createElement("div");
+        note.className = "season-empty-note";
+        note.textContent = "No seasons available.";
+        seasonList.appendChild(note);
+        return;
+      }
+
       seasons.forEach((s) => {
         const seasonNum = Number(s.season_number);
 
@@ -1421,82 +1439,41 @@ NOTES:
       });
     }
 
-    // ===== SEASON DETAILS (RIGHT SIDE) =====
     function renderSeasonDetails(show, seasonNum) {
       const s = getSeason(show, seasonNum);
-      if (!s) return;
+      if (!s) {
+        safeText(seasonTitle, "");
+        safeText(seasonMeta, "");
+        safeText(seasonBody, "");
+        if (seasonHeroMeta) safeText(seasonHeroMeta, "");
+        return;
+      }
 
       const label = labelSeason(s);
       safeText(seasonTitle, label);
 
-      const eps = (s.episodes || []);
+      const eps = extractEpisodes(s);
       const countTxt = eps.length ? `${eps.length} episodes` : "Episodes not yet available";
-      const airTxt = s.air_date ? `· Season premiered ${formatDate(s.air_date)}` : "";
+      const airTxt = s.air_date ? `· Season premiered ${s.air_date}` : "";
       safeText(seasonMeta, `${countTxt} ${airTxt}`.trim());
 
       safeText(seasonBody, s.overview || "");
 
-      if (seasonHeroMeta) {
-        seasonHeroMeta.textContent =
-          `${label} · ${countTxt}${airTxt ? " " + airTxt : ""}`.replace("  ", " ").trim();
-      }
+      if (seasonHeroMeta) safeText(seasonHeroMeta, `${label} · ${countTxt}${airTxt ? " " + airTxt : ""}`.trim());
     }
 
-    // =====================================================================
-    // EPISODES (TV ONLY)
-    // =====================================================================
-
+    // ----- EPISODES -----
     function urlFromLinks(links, key) {
       if (!links || typeof links !== "object") return "";
       return links[key] || "";
     }
 
-    
-    // =====================================================================
-    // HEADER LINKS (TMDB / ROTTEN) — NO HARDCODED URLS
-    // =====================================================================
-    function setHeaderLinks() {
-      const tmdbHref = tmdbHrefForItem();
-
-      if (tmdbLink) {
-        tmdbLink.href = tmdbHref || "#";
-        tmdbLink.style.opacity = tmdbHref ? "1" : "0.4";
-        tmdbLink.style.pointerEvents = tmdbHref ? "auto" : "none";
-      }
-
-      // Rotten link is optional; show.links.rotten may not exist
-      let rottenHref = "";
-      if (MODE === "tv")  rottenHref = (ITEM && ITEM.links && ITEM.links.rotten) ? ITEM.links.rotten : "";
-      if (MODE === "movie") rottenHref = (ITEM && ITEM.links && ITEM.links.rotten) ? ITEM.links.rotten : "";
-
-      if (rottenLink) {
-        if (rottenHref) {
-          rottenLink.href = rottenHref;
-          rottenLink.style.display = "";
-          rottenLink.style.opacity = "1";
-          rottenLink.style.pointerEvents = "auto";
-        } else {
-          // Keep layout stable but visually disabled
-          rottenLink.href = "#";
-          rottenLink.style.opacity = "0.35";
-          rottenLink.style.pointerEvents = "none";
-        }
-      }
-    }
-function tmdbHrefForItem() {
-      if (!ITEM) return "";
-      if (MODE === "tv") return TMDB_TV_BASE + String(ITEM.tmdb_id || ITEM.id || "");
-      if (MODE === "movie") return TMDB_MOVIE_BASE + String(ITEM.tmdb_id || ITEM.id || "");
-      return "";
-    }
-
-    // ===== EPISODE RENDERING (CAROUSEL) =====
     function renderEpisodesForSeason(show, seasonNum) {
       if (!episodesStrip) return;
       episodesStrip.innerHTML = "";
 
       const s = getSeason(show, seasonNum);
-      const eps = (s && s.episodes) ? s.episodes : [];
+      const eps = s ? extractEpisodes(s) : [];
 
       if (!eps.length) {
         const empty = document.createElement("div");
@@ -1544,12 +1521,12 @@ function tmdbHrefForItem() {
         titleLink.href = tmdbHref || "#";
         titleLink.target = "_blank";
         titleLink.rel = "noopener noreferrer";
-        titleLink.textContent = ep.name || `Episode ${ep.episode_number}`;
+        titleLink.textContent = ep.title || ep.name || `Episode ${ep.episode_number}`;
 
         const meta = document.createElement("div");
         meta.className = "episode-card-meta";
-        const air = ep.air_date ? formatDate(ep.air_date) : "";
-        const rt = ep.runtime != null ? `${ep.runtime} min` : "";
+        const air = ep.air_date || "";
+        const rt  = ep.runtime != null ? `${ep.runtime} min` : "";
         meta.innerHTML = `<span>${air}</span><span>${rt}</span>`;
 
         titleRow.appendChild(titleLink);
@@ -1577,7 +1554,7 @@ function tmdbHrefForItem() {
         };
 
         const videasy = urlFromLinks(ep.links, "videasy");
-        const vidsrc = urlFromLinks(ep.links, "vidsrc");
+        const vidsrc  = urlFromLinks(ep.links, "vidsrc");
 
         actions.appendChild(btn("TMDB", tmdbHref, "btn-ghost"));
         actions.appendChild(btn("VidEasy", videasy, "btn-outline"));
@@ -1592,28 +1569,12 @@ function tmdbHrefForItem() {
       });
     }
 
-    // =====================================================================
-    // LOAD DATA + ROUTE (TV vs MOVIE)
-    // =====================================================================
-
     async function loadData() {
       const res = await fetch(DATA_JSON_PATH, { cache: "no-store" });
       return await res.json();
     }
 
-    function renderNotFound(msg) {
-      safeText(showTitleEl, "Not found");
-      safeText(showOverviewEl, msg || "Item not found.");
-      if (showTaglineBox) showTaglineBox.style.display = "none";
-      if (metaRow) metaRow.innerHTML = "";
-      if (seasonPanel) seasonPanel.style.display = "none";
-      if (episodesPanel) episodesPanel.style.display = "none";
-    }
-
     function renderTV(show) {
-      // remove "SCRIPTED" section entirely
-      if (showTaglineBox) showTaglineBox.style.display = "none";
-
       safeText(showTitleEl, show.title || show.name || "");
       safeText(showOverviewEl, show.overview || "");
 
@@ -1625,9 +1586,7 @@ function tmdbHrefForItem() {
 
       rebuildMetaRowForTV(show);
 
-      
-      setHeaderLinks();
-if (seasonPanel) seasonPanel.style.display = "";
+      if (seasonPanel) seasonPanel.style.display = "";
       if (episodesPanel) episodesPanel.style.display = "";
 
       ACTIVE_SEASON_NUM = pickDefaultSeason(show);
@@ -1636,10 +1595,14 @@ if (seasonPanel) seasonPanel.style.display = "";
       renderEpisodesForSeason(show, ACTIVE_SEASON_NUM);
     }
 
+    
     function renderMovie(movie) {
-      if (showTaglineBox) showTaglineBox.style.display = "none";
-
-      safeText(showTitleEl, movie.title || movie.name || "");
+      // ---------------------------------------------------------
+      // MOVIE MODE
+      // - Hide Season/Episodes bands
+      // - Show streaming buttons under movie info (movie.links.*)
+      // ---------------------------------------------------------
+      safeText(showTitleEl, movie.title || movie.original_title || movie.name || "");
       safeText(showOverviewEl, movie.overview || "");
 
       const poster = imgUrl(movie.poster_local, movie.poster_path);
@@ -1650,57 +1613,77 @@ if (seasonPanel) seasonPanel.style.display = "";
 
       rebuildMetaRowForMovie(movie);
 
-      
-      setHeaderLinks();
-if (seasonPanel) seasonPanel.style.display = "none";
+      // Hide TV-only panels
+      if (seasonPanel) seasonPanel.style.display = "none";
       if (episodesPanel) episodesPanel.style.display = "none";
+
+      // Show movie actions (VidEasy/VidSrc) under movie info
+      const movieActions = document.getElementById("movieActions");
+      if (movieActions) {
+        movieActions.style.display = "";
+        movieActions.innerHTML = "";
+
+        const tmdbHref = tmdbHrefForItem();
+
+        const btn = (label, href, cls) => {
+          const a = document.createElement("a");
+          a.className = cls;
+          a.href = href || "#";
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = label;
+          if (!href) {
+            a.style.opacity = "0.4";
+            a.style.pointerEvents = "none";
+          }
+          return a;
+        };
+
+        const videasy = urlFromLinks(movie.links, "videasy");
+        const vidsrc  = urlFromLinks(movie.links, "vidsrc");
+
+        movieActions.appendChild(btn("TMDB", tmdbHref, "btn-ghost"));
+        movieActions.appendChild(btn("VidEasy", videasy, "btn-outline"));
+        movieActions.appendChild(btn("VidSrc", vidsrc, "btn-outline"));
+      }
     }
 
+
     async function main() {
-      const sel = getParamId();
-      if (!sel.mode || !sel.id) {
-        renderNotFound("Missing URL parameter. Use ?tv=<tmdb_id> or ?m=<tmdb_id>.");
-        return;
-      }
+      const sel = getParamSelection();
+      if (!sel.mode || !sel.id) return renderNoData("No data found. Provide ?tv=<tmdb_id> or ?m=<tmdb_id>.");
 
       MODE = sel.mode;
 
       try {
         DATA = await loadData();
-      } catch (e) {
-        renderNotFound("Unable to load data.json");
-        return;
+      } catch (_) {
+        return renderNoData("No data found (unable to load data.json).");
       }
 
       if (MODE === "tv") {
-        const id = sel.id;
-        const show = (DATA.shows || []).find((s) => Number(s.tmdb_id) === id || Number(s.id) === id);
-        if (!show) return renderNotFound("No data found for input TV show.");
+        const show = (DATA.shows || []).find((s) => Number(s.tmdb_id) === sel.id);
+        if (!show) return renderNoData("No data found for input TV show.");
         ITEM = show;
-        renderTV(show);
-        return;
+        return renderTV(show);
       }
 
       if (MODE === "movie") {
-        const id = sel.id;
-        const movie = (DATA.movies || []).find((m) => Number(m.tmdb_id) === id || Number(m.id) === id);
-        if (!movie) return renderNotFound("No data found for input movie.");
+        const movie = (DATA.movies || []).find((m) => Number(m.tmdb_id) === sel.id);
+        if (!movie) return renderNoData("No data found for input movie.");
         ITEM = movie;
-        renderMovie(movie);
-        return;
+        return renderMovie(movie);
       }
     }
 
-    // ===== VERSION BADGE (AUTO-READ HEADER COMMENT) =====
     async function setVersionBadgeFromHeader() {
       const badge = document.querySelector(".version-badge");
       if (!badge) return;
-
       try {
         const url = window.location.href.split("#")[0];
         const res = await fetch(url, { cache: "no-store" });
         const txt = await res.text();
-        const m = txt.match(/VERSION:0.1.7
+        const m = txt.match(/VERSION:0.2.0
         if (m && m[1]) badge.textContent = m[1].trim();
       } catch (_) {}
     }
@@ -1708,5 +1691,6 @@ if (seasonPanel) seasonPanel.style.display = "none";
     setVersionBadgeFromHeader();
     main();
   </script>
+
 </body>
 </html>
