@@ -44,3 +44,21 @@ audit_AI*
 
 .ai_state/**
 !.ai_state/.keep
+# --- secrets / local-only ---
+.env
+.env.*
+*.key
+*.pem
+*.pfx
+*.p12
+*secrets*
+*password*
+*credentials*
+config.local.*
+**/tokens.*
+**/*.sqlite
+**/*.db
+**/*cookie*
+**/*session*
+**/local.settings.json
+# --- logs / temp ---
