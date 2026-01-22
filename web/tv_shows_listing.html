@@ -2,8 +2,8 @@
 <!--
 FILE: web/tv_shows_listing.html
 PROJECT: my_TV_Movie
-VERSION: 0.1.5
-DATE: 2026-01-21
+VERSION: 0.1.6
+DATE: 2026-01-22
 
 PURPOSE
 - Single-page listing utility sourced ONLY from data/data.json
@@ -28,11 +28,16 @@ EVIDENCE (FROM YOUR SCHEMA DUMP)
 
 SEASONS/EPISODES EXTRACTION (NO GUESSING, NO NEW SOURCES)
 - Primary path (canonical): show.seasons[] then season.episodes[]
-- Fallback path: none (removed). If seasons/episodes are absent, the UI reports “No seasons available” / “No episodes”.
+- Fallback path: none. If seasons/episodes are absent, the UI reports “No seasons available” / “No episodes”.
 
 CHANGE LOG
-- 0.1.5: Episode streaming buttons now resolve links via cascade:
-         episode.links → season.links → show.links (still “prebuilt URLs only”, no construction).
+- 0.1.6: Visual refresh
+         - Modern “twisty” widget (animated chevron pill)
+         - Strong focus/keyboard contrast states
+         - Poster thumbnails at show/movie + season + episode levels (capped to row height)
+         - Show/movie header becomes 2-line “hero row” with genres + rating + seasons + status + dates; removes imdb
+         - Season band: no S01 label; adds air date + 2-line overview clamp + keeps “8 eps”
+         - Episode rows: thumbnail + badge + nicer layout; buttons still use prebuilt links only (with cascade)
 -->
 <html lang="en">
 <head>
@@ -42,76 +47,146 @@ CHANGE LOG
 
   <style>
     :root { color-scheme: dark; }
-    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #0b0c0f;
+    }
+
     .wrap { max-width: 1200px; margin: 0 auto; padding: 14px 14px 40px; }
-    .topbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
     .title { font-size: 18px; font-weight: 650; margin-right: 10px; }
+
     .tabs { display: inline-flex; gap: 6px; }
     .tabbtn {
       border: 1px solid rgba(255,255,255,0.18);
       background: rgba(255,255,255,0.06);
       color: inherit;
       padding: 6px 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       user-select: none;
       font-size: 13px;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
     }
-    .tabbtn[aria-selected="true"] { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.28); }
+    .tabbtn:hover { transform: translateY(-1px); }
+    .tabbtn[aria-selected="true"] { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.30); }
+
     .spacer { flex: 1; }
+
     .version-button {
       border: 1px solid rgba(255,255,255,0.22);
       background: rgba(255,255,255,0.06);
       color: inherit;
       padding: 6px 10px;
-      border-radius: 8px;
+      border-radius: 10px;
       cursor: pointer;
       font-size: 12px;
       user-select: none;
       white-space: nowrap;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+    }
+    .version-button:hover { transform: translateY(-1px); }
+
+    /* Focus contrast (buttons + links) */
+    .tabbtn:focus-visible,
+    .version-button:focus-visible,
+    .btn:focus-visible,
+    .twisty:focus-visible {
+      outline: 3px solid rgba(255,255,255,0.85);
+      outline-offset: 2px;
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.55);
     }
 
     .status { margin-top: 12px; font-size: 13px; opacity: 0.85; }
     .error { margin-top: 12px; font-size: 13px; color: #ffb4b4; white-space: pre-wrap; }
 
     .panel { margin-top: 12px; }
-    .list { display: flex; flex-direction: column; gap: 8px; }
+    .list { display: flex; flex-direction: column; gap: 10px; }
 
     .card {
-      border: 1px solid rgba(255,255,255,0.16);
-      background: rgba(255,255,255,0.04);
-      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.035);
+      border-radius: 14px;
       overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.24);
     }
 
-    .row { display: flex; align-items: center; gap: 10px; padding: 10px 10px; }
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+    }
 
+    /* Fun modern twisty */
     .twisty {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.06);
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background:
+        radial-gradient(120% 120% at 30% 20%, rgba(255,255,255,0.14), rgba(255,255,255,0.04) 55%, rgba(255,255,255,0.02));
       color: inherit;
       cursor: pointer;
       user-select: none;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
       flex: 0 0 auto;
+      transition: transform 140ms ease, border-color 140ms ease, background 140ms ease;
+    }
+    .twisty:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.30); }
+    .twisty .chev {
+      width: 16px; height: 16px;
+      transition: transform 160ms ease;
+      opacity: 0.95;
+    }
+    .twisty[data-open="true"] .chev { transform: rotate(90deg); }
+
+    .thumb {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      flex: 0 0 auto;
+    }
+    .thumb.sm {
+      width: 30px;
+      height: 30px;
+      border-radius: 9px;
     }
 
     .meta { min-width: 0; flex: 1; }
-    .primary { font-size: 14px; font-weight: 600; line-height: 1.25; }
-    .secondary { font-size: 12px; opacity: 0.8; margin-top: 2px; line-height: 1.25; }
-    .pillbar { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .primary { font-size: 14px; font-weight: 650; line-height: 1.2; }
+    .secondary { font-size: 12px; opacity: 0.82; margin-top: 3px; line-height: 1.25; }
+
+    /* Show/Movie title row: 2 lines with “single-line alignment” (no wrapping per line) */
+    .line1, .line2 {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pillbar { display: inline-flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
     .btn {
       border: 1px solid rgba(255,255,255,0.18);
       background: rgba(255,255,255,0.06);
       color: inherit;
-      padding: 6px 8px;
-      border-radius: 8px;
+      padding: 7px 10px;
+      border-radius: 12px;
       cursor: pointer;
       font-size: 12px;
       user-select: none;
@@ -120,22 +195,54 @@ CHANGE LOG
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      gap: 6px;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
     }
-    .btn[aria-disabled="true"] { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+    .btn:hover { transform: translateY(-1px); border-color: rgba(255,255,255,0.30); background: rgba(255,255,255,0.10); }
+    .btn[aria-disabled="true"] { opacity: 0.40; cursor: not-allowed; pointer-events: none; }
 
-    .children { padding: 0 10px 10px 44px; display: none; }
+    .children { padding: 0 12px 12px 56px; display: none; }
     .children[data-open="true"] { display: block; }
 
-    .subcard { border: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.12); border-radius: 10px; margin-top: 8px; overflow: hidden; }
-    .subrow { display: flex; align-items: center; gap: 10px; padding: 9px 10px; }
+    .subcard {
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.14);
+      border-radius: 14px;
+      margin-top: 10px;
+      overflow: hidden;
+    }
+
+    .subrow { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+
+    /* Season text: 2-line (label + overview clamp) */
+    .season_title { font-weight: 650; }
+    .clamp2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
     .ep-row {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
       border-top: 1px solid rgba(255,255,255,0.10);
     }
-    .ep-meta { min-width: 0; flex: 1; font-size: 12.5px; opacity: 0.92; line-height: 1.25; }
-    .muted { opacity: 0.75; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(255,255,255,0.06);
+      opacity: 0.92;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .muted { opacity: 0.78; }
   </style>
 </head>
 
@@ -143,8 +250,8 @@ CHANGE LOG
   <pre id="ajp_page_header" style="display:none">
 FILE: web/tv_shows_listing.html
 PROJECT: my_TV_Movie
-VERSION: 0.1.5
-DATE: 2026-01-21
+VERSION: 0.1.6
+DATE: 2026-01-22
   </pre>
 
   <div class="wrap">
@@ -254,10 +361,53 @@ DATE: 2026-01-21
     return m ? m[1] : "";
   }
 
+  function getGenresLine(obj) {
+    const gs = obj && Array.isArray(obj.genres) ? obj.genres : [];
+    const names = gs.map(g => g && g.name ? String(g.name) : "").filter(Boolean);
+    return names.join(" • ");
+  }
+
+  function getRating(obj) {
+    const v = obj ? obj.vote_average : null;
+    const n = Number(v);
+    if (!Number.isFinite(n)) return "";
+    return n.toFixed(1);
+  }
+
+  /* ============================================================================
+     Asset URL resolver
+     - data.json paths often look like "/assets/..."
+     - On GitHub Pages for a repo site, leading "/" would point to the domain root.
+     - We prefix with the repo base segment when present (e.g. "/my_TV_Movie").
+  ============================================================================ */
+  function getRepoBasePath() {
+    const p = (window.location && window.location.pathname) ? String(window.location.pathname) : "";
+    // GitHub Pages project site: /<repo>/web/...
+    const parts = p.split("/").filter(Boolean);
+    if (parts.length >= 1 && parts[0] && parts[0] !== "web") return "/" + parts[0];
+    return "";
+  }
+
+  function assetUrl(path) {
+    if (!path) return "";
+    const s = String(path);
+    if (s.startsWith("http://") || s.startsWith("https://")) return s;
+    if (s.startsWith("data:")) return s;
+    if (s.startsWith("/")) return getRepoBasePath() + s;
+    return s;
+  }
+
+  function pickThumb(obj, keys) {
+    for (const k of keys) {
+      if (obj && obj[k]) return assetUrl(obj[k]);
+    }
+    return "";
+  }
+
   /* ============================================================================
      LINKS (HARD): prebuilt URLs only (no construction)
-     Episode buttons were failing because episodes often do NOT carry links.
-     Fix: cascade resolution:
+     Episode buttons not working because episodes often do NOT carry links.
+     Resolution: cascade prebuilt links:
        episode.links -> season.links -> show.links
   ============================================================================ */
   function getLinksDirect(obj) {
@@ -277,8 +427,7 @@ DATE: 2026-01-21
     const s = getLinksDirect(season);
     if (s.vidsrc || s.videasy) return s;
 
-    const sh = getLinksDirect(show);
-    return sh;
+    return getLinksDirect(show);
   }
 
   /* ============================================================================
@@ -286,6 +435,8 @@ DATE: 2026-01-21
   ============================================================================ */
   function seasonNumber(season) { return season ? (season.season_number ?? null) : null; }
   function seasonTitle(season)  { return season ? (season.title ?? season.name ?? null) : null; }
+  function seasonAirDate(season){ return season ? (season.air_date ?? null) : null; }
+  function seasonOverview(season){ return season ? (season.overview ?? "") : ""; }
 
   function episodeNumber(ep)    { return ep ? (ep.episode_number ?? null) : null; }
   function episodeTitle(ep)     { return ep ? (ep.title ?? ep.name ?? null) : null; }
@@ -321,19 +472,39 @@ DATE: 2026-01-21
   }
 
   function makeTwistyButton(isOpen) {
-    return el("button", { class: "twisty", type: "button", "aria-label": isOpen ? "Collapse" : "Expand", text: isOpen ? "−" : "+" });
+    const btn = el("button", { class: "twisty", type: "button", "aria-label": isOpen ? "Collapse" : "Expand" });
+    btn.dataset.open = isOpen ? "true" : "false";
+    btn.appendChild(el("svg", { class: "chev", viewBox: "0 0 24 24", fill: "none" },
+      el("path", { d: "M9 6l6 6-6 6", stroke: "currentColor", "stroke-width": "2.5", "stroke-linecap": "round", "stroke-linejoin": "round" })
+    ));
+    return btn;
   }
 
   function setOpen(childrenEl, twistyBtn, open) {
     childrenEl.dataset.open = open ? "true" : "false";
-    twistyBtn.textContent = open ? "−" : "+";
+    twistyBtn.dataset.open = open ? "true" : "false";
     twistyBtn.setAttribute("aria-label", open ? "Collapse" : "Expand");
+  }
+
+  function makeThumb(src, cls) {
+    const img = el("img", { class: cls || "thumb", alt: "" });
+    if (!src) {
+      img.style.visibility = "hidden";
+      img.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
+      return img;
+    }
+    img.src = src;
+    img.loading = "lazy";
+    img.decoding = "async";
+    img.addEventListener("error", () => { img.style.visibility = "hidden"; });
+    return img;
   }
 
   /* ============================================================================
      RENDER: EPISODE ROW
-     - PULLS FROM season.episodes[] (canonical)
-     - LINKS: episode.links -> season.links -> show.links (cascade, prebuilt only)
+     - Thumbnail: still_local/still_path if available (capped to row height)
+     - Badge: S##E##
+     - Buttons: prebuilt links via cascade
   ============================================================================ */
   function buildEpisodeRow(show, season, ep, sNum) {
     const eNum = episodeNumber(ep);
@@ -341,16 +512,25 @@ DATE: 2026-01-21
     const air = fmtDate(episodeAirDate(ep));
     const rt  = fmtRuntime(episodeRuntime(ep));
 
-    const label =
-      "S" + pad2(sNum) + "E" + pad2(eNum) +
-      " - " + name +
-      (air ? (" - " + air) : "") +
-      (rt  ? (" - " + rt)  : "");
+    const badgeTxt = "S" + pad2(sNum) + "E" + pad2(eNum);
+
+    const line = [
+      name,
+      air ? ("• " + air) : "",
+      rt ? ("• " + rt) : ""
+    ].filter(Boolean).join(" ");
 
     const links = getLinksCascade(show, season, ep);
 
+    const epThumb = pickThumb(ep, ["still_local", "still_path", "backdrop_local", "backdrop_path", "poster_local", "poster_path"]);
+
     return el("div", { class: "ep-row" },
-      el("div", { class: "ep-meta" }, label),
+      makeThumb(epThumb, "thumb sm"),
+      el("div", { class: "badge" }, badgeTxt),
+      el("div", { class: "meta" },
+        el("div", { class: "primary line1" }, line),
+        el("div", { class: "secondary line2 muted" }, (ep && ep.overview ? String(ep.overview) : ""))
+      ),
       el("div", { class: "pillbar" },
         makeLinkButton("Vidsrc", links.vidsrc),
         makeLinkButton("Videasy", links.videasy)
@@ -360,32 +540,50 @@ DATE: 2026-01-21
 
   /* ============================================================================
      RENDER: SEASON CARD
-     - PULLS FROM show.seasons[] (canonical)
-     - EPISODES PULL FROM season.episodes[] (canonical)
+     - No "S01" label
+     - Keeps "8 eps"
+     - Adds season air date
+     - Adds 2-line description with "Season #:" label
   ============================================================================ */
   function buildSeasonCard(show, season) {
     const sNum  = seasonNumber(season);
     const sName = seasonTitle(season) || ("Season " + (sNum ?? "?"));
+    const sDate = fmtDate(seasonAirDate(season));
+    const sOv   = seasonOverview(season);
 
-    // CANONICAL EPISODES PULL:
     const eps = ensureArray(season && season.episodes ? season.episodes : []);
+    const epCount = eps.length;
 
     const sub = el("div", { class: "subcard" });
     const headerRow = el("div", { class: "subrow" });
+
     const twisty = makeTwistyButton(false);
     const children = el("div", { class: "children", dataset: { open: "false" } });
 
+    const seasonThumb = pickThumb(season, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]);
+
     headerRow.appendChild(twisty);
+    headerRow.appendChild(makeThumb(seasonThumb, "thumb"));
     headerRow.appendChild(
       el("div", { class: "meta" },
-        el("div", { class: "primary" }, sName),
-        el("div", { class: "secondary" }, "S" + pad2(sNum) + " • " + (eps.length ? (eps.length + " eps") : "no episodes"))
+        el("div", { class: "primary line1" },
+          el("span", { class: "season_title" }, sName),
+          el("span", { class: "muted" }, epCount ? ("  •  " + epCount + " eps") : "  •  no episodes"),
+          sDate ? el("span", { class: "muted" }, "  •  " + sDate) : null
+        ),
+        el("div", { class: "secondary clamp2" },
+          (sNum != null ? ("Season " + sNum + ": ") : "Season: "),
+          (sOv ? sOv : "—")
+        )
       )
     );
 
     if (!eps.length) {
       children.appendChild(el("div", { class: "ep-row" },
-        el("div", { class: "ep-meta muted" }, "No episodes available in this season.")
+        el("div", { class: "meta" },
+          el("div", { class: "primary" }, "No episodes available."),
+          el("div", { class: "secondary muted" }, "This season has an empty episodes[] array in data.json.")
+        )
       ));
     } else {
       eps
@@ -406,30 +604,56 @@ DATE: 2026-01-21
 
   /* ============================================================================
      RENDER: SHOW CARD
-     - SEASONS PULL FROM show.seasons[] (canonical)
+     - Poster thumb between twisty and title
+     - Two-line “hero row”
+       Line1: Title YEAR • tmdb:ID • Genres
+       Line2: ★ rating • # seasons • Status • Released/First air date
+     - Removes imdb from display
+     - Adds button line at show level (Vidsrc/Videasy) using prebuilt show.links
   ============================================================================ */
   function buildShowCard(show) {
-    const name = showTitle(show) || "(untitled show)";
-    const year = getYearFromObj(show);
-
-    // CANONICAL SEASONS PULL:
+    const title = showTitle(show) || "(untitled show)";
+    const year  = getYearFromObj(show);
+    const tmdb  = show && show.tmdb_id ? String(show.tmdb_id) : "";
+    const genres = getGenresLine(show);
+    const rating = getRating(show);
+    const status = show && show.status ? String(show.status) : "";
+    const firstAir = show && show.first_air_date ? fmtDate(show.first_air_date) : "";
     const seasons = ensureArray(show && show.seasons ? show.seasons : []);
+    const links = getLinksDirect(show);
 
     const card = el("div", { class: "card" });
     const row = el("div", { class: "row" });
+
     const twisty = makeTwistyButton(false);
     const children = el("div", { class: "children", dataset: { open: "false" } });
 
+    const showThumb = pickThumb(show, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]);
+
+    const line1Parts = [];
+    if (year) line1Parts.push(year);
+    if (tmdb) line1Parts.push("tmdb:" + tmdb);
+    if (genres) line1Parts.push(genres);
+
+    const line2Parts = [];
+    if (rating) line2Parts.push("★ " + rating);
+    line2Parts.push((seasons.length ? seasons.length : 0) + " seasons");
+    if (status) line2Parts.push(status);
+    if (firstAir) line2Parts.push("First Air " + firstAir);
+
     row.appendChild(twisty);
+    row.appendChild(makeThumb(showThumb, "thumb"));
     row.appendChild(
       el("div", { class: "meta" },
-        el("div", { class: "primary" }, name),
-        el("div", { class: "secondary" },
-          (year ? (year + " • ") : "") +
-          (show && show.tmdb_id ? ("tmdb:" + show.tmdb_id + " • ") : "") +
-          (show && show.imdb_id ? ("imdb:" + show.imdb_id + " • ") : "") +
-          (seasons.length ? (seasons.length + " seasons") : "no seasons")
-        )
+        el("div", { class: "primary line1" }, title, line1Parts.length ? ("  " + line1Parts.join(" • ")) : ""),
+        el("div", { class: "secondary line2" }, line2Parts.join(" • "))
+      )
+    );
+
+    row.appendChild(
+      el("div", { class: "pillbar" },
+        makeLinkButton("Vidsrc", links.vidsrc),
+        makeLinkButton("Videasy", links.videasy)
       )
     );
 
@@ -438,7 +662,7 @@ DATE: 2026-01-21
         el("div", { class: "subrow" },
           el("div", { class: "meta" },
             el("div", { class: "primary" }, "Seasons"),
-            el("div", { class: "secondary" }, "No seasons available.")
+            el("div", { class: "secondary muted" }, "No seasons available.")
           )
         )
       ));
@@ -460,32 +684,54 @@ DATE: 2026-01-21
   }
 
   /* ============================================================================
-     RENDER: MOVIE CARD (links from movie.links.*)
+     RENDER: MOVIE CARD
+     - Poster thumb between (no twisty) and title
+     - Two-line hero row (similar to shows)
+     - Removes imdb from display
   ============================================================================ */
   function buildMovieCard(movie) {
-    const name = movieTitle(movie) || "(untitled movie)";
-    const year = getYearFromObj(movie);
-    const rt   = fmtRuntime(movie && movie.runtime != null ? movie.runtime : null);
+    const title = movieTitle(movie) || "(untitled movie)";
+    const year  = getYearFromObj(movie);
+    const tmdb  = movie && movie.tmdb_id ? String(movie.tmdb_id) : "";
+    const genres = getGenresLine(movie);
+    const rating = getRating(movie);
+    const status = movie && movie.status ? String(movie.status) : "";
+    const rel = movie && movie.release_date ? fmtDate(movie.release_date) : "";
+    const rt = fmtRuntime(movie && movie.runtime != null ? movie.runtime : null);
     const links = getLinksDirect(movie);
 
-    const metaBits = [];
-    if (year) metaBits.push(year);
-    if (rt) metaBits.push(rt);
-    if (movie && movie.tmdb_id) metaBits.push("tmdb:" + movie.tmdb_id);
-    if (movie && movie.imdb_id) metaBits.push("imdb:" + movie.imdb_id);
+    const card = el("div", { class: "card" });
+    const row = el("div", { class: "row" });
 
-    return el("div", { class: "card" },
-      el("div", { class: "row" },
-        el("div", { class: "meta" },
-          el("div", { class: "primary" }, name),
-          el("div", { class: "secondary" }, metaBits.length ? metaBits.join(" • ") : "—")
-        ),
-        el("div", { class: "pillbar" },
-          makeLinkButton("Vidsrc", links.vidsrc),
-          makeLinkButton("Videasy", links.videasy)
-        )
+    const movieThumb = pickThumb(movie, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]);
+
+    const line1Parts = [];
+    if (year) line1Parts.push(year);
+    if (tmdb) line1Parts.push("tmdb:" + tmdb);
+    if (genres) line1Parts.push(genres);
+
+    const line2Parts = [];
+    if (rating) line2Parts.push("★ " + rating);
+    if (status) line2Parts.push(status);
+    if (rel) line2Parts.push("Released " + rel);
+    if (rt) line2Parts.push(rt);
+
+    row.appendChild(makeThumb(movieThumb, "thumb"));
+    row.appendChild(
+      el("div", { class: "meta" },
+        el("div", { class: "primary line1" }, title, line1Parts.length ? ("  " + line1Parts.join(" • ")) : ""),
+        el("div", { class: "secondary line2" }, line2Parts.join(" • "))
       )
     );
+    row.appendChild(
+      el("div", { class: "pillbar" },
+        makeLinkButton("Vidsrc", links.vidsrc),
+        makeLinkButton("Videasy", links.videasy)
+      )
+    );
+
+    card.appendChild(row);
+    return card;
   }
 
   /* ============================================================================
