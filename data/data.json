@@ -1,5 +1,11 @@
 {
-  "errors": [],
+  "errors": [
+    {
+      "type": "trakt_watch_state",
+      "message": "401 Unauthorized; refresh attempt failed: HTTP Error 400: Bad Request",
+      "utc": "2026-01-22T05:40:32Z"
+    }
+  ],
   "meta": {
     "builder": {
       "config_sha1": "bbf57afc914ed16f258cb2a37e196513aadc6498",
@@ -11,7 +17,23 @@
       "movies": 64,
       "shows": 119
     },
-    "generated_utc": "2026-01-22T05:29:04Z"
+    "generated_utc": "2026-01-22T05:39:36Z"
+  },
+  "metadata": {
+    "trakt_public_enrichment": {
+      "client_id_sha256": "3d2ddcc28a945c269c19f37c73dc41c518cb95ef10a76c3d48ea9ed70c22262d",
+      "counts": {
+        "already_movies": 64,
+        "already_shows": 119,
+        "looked_up": 183,
+        "not_found": 0,
+        "updated_movies": 0,
+        "updated_shows": 0
+      },
+      "mode": "public_lookup",
+      "script": "fetch_trakt.py",
+      "timestamp_utc": "2026-01-22T05:40:31Z"
+    }
   },
   "movies": [
     {
@@ -517,7 +539,7 @@
       },
       "original_title": "Barbie",
       "overview": "Barbie and Ken are having the time of their lives in the colorful and seemingly perfect world of Barbie Land. However, when they get a chance to go to the real world, they soon discover the joys and perils of living among humans.",
-      "popularity": 21.5396,
+      "popularity": 21.7646,
       "poster_local": "/assets/posters/movies/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
       "poster_path": "/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
       "production_companies": [
@@ -569,8 +591,8 @@
       "title": "Barbie",
       "tmdb_id": 346698,
       "trakt_id": 242104,
-      "vote_average": 6.935,
-      "vote_count": 10679
+      "vote_average": 6.934,
+      "vote_count": 10680
     },
     {
       "backdrop_local": "/assets/backdrops/movies/gxO51FVgADhYGGnnRPIlutVqb30.jpg",
@@ -10991,7 +11013,7 @@
       ],
       "original_name": "Working: What We Do All Day",
       "overview": "For some, it's a paycheck. For others, it's a calling. This docuseries explores the meaning of work for modern Americans in a time of rapid change.",
-      "popularity": 0.663,
+      "popularity": 0.8831,
       "poster_local": "/assets/posters/shows/2Zsi0hWQ6SByrKjLyuD7OcjOawI.jpg",
       "poster_path": "/2Zsi0hWQ6SByrKjLyuD7OcjOawI.jpg",
       "season_filter": null,
@@ -19815,7 +19837,7 @@
       ],
       "original_name": "Foundation",
       "overview": "Follow a band of exiles on their monumental journey to save humanity and rebuild civilization amid the fall of the Galactic Empire.",
-      "popularity": 29.3197,
+      "popularity": 33.7549,
       "poster_local": "/assets/posters/shows/tg9I5pOY4M9CKj8U0cxVBTsm5eh.jpg",
       "poster_path": "/tg9I5pOY4M9CKj8U0cxVBTsm5eh.jpg",
       "season_filter": null,
@@ -20509,8 +20531,8 @@
       "trakt_id": 150469,
       "tvdb_id": 366972,
       "type": "Scripted",
-      "vote_average": 7.72,
-      "vote_count": 1610
+      "vote_average": 7.716,
+      "vote_count": 1612
     },
     {
       "backdrop_local": "/assets/backdrops/shows/6gN8DYnIEln8v7OhRy61c57w0Xy.jpg",
@@ -31212,7 +31234,7 @@
       "origin_country": [],
       "original_name": "Another Heaven",
       "overview": "",
-      "popularity": 0.3187,
+      "popularity": 0.7054,
       "poster_local": "/assets/posters/shows/AnODgWQb0BBygqA4Rz8WM5by2Np.jpg",
       "poster_path": "/AnODgWQb0BBygqA4Rz8WM5by2Np.jpg",
       "season_filter": null,
@@ -50639,7 +50661,7 @@
       ],
       "original_name": "School Spirits",
       "overview": "Maddie, a teen stuck in the afterlife investigating her own mysterious disappearance, goes on a crime-solving journey as she adjusts to high school purgatory, but the closer she gets to discovering the truth, the more secrets and lies she uncovers.",
-      "popularity": 8.6529,
+      "popularity": 8.8398,
       "poster_local": "/assets/posters/shows/eb7ZJYZjed1bBQ8a4aMDwp5nvjF.jpg",
       "poster_path": "/eb7ZJYZjed1bBQ8a4aMDwp5nvjF.jpg",
       "season_filter": null,
@@ -55224,8 +55246,8 @@
               "show_id": 223530,
               "still_local": "/assets/stills/episodes/1U61OOu2BCLeqqjdIdSeXCCwDWc.jpg",
               "still_path": "/1U61OOu2BCLeqqjdIdSeXCCwDWc.jpg",
-              "vote_average": 4.364,
-              "vote_count": 22
+              "vote_average": 4.457,
+              "vote_count": 23
             },
             {
               "air_date": "2026-01-15",
@@ -55258,14 +55280,14 @@
                 "videasy": "https://player.videasy.net/tv/223530/1/3",
                 "vidsrc": "https://vidsrc.net/embed/tv/223530/1/3"
               },
-              "name": "Episode 3",
-              "overview": "",
+              "name": "Vitus Reflux",
+              "overview": "While our cadets compete to join an elite team at the Academy, a battle of escalating pranks breaks out between Starfleet Academy and a rival school. Tensions rise fast, threatening their newly-emerging bonds and a blossoming romance.",
               "production_code": "",
-              "runtime": null,
+              "runtime": 64,
               "season_number": 1,
               "show_id": 223530,
-              "still_local": null,
-              "still_path": null,
+              "still_local": "/assets/stills/episodes/zxGxsjWs4UfQMsReYWHNGhuItne.jpg",
+              "still_path": "/zxGxsjWs4UfQMsReYWHNGhuItne.jpg",
               "vote_average": 1.0,
               "vote_count": 1
             },
