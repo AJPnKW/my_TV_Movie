@@ -2,7 +2,7 @@
 <!--
 FILE: web/tv_shows_listing.html
 PROJECT: my_TV_Movie
-VERSION: 0.1.4
+VERSION: 0.1.5
 DATE: 2026-01-21
 
 PURPOSE
@@ -31,8 +31,8 @@ SEASONS/EPISODES EXTRACTION (NO GUESSING, NO NEW SOURCES)
 - Fallback path: none (removed). If seasons/episodes are absent, the UI reports “No seasons available” / “No episodes”.
 
 CHANGE LOG
-- 0.1.4: Align strictly to canonical nested schema (shows[] → seasons[] → episodes[]),
-         remove key guessing and deep-scan fallback, keep header structure intact, add explicit code comments.
+- 0.1.5: Episode streaming buttons now resolve links via cascade:
+         episode.links → season.links → show.links (still “prebuilt URLs only”, no construction).
 -->
 <html lang="en">
 <head>
@@ -143,7 +143,7 @@ CHANGE LOG
   <pre id="ajp_page_header" style="display:none">
 FILE: web/tv_shows_listing.html
 PROJECT: my_TV_Movie
-VERSION: 0.1.4
+VERSION: 0.1.5
 DATE: 2026-01-21
   </pre>
 
@@ -217,9 +217,6 @@ DATE: 2026-01-21
 
   /* ============================================================================
      CANONICAL ACCESSORS (NO KEY GUESSING)
-     Canonical:
-       data.shows[]  and  data.movies[]
-       show.seasons[] -> season.episodes[]
   ============================================================================ */
   function ensureArray(x) { return Array.isArray(x) ? x : []; }
 
@@ -258,12 +255,12 @@ DATE: 2026-01-21
   }
 
   /* ============================================================================
-     LINKS (HARD): use obj.links.vidsrc + obj.links.videasy only
-     Notes:
-       - Movies: links are present (per your example).
-       - Episodes: links may or may not be present; buttons auto-disable if absent.
+     LINKS (HARD): prebuilt URLs only (no construction)
+     Episode buttons were failing because episodes often do NOT carry links.
+     Fix: cascade resolution:
+       episode.links -> season.links -> show.links
   ============================================================================ */
-  function getLinks(obj) {
+  function getLinksDirect(obj) {
     if (obj && obj.links && typeof obj.links === "object") {
       return {
         vidsrc: obj.links.vidsrc ? String(obj.links.vidsrc) : "",
@@ -271,6 +268,17 @@ DATE: 2026-01-21
       };
     }
     return { vidsrc: "", videasy: "" };
+  }
+
+  function getLinksCascade(show, season, ep) {
+    const e = getLinksDirect(ep);
+    if (e.vidsrc || e.videasy) return e;
+
+    const s = getLinksDirect(season);
+    if (s.vidsrc || s.videasy) return s;
+
+    const sh = getLinksDirect(show);
+    return sh;
   }
 
   /* ============================================================================
@@ -325,8 +333,9 @@ DATE: 2026-01-21
   /* ============================================================================
      RENDER: EPISODE ROW
      - PULLS FROM season.episodes[] (canonical)
+     - LINKS: episode.links -> season.links -> show.links (cascade, prebuilt only)
   ============================================================================ */
-  function buildEpisodeRow(ep, sNum) {
+  function buildEpisodeRow(show, season, ep, sNum) {
     const eNum = episodeNumber(ep);
     const name = episodeTitle(ep) || "(untitled)";
     const air = fmtDate(episodeAirDate(ep));
@@ -338,7 +347,7 @@ DATE: 2026-01-21
       (air ? (" - " + air) : "") +
       (rt  ? (" - " + rt)  : "");
 
-    const links = getLinks(ep);
+    const links = getLinksCascade(show, season, ep);
 
     return el("div", { class: "ep-row" },
       el("div", { class: "ep-meta" }, label),
@@ -354,12 +363,11 @@ DATE: 2026-01-21
      - PULLS FROM show.seasons[] (canonical)
      - EPISODES PULL FROM season.episodes[] (canonical)
   ============================================================================ */
-  function buildSeasonCard(season) {
+  function buildSeasonCard(show, season) {
     const sNum  = seasonNumber(season);
     const sName = seasonTitle(season) || ("Season " + (sNum ?? "?"));
 
-    // CANONICAL EPISODES PULL (key is literally "episodes" per your screenshots):
-    // season.episodes[] -> rendered below
+    // CANONICAL EPISODES PULL:
     const eps = ensureArray(season && season.episodes ? season.episodes : []);
 
     const sub = el("div", { class: "subcard" });
@@ -380,11 +388,10 @@ DATE: 2026-01-21
         el("div", { class: "ep-meta muted" }, "No episodes available in this season.")
       ));
     } else {
-      // deterministic sort by episode_number
       eps
         .slice()
         .sort((a,b) => (asInt(episodeNumber(a)) ?? 9999) - (asInt(episodeNumber(b)) ?? 9999))
-        .forEach(ep => children.appendChild(buildEpisodeRow(ep, sNum)));
+        .forEach(ep => children.appendChild(buildEpisodeRow(show, season, ep, sNum)));
     }
 
     twisty.addEventListener("click", () => {
@@ -406,7 +413,6 @@ DATE: 2026-01-21
     const year = getYearFromObj(show);
 
     // CANONICAL SEASONS PULL:
-    // show.seasons[] -> rendered below
     const seasons = ensureArray(show && show.seasons ? show.seasons : []);
 
     const card = el("div", { class: "card" });
@@ -427,7 +433,6 @@ DATE: 2026-01-21
       )
     );
 
-    // Always render a Seasons section for visibility
     if (!seasons.length) {
       children.appendChild(el("div", { class: "subcard" },
         el("div", { class: "subrow" },
@@ -438,11 +443,10 @@ DATE: 2026-01-21
         )
       ));
     } else {
-      // deterministic sort by season_number
       seasons
         .slice()
         .sort((a,b) => (asInt(seasonNumber(a)) ?? 9999) - (asInt(seasonNumber(b)) ?? 9999))
-        .forEach(season => children.appendChild(buildSeasonCard(season)));
+        .forEach(season => children.appendChild(buildSeasonCard(show, season)));
     }
 
     twisty.addEventListener("click", () => {
@@ -462,7 +466,7 @@ DATE: 2026-01-21
     const name = movieTitle(movie) || "(untitled movie)";
     const year = getYearFromObj(movie);
     const rt   = fmtRuntime(movie && movie.runtime != null ? movie.runtime : null);
-    const links = getLinks(movie);
+    const links = getLinksDirect(movie);
 
     const metaBits = [];
     if (year) metaBits.push(year);
@@ -519,7 +523,6 @@ DATE: 2026-01-21
   }
 
   function getMetaCounts(data) {
-    // Optional: data.meta.counts (per your screenshots)
     const counts = data && data.meta && data.meta.counts ? data.meta.counts : null;
     if (!counts) return null;
     const movies = (typeof counts.movies === "number") ? counts.movies : null;
@@ -529,7 +532,6 @@ DATE: 2026-01-21
   }
 
   function getGeneratedUtc(data) {
-    // Optional: data.meta.generated_utc (per your screenshots)
     const v = data && data.meta ? data.meta.generated_utc : null;
     return v ? String(v) : "";
   }
@@ -541,11 +543,9 @@ DATE: 2026-01-21
     try {
       const data = await loadJson("../data/data.json");
 
-      // CANONICAL ROOT PULLS:
       const shows  = ensureArray(data && data.shows  ? data.shows  : []);
       const movies = ensureArray(data && data.movies ? data.movies : []);
 
-      // Render TV shows (sorted by name/title)
       const tvList = document.getElementById("tv-list");
       tvList.innerHTML = "";
 
@@ -554,7 +554,6 @@ DATE: 2026-01-21
       );
       showsSorted.forEach(show => tvList.appendChild(buildShowCard(show)));
 
-      // Render Movies (sorted by title)
       const mvList = document.getElementById("movies-list");
       mvList.innerHTML = "";
 
@@ -563,7 +562,6 @@ DATE: 2026-01-21
       );
       moviesSorted.forEach(movie => mvList.appendChild(buildMovieCard(movie)));
 
-      // Status (prefers meta.counts if present, otherwise uses computed lengths)
       const counts = getMetaCounts(data);
       const genUtc = getGeneratedUtc(data);
 
