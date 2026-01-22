@@ -4,8 +4,8 @@
 FILE: watch.me.html
 PROJECT: my_TV_Movie
 PAGE: Universal Watch Page (TV + Movie)
-VERSION: 0.1.4
-UPDATED: 2026-01-20 03:23:06
+VERSION: 0.1.6
+UPDATED: 2026-01-22 00:58:32
 
 PURPOSE:
 - Universal page with the exact same visual design as the Heated Rivalry page.
@@ -1110,6 +1110,20 @@ NOTES:
       line-height: 1.1;
     }
 
+
+    /* SEASON PICKER LAYOUT (HEADER ABOVE LIST) */
+    .season-picker {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+      gap: 8px;
+      min-width: 240px;
+    }
+    .season-radio {
+      width: 100%;
+    }
+
 </style>
 
 </head>
@@ -1665,7 +1679,7 @@ NOTES:
         const url = window.location.href.split("#")[0];
         const res = await fetch(url, { cache: "no-store" });
         const txt = await res.text();
-        const m = txt.match(/VERSION:\s*([0-9A-Za-z.+-]+)/);
+        const m = txt.match(/VERSION:0.1.6
         if (m && m[1]) badge.textContent = m[1].trim();
       } catch (_) {}
     }
