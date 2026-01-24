@@ -301,6 +301,9 @@ CHANGE NOTES
       font-weight:900;
       letter-spacing:0.08em;
       text-transform:uppercase;
+      display:inline-flex;
+      align-items:center;
+      text-decoration:none;
     }
     .chip .mini.tmdb{ border-color:rgba(56,189,248,0.45); }
     .chip .mini.vidsrc{ border-color:rgba(34,197,94,0.45); }
@@ -1317,9 +1320,9 @@ CHANGE NOTES
                 ${epTag ? `<div class="epnum">${escHtml(epTag)}</div>` : ""}
                 ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
                 <div class="iconstrip">
-                  ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
-                  ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
-                  ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                  ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+                  ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                  ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                   ${watchBtn}
                   ${providerIcons}
                 </div>
@@ -1356,9 +1359,9 @@ CHANGE NOTES
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
               <div class="iconstrip">
-                ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
-                ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
-                ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+                ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                 ${watchBtn}
                 ${providerIcons}
               </div>
@@ -1411,9 +1414,9 @@ CHANGE NOTES
                 ${epTag ? `<div class="epnum">${escHtml(epTag)}</div>` : ""}
                 ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
                 <div class="iconstrip">
-                  ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
-                  ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
-                  ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                  ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+                  ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                  ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                   ${watchBtn}
                   ${providerIcons}
                 </div>
@@ -1447,9 +1450,9 @@ CHANGE NOTES
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
               <div class="iconstrip">
-                ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
-                ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
-                ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+                ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                 ${watchBtn}
                 ${providerIcons}
               </div>
@@ -1485,6 +1488,11 @@ CHANGE NOTES
           openMovieModal(movieId);
           return;
         }
+      });
+    });
+    $$(".chip a").forEach(link => {
+      link.addEventListener("click", (e) => {
+        e.stopPropagation();
       });
     });
 
