@@ -22,6 +22,7 @@ DATE: 2026-01-20
     .inputs_editor_list{border:1px solid rgba(255,255,255,.10);border-radius:12px;max-height:62vh;overflow:auto}
     .inputs_editor_item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
     .inputs_editor_item:last-child{border-bottom:0}
+    .inputs_editor_item.selected{background:rgba(120,180,255,.08)}
     .inputs_editor_title{font-weight:900}
     .inputs_editor_tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
     .inputs_editor_tag{font-family:ui-monospace,monospace;font-size:11px;border:1px solid rgba(255,255,255,.12);padding:2px 8px;border-radius:999px;opacity:.9}
@@ -29,12 +30,17 @@ DATE: 2026-01-20
     .inputs_editor_poster img{width:100%;height:100%;object-fit:cover}
     .inputs_editor_controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
     .inputs_editor_toggle{display:flex;gap:6px;align-items:center;font-size:12px;opacity:.95}
+    .inputs_editor_inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     input[type="search"], input[type="text"]{flex:1;min-width:220px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);color:#fff}
     select{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);color:#fff}
     button{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-weight:800;cursor:pointer}
     button.primary{background:rgba(120,180,255,.18);border-color:rgba(120,180,255,.40)}
     button.danger{background:rgba(255,90,90,.12);border-color:rgba(255,90,90,.40)}
+    button.ghost{background:transparent;border-color:rgba(255,255,255,.18)}
     .banner{border:1px solid rgba(255,180,80,.35);background:rgba(255,180,80,.10);padding:10px 12px;border-radius:12px}
+    .inputs_editor_kbd{font-family:ui-monospace,Consolas,monospace;font-size:11px;padding:2px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.2);opacity:.8}
+    .inputs_editor_link{font-size:12px;opacity:.8}
+    .inputs_editor_hint{font-size:11px;opacity:.75}
   </style>
 </head>
 <body>
@@ -52,7 +58,19 @@ DATE: 2026-01-20
           <input id="q" type="search" placeholder="Search TMDB (tv + movie) …"/>
           <button class="primary" id="btnSearch">Search</button>
         </div>
+        <div class="inputs_editor_row">
+          <select id="tmdbType">
+            <option value="">All types</option>
+            <option value="tv">TV</option>
+            <option value="movie">Movie</option>
+          </select>
+          <input id="tmdbYearMin" type="text" placeholder="Year from (e.g., 2010)"/>
+          <input id="tmdbYearMax" type="text" placeholder="Year to (e.g., 2026)"/>
+          <button id="btnTmdbSelectAll">Select all</button>
+          <button class="primary" id="btnAddSelected">Add selected</button>
+        </div>
         <div class="inputs_editor_meta" id="tmdbCount">0 results</div>
+        <div class="inputs_editor_hint">Tip: double-click a result to add immediately.</div>
         <div class="inputs_editor_list" id="tmdbList"></div>
       </div>
     </section>
@@ -69,6 +87,25 @@ DATE: 2026-01-20
           <button id="btnReload">Reload</button>
           <button class="primary" id="btnSave">Save</button>
         </div>
+        <div class="inputs_editor_row">
+          <select id="mineType">
+            <option value="">All types</option>
+            <option value="tv">TV</option>
+            <option value="movie">Movie</option>
+          </select>
+          <select id="mineScope">
+            <option value="">All scope</option>
+            <option value="in">In scope</option>
+            <option value="out">Out of scope</option>
+          </select>
+          <select id="mineFuture">
+            <option value="">Future episodes</option>
+            <option value="on">Include future</option>
+            <option value="off">Exclude future</option>
+          </select>
+          <button id="btnMineSelectAll">Select all</button>
+          <button class="danger" id="btnRemoveSelected">Remove selected</button>
+        </div>
         <div class="inputs_editor_meta" id="saveMsg"></div>
         <div class="inputs_editor_list" id="mineList"></div>
       </div>
@@ -77,6 +114,7 @@ DATE: 2026-01-20
 
 <script>
 let inputs=null, imgBase="https://image.tmdb.org/t/p/", dirty=false;
+let tmdbResults=[], tmdbSelected=new Set(), mineSelected=new Set();
 
 function setDirty(v){ dirty=v; document.getElementById("dirty").textContent="Unsaved: "+(dirty?"yes":"no"); }
 function norm(s){ return (s||"").toString().toLowerCase().trim(); }
@@ -94,16 +132,28 @@ async function loadInputs(){
 
 function renderMine(){
   const q=norm(document.getElementById("qMine").value), box=document.getElementById("mineList"); box.innerHTML="";
+  const typeFilter=document.getElementById("mineType").value;
+  const scopeFilter=document.getElementById("mineScope").value;
+  const futureFilter=document.getElementById("mineFuture").value;
   const tv=(inputs.tv||[]).map(x=>({...x,_type:"tv"})), mv=(inputs.movies||[]).map(x=>({...x,_type:"movie"}));
   let all=[...tv,...mv]; if(q) all=all.filter(x=>norm(x.title).includes(q)||String(x.tmdb_id||"").includes(q));
+  if(typeFilter) all=all.filter(x=>x._type===typeFilter);
+  if(scopeFilter==="in") all=all.filter(x=>x.in_scope!==false);
+  if(scopeFilter==="out") all=all.filter(x=>x.in_scope===false);
+  if(futureFilter==="on") all=all.filter(x=>x._type!=="tv" || x.include_future!==false);
+  if(futureFilter==="off") all=all.filter(x=>x._type!=="tv" || x.include_future===false);
   all.sort((a,b)=>(a.title||"").localeCompare(b.title||""));
   for(const it of all){
     const row=document.createElement("div"); row.className="inputs_editor_item";
+    if(mineSelected.has(`${it._type}:${it.tmdb_id}`)) row.classList.add("selected");
     const meta=document.createElement("div"); meta.style.flex="1";
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=it.title||"(untitled)";
     const tags=document.createElement("div"); tags.className="inputs_editor_tags";
     tags.innerHTML=`<span class="inputs_editor_tag">${it._type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>`;
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
+    const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=mineSelected.has(`${it._type}:${it.tmdb_id}`);
+    sel.onchange=()=>{ toggleMineSelected(it._type,it.tmdb_id,sel.checked); row.classList.toggle("selected", sel.checked); };
+    controls.appendChild(sel);
 
     const scope=document.createElement("select");
     scope.innerHTML=`<option value="true">In scope</option><option value="false">Out of scope</option>`;
@@ -144,19 +194,42 @@ function addItem(type,id,title){
   else { if(inputs.movies.some(x=>x.tmdb_id===id)) return; inputs.movies.push({title,tmdb_id:id,in_scope:true}); }
   setDirty(true); renderMine(); counts();
 }
+function toggleMineSelected(type,id,checked){
+  const key=`${type}:${id}`;
+  if(checked) mineSelected.add(key); else mineSelected.delete(key);
+}
+function removeSelected(){
+  for(const key of Array.from(mineSelected)){
+    const [type,id]=key.split(":");
+    removeItem(type, Number(id));
+  }
+  mineSelected.clear();
+  setDirty(true); renderMine(); counts();
+}
 
 async function tmdbSearch(){
   const q=document.getElementById("q").value.trim(); if(!q) return;
   const j=await apiGet("/api/tmdb/search?q="+encodeURIComponent(q));
   if(!j.ok){ document.getElementById("tmdbStatus").textContent="TMDB: disabled"; alert(j.error||"TMDB search failed"); return; }
   imgBase=j.img_base||imgBase; document.getElementById("tmdbStatus").textContent="TMDB: ok";
-  document.getElementById("tmdbCount").textContent=`${j.results.length} results`; renderTmdb(j.results||[]);
+  tmdbResults=j.results||[]; tmdbSelected.clear();
+  renderTmdb();
 }
 
-function renderTmdb(results){
+function renderTmdb(){
+  const typeFilter=document.getElementById("tmdbType").value;
+  const yMin=Number((document.getElementById("tmdbYearMin").value||"").trim());
+  const yMax=Number((document.getElementById("tmdbYearMax").value||"").trim());
+  let results=[...tmdbResults];
+  if(typeFilter) results=results.filter(r=>r.type===typeFilter);
+  if(Number.isFinite(yMin) && yMin>0) results=results.filter(r=>Number(r.year||0)>=yMin);
+  if(Number.isFinite(yMax) && yMax>0) results=results.filter(r=>Number(r.year||0)<=yMax);
+
   const box=document.getElementById("tmdbList"); box.innerHTML="";
+  document.getElementById("tmdbCount").textContent=`${results.length} results`;
   for(const r of results){
     const row=document.createElement("div"); row.className="inputs_editor_item";
+    if(tmdbSelected.has(`${r.type}:${r.tmdb_id}`)) row.classList.add("selected");
     const poster=document.createElement("div"); poster.className="inputs_editor_poster";
     if(r.poster_path){ const img=document.createElement("img"); img.src=imgBase+"w185"+r.poster_path; poster.appendChild(img); }
     row.appendChild(poster);
@@ -167,12 +240,38 @@ function renderTmdb(results){
     tags.innerHTML=`<span class="inputs_editor_tag">${r.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${r.tmdb_id}</span>${r.year?`<span class="inputs_editor_tag">${r.year}</span>`:""}`;
 
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
+    const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=tmdbSelected.has(`${r.type}:${r.tmdb_id}`);
+    sel.onchange=()=>{ toggleTmdbSelected(r.type,r.tmdb_id,sel.checked); row.classList.toggle("selected", sel.checked); };
+    controls.appendChild(sel);
     const btn=document.createElement("button"); btn.className="primary"; btn.textContent="Add"; btn.onclick=()=>addItem(r.type,r.tmdb_id,r.title||"");
     controls.appendChild(btn);
+    const link=document.createElement("a"); link.href=`https://www.themoviedb.org/${r.type}/${r.tmdb_id}`; link.target="_blank"; link.rel="noopener";
+    link.textContent="Open TMDB"; link.className="inputs_editor_link";
+    controls.appendChild(link);
 
     meta.appendChild(title); meta.appendChild(tags); meta.appendChild(controls);
     row.appendChild(meta); box.appendChild(row);
+    row.ondblclick=()=>addItem(r.type,r.tmdb_id,r.title||"");
   }
+}
+function toggleTmdbSelected(type,id,checked){
+  const key=`${type}:${id}`;
+  if(checked) tmdbSelected.add(key); else tmdbSelected.delete(key);
+}
+function selectAllTmdb(){
+  for(const r of tmdbResults){
+    tmdbSelected.add(`${r.type}:${r.tmdb_id}`);
+  }
+  renderTmdb();
+}
+function addSelected(){
+  for(const key of Array.from(tmdbSelected)){
+    const [type,id]=key.split(":");
+    const r=tmdbResults.find(x=>x.type===type && String(x.tmdb_id)===id);
+    addItem(type, Number(id), r?.title||"");
+  }
+  tmdbSelected.clear();
+  renderTmdb();
 }
 
 async function saveInputs(){
@@ -200,9 +299,33 @@ async function saveInputs(){
 
   document.getElementById("btnSearch").onclick=tmdbSearch;
   document.getElementById("q").addEventListener("keydown",e=>{ if(e.key==="Enter") tmdbSearch(); });
+  document.getElementById("tmdbType").addEventListener("change",renderTmdb);
+  document.getElementById("tmdbYearMin").addEventListener("input",renderTmdb);
+  document.getElementById("tmdbYearMax").addEventListener("input",renderTmdb);
+  document.getElementById("btnTmdbSelectAll").onclick=selectAllTmdb;
+  document.getElementById("btnAddSelected").onclick=addSelected;
   document.getElementById("btnReload").onclick=loadInputs;
   document.getElementById("btnSave").onclick=saveInputs;
   document.getElementById("qMine").addEventListener("input",()=>renderMine());
+  document.getElementById("mineType").addEventListener("change",renderMine);
+  document.getElementById("mineScope").addEventListener("change",renderMine);
+  document.getElementById("mineFuture").addEventListener("change",renderMine);
+  document.getElementById("btnMineSelectAll").onclick=()=>{
+    const typeFilter=document.getElementById("mineType").value;
+    const scopeFilter=document.getElementById("mineScope").value;
+    const futureFilter=document.getElementById("mineFuture").value;
+    const tv=(inputs.tv||[]).map(x=>({...x,_type:"tv"})), mv=(inputs.movies||[]).map(x=>({...x,_type:"movie"}));
+    let all=[...tv,...mv];
+    if(typeFilter) all=all.filter(x=>x._type===typeFilter);
+    if(scopeFilter==="in") all=all.filter(x=>x.in_scope!==false);
+    if(scopeFilter==="out") all=all.filter(x=>x.in_scope===false);
+    if(futureFilter==="on") all=all.filter(x=>x._type!=="tv" || x.include_future!==false);
+    if(futureFilter==="off") all=all.filter(x=>x._type!=="tv" || x.include_future===false);
+    mineSelected.clear();
+    for(const it of all){ mineSelected.add(`${it._type}:${it.tmdb_id}`); }
+    renderMine();
+  };
+  document.getElementById("btnRemoveSelected").onclick=removeSelected;
   document.getElementById("tmdbStatus").textContent="TMDB: ready";
 })();
 </script>
