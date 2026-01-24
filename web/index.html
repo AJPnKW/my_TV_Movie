@@ -1623,12 +1623,12 @@ CHANGE NOTES
                 ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}</div>` : ""}
                 <div class="epmedia">
                   ${thumb}
-                  <div class="epactionscol">
-                    ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
-                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                  </div>
+                </div>
+                <div class="epactionsrow">
+                  ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
+                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
                 </div>
                 <div class="providerrow">
                   ${providerIcons}
@@ -1720,12 +1720,12 @@ CHANGE NOTES
                 ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}</div>` : ""}
                 <div class="epmedia">
                   ${thumb}
-                  <div class="epactionscol">
-                    ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
-                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                  </div>
+                </div>
+                <div class="epactionsrow">
+                  ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
+                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
                 </div>
                 <div class="providerrow">
                   ${providerIcons}
