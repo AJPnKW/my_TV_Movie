@@ -275,9 +275,10 @@ CHANGE NOTES
       text-align:left;
     }
     .chip.cal-episode{
-      display:flex;
-      flex-direction:column;
-      gap:6px;
+      display:grid;
+      grid-template-columns: var(--cal-thumb-w) minmax(0, 1fr);
+      gap:8px;
+      align-items:start;
     }
     .chip:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .chip .thumb{
@@ -361,6 +362,30 @@ CHANGE NOTES
       gap:6px;
       align-items:center;
       width:100%;
+    }
+    .chip .epcontent{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
+    .chip .actionrow{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      width:100%;
+    }
+    .chip .action-left,
+    .chip .action-right{
+      display:flex;
+      gap:4px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .chip.cal-episode .progress{
+      grid-column:1 / -1;
     }
     .chip .mini{
       border:1px solid rgba(255,255,255,0.18);
@@ -1415,27 +1440,25 @@ CHANGE NOTES
 
           return `
             <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
-              <div class="lines">
+              ${thumb}
+              <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
                 ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
-              </div>
-              <div class="chip-body">
-                <div class="thumbcol">
-                  <div class="iconrow top">
+                <div class="actionrow">
+                  <div class="action-left">
                     ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                     ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
                   </div>
-                  ${thumb}
-                  <div class="iconrow bottom">
+                  <div class="action-right">
                     ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
                     ${watchBtn}
                   </div>
                 </div>
-              </div>
-              <div class="providerrow">
-                ${providerIcons}
-                ${netLogo}
+                <div class="providerrow">
+                  ${providerIcons}
+                  ${netLogo}
+                </div>
               </div>
               ${progressBar}
             </button>
@@ -1516,27 +1539,25 @@ CHANGE NOTES
 
           return `
             <button class="chip cal-episode hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
-              <div class="lines">
+              ${thumb}
+              <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
-              ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
-            </div>
-            <div class="chip-body">
-              <div class="thumbcol">
-                <div class="iconrow top">
-                  ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
-                  ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
+                <div class="actionrow">
+                  <div class="action-left">
+                    ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
+                    ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                  </div>
+                  <div class="action-right">
+                    ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+                    ${watchBtn}
+                  </div>
                 </div>
-                ${thumb}
-                <div class="iconrow bottom">
-                  ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                  ${watchBtn}
+                <div class="providerrow">
+                  ${providerIcons}
+                  ${netLogo}
                 </div>
-              </div>
-            </div>
-              <div class="providerrow">
-                ${providerIcons}
-                ${netLogo}
               </div>
               ${progressBar}
             </button>
