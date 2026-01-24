@@ -28,6 +28,7 @@ DATE: 2026-01-20
     .inputs_editor_poster{width:52px;height:78px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.10);overflow:hidden;flex:0 0 auto}
     .inputs_editor_poster img{width:100%;height:100%;object-fit:cover}
     .inputs_editor_controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .inputs_editor_toggle{display:flex;gap:6px;align-items:center;font-size:12px;opacity:.95}
     input[type="search"], input[type="text"]{flex:1;min-width:220px;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);color:#fff}
     select{padding:8px 10px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.28);color:#fff}
     button{padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-weight:800;cursor:pointer}
@@ -116,6 +117,13 @@ function renderMine(){
       ss.value=it.season_spec||"*";
       ss.onchange=()=>{ setSeasonSpec(it.tmdb_id,ss.value); setDirty(true); };
       controls.appendChild(ss);
+
+      const lbl=document.createElement("label"); lbl.className="inputs_editor_toggle";
+      const cb=document.createElement("input"); cb.type="checkbox";
+      cb.checked=(it.include_future!==false);
+      cb.onchange=()=>{ setIncludeFuture(it.tmdb_id,cb.checked); setDirty(true); };
+      lbl.appendChild(cb); lbl.appendChild(document.createTextNode("Include future episodes"));
+      controls.appendChild(lbl);
     }
 
     const del=document.createElement("button"); del.className="danger"; del.textContent="Remove";
@@ -129,9 +137,10 @@ function renderMine(){
 
 function setInScope(type,id,val){ const list=(type==="tv")?inputs.tv:inputs.movies; const i=list.findIndex(x=>x.tmdb_id===id); if(i>=0) list[i].in_scope=val; }
 function setSeasonSpec(id,spec){ const i=inputs.tv.findIndex(x=>x.tmdb_id===id); if(i>=0) inputs.tv[i].season_spec=(spec||"*").trim(); }
+function setIncludeFuture(id,val){ const i=inputs.tv.findIndex(x=>x.tmdb_id===id); if(i>=0) inputs.tv[i].include_future=(val===true); }
 function removeItem(type,id){ if(type==="tv") inputs.tv=inputs.tv.filter(x=>x.tmdb_id!==id); else inputs.movies=inputs.movies.filter(x=>x.tmdb_id!==id); }
 function addItem(type,id,title){
-  if(type==="tv"){ if(inputs.tv.some(x=>x.tmdb_id===id)) return; inputs.tv.push({title,tmdb_id:id,season_spec:"*",in_scope:true}); }
+  if(type==="tv"){ if(inputs.tv.some(x=>x.tmdb_id===id)) return; inputs.tv.push({title,tmdb_id:id,season_spec:"*",include_future:true,in_scope:true}); }
   else { if(inputs.movies.some(x=>x.tmdb_id===id)) return; inputs.movies.push({title,tmdb_id:id,in_scope:true}); }
   setDirty(true); renderMine(); counts();
 }
