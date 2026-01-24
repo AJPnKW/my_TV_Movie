@@ -381,26 +381,30 @@ CHANGE NOTES
       gap:3px;
     }
     .chip .epmedia{
-      display:grid;
-      grid-template-columns: var(--cal-thumb-w) 1fr;
-      gap:6px;
-      align-items:start;
+      display:block;
       width:100%;
     }
-    .chip .epactionscol{
+    .chip.cal-episode .epmedia .thumb{
+      width:100%;
+      height:clamp(54px, 8vw, 110px);
+      border-radius:8px;
+    }
+    .chip .epactionsrow{
       display:flex;
-      flex-direction:column;
-      gap:3px;
-      align-items:flex-start;
+      gap:10px;
+      align-items:center;
+      justify-content:flex-start;
+      margin-top:4px;
+      width:100%;
     }
     .chip .actionicon{
-      width:16px;
-      height:16px;
-      border-radius:4px;
+      width:18px;
+      height:18px;
+      border-radius:5px;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      font-size:9px;
+      font-size:10px;
       font-weight:900;
       line-height:1;
       color:#0b0f14;
