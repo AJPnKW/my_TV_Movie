@@ -1226,6 +1226,8 @@ CHANGE NOTES
         title: safeText(movie?.title).trim() || "Unknown Movie",
         thumb: mapMoviePoster(movie),
         links: movie?.links || {},
+        service_logo_local: safeText(movie?.service_logo_local || "").trim(),
+        service_logo_tmdb: safeText(movie?.service_logo_tmdb || "").trim(),
         watch_providers: getWatchProviders(movie),
         progress: (progressPercent(movie) ?? watchedMoviePercent(Number(movie?.tmdb_id) || 0))
       });
@@ -1380,7 +1382,8 @@ CHANGE NOTES
           : "";
 
         if (it.kind === "episode"){
-          const sub = `${seTag(it.season_number || 0, it.episode_number || 0)} • ${safeText(it.episode_name)}`;
+          const epName = safeText(it.episode_name);
+          const epTag = (it.season_number || it.episode_number) ? seTag(it.season_number || 0, it.episode_number || 0) : "";
           const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
           const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
           const vidsrc = safeText(it?.links?.vidsrc || "").trim();
@@ -1404,11 +1407,9 @@ CHANGE NOTES
               ${thumb}
               <div class="lines">
                 <div class="t">${escHtml(it.show_title)}</div>
-                <div class="s">${escHtml(sub)}</div>
-                <div class="meta">
-                  ${it.runtime ? `<span>${escHtml(it.runtime)}m</span>` : ""}
-                  ${netLogo}
-                </div>
+                <div class="s">${escHtml(epName)}</div>
+                ${epTag ? `<div class="epnum">${escHtml(epTag)}</div>` : ""}
+                ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
                 <div class="iconstrip">
                   ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
                   ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
@@ -1416,6 +1417,7 @@ CHANGE NOTES
                   ${watchBtn}
                   ${providerIcons}
                 </div>
+                ${netLogo ? `<div class="logos">${netLogo}</div>` : ""}
                 ${progressBar}
               </div>
             </button>
@@ -1435,6 +1437,9 @@ CHANGE NOTES
           return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
         }).join("");
         const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+        const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
+          ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+          : "";
         return `
           <button class="chip hidden" type="button" data-extra="1" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${realIdx}">
             ${thumb}
@@ -1448,6 +1453,7 @@ CHANGE NOTES
                 ${watchBtn}
                 ${providerIcons}
               </div>
+              ${serviceLogo ? `<div class="logos">${serviceLogo}</div>` : ""}
               ${progressBar}
             </div>
           </button>
