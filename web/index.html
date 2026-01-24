@@ -369,7 +369,7 @@ CHANGE NOTES
     .chip .providerrow{
       display:flex;
       flex-wrap:wrap;
-      gap:6px;
+      gap:4px;
       align-items:center;
       width:100%;
     }
@@ -377,38 +377,24 @@ CHANGE NOTES
       min-width:0;
       display:flex;
       flex-direction:column;
-      gap:4px;
+      gap:3px;
     }
     .chip .epmedia{
       display:grid;
       grid-template-columns: var(--cal-thumb-w) 1fr;
-      gap:8px;
+      gap:6px;
       align-items:start;
       width:100%;
     }
     .chip .epactionscol{
       display:flex;
       flex-direction:column;
-      gap:4px;
+      gap:3px;
       align-items:flex-start;
     }
-    .chip .actionbtn{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:4px 6px;
-      border-radius:10px;
-      border:1px solid rgba(255,255,255,0.14);
-      background:rgba(255,255,255,0.06);
-      font-size:9px;
-      font-weight:900;
-      letter-spacing:0.04em;
-      text-decoration:none;
-      text-transform:uppercase;
-    }
-    .chip .actionbtn .icon{
-      width:12px;
-      height:12px;
+    .chip .actionicon{
+      width:16px;
+      height:16px;
       border-radius:4px;
       display:inline-flex;
       align-items:center;
@@ -417,15 +403,13 @@ CHANGE NOTES
       font-weight:900;
       line-height:1;
       color:#0b0f14;
+      border:1px solid rgba(0,0,0,0.25);
+      text-decoration:none;
     }
-    .chip .actionbtn.tmdb{ background:rgba(56,189,248,0.14); border-color:rgba(56,189,248,0.5); }
-    .chip .actionbtn.tmdb .icon{ background:#38bdf8; color:#062136; }
-    .chip .actionbtn.vidsrc{ background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.5); }
-    .chip .actionbtn.vidsrc .icon{ background:#22c55e; color:#052e16; }
-    .chip .actionbtn.videasy{ background:rgba(236,72,153,0.12); border-color:rgba(236,72,153,0.5); }
-    .chip .actionbtn.videasy .icon{ background:#ec4899; color:#2b0b1e; }
-    .chip .actionbtn.watch{ background:rgba(255,255,255,0.10); border-color:rgba(255,255,255,0.5); }
-    .chip .actionbtn.watch .icon{ background:#ffffff; color:#0b0f14; }
+    .chip .actionicon.tmdb{ background:#38bdf8; color:#062136; }
+    .chip .actionicon.vidsrc{ background:#22c55e; color:#052e16; }
+    .chip .actionicon.videasy{ background:#ec4899; color:#2b0b1e; }
+    .chip .actionicon.watch{ background:#ffffff; color:#0b0f14; }
     .chip.cal-episode .progress{
       grid-column:1 / -1;
     }
@@ -1211,6 +1195,7 @@ CHANGE NOTES
     const movieGenres = uniqueSorted(movies.flatMap(m => (m.genres || []).map(g => g?.name)));
     const showYears = uniqueSorted(shows.map(s => yearFromDate(s.first_air_date)).filter(Boolean)).sort((a,b)=>Number(b)-Number(a));
     const movieYears = uniqueSorted(movies.map(m => yearFromDate(m.release_date)).filter(Boolean)).sort((a,b)=>Number(b)-Number(a));
+    const movieCollections = uniqueSorted(movies.map(m => m?.collection?.name).filter(Boolean));
 
     const showsGenresSel = $("#filterShowsGenres");
     const moviesGenresSel = $("#filterMoviesGenres");
@@ -1229,8 +1214,10 @@ CHANGE NOTES
       showsCollectionSel.disabled = true;
     }
     if (moviesCollectionSel) {
-      moviesCollectionSel.innerHTML = `<option value="">No collection data</option>`;
-      moviesCollectionSel.disabled = true;
+      moviesCollectionSel.innerHTML = movieCollections.length
+        ? `<option value="">All Collections</option>${movieCollections.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join("")}`
+        : `<option value="">No collection data</option>`;
+      moviesCollectionSel.disabled = movieCollections.length === 0;
     }
 
     const showsWatchlistSel = $("#filterShowsWatchlist");
@@ -1619,14 +1606,14 @@ CHANGE NOTES
               <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
-                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
+                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}</div>` : ""}
                 <div class="epmedia">
                   ${thumb}
                   <div class="epactionscol">
-                    ${tmdb ? `<a class="actionbtn tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener"><span class="icon">T</span>TMDB</a>` : ""}
-                    ${vidsrc ? `<a class="actionbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener"><span class="icon">S</span>VidSrc</a>` : ""}
-                    ${videasy ? `<a class="actionbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener"><span class="icon">E</span>VidEasy</a>` : ""}
-                    ${providers.length ? `<span class="actionbtn watch"><span class="icon">▶</span>Watch</span>` : ""}
+                    ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
+                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
                   </div>
                 </div>
                 <div class="providerrow">
@@ -1716,14 +1703,14 @@ CHANGE NOTES
               <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
-                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
+                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}</div>` : ""}
                 <div class="epmedia">
                   ${thumb}
                   <div class="epactionscol">
-                    ${tmdb ? `<a class="actionbtn tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener"><span class="icon">T</span>TMDB</a>` : ""}
-                    ${vidsrc ? `<a class="actionbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener"><span class="icon">S</span>VidSrc</a>` : ""}
-                    ${videasy ? `<a class="actionbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener"><span class="icon">E</span>VidEasy</a>` : ""}
-                    ${providers.length ? `<span class="actionbtn watch"><span class="icon">▶</span>Watch</span>` : ""}
+                    ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
+                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
                   </div>
                 </div>
                 <div class="providerrow">
@@ -1922,6 +1909,7 @@ CHANGE NOTES
     const wantYear = safeText(f.year);
     const wantWatched = safeText(f.watched);
     const wantWatchlist = safeText(f.watchlist);
+    const wantCollection = safeText(f.collection);
     const watchlistSet = getWatchlistSet();
 
     const movies = (state.data?.movies || []).filter(m => {
@@ -1934,6 +1922,10 @@ CHANGE NOTES
       if (wantYear){
         const y = yearFromDate(m?.release_date);
         if (y !== wantYear) return false;
+      }
+      if (wantCollection){
+        const cn = safeText(m?.collection?.name);
+        if (cn !== wantCollection) return false;
       }
       if (wantWatchlist === "watchlist"){
         const id = String(m?.tmdb_id ?? "");
