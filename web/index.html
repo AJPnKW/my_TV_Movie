@@ -1398,6 +1398,11 @@ CHANGE NOTES
     const voteAvg = show.vote_average;
     const voteCnt = show.vote_count;
     const networks = Array.isArray(show.networks) ? show.networks.map(n => n?.name).filter(Boolean) : [];
+    const networkObj = Array.isArray(show.networks) && show.networks.length ? show.networks[0] : null;
+    const networkName = safeText(networkObj?.name || networks[0] || "").trim();
+    const networkLocalLogo = networkName ? guessLocalNetworkLogo(networkName) : "";
+    const networkTmdbLogo = tmdbLogoUrl(networkObj?.logo_path || "");
+    const statusText = safeText(show.status || "").trim();
     const premiered = safeText(show.first_air_date || "");
     const lastAir = safeText(show.last_air_date || "");
 
@@ -1482,7 +1487,13 @@ CHANGE NOTES
         <div class="grain"></div>
         <div class="showinner">
           <div class="showtopbar">
-            <div class="muted">Show</div>
+            <div class="showbadges">
+              ${statusText ? `<span class="statuspill">${escHtml(statusText)}</span>` : ""}
+              ${networkName ? `
+                <span class="statuspill">${escHtml(networkName)}</span>
+                ${networkLocalLogo || networkTmdbLogo ? `<img class="netlogo" src="${escHtml(networkLocalLogo || networkTmdbLogo)}" data-fallback="${escHtml(networkTmdbLogo)}" alt="${escHtml(networkName)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : ""}
+              ` : ""}
+            </div>
             <div class="muted">TMDB ${escHtml(show.tmdb_id ?? "")}</div>
             <div></div>
           </div>
