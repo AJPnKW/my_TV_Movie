@@ -36,7 +36,7 @@ CHANGE NOTES
       --show_card_min:240px;
       --movie_card_min:240px;
       --episode_thumb:34px;
-      --cal-thumb-w: clamp(36px, 5vw, 64px);
+      --cal-thumb-w: clamp(28px, 4vw, 44px);
       --cal-thumb-h: calc(var(--cal-thumb-w) * 1.6);
     }
 
@@ -265,34 +265,59 @@ CHANGE NOTES
       border:1px solid rgba(255,255,255,0.14);
       background:rgba(255,255,255,0.05);
       border-radius:14px;
-      padding:7px 8px;
+      padding:6px;
       cursor:pointer;
       display:grid;
-      grid-template-columns: var(--cal-thumb-w) 1fr;
-      gap:10px;
+      grid-template-columns: minmax(0, var(--cal-thumb-w)) minmax(0, 1fr);
+      gap:6px;
       align-items:start;
       min-height:var(--cal-thumb-h);
       text-align:left;
+    }
+    .chip.cal-episode{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
     }
     .chip:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .chip .thumb{
       width:var(--cal-thumb-w);
       height:var(--cal-thumb-h);
-      border-radius:10px;
+      border-radius:8px;
       background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.10);
       flex:0 0 auto;
       overflow:hidden;
     }
     .chip .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .chip .lines{ min-width:0; display:flex; flex-direction:column; gap:4px; flex:1; align-items:flex-start; text-align:left; width:100%; }
+    .chip .lines{ min-width:0; display:flex; flex-direction:column; gap:2px; flex:1; align-items:flex-start; text-align:left; width:100%; }
     .chip .lines > *{ width:100%; }
-    .chip .t{ color:var(--text); font-weight:950; font-size:12px; white-space:normal; line-height:1.2; }
-    .chip .s{ color:var(--muted); font-size:11px; white-space:normal; line-height:1.2; }
-    .chip .epnum{ color:var(--muted); font-size:11px; font-weight:900; letter-spacing:0.04em; text-transform:uppercase; }
-    .chip .runtime{ color:var(--muted); font-size:10px; font-weight:900; }
-    .chip .iconstrip{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+    .chip .t{ color:var(--text); font-weight:950; font-size:11px; white-space:normal; line-height:1.1; }
+    .chip .s{ color:var(--muted); font-size:10px; white-space:normal; line-height:1.1; }
+    .chip .epnum{ color:var(--muted); font-size:10px; font-weight:900; letter-spacing:0.04em; text-transform:uppercase; }
+    .chip .runtime{ color:var(--muted); font-size:9px; font-weight:900; }
+    .chip .iconstrip{ display:flex; gap:4px; flex-wrap:wrap; margin-top:2px; }
     .chip .logos{ display:flex; gap:6px; align-items:center; }
+    .chip .chip-body{
+      display:grid;
+      grid-template-columns: var(--cal-thumb-w) minmax(0, 1fr);
+      gap:8px;
+      align-items:start;
+      width:100%;
+    }
+    .chip .iconcol{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      align-items:flex-start;
+    }
+    .chip .providerrow{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      align-items:center;
+      width:100%;
+    }
     .chip .mini{
       border:1px solid rgba(255,255,255,0.18);
       background:rgba(255,255,255,0.06);
@@ -1326,23 +1351,26 @@ CHANGE NOTES
             : "";
 
           return `
-            <button class="chip" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
-              ${thumb}
+            <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
               <div class="lines">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
-                <div class="s">${escHtml(epName)}</div>
-                ${epTag ? `<div class="epnum">${escHtml(epTag)}</div>` : ""}
+                <div class="s">${escHtml(epName)}${epTag ? ` <span class="epnum">${escHtml(epTag)}</span>` : ""}</div>
                 ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
-                <div class="iconstrip">
+              </div>
+              <div class="chip-body">
+                ${thumb}
+                <div class="iconcol">
                   ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
                   ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
                   ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                   ${watchBtn}
-                  ${providerIcons}
                 </div>
-                ${netLogo ? `<div class="logos">${netLogo}</div>` : ""}
-                ${progressBar}
               </div>
+              <div class="providerrow">
+                ${providerIcons}
+                ${netLogo}
+              </div>
+              ${progressBar}
             </button>
           `;
         }
@@ -1420,23 +1448,26 @@ CHANGE NOTES
             : "";
 
           return `
-            <button class="chip hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
-              ${thumb}
+            <button class="chip cal-episode hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
               <div class="lines">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
-                <div class="s">${escHtml(epName)}</div>
-                ${epTag ? `<div class="epnum">${escHtml(epTag)}</div>` : ""}
+                <div class="s">${escHtml(epName)}${epTag ? ` <span class="epnum">${escHtml(epTag)}</span>` : ""}</div>
                 ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
-                <div class="iconstrip">
+              </div>
+              <div class="chip-body">
+                ${thumb}
+                <div class="iconcol">
                   ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
                   ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
                   ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                   ${watchBtn}
-                  ${providerIcons}
                 </div>
-                ${netLogo ? `<div class="logos">${netLogo}</div>` : ""}
-                ${progressBar}
               </div>
+              <div class="providerrow">
+                ${providerIcons}
+                ${netLogo}
+              </div>
+              ${progressBar}
             </button>
           `;
         }
