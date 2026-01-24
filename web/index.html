@@ -152,6 +152,11 @@ CHANGE NOTES
       outline:none;
     }
     select.input{ min-width:160px; }
+    select.input[multiple]{
+      min-width:180px;
+      padding:8px;
+      height:auto;
+    }
 
     .h1{ font-size:28px; font-weight:950; margin:8px 0 8px; }
 
@@ -185,7 +190,7 @@ CHANGE NOTES
     .cardtitle{ font-weight:950; font-size:14px; letter-spacing:0.2px; }
     .cardmeta{ color:var(--muted); font-size:12px; line-height:1.25; }
 
-    .btnrow{ display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; }
+    .btnrow{ display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto; margin-top:auto; }
     .btn{
       border:1px solid rgba(255,255,255,0.18);
       background:rgba(255,255,255,0.06);
@@ -198,6 +203,12 @@ CHANGE NOTES
       display:inline-flex;
       align-items:center;
       gap:6px;
+    }
+    .btnicon{
+      width:16px;height:16px;border-radius:4px;
+      display:inline-flex;align-items:center;justify-content:center;
+      font-size:9px;font-weight:900;letter-spacing:0.02em;
+      background:#ef4444;color:#0b0f14;
     }
     .btn:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .btn[aria-disabled="true"]{ opacity:0.45; pointer-events:none; }
@@ -275,10 +286,9 @@ CHANGE NOTES
       text-align:left;
     }
     .chip.cal-episode{
-      display:grid;
-      grid-template-columns: var(--cal-thumb-w) minmax(0, 1fr);
-      gap:8px;
-      align-items:start;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
     }
     .chip:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .chip .thumb{
@@ -369,21 +379,53 @@ CHANGE NOTES
       flex-direction:column;
       gap:4px;
     }
-    .chip .actionrow{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
+    .chip .epmedia{
+      display:grid;
+      grid-template-columns: var(--cal-thumb-w) 1fr;
+      gap:8px;
+      align-items:start;
       width:100%;
     }
-    .chip .action-left,
-    .chip .action-right{
+    .chip .epactionscol{
       display:flex;
+      flex-direction:column;
       gap:4px;
-      flex-wrap:wrap;
-      align-items:center;
+      align-items:flex-start;
     }
+    .chip .actionbtn{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 6px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.06);
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:0.04em;
+      text-decoration:none;
+      text-transform:uppercase;
+    }
+    .chip .actionbtn .icon{
+      width:12px;
+      height:12px;
+      border-radius:4px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:9px;
+      font-weight:900;
+      line-height:1;
+      color:#0b0f14;
+    }
+    .chip .actionbtn.tmdb{ background:rgba(56,189,248,0.14); border-color:rgba(56,189,248,0.5); }
+    .chip .actionbtn.tmdb .icon{ background:#38bdf8; color:#062136; }
+    .chip .actionbtn.vidsrc{ background:rgba(34,197,94,0.12); border-color:rgba(34,197,94,0.5); }
+    .chip .actionbtn.vidsrc .icon{ background:#22c55e; color:#052e16; }
+    .chip .actionbtn.videasy{ background:rgba(236,72,153,0.12); border-color:rgba(236,72,153,0.5); }
+    .chip .actionbtn.videasy .icon{ background:#ec4899; color:#2b0b1e; }
+    .chip .actionbtn.watch{ background:rgba(255,255,255,0.10); border-color:rgba(255,255,255,0.5); }
+    .chip .actionbtn.watch .icon{ background:#ffffff; color:#0b0f14; }
     .chip.cal-episode .progress{
       grid-column:1 / -1;
     }
@@ -599,14 +641,14 @@ CHANGE NOTES
       border:1px solid rgba(255,255,255,0.10);
       background:rgba(255,255,255,0.03);
       border-radius:18px;
-      padding:10px;
+      padding:8px;
     }
 
     .seasonpickerhead{
       display:flex;
       justify-content:flex-start;
       align-items:center;
-      margin-bottom:8px;
+      margin-bottom:6px;
       color:var(--muted);
       font-weight:950;
       font-size:12px;
@@ -618,7 +660,7 @@ CHANGE NOTES
       display:flex;
       flex-direction:column;
       gap:8px;
-      max-height: 250px; /* scroll once > ~5 seasons */
+      max-height: 180px; /* ~4 seasons before scroll */
       overflow:auto;
       padding-right:4px;
     }
@@ -630,7 +672,7 @@ CHANGE NOTES
       border:1px solid rgba(255,255,255,0.12);
       background:rgba(255,255,255,0.04);
       border-radius:14px;
-      padding:10px 10px;
+      padding:8px 10px;
       cursor:pointer;
     }
     .seasonopt input{ accent-color: #ffffff; }
@@ -882,9 +924,17 @@ CHANGE NOTES
         <div class="h1">Shows</div>
         <div class="filters">
           <input id="searchShows" class="input" type="search" placeholder="Search..." autocomplete="off" />
+          <select id="filterShowsGenres" class="input" multiple size="5" aria-label="Genre filter"></select>
+          <select id="filterShowsYear" class="input" aria-label="Release year filter"></select>
+          <select id="filterShowsCollection" class="input" aria-label="Collection filter"></select>
+          <select id="filterShowsWatchlist" class="input" aria-label="Watchlist filter"></select>
+          <select id="filterShowsWatched" class="input" aria-label="Watched filter"></select>
           <select id="sortShows" class="input">
             <option value="title">Title A→Z</option>
             <option value="title_desc">Title Z→A</option>
+            <option value="popularity">Popularity</option>
+            <option value="vote">Vote Average</option>
+            <option value="release">Release Date</option>
           </select>
         </div>
       </div>
@@ -896,9 +946,17 @@ CHANGE NOTES
         <div class="h1">Movies</div>
         <div class="filters">
           <input id="searchMovies" class="input" type="search" placeholder="Search..." autocomplete="off" />
+          <select id="filterMoviesGenres" class="input" multiple size="5" aria-label="Genre filter"></select>
+          <select id="filterMoviesYear" class="input" aria-label="Release year filter"></select>
+          <select id="filterMoviesCollection" class="input" aria-label="Collection filter"></select>
+          <select id="filterMoviesWatchlist" class="input" aria-label="Watchlist filter"></select>
+          <select id="filterMoviesWatched" class="input" aria-label="Watched filter"></select>
           <select id="sortMovies" class="input">
             <option value="title">Title A→Z</option>
             <option value="title_desc">Title Z→A</option>
+            <option value="popularity">Popularity</option>
+            <option value="vote">Vote Average</option>
+            <option value="release">Release Date</option>
           </select>
         </div>
       </div>
@@ -933,12 +991,17 @@ CHANGE NOTES
   const state = {
     cfg: null,
     data: null,
+    inputs: null,
     tab: "calendar",
     lastNonShowHash: "#calendar",
     calendarMonth: null,
     watchState: null,
     search: { shows: "", movies: "" },
     sort: { shows: "title", movies: "title" },
+    filters: {
+      shows: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
+      movies: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" }
+    },
     show: {
       tmdb_id: null,
       selectedSeasonNumber: null,
@@ -1123,7 +1186,86 @@ CHANGE NOTES
     const kind = cls || (label === "TMDB"
       ? "tmdb"
       : (label === "VidEasy" ? "videasy" : (label === "VidSrc" ? "vidsrc" : (label === "RT" ? "rt" : ""))));
-    return `<a class="btn ${kind}" href="${escHtml(safeHref)}" target="_blank" rel="noopener" aria-disabled="${ok?"false":"true"}">${label}</a>`;
+    const inner = (label === "RT")
+      ? `<span class="btnicon">RT</span>${label}`
+      : label;
+    return `<a class="btn ${kind}" href="${escHtml(safeHref)}" target="_blank" rel="noopener" aria-disabled="${ok?"false":"true"}">${inner}</a>`;
+  }
+
+  function yearFromDate(d){
+    const y = safeText(d).slice(0,4);
+    return /^\d{4}$/.test(y) ? y : "";
+  }
+
+  function uniqueSorted(arr){
+    return Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>safeText(a).localeCompare(safeText(b)));
+  }
+
+  function populateFilters(){
+    const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+    const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
+    const watchlist = Array.isArray(state.inputs?.watchlist) ? state.inputs.watchlist : [];
+    const hasWatchlist = watchlist.length > 0;
+
+    const showGenres = uniqueSorted(shows.flatMap(s => (s.genres || []).map(g => g?.name)));
+    const movieGenres = uniqueSorted(movies.flatMap(m => (m.genres || []).map(g => g?.name)));
+    const showYears = uniqueSorted(shows.map(s => yearFromDate(s.first_air_date)).filter(Boolean)).sort((a,b)=>Number(b)-Number(a));
+    const movieYears = uniqueSorted(movies.map(m => yearFromDate(m.release_date)).filter(Boolean)).sort((a,b)=>Number(b)-Number(a));
+
+    const showsGenresSel = $("#filterShowsGenres");
+    const moviesGenresSel = $("#filterMoviesGenres");
+    if (showsGenresSel) showsGenresSel.innerHTML = showGenres.map(g => `<option value="${escHtml(g)}">${escHtml(g)}</option>`).join("");
+    if (moviesGenresSel) moviesGenresSel.innerHTML = movieGenres.map(g => `<option value="${escHtml(g)}">${escHtml(g)}</option>`).join("");
+
+    const showsYearSel = $("#filterShowsYear");
+    const moviesYearSel = $("#filterMoviesYear");
+    if (showsYearSel) showsYearSel.innerHTML = `<option value="">All Years</option>${showYears.map(y => `<option value="${escHtml(y)}">${escHtml(y)}</option>`).join("")}`;
+    if (moviesYearSel) moviesYearSel.innerHTML = `<option value="">All Years</option>${movieYears.map(y => `<option value="${escHtml(y)}">${escHtml(y)}</option>`).join("")}`;
+
+    const showsCollectionSel = $("#filterShowsCollection");
+    const moviesCollectionSel = $("#filterMoviesCollection");
+    if (showsCollectionSel) {
+      showsCollectionSel.innerHTML = `<option value="">No collection data</option>`;
+      showsCollectionSel.disabled = true;
+    }
+    if (moviesCollectionSel) {
+      moviesCollectionSel.innerHTML = `<option value="">No collection data</option>`;
+      moviesCollectionSel.disabled = true;
+    }
+
+    const showsWatchlistSel = $("#filterShowsWatchlist");
+    const moviesWatchlistSel = $("#filterMoviesWatchlist");
+    if (showsWatchlistSel) {
+      showsWatchlistSel.innerHTML = `<option value="all">All</option><option value="watchlist">Watchlist</option>`;
+      showsWatchlistSel.disabled = !hasWatchlist;
+    }
+    if (moviesWatchlistSel) {
+      moviesWatchlistSel.innerHTML = `<option value="all">All</option><option value="watchlist">Watchlist</option>`;
+      moviesWatchlistSel.disabled = !hasWatchlist;
+    }
+
+    const hasWatchState = !!(state.watchState && (state.watchState.movies || state.watchState.shows));
+    const showsWatchedSel = $("#filterShowsWatched");
+    const moviesWatchedSel = $("#filterMoviesWatched");
+    if (showsWatchedSel) {
+      showsWatchedSel.innerHTML = `<option value="all">All</option><option value="watched">Watched</option><option value="unwatched">Unwatched</option>`;
+      showsWatchedSel.disabled = !hasWatchState;
+    }
+    if (moviesWatchedSel) {
+      moviesWatchedSel.innerHTML = `<option value="all">All</option><option value="watched">Watched</option><option value="unwatched">Unwatched</option>`;
+      moviesWatchedSel.disabled = !hasWatchState;
+    }
+  }
+
+  function getSelectedValues(sel){
+    if (!sel) return [];
+    return Array.from(sel.selectedOptions || []).map(o => o.value).filter(Boolean);
+  }
+
+  function getWatchlistSet(){
+    const list = Array.isArray(state.inputs?.watchlist) ? state.inputs.watchlist : [];
+    const ids = list.map(x => String(x?.tmdb_id ?? "")).filter(Boolean);
+    return new Set(ids);
   }
 
   function getRtLink(obj){
@@ -1217,6 +1359,13 @@ CHANGE NOTES
       state.data.errors = Array.isArray(state.data.errors) ? state.data.errors : [];
       state.data.meta   = state.data.meta && typeof state.data.meta === "object" ? state.data.meta : {};
       state.watchState = (state.data.watch_state && state.data.watch_state.trakt) ? state.data.watch_state.trakt : null;
+
+      state.inputs = await fetchJsonFirst([
+        "../data/inputs.json",
+        "../inputs.json"
+      ]);
+
+      populateFilters();
 
       $("#footer").textContent = footerText();
       setStatus(true, "Ready");
@@ -1467,19 +1616,17 @@ CHANGE NOTES
 
           return `
             <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
-              ${thumb}
               <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
                 ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
-                <div class="actionrow">
-                  <div class="action-left">
-                    ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
-                    ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-                  </div>
-                  <div class="action-right">
-                    ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                    ${watchBtn}
+                <div class="epmedia">
+                  ${thumb}
+                  <div class="epactionscol">
+                    ${tmdb ? `<a class="actionbtn tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener"><span class="icon">T</span>TMDB</a>` : ""}
+                    ${vidsrc ? `<a class="actionbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener"><span class="icon">S</span>VidSrc</a>` : ""}
+                    ${videasy ? `<a class="actionbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener"><span class="icon">E</span>VidEasy</a>` : ""}
+                    ${providers.length ? `<span class="actionbtn watch"><span class="icon">▶</span>Watch</span>` : ""}
                   </div>
                 </div>
                 <div class="providerrow">
@@ -1566,19 +1713,17 @@ CHANGE NOTES
 
           return `
             <button class="chip cal-episode hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
-              ${thumb}
               <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
                 ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
-                <div class="actionrow">
-                  <div class="action-left">
-                    ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
-                    ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-                  </div>
-                  <div class="action-right">
-                    ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                    ${watchBtn}
+                <div class="epmedia">
+                  ${thumb}
+                  <div class="epactionscol">
+                    ${tmdb ? `<a class="actionbtn tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener"><span class="icon">T</span>TMDB</a>` : ""}
+                    ${vidsrc ? `<a class="actionbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener"><span class="icon">S</span>VidSrc</a>` : ""}
+                    ${videasy ? `<a class="actionbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener"><span class="icon">E</span>VidEasy</a>` : ""}
+                    ${providers.length ? `<span class="actionbtn watch"><span class="icon">▶</span>Watch</span>` : ""}
                   </div>
                 </div>
                 <div class="providerrow">
@@ -1684,17 +1829,53 @@ CHANGE NOTES
     return desc ? -r : r;
   }
 
+  function isShowWatched(s){
+    const ws = state.watchState;
+    const id = String(s?.tmdb_id ?? "");
+    return !!(ws && ws.shows && id && ws.shows[id]);
+  }
+
+  function isMovieWatched(m){
+    const ws = state.watchState;
+    const id = String(m?.tmdb_id ?? "");
+    return !!(ws && ws.movies && id && ws.movies[id]);
+  }
+
   function renderShows(){
     const q = state.search.shows.trim().toLowerCase();
     const sort = state.sort.shows;
+    const f = state.filters.shows;
+    const wantGenres = Array.isArray(f.genres) ? f.genres : [];
+    const wantYear = safeText(f.year);
+    const wantWatched = safeText(f.watched);
+    const wantWatchlist = safeText(f.watchlist);
+    const watchlistSet = getWatchlistSet();
 
     const shows = (state.data?.shows || []).filter(s => {
       const t = safeText(s?.title || s?.name).toLowerCase();
-      return !q || t.includes(q);
+      if (q && !t.includes(q)) return false;
+      if (wantGenres.length){
+        const g = Array.isArray(s?.genres) ? s.genres.map(x => x?.name).filter(Boolean) : [];
+        if (!wantGenres.some(w => g.includes(w))) return false;
+      }
+      if (wantYear){
+        const y = yearFromDate(s?.first_air_date);
+        if (y !== wantYear) return false;
+      }
+      if (wantWatchlist === "watchlist"){
+        const id = String(s?.tmdb_id ?? "");
+        if (!id || !watchlistSet.has(id)) return false;
+      }
+      if (wantWatched === "watched" && !isShowWatched(s)) return false;
+      if (wantWatched === "unwatched" && isShowWatched(s)) return false;
+      return true;
     });
 
     if (sort === "title") shows.sort((a,b)=>sortByTitle(a,b,false));
     if (sort === "title_desc") shows.sort((a,b)=>sortByTitle(a,b,true));
+    if (sort === "popularity") shows.sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0));
+    if (sort === "vote") shows.sort((a,b)=>(Number(b?.vote_average)||0)-(Number(a?.vote_average)||0));
+    if (sort === "release") shows.sort((a,b)=>safeText(b?.first_air_date).localeCompare(safeText(a?.first_air_date)));
 
     $("#showsGrid").innerHTML = shows.map(showCardHtml).join("");
 
@@ -1736,14 +1917,38 @@ CHANGE NOTES
   function renderMovies(){
     const q = state.search.movies.trim().toLowerCase();
     const sort = state.sort.movies;
+    const f = state.filters.movies;
+    const wantGenres = Array.isArray(f.genres) ? f.genres : [];
+    const wantYear = safeText(f.year);
+    const wantWatched = safeText(f.watched);
+    const wantWatchlist = safeText(f.watchlist);
+    const watchlistSet = getWatchlistSet();
 
     const movies = (state.data?.movies || []).filter(m => {
       const t = safeText(m?.title).toLowerCase();
-      return !q || t.includes(q);
+      if (q && !t.includes(q)) return false;
+      if (wantGenres.length){
+        const g = Array.isArray(m?.genres) ? m.genres.map(x => x?.name).filter(Boolean) : [];
+        if (!wantGenres.some(w => g.includes(w))) return false;
+      }
+      if (wantYear){
+        const y = yearFromDate(m?.release_date);
+        if (y !== wantYear) return false;
+      }
+      if (wantWatchlist === "watchlist"){
+        const id = String(m?.tmdb_id ?? "");
+        if (!id || !watchlistSet.has(id)) return false;
+      }
+      if (wantWatched === "watched" && !isMovieWatched(m)) return false;
+      if (wantWatched === "unwatched" && isMovieWatched(m)) return false;
+      return true;
     });
 
     if (sort === "title") movies.sort((a,b)=>safeText(a?.title).localeCompare(safeText(b?.title)));
     if (sort === "title_desc") movies.sort((a,b)=>safeText(b?.title).localeCompare(safeText(a?.title)));
+    if (sort === "popularity") movies.sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0));
+    if (sort === "vote") movies.sort((a,b)=>(Number(b?.vote_average)||0)-(Number(a?.vote_average)||0));
+    if (sort === "release") movies.sort((a,b)=>safeText(b?.release_date).localeCompare(safeText(a?.release_date)));
 
     $("#moviesGrid").innerHTML = movies.map(movieCardHtml).join("");
 
@@ -2102,6 +2307,26 @@ CHANGE NOTES
     state.search.shows = e.target.value || "";
     renderShows();
   });
+  $("#filterShowsGenres").addEventListener("change", (e) => {
+    state.filters.shows.genres = getSelectedValues(e.target);
+    renderShows();
+  });
+  $("#filterShowsYear").addEventListener("change", (e) => {
+    state.filters.shows.year = e.target.value || "";
+    renderShows();
+  });
+  $("#filterShowsCollection").addEventListener("change", (e) => {
+    state.filters.shows.collection = e.target.value || "";
+    renderShows();
+  });
+  $("#filterShowsWatchlist").addEventListener("change", (e) => {
+    state.filters.shows.watchlist = e.target.value || "all";
+    renderShows();
+  });
+  $("#filterShowsWatched").addEventListener("change", (e) => {
+    state.filters.shows.watched = e.target.value || "all";
+    renderShows();
+  });
   $("#sortShows").addEventListener("change", (e) => {
     state.sort.shows = e.target.value;
     renderShows();
@@ -2109,6 +2334,26 @@ CHANGE NOTES
 
   $("#searchMovies").addEventListener("input", (e) => {
     state.search.movies = e.target.value || "";
+    renderMovies();
+  });
+  $("#filterMoviesGenres").addEventListener("change", (e) => {
+    state.filters.movies.genres = getSelectedValues(e.target);
+    renderMovies();
+  });
+  $("#filterMoviesYear").addEventListener("change", (e) => {
+    state.filters.movies.year = e.target.value || "";
+    renderMovies();
+  });
+  $("#filterMoviesCollection").addEventListener("change", (e) => {
+    state.filters.movies.collection = e.target.value || "";
+    renderMovies();
+  });
+  $("#filterMoviesWatchlist").addEventListener("change", (e) => {
+    state.filters.movies.watchlist = e.target.value || "all";
+    renderMovies();
+  });
+  $("#filterMoviesWatched").addEventListener("change", (e) => {
+    state.filters.movies.watched = e.target.value || "all";
     renderMovies();
   });
   $("#sortMovies").addEventListener("change", (e) => {
