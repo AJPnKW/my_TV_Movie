@@ -294,8 +294,23 @@ CHANGE NOTES
     .chip .lines > *{ width:100%; }
     .chip .t{ color:var(--text); font-weight:950; font-size:11px; white-space:normal; line-height:1.1; }
     .chip .s{ color:var(--muted); font-size:10px; white-space:normal; line-height:1.1; }
-    .chip .epnum{ color:var(--muted); font-size:10px; font-weight:900; letter-spacing:0.04em; text-transform:uppercase; }
-    .chip .runtime{ color:var(--muted); font-size:9px; font-weight:900; }
+    .chip .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:2px 6px;
+      border-radius:999px;
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:0.04em;
+      text-transform:uppercase;
+      color:var(--text);
+      background:rgba(255,255,255,0.08);
+      border:1px solid rgba(255,255,255,0.18);
+      width:fit-content;
+    }
+    .chip .pill.epnum{ background:rgba(59,130,246,0.18); border-color:rgba(59,130,246,0.45); }
+    .chip .pill.runtime{ background:rgba(34,197,94,0.16); border-color:rgba(34,197,94,0.45); }
     .chip .iconstrip{ display:flex; gap:4px; flex-wrap:wrap; margin-top:2px; }
     .chip .logos{ display:flex; gap:6px; align-items:center; }
     .chip .chip-body{
@@ -1354,8 +1369,9 @@ CHANGE NOTES
             <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
               <div class="lines">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
-                <div class="s">${escHtml(epName)}${epTag ? ` <span class="epnum">${escHtml(epTag)}</span>` : ""}</div>
-                ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
+                <div class="s">${escHtml(epName)}</div>
+                ${epTag ? `<div class="pill epnum">${escHtml(epTag)}</div>` : ""}
+                ${it.runtime ? `<div class="pill runtime">${escHtml(it.runtime)}m</div>` : ""}
               </div>
               <div class="chip-body">
                 ${thumb}
@@ -1451,8 +1467,9 @@ CHANGE NOTES
             <button class="chip cal-episode hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
               <div class="lines">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
-                <div class="s">${escHtml(epName)}${epTag ? ` <span class="epnum">${escHtml(epTag)}</span>` : ""}</div>
-                ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
+                <div class="s">${escHtml(epName)}</div>
+                ${epTag ? `<div class="pill epnum">${escHtml(epTag)}</div>` : ""}
+                ${it.runtime ? `<div class="pill runtime">${escHtml(it.runtime)}m</div>` : ""}
               </div>
               <div class="chip-body">
                 ${thumb}
