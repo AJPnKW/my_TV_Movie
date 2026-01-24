@@ -39,6 +39,7 @@ CHANGE NOTES
       --cal-thumb-w: clamp(28px, 4vw, 44px);
       --cal-thumb-h: calc(var(--cal-thumb-w) * 1.6);
       --logo-h: 16px;
+      --provider-logo-h: 20px;
     }
 
     *{ box-sizing:border-box; }
@@ -370,7 +371,8 @@ CHANGE NOTES
     .chip .providerrow{
       display:flex;
       flex-wrap:wrap;
-      gap:4px;
+      column-gap:8px;
+      row-gap:4px;
       align-items:center;
       width:100%;
     }
@@ -455,7 +457,7 @@ CHANGE NOTES
       text-transform:none;
       letter-spacing:0.06em;
     }
-    .chip .netlogo-sm{ height:var(--logo-h); max-width:64px; object-fit:contain; }
+    .chip .netlogo-sm{ height:var(--provider-logo-h); width:auto; max-width:92px; object-fit:contain; display:inline-block; }
     .chip .progress{
       position:relative;
       height:4px;
@@ -1341,6 +1343,8 @@ CHANGE NOTES
         if (ui && typeof ui === 'object'){
           const lh = Number(ui.logo_height);
           if (Number.isFinite(lh) && lh > 0) document.documentElement.style.setProperty('--logo-h', `${lh}px`);
+          const plh = Number(ui.provider_logo_height);
+          if (Number.isFinite(plh) && plh > 0) document.documentElement.style.setProperty('--provider-logo-h', `${plh}px`);
         }
       }catch(_){/* noop */}
 
