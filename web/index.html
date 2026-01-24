@@ -590,7 +590,7 @@ CHANGE NOTES
 
     .seasonsgrid{
       display:grid;
-      grid-template-columns: 320px 1fr;
+      grid-template-columns: 240px 1fr;
       gap:14px;
       align-items:start;
     }
@@ -604,7 +604,7 @@ CHANGE NOTES
 
     .seasonpickerhead{
       display:flex;
-      justify-content:flex-end;
+      justify-content:flex-start;
       align-items:center;
       margin-bottom:8px;
       color:var(--muted);
@@ -642,19 +642,22 @@ CHANGE NOTES
       border-radius:18px;
       padding:10px;
       display:grid;
-      grid-template-columns: 130px 1fr;
+      grid-template-columns: 1fr;
       gap:10px;
       align-items:start;
-    }
-
-    .seasonposter{
-      border-radius:16px;
+      background-size:cover;
+      background-position:center;
+      position:relative;
       overflow:hidden;
-      border:1px solid rgba(255,255,255,0.10);
-      background:rgba(255,255,255,0.03);
-      aspect-ratio:2/3;
     }
-    .seasonposter img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .seasondetails::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:linear-gradient(180deg, rgba(10,14,20,0.72), rgba(10,14,20,0.85));
+      pointer-events:none;
+    }
+    .seasondetails > *{ position:relative; z-index:1; }
 
     .seasonmeta{ display:flex; flex-direction:column; gap:6px; }
     .seasonname{ font-weight:950; }
@@ -744,10 +747,10 @@ CHANGE NOTES
       font-size:13px;
       line-height:1.35;
       display:-webkit-box;
-      -webkit-line-clamp:4;
+      -webkit-line-clamp:3;
       -webkit-box-orient:vertical;
       overflow:hidden;
-      min-height: 70px;
+      min-height: 0;
     }
     .epactions{ margin-top:auto; display:flex; gap:8px; flex-wrap:wrap; }
 
@@ -770,8 +773,23 @@ CHANGE NOTES
       font-weight:800;
     }
     .providerblock{ margin-top:10px; }
-    .providerrows{ margin-top:6px; display:flex; flex-direction:column; gap:8px; }
-    .providerrow{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .providerrows{
+      margin-top:6px;
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+    }
+    .providerrow{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      align-items:flex-start;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.03);
+      border-radius:12px;
+      padding:8px;
+      min-height:60px;
+    }
     .providerlabel{
       font-size:10px;
       letter-spacing:0.16em;
@@ -792,6 +810,16 @@ CHANGE NOTES
       font-weight:800;
       text-decoration:none;
     }
+    .providerchips{ display:flex; flex-wrap:wrap; gap:6px; }
+    .showmeta{
+      margin-top:6px;
+      display:grid;
+      gap:4px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
+    .showmeta span{ color:var(--text); font-weight:900; }
     .providerlogo{ height:16px; width:auto; object-fit:contain; }
 
     .footer{ margin-top:10px; color:var(--muted); font-size:12px; padding:2px 4px; }
@@ -1026,10 +1054,9 @@ CHANGE NOTES
     const wp = getWatchProviders(item);
     const id = item?.tmdb_id ?? item?.id;
     if (!wp || !id) return "";
-    const regions = ["US", "CA", "AU"];
+    const regions = ["US", "CA", "AU", "GB"];
     const rows = regions.map(region => {
       const providers = collectProvidersForRegion(wp, region);
-      if (!providers.length) return "";
       const watchUrl = tmdbWatchUrl(kind, id);
       const chips = providers.slice(0, 8).map(p => {
         const logo = providerLogoUrl(p);
@@ -1037,14 +1064,14 @@ CHANGE NOTES
         const img = src ? `<img class="providerlogo" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
         return `<a class="providerchip" href="${escHtml(watchUrl)}" target="_blank" rel="noopener">${img}${escHtml(logo.name || "Provider")}</a>`;
       }).join("");
+      const body = chips || `<div class="muted" style="font-size:11px;">No providers</div>`;
       return `
         <div class="providerrow">
           <span class="providerlabel">${region}</span>
-          ${chips}
+          <div class="providerchips">${body}</div>
         </div>`;
-    }).filter(Boolean).join("");
+    }).join("");
 
-    if (!rows) return "";
     return `
       <div class="providerblock">
         <div class="metatitle">Where to watch</div>
@@ -1788,7 +1815,7 @@ CHANGE NOTES
         <div>
           <div style="font-weight:950;font-size:18px;">${escHtml(title)}</div>
           <div style="margin-top:8px;color:rgba(255,255,255,0.80);line-height:1.35;">${escHtml(overview)}</div>
-          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;">
             ${linkOrDisabled("TMDB", tmdbMovieUrl(Number(m?.tmdb_id)||0))}
             ${linkOrDisabled("VidSrc", vidsrc)}
             ${linkOrDisabled("VidEasy", videasy)}
@@ -1842,7 +1869,7 @@ CHANGE NOTES
     }
 
     const selSeason = selItem ? selItem.s : null;
-    const seasonPoster = selSeason ? pickImage(selSeason, "poster_local", "poster_path") : "";
+    const seasonBackdrop = selSeason ? pickImage(selSeason, "backdrop_local", "backdrop_path") : "";
     const seasonName = safeText(selSeason?.name || (selItem?.n != null ? `Season ${selItem.n}` : "Season"));
     const seasonOverview = safeText(selSeason?.overview || "");
     const seasonAir = safeText(selSeason?.air_date || selSeason?.first_air_date || "");
@@ -1961,6 +1988,15 @@ CHANGE NOTES
             <div class="heroright">
               <div class="showtitle">${escHtml(title)}</div>
               <div class="pills">${pills}</div>
+              <div class="showmeta">
+                ${statusText ? `<div>Status <span>${escHtml(statusText)}</span></div>` : ""}
+                ${networkName ? `<div>Network <span>${escHtml(networkName)}</span></div>` : ""}
+                ${genreNames.length ? `<div>Genres <span>${escHtml(genreNames.join(", "))}</span></div>` : ""}
+                ${(voteAvg != null || voteCnt != null) ? `<div>★ <span>${voteAvg != null ? escHtml(voteAvg) : ""}${voteCnt != null ? ` (${escHtml(voteCnt)})` : ""}</span></div>` : ""}
+                ${premiered ? `<div>Premiered <span>${escHtml(fmtDate(premiered))}</span></div>` : ""}
+                ${lastAir ? `<div>Last <span>${escHtml(fmtDate(lastAir))}</span></div>` : ""}
+                ${show?.tmdb_id != null ? `<div>TMDB <span>${escHtml(show.tmdb_id)}</span></div>` : ""}
+              </div>
               <div class="showactions">
                 ${linkOrDisabled("TMDB", tmdbUrl)}
                 ${linkOrDisabled("RT", rtUrl)}
@@ -1974,19 +2010,16 @@ CHANGE NOTES
           <div class="section">
             <div class="seasonsgrid">
               <div class="seasonpicker">
-                <div class="seasonpickerhead">Season</div>
+                <div class="seasonpickerhead">Select Season</div>
                 <div class="seasonlist">
                   ${seasonOptions || `<div class="muted" style="padding:10px;">No seasons available.</div>`}
                 </div>
               </div>
 
-              <div class="seasondetails">
-                <div class="seasonposter">
-                  ${seasonPoster ? `<img src="${escHtml(seasonPoster)}" alt="" loading="lazy" />` : `<div class="posterFallback">No Poster</div>`}
-                </div>
+              <div class="seasondetails"${seasonBackdrop ? ` style="background-image:url('${escHtml(seasonBackdrop)}');"` : ""}>
                 <div class="seasonmeta">
                   <div class="seasonname">${escHtml(seasonName)}</div>
-                  ${seasonAir ? `<div class="seasonair">Season premiered ${escHtml(fmtDate(seasonAir))}</div>` : ""}
+                  ${seasonAir ? `<div class="seasonair">Premiered ${escHtml(fmtDate(seasonAir))}</div>` : ""}
                   ${seasonOverview ? `<div class="seasonov">${escHtml(seasonOverview)}</div>` : ""}
                 </div>
               </div>
