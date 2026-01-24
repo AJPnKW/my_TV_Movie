@@ -369,6 +369,16 @@ def compute_local_episode_still(cfg: Config, still_path: Optional[str]) -> Optio
     return f"{d}/{name}" if d else None
 
 
+def _is_future_air_date(air_date: Optional[str]) -> bool:
+    if not air_date:
+        return False
+    try:
+        d = _dt.date.fromisoformat(air_date)
+    except Exception:
+        return False
+    return d > _dt.date.today()
+
+
 def build_tv_seasons_episodes(
     client: "TMDBClient",
     cfg: Config,
@@ -376,6 +386,7 @@ def build_tv_seasons_episodes(
     season_mode: str,
     season_filter: Optional[List[int]],
     season_min: Optional[int],
+    include_future: bool,
 ) -> List[Dict[str, Any]]:
     """Build full Season -> Episode hierarchy via /tv/{id}/season/{season_number}."""
     try:
@@ -430,6 +441,8 @@ def build_tv_seasons_episodes(
                 ep_num = int(ep.get("episode_number"))
             except Exception:
                 continue
+            if not include_future and _is_future_air_date(ep.get("air_date")):
+                continue
             still_path = ep.get("still_path")
             season_number = int(ep.get("season_number") or sn)
             ep_obj: Dict[str, Any] = {
@@ -451,7 +464,8 @@ def build_tv_seasons_episodes(
             }
             season_obj["episodes"].append(ep_obj)
 
-        seasons_out.append(season_obj)
+        if include_future or season_obj["episodes"]:
+            seasons_out.append(season_obj)
 
     return seasons_out
 
@@ -642,6 +656,8 @@ def main() -> int:
         title = (item.get("title") or item.get("name") or "").strip()
         tmdb_id_raw = str(item.get("tmdb_id") or "").strip()
         season_spec = str(item.get("season_spec") or item.get("seasons") or "").strip()
+        include_future = item.get("include_future")
+        include_future = True if include_future is None else bool(include_future)
 
         # Prefer parsed rule fields if present (from parse_txt_to_json.py)
         season_mode = str(item.get("season_mode") or "").strip().lower() or ""
@@ -712,6 +728,7 @@ def main() -> int:
                 "links": {"tmdb": f"https://www.themoviedb.org/tv/{int(tmdb_id)}"},
                 "season_mode": season_mode,
                 "season_filter": seasons,  # None => all
+                "include_future": include_future,
 
                 # --- rich TMDB fields (NO translations) ---
                 "id": int(tmdb_id),
@@ -751,6 +768,7 @@ def main() -> int:
                     season_mode=season_mode,
                     season_filter=seasons,
                     season_min=season_min,
+                    include_future=include_future,
                 )
             except Exception as _ex_deep:
                 logging.warning("[show] deep build failed tmdb_id=%s err=%s", tmdb_id, _ex_deep)
