@@ -60,6 +60,12 @@ def main() -> int:
         _write_line(logfp, f"RESULT    : FAIL (tmdb exit_code={rc_tmdb})")
         return rc_tmdb
 
+    # 2) OMDb enrichment (optional; requires API_OMDB_KEY)
+    rc_omdb = _run("OMDB", [py, os.path.join("scripts", "fetch_omdb.py")], logfp)
+    if rc_omdb != 0:
+        _write_line(logfp, f"RESULT    : FAIL (omdb exit_code={rc_omdb})")
+        return rc_omdb
+
     # 3) Trakt enrichment (public)
     rc_trakt = _run("TRAKT", [py, os.path.join("scripts", "fetch_trakt.py")], logfp)
     if rc_trakt != 0:
