@@ -784,6 +784,7 @@ CHANGE NOTES
     tab: "calendar",
     lastNonShowHash: "#calendar",
     calendarMonth: null,
+    watchState: null,
     search: { shows: "", movies: "" },
     sort: { shows: "title", movies: "title" },
     show: {
@@ -927,6 +928,23 @@ CHANGE NOTES
     return pct;
   }
 
+  function watchedEpisodePercent(showId, seasonNum, episodeNum){
+    const ws = state.watchState;
+    if (!ws || !ws.shows) return null;
+    const show = ws.shows[String(showId)];
+    if (!show || !show.seasons) return null;
+    const season = show.seasons[String(seasonNum)];
+    if (!season || !Array.isArray(season.episodes)) return null;
+    if (season.episodes.includes(Number(episodeNum))) return 100;
+    return null;
+  }
+
+  function watchedMoviePercent(movieId){
+    const ws = state.watchState;
+    if (!ws || !ws.movies) return null;
+    return ws.movies[String(movieId)] ? 100 : null;
+  }
+
   function pickImage(obj, localKey, pathKey){
     if (!obj) return "";
     const local = safeText(obj[localKey]).trim();
@@ -1035,6 +1053,7 @@ CHANGE NOTES
       state.data.shows  = Array.isArray(state.data.shows)  ? state.data.shows  : [];
       state.data.errors = Array.isArray(state.data.errors) ? state.data.errors : [];
       state.data.meta   = state.data.meta && typeof state.data.meta === "object" ? state.data.meta : {};
+      state.watchState = (state.data.watch_state && state.data.watch_state.trakt) ? state.data.watch_state.trakt : null;
 
       $("#footer").textContent = footerText();
       setStatus(true, "Ready");
@@ -1182,7 +1201,7 @@ CHANGE NOTES
             network_logo_local: networkLocalLogo,
             network_logo_tmdb: networkTmdbLogo,
             watch_providers: getWatchProviders(show),
-            progress: progressPercent(ep)
+            progress: (progressPercent(ep) ?? watchedEpisodePercent(showId, Number(ep?.season_number ?? season?.season_number) || 0, Number(ep?.episode_number) || 0))
           });
           eventsByDate.set(dateKey, arr);
         }
@@ -1202,7 +1221,7 @@ CHANGE NOTES
         thumb: mapMoviePoster(movie),
         links: movie?.links || {},
         watch_providers: getWatchProviders(movie),
-        progress: progressPercent(movie)
+        progress: (progressPercent(movie) ?? watchedMoviePercent(Number(movie?.tmdb_id) || 0))
       });
       eventsByDate.set(dateKey, arr);
     }
