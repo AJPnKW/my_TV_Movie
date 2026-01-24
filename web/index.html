@@ -763,6 +763,20 @@ CHANGE NOTES
   function tmdbShowUrl(id){ return `https://www.themoviedb.org/tv/${id}`; }
   function tmdbMovieUrl(id){ return `https://www.themoviedb.org/movie/${id}`; }
   function tmdbEpisodeUrl(showId, s, e){ return `https://www.themoviedb.org/tv/${showId}/season/${s}/episode/${e}`; }
+  function tmdbLogoUrl(path){
+    const p = safeText(path).trim();
+    return p ? `https://image.tmdb.org/t/p/w154${p}` : "";
+  }
+
+  function slugifyName(name){
+    return safeText(name).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  }
+
+  function guessLocalNetworkLogo(name){
+    const slug = slugifyName(name);
+    if (!slug) return "";
+    return `/assets/logos/services/${slug}.png`;
+  }
 
   function pickImage(obj, localKey, pathKey){
     if (!obj) return "";
