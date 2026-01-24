@@ -1237,11 +1237,6 @@ CHANGE NOTES
       (lastAir ? `• ${fmtDate(lastAir)}` : ""),
     ].join(" ").trim();
 
-    // show.links may exist
-    const links = s?.links && typeof s.links === "object" ? s.links : {};
-    const vidsrc = safeText(links?.vidsrc).trim();
-    const videasy = safeText(links?.videasy).trim();
-
     return `
       <div class="card">
         <button type="button" class="imgbox" data-show-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
@@ -1252,8 +1247,6 @@ CHANGE NOTES
           <div class="cardmeta">${escHtml(meta)}</div>
           <div class="btnrow">
             ${linkOrDisabled("TMDB", id ? tmdbShowUrl(id) : "")}
-            ${linkOrDisabled("VidEasy", videasy)}
-            ${linkOrDisabled("VidSrc", vidsrc)}
           </div>
         </div>
       </div>
