@@ -109,6 +109,15 @@ async function main() {
     log(`[requestfailed] ${req.url()} :: ${f ? f.errorText : "unknown"}`);
   });
 
+  page.on("response", (res) => {
+    try {
+      const status = res.status();
+      if (status >= 400) {
+        log(`[response] ${status} ${res.url()}`);
+      }
+    } catch {}
+  });
+
   // Let it settle
   await sleep(7000);
 
