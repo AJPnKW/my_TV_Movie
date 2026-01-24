@@ -2,8 +2,8 @@
   "errors": [
     {
       "type": "trakt_watch_state",
-      "message": "HTTP 403 calling Trakt: <!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!--<![endif]-->\n<head>\n<title>Attention Required! | Cloudflare</title>\n<meta charset=\"UTF-8\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" ",
-      "utc": "2026-01-24T18:40:15Z"
+      "message": "401 Unauthorized; refresh attempt failed: HTTP Error 400: Bad Request",
+      "utc": "2026-01-24T19:03:13Z"
     }
   ],
   "meta": {
@@ -17,7 +17,7 @@
       "movies": 64,
       "shows": 119
     },
-    "generated_utc": "2026-01-24T18:38:34Z"
+    "generated_utc": "2026-01-24T19:02:39Z"
   },
   "metadata": {
     "trakt_public_enrichment": {
@@ -32,7 +32,7 @@
       },
       "mode": "public_lookup",
       "script": "fetch_trakt.py",
-      "timestamp_utc": "2026-01-24T18:40:14Z"
+      "timestamp_utc": "2026-01-24T19:03:12Z"
     }
   },
   "movies": [
@@ -66013,7 +66013,7 @@
       "tmdb_id": 945729,
       "trakt_id": 759594,
       "vote_average": 6.577,
-      "vote_count": 2712,
+      "vote_count": 2713,
       "watch_providers": {
         "id": 945729,
         "results": {
@@ -142003,7 +142003,7 @@
       "tvdb_id": 393187,
       "type": "Scripted",
       "vote_average": 7.443,
-      "vote_count": 1131,
+      "vote_count": 1132,
       "watch_providers": {
         "id": 114461,
         "results": {
@@ -270738,8 +270738,8 @@
         "season_number": 5,
         "show_id": 66732,
         "still_path": "/kP23RWbUWM6vGhT9PxFyP5VT3y4.jpg",
-        "vote_average": 6.8,
-        "vote_count": 168
+        "vote_average": 6.774,
+        "vote_count": 170
       },
       "links": {
         "tmdb": "https://www.themoviedb.org/tv/66732"
@@ -270961,8 +270961,8 @@
       "trakt_id": 104439,
       "tvdb_id": 305288,
       "type": "Scripted",
-      "vote_average": 8.581,
-      "vote_count": 20395,
+      "vote_average": 8.582,
+      "vote_count": 20399,
       "watch_providers": {
         "id": 66732,
         "results": {
