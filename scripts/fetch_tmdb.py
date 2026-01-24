@@ -3,9 +3,9 @@
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
-# [VERSION] v2.8.3
-# [UPDATED] 2026-01-13
-# [BUILD]   14.01.07
+# [VERSION] v2.9.0
+# [UPDATED] 2026-01-24
+# [BUILD]   24.01.01
 #
 # [PATCH GOALS]
 # - Fix broken streaming links caused by config key mismatch (streaming vs streaming_services)
@@ -578,6 +578,18 @@ def safe_external_ids(client: TMDBClient, media: str, tmdb_id: int) -> Dict[str,
         return {}
 
 
+def safe_watch_providers(client: TMDBClient, media: str, tmdb_id: int) -> Dict[str, Any]:
+    try:
+        if media == "movie":
+            js = client.get_json(f"/movie/{tmdb_id}/watch/providers")
+        else:
+            js = client.get_json(f"/tv/{tmdb_id}/watch/providers")
+        return js if isinstance(js, dict) else {}
+    except Exception as ex:
+        logging.warning("[watch_providers] media=%s tmdb_id=%s err=%s", media, tmdb_id, ex)
+        return {}
+
+
 # -------------------------
 # Core build
 # -------------------------
@@ -605,7 +617,7 @@ def main() -> int:
             "generated_utc": _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
             "builder": {
                 "script": "scripts/fetch_tmdb.py",
-                "version": "v2.7.0",
+                "version": "v2.9.0",
                 "config_sha1": sha1_text(read_text_file(CONFIG_JSON)),
             },
         },
@@ -682,6 +694,7 @@ def main() -> int:
 
             tmdb_id = int(show.get("id") or tmdb_id or 0)
             ext = safe_external_ids(client, "show", tmdb_id)
+            watch_providers = safe_watch_providers(client, "show", tmdb_id)
 
             poster_path = show.get("poster_path")
             backdrop_path = show.get("backdrop_path")
@@ -726,6 +739,7 @@ def main() -> int:
                 "last_episode_to_air": show.get("last_episode_to_air"),
                 "created_by": show.get("created_by") or [],
                 "networks": show.get("networks") or [],
+                "watch_providers": watch_providers,
             }
 
             # Deep build seasons + episodes (required for UI + Trakt mapping)
@@ -782,6 +796,7 @@ def main() -> int:
 
             tmdb_id = int(mv.get("id") or tmdb_id or 0)
             ext = safe_external_ids(client, "movie", tmdb_id)
+            watch_providers = safe_watch_providers(client, "movie", tmdb_id)
 
             poster_path = mv.get("poster_path")
             backdrop_path = mv.get("backdrop_path")
@@ -814,6 +829,7 @@ def main() -> int:
                 "production_companies": mv.get("production_companies") or [],
                 "production_countries": mv.get("production_countries") or [],
                 "runtime": mv.get("runtime"),
+                "watch_providers": watch_providers,
             }
 
             data["movies"].append(mv_obj)
