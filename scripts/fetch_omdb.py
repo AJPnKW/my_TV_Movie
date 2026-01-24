@@ -51,6 +51,7 @@ def fetch_omdb(title: str, year: str | None):
         "imdb_rating": data.get("imdbRating"),
         "imdb_votes": data.get("imdbVotes"),
         "metascore": data.get("Metascore"),
+        "ratings": data.get("Ratings") or [],
         "tomato_meter": data.get("tomatoMeter", None),
         "tomato_rating": data.get("tomatoRating", None),
         "tomato_votes": data.get("tomatoReviews", None),
@@ -71,7 +72,7 @@ def main():
 
     out = {"movies": []}
     for mv in movies:
-        title = mv.get("name")
+        title = mv.get("title") or mv.get("name")
         year = mv.get("release_date", "")[:4] if mv.get("release_date") else None
         if not title:
             continue
@@ -79,7 +80,7 @@ def main():
         if info:
             out["movies"].append(
                 {
-                    "movie_id": mv.get("movie_id"),
+                    "tmdb_id": mv.get("tmdb_id"),
                     "title": title,
                     "year": year,
                     "omdb": info,
@@ -87,7 +88,20 @@ def main():
             )
 
     OUT.write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"OK: wrote {OUT}")
+
+    # Optionally merge into data.json (non-destructive, adds only omdb field)
+    try:
+        data = json.loads(DATA_JSON.read_text(encoding="utf-8"))
+        by_tmdb = {str(x.get("tmdb_id")): x.get("omdb") for x in out.get("movies") or [] if x.get("tmdb_id")}
+        if by_tmdb and isinstance(data.get("movies"), list):
+            for mv in data["movies"]:
+                key = str(mv.get("tmdb_id"))
+                if key in by_tmdb:
+                    mv["omdb"] = by_tmdb[key]
+        DATA_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"OK: wrote {OUT} and merged OMDb into {DATA_JSON}")
+    except Exception as ex:
+        print(f"WARN: wrote {OUT} but could not merge into data.json: {ex}")
 
 
 if __name__ == "__main__":
