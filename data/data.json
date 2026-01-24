@@ -2,8 +2,8 @@
   "errors": [
     {
       "type": "trakt_watch_state",
-      "message": "401 Unauthorized; refresh attempt failed: HTTP Error 400: Bad Request",
-      "utc": "2026-01-24T17:46:43Z"
+      "message": "HTTP 403 calling Trakt: <!DOCTYPE html>\n<!--[if lt IE 7]> <html class=\"no-js ie6 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 7]>    <html class=\"no-js ie7 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if IE 8]>    <html class=\"no-js ie8 oldie\" lang=\"en-US\"> <![endif]-->\n<!--[if gt IE 8]><!--> <html class=\"no-js\" lang=\"en-US\"> <!--<![endif]-->\n<head>\n<title>Attention Required! | Cloudflare</title>\n<meta charset=\"UTF-8\" />\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n<meta http-equiv=\"X-UA-Compatible\" ",
+      "utc": "2026-01-24T18:18:50Z"
     }
   ],
   "meta": {
@@ -17,7 +17,7 @@
       "movies": 64,
       "shows": 119
     },
-    "generated_utc": "2026-01-24T17:46:15Z"
+    "generated_utc": "2026-01-24T18:18:18Z"
   },
   "metadata": {
     "trakt_public_enrichment": {
@@ -32,7 +32,7 @@
       },
       "mode": "public_lookup",
       "script": "fetch_trakt.py",
-      "timestamp_utc": "2026-01-24T17:46:42Z"
+      "timestamp_utc": "2026-01-24T18:18:49Z"
     }
   },
   "movies": [
@@ -59058,8 +59058,8 @@
       "title": "Now You See Me: Now You Don't",
       "tmdb_id": 425274,
       "trakt_id": 292275,
-      "vote_average": 6.6,
-      "vote_count": 937,
+      "vote_average": 6.583,
+      "vote_count": 939,
       "watch_providers": {
         "id": 425274,
         "results": {
@@ -135197,6 +135197,7 @@
       "id": 108545,
       "imdb_id": "tt13016388",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-03-21",
       "last_episode_to_air": {
         "air_date": "2024-03-21",
@@ -135210,7 +135211,7 @@
         "season_number": 1,
         "show_id": 108545,
         "still_path": "/bXQgkpS4TV6FottbpKjv82AJunG.jpg",
-        "vote_average": 6.9,
+        "vote_average": 6.875,
         "vote_count": 60
       },
       "links": {
@@ -136987,6 +136988,7 @@
       "id": 224372,
       "imdb_id": "tt27497448",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-18",
       "last_episode_to_air": {
         "air_date": "2026-01-18",
@@ -138184,6 +138186,7 @@
       "id": 245312,
       "imdb_id": "tt26670955",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-11-20",
       "last_episode_to_air": {
         "air_date": "2025-11-20",
@@ -140143,6 +140146,7 @@
       "id": 125935,
       "imdb_id": "tt14218830",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-14",
       "last_episode_to_air": {
         "air_date": "2026-01-21",
@@ -141662,6 +141666,7 @@
       "id": 114461,
       "imdb_id": "tt13622776",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2023-10-03",
       "last_episode_to_air": {
         "air_date": "2023-10-03",
@@ -142894,6 +142899,7 @@
       "id": 1413,
       "imdb_id": "tt1844624",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-04-24",
       "last_episode_to_air": {
         "air_date": "2024-04-24",
@@ -146420,7 +146426,7 @@
       "tvdb_id": 250487,
       "type": "Scripted",
       "vote_average": 8.093,
-      "vote_count": 5925,
+      "vote_count": 5926,
       "watch_providers": {
         "id": 1413,
         "results": {
@@ -147571,6 +147577,7 @@
       "id": 83867,
       "imdb_id": "tt9253284",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-05-13",
       "last_episode_to_air": {
         "air_date": "2025-05-13",
@@ -149173,6 +149180,7 @@
       "id": 82452,
       "imdb_id": "tt9018736",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-02-22",
       "last_episode_to_air": {
         "air_date": "2024-02-22",
@@ -150954,6 +150962,7 @@
       "id": 225462,
       "imdb_id": "tt27619797",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2023-05-17",
       "last_episode_to_air": {
         "air_date": "2023-05-17",
@@ -152662,6 +152671,7 @@
       "id": 291506,
       "imdb_id": "tt36957934",
       "in_production": true,
+      "include_future": true,
       "last_air_date": null,
       "last_episode_to_air": null,
       "links": {
@@ -152753,6 +152763,7 @@
       "id": 225385,
       "imdb_id": "tt27995113",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-12-05",
       "last_episode_to_air": {
         "air_date": "2024-12-05",
@@ -154493,6 +154504,7 @@
       "id": 42009,
       "imdb_id": "tt2085059",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-04-10",
       "last_episode_to_air": {
         "air_date": "2025-04-10",
@@ -156972,6 +156984,7 @@
       "id": 60585,
       "imdb_id": "tt3502248",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2021-06-24",
       "last_episode_to_air": {
         "air_date": "2021-06-24",
@@ -161599,6 +161612,7 @@
       "id": 94038,
       "imdb_id": "tt11382554",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-08",
       "last_episode_to_air": {
         "air_date": "2026-01-15",
@@ -163138,6 +163152,7 @@
       "id": 247168,
       "imdb_id": "tt31449991",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-10-28",
       "last_episode_to_air": {
         "air_date": "2025-10-28",
@@ -164187,6 +164202,7 @@
       "id": 204490,
       "imdb_id": "tt21088136",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-02-21",
       "last_episode_to_air": {
         "air_date": "2024-02-21",
@@ -165546,6 +165562,7 @@
       "id": 213306,
       "imdb_id": "tt11794812",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-11-14",
       "last_episode_to_air": {
         "air_date": "2024-11-14",
@@ -167364,6 +167381,7 @@
       "id": 128904,
       "imdb_id": "tt15017118",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-04-27",
       "last_episode_to_air": {
         "air_date": "2025-04-27",
@@ -168669,6 +168687,7 @@
       "id": 245703,
       "imdb_id": "tt27995114",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-05-29",
       "last_episode_to_air": {
         "air_date": "2025-05-29",
@@ -170480,6 +170499,7 @@
       "id": 239770,
       "imdb_id": "tt31433814",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-05-31",
       "last_episode_to_air": {
         "air_date": "2025-05-31",
@@ -171890,6 +171910,7 @@
       "id": 252000,
       "imdb_id": "tt32132630",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-10",
       "last_episode_to_air": {
         "air_date": "2025-12-10",
@@ -174048,6 +174069,7 @@
       "id": 90228,
       "imdb_id": "tt10466872",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-12-22",
       "last_episode_to_air": {
         "air_date": "2024-12-22",
@@ -176008,6 +176030,7 @@
       "id": 226285,
       "imdb_id": "tt26591110",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-18",
       "last_episode_to_air": {
         "air_date": "2025-12-18",
@@ -177876,6 +177899,7 @@
       "id": 258902,
       "imdb_id": "tt20782190",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-10-16",
       "last_episode_to_air": {
         "air_date": "2025-10-16",
@@ -179072,6 +179096,7 @@
       "id": 60574,
       "imdb_id": "tt2442560",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2022-04-03",
       "last_episode_to_air": {
         "air_date": "2022-04-03",
@@ -179743,7 +179768,7 @@
               "show_id": 60574,
               "still_local": "/assets/stills/episodes/2JxCri29xSPtPdrrZBWtbehhClL.jpg",
               "still_path": "/2JxCri29xSPtPdrrZBWtbehhClL.jpg",
-              "vote_average": 7.9,
+              "vote_average": 7.92,
               "vote_count": 119
             },
             {
@@ -179764,7 +179789,7 @@
               "show_id": 60574,
               "still_local": "/assets/stills/episodes/yQUuWCeTkuhZrXEKcEtMWisoCwO.jpg",
               "still_path": "/yQUuWCeTkuhZrXEKcEtMWisoCwO.jpg",
-              "vote_average": 8.2,
+              "vote_average": 8.155,
               "vote_count": 84
             },
             {
@@ -179785,7 +179810,7 @@
               "show_id": 60574,
               "still_local": "/assets/stills/episodes/lGR1zCMvbBKb8A8LMnqQCeaXTUw.jpg",
               "still_path": "/lGR1zCMvbBKb8A8LMnqQCeaXTUw.jpg",
-              "vote_average": 8.1,
+              "vote_average": 8.148,
               "vote_count": 81
             },
             {
@@ -179806,7 +179831,7 @@
               "show_id": 60574,
               "still_local": "/assets/stills/episodes/zYGvwuFcg5WdqqdR5px1xADc8bn.jpg",
               "still_path": "/zYGvwuFcg5WdqqdR5px1xADc8bn.jpg",
-              "vote_average": 8.0,
+              "vote_average": 7.952,
               "vote_count": 62
             },
             {
@@ -179827,7 +179852,7 @@
               "show_id": 60574,
               "still_local": "/assets/stills/episodes/b6Yhg94P1OvTWeOuvZkZ2v5Ct4t.jpg",
               "still_path": "/b6Yhg94P1OvTWeOuvZkZ2v5Ct4t.jpg",
-              "vote_average": 8.2,
+              "vote_average": 8.208,
               "vote_count": 60
             },
             {
@@ -179848,7 +179873,7 @@
               "show_id": 60574,
               "still_local": "/assets/stills/episodes/rxEHqVvWCXLbNDfO1Z6S4r9pxHY.jpg",
               "still_path": "/rxEHqVvWCXLbNDfO1Z6S4r9pxHY.jpg",
-              "vote_average": 8.7,
+              "vote_average": 8.692,
               "vote_count": 73
             }
           ],
@@ -182124,6 +182149,7 @@
       "id": 93740,
       "imdb_id": "tt0804484",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-09-11",
       "last_episode_to_air": {
         "air_date": "2025-09-11",
@@ -182188,7 +182214,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/eYwAsUtxMxyGv1qJ9asMftaqjUE.jpg",
               "still_path": "/eYwAsUtxMxyGv1qJ9asMftaqjUE.jpg",
-              "vote_average": 7.5,
+              "vote_average": 7.534,
               "vote_count": 87
             },
             {
@@ -182230,7 +182256,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/cU2elll7NKNGnXxmDPSFntlJnul.jpg",
               "still_path": "/cU2elll7NKNGnXxmDPSFntlJnul.jpg",
-              "vote_average": 6.3,
+              "vote_average": 6.323,
               "vote_count": 65
             },
             {
@@ -182251,7 +182277,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/k0sNoraOGogMPnzn68Ws973PtEN.jpg",
               "still_path": "/k0sNoraOGogMPnzn68Ws973PtEN.jpg",
-              "vote_average": 6.3,
+              "vote_average": 6.29,
               "vote_count": 62
             },
             {
@@ -182272,7 +182298,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/dIjF3UqGq0Rqa0yJ6QpMQtpo3xu.jpg",
               "still_path": "/dIjF3UqGq0Rqa0yJ6QpMQtpo3xu.jpg",
-              "vote_average": 6.2,
+              "vote_average": 6.233,
               "vote_count": 60
             },
             {
@@ -182314,7 +182340,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/xFFvPC2E2pvItVpz6VHdSD8WxJ1.jpg",
               "still_path": "/xFFvPC2E2pvItVpz6VHdSD8WxJ1.jpg",
-              "vote_average": 6.3,
+              "vote_average": 6.281,
               "vote_count": 57
             },
             {
@@ -182335,7 +182361,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/lTr4e8NpKN60X3fd24FAxiY32WB.jpg",
               "still_path": "/lTr4e8NpKN60X3fd24FAxiY32WB.jpg",
-              "vote_average": 6.3,
+              "vote_average": 6.315,
               "vote_count": 54
             },
             {
@@ -182356,7 +182382,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/oB5uoHXfPIFeDkmfSrHL8SdxAAS.jpg",
               "still_path": "/oB5uoHXfPIFeDkmfSrHL8SdxAAS.jpg",
-              "vote_average": 6.5,
+              "vote_average": 6.463,
               "vote_count": 54
             },
             {
@@ -182377,7 +182403,7 @@
               "show_id": 93740,
               "still_local": "/assets/stills/episodes/tJXAQitxYZ4QjghdgDJrKPsbJUx.jpg",
               "still_path": "/tJXAQitxYZ4QjghdgDJrKPsbJUx.jpg",
-              "vote_average": 6.4,
+              "vote_average": 6.379,
               "vote_count": 58
             }
           ],
@@ -183979,6 +184005,7 @@
       "id": 124364,
       "imdb_id": "tt9813792",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-11-24",
       "last_episode_to_air": {
         "air_date": "2024-11-24",
@@ -185888,6 +185915,7 @@
       "id": 205715,
       "imdb_id": "tt13159924",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-10-22",
       "last_episode_to_air": {
         "air_date": "2025-10-22",
@@ -187708,6 +187736,7 @@
       "id": 126027,
       "imdb_id": "tt11379026",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-18",
       "last_episode_to_air": {
         "air_date": "2025-12-18",
@@ -189242,6 +189271,7 @@
       "id": 124101,
       "imdb_id": "tt11815682",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-05-29",
       "last_episode_to_air": {
         "air_date": "2025-05-29",
@@ -191870,6 +191900,7 @@
       "id": 243217,
       "imdb_id": "tt15977292",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-05-01",
       "last_episode_to_air": {
         "air_date": "2025-05-01",
@@ -193655,6 +193686,7 @@
       "id": 124834,
       "imdb_id": "tt10638036",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2024-10-03",
       "last_episode_to_air": {
         "air_date": "2024-10-03",
@@ -195799,6 +195831,7 @@
       "id": 301507,
       "imdb_id": "tt35495073",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-26",
       "last_episode_to_air": {
         "air_date": "2025-12-26",
@@ -196330,6 +196363,7 @@
       "id": 226637,
       "imdb_id": "tt22091076",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-20",
       "last_episode_to_air": {
         "air_date": "2026-01-20",
@@ -197979,6 +198013,7 @@
       "id": 198102,
       "imdb_id": "tt19854762",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-21",
       "last_episode_to_air": {
         "air_date": "2026-01-21",
@@ -200146,6 +200181,7 @@
       "id": 94997,
       "imdb_id": "tt11198330",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-08-04",
       "last_episode_to_air": {
         "air_date": "2024-08-04",
@@ -203965,6 +204001,7 @@
       "id": 275715,
       "imdb_id": "tt34375633",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-11-30",
       "last_episode_to_air": {
         "air_date": "2025-12-07",
@@ -204524,6 +204561,7 @@
       "id": 30901,
       "imdb_id": "tt0338616",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-13",
       "last_episode_to_air": {
         "air_date": "2025-12-13",
@@ -206659,6 +206697,7 @@
       "id": 61913,
       "imdb_id": "tt4422950",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-18",
       "last_episode_to_air": {
         "air_date": "2026-01-21",
@@ -207160,6 +207199,7 @@
       "id": 200875,
       "imdb_id": "tt19244304",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-14",
       "last_episode_to_air": {
         "air_date": "2025-12-14",
@@ -208847,6 +208887,7 @@
       "id": 12098,
       "imdb_id": "tt0294137",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2001-07-14",
       "last_episode_to_air": {
         "air_date": "2001-07-14",
@@ -209214,6 +209255,7 @@
       "id": 125325,
       "imdb_id": null,
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2000-06-29",
       "last_episode_to_air": {
         "air_date": "2000-06-29",
@@ -209542,6 +209584,7 @@
       "id": 157741,
       "imdb_id": "tt14186672",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-18",
       "last_episode_to_air": {
         "air_date": "2026-01-18",
@@ -211655,6 +211698,7 @@
       "id": 197449,
       "imdb_id": "tt14271498",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-09",
       "last_episode_to_air": {
         "air_date": "2025-12-09",
@@ -213275,6 +213319,7 @@
       "id": 274479,
       "imdb_id": "tt33022310",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-09-25",
       "last_episode_to_air": {
         "air_date": "2025-09-25",
@@ -213684,6 +213729,7 @@
       "id": 279471,
       "imdb_id": "tt35466672",
       "in_production": true,
+      "include_future": true,
       "last_air_date": null,
       "last_episode_to_air": null,
       "links": {
@@ -213866,6 +213912,7 @@
       "id": 204503,
       "imdb_id": "tt8921496",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2018-06-18",
       "last_episode_to_air": {
         "air_date": "2018-06-18",
@@ -214296,6 +214343,7 @@
       "id": 135993,
       "imdb_id": "tt6622524",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2012-06-24",
       "last_episode_to_air": {
         "air_date": "2012-06-24",
@@ -214941,6 +214989,7 @@
       "id": 261363,
       "imdb_id": "tt32641461",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-03-28",
       "last_episode_to_air": {
         "air_date": "2025-03-28",
@@ -216063,6 +216112,7 @@
       "id": 97400,
       "imdb_id": "tt10574558",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2021-09-24",
       "last_episode_to_air": {
         "air_date": "2021-09-24",
@@ -217832,6 +217882,7 @@
       "id": 241554,
       "imdb_id": "tt30444310",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-07-10",
       "last_episode_to_air": {
         "air_date": "2025-07-10",
@@ -219226,6 +219277,7 @@
       "id": 88989,
       "imdb_id": "tt8760932",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-07-02",
       "last_episode_to_air": {
         "air_date": "2025-07-02",
@@ -221239,6 +221291,7 @@
       "id": 249023,
       "imdb_id": "tt27370649",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-02-18",
       "last_episode_to_air": {
         "air_date": "2025-02-18",
@@ -223067,6 +223120,7 @@
       "id": 107113,
       "imdb_id": "tt11691774",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-10-28",
       "last_episode_to_air": {
         "air_date": "2025-10-28",
@@ -225158,6 +225212,7 @@
       "id": 100757,
       "imdb_id": "tt10293938",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-11-07",
       "last_episode_to_air": {
         "air_date": "2024-11-07",
@@ -227701,6 +227756,7 @@
       "id": 110492,
       "imdb_id": "tt13146488",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-10-09",
       "last_episode_to_air": {
         "air_date": "2025-10-09",
@@ -229682,6 +229738,7 @@
       "id": 103540,
       "imdb_id": "tt12324366",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-21",
       "last_episode_to_air": {
         "air_date": "2026-01-21",
@@ -230823,6 +230880,7 @@
       "id": 1411,
       "imdb_id": "tt1839578",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2016-06-21",
       "last_episode_to_air": {
         "air_date": "2016-06-21",
@@ -234148,6 +234206,7 @@
       "id": 225171,
       "imdb_id": "tt22202452",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-23",
       "last_episode_to_air": {
         "air_date": "2025-12-23",
@@ -236280,6 +236339,7 @@
       "id": 119845,
       "imdb_id": "tt11761194",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2026-01-16",
       "last_episode_to_air": {
         "air_date": "2026-01-16",
@@ -237320,6 +237380,7 @@
       "id": 225922,
       "imdb_id": null,
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2009-02-11",
       "last_episode_to_air": {
         "air_date": "2009-02-11",
@@ -239631,6 +239692,7 @@
       "id": 110531,
       "imdb_id": "tt13075042",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2024-06-20",
       "last_episode_to_air": {
         "air_date": "2024-06-20",
@@ -241370,6 +241432,7 @@
       "id": 246381,
       "imdb_id": "tt31186958",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-03-05",
       "last_episode_to_air": {
         "air_date": "2025-03-05",
@@ -242703,6 +242766,7 @@
       "id": 76922,
       "imdb_id": "tt7259746",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2026-01-21",
       "last_episode_to_air": {
         "air_date": "2026-01-21",
@@ -246287,6 +246351,7 @@
       "id": 108978,
       "imdb_id": "tt9288030",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-03-27",
       "last_episode_to_air": {
         "air_date": "2025-03-27",
@@ -248642,6 +248707,7 @@
       "id": 272418,
       "imdb_id": "tt33484460",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-28",
       "last_episode_to_air": {
         "air_date": "2025-12-28",
@@ -249288,6 +249354,7 @@
       "id": 67482,
       "imdb_id": "tt2301351",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-07-18",
       "last_episode_to_air": {
         "air_date": "2025-07-18",
@@ -251253,6 +251320,7 @@
       "id": 67564,
       "imdb_id": "tt9646834",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-07-18",
       "last_episode_to_air": {
         "air_date": "2025-07-18",
@@ -252343,6 +252411,7 @@
       "id": 92611,
       "imdb_id": "tt9780442",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-11-27",
       "last_episode_to_air": {
         "air_date": "2025-11-27",
@@ -253518,6 +253587,7 @@
       "id": 8514,
       "imdb_id": "tt1353056",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-16",
       "last_episode_to_air": {
         "air_date": "2026-01-23",
@@ -255072,6 +255142,7 @@
       "id": 38409,
       "imdb_id": "tt1588754",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-16",
       "last_episode_to_air": {
         "air_date": "2026-01-23",
@@ -256752,6 +256823,7 @@
       "id": 45336,
       "imdb_id": "tt0115340",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "1998-04-29",
       "last_episode_to_air": {
         "air_date": "1998-04-29",
@@ -257295,6 +257367,7 @@
       "id": 208397,
       "imdb_id": "tt21057450",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-03-06",
       "last_episode_to_air": {
         "air_date": "2025-03-06",
@@ -259200,6 +259273,7 @@
       "id": 95396,
       "imdb_id": "tt11280740",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-03-20",
       "last_episode_to_air": {
         "air_date": "2025-03-20",
@@ -260858,6 +260932,7 @@
       "id": 253391,
       "imdb_id": "tt32268630",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-19",
       "last_episode_to_air": {
         "air_date": "2025-12-19",
@@ -261395,6 +261470,7 @@
       "id": 260471,
       "imdb_id": "tt31614348",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-07",
       "last_episode_to_air": {
         "air_date": "2026-01-21",
@@ -262676,6 +262752,7 @@
       "id": 136311,
       "imdb_id": "tt15677150",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-12-23",
       "last_episode_to_air": {
         "air_date": "2024-12-23",
@@ -264631,6 +264708,7 @@
       "id": 125988,
       "imdb_id": "tt14688458",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-01-16",
       "last_episode_to_air": {
         "air_date": "2025-01-16",
@@ -266301,6 +266379,7 @@
       "id": 241431,
       "imdb_id": "tt32560063",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-26",
       "last_episode_to_air": {
         "air_date": "2025-12-26",
@@ -267362,6 +267441,7 @@
       "id": 95480,
       "imdb_id": "tt5875444",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-10-29",
       "last_episode_to_air": {
         "air_date": "2025-10-29",
@@ -269247,6 +269327,7 @@
       "id": 223530,
       "imdb_id": "tt8622160",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-22",
       "last_episode_to_air": {
         "air_date": "2026-01-22",
@@ -270318,6 +270399,7 @@
       "id": 289219,
       "imdb_id": "tt36594331",
       "in_production": true,
+      "include_future": true,
       "last_air_date": null,
       "last_episode_to_air": null,
       "links": {
@@ -270642,6 +270724,7 @@
       "id": 66732,
       "imdb_id": "tt4574334",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-12-31",
       "last_episode_to_air": {
         "air_date": "2025-12-31",
@@ -272418,6 +272501,7 @@
       "id": 256624,
       "imdb_id": "tt32596156",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-11-23",
       "last_episode_to_air": {
         "air_date": "2025-11-23",
@@ -273635,6 +273719,7 @@
       "id": 97546,
       "imdb_id": "tt10986410",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2023-05-30",
       "last_episode_to_air": {
         "air_date": "2023-05-30",
@@ -275624,6 +275709,7 @@
       "id": 136315,
       "imdb_id": "tt14452776",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-06-25",
       "last_episode_to_air": {
         "air_date": "2025-06-25",
@@ -277430,6 +277516,7 @@
       "id": 76479,
       "imdb_id": "tt1190634",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-07-18",
       "last_episode_to_air": {
         "air_date": "2024-07-18",
@@ -281271,6 +281358,7 @@
       "id": 97083,
       "imdb_id": "tt9581768",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2024-10-02",
       "last_episode_to_air": {
         "air_date": "2024-10-02",
@@ -283170,6 +283258,7 @@
       "id": 60603,
       "imdb_id": "tt3455408",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-06",
       "last_episode_to_air": {
         "air_date": "2026-01-20",
@@ -290272,6 +290361,7 @@
       "id": 203857,
       "imdb_id": "tt17491088",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-10-16",
       "last_episode_to_air": {
         "air_date": "2025-10-16",
@@ -292404,6 +292494,7 @@
       "id": 63639,
       "imdb_id": "tt3230854",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2022-01-13",
       "last_episode_to_air": {
         "air_date": "2022-01-13",
@@ -296785,6 +296876,7 @@
       "id": 247723,
       "imdb_id": "tt21906554",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-22",
       "last_episode_to_air": {
         "air_date": "2026-01-22",
@@ -297768,6 +297860,7 @@
       "id": 221079,
       "imdb_id": "tt26862142",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-12-04",
       "last_episode_to_air": {
         "air_date": "2025-12-04",
@@ -299127,6 +299220,7 @@
       "id": 226749,
       "imdb_id": "tt27799594",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-08-04",
       "last_episode_to_air": {
         "air_date": "2025-08-04",
@@ -299610,6 +299704,7 @@
       "id": 96907,
       "imdb_id": "tt10477884",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-17",
       "last_episode_to_air": {
         "air_date": "2026-01-17",
@@ -301186,6 +301281,7 @@
       "id": 84910,
       "imdb_id": "tt7670568",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-07",
       "last_episode_to_air": {
         "air_date": "2026-01-21",
@@ -301979,6 +302075,7 @@
       "id": 129552,
       "imdb_id": "tt13918776",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-01-23",
       "last_episode_to_air": {
         "air_date": "2025-01-23",
@@ -304271,6 +304368,7 @@
       "id": 61859,
       "imdb_id": "tt1399664",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-18",
       "last_episode_to_air": {
         "air_date": "2026-01-18",
@@ -306415,6 +306513,7 @@
       "id": 111800,
       "imdb_id": "tt5645432",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2024-10-24",
       "last_episode_to_air": {
         "air_date": "2024-10-24",
@@ -307745,6 +307844,7 @@
       "id": 235685,
       "imdb_id": "tt23734948",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-22",
       "last_episode_to_air": {
         "air_date": "2026-01-22",
@@ -308010,6 +308110,7 @@
       "id": 95403,
       "imdb_id": "tt8291284",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2022-12-01",
       "last_episode_to_air": {
         "air_date": "2022-12-01",
@@ -309842,6 +309943,7 @@
       "id": 250307,
       "imdb_id": "tt31938062",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2026-01-22",
       "last_episode_to_air": {
         "air_date": "2026-01-22",
@@ -311493,6 +311595,7 @@
       "id": 210916,
       "imdb_id": "tt16030542",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-01-30",
       "last_episode_to_air": {
         "air_date": "2025-01-30",
@@ -313414,6 +313517,7 @@
       "id": 82782,
       "imdb_id": "tt8634332",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-05-04",
       "last_episode_to_air": {
         "air_date": "2025-05-04",
@@ -315729,6 +315833,7 @@
       "id": 90802,
       "imdb_id": "tt1751634",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-07-31",
       "last_episode_to_air": {
         "air_date": "2025-07-31",
@@ -317945,6 +318050,7 @@
       "id": 75006,
       "imdb_id": "tt1312171",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2024-08-08",
       "last_episode_to_air": {
         "air_date": "2024-08-08",
@@ -320422,6 +320528,7 @@
       "id": 259886,
       "imdb_id": "tt30645193",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-12-21",
       "last_episode_to_air": {
         "air_date": "2025-12-21",
@@ -320666,6 +320773,7 @@
       "id": 71914,
       "imdb_id": "tt7462410",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-04-17",
       "last_episode_to_air": {
         "air_date": "2025-04-17",
@@ -323328,6 +323436,7 @@
       "id": 111803,
       "imdb_id": "tt13406094",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-04-06",
       "last_episode_to_air": {
         "air_date": "2025-04-06",
@@ -325457,6 +325566,7 @@
       "id": 197170,
       "imdb_id": "tt6838596",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2017-06-25",
       "last_episode_to_air": {
         "air_date": "2017-06-25",
@@ -326162,6 +326272,7 @@
       "id": 86248,
       "imdb_id": "tt7826376",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-08-25",
       "last_episode_to_air": {
         "air_date": "2025-08-25",
@@ -328536,6 +328647,7 @@
       "id": 242867,
       "imdb_id": "tt22475008",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-12-15",
       "last_episode_to_air": {
         "air_date": "2025-12-15",
@@ -329745,6 +329857,7 @@
       "id": 119051,
       "imdb_id": "tt13443470",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-09-03",
       "last_episode_to_air": {
         "air_date": "2025-09-03",
@@ -331727,6 +331840,7 @@
       "id": 83631,
       "imdb_id": "tt7908628",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2024-12-16",
       "last_episode_to_air": {
         "air_date": "2024-12-16",
@@ -334616,6 +334730,7 @@
       "id": 198178,
       "imdb_id": "tt21066182",
       "in_production": true,
+      "include_future": true,
       "last_air_date": null,
       "last_episode_to_air": null,
       "links": {
@@ -334896,6 +335011,7 @@
       "id": 117488,
       "imdb_id": "tt11041332",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-04-13",
       "last_episode_to_air": {
         "air_date": "2025-04-13",
@@ -337578,6 +337694,7 @@
       "id": 105136,
       "imdb_id": "tt10922010",
       "in_production": true,
+      "include_future": true,
       "last_air_date": "2025-11-28",
       "last_episode_to_air": {
         "air_date": "2025-11-28",
@@ -338265,6 +338382,7 @@
       "id": 78191,
       "imdb_id": "tt7335184",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2025-04-24",
       "last_episode_to_air": {
         "air_date": "2025-04-24",
@@ -341119,6 +341237,7 @@
       "id": 1167,
       "imdb_id": "tt0988820",
       "in_production": false,
+      "include_future": true,
       "last_air_date": "2007-08-16",
       "last_episode_to_air": {
         "air_date": "2007-08-16",
