@@ -811,6 +811,18 @@ CHANGE NOTES
   function seTag(s,e){ return `S${pad2(s)}E${pad2(e)}`; }
 
   function safeText(v){ return (v ?? "").toString(); }
+  const BASE_PATH = (() => {
+    const p = location.pathname || "";
+    const idx = p.indexOf("/web/");
+    return idx > 0 ? p.slice(0, idx) : "";
+  })();
+  function withBasePath(path){
+    const v = safeText(path).trim();
+    if (!v) return "";
+    if (/^https?:\/\//i.test(v)) return v;
+    if (v.startsWith("/") && BASE_PATH && !v.startsWith(BASE_PATH + "/")) return BASE_PATH + v;
+    return v;
+  }
 
   function escHtml(s){
     return safeText(s)
@@ -857,7 +869,7 @@ CHANGE NOTES
   function guessLocalNetworkLogo(name){
     const slug = slugifyName(name);
     if (!slug) return "";
-    return `/assets/logos/services/${slug}.png`;
+    return withBasePath(`/assets/logos/services/${slug}.png`);
   }
 
   function getWatchProviders(item){
@@ -956,9 +968,9 @@ CHANGE NOTES
 
   function pickImage(obj, localKey, pathKey){
     if (!obj) return "";
-    const local = safeText(obj[localKey]).trim();
+    const local = withBasePath(obj[localKey]);
     if (local) return local;
-    const path = safeText(obj[pathKey]).trim();
+    const path = withBasePath(obj[pathKey]);
     if (path) return path;
     return "";
   }
@@ -1159,19 +1171,19 @@ CHANGE NOTES
     const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
 
     const mapMoviePoster = (movie) => {
-      const pl = safeText(movie?.poster_local).trim();
+      const pl = withBasePath(movie?.poster_local);
       if (pl) return pl;
       const pp = safeText(movie?.poster_path).trim();
-      if (pp && pp.startsWith("/")) return "/assets/posters/movies/" + pp.split("/").pop();
+      if (pp && pp.startsWith("/")) return withBasePath("/assets/posters/movies/" + pp.split("/").pop());
       return "";
     };
 
     const mapEpisodeStill = (ep) => {
-      const sl = safeText(ep?.still_local).trim();
+      const sl = withBasePath(ep?.still_local);
       if (sl) return sl;
       const sp = safeText(ep?.still_path).trim();
       // still_path is TMDB-style (/abc.jpg) in your screenshots
-      if (sp && sp.startsWith("/")) return "/assets/stills/episodes/" + sp.split("/").pop();
+      if (sp && sp.startsWith("/")) return withBasePath("/assets/stills/episodes/" + sp.split("/").pop());
       return "";
     };
 
@@ -1291,7 +1303,7 @@ CHANGE NOTES
           : "";
 
         if (it.kind === "episode"){
-          const epName = safeText(it.episode_name);
+          const epName = safeText(it.episode_name).trim() || "Episode";
           const epTag = (it.season_number || it.episode_number) ? seTag(it.season_number || 0, it.episode_number || 0) : "";
           const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
           const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
@@ -1315,7 +1327,7 @@ CHANGE NOTES
             <button class="chip" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
               ${thumb}
               <div class="lines">
-                <div class="t">${escHtml(it.show_title)}</div>
+                <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
                 ${epTag ? `<div class="epnum">${escHtml(epTag)}</div>` : ""}
                 ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
@@ -1385,7 +1397,7 @@ CHANGE NOTES
           : "";
 
         if (it.kind === "episode"){
-          const epName = safeText(it.episode_name);
+          const epName = safeText(it.episode_name).trim() || "Episode";
           const epTag = (it.season_number || it.episode_number) ? seTag(it.season_number || 0, it.episode_number || 0) : "";
           const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
           const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
@@ -1409,7 +1421,7 @@ CHANGE NOTES
             <button class="chip hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
               ${thumb}
               <div class="lines">
-                <div class="t">${escHtml(it.show_title)}</div>
+                <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
                 ${epTag ? `<div class="epnum">${escHtml(epTag)}</div>` : ""}
                 ${it.runtime ? `<div class="runtime">${escHtml(it.runtime)}m</div>` : ""}
