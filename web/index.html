@@ -298,19 +298,28 @@ CHANGE NOTES
       display:inline-flex;
       align-items:center;
       gap:4px;
-      padding:2px 6px;
-      border-radius:999px;
+      padding:2px 7px;
+      border-radius:10px;
       font-size:9px;
       font-weight:900;
-      letter-spacing:0.04em;
+      letter-spacing:0.12em;
       text-transform:uppercase;
       color:var(--text);
-      background:rgba(255,255,255,0.08);
-      border:1px solid rgba(255,255,255,0.18);
+      background:linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.04));
+      border:1px solid rgba(255,255,255,0.22);
+      box-shadow:0 4px 10px rgba(0,0,0,0.25), inset 0 0 0 1px rgba(255,255,255,0.08);
       width:fit-content;
     }
-    .chip .pill.epnum{ background:rgba(59,130,246,0.18); border-color:rgba(59,130,246,0.45); }
-    .chip .pill.runtime{ background:rgba(34,197,94,0.16); border-color:rgba(34,197,94,0.45); }
+    .chip .pill.epnum{
+      background:linear-gradient(135deg, rgba(59,130,246,0.28), rgba(15,23,42,0.6));
+      border-color:rgba(59,130,246,0.55);
+      box-shadow:0 6px 12px rgba(30,64,175,0.25), inset 0 0 0 1px rgba(147,197,253,0.35);
+    }
+    .chip .pill.runtime{
+      background:linear-gradient(135deg, rgba(34,197,94,0.26), rgba(6,78,59,0.55));
+      border-color:rgba(34,197,94,0.55);
+      box-shadow:0 6px 12px rgba(5,150,105,0.22), inset 0 0 0 1px rgba(167,243,208,0.35);
+    }
     .chip .iconstrip{ display:flex; gap:4px; flex-wrap:wrap; margin-top:2px; }
     .chip .logos{ display:flex; gap:6px; align-items:center; }
     .chip .chip-body{
@@ -332,7 +341,13 @@ CHANGE NOTES
       align-items:center;
       justify-content:flex-start;
       width:100%;
+      padding:2px 4px;
+      border-radius:10px;
+      background:rgba(7,10,16,0.35);
+      border:1px solid rgba(255,255,255,0.10);
     }
+    .chip .iconrow.top{ margin-bottom:2px; }
+    .chip .iconrow.bottom{ margin-top:2px; justify-content:space-between; }
     .chip .meta-row{
       display:flex;
       gap:4px;
@@ -349,7 +364,7 @@ CHANGE NOTES
     }
     .chip .mini{
       border:1px solid rgba(255,255,255,0.18);
-      background:rgba(255,255,255,0.06);
+      background:rgba(255,255,255,0.08);
       color:var(--text);
       border-radius:999px;
       padding:3px 6px;
@@ -360,11 +375,30 @@ CHANGE NOTES
       display:inline-flex;
       align-items:center;
       text-decoration:none;
+      box-shadow:0 2px 6px rgba(0,0,0,0.35);
     }
-    .chip .mini.tmdb{ border-color:rgba(56,189,248,0.45); }
-    .chip .mini.vidsrc{ border-color:rgba(34,197,94,0.45); }
-    .chip .mini.videasy{ border-color:rgba(236,72,153,0.45); }
-    .chip .mini.watch{ border-color:rgba(255,255,255,0.45); }
+    .chip .mini.tmdb{
+      border-color:rgba(56,189,248,0.55);
+      background:linear-gradient(135deg, rgba(56,189,248,0.35), rgba(12,74,110,0.7));
+      text-shadow:0 1px 2px rgba(0,0,0,0.4);
+    }
+    .chip .mini.watch{
+      border-color:rgba(255,255,255,0.55);
+      background:linear-gradient(135deg, rgba(255,255,255,0.28), rgba(30,41,59,0.8));
+      text-shadow:0 1px 2px rgba(0,0,0,0.4);
+    }
+    .chip .mini.vidsrc{
+      border-color:rgba(34,197,94,0.55);
+      background:linear-gradient(135deg, rgba(34,197,94,0.3), rgba(6,95,70,0.7));
+      text-transform:none;
+      letter-spacing:0.06em;
+    }
+    .chip .mini.videasy{
+      border-color:rgba(236,72,153,0.55);
+      background:linear-gradient(135deg, rgba(236,72,153,0.32), rgba(107,33,168,0.6));
+      text-transform:none;
+      letter-spacing:0.06em;
+    }
     .chip .netlogo-sm{ height:16px; max-width:64px; object-fit:contain; }
     .chip .progress{
       position:relative;
@@ -1388,12 +1422,12 @@ CHANGE NOTES
               </div>
               <div class="chip-body">
                 <div class="thumbcol">
-                  <div class="iconrow">
+                  <div class="iconrow top">
                     ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                     ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
                   </div>
                   ${thumb}
-                  <div class="iconrow">
+                  <div class="iconrow bottom">
                     ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
                     ${watchBtn}
                   </div>
@@ -1489,12 +1523,12 @@ CHANGE NOTES
             </div>
             <div class="chip-body">
               <div class="thumbcol">
-                <div class="iconrow">
+                <div class="iconrow top">
                   ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                   ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
                 </div>
                 ${thumb}
-                <div class="iconrow">
+                <div class="iconrow bottom">
                   ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
                   ${watchBtn}
                 </div>
