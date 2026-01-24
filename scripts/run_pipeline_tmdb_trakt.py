@@ -19,6 +19,7 @@ SCRIPTS_DIR = REPO_ROOT / "scripts"
 LOGS_DIR = REPO_ROOT / "logs"
 
 FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
+FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
 
 
@@ -64,6 +65,13 @@ def main() -> int:
 
     started = _ts()
     rc = _run_one("TMDB", FETCH_TMDB)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("OMDB", FETCH_OMDB)
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")
