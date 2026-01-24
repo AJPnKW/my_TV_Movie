@@ -250,7 +250,12 @@ CHANGE NOTES
     }
     .day.dim{ opacity:0.55; }
     .day.today{ border-color:rgba(59,130,246,0.55); box-shadow:0 0 0 2px rgba(59,130,246,0.12) inset; }
-    .date{ font-weight:950; font-size:12px; color:var(--muted); }
+    .date{
+      font-weight:950;
+      font-size:12px;
+      color:#ffffff;
+      text-shadow:0 1px 6px rgba(0,0,0,0.6);
+    }
 
     .chips{ display:flex; flex-direction:column; gap:6px; }
     .chip{
@@ -258,16 +263,16 @@ CHANGE NOTES
       border:1px solid rgba(255,255,255,0.14);
       background:rgba(255,255,255,0.05);
       border-radius:14px;
-      padding:6px 8px;
+      padding:7px 8px;
       cursor:pointer;
       display:flex;
       gap:8px;
       align-items:center;
-      min-height:44px;
+      min-height:56px;
     }
     .chip:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .chip .thumb{
-      width:var(--episode_thumb,34px); height:var(--episode_thumb,34px);
+      width:42px; height:42px;
       border-radius:10px;
       background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.10);
@@ -278,6 +283,47 @@ CHANGE NOTES
     .chip .lines{ min-width:0; display:flex; flex-direction:column; gap:2px; flex:1; }
     .chip .t{ color:var(--text); font-weight:950; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .chip .s{ color:var(--muted); font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .chip .meta{ color:var(--muted); font-size:10px; font-weight:900; display:flex; gap:8px; flex-wrap:wrap; }
+    .chip .iconstrip{ display:flex; gap:6px; flex-wrap:wrap; margin-top:2px; }
+    .chip .mini{
+      border:1px solid rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      border-radius:999px;
+      padding:3px 6px;
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+    }
+    .chip .mini.tmdb{ border-color:rgba(56,189,248,0.45); }
+    .chip .mini.vidsrc{ border-color:rgba(34,197,94,0.45); }
+    .chip .mini.videasy{ border-color:rgba(236,72,153,0.45); }
+    .chip .mini.watch{ border-color:rgba(255,255,255,0.45); }
+    .chip .netlogo-sm{ height:16px; max-width:64px; object-fit:contain; }
+    .chip .progress{
+      position:relative;
+      height:4px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.10);
+      overflow:hidden;
+      margin-top:4px;
+    }
+    .chip .progress > span{
+      display:block;
+      height:100%;
+      background:linear-gradient(90deg, rgba(59,130,246,0.9), rgba(34,197,94,0.9));
+      width:0%;
+    }
+    .chip .progress > i{
+      position:absolute;
+      top:-2px;
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:#ffffff;
+      box-shadow:0 0 0 2px rgba(0,0,0,0.45);
+    }
 
     .more{
       width:100%;
@@ -599,6 +645,30 @@ CHANGE NOTES
       color:var(--text);
       font-weight:800;
     }
+    .providerblock{ margin-top:10px; }
+    .providerrows{ margin-top:6px; display:flex; flex-direction:column; gap:8px; }
+    .providerrow{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .providerlabel{
+      font-size:10px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+    }
+    .providerchip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.16);
+      background:rgba(255,255,255,0.05);
+      font-size:11px;
+      color:var(--text);
+      font-weight:800;
+      text-decoration:none;
+    }
+    .providerlogo{ height:16px; width:auto; object-fit:contain; }
 
     .footer{ margin-top:10px; color:var(--muted); font-size:12px; padding:2px 4px; }
 
@@ -610,11 +680,7 @@ CHANGE NOTES
       .epcard{ flex-basis: 300px; }
     }
   
-    /* v1.2.8: calendar chips constrained (no massive expansion) */
-    .chip{display:flex;gap:10px;align-items:flex-start}
-    .chipimg{width:72px;height:44px;border-radius:12px;object-fit:cover;background:#0b1220;border:1px solid rgba(255,255,255,.08);flex:0 0 auto}
-    .chiptext{min-width:0}
-    .chipbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    /* v1.3.0: calendar chips layout now handled above */
 
   </style>
 </head>
@@ -767,6 +833,12 @@ CHANGE NOTES
     const p = safeText(path).trim();
     return p ? `https://image.tmdb.org/t/p/w154${p}` : "";
   }
+  function tmdbWatchUrl(kind, id){
+    if (!id) return "";
+    return kind === "movie"
+      ? `https://www.themoviedb.org/movie/${id}/watch`
+      : `https://www.themoviedb.org/tv/${id}/watch`;
+  }
 
   function slugifyName(name){
     return safeText(name).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
@@ -776,6 +848,83 @@ CHANGE NOTES
     const slug = slugifyName(name);
     if (!slug) return "";
     return `/assets/logos/services/${slug}.png`;
+  }
+
+  function getWatchProviders(item){
+    if (!item || typeof item !== "object") return null;
+    const wp = item.watch_providers || item.watchProviders || null;
+    if (!wp) return null;
+    return wp.results || wp;
+  }
+
+  function collectProvidersForRegion(wp, region){
+    if (!wp || !region || !wp[region]) return [];
+    const r = wp[region] || {};
+    const buckets = ["flatrate", "free", "ads", "rent", "buy"];
+    const out = [];
+    for (const b of buckets){
+      const arr = Array.isArray(r[b]) ? r[b] : [];
+      for (const p of arr){
+        if (p && typeof p === "object") out.push(p);
+      }
+    }
+    // unique by provider_id or name
+    const seen = new Set();
+    return out.filter(p => {
+      const key = p.provider_id ?? p.provider_name ?? p.name;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function providerLogoUrl(p){
+    const name = safeText(p?.provider_name || p?.name || "").trim();
+    const local = name ? guessLocalNetworkLogo(name) : "";
+    const tmdb = tmdbLogoUrl(p?.logo_path || "");
+    return { name, local, tmdb };
+  }
+
+  function renderWatchProvidersHtml(item, kind){
+    const wp = getWatchProviders(item);
+    const id = item?.tmdb_id ?? item?.id;
+    if (!wp || !id) return "";
+    const regions = ["US", "CA", "AU"];
+    const rows = regions.map(region => {
+      const providers = collectProvidersForRegion(wp, region);
+      if (!providers.length) return "";
+      const watchUrl = tmdbWatchUrl(kind, id);
+      const chips = providers.slice(0, 8).map(p => {
+        const logo = providerLogoUrl(p);
+        const src = logo.local || logo.tmdb;
+        const img = src ? `<img class="providerlogo" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
+        return `<a class="providerchip" href="${escHtml(watchUrl)}" target="_blank" rel="noopener">${img}${escHtml(logo.name || "Provider")}</a>`;
+      }).join("");
+      return `
+        <div class="providerrow">
+          <span class="providerlabel">${region}</span>
+          ${chips}
+        </div>`;
+    }).filter(Boolean).join("");
+
+    if (!rows) return "";
+    return `
+      <div class="providerblock">
+        <div class="metatitle">Where to watch</div>
+        <div class="providerrows">${rows}</div>
+      </div>`;
+  }
+
+  function progressPercent(obj){
+    if (!obj || typeof obj !== "object") return null;
+    const raw = obj.watch_progress?.percent ?? obj.watch_progress?.pct ?? obj.watch_progress?.progress ??
+      obj.progress?.percent ?? obj.progress?.pct ?? obj.progress?.progress ??
+      obj.watch_progress ?? obj.progress;
+    const num = Number(raw);
+    if (!Number.isFinite(num)) return null;
+    const pct = num <= 1 ? num * 100 : num;
+    if (pct < 0 || pct > 100) return null;
+    return pct;
   }
 
   function pickImage(obj, localKey, pathKey){
@@ -999,10 +1148,14 @@ CHANGE NOTES
     };
 
     for (const show of shows){
-      const showTitle = safeText(show?.title || show?.name).trim();
+      const showTitle = safeText(show?.title || show?.name).trim() || "Unknown Show";
       const showId = Number(show?.tmdb_id) || 0;
 
       const seasons = Array.isArray(show?.seasons) ? show.seasons : [];
+      const networkObj = Array.isArray(show?.networks) && show.networks.length ? show.networks[0] : null;
+      const networkName = safeText(networkObj?.name || "").trim();
+      const networkLocalLogo = networkName ? guessLocalNetworkLogo(networkName) : "";
+      const networkTmdbLogo = tmdbLogoUrl(networkObj?.logo_path || "");
       for (const season of seasons){
         const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
         for (const ep of episodes){
@@ -1024,7 +1177,12 @@ CHANGE NOTES
             thumb: mapEpisodeStill(ep),
 
             // For future use (routing/buttons)
-            links: ep?.links || {}
+            links: ep?.links || {},
+            network_name: networkName,
+            network_logo_local: networkLocalLogo,
+            network_logo_tmdb: networkTmdbLogo,
+            watch_providers: getWatchProviders(show),
+            progress: progressPercent(ep)
           });
           eventsByDate.set(dateKey, arr);
         }
@@ -1040,9 +1198,11 @@ CHANGE NOTES
       arr.push({
         kind: "movie",
         tmdb_id: Number(movie?.tmdb_id) || 0,
-        title: safeText(movie?.title).trim(),
+        title: safeText(movie?.title).trim() || "Unknown Movie",
         thumb: mapMoviePoster(movie),
-        links: movie?.links || {}
+        links: movie?.links || {},
+        watch_providers: getWatchProviders(movie),
+        progress: progressPercent(movie)
       });
       eventsByDate.set(dateKey, arr);
     }
@@ -1089,20 +1249,55 @@ CHANGE NOTES
 
     const cells = days.map(({dt,key,inMonth,num}) => {
       const ev = eventsByDate.get(key) || [];
-      const max = 4;
+      const max = 5;
       const top = ev.slice(0, max);
       const rest = ev.length - top.length;
 
       const chips = top.map((it, idx) => {
+        const progress = Number.isFinite(it.progress) ? it.progress : null;
+        const pct = (progress != null) ? Math.max(0, Math.min(100, progress)) : null;
+        const progressBar = (pct != null)
+          ? `<div class="progress"><span style="width:${pct.toFixed(0)}%"></span><i style="left:calc(${pct.toFixed(0)}% - 3px)"></i></div>`
+          : "";
+
         if (it.kind === "episode"){
           const sub = `${seTag(it.season_number || 0, it.episode_number || 0)} • ${safeText(it.episode_name)}`;
           const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+          const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
+          const vidsrc = safeText(it?.links?.vidsrc || "").trim();
+          const videasy = safeText(it?.links?.videasy || "").trim();
+          const wp = it.watch_providers;
+          const providers = collectProvidersForRegion(wp, "US").length
+            ? collectProvidersForRegion(wp, "US")
+            : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
+          const providerIcons = providers.slice(0, 3).map(p => {
+            const logo = providerLogoUrl(p);
+            const src = logo.local || logo.tmdb;
+            return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
+          }).join("");
+          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+          const netLogo = (it.network_logo_local || it.network_logo_tmdb)
+            ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+            : "";
+
           return `
             <button class="chip" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
               ${thumb}
               <div class="lines">
                 <div class="t">${escHtml(it.show_title)}</div>
                 <div class="s">${escHtml(sub)}</div>
+                <div class="meta">
+                  ${it.runtime ? `<span>${escHtml(it.runtime)}m</span>` : ""}
+                  ${netLogo}
+                </div>
+                <div class="iconstrip">
+                  ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
+                  ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
+                  ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                  ${watchBtn}
+                  ${providerIcons}
+                </div>
+                ${progressBar}
               </div>
             </button>
           `;
@@ -1110,12 +1305,34 @@ CHANGE NOTES
 
         // movie
         const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+        const tmdb = safeText(it?.links?.tmdb || (it.tmdb_id ? tmdbMovieUrl(it.tmdb_id) : "")).trim();
+        const vidsrc = safeText(it?.links?.vidsrc || "").trim();
+        const videasy = safeText(it?.links?.videasy || "").trim();
+        const wp = it.watch_providers;
+        const providers = collectProvidersForRegion(wp, "US").length
+          ? collectProvidersForRegion(wp, "US")
+          : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
+        const providerIcons = providers.slice(0, 3).map(p => {
+          const logo = providerLogoUrl(p);
+          const src = logo.local || logo.tmdb;
+          return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
+        }).join("");
+        const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+
         return `
           <button class="chip" type="button" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${idx}">
             ${thumb}
             <div class="lines">
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
+              <div class="iconstrip">
+                ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
+                ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
+                ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                ${watchBtn}
+                ${providerIcons}
+              </div>
+              ${progressBar}
             </div>
           </button>
         `;
@@ -1127,26 +1344,82 @@ CHANGE NOTES
 
       const extra = rest > 0 ? ev.slice(max).map((it, idx2) => {
         const realIdx = max + idx2;
+        const progress = Number.isFinite(it.progress) ? it.progress : null;
+        const pct = (progress != null) ? Math.max(0, Math.min(100, progress)) : null;
+        const progressBar = (pct != null)
+          ? `<div class="progress"><span style="width:${pct.toFixed(0)}%"></span><i style="left:calc(${pct.toFixed(0)}% - 3px)"></i></div>`
+          : "";
+
         if (it.kind === "episode"){
           const sub = `${seTag(it.season_number || 0, it.episode_number || 0)} • ${safeText(it.episode_name)}`;
           const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+          const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
+          const vidsrc = safeText(it?.links?.vidsrc || "").trim();
+          const videasy = safeText(it?.links?.videasy || "").trim();
+          const wp = it.watch_providers;
+          const providers = collectProvidersForRegion(wp, "US").length
+            ? collectProvidersForRegion(wp, "US")
+            : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
+          const providerIcons = providers.slice(0, 3).map(p => {
+            const logo = providerLogoUrl(p);
+            const src = logo.local || logo.tmdb;
+            return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
+          }).join("");
+          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+          const netLogo = (it.network_logo_local || it.network_logo_tmdb)
+            ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+            : "";
+
           return `
             <button class="chip hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
               ${thumb}
               <div class="lines">
                 <div class="t">${escHtml(it.show_title)}</div>
                 <div class="s">${escHtml(sub)}</div>
+                <div class="meta">
+                  ${it.runtime ? `<span>${escHtml(it.runtime)}m</span>` : ""}
+                  ${netLogo}
+                </div>
+                <div class="iconstrip">
+                  ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
+                  ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
+                  ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                  ${watchBtn}
+                  ${providerIcons}
+                </div>
+                ${progressBar}
               </div>
             </button>
           `;
         }
         const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+        const tmdb = safeText(it?.links?.tmdb || (it.tmdb_id ? tmdbMovieUrl(it.tmdb_id) : "")).trim();
+        const vidsrc = safeText(it?.links?.vidsrc || "").trim();
+        const videasy = safeText(it?.links?.videasy || "").trim();
+        const wp = it.watch_providers;
+        const providers = collectProvidersForRegion(wp, "US").length
+          ? collectProvidersForRegion(wp, "US")
+          : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
+        const providerIcons = providers.slice(0, 3).map(p => {
+          const logo = providerLogoUrl(p);
+          const src = logo.local || logo.tmdb;
+          return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
+        }).join("");
+        const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
         return `
           <button class="chip hidden" type="button" data-extra="1" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${realIdx}">
             ${thumb}
             <div class="lines">
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
+              <div class="iconstrip">
+                ${tmdb ? `<span class="mini tmdb">TMDB</span>` : ""}
+                ${vidsrc ? `<span class="mini vidsrc">VidSrc</span>` : ""}
+                ${videasy ? `<span class="mini videasy">VidEasy</span>` : ""}
+                ${watchBtn}
+                ${providerIcons}
+              </div>
+              ${progressBar}
             </div>
           </button>
         `;
@@ -1192,7 +1465,7 @@ CHANGE NOTES
         if (!nowHidden){
           // restore +N more label
           const total = (eventsByDate.get(day) || []).length;
-          const rest = Math.max(0, total - 4);
+          const rest = Math.max(0, total - 5);
           btn.textContent = rest ? `+${rest} more` : "";
         }
       });
@@ -1326,6 +1599,7 @@ CHANGE NOTES
     const rtUrl = getRtLink(m);
     const prodNames = getCompanyNames(m.production_companies);
 
+    const watchProvidersHtml = renderWatchProvidersHtml(m, "movie");
     const html = `
       <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:start;">
         <div style="border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.03);aspect-ratio:2/3;">
@@ -1348,6 +1622,7 @@ CHANGE NOTES
               </div>
             </div>
           ` : ""}
+          ${watchProvidersHtml}
         </div>
       </div>
       ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:220px;object-fit:cover;display:block;\"/></div>` : ``}
@@ -1479,6 +1754,7 @@ CHANGE NOTES
           </div>
         </div>`
       : "";
+    const watchProvidersHtml = renderWatchProvidersHtml(show, "tv");
 
     return `
       <div class="showwrap">
@@ -1511,6 +1787,7 @@ CHANGE NOTES
               </div>
               ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
               ${prodHtml}
+              ${watchProvidersHtml}
             </div>
           </div>
 
