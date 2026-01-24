@@ -92,6 +92,7 @@ CHANGE NOTES
     .titlebox{ display:flex; flex-direction:column; line-height:1.1; }
     .title{ font-weight:900; letter-spacing:0.2px; font-size:18px; }
     .subtitle{ color:var(--muted); font-size:12px; }
+    .muted{ color:var(--muted); }
 
     .nav{
       display:flex;
@@ -202,6 +203,7 @@ CHANGE NOTES
     .btn.tmdb{ background:rgba(56,189,248,0.18); border-color:rgba(56,189,248,0.30); }
     .btn.videasy{ background:rgba(236,72,153,0.16); border-color:rgba(236,72,153,0.28); }
     .btn.vidsrc{ background:rgba(34,197,94,0.14); border-color:rgba(34,197,94,0.26); }
+    .btn.rt{ background:rgba(239,68,68,0.18); border-color:rgba(239,68,68,0.32); }
 
     /* CALENDAR */
     .calbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -341,13 +343,14 @@ CHANGE NOTES
 
     .hero{
       display:grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: minmax(180px, 230px) 1fr;
       gap:14px;
       align-items:start;
     }
 
     .poster{
       width:100%;
+      max-width:230px;
       border-radius:18px;
       overflow:hidden;
       border:1px solid rgba(255,255,255,0.10);
@@ -355,6 +358,16 @@ CHANGE NOTES
       aspect-ratio:2/3;
     }
     .poster img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .posterFallback{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      height:100%;
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+    }
 
     .heroright{ display:flex; flex-direction:column; gap:10px; }
     .showtitle{ font-size:26px; font-weight:950; letter-spacing:0.3px; }
@@ -378,6 +391,8 @@ CHANGE NOTES
       line-height:1.4;
       max-width: 860px;
     }
+
+    .showactions{ display:flex; gap:8px; flex-wrap:wrap; }
 
     .section{
       margin-top:14px;
@@ -471,12 +486,34 @@ CHANGE NOTES
       margin-bottom:8px;
     }
 
+    .epnav{
+      display:grid;
+      grid-template-columns: 34px 1fr 34px;
+      gap:8px;
+      align-items:center;
+    }
+
+    .epnavbtn{
+      border:1px solid rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      border-radius:10px;
+      width:34px;
+      height:34px;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      font-weight:900;
+    }
+    .epnavbtn:disabled{ opacity:0.45; cursor:not-allowed; }
+
     .carousel{
       display:flex;
       gap:12px;
       overflow-x:auto;
       padding-bottom:10px;
       scroll-snap-type:x mandatory;
+      scroll-behavior:smooth;
     }
 
     .epcard{
@@ -523,6 +560,26 @@ CHANGE NOTES
       -webkit-box-orient:vertical;
       overflow:hidden;
       min-height: 70px;
+    }
+    .epactions{ margin-top:auto; display:flex; gap:8px; flex-wrap:wrap; }
+
+    .metablock{ margin-top:10px; }
+    .metatitle{
+      font-size:11px;
+      letter-spacing:0.16em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+    }
+    .metachips{ margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; }
+    .metachip{
+      padding:5px 9px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.14);
+      background:rgba(255,255,255,0.05);
+      font-size:11px;
+      color:var(--text);
+      font-weight:800;
     }
 
     .footer{ margin-top:10px; color:var(--muted); font-size:12px; padding:2px 4px; }
@@ -698,10 +755,32 @@ CHANGE NOTES
     return "";
   }
 
-  function linkOrDisabled(label, href){
+  function linkOrDisabled(label, href, cls){
     const ok = !!href;
     const safeHref = ok ? href : "#";
-    return `<a class="btn ${label === "TMDB" ? "tmdb" : (label === "VidEasy" ? "videasy" : (label === "VidSrc" ? "vidsrc" : ""))}" href="${escHtml(safeHref)}" target="_blank" rel="noopener" aria-disabled="${ok?"false":"true"}">${label}</a>`;
+    const kind = cls || (label === "TMDB"
+      ? "tmdb"
+      : (label === "VidEasy" ? "videasy" : (label === "VidSrc" ? "vidsrc" : (label === "RT" ? "rt" : ""))));
+    return `<a class="btn ${kind}" href="${escHtml(safeHref)}" target="_blank" rel="noopener" aria-disabled="${ok?"false":"true"}">${label}</a>`;
+  }
+
+  function getRtLink(obj){
+    if (!obj || typeof obj !== "object") return "";
+    const links = obj?.links && typeof obj.links === "object" ? obj.links : {};
+    return safeText(
+      links.rotten_tomatoes ||
+      links.rottentomatoes ||
+      links.rt ||
+      links.rotten ||
+      obj.rotten_tomatoes ||
+      obj.rt ||
+      ""
+    ).trim();
+  }
+
+  function getCompanyNames(list){
+    if (!Array.isArray(list)) return [];
+    return list.map(c => c?.name).filter(Boolean);
   }
 
   function openModal(title, html) {
@@ -827,8 +906,12 @@ CHANGE NOTES
         return;
       }
       state.show.tmdb_id = id;
-      setTab("show");
-      renderShowPage(id);
+      openShowModal(id);
+      const fallback = state.lastNonShowHash || "#calendar";
+      const tab = fallback.startsWith("#") ? fallback.slice(1) : fallback;
+      if (tab === "calendar" || tab === "shows" || tab === "movies"){
+        setTab(tab);
+      }
       return;
     }
 
@@ -846,10 +929,9 @@ CHANGE NOTES
 
   function gotoShow(tmdbId){
     if (!Number.isFinite(tmdbId)) return;
-    // preserve return location
     const current = safeText(location.hash || "");
     if (!current.startsWith("#show/")) state.lastNonShowHash = current || "#calendar";
-    location.hash = `#show/${tmdbId}`;
+    openShowModal(tmdbId);
   }
 
   function getShowById(id){
@@ -1216,6 +1298,8 @@ CHANGE NOTES
     const links = m?.links && typeof m.links === "object" ? m.links : {};
     const vidsrc = safeText(links?.vidsrc).trim();
     const videasy = safeText(links?.videasy).trim();
+    const rtUrl = getRtLink(m);
+    const prodNames = getCompanyNames(m.production_companies);
 
     const html = `
       <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:start;">
@@ -1229,7 +1313,16 @@ CHANGE NOTES
             ${linkOrDisabled("TMDB", tmdbMovieUrl(Number(m?.tmdb_id)||0))}
             ${linkOrDisabled("VidSrc", vidsrc)}
             ${linkOrDisabled("VidEasy", videasy)}
+            ${linkOrDisabled("RT", rtUrl)}
           </div>
+          ${prodNames.length ? `
+            <div class="metablock">
+              <div class="metatitle">Production</div>
+              <div class="metachips">
+                ${prodNames.map(n => `<span class="metachip">${escHtml(n)}</span>`).join("")}
+              </div>
+            </div>
+          ` : ""}
         </div>
       </div>
       ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:220px;object-fit:cover;display:block;\"/></div>` : ``}
@@ -1237,206 +1330,222 @@ CHANGE NOTES
     openModal(title, html);
   }
 
-  function renderShowPage(showId){
-    const panel = $("#panel-show");
-    const show = state.showsById?.get(showId) || null;
-
+  function openShowModal(showId){
+    const show = getShowById(showId);
     if (!show){
-      panel.innerHTML = `
-        <div class="show-shell">
-          <div class="show-shell-inner">
-            <div class="show-topbar">
-              <button id="showBackBtn" class="calbtn" type="button">Back</button>
-              <div class="muted">Show not found (tmdb_id=${escHtml(showId)})</div>
-              <div></div>
-            </div>
-          </div>
-        </div>`;
-      $("#showBackBtn")?.addEventListener("click", backFromShow);
+      openModal("Show", `<div>Show not found: ${escHtml(showId)}</div>`);
       return;
     }
+    state.show.tmdb_id = showId;
+    openModal("Show", buildShowPopupHtml(show));
+    wireShowPopup(showId);
+  }
 
+  function buildShowPopupHtml(show){
     const title = safeText(show.title || show.name || "(Untitled)");
     const overview = safeText(show.overview || "");
     const poster = pickImage(show, "poster_local", "poster_path");
     const backdrop = pickImage(show, "backdrop_local", "backdrop_path");
 
     const seasons = Array.isArray(show.seasons) ? show.seasons : [];
+    const seasonItems = seasons.map((s, idx) => {
+      const n = Number(s?.season_number ?? s?.season ?? s?.number ?? (idx + 1));
+      return { n, s, idx };
+    });
 
-    // Default season selection rule: select season with MAX season_number
-    let maxSeasonNum = null;
-    for (const s of seasons){
-      const n = Number(s?.season_number);
-      if (!Number.isFinite(n)) continue;
-      if (maxSeasonNum === null || n > maxSeasonNum) maxSeasonNum = n;
-    }
-
-    // If the stored selection is missing/invalid, set it deterministically.
     let selNum = state.show.selectedSeasonNumber;
-    const hasSel = seasons.some(s => Number(s?.season_number) === Number(selNum));
-    if (!hasSel){
-      if (maxSeasonNum !== null) selNum = maxSeasonNum;
-      else if (seasons.length) selNum = Number(seasons[0]?.season_number) || null;
-      else selNum = null;
+    let selItem = seasonItems.find(it => Number(it.n) === Number(selNum)) || null;
+    if (!selItem){
+      selItem = seasonItems.find(it => Array.isArray(it.s?.episodes) && it.s.episodes.length > 0) || seasonItems[0] || null;
+      selNum = selItem ? selItem.n : null;
       state.show.selectedSeasonNumber = selNum;
     }
 
-    const selSeason = seasons.find(s => Number(s?.season_number) === Number(selNum)) || (seasons[0] || null);
+    const selSeason = selItem ? selItem.s : null;
     const seasonPoster = selSeason ? pickImage(selSeason, "poster_local", "poster_path") : "";
-    const seasonName = safeText(selSeason?.name || (selSeason?.season_number != null ? `Season ${selSeason.season_number}` : "Season"));
+    const seasonName = safeText(selSeason?.name || (selItem?.n != null ? `Season ${selItem.n}` : "Season"));
     const seasonOverview = safeText(selSeason?.overview || "");
-    const seasonAir = safeText(selSeason?.air_date || "");
+    const seasonAir = safeText(selSeason?.air_date || selSeason?.first_air_date || "");
 
     const episodes = Array.isArray(selSeason?.episodes) ? selSeason.episodes : [];
-    const firstEp = episodes.length ? episodes[0] : null;
 
-    const heroVidSrc = safeText(firstEp?.links?.vidsrc || show?.links?.vidsrc || "");
-    const heroVidEasy = safeText(firstEp?.links?.videasy || show?.links?.videasy || "");
-
-    // Pills (optional fields; omit if missing)
     const genreNames = Array.isArray(show.genres) ? show.genres.map(g => g?.name).filter(Boolean) : [];
     const voteAvg = show.vote_average;
     const voteCnt = show.vote_count;
     const networks = Array.isArray(show.networks) ? show.networks.map(n => n?.name).filter(Boolean) : [];
     const premiered = safeText(show.first_air_date || "");
+    const lastAir = safeText(show.last_air_date || "");
 
-    const pillHtml = [
+    const pills = [
       ...genreNames.map(n => `<span class="pill">${escHtml(n)}</span>`),
       (voteAvg != null ? `<span class="pill">★ ${escHtml(voteAvg)}${voteCnt != null ? ` (${escHtml(voteCnt)})` : ""}</span>` : ""),
       ...networks.map(n => `<span class="pill">${escHtml(n)}</span>`),
-      (premiered ? `<span class="pill">Premiere ${escHtml(fmtDate(premiered))}</span>` : "")
+      (premiered ? `<span class="pill">Premiered ${escHtml(fmtDate(premiered))}</span>` : ""),
+      (lastAir ? `<span class="pill">Last ${escHtml(fmtDate(lastAir))}</span>` : "")
     ].filter(Boolean).join("");
 
-    const seasonOptions = seasons.map(s => {
-      const n = Number(s?.season_number);
-      const nm = safeText(s?.name || (Number.isFinite(n) ? `Season ${n}` : "Season"));
-      const checked = (Number.isFinite(n) && Number(n) === Number(selNum)) ? "checked" : "";
+    const tmdbUrl = safeText(show?.links?.tmdb || (show.tmdb_id != null ? tmdbShowUrl(show.tmdb_id) : "")).trim();
+    const rtUrl = getRtLink(show);
+    const prodNames = getCompanyNames(show.production_companies);
+
+    const seasonOptions = seasonItems.map(it => {
+      const nm = safeText(it.s?.name || (Number.isFinite(it.n) ? `Season ${it.n}` : "Season"));
+      const checked = (Number.isFinite(it.n) && Number(it.n) === Number(selNum)) ? "checked" : "";
       return `
-        <label class="season-opt">
-          <input type="radio" name="seasonPick" value="${escHtml(n)}" ${checked} />
-          <span>${escHtml(nm)}</span>
+        <label class="seasonopt">
+          <input type="radio" name="seasonPick" value="${escHtml(it.n)}" ${checked} />
+          <span class="label">${escHtml(nm)}</span>
         </label>`;
     }).join("");
 
     const epsCards = episodes.map(ep => {
-      const sNum = Number(ep?.season_number ?? selSeason?.season_number ?? 0) || 0;
-      const eNum = Number(ep?.episode_number ?? 0) || 0;
-      const epName = safeText(ep?.name || `Episode ${eNum || ""}`);
+      const sNum = Number(ep?.season_number ?? selSeason?.season_number ?? selItem?.n ?? 0) || 0;
+      const eNum = Number(ep?.episode_number ?? ep?.number ?? ep?.ep ?? 0) || 0;
+      const epName = safeText(ep?.title || ep?.name || `Episode ${eNum || ""}`);
       const epOverview = safeText(ep?.overview || "");
       const epStill = pickImage(ep, "still_local", "still_path");
       const epAir = safeText(ep?.air_date || "");
       const epRun = ep?.runtime;
 
-      const tmdbUrl = (show.tmdb_id != null && sNum && eNum)
+      const tmdbUrlEp = (show.tmdb_id != null && sNum && eNum)
         ? `https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}/season/${encodeURIComponent(sNum)}/episode/${encodeURIComponent(eNum)}`
         : (show.tmdb_id != null ? `https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}` : "");
 
-      const vsrc = safeText(ep?.links?.vidsrc || "");
-      const vezy = safeText(ep?.links?.videasy || "");
+      const vsrc = safeText(ep?.links?.vidsrc || "").trim();
+      const vezy = safeText(ep?.links?.videasy || "").trim();
 
       const img = epStill
-        ? `<img class="ep-still" src="${escHtml(epStill)}" alt="" loading="lazy" />`
-        : `<div class="ep-still ep-still-fallback"></div>`;
+        ? `<img src="${escHtml(epStill)}" alt="" loading="lazy" />`
+        : ``;
 
       return `
-        <div class="ep-card" tabindex="0">
-          ${img}
-          <div class="ep-meta">
-            <div class="ep-top">
-              <span class="badge">${escHtml(seTag(sNum, eNum))}</span>
-              ${epAir ? `<span class="muted">${escHtml(fmtDate(epAir))}</span>` : ""}
-              ${epRun != null ? `<span class="muted">${escHtml(epRun)}m</span>` : ""}
+        <div class="epcard" tabindex="0">
+          <div class="epimg">
+            ${img}
+            <div class="badge">${escHtml(seTag(sNum, eNum))}</div>
+          </div>
+          <div class="epbody">
+            <div class="eptitle">${escHtml(epName)}</div>
+            <div class="epmeta">
+              ${epAir ? `<span>${escHtml(fmtDate(epAir))}</span>` : ""}
+              ${epRun != null ? `<span>${escHtml(epRun)}m</span>` : ""}
             </div>
-            <div class="ep-title">${escHtml(epName)}</div>
-            ${epOverview ? `<div class="ep-overview">${escHtml(epOverview)}</div>` : ""}
-            <div class="btnrow">
-              ${tmdbUrl ? `<a class="btn tmdb" href="${escHtml(tmdbUrl)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-              ${vsrc ? `<a class="btn vidsrc" href="${escHtml(vsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-              ${vezy ? `<a class="btn videasy" href="${escHtml(vezy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
+            ${epOverview ? `<div class="epov">${escHtml(epOverview)}</div>` : ""}
+            <div class="epactions">
+              ${linkOrDisabled("TMDB", tmdbUrlEp)}
+              ${linkOrDisabled("VidSrc", vsrc)}
+              ${linkOrDisabled("VidEasy", vezy)}
             </div>
           </div>
         </div>`;
     }).join("");
 
-    const backdropStyle = backdrop ? `background-image: url('${escHtml(backdrop)}');` : "";
+    const prodHtml = prodNames.length
+      ? `
+        <div class="metablock">
+          <div class="metatitle">Production</div>
+          <div class="metachips">
+            ${prodNames.map(n => `<span class="metachip">${escHtml(n)}</span>`).join("")}
+          </div>
+        </div>`
+      : "";
 
-    panel.innerHTML = `
-      <div class="show-shell" style="${backdropStyle}">
-        <div class="show-grain"></div>
-        <div class="show-shell-inner">
-          <div class="show-topbar">
-            <button id="showBackBtn" class="calbtn" type="button">Back</button>
-            <div class="muted">#show/${escHtml(showId)}</div>
+    return `
+      <div class="showwrap">
+        ${backdrop ? `<div class="showback" style="background-image:url('${escHtml(backdrop)}')"></div>` : ""}
+        <div class="showoverlay"></div>
+        <div class="grain"></div>
+        <div class="showinner">
+          <div class="showtopbar">
+            <div class="muted">Show</div>
+            <div class="muted">TMDB ${escHtml(show.tmdb_id ?? "")}</div>
             <div></div>
           </div>
 
-          <div class="show-hero">
-            <div class="show-poster">
-              ${poster ? `<img src="${escHtml(poster)}" alt="" loading="lazy" />` : `<div class="poster-fallback">No Poster</div>`}
+          <div class="hero">
+            <div class="poster">
+              ${poster ? `<img src="${escHtml(poster)}" alt="" loading="lazy" />` : `<div class="posterFallback">No Poster</div>`}
             </div>
-
-            <div class="show-hero-main">
-              <div class="show-kicker">Original series</div>
-              <div class="show-title">${escHtml(title)}</div>
-              <div class="show-pills">${pillHtml}</div>
-
-              <div class="btnrow" style="margin-top:10px;">
-                ${show.tmdb_id != null ? `<a class="btn tmdb" href="https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                ${heroVidSrc ? `<a class="btn vidsrc" href="${escHtml(heroVidSrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-                ${heroVidEasy ? `<a class="btn videasy" href="${escHtml(heroVidEasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
+            <div class="heroright">
+              <div class="showtitle">${escHtml(title)}</div>
+              <div class="pills">${pills}</div>
+              <div class="showactions">
+                ${linkOrDisabled("TMDB", tmdbUrl)}
+                ${linkOrDisabled("RT", rtUrl)}
               </div>
-
-              ${overview ? `<div class="show-overview">${escHtml(overview)}</div>` : ""}
+              ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
+              ${prodHtml}
             </div>
           </div>
 
-          <div class="show-seasons">
-            <div class="season-picker">
-              <div class="season-picker-head">
-                <div></div>
-                <div class="season-label">Season</div>
+          <div class="section">
+            <div class="seasonsgrid">
+              <div class="seasonpicker">
+                <div class="seasonpickerhead">Season</div>
+                <div class="seasonlist">
+                  ${seasonOptions || `<div class="muted" style="padding:10px;">No seasons available.</div>`}
+                </div>
               </div>
-              <div class="season-list ${seasons.length > 5 ? "scroll" : ""}">
-                ${seasonOptions || `<div class="muted" style="padding:10px;">No seasons available.</div>`}
-              </div>
-            </div>
 
-            <div class="season-details">
-              <div class="season-details-top">
-                <div class="season-poster">
-                  ${seasonPoster ? `<img src="${escHtml(seasonPoster)}" alt="" loading="lazy" />` : `<div class="poster-fallback">No Poster</div>`}
+              <div class="seasondetails">
+                <div class="seasonposter">
+                  ${seasonPoster ? `<img src="${escHtml(seasonPoster)}" alt="" loading="lazy" />` : `<div class="posterFallback">No Poster</div>`}
                 </div>
-                <div>
-                  <div class="season-name">${escHtml(seasonName)}</div>
-                  ${seasonAir ? `<div class="muted">Season premiered ${escHtml(fmtDate(seasonAir))}</div>` : ""}
+                <div class="seasonmeta">
+                  <div class="seasonname">${escHtml(seasonName)}</div>
+                  ${seasonAir ? `<div class="seasonair">Season premiered ${escHtml(fmtDate(seasonAir))}</div>` : ""}
+                  ${seasonOverview ? `<div class="seasonov">${escHtml(seasonOverview)}</div>` : ""}
                 </div>
               </div>
-              ${seasonOverview ? `<div class="season-overview">${escHtml(seasonOverview)}</div>` : ""}
             </div>
           </div>
 
-          <div class="show-episodes">
-            <div class="section-title">Episodes</div>
-            <div class="ep-carousel" role="list">
-              ${epsCards || `<div class="muted" style="padding:10px;">No episodes available for this season.</div>`}
+          <div class="episodeswrap">
+            <div class="episodestitle">Episodes</div>
+            <div class="epnav">
+              <button class="epnavbtn" type="button" data-ep-nav="prev">‹</button>
+              <div class="carousel" role="list">
+                ${epsCards || `<div class="muted" style="padding:10px;">No episodes available for this season.</div>`}
+              </div>
+              <button class="epnavbtn" type="button" data-ep-nav="next">›</button>
             </div>
           </div>
         </div>
       </div>`;
+  }
 
-    $("#showBackBtn")?.addEventListener("click", backFromShow);
+  function wireShowPopup(showId){
+    const host = $("#modalBody");
+    if (!host) return;
 
-    // Wire season picker
-    $$("input[name='seasonPick']", panel).forEach(inp => {
+    $$("input[name='seasonPick']", host).forEach(inp => {
       inp.addEventListener("change", () => {
         const v = Number(inp.value);
         if (Number.isFinite(v)){
           state.show.selectedSeasonNumber = v;
-          // Re-render without changing hash
-          renderShowPage(showId);
+          const show = getShowById(showId);
+          if (!show) return;
+          $("#modalBody").innerHTML = buildShowPopupHtml(show);
+          wireShowPopup(showId);
         }
       });
     });
+
+    const track = $(".carousel", host);
+    const prev = $("[data-ep-nav='prev']", host);
+    const next = $("[data-ep-nav='next']", host);
+    if (track && prev && next){
+      const scrollBy = () => Math.max(240, Math.floor(track.clientWidth * 0.85));
+      prev.addEventListener("click", () => track.scrollBy({ left: -scrollBy(), behavior: "smooth" }));
+      next.addEventListener("click", () => track.scrollBy({ left: scrollBy(), behavior: "smooth" }));
+      const update = () => {
+        const max = Math.max(0, track.scrollWidth - track.clientWidth);
+        prev.disabled = track.scrollLeft <= 2;
+        next.disabled = track.scrollLeft >= max - 2;
+      };
+      track.addEventListener("scroll", update);
+      update();
+    }
   }
 
   // NAV
