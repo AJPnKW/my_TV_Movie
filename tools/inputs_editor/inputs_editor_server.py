@@ -1,11 +1,7 @@
-Set-Location "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
-New-Item -ItemType Directory -Force ".\tools\inputs_editor" | Out-Null
-
-@'
 """
 FILE: tools/inputs_editor/inputs_editor_server.py
-VERSION: 1.0.2
-DATE: 2026-01-20
+VERSION: 1.0.3
+DATE: 2026-01-24
 
 PURPOSE
 - Local utility server to manage canonical scope file: data/inputs.json
@@ -30,9 +26,9 @@ import json
 import os
 import sys
 import tempfile
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from urllib.parse import urlparse, parse_qs, quote
+from urllib.parse import parse_qs, quote, urlparse
 import urllib.request
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -235,4 +231,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-'@ | Set-Content -Encoding UTF8 ".\tools\inputs_editor\inputs_editor_server.py"
