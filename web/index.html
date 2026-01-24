@@ -314,17 +314,31 @@ CHANGE NOTES
     .chip .iconstrip{ display:flex; gap:4px; flex-wrap:wrap; margin-top:2px; }
     .chip .logos{ display:flex; gap:6px; align-items:center; }
     .chip .chip-body{
-      display:grid;
-      grid-template-columns: var(--cal-thumb-w) minmax(0, 1fr);
+      display:flex;
+      align-items:flex-start;
       gap:8px;
-      align-items:start;
       width:100%;
     }
-    .chip .iconcol{
-      display:flex;
-      flex-direction:column;
+    .chip .thumbcol{
+      width:var(--cal-thumb-w);
+      display:grid;
       gap:4px;
-      align-items:flex-start;
+      justify-items:start;
+    }
+    .chip .iconrow{
+      display:flex;
+      gap:4px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-start;
+      width:100%;
+    }
+    .chip .meta-row{
+      display:flex;
+      gap:4px;
+      flex-wrap:wrap;
+      align-items:center;
+      width:100%;
     }
     .chip .providerrow{
       display:flex;
@@ -1370,16 +1384,19 @@ CHANGE NOTES
               <div class="lines">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
-                ${epTag ? `<div class="pill epnum">${escHtml(epTag)}</div>` : ""}
-                ${it.runtime ? `<div class="pill runtime">${escHtml(it.runtime)}m</div>` : ""}
+                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
               </div>
               <div class="chip-body">
-                ${thumb}
-                <div class="iconcol">
-                  ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                  ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-                  ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
-                  ${watchBtn}
+                <div class="thumbcol">
+                  <div class="iconrow">
+                    ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
+                    ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                  </div>
+                  ${thumb}
+                  <div class="iconrow">
+                    ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
+                    ${watchBtn}
+                  </div>
                 </div>
               </div>
               <div class="providerrow">
@@ -1468,18 +1485,21 @@ CHANGE NOTES
               <div class="lines">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
-                ${epTag ? `<div class="pill epnum">${escHtml(epTag)}</div>` : ""}
-                ${it.runtime ? `<div class="pill runtime">${escHtml(it.runtime)}m</div>` : ""}
-              </div>
-              <div class="chip-body">
-                ${thumb}
-                <div class="iconcol">
-                  ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                  ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+              ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)}m</span>` : ""}</div>` : ""}
+            </div>
+            <div class="chip-body">
+              <div class="thumbcol">
+                <div class="iconrow">
                   ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
+                  ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
+                </div>
+                ${thumb}
+                <div class="iconrow">
+                  ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
                   ${watchBtn}
                 </div>
               </div>
+            </div>
               <div class="providerrow">
                 ${providerIcons}
                 ${netLogo}
