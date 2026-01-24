@@ -826,6 +826,7 @@ def main() -> int:
                 "poster_path": poster_path,
                 "backdrop_path": backdrop_path,
                 "genres": mv.get("genres") or [],
+                "collection": mv.get("belongs_to_collection"),
                 "production_companies": mv.get("production_companies") or [],
                 "production_countries": mv.get("production_countries") or [],
                 "runtime": mv.get("runtime"),
