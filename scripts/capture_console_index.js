@@ -118,6 +118,15 @@ async function main() {
     } catch {}
   });
 
+  // Force a reload after listeners are attached to capture network responses.
+  try {
+    await page.setCacheEnabled(false);
+    await page.reload({ waitUntil: "networkidle2" });
+    log("[reload] ok");
+  } catch (e) {
+    log(`[reload] ERROR ${String(e && e.stack ? e.stack : e)}`);
+  }
+
   // Let it settle
   await sleep(7000);
 
