@@ -144,6 +144,17 @@ CHANGE NOTES
     .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between; }
 
     .filters{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .filtersbar{
+      position:sticky;
+      top:calc(var(--sticky-top, 64px) + 2px);
+      z-index:20;
+      padding:8px;
+      margin:-4px -6px 6px;
+      border-radius:14px;
+      background:linear-gradient(180deg, rgba(12,18,26,0.98), rgba(12,18,26,0.86));
+      backdrop-filter: blur(8px);
+      border:1px solid rgba(255,255,255,0.06);
+    }
     .input{
       background:rgba(255,255,255,0.04);
       border:1px solid var(--line);
