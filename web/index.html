@@ -271,7 +271,21 @@ CHANGE NOTES
     .btn.rt{ background:rgba(239,68,68,0.18); border-color:rgba(239,68,68,0.32); }
 
     /* CALENDAR */
-    .calbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; }
+    .calbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      position:sticky;
+      top:var(--sticky-top, 64px);
+      z-index:30;
+      padding:6px 8px;
+      margin:-6px -6px 6px;
+      border-radius:14px;
+      background:linear-gradient(180deg, rgba(12,18,26,0.98), rgba(12,18,26,0.85));
+      backdrop-filter: blur(8px);
+    }
     .calbar .left{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .calbar .month{ font-weight:950; font-size:18px; }
     .calbtn{
@@ -292,6 +306,9 @@ CHANGE NOTES
       gap:8px;
     }
     .dow{
+      position:sticky;
+      top:calc(var(--sticky-top, 64px) + var(--calbar-h, 44px));
+      z-index:25;
       font-size:12px;
       color:var(--muted);
       font-weight:900;
