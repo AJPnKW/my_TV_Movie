@@ -88,6 +88,27 @@ def _tmdb_size_tag(kind: str, sizes_cfg: Dict[str, Any]) -> str:
         w = int(w)
     except Exception:
         w = None
+
+    # TMDB supports specific size buckets; snap to nearest supported size >= requested.
+    poster_sizes = [92, 154, 185, 342, 500, 780]
+    still_sizes = [92, 185, 300, 500]
+    backdrop_sizes = [300, 780, 1280]
+
+    def _snap(req: int | None, allowed: list[int]) -> int | None:
+        if not req or req <= 0:
+            return None
+        for a in allowed:
+            if req <= a:
+                return a
+        return allowed[-1] if allowed else None
+
+    if kind in ("show_poster", "movie_poster", "season_poster"):
+        w = _snap(w, poster_sizes)
+    elif kind == "episode_still":
+        w = _snap(w, still_sizes)
+    else:
+        w = _snap(w, backdrop_sizes)
+
     return f"w{w}" if w else "original"
 
 def _tmdb_url(base: str, size_tag: str, tmdb_path: str) -> str:

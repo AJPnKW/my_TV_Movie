@@ -1179,8 +1179,24 @@ CHANGE NOTES
     else if (kind === "season_poster") w = Number(sz.season_width);
     else if (kind === "episode_still") w = Number(sz.episode_still_w);
     else if (kind === "backdrop") w = Number(sz.backdrop_w);
-    if (Number.isFinite(w) && w > 0) return `w${Math.round(w)}`;
-    return "original";
+    const posterSizes = [92, 154, 185, 342, 500, 780];
+    const stillSizes = [92, 185, 300, 500];
+    const backdropSizes = [300, 780, 1280];
+    const snap = (req, allowed) => {
+      if (!Number.isFinite(req) || req <= 0) return null;
+      for (const a of allowed){
+        if (req <= a) return a;
+      }
+      return allowed[allowed.length - 1] || null;
+    };
+    if (kind === "show_poster" || kind === "movie_poster" || kind === "season_poster"){
+      w = snap(w, posterSizes);
+    } else if (kind === "episode_still") {
+      w = snap(w, stillSizes);
+    } else if (kind === "backdrop") {
+      w = snap(w, backdropSizes);
+    }
+    return w ? `w${Math.round(w)}` : "original";
   }
 
   function tmdbImageUrl(kind, tmdbPath){
