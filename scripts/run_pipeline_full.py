@@ -78,6 +78,12 @@ def main() -> int:
         _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
         return rc_watch
 
+    # 3c) Local watch-state sync (inputs.json -> data.json)
+    rc_local = _run("LOCAL_WATCH_STATE", [py, os.path.join("scripts", "sync_local_watch_state.py")], logfp)
+    if rc_local != 0:
+        _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
+        return rc_local
+
     # 4) QA missing trakt ids
     rc_qa1 = _run("QA_MISSING_TRAKT", [py, os.path.join("scripts", "qa_missing_trakt_ids.py")], logfp)
     if rc_qa1 != 0:
