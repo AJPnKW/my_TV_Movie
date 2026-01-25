@@ -2,13 +2,13 @@
   "errors": [
     {
       "type": "trakt_watch_state",
-      "message": "HTTP 403 calling Trakt: error code: 1010",
-      "utc": "2026-01-25T19:05:13Z"
+      "message": "401 Unauthorized; refresh attempt failed: HTTP Error 400: Bad Request",
+      "utc": "2026-01-25T19:08:07Z"
     }
   ],
   "meta": {
     "builder": {
-      "config_sha1": "b771b4810711737b6a1f87eb7fbc2eb6eee78e86",
+      "config_sha1": "c82c29e7c068bfe9733a295446cd1f2225d3c094",
       "script": "scripts/fetch_tmdb.py",
       "version": "v2.9.0"
     },
@@ -17,7 +17,7 @@
       "movies": 64,
       "shows": 119
     },
-    "generated_utc": "2026-01-25T19:04:19Z"
+    "generated_utc": "2026-01-25T19:06:24Z"
   },
   "metadata": {
     "trakt_public_enrichment": {
@@ -32,7 +32,7 @@
       },
       "mode": "public_lookup",
       "script": "fetch_trakt.py",
-      "timestamp_utc": "2026-01-25T19:05:12Z"
+      "timestamp_utc": "2026-01-25T19:08:06Z"
     }
   },
   "movies": [
@@ -61355,7 +61355,7 @@
       "tmdb_id": 792307,
       "trakt_id": 628026,
       "vote_average": 7.655,
-      "vote_count": 5234,
+      "vote_count": 5235,
       "watch_providers": {
         "id": 792307,
         "results": {
