@@ -38,6 +38,8 @@ CHANGE NOTES
       --episode_thumb:34px;
       --cal-thumb-w: clamp(28px, 4vw, 44px);
       --cal-thumb-h: calc(var(--cal-thumb-w) * 1.6);
+      --hero-poster-w: 230px;
+      --hero-poster-min: 180px;
       --logo-h: 16px;
       --provider-logo-h: 20px;
     }
@@ -636,14 +638,14 @@ CHANGE NOTES
 
     .hero{
       display:grid;
-      grid-template-columns: minmax(180px, 230px) 1fr;
+      grid-template-columns: minmax(var(--hero-poster-min), var(--hero-poster-w)) 1fr;
       gap:14px;
       align-items:start;
     }
 
     .poster{
       width:100%;
-      max-width:230px;
+      max-width:var(--hero-poster-w);
       border-radius:18px;
       overflow:hidden;
       border:1px solid rgba(255,255,255,0.10);
@@ -1626,9 +1628,17 @@ CHANGE NOTES
           const sw = Number(sz.show_width);
           const mw = Number(sz.movie_width);
           const ew = Number(sz.episode_still_w);
+          const cw = Number(sz.calendar_thumb_w);
+          const ch = Number(sz.calendar_thumb_h);
+          const hpw = Number(sz.hero_poster_w);
+          const hpm = Number(sz.hero_poster_min);
           if (Number.isFinite(sw) && sw > 0) document.documentElement.style.setProperty('--show_card_min', `${sw}px`);
           if (Number.isFinite(mw) && mw > 0) document.documentElement.style.setProperty('--movie_card_min', `${mw}px`);
           if (Number.isFinite(ew) && ew > 0) document.documentElement.style.setProperty('--episode_thumb', `${ew}px`);
+          if (Number.isFinite(cw) && cw > 0) document.documentElement.style.setProperty('--cal-thumb-w', `${cw}px`);
+          if (Number.isFinite(ch) && ch > 0) document.documentElement.style.setProperty('--cal-thumb-h', `${ch}px`);
+          if (Number.isFinite(hpw) && hpw > 0) document.documentElement.style.setProperty('--hero-poster-w', `${hpw}px`);
+          if (Number.isFinite(hpm) && hpm > 0) document.documentElement.style.setProperty('--hero-poster-min', `${hpm}px`);
         }
       }catch(_){/* noop */}
 
@@ -1858,9 +1868,39 @@ CHANGE NOTES
     return eventsByDate;
   }
 
+  function updateCalendarStickyVars(){
+    const topBar = $(".top");
+    const calbar = $(".calbar");
+    if (topBar) document.documentElement.style.setProperty("--sticky-top", `${topBar.offsetHeight + 8}px`);
+    if (calbar) document.documentElement.style.setProperty("--calbar-h", `${calbar.offsetHeight}px`);
+  }
+
+  function updateTodayLabel(){
+    const el = $("#calTodayLabel");
+    if (!el) return;
+    const today = new Date();
+    el.textContent = `Today: ${today.toLocaleDateString(undefined, { weekday:"short", month:"short", day:"numeric", year:"numeric" })}`;
+  }
+
+  function scrollToDayCell(dateKey){
+    const cell = document.querySelector(`[data-daycell="${CSS.escape(dateKey)}"]`);
+    if (!cell) return false;
+    updateCalendarStickyVars();
+    const rootStyle = getComputedStyle(document.documentElement);
+    const stickyTop = parseFloat(rootStyle.getPropertyValue("--sticky-top")) || 0;
+    const calbarH = parseFloat(rootStyle.getPropertyValue("--calbar-h")) || 0;
+    const offset = stickyTop + calbarH + 8;
+    const top = cell.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior:"smooth" });
+    cell.classList.add("today-jump");
+    setTimeout(() => cell.classList.remove("today-jump"), 1200);
+    return true;
+  }
+
   function renderCalendar(){
     const m = state.calendarMonth;
     $("#calMonth").textContent = m.toLocaleDateString(undefined, { month:"long", year:"numeric" });
+    updateTodayLabel();
 
     const todayKey = toDateKey(new Date());
 
@@ -2094,6 +2134,7 @@ CHANGE NOTES
     }).join("");
 
     $("#calendar").innerHTML = dows + cells;
+    requestAnimationFrame(() => updateCalendarStickyVars());
 
     // behaviors
     $$(".chip").forEach(btn => {
@@ -2650,7 +2691,9 @@ CHANGE NOTES
   $("#calToday").addEventListener("click", () => {
     initCalendarMonth();
     renderCalendar();
+    requestAnimationFrame(() => scrollToDayCell(toDateKey(new Date())));
   });
+  window.addEventListener("resize", () => updateCalendarStickyVars());
 
   $("#searchShows").addEventListener("input", (e) => {
     state.search.shows = e.target.value || "";
