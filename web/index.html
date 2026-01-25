@@ -1166,13 +1166,51 @@ CHANGE NOTES
     return ws.movies[String(movieId)] ? 100 : null;
   }
 
+  function tmdbImageBase(){
+    const base = safeText(state.cfg?.image_cache?.tmdb_image_base || "https://image.tmdb.org/t/p").trim();
+    return base.replace(/\/+$/,"");
+  }
+
+  function tmdbSizeTag(kind){
+    const sz = state.cfg?.image_sizes || {};
+    let w = null;
+    if (kind === "show_poster") w = Number(sz.show_width);
+    else if (kind === "movie_poster") w = Number(sz.movie_width);
+    else if (kind === "season_poster") w = Number(sz.season_width);
+    else if (kind === "episode_still") w = Number(sz.episode_still_w);
+    else if (kind === "backdrop") w = Number(sz.backdrop_w);
+    if (Number.isFinite(w) && w > 0) return `w${Math.round(w)}`;
+    return "original";
+  }
+
+  function tmdbImageUrl(kind, tmdbPath){
+    const p = safeText(tmdbPath).trim();
+    if (!p) return "";
+    if (/^https?:\/\//i.test(p)) return p;
+    if (!p.startsWith("/")) return "";
+    return `${tmdbImageBase()}/${tmdbSizeTag(kind)}${p}`;
+  }
+
+  function inferPosterKind(obj){
+    if (obj && Object.prototype.hasOwnProperty.call(obj, "season_number")) return "season_poster";
+    if (obj && Object.prototype.hasOwnProperty.call(obj, "release_date") && !Object.prototype.hasOwnProperty.call(obj, "first_air_date")) return "movie_poster";
+    return "show_poster";
+  }
+
   function pickImage(obj, localKey, pathKey){
     if (!obj) return "";
     const local = withBasePath(obj[localKey]);
     if (local) return local;
-    const path = withBasePath(obj[pathKey]);
-    if (path) return path;
-    return "";
+
+    const rawPath = safeText(obj[pathKey]).trim();
+    if (!rawPath) return "";
+    if (/^https?:\/\//i.test(rawPath)) return rawPath;
+    if (rawPath.startsWith("/assets/")) return withBasePath(rawPath);
+
+    const kind = (pathKey === "still_path")
+      ? "episode_still"
+      : (pathKey === "backdrop_path" ? "backdrop" : inferPosterKind(obj));
+    return tmdbImageUrl(kind, rawPath);
   }
 
   function linkOrDisabled(label, href, cls){
