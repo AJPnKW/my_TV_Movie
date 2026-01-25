@@ -191,6 +191,7 @@ CHANGE NOTES
     .cardbody{ padding:12px 12px 10px; display:flex; flex-direction:column; gap:8px; flex:1; }
     .cardtitle{ font-weight:950; font-size:14px; letter-spacing:0.2px; }
     .cardmeta{ color:var(--muted); font-size:12px; line-height:1.25; }
+    .cardbadges{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
 
     .btnrow{ display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto; margin-top:auto; }
     .btn{
@@ -214,6 +215,44 @@ CHANGE NOTES
     }
     .btn:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .btn[aria-disabled="true"]{ opacity:0.45; pointer-events:none; }
+
+    .flag{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      padding:2px 7px;
+      border-radius:999px;
+      font-size:9px;
+      font-weight:900;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      border:1px solid rgba(255,255,255,0.25);
+      background:rgba(255,255,255,0.08);
+      color:var(--text);
+      white-space:nowrap;
+    }
+    .flag.watched{
+      border-color:rgba(34,197,94,0.55);
+      background:linear-gradient(135deg, rgba(34,197,94,0.35), rgba(6,95,70,0.7));
+    }
+    .flag.unwatched{
+      border-color:rgba(255,255,255,0.25);
+      background:rgba(255,255,255,0.05);
+      color:var(--muted);
+    }
+    .watchtoggle{
+      border:1px solid rgba(255,255,255,0.20);
+      background:rgba(255,255,255,0.08);
+      color:var(--text);
+      border-radius:999px;
+      padding:3px 8px;
+      font-size:10px;
+      font-weight:900;
+      cursor:pointer;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+    }
+    .watchtoggle.on{ border-color:rgba(34,197,94,0.55); background:rgba(34,197,94,0.18); }
 
     .btn.tmdb{ background:rgba(56,189,248,0.18); border-color:rgba(56,189,248,0.30); }
     .btn.videasy{ background:rgba(236,72,153,0.16); border-color:rgba(236,72,153,0.28); }
@@ -991,11 +1030,15 @@ CHANGE NOTES
     lastNonShowHash: "#calendar",
     calendarMonth: null,
     watchState: null,
+    watchStateSource: null,
+    apiAvailable: false,
+    inputsDirty: false,
     search: { shows: "", movies: "" },
     sort: { shows: "title", movies: "title" },
     filters: {
       shows: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
-      movies: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" }
+      movies: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
+      watchlist: { status: "all" }
     },
     show: {
       tmdb_id: null,
@@ -1166,6 +1209,167 @@ CHANGE NOTES
     return ws.movies[String(movieId)] ? 100 : null;
   }
 
+  function watchFlagHtml(watched){
+    return `<span class="flag ${watched ? "watched" : "unwatched"}">${watched ? "Watched" : "Unwatched"}</span>`;
+  }
+
+  function nowUtcIso(){
+    try { return new Date().toISOString(); } catch { return ""; }
+  }
+
+  async function checkApiAvailable(){
+    try {
+      const r = await fetch("/api/health", { cache: "no-store" });
+      return r.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function ensureLocalWatchState(){
+    if (!state.inputs) state.inputs = { tv: [], movies: [], watchlist: [] };
+    if (!state.inputs.watch_state || typeof state.inputs.watch_state !== "object") state.inputs.watch_state = {};
+    if (!state.inputs.watch_state.local || typeof state.inputs.watch_state.local !== "object") {
+      state.inputs.watch_state.local = { generated_utc: nowUtcIso(), movies: {}, shows: {} };
+    }
+    const local = state.inputs.watch_state.local;
+    if (!local.movies || typeof local.movies !== "object") local.movies = {};
+    if (!local.shows || typeof local.shows !== "object") local.shows = {};
+    return local;
+  }
+
+  function setWatchStateSource(){
+    const local = state.data?.watch_state?.local || state.inputs?.watch_state?.local;
+    if (local && typeof local === "object"){
+      state.watchState = local;
+      state.watchStateSource = "local";
+      return;
+    }
+    const trakt = state.data?.watch_state?.trakt;
+    if (trakt && typeof trakt === "object"){
+      state.watchState = trakt;
+      state.watchStateSource = "trakt";
+      return;
+    }
+    state.watchState = null;
+    state.watchStateSource = null;
+  }
+
+  async function saveInputs(){
+    if (!state.apiAvailable){
+      state.inputsDirty = true;
+      return false;
+    }
+    try{
+      const r = await fetch("/api/inputs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state.inputs || {})
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      state.inputsDirty = false;
+      return true;
+    }catch{
+      state.inputsDirty = true;
+      return false;
+    }
+  }
+
+  function isEpisodeWatched(showId, seasonNum, episodeNum){
+    const ws = state.watchState;
+    const show = ws?.shows?.[String(showId)];
+    const season = show?.seasons?.[String(seasonNum)];
+    if (!season || !Array.isArray(season.episodes)) return false;
+    return season.episodes.includes(Number(episodeNum));
+  }
+
+  function isSeasonWatched(showId, seasonNum, totalEpisodes){
+    const ws = state.watchState;
+    const show = ws?.shows?.[String(showId)];
+    const season = show?.seasons?.[String(seasonNum)];
+    if (!season || !Array.isArray(season.episodes)) return false;
+    if (!Number.isFinite(totalEpisodes) || totalEpisodes <= 0) return season.episodes.length > 0;
+    return season.episodes.length >= totalEpisodes;
+  }
+
+  function setMovieWatched(movieId, watched){
+    const ws = ensureLocalWatchState();
+    const key = String(movieId);
+    if (watched){
+      ws.movies[key] = ws.movies[key] || { last_watched_at: nowUtcIso(), plays: 1 };
+      ws.movies[key].last_watched_at = nowUtcIso();
+    } else {
+      delete ws.movies[key];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
+  function setEpisodeWatched(showId, seasonNum, episodeNum, watched){
+    const ws = ensureLocalWatchState();
+    const sid = String(showId);
+    const sn = String(seasonNum);
+    const epn = Number(episodeNum);
+    if (!ws.shows[sid]) ws.shows[sid] = { seasons: {} };
+    if (!ws.shows[sid].seasons[sn]) ws.shows[sid].seasons[sn] = { episodes: [] };
+    const arr = ws.shows[sid].seasons[sn].episodes || [];
+    const has = arr.includes(epn);
+    if (watched && !has) arr.push(epn);
+    if (!watched && has) ws.shows[sid].seasons[sn].episodes = arr.filter(n => n !== epn);
+    ws.shows[sid].seasons[sn].episodes = ws.shows[sid].seasons[sn].episodes.sort((a,b)=>a-b);
+    if (!ws.shows[sid].seasons[sn].episodes.length){
+      delete ws.shows[sid].seasons[sn];
+    }
+    if (!Object.keys(ws.shows[sid].seasons || {}).length){
+      delete ws.shows[sid];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
+  function setSeasonWatched(showId, seasonNum, episodeNums, watched){
+    const ws = ensureLocalWatchState();
+    const sid = String(showId);
+    const sn = String(seasonNum);
+    if (!ws.shows[sid]) ws.shows[sid] = { seasons: {} };
+    if (watched){
+      ws.shows[sid].seasons[sn] = { episodes: (episodeNums || []).map(n => Number(n)).filter(n => Number.isFinite(n)).sort((a,b)=>a-b) };
+    } else {
+      delete ws.shows[sid].seasons[sn];
+    }
+    if (!Object.keys(ws.shows[sid].seasons || {}).length){
+      delete ws.shows[sid];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
+  function setShowWatched(showId, seasons, watched){
+    const ws = ensureLocalWatchState();
+    const sid = String(showId);
+    if (watched){
+      ws.shows[sid] = { seasons: {} };
+      for (const se of (seasons || [])){
+        const sn = String(se?.season_number ?? se?.number ?? "");
+        if (!sn) continue;
+        const eps = (se?.episodes || []).map(e => Number(e?.episode_number ?? e?.number)).filter(n => Number.isFinite(n));
+        ws.shows[sid].seasons[sn] = { episodes: eps.sort((a,b)=>a-b) };
+      }
+    } else {
+      delete ws.shows[sid];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
   function tmdbImageBase(){
     const base = safeText(state.cfg?.image_cache?.tmdb_image_base || "https://image.tmdb.org/t/p").trim();
     return base.replace(/\/+$/,"");
@@ -1296,7 +1500,7 @@ CHANGE NOTES
       moviesWatchlistSel.disabled = !hasWatchlist;
     }
 
-    const hasWatchState = !!(state.watchState && (state.watchState.movies || state.watchState.shows));
+    const hasWatchState = !!state.watchState;
     const showsWatchedSel = $("#filterShowsWatched");
     const moviesWatchedSel = $("#filterMoviesWatched");
     if (showsWatchedSel) {
@@ -1427,12 +1631,16 @@ CHANGE NOTES
       state.data.shows  = Array.isArray(state.data.shows)  ? state.data.shows  : [];
       state.data.errors = Array.isArray(state.data.errors) ? state.data.errors : [];
       state.data.meta   = state.data.meta && typeof state.data.meta === "object" ? state.data.meta : {};
-      state.watchState = (state.data.watch_state && state.data.watch_state.trakt) ? state.data.watch_state.trakt : null;
-
       state.inputs = await fetchJsonFirst([
         "../data/inputs.json",
         "../inputs.json"
       ]);
+
+      // Detect local inputs editor API (for write-back)
+      state.apiAvailable = await checkApiAvailable();
+
+      // Prefer local watch_state (inputs/data), fallback to Trakt
+      setWatchStateSource();
 
       populateFilters();
 
@@ -1954,12 +2162,27 @@ CHANGE NOTES
         gotoShow(id);
       });
     });
+    $$("[data-watch-show]", $("#showsGrid")).forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-watch-show"), 10);
+        if (!Number.isFinite(id)) return;
+        const watched = el.getAttribute("data-watched") === "1";
+        setShowWatched(id, getShowById(id)?.seasons || [], !watched);
+        renderShows();
+      });
+    });
   }
 
   function showCardHtml(s){
     const id = Number(s?.tmdb_id) || 0;
     const title = safeText(s?.title || s?.name || "(Untitled)");
     const poster = pickImage(s, "poster_local", "poster_path");
+    const watched = isShowWatched(s);
+    const flag = state.watchState ? watchFlagHtml(watched) : "";
+    const toggle = (state.watchStateSource === "local")
+      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-show="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Watch"}</button>`
+      : "";
     const firstAir = safeText(s?.first_air_date);
     const lastAir = safeText(s?.last_air_date);
     const meta = [
@@ -1975,6 +2198,7 @@ CHANGE NOTES
         <div class="cardbody">
           <div class="cardtitle">${escHtml(title)}</div>
           <div class="cardmeta">${escHtml(meta)}</div>
+          <div class="cardbadges">${flag}${toggle}</div>
           <div class="btnrow">
             ${linkOrDisabled("TMDB", id ? tmdbShowUrl(id) : "")}
           </div>
@@ -2032,12 +2256,27 @@ CHANGE NOTES
         openMovieModal(id);
       });
     });
+    $$("[data-watch-movie]", $("#moviesGrid")).forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-watch-movie"), 10);
+        if (!Number.isFinite(id)) return;
+        const watched = el.getAttribute("data-watched") === "1";
+        setMovieWatched(id, !watched);
+        renderMovies();
+      });
+    });
   }
 
   function movieCardHtml(m){
     const id = Number(m?.tmdb_id) || 0;
     const title = safeText(m?.title || "(Untitled)");
     const poster = pickImage(m, "poster_local", "poster_path");
+    const watched = isMovieWatched(m);
+    const flag = state.watchState ? watchFlagHtml(watched) : "";
+    const toggle = (state.watchStateSource === "local")
+      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-movie="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Watch"}</button>`
+      : "";
     const rd = safeText(m?.release_date);
     const rt = m?.runtime;
     const genres = Array.isArray(m?.genres) ? m.genres.map(g => g?.name).filter(Boolean) : [];
@@ -2059,6 +2298,7 @@ CHANGE NOTES
         <div class="cardbody">
           <div class="cardtitle">${escHtml(title)}</div>
           <div class="cardmeta">${escHtml(meta)}</div>
+          <div class="cardbadges">${flag}${toggle}</div>
           <div class="btnrow">
             ${linkOrDisabled("TMDB", id ? tmdbMovieUrl(id) : "")}
             ${linkOrDisabled("VidEasy", videasy)}
