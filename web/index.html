@@ -1866,9 +1866,9 @@ CHANGE NOTES
       const chips = top.map((it, idx) => {
         const progress = Number.isFinite(it.progress) ? it.progress : null;
         const pct = (progress != null) ? Math.max(0, Math.min(100, progress)) : null;
-        const progressBar = (pct != null)
-          ? `<div class="progress"><span style="width:${pct.toFixed(0)}%"></span><i style="left:calc(${pct.toFixed(0)}% - 3px)"></i></div>`
-          : "";
+          const progressBar = (pct != null)
+            ? `<div class="progress"><span style="width:${pct.toFixed(0)}%"></span><i style="left:calc(${pct.toFixed(0)}% - 3px)"></i></div>`
+            : "";
 
         if (it.kind === "episode"){
           const epName = safeText(it.episode_name).trim() || "Episode";
@@ -1886,10 +1886,11 @@ CHANGE NOTES
             const src = logo.local || logo.tmdb;
             return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
           }).join("");
-          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-          const netLogo = (it.network_logo_local || it.network_logo_tmdb)
-            ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-            : "";
+            const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+            const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
+            const netLogo = (it.network_logo_local || it.network_logo_tmdb)
+              ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+              : "";
 
           return `
             <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
@@ -1905,6 +1906,7 @@ CHANGE NOTES
                   ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
                   ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
                   ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
+                  ${watchedFlag}
                 </div>
                 <div class="providerrow">
                   ${providerIcons}
@@ -1930,10 +1932,11 @@ CHANGE NOTES
           const src = logo.local || logo.tmdb;
           return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
         }).join("");
-        const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-        const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
-          ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-          : "";
+          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+          const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
+          const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
+            ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+            : "";
 
         return `
           <button class="chip" type="button" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${idx}">
@@ -1947,6 +1950,7 @@ CHANGE NOTES
                 ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                 ${watchBtn}
                 ${providerIcons}
+                ${watchedFlag}
               </div>
               ${serviceLogo ? `<div class="logos">${serviceLogo}</div>` : ""}
               ${progressBar}
@@ -1983,10 +1987,11 @@ CHANGE NOTES
             const src = logo.local || logo.tmdb;
             return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
           }).join("");
-          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-          const netLogo = (it.network_logo_local || it.network_logo_tmdb)
-            ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-            : "";
+            const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+            const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
+            const netLogo = (it.network_logo_local || it.network_logo_tmdb)
+              ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+              : "";
 
           return `
             <button class="chip cal-episode hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
@@ -2002,6 +2007,7 @@ CHANGE NOTES
                   ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
                   ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
                   ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
+                  ${watchedFlag}
                 </div>
                 <div class="providerrow">
                   ${providerIcons}
@@ -2025,10 +2031,11 @@ CHANGE NOTES
           const src = logo.local || logo.tmdb;
           return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
         }).join("");
-        const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-        const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
-          ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-          : "";
+          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+          const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
+          const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
+            ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+            : "";
         return `
           <button class="chip hidden" type="button" data-extra="1" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${realIdx}">
             ${thumb}
@@ -2041,6 +2048,7 @@ CHANGE NOTES
                 ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
                 ${watchBtn}
                 ${providerIcons}
+                ${watchedFlag}
               </div>
               ${serviceLogo ? `<div class="logos">${serviceLogo}</div>` : ""}
               ${progressBar}
