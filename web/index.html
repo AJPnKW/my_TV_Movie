@@ -349,8 +349,8 @@ CHANGE NOTES
     }
     .chip .iconrow{
       display:flex;
-      gap:4px;
-      flex-wrap:wrap;
+      gap:6px;
+      flex-wrap:nowrap;
       align-items:center;
       justify-content:flex-start;
       width:100%;
@@ -358,9 +358,11 @@ CHANGE NOTES
       border-radius:10px;
       background:rgba(7,10,16,0.35);
       border:1px solid rgba(255,255,255,0.10);
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
     }
     .chip .iconrow.top{ margin-bottom:2px; }
-    .chip .iconrow.bottom{ margin-top:2px; justify-content:space-between; }
+    .chip .iconrow.bottom{ margin-top:2px; justify-content:flex-start; padding-right:4px; }
     .chip .meta-row{
       display:flex;
       gap:4px;
@@ -370,11 +372,12 @@ CHANGE NOTES
     }
     .chip .providerrow{
       display:flex;
-      flex-wrap:wrap;
-      column-gap:8px;
-      row-gap:4px;
+      flex-wrap:nowrap;
+      gap:6px;
       align-items:center;
       width:100%;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
     }
     .chip .epcontent{
       min-width:0;
@@ -412,6 +415,7 @@ CHANGE NOTES
       color:#0b0f14;
       border:1px solid rgba(0,0,0,0.25);
       text-decoration:none;
+      flex:0 0 auto;
     }
     .chip .actionicon.tmdb{ background:#38bdf8; color:#062136; }
     .chip .actionicon.vidsrc{ background:#22c55e; color:#052e16; }
@@ -457,7 +461,7 @@ CHANGE NOTES
       text-transform:none;
       letter-spacing:0.06em;
     }
-    .chip .netlogo-sm{ height:var(--provider-logo-h); width:auto; max-width:92px; object-fit:contain; display:inline-block; }
+    .chip .netlogo-sm{ height:var(--provider-logo-h); width:auto; max-width:92px; object-fit:contain; display:inline-block; flex:0 0 auto; }
     .chip .progress{
       position:relative;
       height:4px;
@@ -962,8 +966,8 @@ CHANGE NOTES
   </div>
 
   <!-- Modal kept for existing non-calendar usage (movie details). Calendar does not use this. -->
-  <div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:18px;z-index:200;" aria-hidden="true">
-    <div style="width:min(940px,100%);max-height:88vh;overflow:auto;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));">
+  <div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:18px;z-index:200;" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="modalCard" tabindex="0" style="width:min(940px,100%);max-height:88vh;overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);">
         <div id="modalTitle" style="font-weight:950;">Details</div>
         <button id="modalClose" class="calbtn" type="button">Close</button>
@@ -1286,7 +1290,13 @@ CHANGE NOTES
     $("#modalBody").innerHTML = html;
     $("#modalBack").style.display = "flex";
     $("#modalBack").setAttribute("aria-hidden", "false");
-    $("#modalClose").focus();
+    const card = $("#modalCard");
+    if (card) {
+      card.scrollTop = 0;
+      card.focus();
+    } else {
+      $("#modalClose").focus();
+    }
   }
   function closeModal(){
     $("#modalBack").style.display = "none";
