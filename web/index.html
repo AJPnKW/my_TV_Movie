@@ -40,6 +40,11 @@ CHANGE NOTES
       --cal-thumb-h: calc(var(--cal-thumb-w) * 1.6);
       --hero-poster-w: 230px;
       --hero-poster-min: 180px;
+      --epcard-w: 320px;
+      --epcard-img-h: 170px;
+      --netlogo-max-w: 120px;
+      --provider-logo-max-w: 92px;
+      --movie-backdrop-h: 220px;
       --logo-h: 16px;
       --provider-logo-h: 20px;
     }
@@ -306,6 +311,8 @@ CHANGE NOTES
       display:grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
       gap:8px;
+      align-items:stretch;
+      width:100%;
     }
     .dow{
       position:sticky;
@@ -319,6 +326,9 @@ CHANGE NOTES
       border:1px solid var(--line);
       background:rgba(255,255,255,0.03);
       text-align:center;
+      min-width:0;
+      width:100%;
+      justify-self:stretch;
     }
 
     .day{
@@ -331,6 +341,9 @@ CHANGE NOTES
       flex-direction:column;
       gap:6px;
       overflow:hidden; /* prevent images from expanding cell */
+      min-width:0;
+      width:100%;
+      justify-self:stretch;
     }
     .day.dim{ opacity:0.55; }
     .day.today{ border-color:rgba(59,130,246,0.55); box-shadow:0 0 0 2px rgba(59,130,246,0.12) inset; }
@@ -531,7 +544,7 @@ CHANGE NOTES
       text-transform:none;
       letter-spacing:0.06em;
     }
-    .chip .netlogo-sm{ height:var(--provider-logo-h); width:auto; max-width:92px; object-fit:contain; display:inline-block; flex:0 0 auto; }
+    .chip .netlogo-sm{ height:var(--provider-logo-h); width:auto; max-width:var(--provider-logo-max-w); object-fit:contain; display:inline-block; flex:0 0 auto; }
     .chip .progress{
       position:relative;
       height:4px;
@@ -622,7 +635,7 @@ CHANGE NOTES
     }
     .netlogo{
       height:var(--logo-h);
-      max-width:120px;
+      max-width:var(--netlogo-max-w);
       object-fit:contain;
       filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
     }
@@ -816,7 +829,7 @@ CHANGE NOTES
 
     .epcard{
       scroll-snap-align:start;
-      flex:0 0 320px;
+      flex:0 0 var(--epcard-w);
       border:1px solid rgba(255,255,255,0.10);
       background:rgba(255,255,255,0.03);
       border-radius:18px;
@@ -826,7 +839,7 @@ CHANGE NOTES
     }
 
     .epimg{
-      height:170px;
+      height:var(--epcard-img-h);
       background:rgba(255,255,255,0.03);
       border-bottom:1px solid rgba(255,255,255,0.10);
       position:relative;
@@ -1632,6 +1645,11 @@ CHANGE NOTES
           const ch = Number(sz.calendar_thumb_h);
           const hpw = Number(sz.hero_poster_w);
           const hpm = Number(sz.hero_poster_min);
+          const epw = Number(sz.episode_card_w);
+          const eph = Number(sz.episode_card_h);
+          const nwm = Number(sz.network_logo_max_w);
+          const pwm = Number(sz.provider_logo_max_w);
+          const mbh = Number(sz.movie_backdrop_h);
           if (Number.isFinite(sw) && sw > 0) document.documentElement.style.setProperty('--show_card_min', `${sw}px`);
           if (Number.isFinite(mw) && mw > 0) document.documentElement.style.setProperty('--movie_card_min', `${mw}px`);
           if (Number.isFinite(ew) && ew > 0) document.documentElement.style.setProperty('--episode_thumb', `${ew}px`);
@@ -1639,6 +1657,11 @@ CHANGE NOTES
           if (Number.isFinite(ch) && ch > 0) document.documentElement.style.setProperty('--cal-thumb-h', `${ch}px`);
           if (Number.isFinite(hpw) && hpw > 0) document.documentElement.style.setProperty('--hero-poster-w', `${hpw}px`);
           if (Number.isFinite(hpm) && hpm > 0) document.documentElement.style.setProperty('--hero-poster-min', `${hpm}px`);
+          if (Number.isFinite(epw) && epw > 0) document.documentElement.style.setProperty('--epcard-w', `${epw}px`);
+          if (Number.isFinite(eph) && eph > 0) document.documentElement.style.setProperty('--epcard-img-h', `${eph}px`);
+          if (Number.isFinite(nwm) && nwm > 0) document.documentElement.style.setProperty('--netlogo-max-w', `${nwm}px`);
+          if (Number.isFinite(pwm) && pwm > 0) document.documentElement.style.setProperty('--provider-logo-max-w', `${pwm}px`);
+          if (Number.isFinite(mbh) && mbh > 0) document.documentElement.style.setProperty('--movie-backdrop-h', `${mbh}px`);
         }
       }catch(_){/* noop */}
 
@@ -2427,7 +2450,7 @@ CHANGE NOTES
           ${watchProvidersHtml}
         </div>
       </div>
-      ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:220px;object-fit:cover;display:block;\"/></div>` : ``}
+      ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:var(--movie-backdrop-h);object-fit:cover;display:block;\"/></div>` : ``}
     `;
     openModal(title, html);
   }
