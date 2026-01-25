@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Tuple
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA_JSON = os.path.join(REPO_ROOT, "data", "data.json")
 INPUTS_JSON = os.path.join(REPO_ROOT, 'data', 'inputs.json')
+WEB_CONFIG = os.path.join(REPO_ROOT, "web", "config.json")
 LOG_DIR = os.path.join(REPO_ROOT, "logs")
 REPORT_DIR = os.path.join(REPO_ROOT, "reports")
 
@@ -75,6 +76,15 @@ def _index_by_tmdb(items: List[Dict[str, Any]]) -> Dict[int, Dict[str, Any]]:
     return out
 
 
+def _is_local_asset(path: str) -> bool:
+    p = (path or "").strip()
+    return p.startswith("/assets/")
+
+
+def _fs_path_from_site_path(path: str) -> str:
+    return os.path.join(REPO_ROOT, path.lstrip("/").replace("/", os.sep))
+
+
 def main() -> int:
     log_path, logf = _log_open()
     try:
@@ -92,6 +102,7 @@ def main() -> int:
 
         data = _load_json(DATA_JSON)
         inp = _load_json(INPUTS_JSON)
+        cfg = _load_json(WEB_CONFIG) if os.path.isfile(WEB_CONFIG) else {}
 
         shows = data.get("shows", []) or []
         movies = data.get("movies", []) or []
@@ -135,6 +146,51 @@ def main() -> int:
         checks.append(("tmdb_id_set_tv_matches", len(tv_missing) == 0, f"data.json missing {len(tv_missing)} tv tmdb_id(s) present in inputs_json"))
         checks.append(("tmdb_id_set_movies_matches", len(mv_missing) == 0, f"data.json missing {len(mv_missing)} movie tmdb_id(s) present in inputs_json"))
 
+        # Asset drift checks (local files for poster/backdrop/still paths)
+        image_cache = cfg.get("image_cache") if isinstance(cfg, dict) else {}
+        cache_enabled = bool(image_cache.get("enabled", True)) if isinstance(image_cache, dict) else True
+        missing_local_files: List[str] = []
+        missing_local_fields: List[str] = []
+        null_still_paths = 0
+
+        def _track_local(path_val: Any, ctx: str) -> None:
+            p = (path_val or "").strip()
+            if not _is_local_asset(p):
+                return
+            fs = _fs_path_from_site_path(p)
+            if not os.path.isfile(fs):
+                missing_local_files.append(f"{ctx} -> {p}")
+
+        def _track_expected_local(tmdb_path: Any, local_path: Any, ctx: str) -> None:
+            tp = (tmdb_path or "").strip()
+            lp = (local_path or "").strip()
+            if tp and not lp:
+                missing_local_fields.append(ctx)
+
+        for s in shows:
+            _track_expected_local(s.get("poster_path"), s.get("poster_local"), f"show {s.get('tmdb_id')} poster_local missing")
+            _track_expected_local(s.get("backdrop_path"), s.get("backdrop_local"), f"show {s.get('tmdb_id')} backdrop_local missing")
+            _track_local(s.get("poster_local"), f"show {s.get('tmdb_id')} poster_local missing file")
+            _track_local(s.get("backdrop_local"), f"show {s.get('tmdb_id')} backdrop_local missing file")
+            for se in s.get("seasons") or []:
+                _track_expected_local(se.get("poster_path"), se.get("poster_local"), f"season {se.get('tmdb_season_id')} poster_local missing")
+                _track_local(se.get("poster_local"), f"season {se.get('tmdb_season_id')} poster_local missing file")
+                for ep in se.get("episodes") or []:
+                    if not (ep.get("still_path") or "").strip():
+                        null_still_paths += 1
+                    _track_expected_local(ep.get("still_path"), ep.get("still_local"), f"episode {ep.get('tmdb_episode_id')} still_local missing")
+                    _track_local(ep.get("still_local"), f"episode {ep.get('tmdb_episode_id')} still_local missing file")
+
+        for m in movies:
+            _track_expected_local(m.get("poster_path"), m.get("poster_local"), f"movie {m.get('tmdb_id')} poster_local missing")
+            _track_expected_local(m.get("backdrop_path"), m.get("backdrop_local"), f"movie {m.get('tmdb_id')} backdrop_local missing")
+            _track_local(m.get("poster_local"), f"movie {m.get('tmdb_id')} poster_local missing file")
+            _track_local(m.get("backdrop_local"), f"movie {m.get('tmdb_id')} backdrop_local missing file")
+
+        if cache_enabled:
+            checks.append(("missing_local_asset_files_zero", len(missing_local_files) == 0, f"missing local asset files: {len(missing_local_files)}"))
+            checks.append(("missing_local_asset_fields_zero", len(missing_local_fields) == 0, f"missing *_local fields when *_path present: {len(missing_local_fields)}"))
+
         ok = True
         for name, passed, detail in checks:
             _log(logf, f"[qa_pipeline_integrity] CHECK {name} => {'OK' if passed else 'FAIL'} | {detail}")
@@ -158,6 +214,12 @@ def main() -> int:
                 "movies_missing_in_data_json": mv_missing[:50],
             },
             "field_errors_sample": field_errs[:50],
+            "asset_drift": {
+                "cache_enabled": cache_enabled,
+                "missing_local_files": missing_local_files[:50],
+                "missing_local_fields": missing_local_fields[:50],
+                "null_episode_still_paths": null_still_paths,
+            },
             "checks": [{"name": n, "passed": p, "detail": d} for (n, p, d) in checks],
             "result": "OK" if ok else "FAIL",
         }
