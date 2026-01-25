@@ -36,6 +36,7 @@ jobs:
           python scripts/fetch_trakt.py
           python scripts/trakt_sync_watch_state.py
           python scripts/download_tmdb_assets.py
+          python scripts/download_service_logos.py
           python scripts/qa_pipeline_integrity.py
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
