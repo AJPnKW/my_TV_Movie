@@ -224,6 +224,28 @@ CHANGE NOTES
       align-items:center;
       gap:6px;
     }
+    .actionstack{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+    .iconbtn{
+      width:22px;
+      height:22px;
+      border-radius:6px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:11px;
+      font-weight:900;
+      line-height:1;
+      color:#0b0f14;
+      border:1px solid rgba(0,0,0,0.25);
+      text-decoration:none;
+      background:#ffffff;
+    }
+    .iconbtn.flag{ background:#0b0f14; color:#e8eef7; border-color:rgba(255,255,255,0.35); }
+    .iconbtn.flag.yes{ background:rgba(34,197,94,0.85); color:#0b0f14; }
+    .iconbtn.flag.no{ background:rgba(239,68,68,0.85); color:#0b0f14; }
+    .iconbtn.vidsrc{ background:#22c55e; color:#052e16; }
+    .iconbtn.videasy{ background:#ec4899; color:#2b0b1e; }
+    .iconbtn.watch{ background:#ffffff; color:#0b0f14; }
     .btnicon{
       width:16px;height:16px;border-radius:4px;
       display:inline-flex;align-items:center;justify-content:center;
@@ -461,6 +483,10 @@ CHANGE NOTES
       overflow-x:auto;
       -webkit-overflow-scrolling:touch;
     }
+    .chip .providerrow.cal-providers{
+      gap:4px;
+      flex-wrap:nowrap;
+    }
     .chip .epcontent{
       min-width:0;
       display:flex;
@@ -468,21 +494,24 @@ CHANGE NOTES
       gap:3px;
     }
     .chip .epmedia{
-      display:block;
+      display:flex;
+      gap:6px;
+      align-items:stretch;
       width:100%;
     }
     .chip.cal-episode .epmedia .thumb{
-      width:100%;
-      height:clamp(70px, 10vw, 140px);
+      width:var(--cal-thumb-w);
+      height:var(--cal-thumb-h);
       border-radius:8px;
     }
-    .chip .epactionsrow{
+    .chip .epactionscol{
       display:flex;
-      gap:14px;
+      flex-direction:column;
+      gap:4px;
       align-items:center;
-      justify-content:space-evenly;
-      margin-top:6px;
-      width:100%;
+      justify-content:flex-start;
+      padding:2px 0;
+      min-width:20px;
     }
     .chip .actionicon{
       width:18px;
@@ -499,7 +528,9 @@ CHANGE NOTES
       text-decoration:none;
       flex:0 0 auto;
     }
-    .chip .actionicon.tmdb{ background:#38bdf8; color:#062136; }
+    .chip .actionicon.flag{ background:#0b0f14; color:#e8eef7; border-color:rgba(255,255,255,0.35); }
+    .chip .actionicon.flag.yes{ background:rgba(34,197,94,0.85); color:#0b0f14; }
+    .chip .actionicon.flag.no{ background:rgba(239,68,68,0.85); color:#0b0f14; }
     .chip .actionicon.vidsrc{ background:#22c55e; color:#052e16; }
     .chip .actionicon.videasy{ background:#ec4899; color:#2b0b1e; }
     .chip .actionicon.watch{ background:#ffffff; color:#0b0f14; }
@@ -1321,8 +1352,8 @@ CHANGE NOTES
   }
 
   function setWatchStateSource(){
-    const local = state.data?.watch_state?.local || state.inputs?.watch_state?.local;
-    if (local && typeof local === "object"){
+    if (state.inputs){
+      const local = ensureLocalWatchState();
       state.watchState = local;
       state.watchStateSource = "local";
       return;
@@ -2057,6 +2088,7 @@ CHANGE NOTES
     updateTodayLabel();
 
     const todayKey = toDateKey(new Date());
+    const canToggle = (state.watchStateSource === "local");
 
     // 7x6 grid Monday->Sunday
     const firstDow = new Date(m.getFullYear(), m.getMonth(), 1).getDay(); // 0=Sun
@@ -2107,29 +2139,32 @@ CHANGE NOTES
             const src = logo.local || logo.tmdb;
             return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
           }).join("");
-            const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-            const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
-            const netLogo = (it.network_logo_local || it.network_logo_tmdb)
-              ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-              : "";
+          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+          const epWatched = state.watchState ? isEpisodeWatched(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0) : false;
+          const watchedFlag = state.watchState ? watchFlagHtml(epWatched) : "";
+          const watchToggleBtn = canToggle
+            ? `<button class="actionicon flag ${epWatched ? "yes" : "no"}" type="button" data-watch-episode-btn="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" data-watched="${epWatched ? "1" : "0"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</button>`
+            : `<span class="actionicon flag ${epWatched ? "yes" : "no"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`;
+          const netLogo = (it.network_logo_local || it.network_logo_tmdb)
+            ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+            : "";
 
           return `
             <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
               <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
-                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}</div>` : ""}
+                ${(epTag || it.runtime || watchedFlag) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}${watchedFlag || ""}</div>` : ""}
                 <div class="epmedia">
                   ${thumb}
+                  <div class="epactionscol">
+                    ${watchToggleBtn}
+                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
+                  </div>
                 </div>
-                <div class="epactionsrow">
-                  ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
-                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                  ${watchedFlag}
-                </div>
-                <div class="providerrow">
+                <div class="providerrow cal-providers">
                   ${providerIcons}
                   ${netLogo}
                 </div>
@@ -2153,11 +2188,15 @@ CHANGE NOTES
           const src = logo.local || logo.tmdb;
           return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
         }).join("");
-          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-          const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
-          const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
-            ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-            : "";
+        const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+        const movieWatched = state.watchState ? isMovieWatched({ tmdb_id: it.tmdb_id }) : false;
+        const watchedFlag = state.watchState ? watchFlagHtml(movieWatched) : "";
+        const watchToggleBtn = canToggle
+          ? `<button class="actionicon flag ${movieWatched ? "yes" : "no"}" type="button" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</button>`
+          : `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`;
+        const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
+          ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+          : "";
 
         return `
           <button class="chip" type="button" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${idx}">
@@ -2165,15 +2204,16 @@ CHANGE NOTES
             <div class="lines">
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
-              <div class="iconstrip">
-                ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-                ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
-                ${watchBtn}
-                ${providerIcons}
-                ${watchedFlag}
+              <div class="epmedia">
+                <div class="epactionscol">
+                  ${watchToggleBtn}
+                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
+                </div>
               </div>
               ${serviceLogo ? `<div class="logos">${serviceLogo}</div>` : ""}
+              ${watchedFlag}
               ${progressBar}
             </div>
           </button>
@@ -2208,29 +2248,32 @@ CHANGE NOTES
             const src = logo.local || logo.tmdb;
             return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
           }).join("");
-            const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-            const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
-            const netLogo = (it.network_logo_local || it.network_logo_tmdb)
-              ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-              : "";
+          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+          const epWatched = state.watchState ? isEpisodeWatched(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0) : false;
+          const watchedFlag = state.watchState ? watchFlagHtml(epWatched) : "";
+          const watchToggleBtn = canToggle
+            ? `<button class="actionicon flag ${epWatched ? "yes" : "no"}" type="button" data-watch-episode-btn="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" data-watched="${epWatched ? "1" : "0"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</button>`
+            : `<span class="actionicon flag ${epWatched ? "yes" : "no"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`;
+          const netLogo = (it.network_logo_local || it.network_logo_tmdb)
+            ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+            : "";
 
           return `
             <button class="chip cal-episode hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
               <div class="epcontent">
                 <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
                 <div class="s">${escHtml(epName)}</div>
-                ${(epTag || it.runtime) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}</div>` : ""}
+                ${(epTag || it.runtime || watchedFlag) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}${watchedFlag || ""}</div>` : ""}
                 <div class="epmedia">
                   ${thumb}
+                  <div class="epactionscol">
+                    ${watchToggleBtn}
+                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
+                  </div>
                 </div>
-                <div class="epactionsrow">
-                  ${tmdb ? `<a class="actionicon tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener" title="TMDB" aria-label="TMDB">T</a>` : ""}
-                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                  ${watchedFlag}
-                </div>
-                <div class="providerrow">
+                <div class="providerrow cal-providers">
                   ${providerIcons}
                   ${netLogo}
                 </div>
@@ -2252,26 +2295,31 @@ CHANGE NOTES
           const src = logo.local || logo.tmdb;
           return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
         }).join("");
-          const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
-          const watchedFlag = state.watchState ? watchFlagHtml(pct === 100) : "";
-          const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
-            ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
-            : "";
+        const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
+        const movieWatched = state.watchState ? isMovieWatched({ tmdb_id: it.tmdb_id }) : false;
+        const watchedFlag = state.watchState ? watchFlagHtml(movieWatched) : "";
+        const watchToggleBtn = canToggle
+          ? `<button class="actionicon flag ${movieWatched ? "yes" : "no"}" type="button" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</button>`
+          : `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`;
+        const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
+          ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
+          : "";
         return `
           <button class="chip hidden" type="button" data-extra="1" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${realIdx}">
             ${thumb}
             <div class="lines">
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
-              <div class="iconstrip">
-                ${tmdb ? `<a class="mini tmdb" href="${escHtml(tmdb)}" target="_blank" rel="noopener">TMDB</a>` : ""}
-                ${vidsrc ? `<a class="mini vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener">VidSrc</a>` : ""}
-                ${videasy ? `<a class="mini videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener">VidEasy</a>` : ""}
-                ${watchBtn}
-                ${providerIcons}
-                ${watchedFlag}
+              <div class="epmedia">
+                <div class="epactionscol">
+                  ${watchToggleBtn}
+                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
+                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
+                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
+                </div>
               </div>
               ${serviceLogo ? `<div class="logos">${serviceLogo}</div>` : ""}
+              ${watchedFlag}
               ${progressBar}
             </div>
           </button>
@@ -2309,6 +2357,30 @@ CHANGE NOTES
     $$(".chip a").forEach(link => {
       link.addEventListener("click", (e) => {
         e.stopPropagation();
+      });
+    });
+    $$("[data-watch-episode-btn]").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const showId = Number(btn.getAttribute("data-show") || "0");
+        const seasonNum = Number(btn.getAttribute("data-season") || "0");
+        const episodeNum = Number(btn.getAttribute("data-episode") || "0");
+        if (!Number.isFinite(showId) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
+        const watched = btn.getAttribute("data-watched") === "1";
+        setEpisodeWatched(showId, seasonNum, episodeNum, !watched);
+        await saveInputs();
+        renderCalendar();
+      });
+    });
+    $$("[data-watch-movie-btn]").forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const movieId = Number(btn.getAttribute("data-movie") || "0");
+        if (!Number.isFinite(movieId)) return;
+        const watched = btn.getAttribute("data-watched") === "1";
+        setMovieWatched(movieId, !watched);
+        await saveInputs();
+        renderCalendar();
       });
     });
 
@@ -2450,9 +2522,6 @@ CHANGE NOTES
           <div class="cardtitle">${escHtml(title)}</div>
           <div class="cardmeta">${escHtml(meta)}</div>
           <div class="cardbadges">${flag}${toggle}</div>
-          <div class="btnrow">
-            ${linkOrDisabled("TMDB", id ? tmdbShowUrl(id) : "")}
-          </div>
         </div>
       </div>
     `;
@@ -2644,10 +2713,9 @@ CHANGE NOTES
           <div class="cardtitle">${escHtml(title)}</div>
           <div class="cardmeta">${escHtml(meta)}</div>
           <div class="cardbadges">${flag}${toggle}</div>
-          <div class="btnrow">
-            ${linkOrDisabled("TMDB", id ? tmdbMovieUrl(id) : "")}
-            ${linkOrDisabled("VidEasy", videasy)}
-            ${linkOrDisabled("VidSrc", vidsrc)}
+          <div class="actionstack">
+            ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" aria-label="VidSrc">S</a>` : ""}
+            ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" aria-label="VidEasy">E</a>` : ""}
           </div>
         </div>
       </div>
@@ -2669,6 +2737,11 @@ CHANGE NOTES
     const videasy = safeText(links?.videasy).trim();
     const rtUrl = getRtLink(m);
     const prodNames = getCompanyNames(m.production_companies);
+    const watched = isMovieWatched(m);
+    const flag = state.watchState ? watchFlagHtml(watched) : "";
+    const toggle = (state.watchStateSource === "local")
+      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-movie-popup="${Number(m?.tmdb_id)||0}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Mark Watched"}</button>`
+      : "";
 
     const watchProvidersHtml = renderWatchProvidersHtml(m, "movie");
     const html = `
@@ -2680,10 +2753,11 @@ CHANGE NOTES
           <div style="font-weight:950;font-size:18px;">${escHtml(title)}</div>
           <div style="margin-top:8px;color:rgba(255,255,255,0.80);line-height:1.35;">${escHtml(overview)}</div>
           <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:nowrap;overflow-x:auto;">
-            ${linkOrDisabled("TMDB", tmdbMovieUrl(Number(m?.tmdb_id)||0))}
             ${linkOrDisabled("VidSrc", vidsrc)}
             ${linkOrDisabled("VidEasy", videasy)}
             ${linkOrDisabled("RT", rtUrl)}
+            ${flag}
+            ${toggle}
           </div>
           ${prodNames.length ? `
             <div class="metablock">
@@ -2699,6 +2773,20 @@ CHANGE NOTES
       ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);aspect-ratio:16/9;\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:100%;object-fit:cover;display:block;\"/></div>` : ``}
     `;
     openModal(title, html);
+    wireMoviePopup(Number(m?.tmdb_id) || 0);
+  }
+
+  function wireMoviePopup(movieId){
+    const host = $("#modalBody");
+    if (!host) return;
+    const btn = $("[data-watch-movie-popup]", host);
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      const watched = btn.getAttribute("data-watched") === "1";
+      setMovieWatched(movieId, !watched);
+      await saveInputs();
+      openMovieModal(movieId);
+    });
   }
 
   function openShowModal(showId){
@@ -2888,7 +2976,6 @@ CHANGE NOTES
                 ${show?.tmdb_id != null ? `<div>TMDB <span>${escHtml(show.tmdb_id)}</span></div>` : ""}
               </div>
             <div class="showactions">
-              ${linkOrDisabled("TMDB", tmdbUrl)}
               ${linkOrDisabled("RT", rtUrl)}
               ${showFlag}
               ${showToggle}
