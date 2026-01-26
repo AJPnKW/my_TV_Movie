@@ -1659,6 +1659,45 @@ CHANGE NOTES
     state.inputs.watchlist = list.filter(x => String(x?.tmdb_id ?? "") !== id);
   }
 
+  async function migrateWatchlist(){
+    const list = ensureWatchlist();
+    const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+    const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
+    const showIds = new Set(shows.map(s => String(s?.tmdb_id ?? "")).filter(Boolean));
+    const movieIds = new Set(movies.map(m => String(m?.tmdb_id ?? "")).filter(Boolean));
+    let changed = false;
+    for (const item of list){
+      if (!item || typeof item !== "object") continue;
+      const id = String(item.tmdb_id ?? "");
+      if (!id) continue;
+      if (!item.media_kind && item.kind){
+        item.media_kind = String(item.kind);
+        delete item.kind;
+        changed = true;
+      }
+      if (!item.watch_status && item.status){
+        item.watch_status = String(item.status);
+        delete item.status;
+        changed = true;
+      }
+      if (!item.media_kind){
+        if (showIds.has(id)) item.media_kind = "show";
+        else if (movieIds.has(id)) item.media_kind = "movie";
+        else item.media_kind = "unknown";
+        changed = true;
+      }
+      if (!item.watch_status){
+        item.watch_status = "watchlist";
+        changed = true;
+      }
+      if (!item.added_utc){
+        item.added_utc = nowUtcIso();
+        changed = true;
+      }
+    }
+    if (changed) await saveInputs();
+  }
+
   function getRtLink(obj){
     if (!obj || typeof obj !== "object") return "";
     const links = obj?.links && typeof obj.links === "object" ? obj.links : {};
@@ -1788,6 +1827,9 @@ CHANGE NOTES
 
       // Prefer local watch_state (inputs/data), fallback to Trakt
       setWatchStateSource();
+
+      // Normalize watchlist entries (kind + watch_status)
+      await migrateWatchlist();
 
       populateFilters();
 
@@ -2679,7 +2721,7 @@ CHANGE NOTES
     const showWatched = isShowWatched(show);
     const showFlag = state.watchState ? watchFlagHtml(showWatched) : "";
     const showToggle = canToggle
-      ? `<button class="watchtoggle ${showWatched ? "on" : ""}" type="button" data-watch-show="${escHtml(show.tmdb_id ?? "")}" data-watched="${showWatched ? "1" : "0"}">${showWatched ? "Unwatch" : "Watch"}</button>`
+      ? `<button class="watchtoggle ${showWatched ? "on" : ""}" type="button" data-watch-show="${escHtml(show.tmdb_id ?? "")}" data-watched="${showWatched ? "1" : "0"}">${showWatched ? "Clear Show" : "Mark Show Complete"}</button>`
       : "";
 
     const seasons = Array.isArray(show.seasons) ? show.seasons : [];
@@ -2755,7 +2797,7 @@ CHANGE NOTES
       const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, sNum, eNum) : false;
       const epFlag = state.watchState ? watchFlagHtml(epWatched) : "";
       const epToggle = canToggle
-        ? `<button class="watchtoggle ${epWatched ? "on" : ""}" type="button" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" data-watched="${epWatched ? "1" : "0"}">${epWatched ? "Unwatch" : "Watch"}</button>`
+        ? `<button class="watchtoggle ${epWatched ? "on" : ""}" type="button" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" data-watched="${epWatched ? "1" : "0"}">${epWatched ? "Unwatch" : "Mark Watched"}</button>`
         : "";
 
       const tmdbUrlEp = (show.tmdb_id != null && sNum && eNum)
@@ -2808,7 +2850,7 @@ CHANGE NOTES
     const seasonWatched = state.watchState ? isSeasonWatched(show.tmdb_id, selectedSeasonNum, selectedTotalEpisodes) : false;
     const seasonFlag = state.watchState ? watchFlagHtml(seasonWatched) : "";
     const seasonToggle = canToggle
-      ? `<button class="watchtoggle ${seasonWatched ? "on" : ""}" type="button" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(selectedSeasonNum)}" data-watched="${seasonWatched ? "1" : "0"}">${seasonWatched ? "Unwatch Season" : "Watch Season"}</button>`
+      ? `<button class="watchtoggle ${seasonWatched ? "on" : ""}" type="button" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(selectedSeasonNum)}" data-watched="${seasonWatched ? "1" : "0"}">${seasonWatched ? "Clear Season" : "Mark Season Complete"}</button>`
       : "";
 
     return `
