@@ -41,10 +41,9 @@ CHANGE NOTES
       --hero-poster-w: 230px;
       --hero-poster-min: 180px;
       --epcard-w: 320px;
-      --epcard-img-h: 170px;
+      --epcard-img-h: calc(var(--epcard-w) * 0.56);
       --netlogo-max-w: 120px;
       --provider-logo-max-w: 92px;
-      --movie-backdrop-h: 220px;
       --logo-h: 16px;
       --provider-logo-h: 20px;
     }
@@ -841,6 +840,7 @@ CHANGE NOTES
 
     .epimg{
       height:var(--epcard-img-h);
+      aspect-ratio:16/9;
       background:rgba(255,255,255,0.03);
       border-bottom:1px solid rgba(255,255,255,0.10);
       position:relative;
@@ -1120,7 +1120,7 @@ CHANGE NOTES
     filters: {
       shows: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
       movies: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
-      watchlist: { status: "all", kind: "all", search: "" }
+      watchlist: { watch_status: "all", media_kind: "all", search: "" }
     },
     show: {
       tmdb_id: null,
@@ -1604,7 +1604,7 @@ CHANGE NOTES
 
     const watchlistStatusSel = $("#filterWatchlistStatus");
     if (watchlistStatusSel){
-      watchlistStatusSel.innerHTML = `<option value="all">All Status</option>${WATCHLIST_STATUS_OPTIONS.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("")}`;
+      watchlistStatusSel.innerHTML = `<option value="all">All Watch Status</option>${WATCHLIST_STATUS_OPTIONS.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("")}`;
     }
     const watchlistKindSel = $("#filterWatchlistKind");
     if (watchlistKindSel){
@@ -1636,7 +1636,7 @@ CHANGE NOTES
     return list.find(x => String(x?.tmdb_id ?? "") === id) || null;
   }
 
-  function setWatchlistStatus(tmdbId, title, kind, status){
+  function setWatchlistStatus(tmdbId, title, mediaKind, watchStatus){
     const id = String(tmdbId ?? "");
     if (!id) return;
     const list = ensureWatchlist();
@@ -1646,9 +1646,9 @@ CHANGE NOTES
       list.push(item);
     }
     if (title) item.title = title;
-    if (kind) item.kind = kind;
-    if (status) item.status = status;
-    if (!item.status) item.status = "watchlist";
+    if (mediaKind) item.media_kind = mediaKind;
+    if (watchStatus) item.watch_status = watchStatus;
+    if (!item.watch_status) item.watch_status = "watchlist";
     if (!item.added_utc) item.added_utc = nowUtcIso();
   }
 
@@ -1735,26 +1735,20 @@ CHANGE NOTES
           const mw = Number(sz.movie_width);
           const ew = Number(sz.episode_still_w);
           const cw = Number(sz.calendar_thumb_w);
-          const ch = Number(sz.calendar_thumb_h);
           const hpw = Number(sz.hero_poster_w);
           const hpm = Number(sz.hero_poster_min);
           const epw = Number(sz.episode_card_w);
-          const eph = Number(sz.episode_card_h);
           const nwm = Number(sz.network_logo_max_w);
           const pwm = Number(sz.provider_logo_max_w);
-          const mbh = Number(sz.movie_backdrop_h);
           if (Number.isFinite(sw) && sw > 0) document.documentElement.style.setProperty('--show_card_min', `${sw}px`);
           if (Number.isFinite(mw) && mw > 0) document.documentElement.style.setProperty('--movie_card_min', `${mw}px`);
           if (Number.isFinite(ew) && ew > 0) document.documentElement.style.setProperty('--episode_thumb', `${ew}px`);
           if (Number.isFinite(cw) && cw > 0) document.documentElement.style.setProperty('--cal-thumb-w', `${cw}px`);
-          if (Number.isFinite(ch) && ch > 0) document.documentElement.style.setProperty('--cal-thumb-h', `${ch}px`);
           if (Number.isFinite(hpw) && hpw > 0) document.documentElement.style.setProperty('--hero-poster-w', `${hpw}px`);
           if (Number.isFinite(hpm) && hpm > 0) document.documentElement.style.setProperty('--hero-poster-min', `${hpm}px`);
           if (Number.isFinite(epw) && epw > 0) document.documentElement.style.setProperty('--epcard-w', `${epw}px`);
-          if (Number.isFinite(eph) && eph > 0) document.documentElement.style.setProperty('--epcard-img-h', `${eph}px`);
           if (Number.isFinite(nwm) && nwm > 0) document.documentElement.style.setProperty('--netlogo-max-w', `${nwm}px`);
           if (Number.isFinite(pwm) && pwm > 0) document.documentElement.style.setProperty('--provider-logo-max-w', `${pwm}px`);
-          if (Number.isFinite(mbh) && mbh > 0) document.documentElement.style.setProperty('--movie-backdrop-h', `${mbh}px`);
         }
       }catch(_){/* noop */}
 
@@ -2300,10 +2294,31 @@ CHANGE NOTES
     return desc ? -r : r;
   }
 
-  function isShowWatched(s){
+  function getSeasonEpisodeNumbers(season){
+    const eps = Array.isArray(season?.episodes) ? season.episodes : [];
+    return eps.map(e => Number(e?.episode_number ?? e?.number ?? e?.ep)).filter(n => Number.isFinite(n));
+  }
+
+  function isShowWatched(show){
     const ws = state.watchState;
-    const id = String(s?.tmdb_id ?? "");
-    return !!(ws && ws.shows && id && ws.shows[id]);
+    const id = String(show?.tmdb_id ?? "");
+    if (!ws || !ws.shows || !id) return false;
+    const entry = ws.shows[id];
+    if (!entry || !entry.seasons || typeof entry.seasons !== "object") return false;
+    const seasons = Array.isArray(show?.seasons) ? show.seasons : [];
+    const seasonNums = seasons.map(s => Number(s?.season_number ?? s?.number)).filter(n => Number.isFinite(n));
+    if (!seasonNums.length) return true;
+    for (const season of seasons){
+      const sn = String(season?.season_number ?? season?.number ?? "");
+      const episodeNums = getSeasonEpisodeNumbers(season);
+      if (!episodeNums.length) continue;
+      const watched = entry.seasons[sn];
+      if (!watched || !Array.isArray(watched.episodes)) return false;
+      for (const epn of episodeNums){
+        if (!watched.episodes.includes(Number(epn))) return false;
+      }
+    }
+    return true;
   }
 
   function isMovieWatched(m){
@@ -2465,8 +2480,8 @@ CHANGE NOTES
   function renderWatchlist(){
     const list = ensureWatchlist();
     const q = state.filters.watchlist.search.trim().toLowerCase();
-    const statusFilter = safeText(state.filters.watchlist.status);
-    const kindFilter = safeText(state.filters.watchlist.kind);
+    const statusFilter = safeText(state.filters.watchlist.watch_status);
+    const kindFilter = safeText(state.filters.watchlist.media_kind);
     const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
     const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
     const showMap = new Map(shows.map(s => [String(s?.tmdb_id ?? ""), s]));
@@ -2476,9 +2491,9 @@ CHANGE NOTES
       const id = String(item?.tmdb_id ?? "");
       const show = id ? showMap.get(id) : null;
       const movie = id ? movieMap.get(id) : null;
-      const kind = safeText(item?.kind || (show ? "show" : (movie ? "movie" : "unknown"))).toLowerCase() || "unknown";
+      const kind = safeText(item?.media_kind || (show ? "show" : (movie ? "movie" : "unknown"))).toLowerCase() || "unknown";
       const title = safeText(item?.title || show?.title || show?.name || movie?.title || "Untitled");
-      const status = safeText(item?.status || "watchlist").toLowerCase();
+      const status = safeText(item?.watch_status || "watchlist").toLowerCase();
       return { item, id, show, movie, kind, title, status };
     }).filter(entry => {
       if (q && !entry.title.toLowerCase().includes(q)) return false;
@@ -2639,7 +2654,7 @@ CHANGE NOTES
           ${watchProvidersHtml}
         </div>
       </div>
-      ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:var(--movie-backdrop-h);object-fit:cover;display:block;\"/></div>` : ``}
+      ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);aspect-ratio:16/9;\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:100%;object-fit:cover;display:block;\"/></div>` : ``}
     `;
     openModal(title, html);
   }
