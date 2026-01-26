@@ -3062,11 +3062,11 @@ CHANGE NOTES
     renderWatchlist();
   });
   $("#filterWatchlistStatus").addEventListener("change", (e) => {
-    state.filters.watchlist.status = e.target.value || "all";
+    state.filters.watchlist.watch_status = e.target.value || "all";
     renderWatchlist();
   });
   $("#filterWatchlistKind").addEventListener("change", (e) => {
-    state.filters.watchlist.kind = e.target.value || "all";
+    state.filters.watchlist.media_kind = e.target.value || "all";
     renderWatchlist();
   });
 
