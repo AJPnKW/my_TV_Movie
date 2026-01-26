@@ -1915,6 +1915,40 @@ CHANGE NOTES
     return { label: "Watching", color: (state.ui?.watch_status_colors?.watching || "#bbf7d0") };
   }
 
+  function watchStatusChoiceColor(value, available){
+    const colors = state.ui?.watch_status_colors || {};
+    if (value === "watching" && !available) return colors.to_be_watched || "#fef9c3";
+    if (value === "completed") return colors.completed || "#bfdbfe";
+    if (value === "dropped") return colors.dropped || "#fecaca";
+    return colors.watching || "#bbf7d0";
+  }
+
+  function watchStatusChoiceTitle(value, available){
+    if (value === "watching") return available ? "Watching" : "To Be Watched";
+    if (value === "completed") return "Completed";
+    if (value === "dropped") return "Dropped";
+    return "Watching";
+  }
+
+  function watchStatusBandHtml(kind, id, entry, available){
+    const cur = safeText(entry?.watch_status || "");
+    const options = [
+      { value: "watching", label: "Watch" },
+      { value: "completed", label: "Done" },
+      { value: "dropped", label: "Drop" }
+    ];
+    return `
+      <div class="watchstatusband" data-watch-status-band="${escHtml(kind)}" data-id="${escHtml(id)}" data-status="${escHtml(cur)}">
+        ${options.map(opt => {
+          const active = cur === opt.value;
+          const title = watchStatusChoiceTitle(opt.value, available);
+          const color = watchStatusChoiceColor(opt.value, available);
+          return `<button type="button" class="opt ${active ? "active" : ""}" data-watch-status-choice="${escHtml(opt.value)}" data-watch-status-kind="${escHtml(kind)}" data-id="${escHtml(id)}" title="${escHtml(title)}" style="--opt-color:${escHtml(color)}">${escHtml(opt.label)}</button>`;
+        }).join("")}
+      </div>
+    `;
+  }
+
   async function migrateWatchlist(){
     const list = ensureWatchlist();
     const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
