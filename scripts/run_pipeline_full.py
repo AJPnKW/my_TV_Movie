@@ -72,6 +72,12 @@ def main() -> int:
         _write_line(logfp, f"RESULT    : FAIL (trakt exit_code={rc_trakt})")
         return rc_trakt
 
+    # 3a) Migrate watchlist fields (inputs.json)
+    rc_watchlist = _run("WATCHLIST_MIGRATE", [py, os.path.join("scripts", "migrate_watchlist_fields.py")], logfp)
+    if rc_watchlist != 0:
+        _write_line(logfp, f"RESULT    : FAIL (migrate_watchlist_fields exit_code={rc_watchlist})")
+        return rc_watchlist
+
     # 3b) Trakt watch-state sync (OAuth; optional)
     rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
     if rc_watch != 0:
