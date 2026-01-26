@@ -10,6 +10,8 @@ PURPOSE
     GET  /api/health
     GET  /api/inputs
     POST /api/inputs
+    GET  /api/config
+    POST /api/config
     GET  /api/tmdb/search?q=...
 
 REQUIREMENTS
@@ -36,6 +38,7 @@ DATA_DIR = REPO_ROOT / "data"
 INPUTS_JSON = DATA_DIR / "inputs.json"
 WEB_DIR = REPO_ROOT / "web"
 UI_FILE = WEB_DIR / "inputs_editor.html"
+CONFIG_JSON = WEB_DIR / "config.json"
 
 TMDB_KEY_ENV = "API_TMDB_KEY"
 TMDB_BASE = "https://api.themoviedb.org/3"
@@ -151,6 +154,17 @@ class Handler(BaseHTTPRequestHandler):
             _json(self, 200, {"ok": True, "inputs": _read_inputs()})
             return
 
+        if path == "/api/config":
+            if not CONFIG_JSON.exists():
+                _json(self, 200, {"ok": True, "config": {}})
+                return
+            try:
+                cfg = json.loads(CONFIG_JSON.read_text(encoding="utf-8"))
+            except Exception:
+                cfg = {}
+            _json(self, 200, {"ok": True, "config": cfg})
+            return
+
         if path == "/api/tmdb/search":
             q = parse_qs(p.query)
             query = (q.get("q") or [""])[0].strip()
@@ -186,6 +200,22 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         p = urlparse(self.path)
+        if p.path == "/api/config":
+            n = int(self.headers.get("Content-Length") or "0")
+            body = self.rfile.read(n).decode("utf-8", errors="replace")
+            try:
+                obj = json.loads(body)
+            except Exception as e:
+                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {e}"})
+                return
+            try:
+                CONFIG_JSON.write_text(json.dumps(obj, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+            except Exception as e:
+                _json(self, 500, {"ok": False, "error": str(e)})
+                return
+            _json(self, 200, {"ok": True})
+            return
+
         if p.path != "/api/inputs":
             _json(self, 404, {"ok": False, "error": "Not found"})
             return
