@@ -3102,12 +3102,14 @@ CHANGE NOTES
         <div>
           <div style="font-weight:950;font-size:18px;">${escHtml(title)}</div>
           <div style="margin-top:8px;color:rgba(255,255,255,0.80);line-height:1.35;">${escHtml(overview)}</div>
+          <div style="margin-top:10px;">
+            ${watchStatusBand}
+          </div>
           <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
             ${linkOrDisabled("VidSrc", vidsrc)}
             ${linkOrDisabled("VidEasy", videasy)}
             ${linkOrDisabled("RT", rtUrl)}
             ${toggle}
-            ${watchStatusBand}
           </div>
           ${prodNames.length ? `
             <div class="metablock">
@@ -3343,10 +3345,10 @@ CHANGE NOTES
                 ${lastAir ? `<div>Last <span>${escHtml(fmtDate(lastAir))}</span></div>` : ""}
                 ${show?.tmdb_id != null ? `<div>TMDB <span>${escHtml(show.tmdb_id)}</span></div>` : ""}
               </div>
+            ${watchStatusBand}
             <div class="showactions">
               ${linkOrDisabled("RT", rtUrl)}
               ${showToggle}
-              ${watchStatusBand}
             </div>
               ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
               ${prodHtml}
