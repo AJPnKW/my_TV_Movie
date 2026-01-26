@@ -2504,7 +2504,7 @@ CHANGE NOTES
     const watched = isShowWatched(s);
     const flag = state.watchState ? watchFlagHtml(watched) : "";
     const toggle = (state.watchStateSource === "local")
-      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-show="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Watch"}</button>`
+      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-show="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Clear Show" : "Mark Show Complete"}</button>`
       : "";
     const firstAir = safeText(s?.first_air_date);
     const lastAir = safeText(s?.last_air_date);
@@ -2689,7 +2689,7 @@ CHANGE NOTES
     const watched = isMovieWatched(m);
     const flag = state.watchState ? watchFlagHtml(watched) : "";
     const toggle = (state.watchStateSource === "local")
-      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-movie="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Watch"}</button>`
+      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-movie="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Mark Watched"}</button>`
       : "";
     const rd = safeText(m?.release_date);
     const rt = m?.runtime;
