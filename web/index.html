@@ -46,6 +46,12 @@ CHANGE NOTES
       --provider-logo-max-w: 92px;
       --logo-h: 16px;
       --provider-logo-h: 20px;
+      --url-btn-scale: 1;
+      --toggle-show: #a7f3d0;
+      --toggle-season: #bfdbfe;
+      --toggle-episode: #fecaca;
+      --toggle-movie: #fbcfe8;
+      --toggle-watchlist: #bbf7d0;
     }
 
     *{ box-sizing:border-box; }
@@ -65,7 +71,7 @@ CHANGE NOTES
     a{ color:inherit; }
 
     .app{
-      width:min(1180px, 100%);
+      width:min(95vw, 1800px);
       margin:0 auto;
       padding:10px 10px 16px;
     }
@@ -91,8 +97,8 @@ CHANGE NOTES
       width:64px;height:44px;border-radius:12px;
       display:grid;place-items:center;
       font-weight:1000;
-      background:rgba(255,255,255,0.04);
-      border:1px solid rgba(255,255,255,0.18);
+      background:linear-gradient(135deg, rgba(59,130,246,0.35), rgba(16,185,129,0.18));
+      border:1px solid rgba(59,130,246,0.45);
       box-shadow:0 0 0 2px rgba(255,255,255,0.06) inset;
     }
     .logo_txt{display:grid;gap:2px;line-height:1.0;text-align:center;letter-spacing:.14em;}
@@ -246,6 +252,122 @@ CHANGE NOTES
     .iconbtn.vidsrc{ background:#22c55e; color:#052e16; }
     .iconbtn.videasy{ background:#ec4899; color:#2b0b1e; }
     .iconbtn.watch{ background:#ffffff; color:#0b0f14; }
+
+    .switch{
+      --toggle-w: 52px;
+      --toggle-h: 24px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .switch input{ display:none; }
+    .switch .track{
+      width:var(--toggle-w);
+      height:var(--toggle-h);
+      border-radius:999px;
+      background:rgba(255,255,255,0.15);
+      border:1px solid rgba(255,255,255,0.25);
+      position:relative;
+      transition:background .2s ease,border-color .2s ease;
+    }
+    .switch .thumb{
+      position:absolute;
+      top:2px;
+      left:2px;
+      width:calc(var(--toggle-h) - 4px);
+      height:calc(var(--toggle-h) - 4px);
+      border-radius:999px;
+      background:#ffffff;
+      transition:transform .2s ease;
+      box-shadow:0 2px 6px rgba(0,0,0,0.35);
+    }
+    .switch .ontext{
+      position:absolute;
+      left:8px;
+      right:calc(var(--toggle-h) + 2px);
+      top:0;
+      bottom:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:0.2px;
+      text-transform:uppercase;
+      color:#0b1020;
+      opacity:0;
+      transition:opacity .15s ease;
+      pointer-events:none;
+    }
+    .switch input:checked + .track .thumb{
+      transform:translateX(calc(var(--toggle-w) - var(--toggle-h)));
+    }
+    .switch input:checked + .track .ontext{
+      opacity:1;
+    }
+    .switch.show input:checked + .track{ background:var(--toggle-show, #a7f3d0); border-color:rgba(255,255,255,0.6); }
+    .switch.season input:checked + .track{ background:var(--toggle-season, #bfdbfe); border-color:rgba(255,255,255,0.6); }
+    .switch.episode input:checked + .track{ background:var(--toggle-episode, #fecaca); border-color:rgba(255,255,255,0.6); }
+    .switch.movie input:checked + .track{ background:var(--toggle-movie, #fbcfe8); border-color:rgba(255,255,255,0.6); }
+    .switch.watchlist input:checked + .track{ background:var(--toggle-watchlist, #bbf7d0); border-color:rgba(255,255,255,0.6); }
+
+    .switch.status{
+      --status-color: rgba(255,255,255,0.2);
+      --pos: 0;
+    }
+    .switch.status .track{
+      background:var(--status-color);
+      border-color:rgba(255,255,255,0.5);
+    }
+    .switch.status .thumb{
+      transform:translateX(calc((var(--toggle-w) - var(--toggle-h)) * var(--pos)));
+    }
+
+    .watchstatusband{
+      display:inline-flex;
+      gap:4px;
+      padding:3px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .watchstatusband .opt{
+      font-size:10px;
+      font-weight:900;
+      letter-spacing:0.2px;
+      text-transform:uppercase;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.1);
+      background:rgba(255,255,255,0.04);
+      color:var(--muted);
+      cursor:pointer;
+    }
+    .watchstatusband .opt.active{
+      background:var(--opt-color, #bbf7d0);
+      color:#0b1020;
+      border-color:rgba(255,255,255,0.6);
+      box-shadow:0 4px 10px rgba(0,0,0,0.25);
+    }
+
+    .urlbtn{
+      width:calc(18px * var(--url-btn-scale, 1));
+      height:calc(18px * var(--url-btn-scale, 1));
+      border-radius:5px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:10px;
+      font-weight:900;
+      line-height:1;
+      color:#0b0f14;
+      border:1px solid rgba(0,0,0,0.25);
+      text-decoration:none;
+      background:#ffffff;
+    }
+    .urlbtn.vidsrc{ background:#22c55e; color:#052e16; }
+    .urlbtn.videasy{ background:#ec4899; color:#2b0b1e; }
+    .urlbtn.watch{ background:#ffffff; color:#0b0f14; }
     .btnicon{
       width:16px;height:16px;border-radius:4px;
       display:inline-flex;align-items:center;justify-content:center;
@@ -351,6 +473,10 @@ CHANGE NOTES
       width:100%;
       justify-self:stretch;
     }
+    .dow.weekend{
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.18);
+    }
 
     .day{
       border:1px solid var(--line);
@@ -366,14 +492,29 @@ CHANGE NOTES
       width:100%;
       justify-self:stretch;
     }
+    .day.weekend{
+      background:rgba(255,255,255,0.08);
+      border-color:rgba(255,255,255,0.18);
+    }
     .day.dim{ opacity:0.55; }
-    .day.today{ border-color:rgba(59,130,246,0.55); box-shadow:0 0 0 2px rgba(59,130,246,0.12) inset; }
+    .day.today{ border-color:rgba(59,130,246,0.65); box-shadow:0 0 0 2px rgba(59,130,246,0.18) inset; background:rgba(59,130,246,0.12); }
     .day.today-jump{ box-shadow:0 0 0 2px rgba(59,130,246,0.35) inset, 0 0 22px rgba(59,130,246,0.35); }
     .date{
       font-weight:950;
       font-size:12px;
       color:#ffffff;
       text-shadow:0 1px 6px rgba(0,0,0,0.6);
+      width:fit-content;
+      padding:2px 6px;
+      border-radius:8px;
+      background:rgba(59,130,246,0.25);
+      border:1px solid rgba(59,130,246,0.45);
+    }
+    .day.today .date{
+      background:rgba(59,130,246,0.55);
+      border-color:rgba(255,255,255,0.65);
+      color:#0b0f14;
+      text-shadow:none;
     }
 
     .chips{ display:flex; flex-direction:column; gap:6px; }
@@ -485,7 +626,8 @@ CHANGE NOTES
     }
     .chip .providerrow.cal-providers{
       gap:4px;
-      flex-wrap:nowrap;
+      flex-wrap:wrap;
+      overflow:visible;
     }
     .chip .epcontent{
       min-width:0;
@@ -494,24 +636,21 @@ CHANGE NOTES
       gap:3px;
     }
     .chip .epmedia{
-      display:flex;
-      gap:6px;
-      align-items:stretch;
+      display:block;
       width:100%;
     }
     .chip.cal-episode .epmedia .thumb{
-      width:var(--cal-thumb-w);
-      height:var(--cal-thumb-h);
+      width:100%;
+      height:auto;
+      aspect-ratio:16/9;
       border-radius:8px;
     }
-    .chip .epactionscol{
+    .chip .urlband{
       display:flex;
-      flex-direction:column;
       gap:4px;
       align-items:center;
-      justify-content:flex-start;
+      flex-wrap:wrap;
       padding:2px 0;
-      min-width:20px;
     }
     .chip .actionicon{
       width:18px;
@@ -1048,15 +1187,16 @@ CHANGE NOTES
         <button class="tab" data-tab="shows" role="tab" aria-selected="false" tabindex="0">Shows</button>
         <button class="tab" data-tab="movies" role="tab" aria-selected="false" tabindex="0">Movies</button>
         <button class="tab" data-tab="livetv" role="tab" aria-selected="false" tabindex="0" disabled>Live TV</button>
-        <button class="tab" data-tab="watchlist" role="tab" aria-selected="false" tabindex="0">Watchlist</button>
+        <!-- Watchlist view removed; watchlist controls live on cards/popups -->
         <button class="tab" data-tab="explore" role="tab" aria-selected="false" tabindex="0" disabled>Explore</button>
         <button class="tab" data-tab="profiles" role="tab" aria-selected="false" tabindex="0" disabled>Profiles</button>
-        <button class="tab" data-tab="config" role="tab" aria-selected="false" tabindex="0" disabled>Config</button>
+        <button class="tab" data-tab="config" role="tab" aria-selected="false" tabindex="0">Config</button>
       </div>
 
       <div class="status" aria-live="polite">
         <div id="statusDot" class="dot"></div>
         <span id="statusText">Loading</span>
+        <button id="verBadge" class="calbtn" type="button" aria-label="Version">ver</button>
       </div>
     </div>
 
@@ -1119,15 +1259,8 @@ CHANGE NOTES
       <div id="showRoot"></div>
     </div>
 
-    <div id="panel-watchlist" class="panel hidden">
-      <div class="row filtersbar">
-        <div class="filters">
-          <input id="searchWatchlist" class="input" type="search" placeholder="Search watchlist..." autocomplete="off" />
-          <select id="filterWatchlistStatus" class="input" aria-label="Watchlist status filter"></select>
-          <select id="filterWatchlistKind" class="input" aria-label="Watchlist type filter"></select>
-        </div>
-      </div>
-      <div id="watchlistGrid" class="watchlistgrid"></div>
+    <div id="panel-config" class="panel hidden">
+      <iframe id="configFrame" title="Config" src="./config.html" style="width:100%;height:78vh;border:0;border-radius:14px;background:rgba(0,0,0,0.2);"></iframe>
     </div>
 
     <div class="footer" id="footer"></div>
@@ -1162,6 +1295,7 @@ CHANGE NOTES
     watchStateSource: null,
     apiAvailable: false,
     inputsDirty: false,
+    ui: { url_labels: { vidsrc: "S", videasy: "E", watch: "▶" } },
     search: { shows: "", movies: "" },
     sort: { shows: "title", movies: "title" },
     filters: {
@@ -1344,6 +1478,37 @@ CHANGE NOTES
 
   function nowUtcIso(){
     try { return new Date().toISOString(); } catch { return ""; }
+  }
+
+  function todayKey(){
+    const d = new Date();
+    return toDateKey(d);
+  }
+
+  function isDateAvailable(dateStr){
+    const key = safeText(dateStr).slice(0,10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return false;
+    return key <= todayKey();
+  }
+
+  function isShowAvailable(show){
+    const first = safeText(show?.first_air_date);
+    return isDateAvailable(first);
+  }
+
+  function isSeasonAvailable(season){
+    const d = safeText(season?.air_date || season?.first_air_date);
+    return isDateAvailable(d);
+  }
+
+  function isEpisodeAvailable(ep){
+    const d = safeText(ep?.air_date);
+    return isDateAvailable(d);
+  }
+
+  function isMovieAvailable(movie){
+    const d = safeText(movie?.release_date);
+    return isDateAvailable(d);
   }
 
   async function checkApiAvailable(){
@@ -1706,6 +1871,50 @@ CHANGE NOTES
     state.inputs.watchlist = list.filter(x => String(x?.tmdb_id ?? "") !== id);
   }
 
+  function isInWatchlist(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return false;
+    const list = ensureWatchlist();
+    return list.some(x => String(x?.tmdb_id ?? "") === id);
+  }
+
+  function getWatchlistEntry(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return null;
+    const list = ensureWatchlist();
+    return list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+  }
+
+  function setWatchlistEntry(tmdbId, title, mediaKind, watchStatus){
+    const id = String(tmdbId ?? "");
+    if (!id) return;
+    const list = ensureWatchlist();
+    let item = list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+    if (!item){
+      item = { tmdb_id: Number(id) || id };
+      list.push(item);
+    }
+    if (title) item.title = title;
+    if (mediaKind) item.media_kind = mediaKind;
+    if (watchStatus) item.watch_status = watchStatus;
+    if (!item.watch_status) item.watch_status = "watching";
+    if (!item.added_utc) item.added_utc = nowUtcIso();
+  }
+
+  function cycleWatchStatus(curr){
+    const order = ["watching","completed","dropped"];
+    const idx = Math.max(0, order.indexOf(curr));
+    return order[(idx + 1) % order.length];
+  }
+
+  function watchStatusDisplay(entry, available){
+    const raw = safeText(entry?.watch_status || "watching").toLowerCase();
+    if (raw === "watching" && !available) return { label: "To Be Watched", color: (state.ui?.watch_status_colors?.to_be_watched || "#fef9c3") };
+    if (raw === "completed") return { label: "Completed", color: (state.ui?.watch_status_colors?.completed || "#bfdbfe") };
+    if (raw === "dropped") return { label: "Dropped", color: (state.ui?.watch_status_colors?.dropped || "#fecaca") };
+    return { label: "Watching", color: (state.ui?.watch_status_colors?.watching || "#bbf7d0") };
+  }
+
   async function migrateWatchlist(){
     const list = ensureWatchlist();
     const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
@@ -1846,6 +2055,34 @@ CHANGE NOTES
           if (Number.isFinite(lh) && lh > 0) document.documentElement.style.setProperty('--logo-h', `${lh}px`);
           const plh = Number(ui.provider_logo_height);
           if (Number.isFinite(plh) && plh > 0) document.documentElement.style.setProperty('--provider-logo-h', `${plh}px`);
+          const urlScale = Number(ui.url_button_scale);
+          if (Number.isFinite(urlScale) && urlScale > 0) document.documentElement.style.setProperty('--url-btn-scale', `${urlScale}`);
+          const tw = Number(ui.watch_toggle_width);
+          if (Number.isFinite(tw) && tw > 0) document.documentElement.style.setProperty('--toggle-w', `${tw}px`);
+          const tcolors = ui.watch_toggle_colors && typeof ui.watch_toggle_colors === "object" ? ui.watch_toggle_colors : null;
+          if (tcolors){
+            if (tcolors.show) document.documentElement.style.setProperty('--toggle-show', String(tcolors.show));
+            if (tcolors.season) document.documentElement.style.setProperty('--toggle-season', String(tcolors.season));
+            if (tcolors.episode) document.documentElement.style.setProperty('--toggle-episode', String(tcolors.episode));
+            if (tcolors.movie) document.documentElement.style.setProperty('--toggle-movie', String(tcolors.movie));
+            if (tcolors.watchlist) document.documentElement.style.setProperty('--toggle-watchlist', String(tcolors.watchlist));
+          }
+          state.ui = state.ui || {};
+          if (ui.url_button_labels && typeof ui.url_button_labels === "object"){
+            state.ui.url_labels = {
+              vidsrc: ui.url_button_labels.vidsrc || "S",
+              videasy: ui.url_button_labels.videasy || "E",
+              watch: ui.url_button_labels.watch || "▶"
+            };
+          }
+          if (ui.watch_status_colors && typeof ui.watch_status_colors === "object"){
+            state.ui.watch_status_colors = {
+              watching: ui.watch_status_colors.watching || "#bbf7d0",
+              to_be_watched: ui.watch_status_colors.to_be_watched || "#fef9c3",
+              completed: ui.watch_status_colors.completed || "#bfdbfe",
+              dropped: ui.watch_status_colors.dropped || "#fecaca"
+            };
+          }
         }
       }catch(_){/* noop */}
 
@@ -1881,6 +2118,8 @@ CHANGE NOTES
       populateFilters();
 
       $("#footer").textContent = footerText();
+      const vb = $("#verBadge");
+      if (vb) vb.textContent = APP_VERSION;
       setStatus(true, "Ready");
       initCalendarMonth();
       routeFromHash();
@@ -1915,12 +2154,11 @@ CHANGE NOTES
     $("#panel-shows").classList.toggle("hidden", tab !== "shows");
     $("#panel-movies").classList.toggle("hidden", tab !== "movies");
     $("#panel-show").classList.toggle("hidden", tab !== "show");
-    $("#panel-watchlist").classList.toggle("hidden", tab !== "watchlist");
+    $("#panel-config").classList.toggle("hidden", tab !== "config");
 
     if (tab === "calendar") renderCalendar();
     if (tab === "shows") renderShows();
     if (tab === "movies") renderMovies();
-    if (tab === "watchlist") renderWatchlist();
   }
 
   function routeFromHash(){
@@ -1936,14 +2174,14 @@ CHANGE NOTES
       openShowModal(id);
       const fallback = state.lastNonShowHash || "#calendar";
       const tab = fallback.startsWith("#") ? fallback.slice(1) : fallback;
-      if (tab === "calendar" || tab === "shows" || tab === "movies" || tab === "watchlist"){
+      if (tab === "calendar" || tab === "shows" || tab === "movies"){
         setTab(tab);
       }
       return;
     }
 
     // non-show routes
-    if (h === "#calendar" || h === "#shows" || h === "#movies" || h === "#watchlist"){
+    if (h === "#calendar" || h === "#shows" || h === "#movies" || h === "#config"){
       state.lastNonShowHash = h;
       setTab(h.slice(1));
       return;
@@ -2124,7 +2362,10 @@ CHANGE NOTES
 
     const eventsByDate = buildCalendarEventsForMonth(m);
 
-    const dows = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(s => `<div class="dow">${s}</div>`).join("");
+    const dows = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(s => {
+      const weekend = (s === "Sat" || s === "Sun") ? " weekend" : "";
+      return `<div class="dow${weekend}">${s}</div>`;
+    }).join("");
 
     const cells = days.map(({dt,key,inMonth,num}) => {
       const ev = eventsByDate.get(key) || [];
@@ -2168,17 +2409,16 @@ CHANGE NOTES
           return `
             <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
               <div class="epcontent">
-                <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
-                <div class="s">${escHtml(epName)}</div>
-                ${(epTag || it.runtime || watchedFlag) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}${watchedFlag || ""}</div>` : ""}
+                <div class="t">${escHtml(`${safeText(it.show_title).trim() || "Unknown Show"}${epTag ? ` • ${epTag}` : ""}`)}</div>
                 <div class="epmedia">
                   ${thumb}
-                  <div class="epactionscol">
-                    ${watchToggleBtn}
-                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                  </div>
+                </div>
+                <div class="s">${escHtml(`${epName}${it.runtime ? ` • ${it.runtime} min` : ""}`)}</div>
+                <div class="urlband">
+                  ${watchToggleBtn}
+                  ${vidsrc ? `<a class="urlbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">${escHtml(state.ui?.url_labels?.vidsrc || "S")}</a>` : ""}
+                  ${videasy ? `<a class="urlbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">${escHtml(state.ui?.url_labels?.videasy || "E")}</a>` : ""}
+                  ${providers.length ? `<span class="urlbtn watch" title="Watch" aria-label="Watch">${escHtml(state.ui?.url_labels?.watch || "▶")}</span>` : ""}
                 </div>
                 <div class="providerrow cal-providers">
                   ${providerIcons}
@@ -2220,15 +2460,16 @@ CHANGE NOTES
             <div class="lines">
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
-              <div class="epmedia">
-                <div class="epactionscol">
-                  ${watchToggleBtn}
-                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                </div>
+              <div class="urlband">
+                ${watchToggleBtn}
+                ${vidsrc ? `<a class="urlbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">${escHtml(state.ui?.url_labels?.vidsrc || "S")}</a>` : ""}
+                ${videasy ? `<a class="urlbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">${escHtml(state.ui?.url_labels?.videasy || "E")}</a>` : ""}
+                ${providers.length ? `<span class="urlbtn watch" title="Watch" aria-label="Watch">${escHtml(state.ui?.url_labels?.watch || "▶")}</span>` : ""}
               </div>
-              ${serviceLogo ? `<div class="logos">${serviceLogo}</div>` : ""}
+              <div class="providerrow cal-providers">
+                ${providerIcons}
+                ${serviceLogo || ""}
+              </div>
               ${watchedFlag}
               ${progressBar}
             </div>
@@ -2277,17 +2518,16 @@ CHANGE NOTES
           return `
             <button class="chip cal-episode hidden" type="button" data-extra="1" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${realIdx}">
               <div class="epcontent">
-                <div class="t">${escHtml(safeText(it.show_title).trim() || "Unknown Show")}</div>
-                <div class="s">${escHtml(epName)}</div>
-                ${(epTag || it.runtime || watchedFlag) ? `<div class="meta-row">${epTag ? `<span class="pill epnum">${escHtml(epTag)}</span>` : ""}${it.runtime ? `<span class="pill runtime">${escHtml(it.runtime)} min</span>` : ""}${watchedFlag || ""}</div>` : ""}
+                <div class="t">${escHtml(`${safeText(it.show_title).trim() || "Unknown Show"}${epTag ? ` • ${epTag}` : ""}`)}</div>
                 <div class="epmedia">
                   ${thumb}
-                  <div class="epactionscol">
-                    ${watchToggleBtn}
-                    ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                    ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                    ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                  </div>
+                </div>
+                <div class="s">${escHtml(`${epName}${it.runtime ? ` • ${it.runtime} min` : ""}`)}</div>
+                <div class="urlband">
+                  ${watchToggleBtn}
+                  ${vidsrc ? `<a class="urlbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">${escHtml(state.ui?.url_labels?.vidsrc || "S")}</a>` : ""}
+                  ${videasy ? `<a class="urlbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">${escHtml(state.ui?.url_labels?.videasy || "E")}</a>` : ""}
+                  ${providers.length ? `<span class="urlbtn watch" title="Watch" aria-label="Watch">${escHtml(state.ui?.url_labels?.watch || "▶")}</span>` : ""}
                 </div>
                 <div class="providerrow cal-providers">
                   ${providerIcons}
@@ -2326,15 +2566,16 @@ CHANGE NOTES
             <div class="lines">
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
-              <div class="epmedia">
-                <div class="epactionscol">
-                  ${watchToggleBtn}
-                  ${vidsrc ? `<a class="actionicon vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">S</a>` : ""}
-                  ${videasy ? `<a class="actionicon videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">E</a>` : ""}
-                  ${providers.length ? `<span class="actionicon watch" title="Watch" aria-label="Watch">▶</span>` : ""}
-                </div>
+              <div class="urlband">
+                ${watchToggleBtn}
+                ${vidsrc ? `<a class="urlbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">${escHtml(state.ui?.url_labels?.vidsrc || "S")}</a>` : ""}
+                ${videasy ? `<a class="urlbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">${escHtml(state.ui?.url_labels?.videasy || "E")}</a>` : ""}
+                ${providers.length ? `<span class="urlbtn watch" title="Watch" aria-label="Watch">${escHtml(state.ui?.url_labels?.watch || "▶")}</span>` : ""}
               </div>
-              ${serviceLogo ? `<div class="logos">${serviceLogo}</div>` : ""}
+              <div class="providerrow cal-providers">
+                ${providerIcons}
+                ${serviceLogo || ""}
+              </div>
               ${watchedFlag}
               ${progressBar}
             </div>
@@ -2342,7 +2583,8 @@ CHANGE NOTES
         `;
       }).join("") : "";
 
-      const cls = ["day", inMonth?"":"dim", key===todayKey?"today":""].filter(Boolean).join(" ");
+      const isWeekend = (dt.getDay() === 0 || dt.getDay() === 6);
+      const cls = ["day", inMonth?"":"dim", key===todayKey?"today":"", isWeekend?"weekend":""].filter(Boolean).join(" ");
       return `
         <div class="${cls}" data-daycell="${key}">
           <div class="date">${num}</div>
@@ -2502,12 +2744,39 @@ CHANGE NOTES
       });
     });
     $$("[data-watch-show]", $("#showsGrid")).forEach(el => {
-      el.addEventListener("click", (e) => {
+      el.addEventListener("change", (e) => {
         e.stopPropagation();
         const id = parseInt(el.getAttribute("data-watch-show"), 10);
         if (!Number.isFinite(id)) return;
-        const watched = el.getAttribute("data-watched") === "1";
-        setShowWatched(id, getShowById(id)?.seasons || [], !watched);
+        const on = el.checked;
+        setShowWatched(id, getShowById(id)?.seasons || [], on);
+        renderShows();
+      });
+    });
+    $$("[data-watchlist-toggle='show']", $("#showsGrid")).forEach(el => {
+      el.addEventListener("change", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const on = el.checked;
+        const show = getShowById(id);
+        if (!show) return;
+        if (on) setWatchlistEntry(id, safeText(show.title || show.name), "show", "watching");
+        else removeWatchlistItem(id);
+        await saveInputs();
+        renderShows();
+      });
+    });
+    $$("[data-watch-status='show']", $("#showsGrid")).forEach(el => {
+      el.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const entry = getWatchlistEntry(id);
+        if (!entry) return;
+        const next = cycleWatchStatus(entry.watch_status || "watching");
+        setWatchlistEntry(id, safeText(entry.title), entry.media_kind || "show", next);
+        await saveInputs();
         renderShows();
       });
     });
@@ -2520,8 +2789,26 @@ CHANGE NOTES
     const watched = isShowWatched(s);
     const flag = state.watchState ? watchFlagHtml(watched) : "";
     const toggle = (state.watchStateSource === "local")
-      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-show="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Clear Show" : "Mark Show Complete"}</button>`
+      ? `<label class="switch show">
+          <input type="checkbox" data-watch-show="${id}" ${watched ? "checked" : ""} />
+          <span class="track"><span class="thumb"></span></span>
+        </label>`
       : "";
+    const inWatchlist = isInWatchlist(id);
+    const entry = getWatchlistEntry(id);
+    const available = isShowAvailable(s);
+    const status = inWatchlist ? watchStatusDisplay(entry, available) : { label: "Not in Watchlist", color: "rgba(255,255,255,0.2)" };
+    const watchlistToggle = `
+      <label class="switch watchlist">
+        <input type="checkbox" data-watchlist-toggle="show" data-id="${id}" ${inWatchlist ? "checked" : ""} />
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    `;
+    const watchStatusSwitch = inWatchlist ? `
+      <span class="switch status" data-watch-status="show" data-id="${id}" data-status="${escHtml(entry?.watch_status || "watching")}" style="--status-color:${escHtml(status.color)};--pos:${entry?.watch_status==="completed" ? "0.5" : (entry?.watch_status==="dropped" ? "1" : "0")};" title="${escHtml(status.label)}">
+        <span class="track"><span class="thumb"></span></span>
+      </span>
+    ` : "";
     const firstAir = safeText(s?.first_air_date);
     const lastAir = safeText(s?.last_air_date);
     const meta = [
@@ -2531,13 +2818,15 @@ CHANGE NOTES
 
     return `
       <div class="card">
+        <div class="cardbody">
+          <div class="cardtitle">${escHtml(title)}</div>
+          <div class="cardbadges">${flag}${toggle}${watchlistToggle}${watchStatusSwitch}<span class="muted">${escHtml(status.label)}</span></div>
+        </div>
         <button type="button" class="imgbox" data-show-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
           ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
         </button>
         <div class="cardbody">
-          <div class="cardtitle">${escHtml(title)}</div>
           <div class="cardmeta">${escHtml(meta)}</div>
-          <div class="cardbadges">${flag}${toggle}</div>
         </div>
       </div>
     `;
@@ -2593,12 +2882,39 @@ CHANGE NOTES
       });
     });
     $$("[data-watch-movie]", $("#moviesGrid")).forEach(el => {
-      el.addEventListener("click", (e) => {
+      el.addEventListener("change", (e) => {
         e.stopPropagation();
         const id = parseInt(el.getAttribute("data-watch-movie"), 10);
         if (!Number.isFinite(id)) return;
-        const watched = el.getAttribute("data-watched") === "1";
-        setMovieWatched(id, !watched);
+        const on = el.checked;
+        setMovieWatched(id, on);
+        renderMovies();
+      });
+    });
+    $$("[data-watchlist-toggle='movie']", $("#moviesGrid")).forEach(el => {
+      el.addEventListener("change", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const on = el.checked;
+        const movie = getMovieById(id);
+        if (!movie) return;
+        if (on) setWatchlistEntry(id, safeText(movie.title), "movie", "watching");
+        else removeWatchlistItem(id);
+        await saveInputs();
+        renderMovies();
+      });
+    });
+    $$("[data-watch-status='movie']", $("#moviesGrid")).forEach(el => {
+      el.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const entry = getWatchlistEntry(id);
+        if (!entry) return;
+        const next = cycleWatchStatus(entry.watch_status || "watching");
+        setWatchlistEntry(id, safeText(entry.title), entry.media_kind || "movie", next);
+        await saveInputs();
         renderMovies();
       });
     });
@@ -2705,8 +3021,26 @@ CHANGE NOTES
     const watched = isMovieWatched(m);
     const flag = state.watchState ? watchFlagHtml(watched) : "";
     const toggle = (state.watchStateSource === "local")
-      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-movie="${id}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Mark Watched"}</button>`
+      ? `<label class="switch movie">
+          <input type="checkbox" data-watch-movie="${id}" ${watched ? "checked" : ""} />
+          <span class="track"><span class="thumb"></span></span>
+        </label>`
       : "";
+    const inWatchlist = isInWatchlist(id);
+    const entry = getWatchlistEntry(id);
+    const available = isMovieAvailable(m);
+    const status = inWatchlist ? watchStatusDisplay(entry, available) : { label: "Not in Watchlist", color: "rgba(255,255,255,0.2)" };
+    const watchlistToggle = `
+      <label class="switch watchlist">
+        <input type="checkbox" data-watchlist-toggle="movie" data-id="${id}" ${inWatchlist ? "checked" : ""} />
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    `;
+    const watchStatusSwitch = inWatchlist ? `
+      <span class="switch status" data-watch-status="movie" data-id="${id}" data-status="${escHtml(entry?.watch_status || "watching")}" style="--status-color:${escHtml(status.color)};--pos:${entry?.watch_status==="completed" ? "0.5" : (entry?.watch_status==="dropped" ? "1" : "0")};" title="${escHtml(status.label)}">
+        <span class="track"><span class="thumb"></span></span>
+      </span>
+    ` : "";
     const rd = safeText(m?.release_date);
     const rt = m?.runtime;
     const genres = Array.isArray(m?.genres) ? m.genres.map(g => g?.name).filter(Boolean) : [];
@@ -2722,16 +3056,18 @@ CHANGE NOTES
 
     return `
       <div class="card">
+        <div class="cardbody">
+          <div class="cardtitle">${escHtml(title)}</div>
+          <div class="cardbadges">${flag}${toggle}${watchlistToggle}${watchStatusSwitch}<span class="muted">${escHtml(status.label)}</span></div>
+        </div>
         <button type="button" class="imgbox" data-movie-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
           ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
         </button>
         <div class="cardbody">
-          <div class="cardtitle">${escHtml(title)}</div>
           <div class="cardmeta">${escHtml(meta)}</div>
-          <div class="cardbadges">${flag}${toggle}</div>
           <div class="actionstack">
-            ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" aria-label="VidSrc">S</a>` : ""}
-            ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" aria-label="VidEasy">E</a>` : ""}
+            ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" aria-label="VidSrc">${escHtml(state.ui?.url_labels?.vidsrc || "S")}</a>` : ""}
+            ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" aria-label="VidEasy">${escHtml(state.ui?.url_labels?.videasy || "E")}</a>` : ""}
           </div>
         </div>
       </div>
@@ -2756,8 +3092,26 @@ CHANGE NOTES
     const watched = isMovieWatched(m);
     const flag = state.watchState ? watchFlagHtml(watched) : "";
     const toggle = (state.watchStateSource === "local")
-      ? `<button class="watchtoggle ${watched ? "on" : ""}" type="button" data-watch-movie-popup="${Number(m?.tmdb_id)||0}" data-watched="${watched ? "1" : "0"}">${watched ? "Unwatch" : "Mark Watched"}</button>`
+      ? `<label class="switch movie">
+          <input type="checkbox" data-watch-movie-popup="${Number(m?.tmdb_id)||0}" ${watched ? "checked" : ""} />
+          <span class="track"><span class="thumb"></span></span>
+        </label>`
       : "";
+    const inWatchlist = isInWatchlist(m?.tmdb_id);
+    const entry = getWatchlistEntry(m?.tmdb_id);
+    const available = isMovieAvailable(m);
+    const status = watchStatusDisplay(entry, available);
+    const watchlistToggle = `
+      <label class="switch watchlist">
+        <input type="checkbox" data-watchlist-toggle="movie" data-id="${escHtml(m?.tmdb_id ?? "")}" ${inWatchlist ? "checked" : ""} />
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    `;
+    const watchStatusSwitch = inWatchlist ? `
+      <span class="switch status" data-watch-status="movie" data-id="${escHtml(m?.tmdb_id ?? "")}" data-status="${escHtml(entry?.watch_status || "watching")}" style="--status-color:${escHtml(status.color)};--pos:${entry?.watch_status==="completed" ? "0.5" : (entry?.watch_status==="dropped" ? "1" : "0")};" title="${escHtml(status.label)}">
+        <span class="track"><span class="thumb"></span></span>
+      </span>
+    ` : "";
 
     const watchProvidersHtml = renderWatchProvidersHtml(m, "movie");
     const html = `
@@ -2774,6 +3128,9 @@ CHANGE NOTES
             ${linkOrDisabled("RT", rtUrl)}
             ${flag}
             ${toggle}
+            ${watchlistToggle}
+            ${watchStatusSwitch}
+            <span class="muted">${escHtml(status.label)}</span>
           </div>
           ${prodNames.length ? `
             <div class="metablock">
@@ -2797,12 +3154,33 @@ CHANGE NOTES
     if (!host) return;
     const btn = $("[data-watch-movie-popup]", host);
     if (!btn) return;
-    btn.addEventListener("click", async () => {
-      const watched = btn.getAttribute("data-watched") === "1";
-      setMovieWatched(movieId, !watched);
+    btn.addEventListener("change", async () => {
+      setMovieWatched(movieId, !!btn.checked);
       await saveInputs();
       openMovieModal(movieId);
     });
+    const wl = $("[data-watchlist-toggle='movie']", host);
+    if (wl){
+      wl.addEventListener("change", async () => {
+        const movie = getMovieById(movieId);
+        if (!movie) return;
+        if (wl.checked) setWatchlistEntry(movieId, safeText(movie.title), "movie", "watching");
+        else removeWatchlistItem(movieId);
+        await saveInputs();
+        openMovieModal(movieId);
+      });
+    }
+    const ws = $("[data-watch-status='movie']", host);
+    if (ws){
+      ws.addEventListener("click", async () => {
+        const entry = getWatchlistEntry(movieId);
+        if (!entry) return;
+        const next = cycleWatchStatus(entry.watch_status || "watching");
+        setWatchlistEntry(movieId, safeText(entry.title), entry.media_kind || "movie", next);
+        await saveInputs();
+        openMovieModal(movieId);
+      });
+    }
   }
 
   function openShowModal(showId){
@@ -2825,7 +3203,10 @@ CHANGE NOTES
     const showWatched = isShowWatched(show);
     const showFlag = state.watchState ? watchFlagHtml(showWatched) : "";
     const showToggle = canToggle
-      ? `<button class="watchtoggle ${showWatched ? "on" : ""}" type="button" data-watch-show="${escHtml(show.tmdb_id ?? "")}" data-watched="${showWatched ? "1" : "0"}">${showWatched ? "Clear Show" : "Mark Show Complete"}</button>`
+      ? `<label class="switch show">
+          <input type="checkbox" data-watch-show="${escHtml(show.tmdb_id ?? "")}" ${showWatched ? "checked" : ""} />
+          <span class="track"><span class="thumb"></span></span>
+        </label>`
       : "";
 
     const seasons = Array.isArray(show.seasons) ? show.seasons : [];
@@ -2901,7 +3282,10 @@ CHANGE NOTES
       const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, sNum, eNum) : false;
       const epFlag = state.watchState ? watchFlagHtml(epWatched) : "";
       const epToggle = canToggle
-        ? `<button class="watchtoggle ${epWatched ? "on" : ""}" type="button" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" data-watched="${epWatched ? "1" : "0"}">${epWatched ? "Unwatch" : "Mark Watched"}</button>`
+        ? `<label class="switch episode">
+            <input type="checkbox" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" ${epWatched ? "checked" : ""} />
+            <span class="track"><span class="thumb"></span></span>
+          </label>`
         : "";
 
       const tmdbUrlEp = (show.tmdb_id != null && sNum && eNum)
@@ -2949,12 +3333,30 @@ CHANGE NOTES
         </div>`
       : "";
     const watchProvidersHtml = renderWatchProvidersHtml(show, "tv");
+    const inWatchlist = isInWatchlist(show.tmdb_id);
+    const entry = getWatchlistEntry(show.tmdb_id);
+    const available = isShowAvailable(show);
+    const status = watchStatusDisplay(entry, available);
+    const watchlistToggle = `
+      <label class="switch watchlist">
+        <input type="checkbox" data-watchlist-toggle="show" data-id="${escHtml(show.tmdb_id ?? "")}" ${inWatchlist ? "checked" : ""} />
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    `;
+    const watchStatusSwitch = inWatchlist ? `
+      <span class="switch status" data-watch-status="show" data-id="${escHtml(show.tmdb_id ?? "")}" data-status="${escHtml(entry?.watch_status || "watching")}" style="--status-color:${escHtml(status.color)};--pos:${entry?.watch_status==="completed" ? "0.5" : (entry?.watch_status==="dropped" ? "1" : "0")};" title="${escHtml(status.label)}">
+        <span class="track"><span class="thumb"></span></span>
+      </span>
+    ` : "";
     const selectedSeasonNum = Number(selSeason?.season_number ?? selItem?.n ?? 0) || 0;
     const selectedTotalEpisodes = episodes.length;
     const seasonWatched = state.watchState ? isSeasonWatched(show.tmdb_id, selectedSeasonNum, selectedTotalEpisodes) : false;
     const seasonFlag = state.watchState ? watchFlagHtml(seasonWatched) : "";
     const seasonToggle = canToggle
-      ? `<button class="watchtoggle ${seasonWatched ? "on" : ""}" type="button" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(selectedSeasonNum)}" data-watched="${seasonWatched ? "1" : "0"}">${seasonWatched ? "Clear Season" : "Mark Season Complete"}</button>`
+      ? `<label class="switch season">
+          <input type="checkbox" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(selectedSeasonNum)}" ${seasonWatched ? "checked" : ""} />
+          <span class="track"><span class="thumb"></span></span>
+        </label>`
       : "";
 
     return `
@@ -2995,6 +3397,9 @@ CHANGE NOTES
               ${linkOrDisabled("RT", rtUrl)}
               ${showFlag}
               ${showToggle}
+              ${watchlistToggle}
+              ${watchStatusSwitch}
+              <span class="muted">${escHtml(status.label)}</span>
             </div>
               ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
               ${prodHtml}
@@ -3055,13 +3460,12 @@ CHANGE NOTES
     });
 
     $$("[data-watch-show]", host).forEach(btn => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("change", async () => {
         const id = parseInt(btn.getAttribute("data-watch-show") || "0", 10);
         if (!Number.isFinite(id)) return;
-        const watched = btn.getAttribute("data-watched") === "1";
         const show = getShowById(id);
         if (!show) return;
-        setShowWatched(id, show.seasons || [], !watched);
+        setShowWatched(id, show.seasons || [], !!btn.checked);
         await saveInputs();
         $("#modalBody").innerHTML = buildShowPopupHtml(show);
         wireShowPopup(id);
@@ -3069,16 +3473,15 @@ CHANGE NOTES
     });
 
     $$("[data-watch-season]", host).forEach(btn => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("change", async () => {
         const id = parseInt(btn.getAttribute("data-show") || "0", 10);
         const seasonNum = Number(btn.getAttribute("data-season") || "0");
         if (!Number.isFinite(id) || !Number.isFinite(seasonNum)) return;
-        const watched = btn.getAttribute("data-watched") === "1";
         const show = getShowById(id);
         if (!show) return;
         const season = (show.seasons || []).find(s => Number(s?.season_number ?? s?.number) === Number(seasonNum)) || null;
         const eps = (season?.episodes || []).map(e => Number(e?.episode_number ?? e?.number)).filter(n => Number.isFinite(n));
-        setSeasonWatched(id, seasonNum, eps, !watched);
+        setSeasonWatched(id, seasonNum, eps, !!btn.checked);
         await saveInputs();
         $("#modalBody").innerHTML = buildShowPopupHtml(show);
         wireShowPopup(id);
@@ -3086,16 +3489,44 @@ CHANGE NOTES
     });
 
     $$("[data-watch-episode]", host).forEach(btn => {
-      btn.addEventListener("click", async () => {
+      btn.addEventListener("change", async () => {
         const id = parseInt(btn.getAttribute("data-show") || "0", 10);
         const seasonNum = Number(btn.getAttribute("data-season") || "0");
         const episodeNum = Number(btn.getAttribute("data-episode") || "0");
         if (!Number.isFinite(id) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
-        const watched = btn.getAttribute("data-watched") === "1";
-        setEpisodeWatched(id, seasonNum, episodeNum, !watched);
+        setEpisodeWatched(id, seasonNum, episodeNum, !!btn.checked);
         const show = getShowById(id);
         if (!show) return;
         await saveInputs();
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(id);
+      });
+    });
+
+    $$("[data-watchlist-toggle='show']", host).forEach(btn => {
+      btn.addEventListener("change", async () => {
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const show = getShowById(id);
+        if (!show) return;
+        if (btn.checked) setWatchlistEntry(id, safeText(show.title || show.name), "show", "watching");
+        else removeWatchlistItem(id);
+        await saveInputs();
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(id);
+      });
+    });
+    $$("[data-watch-status='show']", host).forEach(el => {
+      el.addEventListener("click", async () => {
+        const id = parseInt(el.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const entry = getWatchlistEntry(id);
+        if (!entry) return;
+        const next = cycleWatchStatus(entry.watch_status || "watching");
+        setWatchlistEntry(id, safeText(entry.title), entry.media_kind || "show", next);
+        await saveInputs();
+        const show = getShowById(id);
+        if (!show) return;
         $("#modalBody").innerHTML = buildShowPopupHtml(show);
         wireShowPopup(id);
       });
@@ -3202,18 +3633,6 @@ CHANGE NOTES
     renderMovies();
   });
 
-  $("#searchWatchlist").addEventListener("input", (e) => {
-    state.filters.watchlist.search = e.target.value || "";
-    renderWatchlist();
-  });
-  $("#filterWatchlistStatus").addEventListener("change", (e) => {
-    state.filters.watchlist.watch_status = e.target.value || "all";
-    renderWatchlist();
-  });
-  $("#filterWatchlistKind").addEventListener("change", (e) => {
-    state.filters.watchlist.media_kind = e.target.value || "all";
-    renderWatchlist();
-  });
 
   // Modal close
   $("#modalClose").addEventListener("click", closeModal);
