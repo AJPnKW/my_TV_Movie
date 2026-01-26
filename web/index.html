@@ -574,7 +574,16 @@ CHANGE NOTES
       text-transform:none;
       letter-spacing:0.06em;
     }
-    .chip .netlogo-sm{ height:var(--provider-logo-h); width:auto; max-width:var(--provider-logo-max-w); object-fit:contain; display:inline-block; flex:0 0 auto; }
+    .netlogo-sm{
+      height:var(--provider-logo-h);
+      max-height:var(--provider-logo-h);
+      width:auto;
+      max-width:var(--provider-logo-max-w);
+      object-fit:contain;
+      display:inline-block;
+      flex:0 0 auto;
+    }
+    .chip .netlogo-sm{ height:var(--provider-logo-h); }
     .chip .progress{
       position:relative;
       height:4px;
@@ -1000,7 +1009,14 @@ CHANGE NOTES
       font-weight:800;
     }
     .showmeta span{ color:var(--text); font-weight:900; }
-    .providerlogo{ height:var(--logo-h); width:auto; object-fit:contain; }
+    .providerlogo{
+      height:var(--provider-logo-h);
+      max-height:var(--provider-logo-h);
+      width:auto;
+      max-width:var(--provider-logo-max-w);
+      object-fit:contain;
+      display:inline-block;
+    }
 
     .footer{ margin-top:10px; color:var(--muted); font-size:12px; padding:2px 4px; }
 
@@ -1118,8 +1134,8 @@ CHANGE NOTES
   </div>
 
   <!-- Modal kept for existing non-calendar usage (movie details). Calendar does not use this. -->
-  <div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:center;justify-content:center;padding:18px;z-index:200;" aria-hidden="true" role="dialog" aria-modal="true">
-    <div id="modalCard" tabindex="0" style="width:min(940px,100%);max-height:88vh;overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));">
+  <div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:flex-start;justify-content:center;padding:18px;z-index:200;overflow:auto;-webkit-overflow-scrolling:touch;" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="modalCard" tabindex="0" style="width:min(940px,100%);max-height:calc(100vh - 36px);overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));margin:6px 0;">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);">
         <div id="modalTitle" style="font-weight:950;">Details</div>
         <button id="modalClose" class="calbtn" type="button">Close</button>
@@ -2143,7 +2159,7 @@ CHANGE NOTES
           const epWatched = state.watchState ? isEpisodeWatched(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0) : false;
           const watchedFlag = state.watchState ? watchFlagHtml(epWatched) : "";
           const watchToggleBtn = canToggle
-            ? `<button class="actionicon flag ${epWatched ? "yes" : "no"}" type="button" data-watch-episode-btn="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" data-watched="${epWatched ? "1" : "0"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</button>`
+            ? `<span class="actionicon flag ${epWatched ? "yes" : "no"}" role="button" tabindex="0" data-watch-episode-btn="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" data-watched="${epWatched ? "1" : "0"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`
             : `<span class="actionicon flag ${epWatched ? "yes" : "no"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`;
           const netLogo = (it.network_logo_local || it.network_logo_tmdb)
             ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
@@ -2192,7 +2208,7 @@ CHANGE NOTES
         const movieWatched = state.watchState ? isMovieWatched({ tmdb_id: it.tmdb_id }) : false;
         const watchedFlag = state.watchState ? watchFlagHtml(movieWatched) : "";
         const watchToggleBtn = canToggle
-          ? `<button class="actionicon flag ${movieWatched ? "yes" : "no"}" type="button" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</button>`
+          ? `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" role="button" tabindex="0" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`
           : `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`;
         const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
           ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
@@ -2252,7 +2268,7 @@ CHANGE NOTES
           const epWatched = state.watchState ? isEpisodeWatched(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0) : false;
           const watchedFlag = state.watchState ? watchFlagHtml(epWatched) : "";
           const watchToggleBtn = canToggle
-            ? `<button class="actionicon flag ${epWatched ? "yes" : "no"}" type="button" data-watch-episode-btn="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" data-watched="${epWatched ? "1" : "0"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</button>`
+            ? `<span class="actionicon flag ${epWatched ? "yes" : "no"}" role="button" tabindex="0" data-watch-episode-btn="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" data-watched="${epWatched ? "1" : "0"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`
             : `<span class="actionicon flag ${epWatched ? "yes" : "no"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`;
           const netLogo = (it.network_logo_local || it.network_logo_tmdb)
             ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
@@ -2299,7 +2315,7 @@ CHANGE NOTES
         const movieWatched = state.watchState ? isMovieWatched({ tmdb_id: it.tmdb_id }) : false;
         const watchedFlag = state.watchState ? watchFlagHtml(movieWatched) : "";
         const watchToggleBtn = canToggle
-          ? `<button class="actionicon flag ${movieWatched ? "yes" : "no"}" type="button" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</button>`
+          ? `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" role="button" tabindex="0" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`
           : `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`;
         const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
           ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
