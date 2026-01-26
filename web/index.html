@@ -755,6 +755,7 @@ CHANGE NOTES
     }
     .seasonopt input{ accent-color: #ffffff; }
     .seasonopt .label{ font-weight:950; }
+    .seasonopt .labelrow{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
 
     .seasondetails{
       border:1px solid rgba(255,255,255,0.10);
@@ -874,6 +875,34 @@ CHANGE NOTES
     }
     .epactions{ margin-top:auto; display:flex; gap:8px; flex-wrap:wrap; }
 
+    /* WATCHLIST */
+    .watchlistgrid{
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap:12px;
+      margin-top:12px;
+    }
+    .watchlistcard{
+      border:1px solid rgba(255,255,255,0.12);
+      background:rgba(255,255,255,0.03);
+      border-radius:18px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height:260px;
+    }
+    .watchlistthumb{
+      aspect-ratio:2/3;
+      background:rgba(255,255,255,0.03);
+      border-bottom:1px solid rgba(255,255,255,0.10);
+      overflow:hidden;
+    }
+    .watchlistthumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .watchlistbody{ padding:12px; display:flex; flex-direction:column; gap:8px; flex:1; }
+    .watchlisttitle{ font-weight:950; font-size:14px; }
+    .watchlistmeta{ color:var(--muted); font-size:12px; font-weight:800; }
+    .watchlistactions{ margin-top:auto; display:flex; gap:8px; flex-wrap:wrap; }
+
     .metablock{ margin-top:10px; }
     .metatitle{
       font-size:11px;
@@ -972,7 +1001,7 @@ CHANGE NOTES
         <button class="tab" data-tab="shows" role="tab" aria-selected="false" tabindex="0">Shows</button>
         <button class="tab" data-tab="movies" role="tab" aria-selected="false" tabindex="0">Movies</button>
         <button class="tab" data-tab="livetv" role="tab" aria-selected="false" tabindex="0" disabled>Live TV</button>
-        <button class="tab" data-tab="watchlist" role="tab" aria-selected="false" tabindex="0" disabled>Watchlist</button>
+        <button class="tab" data-tab="watchlist" role="tab" aria-selected="false" tabindex="0">Watchlist</button>
         <button class="tab" data-tab="explore" role="tab" aria-selected="false" tabindex="0" disabled>Explore</button>
         <button class="tab" data-tab="profiles" role="tab" aria-selected="false" tabindex="0" disabled>Profiles</button>
         <button class="tab" data-tab="config" role="tab" aria-selected="false" tabindex="0" disabled>Config</button>
@@ -1043,6 +1072,17 @@ CHANGE NOTES
       <div id="showRoot"></div>
     </div>
 
+    <div id="panel-watchlist" class="panel hidden">
+      <div class="row filtersbar">
+        <div class="filters">
+          <input id="searchWatchlist" class="input" type="search" placeholder="Search watchlist..." autocomplete="off" />
+          <select id="filterWatchlistStatus" class="input" aria-label="Watchlist status filter"></select>
+          <select id="filterWatchlistKind" class="input" aria-label="Watchlist type filter"></select>
+        </div>
+      </div>
+      <div id="watchlistGrid" class="watchlistgrid"></div>
+    </div>
+
     <div class="footer" id="footer"></div>
   </div>
 
@@ -1080,7 +1120,7 @@ CHANGE NOTES
     filters: {
       shows: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
       movies: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
-      watchlist: { status: "all" }
+      watchlist: { status: "all", kind: "all", search: "" }
     },
     show: {
       tmdb_id: null,
@@ -1496,6 +1536,14 @@ CHANGE NOTES
     return Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>safeText(a).localeCompare(safeText(b)));
   }
 
+  const WATCHLIST_STATUS_OPTIONS = [
+    { value: "watchlist", label: "Watchlist" },
+    { value: "watching", label: "Watching" },
+    { value: "paused", label: "Paused" },
+    { value: "completed", label: "Completed" },
+    { value: "dropped", label: "Dropped" }
+  ];
+
   function populateFilters(){
     const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
     const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
@@ -1553,6 +1601,15 @@ CHANGE NOTES
       moviesWatchedSel.innerHTML = `<option value="all">All</option><option value="watched">Watched</option><option value="unwatched">Unwatched</option>`;
       moviesWatchedSel.disabled = !hasWatchState;
     }
+
+    const watchlistStatusSel = $("#filterWatchlistStatus");
+    if (watchlistStatusSel){
+      watchlistStatusSel.innerHTML = `<option value="all">All Status</option>${WATCHLIST_STATUS_OPTIONS.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("")}`;
+    }
+    const watchlistKindSel = $("#filterWatchlistKind");
+    if (watchlistKindSel){
+      watchlistKindSel.innerHTML = `<option value="all">All Types</option><option value="show">Shows</option><option value="movie">Movies</option><option value="unknown">Unknown</option>`;
+    }
   }
 
   function getSelectedValues(sel){
@@ -1564,6 +1621,42 @@ CHANGE NOTES
     const list = Array.isArray(state.inputs?.watchlist) ? state.inputs.watchlist : [];
     const ids = list.map(x => String(x?.tmdb_id ?? "")).filter(Boolean);
     return new Set(ids);
+  }
+
+  function ensureWatchlist(){
+    if (!state.inputs) state.inputs = { tv: [], movies: [], watchlist: [] };
+    if (!Array.isArray(state.inputs.watchlist)) state.inputs.watchlist = [];
+    return state.inputs.watchlist;
+  }
+
+  function getWatchlistItem(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return null;
+    const list = ensureWatchlist();
+    return list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+  }
+
+  function setWatchlistStatus(tmdbId, title, kind, status){
+    const id = String(tmdbId ?? "");
+    if (!id) return;
+    const list = ensureWatchlist();
+    let item = list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+    if (!item){
+      item = { tmdb_id: Number(id) || id };
+      list.push(item);
+    }
+    if (title) item.title = title;
+    if (kind) item.kind = kind;
+    if (status) item.status = status;
+    if (!item.status) item.status = "watchlist";
+    if (!item.added_utc) item.added_utc = nowUtcIso();
+  }
+
+  function removeWatchlistItem(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return;
+    const list = ensureWatchlist();
+    state.inputs.watchlist = list.filter(x => String(x?.tmdb_id ?? "") !== id);
   }
 
   function getRtLink(obj){
@@ -1739,10 +1832,12 @@ CHANGE NOTES
     $("#panel-shows").classList.toggle("hidden", tab !== "shows");
     $("#panel-movies").classList.toggle("hidden", tab !== "movies");
     $("#panel-show").classList.toggle("hidden", tab !== "show");
+    $("#panel-watchlist").classList.toggle("hidden", tab !== "watchlist");
 
     if (tab === "calendar") renderCalendar();
     if (tab === "shows") renderShows();
     if (tab === "movies") renderMovies();
+    if (tab === "watchlist") renderWatchlist();
   }
 
   function routeFromHash(){
@@ -1758,14 +1853,14 @@ CHANGE NOTES
       openShowModal(id);
       const fallback = state.lastNonShowHash || "#calendar";
       const tab = fallback.startsWith("#") ? fallback.slice(1) : fallback;
-      if (tab === "calendar" || tab === "shows" || tab === "movies"){
+      if (tab === "calendar" || tab === "shows" || tab === "movies" || tab === "watchlist"){
         setTab(tab);
       }
       return;
     }
 
     // non-show routes
-    if (h === "#calendar" || h === "#shows" || h === "#movies"){
+    if (h === "#calendar" || h === "#shows" || h === "#movies" || h === "#watchlist"){
       state.lastNonShowHash = h;
       setTab(h.slice(1));
       return;
@@ -2367,6 +2462,100 @@ CHANGE NOTES
     });
   }
 
+  function renderWatchlist(){
+    const list = ensureWatchlist();
+    const q = state.filters.watchlist.search.trim().toLowerCase();
+    const statusFilter = safeText(state.filters.watchlist.status);
+    const kindFilter = safeText(state.filters.watchlist.kind);
+    const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+    const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
+    const showMap = new Map(shows.map(s => [String(s?.tmdb_id ?? ""), s]));
+    const movieMap = new Map(movies.map(m => [String(m?.tmdb_id ?? ""), m]));
+
+    const items = list.map(item => {
+      const id = String(item?.tmdb_id ?? "");
+      const show = id ? showMap.get(id) : null;
+      const movie = id ? movieMap.get(id) : null;
+      const kind = safeText(item?.kind || (show ? "show" : (movie ? "movie" : "unknown"))).toLowerCase() || "unknown";
+      const title = safeText(item?.title || show?.title || show?.name || movie?.title || "Untitled");
+      const status = safeText(item?.status || "watchlist").toLowerCase();
+      return { item, id, show, movie, kind, title, status };
+    }).filter(entry => {
+      if (q && !entry.title.toLowerCase().includes(q)) return false;
+      if (statusFilter && statusFilter !== "all" && entry.status !== statusFilter) return false;
+      if (kindFilter && kindFilter !== "all" && entry.kind !== kindFilter) return false;
+      return true;
+    });
+
+    const html = items.map(entry => {
+      const poster = entry.show ? pickImage(entry.show, "poster_local", "poster_path")
+        : (entry.movie ? pickImage(entry.movie, "poster_local", "poster_path") : "");
+      const watched = entry.show ? isShowWatched(entry.show) : (entry.movie ? isMovieWatched(entry.movie) : false);
+      const flag = state.watchState ? watchFlagHtml(watched) : "";
+      const statusOptions = WATCHLIST_STATUS_OPTIONS.map(o => {
+        const sel = o.value === entry.status ? "selected" : "";
+        return `<option value="${escHtml(o.value)}" ${sel}>${escHtml(o.label)}</option>`;
+      }).join("");
+      const openBtn = entry.kind === "show"
+        ? `<button class="btn" type="button" data-watchlist-open="show" data-id="${escHtml(entry.id)}">Open</button>`
+        : (entry.kind === "movie"
+          ? `<button class="btn" type="button" data-watchlist-open="movie" data-id="${escHtml(entry.id)}">Open</button>`
+          : "");
+      return `
+        <div class="watchlistcard" data-watchlist-id="${escHtml(entry.id)}">
+          <div class="watchlistthumb">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ""}
+          </div>
+          <div class="watchlistbody">
+            <div class="watchlisttitle">${escHtml(entry.title)}</div>
+            <div class="watchlistmeta">${escHtml(entry.kind || "unknown")}</div>
+            ${flag}
+            <select class="input" data-watchlist-status="${escHtml(entry.id)}">
+              ${statusOptions}
+            </select>
+            <div class="watchlistactions">
+              ${openBtn}
+              <button class="btn" type="button" data-watchlist-remove="${escHtml(entry.id)}">Remove</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    $("#watchlistGrid").innerHTML = html || `<div class="muted" style="padding:10px;">No watchlist items match your filters.</div>`;
+
+    $$("[data-watchlist-status]", $("#watchlistGrid")).forEach(sel => {
+      sel.addEventListener("change", async () => {
+        const id = sel.getAttribute("data-watchlist-status");
+        const card = sel.closest("[data-watchlist-id]");
+        const title = card ? safeText($(".watchlisttitle", card)?.textContent || "") : "";
+        const kind = card ? safeText($(".watchlistmeta", card)?.textContent || "") : "";
+        setWatchlistStatus(id, title, kind, sel.value || "watchlist");
+        await saveInputs();
+        renderWatchlist();
+      });
+    });
+
+    $$("[data-watchlist-remove]", $("#watchlistGrid")).forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-watchlist-remove");
+        removeWatchlistItem(id);
+        await saveInputs();
+        renderWatchlist();
+      });
+    });
+
+    $$("[data-watchlist-open]", $("#watchlistGrid")).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const kind = btn.getAttribute("data-watchlist-open");
+        if (kind === "show") gotoShow(id);
+        if (kind === "movie") openMovieModal(id);
+      });
+    });
+  }
+
   function movieCardHtml(m){
     const id = Number(m?.tmdb_id) || 0;
     const title = safeText(m?.title || "(Untitled)");
@@ -2471,6 +2660,12 @@ CHANGE NOTES
     const overview = safeText(show.overview || "");
     const poster = pickImage(show, "poster_local", "poster_path");
     const backdrop = pickImage(show, "backdrop_local", "backdrop_path");
+    const canToggle = (state.watchStateSource === "local");
+    const showWatched = isShowWatched(show);
+    const showFlag = state.watchState ? watchFlagHtml(showWatched) : "";
+    const showToggle = canToggle
+      ? `<button class="watchtoggle ${showWatched ? "on" : ""}" type="button" data-watch-show="${escHtml(show.tmdb_id ?? "")}" data-watched="${showWatched ? "1" : "0"}">${showWatched ? "Unwatch" : "Watch"}</button>`
+      : "";
 
     const seasons = Array.isArray(show.seasons) ? show.seasons : [];
     const seasonItems = seasons.map((s, idx) => {
@@ -2521,10 +2716,16 @@ CHANGE NOTES
     const seasonOptions = seasonItems.map(it => {
       const nm = safeText(it.s?.name || (Number.isFinite(it.n) ? `Season ${it.n}` : "Season"));
       const checked = (Number.isFinite(it.n) && Number(it.n) === Number(selNum)) ? "checked" : "";
+      const totalEpisodes = Array.isArray(it.s?.episodes) ? it.s.episodes.length : 0;
+      const seasonWatched = state.watchState ? isSeasonWatched(show.tmdb_id, it.n, totalEpisodes) : false;
+      const seasonFlag = state.watchState ? watchFlagHtml(seasonWatched) : "";
       return `
         <label class="seasonopt">
           <input type="radio" name="seasonPick" value="${escHtml(it.n)}" ${checked} />
-          <span class="label">${escHtml(nm)}</span>
+          <span class="labelrow">
+            <span class="label">${escHtml(nm)}</span>
+            ${seasonFlag}
+          </span>
         </label>`;
     }).join("");
 
@@ -2536,6 +2737,11 @@ CHANGE NOTES
       const epStill = pickImage(ep, "still_local", "still_path");
       const epAir = safeText(ep?.air_date || "");
       const epRun = ep?.runtime;
+      const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, sNum, eNum) : false;
+      const epFlag = state.watchState ? watchFlagHtml(epWatched) : "";
+      const epToggle = canToggle
+        ? `<button class="watchtoggle ${epWatched ? "on" : ""}" type="button" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" data-watched="${epWatched ? "1" : "0"}">${epWatched ? "Unwatch" : "Watch"}</button>`
+        : "";
 
       const tmdbUrlEp = (show.tmdb_id != null && sNum && eNum)
         ? `https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}/season/${encodeURIComponent(sNum)}/episode/${encodeURIComponent(eNum)}`
@@ -2565,6 +2771,8 @@ CHANGE NOTES
               ${linkOrDisabled("TMDB", tmdbUrlEp)}
               ${linkOrDisabled("VidSrc", vsrc)}
               ${linkOrDisabled("VidEasy", vezy)}
+              ${epFlag}
+              ${epToggle}
             </div>
           </div>
         </div>`;
@@ -2580,6 +2788,13 @@ CHANGE NOTES
         </div>`
       : "";
     const watchProvidersHtml = renderWatchProvidersHtml(show, "tv");
+    const selectedSeasonNum = Number(selSeason?.season_number ?? selItem?.n ?? 0) || 0;
+    const selectedTotalEpisodes = episodes.length;
+    const seasonWatched = state.watchState ? isSeasonWatched(show.tmdb_id, selectedSeasonNum, selectedTotalEpisodes) : false;
+    const seasonFlag = state.watchState ? watchFlagHtml(seasonWatched) : "";
+    const seasonToggle = canToggle
+      ? `<button class="watchtoggle ${seasonWatched ? "on" : ""}" type="button" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(selectedSeasonNum)}" data-watched="${seasonWatched ? "1" : "0"}">${seasonWatched ? "Unwatch Season" : "Watch Season"}</button>`
+      : "";
 
     return `
       <div class="showwrap">
@@ -2615,10 +2830,12 @@ CHANGE NOTES
                 ${lastAir ? `<div>Last <span>${escHtml(fmtDate(lastAir))}</span></div>` : ""}
                 ${show?.tmdb_id != null ? `<div>TMDB <span>${escHtml(show.tmdb_id)}</span></div>` : ""}
               </div>
-              <div class="showactions">
-                ${linkOrDisabled("TMDB", tmdbUrl)}
-                ${linkOrDisabled("RT", rtUrl)}
-              </div>
+            <div class="showactions">
+              ${linkOrDisabled("TMDB", tmdbUrl)}
+              ${linkOrDisabled("RT", rtUrl)}
+              ${showFlag}
+              ${showToggle}
+            </div>
               ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
               ${prodHtml}
               ${watchProvidersHtml}
@@ -2639,6 +2856,8 @@ CHANGE NOTES
                   <div class="seasonname">${escHtml(seasonName)}</div>
                   ${seasonAir ? `<div class="seasonair">Premiered ${escHtml(fmtDate(seasonAir))}</div>` : ""}
                   ${seasonOverview ? `<div class="seasonov">${escHtml(seasonOverview)}</div>` : ""}
+                  ${seasonFlag}
+                  ${seasonToggle}
                 </div>
               </div>
             </div>
@@ -2672,6 +2891,53 @@ CHANGE NOTES
           $("#modalBody").innerHTML = buildShowPopupHtml(show);
           wireShowPopup(showId);
         }
+      });
+    });
+
+    $$("[data-watch-show]", host).forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = parseInt(btn.getAttribute("data-watch-show") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const watched = btn.getAttribute("data-watched") === "1";
+        const show = getShowById(id);
+        if (!show) return;
+        setShowWatched(id, show.seasons || [], !watched);
+        await saveInputs();
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(id);
+      });
+    });
+
+    $$("[data-watch-season]", host).forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = parseInt(btn.getAttribute("data-show") || "0", 10);
+        const seasonNum = Number(btn.getAttribute("data-season") || "0");
+        if (!Number.isFinite(id) || !Number.isFinite(seasonNum)) return;
+        const watched = btn.getAttribute("data-watched") === "1";
+        const show = getShowById(id);
+        if (!show) return;
+        const season = (show.seasons || []).find(s => Number(s?.season_number ?? s?.number) === Number(seasonNum)) || null;
+        const eps = (season?.episodes || []).map(e => Number(e?.episode_number ?? e?.number)).filter(n => Number.isFinite(n));
+        setSeasonWatched(id, seasonNum, eps, !watched);
+        await saveInputs();
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(id);
+      });
+    });
+
+    $$("[data-watch-episode]", host).forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = parseInt(btn.getAttribute("data-show") || "0", 10);
+        const seasonNum = Number(btn.getAttribute("data-season") || "0");
+        const episodeNum = Number(btn.getAttribute("data-episode") || "0");
+        if (!Number.isFinite(id) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
+        const watched = btn.getAttribute("data-watched") === "1";
+        setEpisodeWatched(id, seasonNum, episodeNum, !watched);
+        const show = getShowById(id);
+        if (!show) return;
+        await saveInputs();
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(id);
       });
     });
 
@@ -2774,6 +3040,19 @@ CHANGE NOTES
   $("#sortMovies").addEventListener("change", (e) => {
     state.sort.movies = e.target.value;
     renderMovies();
+  });
+
+  $("#searchWatchlist").addEventListener("input", (e) => {
+    state.filters.watchlist.search = e.target.value || "";
+    renderWatchlist();
+  });
+  $("#filterWatchlistStatus").addEventListener("change", (e) => {
+    state.filters.watchlist.status = e.target.value || "all";
+    renderWatchlist();
+  });
+  $("#filterWatchlistKind").addEventListener("change", (e) => {
+    state.filters.watchlist.kind = e.target.value || "all";
+    renderWatchlist();
   });
 
   // Modal close
