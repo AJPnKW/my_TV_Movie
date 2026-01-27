@@ -281,30 +281,34 @@ CHANGE NOTES
       transition:transform .2s ease;
       box-shadow:0 2px 6px rgba(0,0,0,0.35);
     }
-    .switch .ontext{
+    .switch .ontext,
+    .switch .offtext{
       position:absolute;
-      left:8px;
-      right:calc(var(--toggle-h) + 2px);
+      left:6px;
+      right:6px;
       top:0;
       bottom:0;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:0.2px;
+      font-size:9px;
+      font-weight:800;
+      letter-spacing:0.1px;
       text-transform:uppercase;
       color:#0b1020;
       opacity:0;
       transition:opacity .15s ease;
       pointer-events:none;
+      font-family:"Arial Narrow","HelveticaNeue-Condensed","Helvetica Neue Condensed","Nimbus Sans Narrow",sans-serif;
+    }
+    .switch .offtext{
+      color:#e2e8f0;
     }
     .switch input:checked + .track .thumb{
       transform:translateX(calc(var(--toggle-w) - var(--toggle-h)));
     }
-    .switch input:checked + .track .ontext{
-      opacity:1;
-    }
+    .switch input:checked + .track .ontext{ opacity:1; }
+    .switch input:not(:checked) + .track .offtext{ opacity:1; }
     .switch.show input:checked + .track{ background:var(--toggle-show, #a7f3d0); border-color:rgba(255,255,255,0.6); }
     .switch.season input:checked + .track{ background:var(--toggle-season, #bfdbfe); border-color:rgba(255,255,255,0.6); }
     .switch.episode input:checked + .track{ background:var(--toggle-episode, #fecaca); border-color:rgba(255,255,255,0.6); }
@@ -325,23 +329,30 @@ CHANGE NOTES
 
     .watchstatusband{
       display:inline-flex;
+      flex-wrap:wrap;
       gap:4px;
       padding:3px;
       border-radius:999px;
       background:rgba(255,255,255,0.06);
       border:1px solid rgba(255,255,255,0.08);
+      max-width:100%;
     }
     .watchstatusband .opt{
-      font-size:10px;
-      font-weight:900;
-      letter-spacing:0.2px;
+      font-size:9px;
+      font-weight:800;
+      letter-spacing:0.15px;
       text-transform:uppercase;
-      padding:4px 8px;
+      padding:3px 7px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,0.1);
       background:rgba(255,255,255,0.04);
       color:var(--muted);
       cursor:pointer;
+      min-width:44px;
+      text-align:center;
+      white-space:nowrap;
+      line-height:1;
+      font-family:"Arial Narrow","HelveticaNeue-Condensed","Helvetica Neue Condensed","Nimbus Sans Narrow",sans-serif;
     }
     .watchstatusband .opt.active{
       background:var(--opt-color, #bbf7d0);
@@ -2816,7 +2827,7 @@ CHANGE NOTES
     const toggle = (state.watchStateSource === "local")
       ? `<label class="switch show">
           <input type="checkbox" data-watch-show="${id}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watched</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
         </label>`
       : "";
     const entry = getWatchlistEntry(id);
@@ -3027,7 +3038,7 @@ CHANGE NOTES
     const toggle = (state.watchStateSource === "local")
       ? `<label class="switch movie">
           <input type="checkbox" data-watch-movie="${id}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watched</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
         </label>`
       : "";
     const entry = getWatchlistEntry(id);
@@ -3086,7 +3097,7 @@ CHANGE NOTES
     const toggle = (state.watchStateSource === "local")
       ? `<label class="switch movie">
           <input type="checkbox" data-watch-movie-popup="${Number(m?.tmdb_id)||0}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watched</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
         </label>`
       : "";
     const entry = getWatchlistEntry(m?.tmdb_id);
@@ -3176,7 +3187,7 @@ CHANGE NOTES
     const showToggle = canToggle
       ? `<label class="switch show">
           <input type="checkbox" data-watch-show="${escHtml(show.tmdb_id ?? "")}" ${showWatched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watched</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
         </label>`
       : "";
 
@@ -3234,7 +3245,7 @@ CHANGE NOTES
       const seasonToggle = canToggle
         ? `<label class="switch season">
             <input type="checkbox" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(it.n)}" ${seasonWatched ? "checked" : ""} />
-            <span class="track"><span class="thumb"></span><span class="ontext">Watched</span></span>
+            <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
           </label>`
         : "";
       return `
@@ -3259,7 +3270,7 @@ CHANGE NOTES
       const epToggle = canToggle
         ? `<label class="switch episode">
             <input type="checkbox" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" ${epWatched ? "checked" : ""} />
-            <span class="track"><span class="thumb"></span><span class="ontext">Watched</span></span>
+            <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
           </label>`
         : "";
 
