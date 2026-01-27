@@ -4,14 +4,12 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.3.0 (2026-01-24)
+  - v1.3.1 (2026-01-27)
 
 CHANGE NOTES
-  - calendar items show richer metadata + icon strip + progress bar
-  - show popup adds watch providers (local-first logos, TMDB fallback)
-  - show popup keeps status + network logo
-  - show cards no longer show streaming buttons
-  - movie popup includes RT + production companies
+  - D-pad focus navigation + modal focus trap
+  - availability icon row wraps only when needed
+  - focus-visible ring expanded for role=button
 ================================================================================
 -->
 <html lang="en">
@@ -1339,7 +1337,7 @@ CHANGE NOTES
 
 <script>
 (() => {
-  const APP_VERSION = "v1.2.8";
+  const APP_VERSION = "v1.3.1";
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
