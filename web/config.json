@@ -1,16 +1,23 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.3.0",
-    "updated_utc": "2025-12-23T00:00:00Z",
-    "notes": "Authoritative config for streaming base URLs, image cache folders, and UI tuning. Canonical keys: streaming.* + image_cache.folders.*."
+    "version": "v1.4.1",
+    "updated_utc": "2026-01-27T00:00:00Z",
+    "notes": [
+      "Authoritative config for streaming base URLs, image cache folders, and UI tuning.",
+      "JSON cannot contain comments. All documentation is embedded in _meta and ui_palette.docs.",
+      "Palette system is a registry (multiple palettes). Pages apply ui_palette.palettes[ui_palette.active].tokens as CSS variables, then alias legacy variables so existing CSS selectors keep working without refactors.",
+      "Night is default; Day is provided for bright-room viewing and has stronger surface separation to avoid 'washed out' appearance on TVs."
+    ]
   },
+
   "streaming": {
     "vidsrc_tv": "https://vidsrc.net/embed/tv/",
     "vidsrc_movie": "https://vidsrc.net/embed/movie/",
     "videasy_tv": "https://player.videasy.net/tv/",
     "videasy_movie": "https://player.videasy.net/movie/"
   },
+
   "image_sizes": {
     "show_width": 150,
     "movie_width": 150,
@@ -24,6 +31,138 @@
     "provider_logo_max_w": 15,
     "backdrop_w": 780
   },
+
+  "ui_palette": {
+    "active": "night_tv",
+
+    "docs": {
+      "intent": "TV-first palette system with high legibility + obvious focus states. Apply tokens first, then alias legacy vars.",
+      "application_order": [
+        "1) Apply tokens: for each key in tokens, set CSS var --<key> to its value (example: --c-bg-1).",
+        "2) Apply derived: set CSS var --<key> to derived string values (example: --g-bg, --g-card, --ring-focus).",
+        "3) Apply legacy aliases: set CSS vars like --bg/--panel/--text to var(--token_key) so existing CSS keeps working."
+      ],
+      "focus_rules": [
+        "Focusable controls must show a TV-visible focus ring using --ring-focus on :focus-visible.",
+        "Selected states must use 3 cues: border stronger, tinted fill, subtle glow (chips and list rows)."
+      ],
+      "component_token_map": [
+        { "component": "Page background", "use": ["--g-bg", "--c-bg-1"] },
+        { "component": "Card/panel", "use": ["--c-surface-1", "--g-card", "--c-border"] },
+        { "component": "Elevated bar/sticky header", "use": ["--c-surface-2", "--c-border"] },
+        { "component": "Primary text", "use": ["--c-text"] },
+        { "component": "Secondary text", "use": ["--c-text-muted"] },
+        { "component": "Tertiary text/hints", "use": ["--c-text-dim"] },
+        { "component": "Borders", "use": ["--c-border"], "selected": ["--c-border-strong"] },
+        { "component": "Default button", "use": ["--c-surface-2", "--c-text", "--c-border"], "hover": ["--c-surface-3"] },
+        { "component": "Primary button/tab", "use": ["--c-accent"], "text": ["#06101A"] },
+        { "component": "Chips/pills/tags", "use": ["--c-border", "rgba(255,255,255,0.06)", "--c-text-muted"], "selected": ["--c-border-strong", "accent tint + glow"] },
+        { "component": "Inputs/select/textarea", "use": ["--c-surface-1", "--c-text", "--c-border"], "focus": ["--ring-focus"] },
+        { "component": "Checkbox/radio", "use": ["accent-color: var(--c-accent)"] },
+        { "component": "Toggle switch", "use": ["track: --c-border", "thumb: #fff (night) / #0B1324 (day)"], "on": ["status colors"] },
+        { "component": "Slider range", "use": ["track: --c-border", "fill: --c-accent", "thumb: #fff/#0B1324"], "focus": ["--ring-focus"] },
+        { "component": "Progress bar", "use": ["--g-progress"] },
+        { "component": "Modal", "use": ["--c-surface-2", "--c-border"], "focus": ["--ring-focus"] },
+        { "component": "Banners/toasts", "use": ["--c-surface-2", "--c-border"], "status": ["--c-warning/--c-danger/--c-success"] }
+      ]
+    },
+
+    "alias_to_legacy_vars": {
+      "bg": "c-bg-1",
+      "panel": "c-surface-1",
+      "panel2": "c-surface-2",
+      "text": "c-text",
+      "muted": "c-text-muted",
+      "line": "c-border",
+      "accent": "c-accent",
+      "good": "c-success",
+      "bad": "c-danger"
+    },
+
+    "optional_legacy_vars": {
+      "chip": "rgba(255,255,255,0.06)",
+      "chip2": "rgba(255,255,255,0.10)"
+    },
+
+    "palettes": {
+      "night_tv": {
+        "name": "Night TV Premium",
+        "tokens": {
+          "c-bg-0": "#070A10",
+          "c-bg-1": "#0A0F18",
+          "c-surface-1": "#0E1624",
+          "c-surface-2": "#121D2F",
+          "c-surface-3": "#172640",
+
+          "c-text": "#EAF1FF",
+          "c-text-muted": "#B7C6E3",
+          "c-text-dim": "#8EA1C6",
+
+          "c-border": "rgba(255,255,255,0.12)",
+          "c-border-strong": "rgba(255,255,255,0.22)",
+
+          "c-accent": "#4C8DFF",
+          "c-accent-2": "#25D0C6",
+
+          "c-info": "#6AB6FF",
+          "c-success": "#2FE08A",
+          "c-warning": "#FFD166",
+          "c-danger": "#FF5C72",
+          "c-brand-magenta": "#F06BE5",
+
+          "c-focus-outer": "#FFFFFF",
+          "c-focus-inner": "#4C8DFF",
+
+          "c-shadow": "rgba(0,0,0,0.55)"
+        },
+        "derived": {
+          "g-bg": "radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.18), transparent 55%), radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.14), transparent 60%), var(--c-bg-1)",
+          "g-card": "linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
+          "g-progress": "linear-gradient(90deg, rgba(76,141,255,0.95), rgba(47,224,138,0.95))",
+          "ring-focus": "0 0 0 2px var(--c-focus-inner), 0 0 0 4px rgba(255,255,255,0.90)"
+        }
+      },
+
+      "day_tv": {
+        "name": "Day TV (TV-separated)",
+        "tokens": {
+          "c-bg-0": "#E1E7F0",
+          "c-bg-1": "#EEF2F7",
+          "c-surface-1": "#FFFFFF",
+          "c-surface-2": "#E1E7F0",
+          "c-surface-3": "#D0D9E8",
+
+          "c-text": "#0B1324",
+          "c-text-muted": "#3F4F6B",
+          "c-text-dim": "#5B6B86",
+
+          "c-border": "rgba(0,0,0,0.16)",
+          "c-border-strong": "rgba(0,0,0,0.26)",
+
+          "c-accent": "#4C8DFF",
+          "c-accent-2": "#25D0C6",
+
+          "c-info": "#3A78FF",
+          "c-success": "#1FBF75",
+          "c-warning": "#E6B84C",
+          "c-danger": "#E54B5F",
+          "c-brand-magenta": "#E056C9",
+
+          "c-focus-outer": "#000000",
+          "c-focus-inner": "#4C8DFF",
+
+          "c-shadow": "rgba(0,0,0,0.18)"
+        },
+        "derived": {
+          "g-bg": "radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.10), transparent 62%), radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.08), transparent 64%), var(--c-bg-1)",
+          "g-card": "linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78))",
+          "g-progress": "linear-gradient(90deg, rgba(76,141,255,0.92), rgba(31,191,117,0.92))",
+          "ring-focus": "0 0 0 2px var(--c-focus-inner), 0 0 0 4px rgba(0,0,0,0.65)"
+        }
+      }
+    }
+  },
+
   "ui_tuning": {
     "calendar_button_scale": 0.75,
     "calendar_card_density": 0.75,
@@ -36,20 +175,23 @@
       "watch": "▶"
     },
     "watch_toggle_width": 52,
+
     "watch_toggle_colors": {
-      "show": "#a7f3d0",
-      "season": "#bfdbfe",
-      "episode": "#fecaca",
-      "movie": "#fbcfe8",
-      "watchlist": "#bbf7d0"
+      "show": "#2FE08A",
+      "season": "#4C8DFF",
+      "episode": "#FF5C72",
+      "movie": "#F06BE5",
+      "watchlist": "#25D0C6"
     },
+
     "watch_status_colors": {
-      "watching": "#bbf7d0",
-      "to_be_watched": "#fef9c3",
-      "completed": "#bfdbfe",
-      "dropped": "#fecaca"
+      "watching": "#25D0C6",
+      "to_be_watched": "#FFD166",
+      "completed": "#4C8DFF",
+      "dropped": "#FF5C72"
     }
   },
+
   "image_cache": {
     "enabled": true,
     "download_missing_only": true,
