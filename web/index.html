@@ -407,7 +407,8 @@ CHANGE NOTES
     input:focus-visible,
     select:focus-visible,
     textarea:focus-visible,
-    summary:focus-visible{
+    summary:focus-visible,
+    [role="button"]:focus-visible{
       outline:none;
       box-shadow: var(--ring-focus);
     }
@@ -661,10 +662,9 @@ CHANGE NOTES
     }
     .chip .providerrow.cal-providers{
       gap:4px;
-      flex-wrap:nowrap;
-      overflow-x:auto;
-      overflow-y:hidden;
-      white-space:nowrap;
+      flex-wrap:wrap;
+      overflow:visible;
+      white-space:normal;
     }
     .chip .epcontent{
       min-width:0;
@@ -1368,6 +1368,7 @@ CHANGE NOTES
       selectedSeasonNumber: null,
     }
   };
+  let lastFocusEl = null;
 
   function setStatus(ok, msg) {
     $("#statusText").textContent = msg;
@@ -2108,6 +2109,7 @@ CHANGE NOTES
   }
 
   function openModal(title, html) {
+    lastFocusEl = document.activeElement;
     $("#modalTitle").textContent = title;
     $("#modalBody").innerHTML = html;
     $("#modalBack").style.display = "flex";
@@ -2124,9 +2126,13 @@ CHANGE NOTES
     $("#modalBack").style.display = "none";
     $("#modalBack").setAttribute("aria-hidden", "true");
     $("#modalBody").innerHTML = "";
+    if (lastFocusEl && typeof lastFocusEl.focus === "function") {
+      lastFocusEl.focus();
+    }
   }
 
   function openProviderModal(title, html){
+    lastFocusEl = document.activeElement;
     $("#providerTitle").textContent = title;
     $("#providerBody").innerHTML = html;
     $("#providerBack").style.display = "flex";
@@ -2143,6 +2149,116 @@ CHANGE NOTES
     $("#providerBack").style.display = "none";
     $("#providerBack").setAttribute("aria-hidden", "true");
     $("#providerBody").innerHTML = "";
+    if (lastFocusEl && typeof lastFocusEl.focus === "function") {
+      lastFocusEl.focus();
+    }
+  }
+
+  const FOCUSABLE_SELECTOR = [
+    "button:not([disabled])",
+    "a[href]",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])"
+  ].join(",");
+
+  function isModalOpen(){
+    return $("#providerBack").style.display === "flex" || $("#modalBack").style.display === "flex";
+  }
+
+  function activeModalCard(){
+    if ($("#providerBack").style.display === "flex") return $("#providerCard");
+    if ($("#modalBack").style.display === "flex") return $("#modalCard");
+    return null;
+  }
+
+  function activeRoot(){
+    const modal = activeModalCard();
+    if (modal) return modal;
+    const panel = $(".panel:not(.hidden)") || $("#panel-calendar");
+    return panel || document.body;
+  }
+
+  function isVisible(el){
+    if (!el) return false;
+    const style = getComputedStyle(el);
+    if (style.visibility === "hidden" || style.display === "none") return false;
+    const rects = el.getClientRects();
+    return rects.length > 0;
+  }
+
+  function getFocusables(root){
+    if (!root) return [];
+    return $$(FOCUSABLE_SELECTOR, root).filter(el => isVisible(el));
+  }
+
+  function isTypingField(el){
+    if (!el) return false;
+    const tag = (el.tagName || "").toLowerCase();
+    if (tag === "textarea" || tag === "select") return true;
+    if (tag === "input"){
+      const type = (el.getAttribute("type") || "text").toLowerCase();
+      return !["button","submit","checkbox","radio","range","color"].includes(type);
+    }
+    return el.isContentEditable;
+  }
+
+  function moveFocus(dir){
+    const root = activeRoot();
+    const focusables = getFocusables(root);
+    if (!focusables.length) return;
+    let current = document.activeElement;
+    if (!current || !root.contains(current) || !focusables.includes(current)){
+      const first = focusables[0];
+      first.focus({ preventScroll: true });
+      first.scrollIntoView({ block: "nearest", inline: "nearest" });
+      return;
+    }
+    const crect = current.getBoundingClientRect();
+    const cx = crect.left + crect.width / 2;
+    const cy = crect.top + crect.height / 2;
+    let best = null;
+    let bestScore = Infinity;
+    for (const el of focusables){
+      if (el === current) continue;
+      const r = el.getBoundingClientRect();
+      const x = r.left + r.width / 2;
+      const y = r.top + r.height / 2;
+      const dx = x - cx;
+      const dy = y - cy;
+      if (dir === "ArrowLeft" && dx >= -1) continue;
+      if (dir === "ArrowRight" && dx <= 1) continue;
+      if (dir === "ArrowUp" && dy >= -1) continue;
+      if (dir === "ArrowDown" && dy <= 1) continue;
+      const score = (Math.abs(dx) * (dir === "ArrowLeft" || dir === "ArrowRight" ? 1 : 1.4)) +
+        (Math.abs(dy) * (dir === "ArrowUp" || dir === "ArrowDown" ? 1 : 1.4));
+      if (score < bestScore){
+        bestScore = score;
+        best = el;
+      }
+    }
+    if (best){
+      best.focus({ preventScroll: true });
+      best.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }
+
+  function trapTabInModal(e){
+    if (!isModalOpen() || e.key !== "Tab") return;
+    const root = activeModalCard();
+    if (!root) return;
+    const focusables = getFocusables(root);
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first){
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last){
+      e.preventDefault();
+      first.focus();
+    }
   }
 
   function footerText(){
@@ -2823,6 +2939,12 @@ CHANGE NOTES
         await saveInputs();
         renderCalendar();
       });
+      btn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          btn.click();
+        }
+      });
     });
     $$("[data-watch-movie-btn]").forEach(btn => {
       btn.addEventListener("click", async (e) => {
@@ -2833,6 +2955,12 @@ CHANGE NOTES
         setMovieWatched(movieId, !watched);
         await saveInputs();
         renderCalendar();
+      });
+      btn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          btn.click();
+        }
       });
     });
 
@@ -3818,7 +3946,21 @@ CHANGE NOTES
   $("#modalBack").addEventListener("click", (e) => { if (e.target === $("#modalBack")) closeModal(); });
   $("#providerClose").addEventListener("click", closeProviderModal);
   $("#providerBack").addEventListener("click", (e) => { if (e.target === $("#providerBack")) closeProviderModal(); });
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape"){
+      if ($("#providerBack").style.display === "flex") return closeProviderModal();
+      if ($("#modalBack").style.display === "flex") return closeModal();
+      return;
+    }
+    if (e.key === "Tab"){
+      return trapTabInModal(e);
+    }
+    if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown"){
+      if (isTypingField(e.target)) return;
+      e.preventDefault();
+      moveFocus(e.key);
+    }
+  });
 
   window.addEventListener("hashchange", routeFromHash);
 
