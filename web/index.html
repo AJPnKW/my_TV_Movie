@@ -2923,7 +2923,11 @@ CHANGE NOTES
       }
       if (wantWatchStatus.length){
         const status = safeText(entry?.watch_status || "");
-        if (!status || !wantWatchStatus.includes(status)) return false;
+        if (status){
+          if (!wantWatchStatus.includes(status)) return false;
+        } else if (wantWatchlist === "watchlist"){
+          return false;
+        }
       }
       if (wantAvailability !== "all"){
         if (!entry) return false;
@@ -3026,6 +3030,8 @@ CHANGE NOTES
     const wantYear = safeText(f.year);
     const wantWatched = safeText(f.watched);
     const wantWatchlist = safeText(f.watchlist);
+    const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
+    const wantAvailability = safeText(f.availability || "all");
     const wantCollection = safeText(f.collection);
     const watchlistSet = getWatchlistSet();
 
@@ -3051,7 +3057,11 @@ CHANGE NOTES
       }
       if (wantWatchStatus.length){
         const status = safeText(entry?.watch_status || "");
-        if (!status || !wantWatchStatus.includes(status)) return false;
+        if (status){
+          if (!wantWatchStatus.includes(status)) return false;
+        } else if (wantWatchlist === "watchlist"){
+          return false;
+        }
       }
       if (wantAvailability !== "all"){
         if (!entry) return false;
