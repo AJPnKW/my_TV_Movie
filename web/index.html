@@ -2903,8 +2903,6 @@ CHANGE NOTES
     const wantWatchlist = safeText(f.watchlist);
     const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
     const wantAvailability = safeText(f.availability || "all");
-    const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
-    const wantAvailability = safeText(f.availability || "all");
     const watchlistSet = getWatchlistSet();
 
     const shows = (state.data?.shows || []).filter(s => {
