@@ -47,6 +47,15 @@
       cursor:pointer;
     }
     .btn:disabled{ opacity:0.5; cursor:not-allowed; }
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible{
+      outline:none;
+      box-shadow: var(--ring-focus);
+    }
     .status{ display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
     .dot{ width:10px; height:10px; border-radius:50%; background:var(--bad); }
     .dot.ok{ background:var(--ok); }
@@ -79,6 +88,14 @@
     textarea{ min-height:96px; font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:12px; }
     .row{ display:flex; gap:8px; align-items:center; }
     .pill{ padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800; border:1px solid var(--line); color:var(--muted); }
+    .chip.sel,
+    .chip.selected,
+    .item.on,
+    .selected{
+      border-color: var(--c-border-strong);
+      background: color-mix(in srgb, var(--c-accent) 12%, var(--c-surface-1));
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-accent) 30%, transparent);
+    }
   </style>
 </head>
 <body>
@@ -98,10 +115,47 @@
     "use strict";
     const state = { config: {}, defaultConfig: {}, apiOk: false };
     const $ = (id) => document.getElementById(id);
+    const safeText = (v) => (v == null ? "" : String(v));
 
     function setStatus(ok, msg){
       $("dot").className = "dot" + (ok ? " ok" : "");
       $("statusText").textContent = msg || "";
+    }
+
+    function applyUiPaletteFromConfig(cfg){
+      try{
+        const ui = cfg && typeof cfg === "object" ? cfg.ui_palette : null;
+        if (!ui || typeof ui !== "object") return;
+        const active = safeText(ui.active || "night_tv");
+        const palettes = ui.palettes && typeof ui.palettes === "object" ? ui.palettes : null;
+        const palette = palettes && palettes[active] ? palettes[active] : null;
+        if (!palette || typeof palette !== "object") return;
+        const tokens = palette.tokens && typeof palette.tokens === "object" ? palette.tokens : null;
+        const derived = palette.derived && typeof palette.derived === "object" ? palette.derived : null;
+        const root = document.documentElement;
+        if (tokens){
+          for (const [k, v] of Object.entries(tokens)){
+            if (k && v != null) root.style.setProperty(`--${k}`, String(v));
+          }
+        }
+        if (derived){
+          for (const [k, v] of Object.entries(derived)){
+            if (k && v != null) root.style.setProperty(`--${k}`, String(v));
+          }
+        }
+        const alias = ui.alias_to_legacy_vars && typeof ui.alias_to_legacy_vars === "object" ? ui.alias_to_legacy_vars : null;
+        if (alias){
+          for (const [legacyVar, tokenKey] of Object.entries(alias)){
+            if (!legacyVar || !tokenKey) continue;
+            root.style.setProperty(`--${legacyVar}`, `var(--${tokenKey})`);
+          }
+        }
+        const legacy = ui.legacy_vars && typeof ui.legacy_vars === "object" ? ui.legacy_vars : null;
+        if (legacy){
+          if (legacy.chip != null) root.style.setProperty("--chip", String(legacy.chip));
+          if (legacy.chip2 != null) root.style.setProperty("--chip2", String(legacy.chip2));
+        }
+      }catch{}
     }
 
     async function fetchConfig(){
@@ -203,6 +257,7 @@
       setStatus(false, "Loading...");
       state.config = await fetchConfig();
       state.defaultConfig = JSON.parse(JSON.stringify(state.config));
+      applyUiPaletteFromConfig(state.config);
       render();
       setStatus(true, state.apiOk ? "Loaded (inputs editor API)" : "Loaded (read-only)");
       $("btnSave").disabled = !state.apiOk;
@@ -225,6 +280,7 @@
       }
       setStatus(true, "Saved");
       state.config = next;
+      applyUiPaletteFromConfig(state.config);
     }
 
     $("btnReload").addEventListener("click", load);
