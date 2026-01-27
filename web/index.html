@@ -292,9 +292,9 @@ CHANGE NOTES
       align-items:center;
       justify-content:center;
       font-size:9px;
-      font-weight:800;
-      letter-spacing:0.1px;
-      text-transform:uppercase;
+      font-weight:700;
+      letter-spacing:0.05px;
+      text-transform:none;
       color:#0b1020;
       opacity:0;
       transition:opacity .15s ease;
@@ -329,29 +329,30 @@ CHANGE NOTES
 
     .watchstatusband{
       display:inline-flex;
-      flex-wrap:wrap;
-      gap:4px;
-      padding:3px;
+      flex-wrap:nowrap;
+      gap:3px;
+      padding:2px;
       border-radius:999px;
       background:rgba(255,255,255,0.06);
       border:1px solid rgba(255,255,255,0.08);
       max-width:100%;
+      overflow-x:auto;
+      -webkit-overflow-scrolling:touch;
     }
     .watchstatusband .opt{
       font-size:9px;
-      font-weight:800;
-      letter-spacing:0.15px;
-      text-transform:uppercase;
-      padding:3px 7px;
+      font-weight:700;
+      letter-spacing:0.05px;
+      text-transform:none;
+      padding:2px 6px;
       border-radius:999px;
       border:1px solid rgba(255,255,255,0.1);
       background:rgba(255,255,255,0.04);
       color:var(--muted);
       cursor:pointer;
-      min-width:44px;
       text-align:center;
       white-space:nowrap;
-      line-height:1;
+      line-height:1.1;
       font-family:"Arial Narrow","HelveticaNeue-Condensed","Helvetica Neue Condensed","Nimbus Sans Narrow",sans-serif;
     }
     .watchstatusband .opt.active{
@@ -385,8 +386,31 @@ CHANGE NOTES
       font-size:9px;font-weight:900;letter-spacing:0.02em;
       background:#ef4444;color:#0b0f14;
     }
+    #modalCard,#providerCard{
+      scrollbar-width:thin;
+      scrollbar-color:rgba(255,255,255,0.35) transparent;
+      touch-action:pan-y;
+    }
+    #modalCard::-webkit-scrollbar,
+    #providerCard::-webkit-scrollbar{
+      width:10px;
+    }
+    #modalCard::-webkit-scrollbar-thumb,
+    #providerCard::-webkit-scrollbar-thumb{
+      background:rgba(255,255,255,0.25);
+      border-radius:999px;
+    }
     .btn:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .btn[aria-disabled="true"]{ opacity:0.45; pointer-events:none; }
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible{
+      outline:none;
+      box-shadow: var(--ring-focus);
+    }
 
     .flag{
       display:inline-flex;
@@ -637,8 +661,10 @@ CHANGE NOTES
     }
     .chip .providerrow.cal-providers{
       gap:4px;
-      flex-wrap:wrap;
-      overflow:visible;
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      overflow-y:hidden;
+      white-space:nowrap;
     }
     .chip .epcontent{
       min-width:0;
@@ -1007,6 +1033,14 @@ CHANGE NOTES
       cursor:pointer;
       font-weight:900;
     }
+    .chip.sel,
+    .chip.selected,
+    .item.on,
+    .selected{
+      border-color: var(--c-border-strong);
+      background: color-mix(in srgb, var(--c-accent) 12%, var(--c-surface-1));
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-accent) 30%, transparent);
+    }
     .epnavbtn:disabled{ opacity:0.45; cursor:not-allowed; }
 
     .carousel{
@@ -1233,6 +1267,8 @@ CHANGE NOTES
           <select id="filterShowsYear" class="input" aria-label="Release year filter"></select>
           <select id="filterShowsCollection" class="input" aria-label="Collection filter"></select>
           <select id="filterShowsWatchlist" class="input" aria-label="Watchlist filter"></select>
+          <select id="filterShowsWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
+          <select id="filterShowsAvailability" class="input" aria-label="Availability filter"></select>
           <select id="filterShowsWatched" class="input" aria-label="Watched filter"></select>
           <select id="sortShows" class="input">
             <option value="title">Title A→Z</option>
@@ -1254,6 +1290,8 @@ CHANGE NOTES
           <select id="filterMoviesYear" class="input" aria-label="Release year filter"></select>
           <select id="filterMoviesCollection" class="input" aria-label="Collection filter"></select>
           <select id="filterMoviesWatchlist" class="input" aria-label="Watchlist filter"></select>
+          <select id="filterMoviesWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
+          <select id="filterMoviesAvailability" class="input" aria-label="Availability filter"></select>
           <select id="filterMoviesWatched" class="input" aria-label="Watched filter"></select>
           <select id="sortMovies" class="input">
             <option value="title">Title A→Z</option>
@@ -1289,6 +1327,16 @@ CHANGE NOTES
     </div>
   </div>
 
+  <div id="providerBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:flex-start;justify-content:center;padding:18px;z-index:220;overflow:auto;-webkit-overflow-scrolling:touch;" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="providerCard" tabindex="0" style="width:min(760px,100%);max-height:calc(100vh - 36px);overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));margin:6px 0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);">
+        <div id="providerTitle" style="font-weight:950;">Where to watch</div>
+        <button id="providerClose" class="calbtn" type="button">Close</button>
+      </div>
+      <div id="providerBody" style="padding:14px;"></div>
+    </div>
+  </div>
+
 <script>
 (() => {
   const APP_VERSION = "v1.2.8";
@@ -1311,8 +1359,8 @@ CHANGE NOTES
     search: { shows: "", movies: "" },
     sort: { shows: "title", movies: "title" },
     filters: {
-      shows: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
-      movies: { genres: [], year: "", collection: "", watchlist: "all", watched: "all" },
+      shows: { genres: [], year: "", collection: "", watchlist: "all", watch_status: ["watching"], availability: "all", watched: "all" },
+      movies: { genres: [], year: "", collection: "", watchlist: "all", watch_status: ["watching"], availability: "all", watched: "all" },
       watchlist: { watch_status: "all", media_kind: "all", search: "" }
     },
     show: {
@@ -1814,6 +1862,38 @@ CHANGE NOTES
       moviesWatchlistSel.disabled = !hasWatchlist;
     }
 
+    const watchStatusOpts = [
+      { value: "watching", label: "watch" },
+      { value: "completed", label: "done" },
+      { value: "dropped", label: "drop" }
+    ];
+    const showsWatchStatusSel = $("#filterShowsWatchStatus");
+    const moviesWatchStatusSel = $("#filterMoviesWatchStatus");
+    if (showsWatchStatusSel){
+      showsWatchStatusSel.innerHTML = watchStatusOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
+      setSelectedValues(showsWatchStatusSel, state.filters.shows.watch_status);
+    }
+    if (moviesWatchStatusSel){
+      moviesWatchStatusSel.innerHTML = watchStatusOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
+      setSelectedValues(moviesWatchStatusSel, state.filters.movies.watch_status);
+    }
+
+    const availOpts = [
+      { value: "all", label: "All Availability" },
+      { value: "available", label: "Watching" },
+      { value: "unreleased", label: "To Be Watched" }
+    ];
+    const showsAvailSel = $("#filterShowsAvailability");
+    const moviesAvailSel = $("#filterMoviesAvailability");
+    if (showsAvailSel){
+      showsAvailSel.innerHTML = availOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
+      showsAvailSel.value = state.filters.shows.availability || "all";
+    }
+    if (moviesAvailSel){
+      moviesAvailSel.innerHTML = availOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
+      moviesAvailSel.value = state.filters.movies.availability || "all";
+    }
+
     const hasWatchState = !!state.watchState;
     const showsWatchedSel = $("#filterShowsWatched");
     const moviesWatchedSel = $("#filterMoviesWatched");
@@ -1839,6 +1919,14 @@ CHANGE NOTES
   function getSelectedValues(sel){
     if (!sel) return [];
     return Array.from(sel.selectedOptions || []).map(o => o.value).filter(Boolean);
+  }
+
+  function setSelectedValues(sel, values){
+    if (!sel) return;
+    const want = new Set((Array.isArray(values) ? values : []).map(String));
+    Array.from(sel.options || []).forEach(opt => {
+      opt.selected = want.has(String(opt.value));
+    });
   }
 
   function getWatchlistSet(){
@@ -1945,9 +2033,9 @@ CHANGE NOTES
   function watchStatusBandHtml(kind, id, entry, available){
     const cur = safeText(entry?.watch_status || "");
     const options = [
-      { value: "watching", label: "Watch" },
-      { value: "completed", label: "Done" },
-      { value: "dropped", label: "Drop" }
+      { value: "watching", label: "watch" },
+      { value: "completed", label: "done" },
+      { value: "dropped", label: "drop" }
     ];
     return `
       <div class="watchstatusband" data-watch-status-band="${escHtml(kind)}" data-id="${escHtml(id)}" data-status="${escHtml(cur)}">
@@ -2038,6 +2126,25 @@ CHANGE NOTES
     $("#modalBody").innerHTML = "";
   }
 
+  function openProviderModal(title, html){
+    $("#providerTitle").textContent = title;
+    $("#providerBody").innerHTML = html;
+    $("#providerBack").style.display = "flex";
+    $("#providerBack").setAttribute("aria-hidden", "false");
+    const card = $("#providerCard");
+    if (card){
+      card.scrollTop = 0;
+      card.focus();
+    } else {
+      $("#providerClose").focus();
+    }
+  }
+  function closeProviderModal(){
+    $("#providerBack").style.display = "none";
+    $("#providerBack").setAttribute("aria-hidden", "true");
+    $("#providerBody").innerHTML = "";
+  }
+
   function footerText(){
     const meta = state.data?.meta || {};
     const counts = meta.counts || {};
@@ -2060,6 +2167,42 @@ CHANGE NOTES
     return null;
   }
 
+  function applyUiPaletteFromConfig(cfg){
+    try{
+      const ui = cfg && typeof cfg === "object" ? cfg.ui_palette : null;
+      if (!ui || typeof ui !== "object") return;
+      const active = safeText(ui.active || "night_tv");
+      const palettes = ui.palettes && typeof ui.palettes === "object" ? ui.palettes : null;
+      const palette = palettes && palettes[active] ? palettes[active] : null;
+      if (!palette || typeof palette !== "object") return;
+      const tokens = palette.tokens && typeof palette.tokens === "object" ? palette.tokens : null;
+      const derived = palette.derived && typeof palette.derived === "object" ? palette.derived : null;
+      const root = document.documentElement;
+      if (tokens){
+        for (const [k, v] of Object.entries(tokens)){
+          if (k && v != null) root.style.setProperty(`--${k}`, String(v));
+        }
+      }
+      if (derived){
+        for (const [k, v] of Object.entries(derived)){
+          if (k && v != null) root.style.setProperty(`--${k}`, String(v));
+        }
+      }
+      const alias = ui.alias_to_legacy_vars && typeof ui.alias_to_legacy_vars === "object" ? ui.alias_to_legacy_vars : null;
+      if (alias){
+        for (const [legacyVar, tokenKey] of Object.entries(alias)){
+          if (!legacyVar || !tokenKey) continue;
+          root.style.setProperty(`--${legacyVar}`, `var(--${tokenKey})`);
+        }
+      }
+      const legacy = ui.legacy_vars && typeof ui.legacy_vars === "object" ? ui.legacy_vars : null;
+      if (legacy){
+        if (legacy.chip != null) root.style.setProperty("--chip", String(legacy.chip));
+        if (legacy.chip2 != null) root.style.setProperty("--chip2", String(legacy.chip2));
+      }
+    }catch(_){/* fail-safe */}
+  }
+
   async function loadAll(){
     setStatus(true, "Loading");
     try {
@@ -2067,6 +2210,7 @@ CHANGE NOTES
         "./config.json",
         "../web/config.json",
       ]);
+      applyUiPaletteFromConfig(state.cfg);
 
       // Apply config.json image sizing (cards + calendar thumbs)
       try{
@@ -2305,6 +2449,7 @@ CHANGE NOTES
 
             runtime: (ep?.runtime == null) ? null : Number(ep?.runtime),
             thumb: mapEpisodeStill(ep),
+            still_path: safeText(ep?.still_path).trim(),
 
             // For future use (routing/buttons)
             links: ep?.links || {},
@@ -2429,7 +2574,10 @@ CHANGE NOTES
         if (it.kind === "episode"){
           const epName = safeText(it.episode_name).trim() || "Episode";
           const epTag = (it.season_number || it.episode_number) ? seTag(it.season_number || 0, it.episode_number || 0) : "";
-          const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+          const epFallback = it.still_path ? tmdbImageUrl("episode_still", it.still_path) : "";
+          const thumb = it.thumb
+            ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" data-fallback="${escHtml(epFallback)}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" /></div>`
+            : `<div class="thumb"></div>`;
           const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
           const vidsrc = safeText(it?.links?.vidsrc || "").trim();
           const videasy = safeText(it?.links?.videasy || "").trim();
@@ -2753,6 +2901,10 @@ CHANGE NOTES
     const wantYear = safeText(f.year);
     const wantWatched = safeText(f.watched);
     const wantWatchlist = safeText(f.watchlist);
+    const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
+    const wantAvailability = safeText(f.availability || "all");
+    const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
+    const wantAvailability = safeText(f.availability || "all");
     const watchlistSet = getWatchlistSet();
 
     const shows = (state.data?.shows || []).filter(s => {
@@ -2766,9 +2918,20 @@ CHANGE NOTES
         const y = yearFromDate(s?.first_air_date);
         if (y !== wantYear) return false;
       }
+      const id = String(s?.tmdb_id ?? "");
+      const entry = id ? getWatchlistEntry(id) : null;
       if (wantWatchlist === "watchlist"){
-        const id = String(s?.tmdb_id ?? "");
         if (!id || !watchlistSet.has(id)) return false;
+      }
+      if (wantWatchStatus.length){
+        const status = safeText(entry?.watch_status || "");
+        if (!status || !wantWatchStatus.includes(status)) return false;
+      }
+      if (wantAvailability !== "all"){
+        if (!entry) return false;
+        const available = isShowAvailable(s);
+        if (wantAvailability === "available" && !available) return false;
+        if (wantAvailability === "unreleased" && available) return false;
       }
       if (wantWatched === "watched" && !isShowWatched(s)) return false;
       if (wantWatched === "unwatched" && isShowWatched(s)) return false;
@@ -2827,7 +2990,7 @@ CHANGE NOTES
     const toggle = (state.watchStateSource === "local")
       ? `<label class="switch show">
           <input type="checkbox" data-watch-show="${id}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
         </label>`
       : "";
     const entry = getWatchlistEntry(id);
@@ -2883,9 +3046,20 @@ CHANGE NOTES
         const cn = safeText(m?.collection?.name);
         if (cn !== wantCollection) return false;
       }
+      const id = String(m?.tmdb_id ?? "");
+      const entry = id ? getWatchlistEntry(id) : null;
       if (wantWatchlist === "watchlist"){
-        const id = String(m?.tmdb_id ?? "");
         if (!id || !watchlistSet.has(id)) return false;
+      }
+      if (wantWatchStatus.length){
+        const status = safeText(entry?.watch_status || "");
+        if (!status || !wantWatchStatus.includes(status)) return false;
+      }
+      if (wantAvailability !== "all"){
+        if (!entry) return false;
+        const available = isMovieAvailable(m);
+        if (wantAvailability === "available" && !available) return false;
+        if (wantAvailability === "unreleased" && available) return false;
       }
       if (wantWatched === "watched" && !isMovieWatched(m)) return false;
       if (wantWatched === "unwatched" && isMovieWatched(m)) return false;
@@ -3038,7 +3212,7 @@ CHANGE NOTES
     const toggle = (state.watchStateSource === "local")
       ? `<label class="switch movie">
           <input type="checkbox" data-watch-movie="${id}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
         </label>`
       : "";
     const entry = getWatchlistEntry(id);
@@ -3097,14 +3271,17 @@ CHANGE NOTES
     const toggle = (state.watchStateSource === "local")
       ? `<label class="switch movie">
           <input type="checkbox" data-watch-movie-popup="${Number(m?.tmdb_id)||0}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
         </label>`
       : "";
     const entry = getWatchlistEntry(m?.tmdb_id);
     const available = isMovieAvailable(m);
     const watchStatusBand = watchStatusBandHtml("movie", m?.tmdb_id ?? "", entry, available);
 
-    const watchProvidersHtml = renderWatchProvidersHtml(m, "movie");
+    const providersHtml = renderWatchProvidersHtml(m, "movie");
+    const whereBtn = providersHtml
+      ? `<button class="btn" type="button" data-where-watch="movie" data-id="${escHtml(m?.tmdb_id ?? "")}">Where to watch</button>`
+      : "";
     const html = `
       <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:start;">
         <div style="border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.03);aspect-ratio:2/3;">
@@ -3120,6 +3297,7 @@ CHANGE NOTES
             ${linkOrDisabled("VidSrc", vidsrc)}
             ${linkOrDisabled("VidEasy", videasy)}
             ${linkOrDisabled("RT", rtUrl)}
+            ${whereBtn}
             ${toggle}
           </div>
           ${prodNames.length ? `
@@ -3130,7 +3308,6 @@ CHANGE NOTES
               </div>
             </div>
           ` : ""}
-          ${watchProvidersHtml}
         </div>
       </div>
       ${backdrop ? `<div style=\"margin-top:12px;border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);aspect-ratio:16/9;\"><img loading=\"lazy\" src=\"${escHtml(backdrop)}\" style=\"width:100%;height:100%;object-fit:cover;display:block;\"/></div>` : ``}
@@ -3148,6 +3325,14 @@ CHANGE NOTES
       setMovieWatched(movieId, !!btn.checked);
       await saveInputs();
       openMovieModal(movieId);
+    });
+    $$("[data-where-watch='movie']", host).forEach(wbtn => {
+      wbtn.addEventListener("click", () => {
+        const movie = getMovieById(movieId);
+        if (!movie) return;
+        const html = renderWatchProvidersHtml(movie, "movie");
+        openProviderModal(`${safeText(movie.title || "Movie")} • Where to watch`, html);
+      });
     });
     $$("[data-watch-status-choice][data-watch-status-kind='movie']", host).forEach(choiceBtn => {
       choiceBtn.addEventListener("click", async () => {
@@ -3187,7 +3372,7 @@ CHANGE NOTES
     const showToggle = canToggle
       ? `<label class="switch show">
           <input type="checkbox" data-watch-show="${escHtml(show.tmdb_id ?? "")}" ${showWatched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
+          <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
         </label>`
       : "";
 
@@ -3212,6 +3397,7 @@ CHANGE NOTES
     const seasonAir = safeText(selSeason?.air_date || selSeason?.first_air_date || "");
 
     const episodes = Array.isArray(selSeason?.episodes) ? selSeason.episodes : [];
+    const seasonEpisodeCount = episodes.length;
 
     const genreNames = Array.isArray(show.genres) ? show.genres.map(g => g?.name).filter(Boolean) : [];
     const voteAvg = show.vote_average;
@@ -3245,7 +3431,7 @@ CHANGE NOTES
       const seasonToggle = canToggle
         ? `<label class="switch season">
             <input type="checkbox" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(it.n)}" ${seasonWatched ? "checked" : ""} />
-            <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
+            <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
           </label>`
         : "";
       return `
@@ -3270,13 +3456,9 @@ CHANGE NOTES
       const epToggle = canToggle
         ? `<label class="switch episode">
             <input type="checkbox" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" ${epWatched ? "checked" : ""} />
-            <span class="track"><span class="thumb"></span><span class="ontext">Watch</span><span class="offtext">Unwatch</span></span>
+            <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
           </label>`
         : "";
-
-      const tmdbUrlEp = (show.tmdb_id != null && sNum && eNum)
-        ? `https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}/season/${encodeURIComponent(sNum)}/episode/${encodeURIComponent(eNum)}`
-        : (show.tmdb_id != null ? `https://www.themoviedb.org/tv/${encodeURIComponent(show.tmdb_id)}` : "");
 
       const vsrc = safeText(ep?.links?.vidsrc || "").trim();
       const vezy = safeText(ep?.links?.videasy || "").trim();
@@ -3299,7 +3481,6 @@ CHANGE NOTES
             </div>
             ${epOverview ? `<div class="epov">${escHtml(epOverview)}</div>` : ""}
             <div class="epactions">
-              ${linkOrDisabled("TMDB", tmdbUrlEp)}
               ${linkOrDisabled("VidSrc", vsrc)}
               ${linkOrDisabled("VidEasy", vezy)}
               ${epToggle}
@@ -3317,7 +3498,10 @@ CHANGE NOTES
           </div>
         </div>`
       : "";
-    const watchProvidersHtml = renderWatchProvidersHtml(show, "tv");
+    const providersHtml = renderWatchProvidersHtml(show, "tv");
+    const whereBtn = providersHtml
+      ? `<button class="btn" type="button" data-where-watch="show" data-id="${escHtml(show.tmdb_id ?? "")}">Where to watch</button>`
+      : "";
     const entry = getWatchlistEntry(show.tmdb_id);
     const available = isShowAvailable(show);
     const watchStatusBand = watchStatusBandHtml("show", show.tmdb_id ?? "", entry, available);
@@ -3359,11 +3543,11 @@ CHANGE NOTES
             ${watchStatusBand}
             <div class="showactions">
               ${linkOrDisabled("RT", rtUrl)}
+              ${whereBtn}
               ${showToggle}
             </div>
               ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
               ${prodHtml}
-              ${watchProvidersHtml}
             </div>
           </div>
 
@@ -3380,6 +3564,7 @@ CHANGE NOTES
                 <div class="seasonmeta">
                   <div class="seasonname">${escHtml(seasonName)}</div>
                   ${seasonAir ? `<div class="seasonair">Premiered ${escHtml(fmtDate(seasonAir))}</div>` : ""}
+                  ${Number.isFinite(seasonEpisodeCount) ? `<div class="seasonair">Episodes ${escHtml(seasonEpisodeCount)}</div>` : ""}
                   ${seasonOverview ? `<div class="seasonov">${escHtml(seasonOverview)}</div>` : ""}
                 </div>
               </div>
@@ -3439,6 +3624,14 @@ CHANGE NOTES
         await saveInputs();
         $("#modalBody").innerHTML = buildShowPopupHtml(show);
         wireShowPopup(id);
+      });
+    });
+    $$("[data-where-watch='show']", host).forEach(wbtn => {
+      wbtn.addEventListener("click", () => {
+        const show = getShowById(showId);
+        if (!show) return;
+        const html = renderWatchProvidersHtml(show, "tv");
+        openProviderModal(`${safeText(show.title || show.name || "Show")} • Where to watch`, html);
       });
     });
 
@@ -3557,6 +3750,14 @@ CHANGE NOTES
     state.filters.shows.watchlist = e.target.value || "all";
     renderShows();
   });
+  $("#filterShowsWatchStatus").addEventListener("change", (e) => {
+    state.filters.shows.watch_status = getSelectedValues(e.target);
+    renderShows();
+  });
+  $("#filterShowsAvailability").addEventListener("change", (e) => {
+    state.filters.shows.availability = e.target.value || "all";
+    renderShows();
+  });
   $("#filterShowsWatched").addEventListener("change", (e) => {
     state.filters.shows.watched = e.target.value || "all";
     renderShows();
@@ -3586,6 +3787,14 @@ CHANGE NOTES
     state.filters.movies.watchlist = e.target.value || "all";
     renderMovies();
   });
+  $("#filterMoviesWatchStatus").addEventListener("change", (e) => {
+    state.filters.movies.watch_status = getSelectedValues(e.target);
+    renderMovies();
+  });
+  $("#filterMoviesAvailability").addEventListener("change", (e) => {
+    state.filters.movies.availability = e.target.value || "all";
+    renderMovies();
+  });
   $("#filterMoviesWatched").addEventListener("change", (e) => {
     state.filters.movies.watched = e.target.value || "all";
     renderMovies();
@@ -3599,6 +3808,8 @@ CHANGE NOTES
   // Modal close
   $("#modalClose").addEventListener("click", closeModal);
   $("#modalBack").addEventListener("click", (e) => { if (e.target === $("#modalBack")) closeModal(); });
+  $("#providerClose").addEventListener("click", closeProviderModal);
+  $("#providerBack").addEventListener("click", (e) => { if (e.target === $("#providerBack")) closeProviderModal(); });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
   window.addEventListener("hashchange", routeFromHash);
