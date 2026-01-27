@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>my_TV_Movie — Palette Swatch (Night vs Day)</title>
+  <style>
+    :root{
+      --radius: 18px;
+      --gap: 14px;
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: var(--font);
+      background: #0b0f16;
+      color:#eaf1ff;
+    }
+
+    .wrap{max-width:1400px;margin:0 auto;padding:18px}
+    .top{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    h1{margin:0;font-size:20px;letter-spacing:0.2px}
+    .sub{color:rgba(234,241,255,0.72);font-size:13px;margin-top:4px;line-height:1.35}
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+      color: rgba(234,241,255,0.85);
+      font-size:13px;
+      white-space:nowrap;
+    }
+
+    .cols{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--gap);
+      margin-top: 14px;
+    }
+    @media (max-width: 980px){
+      .cols{grid-template-columns: 1fr}
+    }
+
+    .panel{
+      border-radius: var(--radius);
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.12);
+      box-shadow: 0 12px 34px rgba(0,0,0,0.55);
+    }
+    .panel_head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+    }
+    .panel_title{
+      font-weight:900;
+      letter-spacing:0.2px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .dot{width:10px;height:10px;border-radius:50%}
+    .mini{color:rgba(234,241,255,0.75);font-size:13px}
+
+    .panel_body{
+      padding:14px;
+    }
+
+    /* Each mode defines its own vars on .mode */
+    .mode{
+      border-radius: var(--radius);
+      padding:14px;
+      background: var(--g-bg);
+      color: var(--c-text);
+      border:1px solid var(--c-border);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .card{
+      border-radius: 16px;
+      overflow:hidden;
+      border:1px solid var(--c-border);
+      background: var(--g-card);
+      box-shadow: 0 10px 26px var(--c-shadow);
+    }
+    .swatch{
+      height:74px;
+      border-bottom:1px solid var(--c-border);
+    }
+    .meta{padding:10px 12px 12px}
+    .name{font-weight:800;letter-spacing:0.2px}
+    .hex{color:var(--c-text-muted);font-size:13px;margin-top:4px}
+    .use{color:var(--c-text-dim);font-size:12px;margin-top:6px;line-height:1.35}
+
+    .demo{
+      margin-top:14px;
+      border-radius: 16px;
+      border:1px solid var(--c-border);
+      background: var(--c-surface-1);
+      padding:14px;
+    }
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{
+      border:1px solid var(--c-border);
+      background: var(--c-surface-2);
+      color: var(--c-text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:750;
+    }
+    .btn.primary{
+      background: var(--c-accent);
+      color: #06101A;
+      border-color: rgba(255,255,255,0.10);
+    }
+    .btn.focus{
+      outline:none;
+      box-shadow: var(--ring-focus);
+    }
+    .chip{
+      border:1px solid var(--c-border);
+      background: rgba(255,255,255,0.06);
+      padding:6px 10px;
+      border-radius:999px;
+      color: var(--c-text-muted);
+      font-size:13px;
+    }
+    .chip.sel{border-color: var(--c-border-strong)}
+    .hint{
+      margin-top:10px;
+      color: var(--c-text-muted);
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .foot{
+      margin-top:14px;
+      color: rgba(234,241,255,0.70);
+      font-size:13px;
+    }
+    .k{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Palette Swatches — Night vs Day (TV)</h1>
+        <div class="sub">
+          Side-by-side comparison for distance legibility + focus visibility. Use
+          <span class="k">?nocache=1</span> if your browser cached an older version.
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <span class="pill">URL: <span class="k">/web/palette_swatch.html</span></span>
+        <span class="pill">No-cache: <span class="k">?nocache=1</span></span>
+      </div>
+    </div>
+
+    <div class="cols">
+
+      <!-- NIGHT -->
+      <div class="panel">
+        <div class="panel_head">
+          <div class="panel_title">
+            <span class="dot" style="background:#4C8DFF"></span>
+            Night TV Premium
+          </div>
+          <div class="mini">Low-glare, high focus</div>
+        </div>
+
+        <div class="panel_body">
+          <div class="mode night"
+               style="
+                 --c-bg-0:#070A10;
+                 --c-bg-1:#0A0F18;
+                 --c-surface-1:#0E1624;
+                 --c-surface-2:#121D2F;
+                 --c-surface-3:#172640;
+
+                 --c-text:#EAF1FF;
+                 --c-text-muted:#B7C6E3;
+                 --c-text-dim:#8EA1C6;
+
+                 --c-border: rgba(255,255,255,0.12);
+                 --c-border-strong: rgba(255,255,255,0.22);
+
+                 --c-accent:#4C8DFF;
+                 --c-accent-2:#25D0C6;
+
+                 --c-info:#6AB6FF;
+                 --c-success:#2FE08A;
+                 --c-warning:#FFD166;
+                 --c-danger:#FF5C72;
+                 --c-brand-magenta:#F06BE5;
+
+                 --c-focus-outer:#FFFFFF;
+                 --c-focus-inner:#4C8DFF;
+
+                 --c-shadow: rgba(0,0,0,0.55);
+
+                 --g-bg:
+                   radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.18), transparent 55%),
+                   radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.14), transparent 60%),
+                   var(--c-bg-1);
+
+                 --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+
+                 --ring-focus: 0 0 0 2px var(--c-focus-inner), 0 0 0 4px rgba(255,255,255,0.90);
+               ">
+
+            <div class="grid">
+              <div class="card"><div class="swatch" style="background:var(--c-bg-0)"></div><div class="meta"><div class="name">c-bg-0</div><div class="hex">#070A10</div><div class="use">Deepest backdrop</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-bg-1)"></div><div class="meta"><div class="name">c-bg-1</div><div class="hex">#0A0F18</div><div class="use">Main background</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-surface-1)"></div><div class="meta"><div class="name">c-surface-1</div><div class="hex">#0E1624</div><div class="use">Cards / panels</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-surface-2)"></div><div class="meta"><div class="name">c-surface-2</div><div class="hex">#121D2F</div><div class="use">Elevated panels</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-surface-3)"></div><div class="meta"><div class="name">c-surface-3</div><div class="hex">#172640</div><div class="use">Hover/active tint</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-text)"></div><div class="meta"><div class="name">c-text</div><div class="hex">#EAF1FF</div><div class="use">Primary text</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-text-muted)"></div><div class="meta"><div class="name">c-text-muted</div><div class="hex">#B7C6E3</div><div class="use">Secondary text</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-text-dim)"></div><div class="meta"><div class="name">c-text-dim</div><div class="hex">#8EA1C6</div><div class="use">Tertiary text</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-accent)"></div><div class="meta"><div class="name">c-accent</div><div class="hex">#4C8DFF</div><div class="use">Primary accent</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-accent-2)"></div><div class="meta"><div class="name">c-accent-2</div><div class="hex">#25D0C6</div><div class="use">Secondary accent</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-success)"></div><div class="meta"><div class="name">c-success</div><div class="hex">#2FE08A</div><div class="use">Success / watched</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-warning)"></div><div class="meta"><div class="name">c-warning</div><div class="hex">#FFD166</div><div class="use">To be watched</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-danger)"></div><div class="meta"><div class="name">c-danger</div><div class="hex">#FF5C72</div><div class="use">Dropped / errors</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-brand-magenta)"></div><div class="meta"><div class="name">c-brand-magenta</div><div class="hex">#F06BE5</div><div class="use">Videasy highlight</div></div></div>
+            </div>
+
+            <div class="demo">
+              <div style="font-weight:900;margin-bottom:10px">UI quick demo</div>
+              <div class="row">
+                <button class="btn">Normal</button>
+                <button class="btn primary">Primary</button>
+                <button class="btn focus">Focused</button>
+                <span class="chip">Chip</span>
+                <span class="chip sel">Selected chip</span>
+              </div>
+              <div class="hint">
+                Focus must pop from 10 feet away: the focused button uses <span class="k">--ring-focus</span>.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- DAY -->
+      <div class="panel">
+        <div class="panel_head">
+          <div class="panel_title">
+            <span class="dot" style="background:#25D0C6"></span>
+            Day TV
+          </div>
+          <div class="mini">Bright-room legibility</div>
+        </div>
+
+        <div class="panel_body">
+          <div class="mode day"
+               style="
+                 --c-bg-0:#E9EEF6;
+                 --c-bg-1:#F5F7FB;
+                 --c-surface-1:#FFFFFF;
+                 --c-surface-2:#E9EEF6;
+                 --c-surface-3:#DCE4F2;
+
+                 --c-text:#0B1324;
+                 --c-text-muted:#4B5A78;
+                 --c-text-dim:#6B7A96;
+
+                 --c-border: rgba(0,0,0,0.12);
+                 --c-border-strong: rgba(0,0,0,0.22);
+
+                 --c-accent:#4C8DFF;
+                 --c-accent-2:#25D0C6;
+
+                 --c-info:#3A78FF;
+                 --c-success:#1FBF75;
+                 --c-warning:#E6B84C;
+                 --c-danger:#E54B5F;
+                 --c-brand-magenta:#E056C9;
+
+                 --c-focus-outer:#000000;
+                 --c-focus-inner:#4C8DFF;
+
+                 --c-shadow: rgba(0,0,0,0.18);
+
+                 --g-bg:
+                   radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.12), transparent 60%),
+                   radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.10), transparent 62%),
+                   var(--c-bg-1);
+
+                 --g-card: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.78));
+
+                 --ring-focus: 0 0 0 2px var(--c-focus-inner), 0 0 0 4px rgba(0,0,0,0.65);
+               ">
+
+            <div class="grid">
+              <div class="card"><div class="swatch" style="background:var(--c-bg-0)"></div><div class="meta"><div class="name">c-bg-0</div><div class="hex">#E9EEF6</div><div class="use">Deepest backdrop</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-bg-1)"></div><div class="meta"><div class="name">c-bg-1</div><div class="hex">#F5F7FB</div><div class="use">Main background</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-surface-1)"></div><div class="meta"><div class="name">c-surface-1</div><div class="hex">#FFFFFF</div><div class="use">Cards / panels</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-surface-2)"></div><div class="meta"><div class="name">c-surface-2</div><div class="hex">#E9EEF6</div><div class="use">Elevated panels</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-surface-3)"></div><div class="meta"><div class="name">c-surface-3</div><div class="hex">#DCE4F2</div><div class="use">Hover/active tint</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-text)"></div><div class="meta"><div class="name">c-text</div><div class="hex">#0B1324</div><div class="use">Primary text</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-text-muted)"></div><div class="meta"><div class="name">c-text-muted</div><div class="hex">#4B5A78</div><div class="use">Secondary text</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-text-dim)"></div><div class="meta"><div class="name">c-text-dim</div><div class="hex">#6B7A96</div><div class="use">Tertiary text</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-accent)"></div><div class="meta"><div class="name">c-accent</div><div class="hex">#4C8DFF</div><div class="use">Primary accent</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-accent-2)"></div><div class="meta"><div class="name">c-accent-2</div><div class="hex">#25D0C6</div><div class="use">Secondary accent</div></div></div>
+
+              <div class="card"><div class="swatch" style="background:var(--c-success)"></div><div class="meta"><div class="name">c-success</div><div class="hex">#1FBF75</div><div class="use">Success / watched</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-warning)"></div><div class="meta"><div class="name">c-warning</div><div class="hex">#E6B84C</div><div class="use">To be watched</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-danger)"></div><div class="meta"><div class="name">c-danger</div><div class="hex">#E54B5F</div><div class="use">Dropped / errors</div></div></div>
+              <div class="card"><div class="swatch" style="background:var(--c-brand-magenta)"></div><div class="meta"><div class="name">c-brand-magenta</div><div class="hex">#E056C9</div><div class="use">Videasy highlight</div></div></div>
+            </div>
+
+            <div class="demo">
+              <div style="font-weight:900;margin-bottom:10px">UI quick demo</div>
+              <div class="row">
+                <button class="btn">Normal</button>
+                <button class="btn primary">Primary</button>
+                <button class="btn focus">Focused</button>
+                <span class="chip">Chip</span>
+                <span class="chip sel">Selected chip</span>
+              </div>
+              <div class="hint">
+                Day mode uses a dark outer ring so focus is still obvious on light surfaces.
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="foot">
+      Tip: open full-screen and stand ~10 feet back. If anything looks “washed out” in Day mode, increase <span class="k">c-text</span> darkness or border opacity.
+    </div>
+  </div>
+</body>
+</html>
