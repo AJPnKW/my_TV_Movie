@@ -4,11 +4,11 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.3.5 (2026-01-27)
+  - v1.3.6 (2026-01-27)
 
 CHANGE NOTES
-  - calendar toggles moved to image corners (no N/Y chips)
-  - availability row tighter spacing, centered icons
+  - availability row removes extra line-height padding
+  - calendar image toggles no longer trigger card open
   - modal headers stay above scrolling body
 ================================================================================
 -->
@@ -739,6 +739,7 @@ CHANGE NOTES
       -webkit-overflow-scrolling:touch;
       padding:0;
       margin:0;
+      line-height:0;
     }
     .chip .providerrow.cal-providers{
       gap:0;
@@ -752,6 +753,7 @@ CHANGE NOTES
       margin:0;
       border:0;
       background:none;
+      line-height:0;
     }
     .chip .epcontent{
       min-width:0;
@@ -860,7 +862,7 @@ CHANGE NOTES
       width:auto;
       max-width:var(--provider-logo-max-w);
       object-fit:contain;
-      display:inline-block;
+      display:block;
       flex:0 0 auto;
       align-self:center;
       margin:0;
@@ -1523,7 +1525,7 @@ CHANGE NOTES
 
 <script>
 (() => {
-  const APP_VERSION = "v1.3.5";
+  const APP_VERSION = "v1.3.6";
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -3114,6 +3116,9 @@ CHANGE NOTES
       });
     });
     $$("[data-watch-episode-card]").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("mousedown", (e) => e.stopPropagation());
+      inp.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
       inp.addEventListener("change", async (e) => {
         e.stopPropagation();
         const showId = Number(inp.getAttribute("data-show") || "0");
@@ -3126,6 +3131,9 @@ CHANGE NOTES
       });
     });
     $$("[data-watch-movie-card]").forEach(inp => {
+      inp.addEventListener("click", (e) => e.stopPropagation());
+      inp.addEventListener("mousedown", (e) => e.stopPropagation());
+      inp.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
       inp.addEventListener("change", async (e) => {
         e.stopPropagation();
         const movieId = Number(inp.getAttribute("data-movie") || "0");
