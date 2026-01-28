@@ -6,14 +6,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>my_TV_Movie — Palette Swatch (Night vs Day + Component Map)</title>
+  <title>my_TV_Movie — Palette Swatch (Night vs Day + Examples)</title>
   <style>
     :root{
-      --radius: 18px;
-      --gap: 14px;
       --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --radius: 16px;
+      --gap: 12px;
+
+      /* 1 inch ≈ 96 CSS px (good enough for “TV eyeballing”) */
+      --sw_w: 96px;
+      --sw_h: 44px;
     }
+
     html,body{height:100%}
     body{
       margin:0;
@@ -22,398 +27,174 @@
       color:#eaf1ff;
     }
     .wrap{max-width:1500px;margin:0 auto;padding:18px}
-    .top{
-      display:flex;
-      align-items:flex-end;
-      justify-content:space-between;
-      gap:14px;
-      flex-wrap:wrap;
-    }
     h1{margin:0;font-size:20px;letter-spacing:0.2px}
     .sub{color:rgba(234,241,255,0.72);font-size:13px;margin-top:4px;line-height:1.35}
     .pill{
-      padding:6px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.14);
-      background: rgba(255,255,255,0.04);
-      color: rgba(234,241,255,0.85);
-      font-size:13px;
-      white-space:nowrap;
+      padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);color: rgba(234,241,255,0.85);font-size:13px;white-space:nowrap
     }
+    .top{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap}
     .k{font-family: var(--mono)}
+
     .section{
-      margin-top:14px;
-      border-radius: var(--radius);
-      overflow:hidden;
+      margin-top:14px;border-radius:18px;overflow:hidden;
       border:1px solid rgba(255,255,255,0.12);
       box-shadow: 0 12px 34px rgba(0,0,0,0.55);
     }
     .section_head{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,0.12);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.12);
       background: rgba(255,255,255,0.04);
     }
-    .section_title{
-      font-weight:900;
-      letter-spacing:0.2px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
+    .section_title{font-weight:900;letter-spacing:0.2px;display:flex;align-items:center;gap:10px}
     .mini{color:rgba(234,241,255,0.75);font-size:13px}
+    .dot{width:10px;height:10px;border-radius:50%}
 
-    /* Paired grid (Token | Night | Day) */
-    .paired{
+    /* Row grid: Token | Night swatch | Day swatch | Example */
+    .rows{
       display:grid;
-      grid-template-columns: 170px 1fr 1fr;
-      gap:12px;
-      padding:14px;
-      background: rgba(255,255,255,0.02);
-    }
-    @media (max-width: 1100px){
-      .paired{grid-template-columns: 1fr}
-      .paired .hdr{display:none}
-      .paired .tname{margin-top:10px}
-    }
-    .hdr{
-      font-weight:900;
-      color:rgba(234,241,255,0.82);
-      padding:6px 6px 10px;
-    }
-    .tname{
-      font-weight:900;
-      color:rgba(234,241,255,0.82);
-      padding:10px 6px;
-      border-radius:12px;
-      background: rgba(255,255,255,0.03);
-      border:1px solid rgba(255,255,255,0.10);
-      align-self:stretch;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-      justify-content:center;
-    }
-    .tname .desc{font-weight:600;color:rgba(234,241,255,0.62);font-size:12px;line-height:1.25}
-
-    .card{
-      border-radius: 16px;
-      overflow:hidden;
-      border:1px solid var(--c-border);
-      background: var(--g-card);
-      box-shadow: 0 10px 26px var(--c-shadow);
-    }
-    .swatch{height:74px;border-bottom:1px solid var(--c-border)}
-    .meta{padding:10px 12px 12px}
-    .hex{color:var(--c-text-muted);font-size:13px;margin-top:0}
-    .use{color:var(--c-text-dim);font-size:12px;margin-top:6px;line-height:1.35}
-
-    /* Mode containers define vars for demos + cards */
-    .mode{
-      border-radius: 16px;
-      padding:12px;
-      background: var(--g-bg);
-      color: var(--c-text);
-      border:1px solid var(--c-border);
-    }
-
-    /* Components demo */
-    .demo_grid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 210px var(--sw_w) var(--sw_w) 1fr;
       gap: var(--gap);
       padding:14px;
       background: rgba(255,255,255,0.02);
-    }
-    @media (max-width: 980px){
-      .demo_grid{grid-template-columns: 1fr}
-    }
-
-    .demo_panel{
-      border-radius: var(--radius);
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.02);
-    }
-    .demo_head{
-      display:flex;
       align-items:center;
-      justify-content:space-between;
-      gap:10px;
-      padding:12px 14px;
-      border-bottom:1px solid rgba(255,255,255,0.12);
-      background: rgba(255,255,255,0.04);
     }
-    .demo_title{
-      font-weight:900;
-      display:flex;
-      align-items:center;
-      gap:10px;
-      letter-spacing:0.2px;
+    @media (max-width: 1100px){
+      .rows{grid-template-columns: 1fr; }
+      .hdr{display:none}
     }
-    .dot{width:10px;height:10px;border-radius:50%}
+    .hdr{font-weight:900;color:rgba(234,241,255,0.84);padding:0 6px 8px}
+    .token{
+      padding:10px 10px;border-radius:12px;
+      background: rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.10);
+    }
+    .token .name{font-weight:950}
+    .token .desc{margin-top:4px;color:rgba(234,241,255,0.62);font-size:12px;line-height:1.25}
 
-    .ui{
-      border-radius: 16px;
-      border:1px solid var(--c-border);
-      background: var(--c-surface-1);
-      box-shadow: 0 10px 24px var(--c-shadow);
-      padding:14px;
+    .sw{
+      width: var(--sw_w);
+      height: var(--sw_h);
+      border-radius:10px;
+      border:1px solid var(--bdr);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
     }
-    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .lbl{font-weight:900}
-    .muted{color:var(--c-text-muted)}
-    .dim{color:var(--c-text-dim)}
-    .divider{height:1px;background:var(--c-border);margin:12px 0}
+    .sw .hex{
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 8px;
+      color: var(--hex_text);
+      text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+    }
 
-    /* Buttons */
-    .btn{
-      border:1px solid var(--c-border);
-      background: var(--c-surface-2);
-      color: var(--c-text);
+    .ex{
+      border-radius: 14px;
+      border:1px solid var(--ex_bdr);
+      background: var(--ex_bg);
+      color: var(--ex_text);
       padding:10px 12px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      overflow:hidden;
+    }
+    .ex .t{font-weight:950}
+    .ex .m{color: var(--ex_muted); font-size: 12px; margin-top:3px}
+    .ex .d{color: var(--ex_dim); font-size: 12px; margin-top:2px}
+    .ex .line{height:1px;background: var(--ex_div); margin:10px 0}
+
+    .btn{
+      border:1px solid var(--ex_bdr);
+      background: var(--ex_btn_bg);
+      color: var(--ex_text);
+      padding:8px 10px;
+      border-radius:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .btn.primary{background: var(--ex_accent); color:#06101A; border-color: rgba(255,255,255,0.10)}
+    .chip{
+      display:inline-flex;align-items:center;gap:6px;
+      border:1px solid var(--ex_bdr);
+      background: var(--ex_chip_bg);
+      color: var(--ex_muted);
+      padding:6px 10px;border-radius:999px;font-weight:900;font-size:12px
+    }
+    .chip.sel{
+      background: var(--ex_chip_sel_bg);
+      color: var(--ex_text);
+      border-color: var(--ex_accent);
+      box-shadow: var(--ex_chip_sel_glow);
+    }
+
+    .field{
+      border:1px solid var(--ex_bdr);
+      background: var(--ex_field_bg);
+      color: var(--ex_text);
+      padding:9px 10px;
       border-radius:12px;
       font-weight:850;
-      cursor:pointer;
+      min-width: 240px;
     }
-    .btn:hover{background: var(--c-surface-3)}
-    .btn.primary{
-      background: var(--c-accent);
-      color: #06101A;
-      border-color: rgba(255,255,255,0.10);
-    }
-    .btn.danger{
-      background: color-mix(in srgb, var(--c-danger) 18%, var(--c-surface-2));
-      border-color: color-mix(in srgb, var(--c-danger) 35%, var(--c-border));
-      color: var(--c-text);
-    }
-    .btn.focus{
-      outline:none;
-      box-shadow: var(--ring-focus);
+    .field::placeholder{color: var(--ex_dim)}
+    .field.dis{background: var(--ex_dis_bg); color: var(--ex_dis_text)}
+    .field.ro{background: var(--ex_field_alt);}
+
+    .range{
+      width: 220px;
+      accent-color: var(--ex_accent);
     }
 
-    /* Tabs */
-    .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{
-      border:1px solid var(--c-border);
-      background: rgba(255,255,255,0.04);
-      color: var(--c-text-muted);
-      padding:9px 12px;
-      border-radius:12px;
-      font-weight:900;
-      cursor:pointer;
-    }
-    .tab:hover{background: rgba(255,255,255,0.06)}
-    .tab.active{
-      background: var(--c-accent);
-      color:#06101A;
-      border-color: rgba(255,255,255,0.10);
-    }
-
-    /* Chips / pills */
-    .chip{
-      border:1px solid var(--c-border);
-      background: rgba(255,255,255,0.06);
-      padding:6px 10px;
-      border-radius:999px;
-      color: var(--c-text-muted);
-      font-size:13px;
-      font-weight:800;
-    }
-    .chip.selected{
-      border-color: var(--c-accent);
-      background: color-mix(in srgb, var(--c-accent) 14%, var(--c-surface-1));
-      box-shadow: 0 0 0 2px color-mix(in srgb, var(--c-accent) 35%, transparent);
-      color: var(--c-text);
-    }
-
-    /* Inputs */
-    .field{
-      border:1px solid var(--c-border);
-      background: color-mix(in srgb, var(--c-surface-1) 82%, #000000 18%);
-      color: var(--c-text);
-      padding:10px 10px;
-      border-radius:12px;
-      min-width: 260px;
-      font-weight:750;
-    }
-    .field::placeholder{color: color-mix(in srgb, var(--c-text-dim) 75%, transparent)}
-    .field:focus{
-      outline:none;
-      box-shadow: var(--ring-focus);
-      border-color: var(--c-border-strong);
-    }
-
-    select.field{padding-right:34px}
-    textarea.field{min-width: 100%; min-height: 74px; resize: vertical}
-
-    /* Checkbox / radio / range */
-    .ctrls{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
-    .ctrls label{display:flex;gap:8px;align-items:center;font-weight:850;color:var(--c-text)}
-    .ctrls input[type="checkbox"],
-    .ctrls input[type="radio"]{
-      accent-color: var(--c-accent);
-      transform: scale(1.2);
-    }
-    .ctrls input[type="range"]{
-      width: 240px;
-      accent-color: var(--c-accent);
-    }
-    .ctrls input[type="range"]:focus{outline:none; box-shadow: var(--ring-focus); border-radius: 999px}
-
-    /* List row selection */
-    .list{
-      border:1px solid var(--c-border);
-      background: rgba(255,255,255,0.03);
-      border-radius:14px;
-      overflow:hidden;
-    }
-    .li{
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      padding:10px 12px;
-      border-top:1px solid var(--c-border);
-      color: var(--c-text);
-      font-weight:800;
-    }
-    .li:first-child{border-top:none}
-    .li .right{color:var(--c-text-muted);font-weight:800}
-    .li.selected{
-      border-top-color: color-mix(in srgb, var(--c-accent) 40%, var(--c-border));
-      background: color-mix(in srgb, var(--c-accent) 12%, var(--c-surface-1));
-      box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--c-accent) 30%, transparent);
-    }
-
-    /* Toggle switch */
-    .switch{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:900;
-    }
-    .sw{
-      width:52px;height:28px;
-      border-radius:999px;
-      background: rgba(255,255,255,0.16);
-      border:1px solid var(--c-border);
+    .toggle{
+      width:52px;height:28px;border-radius:999px;
+      background: var(--ex_toggle_track);
+      border:1px solid var(--ex_bdr);
       position:relative;
-      flex:0 0 auto;
     }
-    .sw::after{
-      content:"";
-      position:absolute;
-      top:3px;left:3px;
-      width:22px;height:22px;
-      border-radius:50%;
-      background: var(--toggle-thumb, #fff);
-      box-shadow: 0 6px 18px var(--c-shadow);
-      transition: transform 140ms ease;
+    .toggle::after{
+      content:""; position:absolute; top:3px; left:3px;
+      width:22px;height:22px;border-radius:50%;
+      background: var(--ex_toggle_thumb);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.25);
     }
-    .sw.on{
-      background: color-mix(in srgb, var(--c-success) 35%, rgba(255,255,255,0.10));
-      border-color: color-mix(in srgb, var(--c-success) 45%, var(--c-border));
-    }
-    .sw.on::after{transform: translateX(24px)}
-
-    /* Status band */
-    .band{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      padding:10px;
-      border:1px solid var(--c-border);
-      background: rgba(255,255,255,0.03);
-      border-radius:14px;
-    }
-    .opt{
-      border:1px solid var(--c-border);
-      background: rgba(255,255,255,0.04);
-      color: var(--c-text-muted);
-      padding:7px 10px;
-      border-radius:999px;
-      font-weight:900;
-      cursor:pointer;
-      user-select:none;
-    }
-    .opt.active{
-      color:#06101A;
-      border-color: rgba(255,255,255,0.12);
-    }
-    .opt.watching.active{background: var(--c-accent-2)}
-    .opt.todo.active{background: var(--c-warning)}
-    .opt.done.active{background: var(--c-accent)}
-    .opt.drop.active{background: var(--c-danger)}
-
-    /* Progress */
     .prog{
-      height:10px;
-      border-radius:999px;
-      overflow:hidden;
-      border:1px solid var(--c-border);
+      height:10px;border-radius:999px;overflow:hidden;
+      border:1px solid var(--ex_bdr);
       background: rgba(255,255,255,0.05);
-      width: 260px;
+      width: 240px;
     }
-    .prog > span{
-      display:block;
-      height:100%;
-      width: 62%;
-      background: var(--g-progress);
-    }
+    .prog > span{display:block;height:100%;width:58%;background: var(--ex_progress)}
 
-    /* Details/summary */
-    details{
-      border:1px solid var(--c-border);
-      background: rgba(255,255,255,0.03);
-      border-radius:14px;
+    .overlay_demo{
+      position:relative;
+      height:54px;
+      border-radius:12px;
+      border:1px solid var(--ex_bdr);
+      background: var(--ex_bg);
       overflow:hidden;
     }
-    summary{
-      padding:10px 12px;
-      cursor:pointer;
-      font-weight:900;
-      background: rgba(255,255,255,0.04);
-      color: var(--c-text);
+    .overlay_demo::after{
+      content:"";
+      position:absolute; inset:0;
+      background: var(--ex_overlay);
     }
-    summary:hover{background: color-mix(in srgb, var(--c-surface-3) 45%, rgba(255,255,255,0.03))}
-    details .dbody{padding:10px 12px;color:var(--c-text-muted);line-height:1.35}
-
-    /* Mini map table */
-    .map{
-      width:100%;
-      border-collapse:collapse;
-      font-size:13px;
-      overflow:hidden;
-      border-radius:14px;
-      border:1px solid var(--c-border);
-    }
-    .map th,.map td{
-      text-align:left;
-      padding:10px 10px;
-      border-top:1px solid var(--c-border);
-      vertical-align:top;
-    }
-    .map th{
-      border-top:none;
-      background: rgba(255,255,255,0.05);
-      color: var(--c-text);
+    .overlay_demo .modal{
+      position:absolute; left:10px; top:10px;
+      width: 160px;
+      padding:8px 10px;
+      border-radius:12px;
+      background: var(--ex_modal_bg);
+      border:1px solid var(--ex_bdr);
+      color: var(--ex_text);
       font-weight:950;
     }
-    .map td{color: var(--c-text-muted); font-weight:750}
-    .map code{font-family:var(--mono); font-size:12px; color: var(--c-text); background: rgba(255,255,255,0.06); padding:2px 6px; border-radius:999px; border:1px solid var(--c-border)}
   </style>
 </head>
-
 <body>
   <div class="wrap">
     <div class="top">
       <div>
-        <h1>Palette Swatches — Night vs Day (TV) + Component Map</h1>
+        <h1>Palette Swatches — Night vs Day (TV) + Examples</h1>
         <div class="sub">
-          Paired tokens for instant comparison + live component demos using the same palette references.
+          Swatch width is ~1 inch. Each row shows Night + Day plus an “in use” example.
           Use <span class="k">?nocache=1</span> if cached.
         </div>
       </div>
@@ -423,462 +204,98 @@
       </div>
     </div>
 
-    <!-- SECTION: PAIRED SWATCHES -->
     <div class="section">
       <div class="section_head">
-        <div class="section_title">
-          <span class="dot" style="background:#4C8DFF"></span>
-          Paired swatches (Token → Night vs Day)
-        </div>
-        <div class="mini">Day palette adjusted to avoid washed-out surfaces</div>
+        <div class="section_title"><span class="dot" style="background:#4C8DFF"></span>Paired tokens + usage examples</div>
+        <div class="mini">Expanded: divider, overlay, disabled/readonly, slider tokens</div>
       </div>
 
-      <div class="paired">
+      <div class="rows">
+        <div></div><div class="hdr">Night</div><div class="hdr">Day</div><div class="hdr">Example in use</div>
 
-        <div></div>
-        <div class="hdr">Night TV Premium</div>
-        <div class="hdr">Day TV (tuned)</div>
-
-        <!-- c-bg-0 -->
-        <div class="tname"><div>c-bg-0</div><div class="desc">Deepest backdrop</div></div>
-
-        <div class="mode" style="
-          --c-bg-0:#070A10; --c-bg-1:#0A0F18; --c-surface-1:#0E1624; --c-surface-2:#121D2F; --c-surface-3:#172640;
-          --c-text:#EAF1FF; --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;
-          --c-border: rgba(255,255,255,0.12); --c-border-strong: rgba(255,255,255,0.22);
-          --c-accent:#4C8DFF; --c-accent-2:#25D0C6;
-          --c-info:#6AB6FF; --c-success:#2FE08A; --c-warning:#FFD166; --c-danger:#FF5C72; --c-brand-magenta:#F06BE5;
-          --c-focus-outer:#FFFFFF; --c-focus-inner:#4C8DFF;
-          --c-shadow: rgba(0,0,0,0.55);
-          --g-bg:
-            radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.18), transparent 55%),
-            radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.14), transparent 60%),
-            var(--c-bg-1);
-          --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-          --g-progress: linear-gradient(90deg, rgba(76,141,255,0.95), rgba(47,224,138,0.95));
-          --ring-focus: 0 0 0 2px var(--c-focus-inner), 0 0 0 4px rgba(255,255,255,0.90);
-        ">
-          <div class="card">
-            <div class="swatch" style="background:#070A10"></div>
-            <div class="meta">
-              <div class="hex">#070A10</div>
-              <div class="use">Deepest backdrop</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mode" style="
-          --c-bg-0:#E6ECF5; --c-bg-1:#EEF2F7; --c-surface-1:#FFFFFF; --c-surface-2:#E1E7F0; --c-surface-3:#D0D9E8;
-          --c-text:#0B1324; --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;
-          --c-border: rgba(0,0,0,0.16); --c-border-strong: rgba(0,0,0,0.26);
-          --c-accent:#4C8DFF; --c-accent-2:#25D0C6;
-          --c-info:#3A78FF; --c-success:#1FBF75; --c-warning:#E6B84C; --c-danger:#E54B5F; --c-brand-magenta:#E056C9;
-          --c-focus-outer:#000000; --c-focus-inner:#4C8DFF;
-          --c-shadow: rgba(0,0,0,0.18);
-          --g-bg:
-            radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.10), transparent 62%),
-            radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.08), transparent 64%),
-            var(--c-bg-1);
-          --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78));
-          --g-progress: linear-gradient(90deg, rgba(76,141,255,0.92), rgba(31,191,117,0.92));
-          --ring-focus: 0 0 0 2px var(--c-focus-inner), 0 0 0 4px rgba(0,0,0,0.65);
-        ">
-          <div class="card">
-            <div class="swatch" style="background:#E6ECF5"></div>
-            <div class="meta">
-              <div class="hex">#E6ECF5</div>
-              <div class="use">Deepest backdrop</div>
-            </div>
-          </div>
-        </div>
-
+        <!-- Helper: each row repeats a small “example card” driven by per-mode vars in the inline style -->
         <!-- c-bg-1 -->
-        <div class="tname"><div>c-bg-1</div><div class="desc">Main page background</div></div>
-
-        <div class="mode" style="
-          --c-bg-0:#070A10; --c-bg-1:#0A0F18; --c-surface-1:#0E1624; --c-surface-2:#121D2F; --c-surface-3:#172640;
-          --c-text:#EAF1FF; --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;
-          --c-border: rgba(255,255,255,0.12); --c-border-strong: rgba(255,255,255,0.22);
-          --c-accent:#4C8DFF; --c-accent-2:#25D0C6;
-          --c-success:#2FE08A; --c-warning:#FFD166; --c-danger:#FF5C72; --c-brand-magenta:#F06BE5;
-          --c-shadow: rgba(0,0,0,0.55);
-          --g-bg:
-            radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.18), transparent 55%),
-            radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.14), transparent 60%),
-            var(--c-bg-1);
-          --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+        <div class="token"><div class="name">c-bg-1</div><div class="desc">Page background</div></div>
+        <div class="sw" style="background:#0A0F18; --bdr: rgba(255,255,255,0.18); --hex_text:#EAF1FF"><div class="hex">#0A0F18</div></div>
+        <div class="sw" style="background:#EEF2F7; --bdr: rgba(0,0,0,0.22); --hex_text:#0B1324"><div class="hex">#EEF2F7</div></div>
+        <div class="ex" style="
+          --ex_bg: #0A0F18; --ex_text:#EAF1FF; --ex_muted:#B7C6E3; --ex_dim:#8EA1C6;
+          --ex_bdr: rgba(255,255,255,0.14); --ex_div: rgba(255,255,255,0.10);
+          --ex_btn_bg:#15213A; --ex_accent:#4C8DFF;
+          --ex_chip_bg: rgba(255,255,255,0.06); --ex_chip_sel_bg: color-mix(in srgb, #4C8DFF 14%, #0E1624);
+          --ex_chip_sel_glow: 0 0 0 2px color-mix(in srgb, #4C8DFF 35%, transparent);
+          --ex_field_bg: rgba(255,255,255,0.06); --ex_field_alt: rgba(255,255,255,0.04);
+          --ex_dis_bg: rgba(255,255,255,0.03); --ex_dis_text:#6F7F9E;
+          --ex_toggle_track: rgba(255,255,255,0.16); --ex_toggle_thumb:#FFFFFF;
+          --ex_progress: linear-gradient(90deg, rgba(76,141,255,0.95), rgba(47,224,138,0.95));
+          --ex_overlay: rgba(0,0,0,0.65); --ex_modal_bg:#15213A;
         ">
-          <div class="card">
-            <div class="swatch" style="background:#0A0F18"></div>
-            <div class="meta">
-              <div class="hex">#0A0F18</div>
-              <div class="use">Main background</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="mode" style="
-          --c-bg-0:#E6ECF5; --c-bg-1:#EEF2F7; --c-surface-1:#FFFFFF; --c-surface-2:#E1E7F0; --c-surface-3:#D0D9E8;
-          --c-text:#0B1324; --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;
-          --c-border: rgba(0,0,0,0.16); --c-border-strong: rgba(0,0,0,0.26);
-          --c-accent:#4C8DFF; --c-accent-2:#25D0C6;
-          --c-success:#1FBF75; --c-warning:#E6B84C; --c-danger:#E54B5F; --c-brand-magenta:#E056C9;
-          --c-shadow: rgba(0,0,0,0.18);
-          --g-bg:
-            radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.10), transparent 62%),
-            radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.08), transparent 64%),
-            var(--c-bg-1);
-          --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78));
-        ">
-          <div class="card">
-            <div class="swatch" style="background:#EEF2F7"></div>
-            <div class="meta">
-              <div class="hex">#EEF2F7</div>
-              <div class="use">Main background (tuned)</div>
-            </div>
-          </div>
+          <div class="t">Background sample</div><div class="m">Secondary text</div><div class="d">Tertiary hint</div>
         </div>
 
         <!-- c-surface-1 -->
-        <div class="tname"><div>c-surface-1</div><div class="desc">Cards / panels</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#0E1624"></div>
-            <div class="meta"><div class="hex">#0E1624</div><div class="use">Cards / panels</div></div>
-          </div>
+        <div class="token"><div class="name">c-surface-1</div><div class="desc">Cards/panels</div></div>
+        <div class="sw" style="background:#0E1624; --bdr: rgba(255,255,255,0.18); --hex_text:#EAF1FF"><div class="hex">#0E1624</div></div>
+        <div class="sw" style="background:#FFFFFF; --bdr: rgba(0,0,0,0.22); --hex_text:#0B1324"><div class="hex">#FFFFFF</div></div>
+        <div class="ex" style="
+          --ex_bg: #0E1624; --ex_text:#EAF1FF; --ex_muted:#B7C6E3; --ex_dim:#8EA1C6;
+          --ex_bdr: rgba(255,255,255,0.14); --ex_div: rgba(255,255,255,0.10);
+          --ex_btn_bg:#15213A; --ex_accent:#4C8DFF;
+          --ex_chip_bg: rgba(255,255,255,0.06); --ex_chip_sel_bg: color-mix(in srgb, #4C8DFF 14%, #0E1624);
+          --ex_chip_sel_glow: 0 0 0 2px color-mix(in srgb, #4C8DFF 35%, transparent);
+          --ex_field_bg: rgba(255,255,255,0.06); --ex_field_alt: rgba(255,255,255,0.04);
+          --ex_dis_bg: rgba(255,255,255,0.03); --ex_dis_text:#6F7F9E;
+          --ex_toggle_track: rgba(255,255,255,0.16); --ex_toggle_thumb:#FFFFFF;
+          --ex_progress: linear-gradient(90deg, rgba(76,141,255,0.95), rgba(47,224,138,0.95));
+          --ex_overlay: rgba(0,0,0,0.65); --ex_modal_bg:#15213A;
+        ">
+          <div class="t">Panel</div><div class="m">Border + fill separation</div>
+          <div class="line"></div>
+          <button class="btn">Button</button>
+          <button class="btn primary">Primary</button>
         </div>
 
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#FFFFFF"></div>
-            <div class="meta"><div class="hex">#FFFFFF</div><div class="use">Cards / panels</div></div>
-          </div>
+        <!-- c-border -->
+        <div class="token"><div class="name">c-border</div><div class="desc">Default border strength</div></div>
+        <div class="sw" style="background:linear-gradient(90deg,#0E1624,#0E1624); --bdr: rgba(255,255,255,0.14); --hex_text:#EAF1FF"><div class="hex">rgba(255,255,255,0.14)</div></div>
+        <div class="sw" style="background:linear-gradient(90deg,#FFFFFF,#FFFFFF); --bdr: rgba(0,0,0,0.22); --hex_text:#0B1324"><div class="hex">rgba(0,0,0,0.22)</div></div>
+        <div class="ex" style="
+          --ex_bg: rgba(255,255,255,0.03); --ex_text:#EAF1FF; --ex_muted:#B7C6E3; --ex_dim:#8EA1C6;
+          --ex_bdr: rgba(255,255,255,0.14); --ex_div: rgba(255,255,255,0.10);
+          --ex_btn_bg:#15213A; --ex_accent:#4C8DFF;
+          --ex_chip_bg: rgba(255,255,255,0.06); --ex_chip_sel_bg: color-mix(in srgb, #4C8DFF 14%, #0E1624);
+          --ex_chip_sel_glow: 0 0 0 2px color-mix(in srgb, #4C8DFF 35%, transparent);
+          --ex_field_bg: rgba(255,255,255,0.06); --ex_field_alt: rgba(255,255,255,0.04);
+          --ex_dis_bg: rgba(255,255,255,0.03); --ex_dis_text:#6F7F9E;
+          --ex_toggle_track: rgba(255,255,255,0.16); --ex_toggle_thumb:#FFFFFF;
+          --ex_progress: linear-gradient(90deg, rgba(76,141,255,0.95), rgba(47,224,138,0.95));
+          --ex_overlay: rgba(0,0,0,0.65); --ex_modal_bg:#15213A;
+        ">
+          <div class="t">Border sample</div><div class="m">This card border = c-border</div>
         </div>
 
-        <!-- c-surface-2 -->
-        <div class="tname"><div>c-surface-2</div><div class="desc">Elevated panels / sticky bars</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#121D2F"></div>
-            <div class="meta"><div class="hex">#121D2F</div><div class="use">Elevated panels</div></div>
-          </div>
+        <!-- c-divider -->
+        <div class="token"><div class="name">c-divider</div><div class="desc">Separators between rows/sections</div></div>
+        <div class="sw" style="background:#0E1624; --bdr: rgba(255,255,255,0.14); --hex_text:#EAF1FF"><div class="hex">rgba(255,255,255,0.10)</div></div>
+        <div class="sw" style="background:#FFFFFF; --bdr: rgba(0,0,0,0.22); --hex_text:#0B1324"><div class="hex">rgba(0,0,0,0.18)</div></div>
+        <div class="ex" style="
+          --ex_bg:#0E1624; --ex_text:#EAF1FF; --ex_muted:#B7C6E3; --ex_dim:#8EA1C6;
+          --ex_bdr: rgba(255,255,255,0.14); --ex_div: rgba(255,255,255,0.10);
+          --ex_btn_bg:#15213A; --ex_accent:#4C8DFF;
+          --ex_chip_bg: rgba(255,255,255,0.06); --ex_chip_sel_bg: color-mix(in srgb, #4C8DFF 14%, #0E1624);
+          --ex_chip_sel_glow: 0 0 0 2px color-mix(in srgb, #4C8DFF 35%, transparent);
+          --ex_field_bg: rgba(255,255,255,0.06); --ex_field_alt: rgba(255,255,255,0.04);
+          --ex_dis_bg: rgba(255,255,255,0.03); --ex_dis_text:#6F7F9E;
+          --ex_toggle_track: rgba(255,255,255,0.16); --ex_toggle_thumb:#FFFFFF;
+          --ex_progress: linear-gradient(90deg, rgba(76,141,255,0.95), rgba(47,224,138,0.95));
+          --ex_overlay: rgba(0,0,0,0.65); --ex_modal_bg:#15213A;
+        ">
+          <div class="t">Divider sample</div>
+          <div class="line"></div>
+          <div class="m">Line uses c-divider</div>
         </div>
 
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#E1E7F0"></div>
-            <div class="meta"><div class="hex">#E1E7F0</div><div class="use">Elevated panels (tuned)</div></div>
-          </div>
-        </div>
+        <!-- Chip selected visibility -->
+        <div class="token"><div class="name">Chip selection</div><div class="desc">3-cue selection (border + tint + glow)</div></div>
+        <div class="sw" style="background:#4C8DFF; --bdr: rgba(255,255,255,0.14); --hex_text:#06101A"><div class="hex">accent tint</div></div>
 
-        <!-- c-surface-3 -->
-        <div class="tname"><div>c-surface-3</div><div class="desc">Hover / active tint</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#172640"></div>
-            <div class="meta"><div class="hex">#172640</div><div class="use">Hover/active tint</div></div>
-          </div>
-        </div>
-
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#D0D9E8"></div>
-            <div class="meta"><div class="hex">#D0D9E8</div><div class="use">Hover/active tint (tuned)</div></div>
-          </div>
-        </div>
-
-        <!-- c-text -->
-        <div class="tname"><div>c-text</div><div class="desc">Primary text</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#EAF1FF"></div>
-            <div class="meta"><div class="hex">#EAF1FF</div><div class="use">Primary text color</div></div>
-          </div>
-        </div>
-
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#0B1324"></div>
-            <div class="meta"><div class="hex">#0B1324</div><div class="use">Primary text color</div></div>
-          </div>
-        </div>
-
-        <!-- c-text-muted -->
-        <div class="tname"><div>c-text-muted</div><div class="desc">Secondary text</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#B7C6E3"></div>
-            <div class="meta"><div class="hex">#B7C6E3</div><div class="use">Secondary text</div></div>
-          </div>
-        </div>
-
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#3F4F6B"></div>
-            <div class="meta"><div class="hex">#3F4F6B</div><div class="use">Secondary text (tuned)</div></div>
-          </div>
-        </div>
-
-        <!-- c-text-dim -->
-        <div class="tname"><div>c-text-dim</div><div class="desc">Tertiary text</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#8EA1C6"></div>
-            <div class="meta"><div class="hex">#8EA1C6</div><div class="use">Tertiary text</div></div>
-          </div>
-        </div>
-
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#5B6B86"></div>
-            <div class="meta"><div class="hex">#5B6B86</div><div class="use">Tertiary text (tuned)</div></div>
-          </div>
-        </div>
-
-        <!-- c-accent -->
-        <div class="tname"><div>c-accent</div><div class="desc">Primary accent</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#4C8DFF"></div>
-            <div class="meta"><div class="hex">#4C8DFF</div><div class="use">Accent</div></div>
-          </div>
-        </div>
-
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#4C8DFF"></div>
-            <div class="meta"><div class="hex">#4C8DFF</div><div class="use">Accent (shared)</div></div>
-          </div>
-        </div>
-
-        <!-- c-accent-2 -->
-        <div class="tname"><div>c-accent-2</div><div class="desc">Secondary accent</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="card">
-            <div class="swatch" style="background:#25D0C6"></div>
-            <div class="meta"><div class="hex">#25D0C6</div><div class="use">Secondary accent</div></div>
-          </div>
-        </div>
-
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="card">
-            <div class="swatch" style="background:#25D0C6"></div>
-            <div class="meta"><div class="hex">#25D0C6</div><div class="use">Secondary accent (shared)</div></div>
-          </div>
-        </div>
-
-        <!-- status colors -->
-        <div class="tname"><div>Status colors</div><div class="desc">Meaning stays consistent</div></div>
-
-        <div class="mode" style="--c-border: rgba(255,255,255,0.12); --c-shadow: rgba(0,0,0,0.55); --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)); --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;">
-          <div class="row">
-            <span class="chip" style="background:#2FE08A;border-color:rgba(255,255,255,0.12);color:#06101A">success</span>
-            <span class="chip" style="background:#FFD166;border-color:rgba(255,255,255,0.12);color:#06101A">warning</span>
-            <span class="chip" style="background:#FF5C72;border-color:rgba(255,255,255,0.12);color:#06101A">danger</span>
-            <span class="chip" style="background:#F06BE5;border-color:rgba(255,255,255,0.12);color:#06101A">magenta</span>
-          </div>
-          <div class="meta"><div class="use">Night: 2FE08A / FFD166 / FF5C72 / F06BE5</div></div>
-        </div>
-
-        <div class="mode" style="--c-border: rgba(0,0,0,0.16); --c-shadow: rgba(0,0,0,0.18); --g-card: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.78)); --c-text-muted:#3F4F6B; --c-text-dim:#5B6B86;">
-          <div class="row">
-            <span class="chip" style="background:#1FBF75;border-color:rgba(0,0,0,0.16);color:#06101A">success</span>
-            <span class="chip" style="background:#E6B84C;border-color:rgba(0,0,0,0.16);color:#06101A">warning</span>
-            <span class="chip" style="background:#E54B5F;border-color:rgba(0,0,0,0.16);color:#06101A">danger</span>
-            <span class="chip" style="background:#E056C9;border-color:rgba(0,0,0,0.16);color:#06101A">magenta</span>
-          </div>
-          <div class="meta"><div class="use">Day: 1FBF75 / E6B84C / E54B5F / E056C9</div></div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- SECTION: COMPONENT DEMOS -->
-    <div class="section">
-      <div class="section_head">
-        <div class="section_title">
-          <span class="dot" style="background:#25D0C6"></span>
-          Component-to-palette mapping demos (same tokens)
-        </div>
-        <div class="mini">Buttons / tabs / chips / list rows / inputs / toggles / status band / progress / details</div>
-      </div>
-
-      <div class="demo_grid">
-
-        <!-- NIGHT DEMO -->
-        <div class="demo_panel">
-          <div class="demo_head">
-            <div class="demo_title"><span class="dot" style="background:#4C8DFF"></span>Night TV Premium</div>
-            <div class="mini">Focus must pop</div>
-          </div>
-          <div class="section_body" style="padding:14px">
-            <div class="mode" style="
-              --c-bg-0:#070A10; --c-bg-1:#0A0F18; --c-surface-1:#0E1624; --c-surface-2:#121D2F; --c-surface-3:#172640;
-              --c-text:#EAF1FF; --c-text-muted:#B7C6E3; --c-text-dim:#8EA1C6;
-              --c-border: rgba(255,255,255,0.12); --c-border-strong: rgba(255,255,255,0.22);
-              --c-accent:#4C8DFF; --c-accent-2:#25D0C6;
-              --c-success:#2FE08A; --c-warning:#FFD166; --c-danger:#FF5C72; --c-brand-magenta:#F06BE5;
-              --c-shadow: rgba(0,0,0,0.55);
-              --g-bg:
-                radial-gradient(1200px 800px at 18% -10%, rgba(76,141,255,0.18), transparent 55%),
-                radial-gradient(900px 700px at 112% 8%, rgba(37,208,198,0.14), transparent 60%),
-                var(--c-bg-1);
-              --g-card: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-              --g-progress: linear-gradient(90deg, rgba(76,141,255,0.95), rgba(47,224,138,0.95));
-              --ring-focus: 0 0 0 2px var(--c-accent), 0 0 0 4px rgba(255,255,255,0.90);
-              --toggle-thumb:#FFFFFF;
-            ">
-
-              <div class="ui">
-                <div class="row" style="justify-content:space-between">
-                  <div>
-                    <div class="lbl">Title row</div>
-                    <div class="muted">secondary metadata</div>
-                    <div class="dim">tertiary hint text</div>
-                  </div>
-                  <div class="tabs">
-                    <button class="tab active">Active tab</button>
-                    <button class="tab">Tab</button>
-                    <button class="tab">Tab</button>
-                  </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="row">
-                  <button class="btn">Button</button>
-                  <button class="btn primary">Primary</button>
-                  <button class="btn danger">Danger</button>
-                  <button class="btn focus">Focused</button>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Chips / pills -->
-                <div class="row">
-                  <span class="chip">Chip</span>
-                  <span class="chip sel">Selected chip</span>
-                  <span class="chip">Tag</span>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- List rows / selectable items -->
-                <div class="listbox">
-                  <div class="listrow">List item</div>
-                  <div class="listrow selected">Selected list item</div>
-                  <div class="listrow">Another item</div>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Text inputs -->
-                <div class="row">
-                  <input type="text" placeholder="Text input" />
-                  <input type="search" placeholder="Search…" />
-                </div>
-
-                <div class="row">
-                  <textarea rows="2" placeholder="Textarea"></textarea>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Select / listbox -->
-                <div class="row">
-                  <select>
-                    <option>Option one</option>
-                    <option>Option two</option>
-                    <option>Option three</option>
-                  </select>
-
-                  <select multiple size="3">
-                    <option>Multi option A</option>
-                    <option selected>Multi option B</option>
-                    <option>Multi option C</option>
-                  </select>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Checkbox / radio -->
-                <div class="row">
-                  <label><input type="checkbox" checked /> Checkbox</label>
-                  <label><input type="checkbox" /> Checkbox</label>
-                </div>
-
-                <div class="row">
-                  <label><input type="radio" name="r1" checked /> Radio</label>
-                  <label><input type="radio" name="r1" /> Radio</label>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Toggle -->
-                <div class="row">
-                  <label class="toggle">
-                    <input type="checkbox" checked />
-                    <span class="track"><span class="thumb"></span></span>
-                  </label>
-
-                  <label class="toggle">
-                    <input type="checkbox" />
-                    <span class="track"><span class="thumb"></span></span>
-                  </label>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Slider -->
-                <div class="row">
-                  <input type="range" min="0" max="100" value="35" />
-                  <input type="range" min="0" max="100" value="70" />
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Progress -->
-                <div class="progress">
-                  <span style="width:45%"></span>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Status chips -->
-                <div class="row">
-                  <span class="status watching">Watching</span>
-                  <span class="status towatch">To be watched</span>
-                  <span class="status completed">Completed</span>
-                  <span class="status dropped">Dropped</span>
-                </div>
-
-                <div class="divider"></div>
-
-                <!-- Modal preview (static) -->
-                <div class="modal-preview">
-                  <div class="modal-header">Modal title</div>
-                  <div class="modal-body">
-                    Modal content surface using <code>c-surface-2</code>.
-                  </div>
-                  <div class="modal-footer">
-                    <button class="btn">Cancel</button>
-                    <button class="btn primary">Confirm</button>
-                  </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="hint">
-                  All components above are mapped directly to palette tokens
-                  (<code>c-bg</code>, <code>c-surface</code>, <code>c-text</code>,
-                  <code>c-accent</code>, <code>c-border</code>) and should visually
-                  differentiate clearly at TV distance in both Night and Day modes.
-                </div>
