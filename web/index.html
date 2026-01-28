@@ -4,12 +4,12 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.3.3 (2026-01-27)
+  - v1.3.4 (2026-01-27)
 
 CHANGE NOTES
-  - D-pad modal scroll on up/down when focus can't move
-  - availability icon row forced horizontal flow
-  - redesigned Shows/Movies filter bar for clarity
+  - single-row filter controls with button groups + checklists
+  - show/movie cards move watch toggle top-right, remove status band
+  - popup watch toggle + status band under title
 ================================================================================
 -->
 <html lang="en">
@@ -165,17 +165,13 @@ CHANGE NOTES
       backdrop-filter: blur(8px);
       border:1px solid rgba(255,255,255,0.06);
     }
-    .filtersbar .title{
-      font-size:11px;
-      letter-spacing:0.18em;
-      text-transform:uppercase;
-      color:var(--muted);
-      font-weight:900;
-    }
-    .filtersgrid{
-      display:grid;
-      grid-template-columns: minmax(180px, 1.1fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(160px, 0.9fr);
+    .filtersrow{
+      display:flex;
       gap:10px;
+      flex-wrap:nowrap;
+      align-items:flex-start;
+      overflow-x:auto;
+      padding-bottom:4px;
     }
     .filtergroup{
       display:flex;
@@ -185,7 +181,7 @@ CHANGE NOTES
       border-radius:12px;
       border:1px solid rgba(255,255,255,0.08);
       background:rgba(255,255,255,0.03);
-      min-width:0;
+      min-width:170px;
     }
     .filterlabel{
       font-size:10px;
@@ -194,31 +190,57 @@ CHANGE NOTES
       color:var(--muted);
       font-weight:900;
     }
-    .filterrow{
+    .filtersbar .input{
+      min-width:160px;
+    }
+    .input.compact{
+      min-height:36px;
+    }
+    .checklist{
       display:flex;
-      gap:8px;
+      flex-direction:column;
+      gap:4px;
+      max-height:140px;
+      overflow:auto;
+      padding-right:4px;
+    }
+    .checkitem{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:11px;
+      font-weight:800;
+      color:var(--text);
+      white-space:nowrap;
+    }
+    .checkitem input{ accent-color: var(--accent); }
+    .seg{
+      display:flex;
+      gap:6px;
       flex-wrap:wrap;
       align-items:center;
     }
-    .filtersgrid .input{
-      width:100%;
-      min-width:0;
+    .seg.small{ gap:4px; }
+    .segbtn{
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.2);
+      background:rgba(255,255,255,0.05);
+      color:var(--text);
+      font-size:11px;
+      font-weight:900;
+      padding:4px 10px;
+      cursor:pointer;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
     }
-    .filtersgrid select[multiple]{
-      min-height:110px;
+    .segbtn:disabled{
+      opacity:0.45;
+      pointer-events:none;
     }
-    .filtersgrid .input.compact{
-      min-height:36px;
-    }
-    @media (max-width: 1180px){
-      .filtersgrid{
-        grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr);
-      }
-    }
-    @media (max-width: 720px){
-      .filtersgrid{
-        grid-template-columns: 1fr;
-      }
+    .segbtn.active{
+      border-color:rgba(59,130,246,0.7);
+      background:rgba(59,130,246,0.18);
+      box-shadow:0 0 0 2px rgba(59,130,246,0.25);
     }
     .input{
       background:rgba(255,255,255,0.04);
@@ -265,7 +287,9 @@ CHANGE NOTES
     .imgbox img{ width:100%; height:100%; object-fit:cover; display:block; }
 
     .cardbody{ padding:12px 12px 10px; display:flex; flex-direction:column; gap:8px; flex:1; }
+    .cardhead{ display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
     .cardtitle{ font-weight:950; font-size:14px; letter-spacing:0.2px; }
+    .cardtoggle{ margin-left:auto; }
     .cardmeta{ color:var(--muted); font-size:12px; line-height:1.25; }
     .cardbadges{ display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
 
@@ -708,20 +732,26 @@ CHANGE NOTES
       display:flex;
       flex-wrap:nowrap;
       flex-direction:row;
-      gap:6px;
+      gap:0;
       align-items:center;
       width:100%;
       overflow-x:auto;
       -webkit-overflow-scrolling:touch;
+      padding:0;
+      margin:0;
     }
     .chip .providerrow.cal-providers{
-      gap:4px;
+      gap:0;
       flex-wrap:wrap;
       flex-direction:row;
       justify-content:flex-start;
       align-items:center;
       overflow:visible;
       white-space:normal;
+      padding:0;
+      margin:0;
+      border:0;
+      background:none;
     }
     .chip .epcontent{
       min-width:0;
@@ -815,6 +845,9 @@ CHANGE NOTES
       object-fit:contain;
       display:inline-block;
       flex:0 0 auto;
+      margin:0;
+      border:0;
+      padding:0;
     }
     .chip .netlogo-sm{ height:var(--provider-logo-h); }
     .chip .progress{
@@ -951,6 +984,14 @@ CHANGE NOTES
 
     .heroright{ display:flex; flex-direction:column; gap:10px; }
     .showtitle{ font-size:26px; font-weight:950; letter-spacing:0.3px; }
+    .showwatch,
+    .popupwatch{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-top:6px;
+    }
 
     .pills{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
     .pill{
@@ -1318,41 +1359,49 @@ CHANGE NOTES
 
     <div id="panel-shows" class="panel hidden">
       <div class="filtersbar">
-        <div class="title">Shows filters</div>
-        <div class="filtersgrid">
+        <div class="filtersrow">
           <div class="filtergroup">
             <div class="filterlabel">Search</div>
             <input id="searchShows" class="input compact" type="search" placeholder="Title search…" autocomplete="off" />
           </div>
           <div class="filtergroup">
-            <div class="filterlabel">Genres</div>
-            <select id="filterShowsGenres" class="input" multiple size="6" aria-label="Genre filter"></select>
+            <div class="filterlabel">Sort</div>
+            <div id="sortShows" class="seg" role="radiogroup">
+              <button type="button" class="segbtn" data-sort="title">A→Z</button>
+              <button type="button" class="segbtn" data-sort="title_desc">Z→A</button>
+              <button type="button" class="segbtn" data-sort="popularity">Pop</button>
+              <button type="button" class="segbtn" data-sort="vote">Vote</button>
+              <button type="button" class="segbtn" data-sort="release">Release</button>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Genre</div>
+            <div id="filterShowsGenres" class="checklist" role="group"></div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Watch State</div>
+            <div id="filterShowsWatchStatus" class="checklist" role="group"></div>
+            <div id="filterShowsAvailability" class="seg small" role="radiogroup">
+              <button type="button" class="segbtn" data-availability="all">All</button>
+              <button type="button" class="segbtn" data-availability="available">Avail</button>
+              <button type="button" class="segbtn" data-availability="unreleased">Unreleased</button>
+            </div>
+            <div id="filterShowsWatched" class="seg small" role="radiogroup">
+              <button type="button" class="segbtn" data-watched="all">All</button>
+              <button type="button" class="segbtn" data-watched="watched">Watched</button>
+              <button type="button" class="segbtn" data-watched="unwatched">Unwatched</button>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Watch List</div>
+            <div id="filterShowsWatchlist" class="seg" role="radiogroup">
+              <button type="button" class="segbtn" data-watchlist="all">All</button>
+              <button type="button" class="segbtn" data-watchlist="watchlist">On List</button>
+            </div>
           </div>
           <div class="filtergroup">
             <div class="filterlabel">Release</div>
-            <div class="filterrow">
-              <select id="filterShowsYear" class="input compact" aria-label="Release year filter"></select>
-              <select id="filterShowsCollection" class="input compact" aria-label="Collection filter"></select>
-            </div>
-          </div>
-          <div class="filtergroup">
-            <div class="filterlabel">Watch state</div>
-            <div class="filterrow">
-              <select id="filterShowsWatchlist" class="input compact" aria-label="Watchlist filter"></select>
-              <select id="filterShowsWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
-              <select id="filterShowsAvailability" class="input compact" aria-label="Availability filter"></select>
-              <select id="filterShowsWatched" class="input compact" aria-label="Watched filter"></select>
-            </div>
-          </div>
-          <div class="filtergroup">
-            <div class="filterlabel">Sort</div>
-            <select id="sortShows" class="input compact">
-              <option value="title">Title A→Z</option>
-              <option value="title_desc">Title Z→A</option>
-              <option value="popularity">Popularity</option>
-              <option value="vote">Vote Average</option>
-              <option value="release">Release Date</option>
-            </select>
+            <input id="filterShowsYear" class="input compact" type="number" min="1900" max="2100" placeholder="Year" />
           </div>
         </div>
       </div>
@@ -1361,41 +1410,53 @@ CHANGE NOTES
 
     <div id="panel-movies" class="panel hidden">
       <div class="filtersbar">
-        <div class="title">Movies filters</div>
-        <div class="filtersgrid">
+        <div class="filtersrow">
           <div class="filtergroup">
             <div class="filterlabel">Search</div>
             <input id="searchMovies" class="input compact" type="search" placeholder="Title search…" autocomplete="off" />
           </div>
           <div class="filtergroup">
-            <div class="filterlabel">Genres</div>
-            <select id="filterMoviesGenres" class="input" multiple size="6" aria-label="Genre filter"></select>
+            <div class="filterlabel">Sort</div>
+            <div id="sortMovies" class="seg" role="radiogroup">
+              <button type="button" class="segbtn" data-sort="title">A→Z</button>
+              <button type="button" class="segbtn" data-sort="title_desc">Z→A</button>
+              <button type="button" class="segbtn" data-sort="popularity">Pop</button>
+              <button type="button" class="segbtn" data-sort="vote">Vote</button>
+              <button type="button" class="segbtn" data-sort="release">Release</button>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Genre</div>
+            <div id="filterMoviesGenres" class="checklist" role="group"></div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Watch State</div>
+            <div id="filterMoviesWatchStatus" class="checklist" role="group"></div>
+            <div id="filterMoviesAvailability" class="seg small" role="radiogroup">
+              <button type="button" class="segbtn" data-availability="all">All</button>
+              <button type="button" class="segbtn" data-availability="available">Avail</button>
+              <button type="button" class="segbtn" data-availability="unreleased">Unreleased</button>
+            </div>
+            <div id="filterMoviesWatched" class="seg small" role="radiogroup">
+              <button type="button" class="segbtn" data-watched="all">All</button>
+              <button type="button" class="segbtn" data-watched="watched">Watched</button>
+              <button type="button" class="segbtn" data-watched="unwatched">Unwatched</button>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Watch List</div>
+            <div id="filterMoviesWatchlist" class="seg" role="radiogroup">
+              <button type="button" class="segbtn" data-watchlist="all">All</button>
+              <button type="button" class="segbtn" data-watchlist="watchlist">On List</button>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Collection</div>
+            <input id="filterMoviesCollection" class="input compact" type="search" placeholder="Collection…" />
           </div>
           <div class="filtergroup">
             <div class="filterlabel">Release</div>
-            <div class="filterrow">
-              <select id="filterMoviesYear" class="input compact" aria-label="Release year filter"></select>
-              <select id="filterMoviesCollection" class="input compact" aria-label="Collection filter"></select>
-            </div>
-          </div>
-          <div class="filtergroup">
-            <div class="filterlabel">Watch state</div>
-            <div class="filterrow">
-              <select id="filterMoviesWatchlist" class="input compact" aria-label="Watchlist filter"></select>
-              <select id="filterMoviesWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
-              <select id="filterMoviesAvailability" class="input compact" aria-label="Availability filter"></select>
-              <select id="filterMoviesWatched" class="input compact" aria-label="Watched filter"></select>
-            </div>
-          </div>
-          <div class="filtergroup">
-            <div class="filterlabel">Sort</div>
-            <select id="sortMovies" class="input compact">
-              <option value="title">Title A→Z</option>
-              <option value="title_desc">Title Z→A</option>
-              <option value="popularity">Popularity</option>
-              <option value="vote">Vote Average</option>
-              <option value="release">Release Date</option>
-            </select>
+            <input id="filterMoviesYear" class="input compact" type="number" min="1900" max="2100" placeholder="Year" />
           </div>
         </div>
       </div>
@@ -1436,7 +1497,7 @@ CHANGE NOTES
 
 <script>
 (() => {
-  const APP_VERSION = "v1.3.3";
+  const APP_VERSION = "v1.3.4";
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -1456,7 +1517,7 @@ CHANGE NOTES
     search: { shows: "", movies: "" },
     sort: { shows: "title", movies: "title" },
     filters: {
-      shows: { genres: [], year: "", collection: "", watchlist: "all", watch_status: ["watching"], availability: "all", watched: "all" },
+      shows: { genres: [], year: "", watchlist: "all", watch_status: ["watching"], availability: "all", watched: "all" },
       movies: { genres: [], year: "", collection: "", watchlist: "all", watch_status: ["watching"], availability: "all", watched: "all" },
       watchlist: { watch_status: "all", media_kind: "all", search: "" }
     },
@@ -1926,82 +1987,41 @@ CHANGE NOTES
     const movieYears = uniqueSorted(movies.map(m => yearFromDate(m.release_date)).filter(Boolean)).sort((a,b)=>Number(b)-Number(a));
     const movieCollections = uniqueSorted(movies.map(m => m?.collection?.name).filter(Boolean));
 
-    const showsGenresSel = $("#filterShowsGenres");
-    const moviesGenresSel = $("#filterMoviesGenres");
-    if (showsGenresSel) showsGenresSel.innerHTML = showGenres.map(g => `<option value="${escHtml(g)}">${escHtml(g)}</option>`).join("");
-    if (moviesGenresSel) moviesGenresSel.innerHTML = movieGenres.map(g => `<option value="${escHtml(g)}">${escHtml(g)}</option>`).join("");
+    renderChecklist($("#filterShowsGenres"), showGenres, state.filters.shows.genres);
+    renderChecklist($("#filterMoviesGenres"), movieGenres, state.filters.movies.genres);
 
     const showsYearSel = $("#filterShowsYear");
     const moviesYearSel = $("#filterMoviesYear");
-    if (showsYearSel) showsYearSel.innerHTML = `<option value="">All Years</option>${showYears.map(y => `<option value="${escHtml(y)}">${escHtml(y)}</option>`).join("")}`;
-    if (moviesYearSel) moviesYearSel.innerHTML = `<option value="">All Years</option>${movieYears.map(y => `<option value="${escHtml(y)}">${escHtml(y)}</option>`).join("")}`;
+    if (showsYearSel) showsYearSel.value = state.filters.shows.year || "";
+    if (moviesYearSel) moviesYearSel.value = state.filters.movies.year || "";
 
-    const showsCollectionSel = $("#filterShowsCollection");
-    const moviesCollectionSel = $("#filterMoviesCollection");
-    if (showsCollectionSel) {
-      showsCollectionSel.innerHTML = `<option value="">No collection data</option>`;
-      showsCollectionSel.disabled = true;
-    }
-    if (moviesCollectionSel) {
-      moviesCollectionSel.innerHTML = movieCollections.length
-        ? `<option value="">All Collections</option>${movieCollections.map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join("")}`
-        : `<option value="">No collection data</option>`;
-      moviesCollectionSel.disabled = movieCollections.length === 0;
-    }
-
-    const showsWatchlistSel = $("#filterShowsWatchlist");
-    const moviesWatchlistSel = $("#filterMoviesWatchlist");
-    if (showsWatchlistSel) {
-      showsWatchlistSel.innerHTML = `<option value="all">All</option><option value="watchlist">Watchlist</option>`;
-      showsWatchlistSel.disabled = !hasWatchlist;
-    }
-    if (moviesWatchlistSel) {
-      moviesWatchlistSel.innerHTML = `<option value="all">All</option><option value="watchlist">Watchlist</option>`;
-      moviesWatchlistSel.disabled = !hasWatchlist;
-    }
+    const moviesCollectionInput = $("#filterMoviesCollection");
+    if (moviesCollectionInput) moviesCollectionInput.value = state.filters.movies.collection || "";
 
     const watchStatusOpts = [
       { value: "watching", label: "watch" },
       { value: "completed", label: "done" },
       { value: "dropped", label: "drop" }
     ];
-    const showsWatchStatusSel = $("#filterShowsWatchStatus");
-    const moviesWatchStatusSel = $("#filterMoviesWatchStatus");
-    if (showsWatchStatusSel){
-      showsWatchStatusSel.innerHTML = watchStatusOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
-      setSelectedValues(showsWatchStatusSel, state.filters.shows.watch_status);
-    }
-    if (moviesWatchStatusSel){
-      moviesWatchStatusSel.innerHTML = watchStatusOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
-      setSelectedValues(moviesWatchStatusSel, state.filters.movies.watch_status);
-    }
+    renderChecklist($("#filterShowsWatchStatus"), watchStatusOpts, state.filters.shows.watch_status);
+    renderChecklist($("#filterMoviesWatchStatus"), watchStatusOpts, state.filters.movies.watch_status);
 
-    const availOpts = [
-      { value: "all", label: "All Availability" },
-      { value: "available", label: "Watching" },
-      { value: "unreleased", label: "To Be Watched" }
-    ];
-    const showsAvailSel = $("#filterShowsAvailability");
-    const moviesAvailSel = $("#filterMoviesAvailability");
-    if (showsAvailSel){
-      showsAvailSel.innerHTML = availOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
-      showsAvailSel.value = state.filters.shows.availability || "all";
-    }
-    if (moviesAvailSel){
-      moviesAvailSel.innerHTML = availOpts.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("");
-      moviesAvailSel.value = state.filters.movies.availability || "all";
-    }
+    setSegActive($("#filterShowsAvailability"), "availability", state.filters.shows.availability || "all");
+    setSegActive($("#filterMoviesAvailability"), "availability", state.filters.movies.availability || "all");
 
-    const hasWatchState = !!state.watchState;
-    const showsWatchedSel = $("#filterShowsWatched");
-    const moviesWatchedSel = $("#filterMoviesWatched");
-    if (showsWatchedSel) {
-      showsWatchedSel.innerHTML = `<option value="all">All</option><option value="watched">Watched</option><option value="unwatched">Unwatched</option>`;
-      showsWatchedSel.disabled = !hasWatchState;
-    }
-    if (moviesWatchedSel) {
-      moviesWatchedSel.innerHTML = `<option value="all">All</option><option value="watched">Watched</option><option value="unwatched">Unwatched</option>`;
-      moviesWatchedSel.disabled = !hasWatchState;
+    setSegActive($("#filterShowsWatched"), "watched", state.filters.shows.watched || "all");
+    setSegActive($("#filterMoviesWatched"), "watched", state.filters.movies.watched || "all");
+
+    setSegActive($("#filterShowsWatchlist"), "watchlist", state.filters.shows.watchlist || "all");
+    setSegActive($("#filterMoviesWatchlist"), "watchlist", state.filters.movies.watchlist || "all");
+
+    setSegActive($("#sortShows"), "sort", state.sort.shows || "title");
+    setSegActive($("#sortMovies"), "sort", state.sort.movies || "title");
+
+    if (!hasWatchlist){
+      $$("#filterShowsWatchlist .segbtn, #filterMoviesWatchlist .segbtn").forEach(btn => {
+        btn.disabled = true;
+      });
     }
 
     const watchlistStatusSel = $("#filterWatchlistStatus");
@@ -2017,6 +2037,31 @@ CHANGE NOTES
   function getSelectedValues(sel){
     if (!sel) return [];
     return Array.from(sel.selectedOptions || []).map(o => o.value).filter(Boolean);
+  }
+
+  function getCheckedValues(container){
+    if (!container) return [];
+    return $$("input[type='checkbox']", container).filter(i => i.checked).map(i => i.value);
+  }
+
+  function renderChecklist(container, options, selectedValues){
+    if (!container) return;
+    const selected = new Set(selectedValues || []);
+    container.innerHTML = options.map(opt => {
+      const value = typeof opt === "string" ? opt : opt.value;
+      const label = typeof opt === "string" ? opt : opt.label;
+      const checked = selected.has(value) ? "checked" : "";
+      return `<label class="checkitem"><input type="checkbox" value="${escHtml(value)}" ${checked} /> <span>${escHtml(label)}</span></label>`;
+    }).join("");
+  }
+
+  function setSegActive(container, attr, value){
+    if (!container) return;
+    $$(`[data-${attr}]`, container).forEach(btn => {
+      const active = btn.getAttribute(`data-${attr}`) === value;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
   }
 
   function setSelectedValues(sel, values){
@@ -3228,9 +3273,6 @@ CHANGE NOTES
           <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
         </label>`
       : "";
-    const entry = getWatchlistEntry(id);
-    const available = isShowAvailable(s);
-    const watchStatusBand = watchStatusBandHtml("show", id, entry, available);
     const firstAir = safeText(s?.first_air_date);
     const lastAir = safeText(s?.last_air_date);
     const meta = [
@@ -3241,9 +3283,10 @@ CHANGE NOTES
     return `
       <div class="card">
         <div class="cardbody">
-          <div class="cardtitle">${escHtml(title)}</div>
-          ${watchStatusBand}
-          <div class="cardbadges">${toggle}</div>
+          <div class="cardhead">
+            <div class="cardtitle">${escHtml(title)}</div>
+            <div class="cardtoggle">${toggle}</div>
+          </div>
         </div>
         <button type="button" class="imgbox" data-show-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
           ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
@@ -3265,7 +3308,7 @@ CHANGE NOTES
     const wantWatchlist = safeText(f.watchlist);
     const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
     const wantAvailability = safeText(f.availability || "all");
-    const wantCollection = safeText(f.collection);
+    const wantCollection = safeText(f.collection).toLowerCase();
     const watchlistSet = getWatchlistSet();
 
     const movies = (state.data?.movies || []).filter(m => {
@@ -3280,8 +3323,8 @@ CHANGE NOTES
         if (y !== wantYear) return false;
       }
       if (wantCollection){
-        const cn = safeText(m?.collection?.name);
-        if (cn !== wantCollection) return false;
+        const cn = safeText(m?.collection?.name).toLowerCase();
+        if (!cn.includes(wantCollection)) return false;
       }
       const id = String(m?.tmdb_id ?? "");
       const entry = id ? getWatchlistEntry(id) : null;
@@ -3456,9 +3499,6 @@ CHANGE NOTES
           <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
         </label>`
       : "";
-    const entry = getWatchlistEntry(id);
-    const available = isMovieAvailable(m);
-    const watchStatusBand = watchStatusBandHtml("movie", id, entry, available);
     const rd = safeText(m?.release_date);
     const rt = m?.runtime;
     const genres = Array.isArray(m?.genres) ? m.genres.map(g => g?.name).filter(Boolean) : [];
@@ -3475,9 +3515,10 @@ CHANGE NOTES
     return `
       <div class="card">
         <div class="cardbody">
-          <div class="cardtitle">${escHtml(title)}</div>
-          ${watchStatusBand}
-          <div class="cardbadges">${toggle}</div>
+          <div class="cardhead">
+            <div class="cardtitle">${escHtml(title)}</div>
+            <div class="cardtoggle">${toggle}</div>
+          </div>
         </div>
         <button type="button" class="imgbox" data-movie-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
           ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
@@ -3530,16 +3571,16 @@ CHANGE NOTES
         </div>
         <div>
           <div style="font-weight:950;font-size:18px;">${escHtml(title)}</div>
-          <div style="margin-top:8px;color:rgba(255,255,255,0.80);line-height:1.35;">${escHtml(overview)}</div>
-          <div style="margin-top:10px;">
+          <div class="popupwatch">
+            ${toggle}
             ${watchStatusBand}
           </div>
+          <div style="margin-top:8px;color:rgba(255,255,255,0.80);line-height:1.35;">${escHtml(overview)}</div>
           <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
             ${linkOrDisabled("VidSrc", vidsrc)}
             ${linkOrDisabled("VidEasy", videasy)}
             ${linkOrDisabled("RT", rtUrl)}
             ${whereBtn}
-            ${toggle}
           </div>
           ${prodNames.length ? `
             <div class="metablock">
@@ -3771,6 +3812,10 @@ CHANGE NOTES
             </div>
             <div class="heroright">
               <div class="showtitle">${escHtml(title)}</div>
+              <div class="showwatch">
+                ${showToggle}
+                ${watchStatusBand}
+              </div>
               <div class="pills">${pills}</div>
               <div class="showmeta">
                 ${statusText ? `<div>Status <span>${escHtml(statusText)}</span></div>` : ""}
@@ -3781,11 +3826,9 @@ CHANGE NOTES
                 ${lastAir ? `<div>Last <span>${escHtml(fmtDate(lastAir))}</span></div>` : ""}
                 ${show?.tmdb_id != null ? `<div>TMDB <span>${escHtml(show.tmdb_id)}</span></div>` : ""}
               </div>
-            ${watchStatusBand}
             <div class="showactions">
               ${linkOrDisabled("RT", rtUrl)}
               ${whereBtn}
-              ${showToggle}
             </div>
               ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
               ${prodHtml}
@@ -3975,36 +4018,44 @@ CHANGE NOTES
     state.search.shows = e.target.value || "";
     renderShows();
   });
-  $("#filterShowsGenres").addEventListener("change", (e) => {
-    state.filters.shows.genres = getSelectedValues(e.target);
+  $("#filterShowsGenres").addEventListener("change", () => {
+    state.filters.shows.genres = getCheckedValues($("#filterShowsGenres"));
     renderShows();
   });
-  $("#filterShowsYear").addEventListener("change", (e) => {
+  $("#filterShowsYear").addEventListener("input", (e) => {
     state.filters.shows.year = e.target.value || "";
     renderShows();
   });
-  $("#filterShowsCollection").addEventListener("change", (e) => {
-    state.filters.shows.collection = e.target.value || "";
+  $("#filterShowsWatchStatus").addEventListener("change", () => {
+    state.filters.shows.watch_status = getCheckedValues($("#filterShowsWatchStatus"));
     renderShows();
   });
-  $("#filterShowsWatchlist").addEventListener("change", (e) => {
-    state.filters.shows.watchlist = e.target.value || "all";
+  $("#filterShowsAvailability").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-availability]");
+    if (!btn) return;
+    state.filters.shows.availability = btn.getAttribute("data-availability") || "all";
+    setSegActive($("#filterShowsAvailability"), "availability", state.filters.shows.availability);
     renderShows();
   });
-  $("#filterShowsWatchStatus").addEventListener("change", (e) => {
-    state.filters.shows.watch_status = getSelectedValues(e.target);
+  $("#filterShowsWatched").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-watched]");
+    if (!btn) return;
+    state.filters.shows.watched = btn.getAttribute("data-watched") || "all";
+    setSegActive($("#filterShowsWatched"), "watched", state.filters.shows.watched);
     renderShows();
   });
-  $("#filterShowsAvailability").addEventListener("change", (e) => {
-    state.filters.shows.availability = e.target.value || "all";
+  $("#filterShowsWatchlist").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-watchlist]");
+    if (!btn || btn.disabled) return;
+    state.filters.shows.watchlist = btn.getAttribute("data-watchlist") || "all";
+    setSegActive($("#filterShowsWatchlist"), "watchlist", state.filters.shows.watchlist);
     renderShows();
   });
-  $("#filterShowsWatched").addEventListener("change", (e) => {
-    state.filters.shows.watched = e.target.value || "all";
-    renderShows();
-  });
-  $("#sortShows").addEventListener("change", (e) => {
-    state.sort.shows = e.target.value;
+  $("#sortShows").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-sort]");
+    if (!btn) return;
+    state.sort.shows = btn.getAttribute("data-sort") || "title";
+    setSegActive($("#sortShows"), "sort", state.sort.shows);
     renderShows();
   });
 
@@ -4012,36 +4063,48 @@ CHANGE NOTES
     state.search.movies = e.target.value || "";
     renderMovies();
   });
-  $("#filterMoviesGenres").addEventListener("change", (e) => {
-    state.filters.movies.genres = getSelectedValues(e.target);
+  $("#filterMoviesGenres").addEventListener("change", () => {
+    state.filters.movies.genres = getCheckedValues($("#filterMoviesGenres"));
     renderMovies();
   });
-  $("#filterMoviesYear").addEventListener("change", (e) => {
+  $("#filterMoviesYear").addEventListener("input", (e) => {
     state.filters.movies.year = e.target.value || "";
     renderMovies();
   });
-  $("#filterMoviesCollection").addEventListener("change", (e) => {
+  $("#filterMoviesCollection").addEventListener("input", (e) => {
     state.filters.movies.collection = e.target.value || "";
     renderMovies();
   });
-  $("#filterMoviesWatchlist").addEventListener("change", (e) => {
-    state.filters.movies.watchlist = e.target.value || "all";
+  $("#filterMoviesWatchStatus").addEventListener("change", () => {
+    state.filters.movies.watch_status = getCheckedValues($("#filterMoviesWatchStatus"));
     renderMovies();
   });
-  $("#filterMoviesWatchStatus").addEventListener("change", (e) => {
-    state.filters.movies.watch_status = getSelectedValues(e.target);
+  $("#filterMoviesAvailability").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-availability]");
+    if (!btn) return;
+    state.filters.movies.availability = btn.getAttribute("data-availability") || "all";
+    setSegActive($("#filterMoviesAvailability"), "availability", state.filters.movies.availability);
     renderMovies();
   });
-  $("#filterMoviesAvailability").addEventListener("change", (e) => {
-    state.filters.movies.availability = e.target.value || "all";
+  $("#filterMoviesWatched").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-watched]");
+    if (!btn) return;
+    state.filters.movies.watched = btn.getAttribute("data-watched") || "all";
+    setSegActive($("#filterMoviesWatched"), "watched", state.filters.movies.watched);
     renderMovies();
   });
-  $("#filterMoviesWatched").addEventListener("change", (e) => {
-    state.filters.movies.watched = e.target.value || "all";
+  $("#filterMoviesWatchlist").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-watchlist]");
+    if (!btn || btn.disabled) return;
+    state.filters.movies.watchlist = btn.getAttribute("data-watchlist") || "all";
+    setSegActive($("#filterMoviesWatchlist"), "watchlist", state.filters.movies.watchlist);
     renderMovies();
   });
-  $("#sortMovies").addEventListener("change", (e) => {
-    state.sort.movies = e.target.value;
+  $("#sortMovies").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-sort]");
+    if (!btn) return;
+    state.sort.movies = btn.getAttribute("data-sort") || "title";
+    setSegActive($("#sortMovies"), "sort", state.sort.movies);
     renderMovies();
   });
 
