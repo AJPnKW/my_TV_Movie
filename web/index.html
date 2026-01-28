@@ -4,12 +4,12 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.3.1 (2026-01-27)
+  - v1.3.2 (2026-01-27)
 
 CHANGE NOTES
+  - redesigned Shows/Movies filter bar for clarity
   - D-pad focus navigation + modal focus trap
   - availability icon row wraps only when needed
-  - focus-visible ring expanded for role=button
 ================================================================================
 -->
 <html lang="en">
@@ -164,6 +164,61 @@ CHANGE NOTES
       background:linear-gradient(180deg, rgba(12,18,26,0.98), rgba(12,18,26,0.86));
       backdrop-filter: blur(8px);
       border:1px solid rgba(255,255,255,0.06);
+    }
+    .filtersbar .title{
+      font-size:11px;
+      letter-spacing:0.18em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+    }
+    .filtersgrid{
+      display:grid;
+      grid-template-columns: minmax(180px, 1.1fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(180px, 1fr) minmax(160px, 0.9fr);
+      gap:10px;
+    }
+    .filtergroup{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      padding:8px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.03);
+      min-width:0;
+    }
+    .filterlabel{
+      font-size:10px;
+      letter-spacing:0.14em;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+    }
+    .filterrow{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .filtersgrid .input{
+      width:100%;
+      min-width:0;
+    }
+    .filtersgrid select[multiple]{
+      min-height:110px;
+    }
+    .filtersgrid .input.compact{
+      min-height:36px;
+    }
+    @media (max-width: 1180px){
+      .filtersgrid{
+        grid-template-columns: minmax(180px, 1fr) minmax(180px, 1fr);
+      }
+    }
+    @media (max-width: 720px){
+      .filtersgrid{
+        grid-template-columns: 1fr;
+      }
     }
     .input{
       background:rgba(255,255,255,0.04);
@@ -1258,46 +1313,86 @@ CHANGE NOTES
     </div>
 
     <div id="panel-shows" class="panel hidden">
-      <div class="row filtersbar">
-        <div class="filters">
-          <input id="searchShows" class="input" type="search" placeholder="Search..." autocomplete="off" />
-          <select id="filterShowsGenres" class="input" multiple size="5" aria-label="Genre filter"></select>
-          <select id="filterShowsYear" class="input" aria-label="Release year filter"></select>
-          <select id="filterShowsCollection" class="input" aria-label="Collection filter"></select>
-          <select id="filterShowsWatchlist" class="input" aria-label="Watchlist filter"></select>
-          <select id="filterShowsWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
-          <select id="filterShowsAvailability" class="input" aria-label="Availability filter"></select>
-          <select id="filterShowsWatched" class="input" aria-label="Watched filter"></select>
-          <select id="sortShows" class="input">
-            <option value="title">Title A→Z</option>
-            <option value="title_desc">Title Z→A</option>
-            <option value="popularity">Popularity</option>
-            <option value="vote">Vote Average</option>
-            <option value="release">Release Date</option>
-          </select>
+      <div class="filtersbar">
+        <div class="title">Shows filters</div>
+        <div class="filtersgrid">
+          <div class="filtergroup">
+            <div class="filterlabel">Search</div>
+            <input id="searchShows" class="input compact" type="search" placeholder="Title search…" autocomplete="off" />
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Genres</div>
+            <select id="filterShowsGenres" class="input" multiple size="6" aria-label="Genre filter"></select>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Release</div>
+            <div class="filterrow">
+              <select id="filterShowsYear" class="input compact" aria-label="Release year filter"></select>
+              <select id="filterShowsCollection" class="input compact" aria-label="Collection filter"></select>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Watch state</div>
+            <div class="filterrow">
+              <select id="filterShowsWatchlist" class="input compact" aria-label="Watchlist filter"></select>
+              <select id="filterShowsWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
+              <select id="filterShowsAvailability" class="input compact" aria-label="Availability filter"></select>
+              <select id="filterShowsWatched" class="input compact" aria-label="Watched filter"></select>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Sort</div>
+            <select id="sortShows" class="input compact">
+              <option value="title">Title A→Z</option>
+              <option value="title_desc">Title Z→A</option>
+              <option value="popularity">Popularity</option>
+              <option value="vote">Vote Average</option>
+              <option value="release">Release Date</option>
+            </select>
+          </div>
         </div>
       </div>
       <div id="showsGrid" class="grid" style="--card_min: var(--show_card_min, 240px);"></div>
     </div>
 
     <div id="panel-movies" class="panel hidden">
-      <div class="row filtersbar">
-        <div class="filters">
-          <input id="searchMovies" class="input" type="search" placeholder="Search..." autocomplete="off" />
-          <select id="filterMoviesGenres" class="input" multiple size="5" aria-label="Genre filter"></select>
-          <select id="filterMoviesYear" class="input" aria-label="Release year filter"></select>
-          <select id="filterMoviesCollection" class="input" aria-label="Collection filter"></select>
-          <select id="filterMoviesWatchlist" class="input" aria-label="Watchlist filter"></select>
-          <select id="filterMoviesWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
-          <select id="filterMoviesAvailability" class="input" aria-label="Availability filter"></select>
-          <select id="filterMoviesWatched" class="input" aria-label="Watched filter"></select>
-          <select id="sortMovies" class="input">
-            <option value="title">Title A→Z</option>
-            <option value="title_desc">Title Z→A</option>
-            <option value="popularity">Popularity</option>
-            <option value="vote">Vote Average</option>
-            <option value="release">Release Date</option>
-          </select>
+      <div class="filtersbar">
+        <div class="title">Movies filters</div>
+        <div class="filtersgrid">
+          <div class="filtergroup">
+            <div class="filterlabel">Search</div>
+            <input id="searchMovies" class="input compact" type="search" placeholder="Title search…" autocomplete="off" />
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Genres</div>
+            <select id="filterMoviesGenres" class="input" multiple size="6" aria-label="Genre filter"></select>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Release</div>
+            <div class="filterrow">
+              <select id="filterMoviesYear" class="input compact" aria-label="Release year filter"></select>
+              <select id="filterMoviesCollection" class="input compact" aria-label="Collection filter"></select>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Watch state</div>
+            <div class="filterrow">
+              <select id="filterMoviesWatchlist" class="input compact" aria-label="Watchlist filter"></select>
+              <select id="filterMoviesWatchStatus" class="input" multiple size="3" aria-label="Watch status filter"></select>
+              <select id="filterMoviesAvailability" class="input compact" aria-label="Availability filter"></select>
+              <select id="filterMoviesWatched" class="input compact" aria-label="Watched filter"></select>
+            </div>
+          </div>
+          <div class="filtergroup">
+            <div class="filterlabel">Sort</div>
+            <select id="sortMovies" class="input compact">
+              <option value="title">Title A→Z</option>
+              <option value="title_desc">Title Z→A</option>
+              <option value="popularity">Popularity</option>
+              <option value="vote">Vote Average</option>
+              <option value="release">Release Date</option>
+            </select>
+          </div>
         </div>
       </div>
       <div id="moviesGrid" class="grid" style="--card_min: var(--movie_card_min, 240px);"></div>
@@ -1337,7 +1432,7 @@ CHANGE NOTES
 
 <script>
 (() => {
-  const APP_VERSION = "v1.3.1";
+  const APP_VERSION = "v1.3.2";
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
