@@ -4,12 +4,12 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.3.4 (2026-01-27)
+  - v1.3.5 (2026-01-27)
 
 CHANGE NOTES
-  - single-row filter controls with button groups + checklists
-  - show/movie cards move watch toggle top-right, remove status band
-  - popup watch toggle + status band under title
+  - calendar toggles moved to image corners (no N/Y chips)
+  - availability row tighter spacing, centered icons
+  - modal headers stay above scrolling body
 ================================================================================
 -->
 <html lang="en">
@@ -757,11 +757,27 @@ CHANGE NOTES
       min-width:0;
       display:flex;
       flex-direction:column;
-      gap:3px;
+      gap:2px;
     }
     .chip .epmedia{
       display:block;
       width:100%;
+    }
+    .thumbwrap{
+      position:relative;
+      width:100%;
+    }
+    .thumbwrap .caltoggle{
+      position:absolute;
+      top:6px;
+      right:6px;
+      z-index:2;
+      transform:scale(0.85);
+      transform-origin: top right;
+      background:rgba(10,14,20,0.45);
+      padding:2px 4px;
+      border-radius:999px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.35);
     }
     .chip.cal-episode .epmedia .thumb{
       width:100%;
@@ -774,7 +790,8 @@ CHANGE NOTES
       gap:4px;
       align-items:center;
       flex-wrap:wrap;
-      padding:2px 0;
+      padding:0;
+      margin:0;
     }
     .chip .actionicon{
       width:18px;
@@ -845,6 +862,7 @@ CHANGE NOTES
       object-fit:contain;
       display:inline-block;
       flex:0 0 auto;
+      align-self:center;
       margin:0;
       border:0;
       padding:0;
@@ -1170,6 +1188,14 @@ CHANGE NOTES
       overflow:hidden;
     }
     .epimg img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .epimg .switch{
+      position:absolute;
+      top:8px;
+      right:8px;
+      transform:scale(0.9);
+      transform-origin: top right;
+      z-index:2;
+    }
 
     .badge{
       position:absolute;
@@ -1477,7 +1503,7 @@ CHANGE NOTES
   <!-- Modal kept for existing non-calendar usage (movie details). Calendar does not use this. -->
   <div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:flex-start;justify-content:center;padding:18px;z-index:200;overflow:auto;-webkit-overflow-scrolling:touch;" aria-hidden="true" role="dialog" aria-modal="true">
     <div id="modalCard" tabindex="0" style="width:min(940px,100%);max-height:calc(100vh - 36px);overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));margin:6px 0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);z-index:5;box-shadow:0 8px 16px rgba(0,0,0,0.25);">
         <div id="modalTitle" style="font-weight:950;">Details</div>
         <button id="modalClose" class="calbtn" type="button">Close</button>
       </div>
@@ -1487,7 +1513,7 @@ CHANGE NOTES
 
   <div id="providerBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:flex-start;justify-content:center;padding:18px;z-index:220;overflow:auto;-webkit-overflow-scrolling:touch;" aria-hidden="true" role="dialog" aria-modal="true">
     <div id="providerCard" tabindex="0" style="width:min(760px,100%);max-height:calc(100vh - 36px);overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));margin:6px 0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);z-index:5;box-shadow:0 8px 16px rgba(0,0,0,0.25);">
         <div id="providerTitle" style="font-weight:950;">Where to watch</div>
         <button id="providerClose" class="calbtn" type="button">Close</button>
       </div>
@@ -1497,7 +1523,7 @@ CHANGE NOTES
 
 <script>
 (() => {
-  const APP_VERSION = "v1.3.4";
+  const APP_VERSION = "v1.3.5";
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -2860,8 +2886,11 @@ CHANGE NOTES
           const epWatched = state.watchState ? isEpisodeWatched(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0) : false;
           const watchedFlag = state.watchState ? watchFlagHtml(epWatched) : "";
           const watchToggleBtn = canToggle
-            ? `<span class="actionicon flag ${epWatched ? "yes" : "no"}" role="button" tabindex="0" data-watch-episode-btn="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" data-watched="${epWatched ? "1" : "0"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`
-            : `<span class="actionicon flag ${epWatched ? "yes" : "no"}" title="${epWatched ? "Watched" : "Unwatched"}">${epWatched ? "Y" : "N"}</span>`;
+            ? `<label class="switch episode caltoggle">
+                <input type="checkbox" data-watch-episode-card="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" ${epWatched ? "checked" : ""} />
+                <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
+              </label>`
+            : "";
           const netLogo = (it.network_logo_local || it.network_logo_tmdb)
             ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
             : "";
@@ -2871,11 +2900,13 @@ CHANGE NOTES
               <div class="epcontent">
                 <div class="t">${escHtml(`${safeText(it.show_title).trim() || "Unknown Show"}${epTag ? ` • ${epTag}` : ""}`)}</div>
                 <div class="epmedia">
-                  ${thumb}
+                  <div class="thumbwrap">
+                    ${thumb}
+                    ${watchToggleBtn}
+                  </div>
                 </div>
                 <div class="s">${escHtml(`${epName}${it.runtime ? ` • ${it.runtime} min` : ""}`)}</div>
                 <div class="urlband">
-                  ${watchToggleBtn}
                   ${vidsrc ? `<a class="urlbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">${escHtml(state.ui?.url_labels?.vidsrc || "S")}</a>` : ""}
                   ${videasy ? `<a class="urlbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">${escHtml(state.ui?.url_labels?.videasy || "E")}</a>` : ""}
                   ${providers.length ? `<span class="urlbtn watch" title="Watch" aria-label="Watch">${escHtml(state.ui?.url_labels?.watch || "▶")}</span>` : ""}
@@ -2908,20 +2939,25 @@ CHANGE NOTES
         const movieWatched = state.watchState ? isMovieWatched({ tmdb_id: it.tmdb_id }) : false;
         const watchedFlag = state.watchState ? watchFlagHtml(movieWatched) : "";
         const watchToggleBtn = canToggle
-          ? `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" role="button" tabindex="0" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`
-          : `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`;
+          ? `<label class="switch movie caltoggle">
+              <input type="checkbox" data-watch-movie-card="1" data-movie="${Number(it.tmdb_id)||0}" ${movieWatched ? "checked" : ""} />
+              <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
+            </label>`
+          : "";
         const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
           ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
           : "";
 
         return `
           <button class="chip" type="button" data-kind="movie" data-movie="${Number(it.tmdb_id)||0}" data-day="${key}" data-idx="${idx}">
-            ${thumb}
+            <div class="thumbwrap">
+              ${thumb}
+              ${watchToggleBtn}
+            </div>
             <div class="lines">
               <div class="t">${escHtml(it.title)}</div>
               <div class="s">Movie • Release</div>
               <div class="urlband">
-                ${watchToggleBtn}
                 ${vidsrc ? `<a class="urlbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="VidSrc" aria-label="VidSrc">${escHtml(state.ui?.url_labels?.vidsrc || "S")}</a>` : ""}
                 ${videasy ? `<a class="urlbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" aria-label="VidEasy">${escHtml(state.ui?.url_labels?.videasy || "E")}</a>` : ""}
                 ${providers.length ? `<span class="urlbtn watch" title="Watch" aria-label="Watch">${escHtml(state.ui?.url_labels?.watch || "▶")}</span>` : ""}
@@ -3077,40 +3113,26 @@ CHANGE NOTES
         e.stopPropagation();
       });
     });
-    $$("[data-watch-episode-btn]").forEach(btn => {
-      btn.addEventListener("click", async (e) => {
+    $$("[data-watch-episode-card]").forEach(inp => {
+      inp.addEventListener("change", async (e) => {
         e.stopPropagation();
-        const showId = Number(btn.getAttribute("data-show") || "0");
-        const seasonNum = Number(btn.getAttribute("data-season") || "0");
-        const episodeNum = Number(btn.getAttribute("data-episode") || "0");
+        const showId = Number(inp.getAttribute("data-show") || "0");
+        const seasonNum = Number(inp.getAttribute("data-season") || "0");
+        const episodeNum = Number(inp.getAttribute("data-episode") || "0");
         if (!Number.isFinite(showId) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
-        const watched = btn.getAttribute("data-watched") === "1";
-        setEpisodeWatched(showId, seasonNum, episodeNum, !watched);
+        setEpisodeWatched(showId, seasonNum, episodeNum, !!inp.checked);
         await saveInputs();
         renderCalendar();
-      });
-      btn.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          btn.click();
-        }
       });
     });
-    $$("[data-watch-movie-btn]").forEach(btn => {
-      btn.addEventListener("click", async (e) => {
+    $$("[data-watch-movie-card]").forEach(inp => {
+      inp.addEventListener("change", async (e) => {
         e.stopPropagation();
-        const movieId = Number(btn.getAttribute("data-movie") || "0");
+        const movieId = Number(inp.getAttribute("data-movie") || "0");
         if (!Number.isFinite(movieId)) return;
-        const watched = btn.getAttribute("data-watched") === "1";
-        setMovieWatched(movieId, !watched);
+        setMovieWatched(movieId, !!inp.checked);
         await saveInputs();
         renderCalendar();
-      });
-      btn.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          btn.click();
-        }
       });
     });
 
@@ -3753,6 +3775,7 @@ CHANGE NOTES
         <div class="epcard" tabindex="0">
           <div class="epimg">
             ${img}
+            ${epToggle}
             <div class="badge">${escHtml(seTag(sNum, eNum))}</div>
           </div>
           <div class="epbody">
@@ -3765,7 +3788,6 @@ CHANGE NOTES
             <div class="epactions">
               ${linkOrDisabled("VidSrc", vsrc)}
               ${linkOrDisabled("VidEasy", vezy)}
-              ${epToggle}
             </div>
           </div>
         </div>`;
