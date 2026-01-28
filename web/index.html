@@ -4,12 +4,12 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.3.2 (2026-01-27)
+  - v1.3.3 (2026-01-27)
 
 CHANGE NOTES
+  - D-pad modal scroll on up/down when focus can't move
+  - availability icon row forced horizontal flow
   - redesigned Shows/Movies filter bar for clarity
-  - D-pad focus navigation + modal focus trap
-  - availability icon row wraps only when needed
 ================================================================================
 -->
 <html lang="en">
@@ -707,6 +707,7 @@ CHANGE NOTES
     .chip .providerrow{
       display:flex;
       flex-wrap:nowrap;
+      flex-direction:row;
       gap:6px;
       align-items:center;
       width:100%;
@@ -716,6 +717,9 @@ CHANGE NOTES
     .chip .providerrow.cal-providers{
       gap:4px;
       flex-wrap:wrap;
+      flex-direction:row;
+      justify-content:flex-start;
+      align-items:center;
       overflow:visible;
       white-space:normal;
     }
@@ -1432,7 +1436,7 @@ CHANGE NOTES
 
 <script>
 (() => {
-  const APP_VERSION = "v1.3.2";
+  const APP_VERSION = "v1.3.3";
 
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
@@ -2300,13 +2304,13 @@ CHANGE NOTES
   function moveFocus(dir){
     const root = activeRoot();
     const focusables = getFocusables(root);
-    if (!focusables.length) return;
+    if (!focusables.length) return false;
     let current = document.activeElement;
     if (!current || !root.contains(current) || !focusables.includes(current)){
       const first = focusables[0];
       first.focus({ preventScroll: true });
       first.scrollIntoView({ block: "nearest", inline: "nearest" });
-      return;
+      return true;
     }
     const crect = current.getBoundingClientRect();
     const cx = crect.left + crect.width / 2;
@@ -2334,7 +2338,15 @@ CHANGE NOTES
     if (best){
       best.focus({ preventScroll: true });
       best.scrollIntoView({ block: "nearest", inline: "nearest" });
+      return true;
     }
+    return false;
+  }
+
+  function scrollActiveModal(dy){
+    const card = activeModalCard();
+    if (!card) return;
+    card.scrollTop += dy;
   }
 
   function trapTabInModal(e){
@@ -4051,7 +4063,11 @@ CHANGE NOTES
     if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown"){
       if (isTypingField(e.target)) return;
       e.preventDefault();
-      moveFocus(e.key);
+      const moved = moveFocus(e.key);
+      if (!moved && isModalOpen()){
+        if (e.key === "ArrowDown") scrollActiveModal(120);
+        if (e.key === "ArrowUp") scrollActiveModal(-120);
+      }
     }
   });
 
