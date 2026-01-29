@@ -23,8 +23,11 @@
     "show_width": 150,
     "movie_width": 150,
     "season_width": 1100,
-    "episode_still_w": 75,
-    "calendar_thumb_w": 80,
+    "episode_still_w": 100,
+
+    # Sets the small left thumbnail width (also impacts --cal-thumb-h because height is derived)
+    # The small poster/thumb on each calendar chip
+    "calendar_thumb_w": 125,
     "hero_poster_w": 230,
     "hero_poster_min": 180,
     "episode_card_w": 320,
@@ -211,7 +214,10 @@
     "calendar_card_density": 0.75,
     "logo_height": 25,
     "provider_logo_height": 25,
-    "url_button_scale": 0.9,
+
+    # Scales the URL buttons (S/E/▶) in chips and link buttons where transform: scale(var(--url-btn-scale)) is used
+    # URL buttons below episode stills
+    "url_button_scale": 0.75,
     "url_button_labels": {
       "vidsrc": "🍿",
       "videasy": "🌭",
