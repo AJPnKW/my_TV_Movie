@@ -28,6 +28,7 @@ import json
 import os
 import sys
 import tempfile
+import mimetypes
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, urlparse
@@ -181,15 +182,24 @@ class Handler(BaseHTTPRequestHandler):
                 _text(self, 404, "Not found")
                 return
             suf = f.suffix.lower()
+            if suf in {".html", ".htm"}:
+                _text(self, 200, f.read_text(encoding="utf-8", errors="replace"), "text/html; charset=utf-8")
+                return
             if suf == ".css":
                 _text(self, 200, f.read_text(encoding="utf-8", errors="replace"), "text/css; charset=utf-8")
                 return
             if suf == ".js":
                 _text(self, 200, f.read_text(encoding="utf-8", errors="replace"), "application/javascript; charset=utf-8")
                 return
+            if suf == ".json":
+                _text(self, 200, f.read_text(encoding="utf-8", errors="replace"), "application/json; charset=utf-8")
+                return
             data = f.read_bytes()
+            ctype, _ = mimetypes.guess_type(str(f))
+            if not ctype:
+                ctype = "application/octet-stream"
             self.send_response(200)
-            self.send_header("Content-Type", "application/octet-stream")
+            self.send_header("Content-Type", ctype)
             self.send_header("Content-Length", str(len(data)))
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
