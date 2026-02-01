@@ -4,12 +4,11 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.4.3 (2026-01-29)
+  - v1.4.1 (2026-01-29)
 
 CHANGE NOTES
-  - Trakt-style action menus (lists/history) on cards + dashboard
-  - eye menu now drives fade/hide filtering
-  - dashboard action icons restored (VidSrc/VidEasy/Local/Watch)
+  - Trakt-inspired layout refinements (shell, cards, filters)
+  - shows page split + shell layout
 ================================================================================
 -->
 <html lang="en">
@@ -17,7 +16,7 @@ CHANGE NOTES
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
-  <title>My TV Hub — Dashboard</title>
+  <title>My TV Hub — Shows</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap");
     :root{
@@ -1746,7 +1745,7 @@ CHANGE NOTES
 
   </style>
 </head>
-<body data-page="dashboard">
+<body data-page="shows">
   <div class="app">
     <div class="top">
       <div class="brand">
@@ -1758,8 +1757,8 @@ CHANGE NOTES
       </div>
 
       <div class="nav" role="tablist" aria-label="Primary">
-        <a class="tab active" data-tab="dashboard" href="./index.html" role="tab" aria-selected="true">Dashboard</a>
-        <a class="tab" data-tab="shows" href="./shows.html" role="tab" aria-selected="false">Shows</a>
+        <a class="tab" data-tab="dashboard" href="./index.html" role="tab" aria-selected="false">Dashboard</a>
+        <a class="tab active" data-tab="shows" href="./shows.html" role="tab" aria-selected="true">Shows</a>
         <a class="tab" data-tab="movies" href="./movies.html" role="tab" aria-selected="false">Movies</a>
         <a class="tab" data-tab="calendar" href="./calendar.html" role="tab" aria-selected="false">Calendar</a>
         <a class="tab" data-tab="discover" href="./discover.html" role="tab" aria-selected="false">Discover</a>
@@ -1776,45 +1775,140 @@ CHANGE NOTES
     <div class="shell">
       <aside class="sidebar" aria-label="Sidebar">
         <div class="side-section">
-          <div class="side-title">My</div>
-          <button class="side-link active" type="button">Shows &amp; Movies</button>
-          <button class="side-link" type="button">Shows</button>
-          <button class="side-link" type="button">Premieres</button>
-          <button class="side-link" type="button">New Shows</button>
-          <button class="side-link" type="button">Finales</button>
-          <button class="side-link" type="button">Movies</button>
-          <button class="side-link" type="button">Streaming</button>
-          <button class="side-link" type="button">DVD &amp; Blu-ray</button>
+          <div class="side-title">Shows</div>
+          <button class="side-link active" type="button">Trending</button>
+          <button class="side-link" type="button">Recommendations</button>
+          <button class="side-link" type="button">Popular</button>
+          <button class="side-link" type="button">Anticipated</button>
+          <button class="side-link" type="button">Watched</button>
+          <button class="side-link" type="button">Libraries</button>
         </div>
         <div class="side-section">
-          <div class="side-title">Filters</div>
-          <button class="side-link" type="button">Watched</button>
+          <div class="side-title">My</div>
           <button class="side-link" type="button">Watchlist</button>
-          <button class="side-link" type="button">Not Watched</button>
-          <button class="side-link" type="button">In Library</button>
+          <button class="side-link" type="button">In Progress</button>
+          <button class="side-link" type="button">Completed</button>
         </div>
       </aside>
       <div class="main">
-        <div id="panel-dashboard" class="panel">
-          <div class="dash">
-            <section class="dashblock">
-              <div class="dashhead">
-                <h2>Up Next</h2>
-                <span class="muted" id="dashNextMeta"></span>
+        <div id="panel-shows" class="panel">
+          <div class="panelhead">
+            <div>
+              <div class="paneltitle">Shows</div>
+              <div class="panelmeta">Browse and filter your collection</div>
+            </div>
+            <div class="panelactions" style="position:relative;">
+              <button id="showsEyeBtn" class="iconpill" type="button" aria-label="View options" data-icon-key="sys_view_options"></button>
+              <button id="showsFilterBtn" class="iconpill" type="button" aria-label="Open filters">Filters ▾</button>
+              <div id="showsEyeMenu" class="eyemenu" aria-hidden="true">
+                <button type="button" data-eye="show_all">Show All</button>
+                <div class="menutitle">Fade</div>
+                <button type="button" data-eye="fade_watched">Watched</button>
+                <button type="button" data-eye="fade_unwatched">Not Watched</button>
+                <button type="button" data-eye="fade_library">In Library</button>
+                <button type="button" data-eye="fade_not_library">Not In Library</button>
+                <button type="button" data-eye="fade_watchlist">Watchlisted</button>
+                <button type="button" data-eye="fade_not_watchlist">Not Watchlisted</button>
+                <button type="button" data-eye="fade_listed">Listed</button>
+                <button type="button" data-eye="fade_not_listed">Not Listed</button>
+                <button type="button" data-eye="fade_rated">Rated</button>
+                <button type="button" data-eye="fade_not_rated">Not Rated</button>
+                <div class="divider"></div>
+                <div class="menutitle">Hide</div>
+                <button type="button" data-eye="hide_watched">Watched</button>
+                <button type="button" data-eye="hide_unwatched">Not Watched</button>
+                <button type="button" data-eye="hide_library">In Library</button>
+                <button type="button" data-eye="hide_not_library">Not In Library</button>
+                <button type="button" data-eye="hide_watchlist">Watchlisted</button>
+                <button type="button" data-eye="hide_not_watchlist">Not Watchlisted</button>
+                <button type="button" data-eye="hide_listed">Listed</button>
+                <button type="button" data-eye="hide_not_listed">Not Listed</button>
+                <button type="button" data-eye="hide_rated">Rated</button>
+                <button type="button" data-eye="hide_not_rated">Not Rated</button>
               </div>
-              <div id="dashUpNext" class="dashrow"></div>
-            </section>
-            <section class="dashblock">
-              <div class="dashhead">
-                <h2>Upcoming Schedule</h2>
-                <span class="muted">Next 7 days</span>
-              </div>
-              <div id="dashSchedule" class="dashlist"></div>
-            </section>
+            </div>
           </div>
+
+          <div id="showsGrid" class="grid" style="--card_min: var(--show_card_min, 240px);"></div>
         </div>
-        <div id="panel-show" class="panel hidden">
-          <div id="showRoot"></div>
+
+        <div id="showsFilterBack" class="drawer-back" aria-hidden="true">
+          <div class="drawer">
+            <div class="drawerhead">
+              <div class="paneltitle" style="font-size:16px;">Filters</div>
+              <button id="showsFilterClose" class="iconpill" type="button">Close</button>
+            </div>
+            <div class="drawerbody">
+              <div class="filtergroup">
+                <div class="filterlabel">Sort</div>
+                <div id="sortShows" class="seg" role="radiogroup">
+                  <button type="button" class="segbtn" data-sort="title">A→Z</button>
+                  <button type="button" class="segbtn" data-sort="title_desc">Z→A</button>
+                  <button type="button" class="segbtn" data-sort="popularity">Pop</button>
+                  <button type="button" class="segbtn" data-sort="vote">Vote</button>
+                  <button type="button" class="segbtn" data-sort="release">Release</button>
+                </div>
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Filter Terms</div>
+                <input id="searchShows" class="input compact" type="search" placeholder="Filter by title or description…" autocomplete="off" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Available to Watch On</div>
+                <input class="input compact" type="search" placeholder="Choose streaming services…" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Genres</div>
+                <div id="filterShowsGenres" class="checklist" role="group"></div>
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Status</div>
+                <input class="input compact" type="search" placeholder="Choose status…" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Watch State</div>
+                <div id="filterShowsWatchStatus" class="checklist" role="group"></div>
+                <div id="filterShowsAvailability" class="seg small" role="radiogroup">
+                  <button type="button" class="segbtn" data-availability="all">All</button>
+                  <button type="button" class="segbtn" data-availability="available">Avail</button>
+                  <button type="button" class="segbtn" data-availability="unreleased">Unreleased</button>
+                </div>
+                <div id="filterShowsWatched" class="seg small" role="radiogroup">
+                  <button type="button" class="segbtn" data-watched="all">All</button>
+                  <button type="button" class="segbtn" data-watched="watched">Watched</button>
+                  <button type="button" class="segbtn" data-watched="unwatched">Unwatched</button>
+                </div>
+                <div id="filterShowsWatchlist" class="seg" role="radiogroup">
+                  <button type="button" class="segbtn" data-watchlist="all">All</button>
+                  <button type="button" class="segbtn" data-watchlist="watchlist">On List</button>
+                </div>
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Release</div>
+                <input id="filterShowsYear" class="input compact" type="number" min="1900" max="2100" placeholder="Year" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Countries</div>
+                <input class="input compact" type="search" placeholder="Choose countries…" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Networks</div>
+                <input class="input compact" type="search" placeholder="Choose networks…" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Studios</div>
+                <input class="input compact" type="search" placeholder="Choose studios…" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Runtime (0–500 min)</div>
+                <input class="input compact" type="range" min="0" max="500" value="0" />
+              </div>
+              <div class="filtergroup">
+                <div class="filterlabel">Site Ratings</div>
+                <input class="input compact" type="range" min="0" max="100" value="0" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -4,12 +4,11 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.4.3 (2026-01-29)
+  - v1.4.1 (2026-01-29)
 
 CHANGE NOTES
-  - Trakt-style action menus (lists/history) on cards + dashboard
-  - eye menu now drives fade/hide filtering
-  - dashboard action icons restored (VidSrc/VidEasy/Local/Watch)
+  - Trakt-inspired layout refinements (shell, cards, filters)
+  - discover page split + shell layout
 ================================================================================
 -->
 <html lang="en">
@@ -17,7 +16,7 @@ CHANGE NOTES
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
-  <title>My TV Hub — Dashboard</title>
+  <title>My TV Hub — Discover</title>
   <style>
     @import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800;900&display=swap");
     :root{
@@ -1746,7 +1745,7 @@ CHANGE NOTES
 
   </style>
 </head>
-<body data-page="dashboard">
+<body data-page="discover">
   <div class="app">
     <div class="top">
       <div class="brand">
@@ -1758,11 +1757,11 @@ CHANGE NOTES
       </div>
 
       <div class="nav" role="tablist" aria-label="Primary">
-        <a class="tab active" data-tab="dashboard" href="./index.html" role="tab" aria-selected="true">Dashboard</a>
+        <a class="tab" data-tab="dashboard" href="./index.html" role="tab" aria-selected="false">Dashboard</a>
         <a class="tab" data-tab="shows" href="./shows.html" role="tab" aria-selected="false">Shows</a>
         <a class="tab" data-tab="movies" href="./movies.html" role="tab" aria-selected="false">Movies</a>
         <a class="tab" data-tab="calendar" href="./calendar.html" role="tab" aria-selected="false">Calendar</a>
-        <a class="tab" data-tab="discover" href="./discover.html" role="tab" aria-selected="false">Discover</a>
+        <a class="tab active" data-tab="discover" href="./discover.html" role="tab" aria-selected="true">Discover</a>
         <a class="tab" data-tab="config" href="./config.html" role="tab" aria-selected="false">Config</a>
       </div>
 
@@ -1776,45 +1775,26 @@ CHANGE NOTES
     <div class="shell">
       <aside class="sidebar" aria-label="Sidebar">
         <div class="side-section">
-          <div class="side-title">My</div>
-          <button class="side-link active" type="button">Shows &amp; Movies</button>
-          <button class="side-link" type="button">Shows</button>
-          <button class="side-link" type="button">Premieres</button>
-          <button class="side-link" type="button">New Shows</button>
-          <button class="side-link" type="button">Finales</button>
-          <button class="side-link" type="button">Movies</button>
-          <button class="side-link" type="button">Streaming</button>
-          <button class="side-link" type="button">DVD &amp; Blu-ray</button>
+          <div class="side-title">Discover</div>
+          <button class="side-link active" type="button">Trending</button>
+          <button class="side-link" type="button">Popular</button>
+          <button class="side-link" type="button">Anticipated</button>
+          <button class="side-link" type="button">Recommended</button>
         </div>
         <div class="side-section">
           <div class="side-title">Filters</div>
-          <button class="side-link" type="button">Watched</button>
-          <button class="side-link" type="button">Watchlist</button>
-          <button class="side-link" type="button">Not Watched</button>
-          <button class="side-link" type="button">In Library</button>
+          <button class="side-link" type="button">Movies</button>
+          <button class="side-link" type="button">Shows</button>
+          <button class="side-link" type="button">Networks</button>
+          <button class="side-link" type="button">Studios</button>
         </div>
       </aside>
       <div class="main">
-        <div id="panel-dashboard" class="panel">
-          <div class="dash">
-            <section class="dashblock">
-              <div class="dashhead">
-                <h2>Up Next</h2>
-                <span class="muted" id="dashNextMeta"></span>
-              </div>
-              <div id="dashUpNext" class="dashrow"></div>
-            </section>
-            <section class="dashblock">
-              <div class="dashhead">
-                <h2>Upcoming Schedule</h2>
-                <span class="muted">Next 7 days</span>
-              </div>
-              <div id="dashSchedule" class="dashlist"></div>
-            </section>
+        <div id="panel-discover" class="panel">
+          <div style="padding:12px;">
+            <div style="font-weight:900;font-size:18px;margin-bottom:6px;">Discover</div>
+            <div class="muted">This page will be modeled after Trakt’s Discover layout in the next pass.</div>
           </div>
-        </div>
-        <div id="panel-show" class="panel hidden">
-          <div id="showRoot"></div>
         </div>
       </div>
     </div>

@@ -607,7 +607,7 @@ DATE: 2026-01-22
      - Poster thumb between twisty and title
      - Two-line “hero row”
        Line1: Title YEAR • tmdb:ID • Genres
-       Line2: ★ rating • # seasons • Status • Released/First air date
+       Line2: rating • # seasons • Status • Released/First air date
      - Removes imdb from display
      - Adds button line at show level (Vidsrc/Videasy) using prebuilt show.links
   ============================================================================ */
@@ -636,7 +636,7 @@ DATE: 2026-01-22
     if (genres) line1Parts.push(genres);
 
     const line2Parts = [];
-    if (rating) line2Parts.push("★ " + rating);
+    if (rating) line2Parts.push("Rating " + rating);
     line2Parts.push((seasons.length ? seasons.length : 0) + " seasons");
     if (status) line2Parts.push(status);
     if (firstAir) line2Parts.push("First Air " + firstAir);
@@ -711,7 +711,7 @@ DATE: 2026-01-22
     if (genres) line1Parts.push(genres);
 
     const line2Parts = [];
-    if (rating) line2Parts.push("★ " + rating);
+    if (rating) line2Parts.push("Rating " + rating);
     if (status) line2Parts.push(status);
     if (rel) line2Parts.push("Released " + rel);
     if (rt) line2Parts.push(rt);

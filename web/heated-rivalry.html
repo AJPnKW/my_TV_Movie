@@ -1084,7 +1084,7 @@ NOTES:
           <div class="pill"><span class="pill-dot"></span>Drama</div>
           <div class="pill"><span class="pill-dot"></span>Romance</div>
           <div class="pill"><span class="pill-dot"></span>Sports</div>
-          <div class="pill pill-rating">★ 7.6</div>
+          <div class="pill pill-rating"><span class="icon" data-icon-key="meta_rating_summary"></span> 7.6</div>
           <div class="pill pill-network">Crave</div>
           <div class="pill">Premiered Nov 28, 2025</div>
         </div>
@@ -1097,13 +1097,13 @@ NOTES:
           <a class="ext-link ext-link-tmdb"
              href="https://www.themoviedb.org/tv/242783-heated-rivalry"
              target="_blank" rel="noopener noreferrer">
-            <span class="icon">◎</span>
+            <span class="icon" data-icon-key="meta_tmdb"></span>
             <span class="label">TMDB</span>
           </a>
           <a class="ext-link ext-link-rt"
              href="https://www.rottentomatoes.com/tv/heated_rivalry"
              target="_blank" rel="noopener noreferrer">
-            <span class="icon">🍅</span>
+            <span class="icon" data-icon-key="meta_rt_critics"></span>
             <span class="label">Rotten Tomatoes</span>
           </a>
         </div>
@@ -1170,6 +1170,82 @@ NOTES:
   
   <!-- JAVASCRIPT ENGINE -->
   <script>
+    function stripJsonComments(input){
+      let out = "";
+      let inStr = false;
+      let esc = false;
+      let inLine = false;
+      let inBlock = false;
+      for (let i = 0; i < input.length; i++){
+        const c = input[i];
+        const n = input[i + 1];
+        if (inLine){
+          if (c === "\n"){
+            inLine = false;
+            out += c;
+          }
+          continue;
+        }
+        if (inBlock){
+          if (c === "*" && n === "/"){
+            inBlock = false;
+            i++;
+          }
+          continue;
+        }
+        if (inStr){
+          out += c;
+          if (esc){
+            esc = false;
+          } else if (c === "\\"){
+            esc = true;
+          } else if (c === "\""){
+            inStr = false;
+          }
+          continue;
+        }
+        if (c === "\""){
+          inStr = true;
+          out += c;
+          continue;
+        }
+        if (c === "/" && n === "/"){
+          inLine = true;
+          i++;
+          continue;
+        }
+        if (c === "/" && n === "*"){
+          inBlock = true;
+          i++;
+          continue;
+        }
+        out += c;
+      }
+      return out;
+    }
+
+    function parseJsonc(text){
+      return JSON.parse(stripJsonComments(text));
+    }
+
+    async function applyIcons(){
+      try{
+        const res = await fetch("./config.json", { cache: "no-store" });
+        if (!res.ok) return;
+        const cfg = parseJsonc(await res.text());
+        const icons = cfg && cfg.icons ? cfg.icons : {};
+        document.querySelectorAll("[data-icon-key]").forEach(el => {
+          const key = el.getAttribute("data-icon-key");
+          const icon = icons[key]?.icon;
+          if (icon) el.textContent = icon;
+        });
+      }catch(_){
+        // ignore icon load errors
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", applyIcons);
+
     const EPISODES = [
       {
         season: 1,
@@ -1436,7 +1512,7 @@ NOTES:
         const watchBtn = document.createElement("button");
         watchBtn.type = "button";
         watchBtn.className = "btn-ghost";
-        watchBtn.innerHTML = `<span class="btn-pill-icon">▶</span><span>Watch</span>`;
+        watchBtn.innerHTML = `<span class="btn-pill-icon" data-icon-key="action_play"></span><span>Watch</span>`;
         watchBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           window.open(driveWatchUrl(ep.driveId), "_blank", "noopener,noreferrer");

@@ -1,14 +1,61 @@
+// ========================================================================
+// ICON SYSTEM — MASTER DOCUMENTATION
+// ========================================================================
+//
+// This section defines the complete icon vocabulary for the media dashboard.
+// All icons used anywhere in the system MUST be defined here.
+//
+// PURPOSE:
+//   - Centralize icon definitions
+//   - Ensure deterministic behavior across UI, scripts, and controller logic
+//   - Prevent icon overloading or duplication
+//   - Provide full documentation for each icon
+//
+// HOW ICONS ARE USED:
+//   - UI components reference icons via config.icons.<key>.icon
+//   - Scripts reference icons via config.icons.<key>
+//   - No icon may be hardcoded anywhere else in the codebase
+//
+// FUNCTION TYPE BEHAVIOR:
+//   - "single-click": instant action (e.g., toggle watched)
+//   - "popup": opens a modal or multi-choice dialog
+//   - "long-press": opens extended menu (D-pad compatible)
+//   - "link": opens external or internal URL
+//   - "function": triggers internal logic (e.g., sync)
+//
+// D-PAD BEHAVIOR:
+//   - Single-click actions activate on press
+//   - Popup actions open a modal or menu on press
+//   - Long-press actions open a secondary menu on press
+//   - Link actions open the associated URL on press
+//
+// TRAKT SYNC:
+//   - Sync actions map to Trakt endpoints or local proxy actions
+//   - All sync actions must be deterministic and idempotent
+//
+// CUSTOM MEDIA SOURCES:
+//   - Vidrsc and VidEasy are complementary icons
+//   - Both use streaming base URLs + TMDB slug
+//
+// ADDING NEW ICONS:
+//   - Add a full documentation block above the icon entry
+//   - Ensure the icon is unique and not overloaded
+//   - Define purpose, functionType, and target
+//   - Update scripts and UI to reference the new icon key
+//
+// ========================================================================
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.4.2",
-    "updated_utc": "2026-01-27T02:30:00Z",
+    "version": "v1.4.4",
+    "updated_utc": "2026-01-31T00:00:00Z",
     "notes": [
-      "JSON cannot contain comments. Documentation is embedded in _meta + ui_palette.docs.",
+      "JSONC is required for this file. Documentation uses line comments.",
       "Palette system is a registry: ui_palette.palettes[ui_palette.active] is applied at runtime.",
       "Apply order: tokens -> derived -> alias_to_legacy_vars. This preserves existing CSS selectors (--bg/--panel/etc) without refactors.",
       "Expanded token coverage: divider, overlay (modal scrim), disabled/readonly surfaces, slider tokens (track/fill/thumb), field backgrounds.",
-      "Day palette tuned for TV: larger separation between bg/surfaces + stronger borders to avoid washed-out look."
+      "Day palette tuned for TV: larger separation between bg/surfaces + stronger borders to avoid washed-out look.",
+      "Icon system is authoritative: all icons must be defined in icons and referenced via config.icons.<key>.icon."
     ]
   },
 
@@ -19,14 +66,1026 @@
     "videasy_movie": "https://player.videasy.net/movie/"
   },
 
+  "trakt_sync": {
+    "enabled": false,
+    "endpoint": "/api/trakt/sync"
+  },
+
+  "icons": {
+    // ------------------------------------------------------------
+    // Icon: ✔️
+    // Name: Mark Watched
+    // Purpose: Mark item watched / remove watched in Trakt history
+    // Function Type: popup
+    // Target: trakt:history.add|remove (via local sync)
+    // Category: Trakt Sync
+    // Trakt Sync: yes
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens watched history menu on press
+    // Notes: Used for history toggle menu
+    // ------------------------------------------------------------
+    "trakt_mark_watched": {
+      "icon": "✔️",
+      "name": "Mark Watched",
+      "purpose": "Mark item watched / remove watched",
+      "functionType": "popup",
+      "target": "trakt:history.add|remove"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🕒
+    // Name: Watch Date
+    // Purpose: Choose date for watched action
+    // Function Type: popup
+    // Target: trakt:history.add (with date)
+    // Category: Trakt Sync
+    // Trakt Sync: yes
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens watch-date menu on press
+    // Notes: Used for watch-date options
+    // ------------------------------------------------------------
+    "trakt_watch_date": {
+      "icon": "🕒",
+      "name": "Watch Date",
+      "purpose": "Choose watch date",
+      "functionType": "popup",
+      "target": "trakt:history.add(date)"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ➕
+    // Name: Add to List
+    // Purpose: Add item to a Trakt list
+    // Function Type: popup
+    // Target: trakt:lists.add
+    // Category: Trakt Sync
+    // Trakt Sync: yes
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens list picker on press
+    // Notes: Used in list management menus
+    // ------------------------------------------------------------
+    "trakt_add_to_list": {
+      "icon": "➕",
+      "name": "Add to List",
+      "purpose": "Add item to list",
+      "functionType": "popup",
+      "target": "trakt:lists.add"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🔖
+    // Name: Watchlist
+    // Purpose: Toggle Trakt watchlist entry
+    // Function Type: function
+    // Target: trakt:watchlist.add|remove
+    // Category: Trakt Sync
+    // Trakt Sync: yes
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Toggles watchlist on press
+    // Notes: Deterministic add/remove
+    // ------------------------------------------------------------
+    "trakt_watchlist": {
+      "icon": "🔖",
+      "name": "Watchlist",
+      "purpose": "Toggle watchlist",
+      "functionType": "function",
+      "target": "trakt:watchlist.add|remove"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ❤️
+    // Name: Rate / Like
+    // Purpose: Rate item in Trakt
+    // Function Type: popup
+    // Target: trakt:ratings
+    // Category: Trakt Sync
+    // Trakt Sync: yes
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens rating dialog on press
+    // Notes: Rating values stored with sync
+    // ------------------------------------------------------------
+    "trakt_rate_like": {
+      "icon": "❤️",
+      "name": "Rate / Like",
+      "purpose": "Rate item",
+      "functionType": "popup",
+      "target": "trakt:ratings"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🗑️
+    // Name: Remove from History
+    // Purpose: Remove watch history entry
+    // Function Type: function
+    // Target: trakt:history.remove
+    // Category: Trakt Sync
+    // Trakt Sync: yes
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Removes history on press
+    // Notes: Used for history cleanup
+    // ------------------------------------------------------------
+    "trakt_remove_history": {
+      "icon": "🗑️",
+      "name": "Remove from History",
+      "purpose": "Remove watch history",
+      "functionType": "function",
+      "target": "trakt:history.remove"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📄
+    // Name: Lists
+    // Purpose: Open list management menu
+    // Function Type: long-press
+    // Target: popup:lists_menu
+    // Category: Trakt Sync
+    // Trakt Sync: yes
+    // Popup Behavior: yes
+    // Long-Press Behavior: yes
+    // D-Pad Behavior: Opens lists menu on press
+    // Notes: Menu contains watchlist + list actions
+    // ------------------------------------------------------------
+    "trakt_lists": {
+      "icon": "📄",
+      "name": "Lists",
+      "purpose": "Open list menu",
+      "functionType": "long-press",
+      "target": "popup:lists_menu"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📊
+    // Name: Dashboard
+    // Purpose: Navigate to dashboard
+    // Function Type: link
+    // Target: #dashboard
+    // Category: Navigation
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Navigates on press
+    // Notes: Navigation icon
+    // ------------------------------------------------------------
+    "nav_dashboard": {
+      "icon": "📊",
+      "name": "Dashboard",
+      "purpose": "Go to dashboard",
+      "functionType": "link",
+      "target": "#dashboard"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📺
+    // Name: Shows
+    // Purpose: Navigate to shows
+    // Function Type: link
+    // Target: #shows
+    // Category: Navigation
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Navigates on press
+    // Notes: Navigation icon
+    // ------------------------------------------------------------
+    "nav_shows": {
+      "icon": "📺",
+      "name": "Shows",
+      "purpose": "Go to shows",
+      "functionType": "link",
+      "target": "#shows"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🎬
+    // Name: Movies
+    // Purpose: Navigate to movies
+    // Function Type: link
+    // Target: #movies
+    // Category: Navigation
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Navigates on press
+    // Notes: Navigation icon
+    // ------------------------------------------------------------
+    "nav_movies": {
+      "icon": "🎬",
+      "name": "Movies",
+      "purpose": "Go to movies",
+      "functionType": "link",
+      "target": "#movies"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📆
+    // Name: Calendar
+    // Purpose: Navigate to calendar
+    // Function Type: link
+    // Target: #calendar
+    // Category: Navigation
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Navigates on press
+    // Notes: Navigation icon
+    // ------------------------------------------------------------
+    "nav_calendar": {
+      "icon": "📆",
+      "name": "Calendar",
+      "purpose": "Go to calendar",
+      "functionType": "link",
+      "target": "#calendar"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🧭
+    // Name: Discover
+    // Purpose: Navigate to discover
+    // Function Type: link
+    // Target: #discover
+    // Category: Navigation
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Navigates on press
+    // Notes: Navigation icon
+    // ------------------------------------------------------------
+    "nav_discover": {
+      "icon": "🧭",
+      "name": "Discover",
+      "purpose": "Go to discover",
+      "functionType": "link",
+      "target": "#discover"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ⟨
+    // Name: Previous
+    // Purpose: Navigate to previous range/month
+    // Function Type: single-click
+    // Target: internal:navigate_previous
+    // Category: Navigation
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Moves to previous on press
+    // Notes: Used in calendar prev button
+    // ------------------------------------------------------------
+    "nav_prev": {
+      "icon": "⟨",
+      "name": "Previous",
+      "purpose": "Navigate previous",
+      "functionType": "single-click",
+      "target": "internal:navigate_previous"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ⟩
+    // Name: Next
+    // Purpose: Navigate to next range/month
+    // Function Type: single-click
+    // Target: internal:navigate_next
+    // Category: Navigation
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Moves to next on press
+    // Notes: Used in calendar next button
+    // ------------------------------------------------------------
+    "nav_next": {
+      "icon": "⟩",
+      "name": "Next",
+      "purpose": "Navigate next",
+      "functionType": "single-click",
+      "target": "internal:navigate_next"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🟣
+    // Name: Trakt
+    // Purpose: External metadata provider
+    // Function Type: link
+    // Target: https://trakt.tv
+    // Category: External Metadata
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens Trakt site on press
+    // Notes: Provider link
+    // ------------------------------------------------------------
+    "meta_trakt": {
+      "icon": "🟣",
+      "name": "Trakt",
+      "purpose": "Trakt provider link",
+      "functionType": "link",
+      "target": "https://trakt.tv"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🎞️
+    // Name: TMDB
+    // Purpose: External metadata provider
+    // Function Type: link
+    // Target: https://www.themoviedb.org
+    // Category: External Metadata
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens TMDB on press
+    // Notes: Provider link
+    // ------------------------------------------------------------
+    "meta_tmdb": {
+      "icon": "🎞️",
+      "name": "TMDB",
+      "purpose": "TMDB provider link",
+      "functionType": "link",
+      "target": "https://www.themoviedb.org"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🎯
+    // Name: IMDB
+    // Purpose: External metadata provider
+    // Function Type: link
+    // Target: https://www.imdb.com
+    // Category: External Metadata
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens IMDb on press
+    // Notes: Provider link
+    // ------------------------------------------------------------
+    "meta_imdb": {
+      "icon": "🎯",
+      "name": "IMDB",
+      "purpose": "IMDb provider link",
+      "functionType": "link",
+      "target": "https://www.imdb.com"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🍅
+    // Name: Rotten Tomatoes Critics
+    // Purpose: External critic ratings
+    // Function Type: link
+    // Target: https://www.rottentomatoes.com
+    // Category: External Metadata
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens Rotten Tomatoes on press
+    // Notes: Critic score link
+    // ------------------------------------------------------------
+    "meta_rt_critics": {
+      "icon": "🍅",
+      "name": "Rotten Tomatoes Critics",
+      "purpose": "Critic ratings link",
+      "functionType": "link",
+      "target": "https://www.rottentomatoes.com"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 👥
+    // Name: Rotten Tomatoes Audience
+    // Purpose: External audience ratings
+    // Function Type: link
+    // Target: https://www.rottentomatoes.com
+    // Category: External Metadata
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens Rotten Tomatoes on press
+    // Notes: Audience score link
+    // ------------------------------------------------------------
+    "meta_rt_audience": {
+      "icon": "👥",
+      "name": "Rotten Tomatoes Audience",
+      "purpose": "Audience ratings link",
+      "functionType": "link",
+      "target": "https://www.rottentomatoes.com"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ⭐
+    // Name: Ratings Summary
+    // Purpose: Display rating summary
+    // Function Type: function
+    // Target: internal:ratings_summary
+    // Category: External Metadata
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Highlights rating summary on press
+    // Notes: Used in rating pills
+    // ------------------------------------------------------------
+    "meta_rating_summary": {
+      "icon": "⭐",
+      "name": "Ratings Summary",
+      "purpose": "Rating summary",
+      "functionType": "function",
+      "target": "internal:ratings_summary"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🍿
+    // Name: Vidrsc
+    // Purpose: Custom media source (Vidrsc)
+    // Function Type: link
+    // Target: streaming.vidsrc_tv|movie + <tmdb_id>
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens Vidrsc link on press
+    // Notes: Complementary to VidEasy, UTF-8 safe, controller friendly
+    // ------------------------------------------------------------
+    "media_vidrsc": {
+      "icon": "🍿",
+      "name": "Vidrsc",
+      "purpose": "Vidrsc stream link",
+      "functionType": "link",
+      "target": "streaming.vidsrc_* + tmdb_id"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🌭
+    // Name: VidEasy
+    // Purpose: Custom media source (VidEasy)
+    // Function Type: link
+    // Target: streaming.videasy_tv|movie + <tmdb_id>
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens VidEasy link on press
+    // Notes: Complementary to Vidrsc, UTF-8 safe, controller friendly
+    // ------------------------------------------------------------
+    "media_videasy": {
+      "icon": "🌭",
+      "name": "VidEasy",
+      "purpose": "VidEasy stream link",
+      "functionType": "link",
+      "target": "streaming.videasy_* + tmdb_id"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 💾
+    // Name: Local File
+    // Purpose: Local media file
+    // Function Type: link
+    // Target: links.local_media
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens local file link on press
+    // Notes: Local media link
+    // ------------------------------------------------------------
+    "media_local_file": {
+      "icon": "💾",
+      "name": "Local File",
+      "purpose": "Local media link",
+      "functionType": "link",
+      "target": "links.local_media"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ☁️
+    // Name: Cloud File
+    // Purpose: Cloud media file
+    // Function Type: link
+    // Target: links.cloud
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens cloud link on press
+    // Notes: Cloud media link
+    // ------------------------------------------------------------
+    "media_cloud_file": {
+      "icon": "☁️",
+      "name": "Cloud File",
+      "purpose": "Cloud media link",
+      "functionType": "link",
+      "target": "links.cloud"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📡
+    // Name: IPTV Stream
+    // Purpose: IPTV stream link
+    // Function Type: link
+    // Target: links.iptv
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens IPTV link on press
+    // Notes: IPTV source
+    // ------------------------------------------------------------
+    "media_iptv": {
+      "icon": "📡",
+      "name": "IPTV Stream",
+      "purpose": "IPTV stream link",
+      "functionType": "link",
+      "target": "links.iptv"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ⏺️
+    // Name: DVR Recording
+    // Purpose: DVR recording link
+    // Function Type: link
+    // Target: links.dvr
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens DVR link on press
+    // Notes: DVR source
+    // ------------------------------------------------------------
+    "media_dvr": {
+      "icon": "⏺️",
+      "name": "DVR Recording",
+      "purpose": "DVR recording link",
+      "functionType": "link",
+      "target": "links.dvr"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🔗
+    // Name: Provider Page
+    // Purpose: Provider landing page
+    // Function Type: link
+    // Target: links.provider_page
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens provider page on press
+    // Notes: Provider information link
+    // ------------------------------------------------------------
+    "media_provider_page": {
+      "icon": "🔗",
+      "name": "Provider Page",
+      "purpose": "Provider page link",
+      "functionType": "link",
+      "target": "links.provider_page"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🗂️
+    // Name: Media Folder
+    // Purpose: Folder containing media assets
+    // Function Type: link
+    // Target: links.media_folder
+    // Category: Custom Media Source
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens folder on press
+    // Notes: Local folder pointer
+    // ------------------------------------------------------------
+    "media_media_folder": {
+      "icon": "🗂️",
+      "name": "Media Folder",
+      "purpose": "Media folder link",
+      "functionType": "link",
+      "target": "links.media_folder"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ▶️
+    // Name: Play
+    // Purpose: Play or watch now
+    // Function Type: single-click
+    // Target: internal:play_or_watch
+    // Category: Item-Level Action
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Activates play on press
+    // Notes: Used for watch actions
+    // ------------------------------------------------------------
+    "action_play": {
+      "icon": "▶️",
+      "name": "Play",
+      "purpose": "Play or watch now",
+      "functionType": "single-click",
+      "target": "internal:play_or_watch"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ℹ️
+    // Name: Info
+    // Purpose: Open details popup
+    // Function Type: popup
+    // Target: popup:details
+    // Category: Item-Level Action
+    // Trakt Sync: no
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens details popup on press
+    // Notes: Used for show/movie details
+    // ------------------------------------------------------------
+    "action_info": {
+      "icon": "ℹ️",
+      "name": "Info",
+      "purpose": "Open details",
+      "functionType": "popup",
+      "target": "popup:details"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🌟
+    // Name: Ratings
+    // Purpose: Open ratings popup
+    // Function Type: popup
+    // Target: popup:rate
+    // Category: Item-Level Action
+    // Trakt Sync: yes
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens rating popup on press
+    // Notes: Maps to Trakt rating when synced
+    // ------------------------------------------------------------
+    "action_ratings": {
+      "icon": "🌟",
+      "name": "Ratings",
+      "purpose": "Open ratings",
+      "functionType": "popup",
+      "target": "popup:rate"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ☰
+    // Name: Lists (Item Action)
+    // Purpose: Open item list menu
+    // Function Type: long-press
+    // Target: popup:lists_menu
+    // Category: Item-Level Action
+    // Trakt Sync: yes
+    // Popup Behavior: yes
+    // Long-Press Behavior: yes
+    // D-Pad Behavior: Opens lists menu on press
+    // Notes: Item-level list menu
+    // ------------------------------------------------------------
+    "action_lists": {
+      "icon": "☰",
+      "name": "Lists",
+      "purpose": "Open lists menu",
+      "functionType": "long-press",
+      "target": "popup:lists_menu"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 👁️
+    // Name: Watched
+    // Purpose: Toggle watched status
+    // Function Type: single-click
+    // Target: internal:toggle_watched
+    // Category: Item-Level Action
+    // Trakt Sync: yes
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Toggles watched on press
+    // Notes: Used for quick watched toggle
+    // ------------------------------------------------------------
+    "action_watched": {
+      "icon": "👁️",
+      "name": "Watched",
+      "purpose": "Toggle watched",
+      "functionType": "single-click",
+      "target": "internal:toggle_watched"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ✚
+    // Name: Add
+    // Purpose: Add item
+    // Function Type: single-click
+    // Target: internal:add
+    // Category: Item-Level Action
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Adds item on press
+    // Notes: Generic add action
+    // ------------------------------------------------------------
+    "action_add": {
+      "icon": "✚",
+      "name": "Add",
+      "purpose": "Add item",
+      "functionType": "single-click",
+      "target": "internal:add"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ✖️
+    // Name: Remove
+    // Purpose: Remove item
+    // Function Type: single-click
+    // Target: internal:remove
+    // Category: Item-Level Action
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Removes item on press
+    // Notes: Generic remove action
+    // ------------------------------------------------------------
+    "action_remove": {
+      "icon": "✖️",
+      "name": "Remove",
+      "purpose": "Remove item",
+      "functionType": "single-click",
+      "target": "internal:remove"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🌐
+    // Name: External Links
+    // Purpose: Open external links popup
+    // Function Type: popup
+    // Target: popup:external_links
+    // Category: Item-Level Action
+    // Trakt Sync: no
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens external links on press
+    // Notes: Aggregates external links
+    // ------------------------------------------------------------
+    "action_external_links": {
+      "icon": "🌐",
+      "name": "External Links",
+      "purpose": "Open external links",
+      "functionType": "popup",
+      "target": "popup:external_links"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 👀
+    // Name: View Options
+    // Purpose: Open view/filter options
+    // Function Type: popup
+    // Target: popup:view_options
+    // Category: System Utility
+    // Trakt Sync: no
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens view options on press
+    // Notes: Used for eye menu buttons
+    // ------------------------------------------------------------
+    "sys_view_options": {
+      "icon": "👀",
+      "name": "View Options",
+      "purpose": "Open view options",
+      "functionType": "popup",
+      "target": "popup:view_options"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ⚙️
+    // Name: Settings
+    // Purpose: Open settings
+    // Function Type: popup
+    // Target: popup:settings
+    // Category: System Utility
+    // Trakt Sync: no
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens settings on press
+    // Notes: System utility
+    // ------------------------------------------------------------
+    "sys_settings": {
+      "icon": "⚙️",
+      "name": "Settings",
+      "purpose": "Open settings",
+      "functionType": "popup",
+      "target": "popup:settings"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🔄
+    // Name: Sync
+    // Purpose: Run sync process
+    // Function Type: function
+    // Target: internal:sync
+    // Category: System Utility
+    // Trakt Sync: yes
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Starts sync on press
+    // Notes: Trakt sync trigger
+    // ------------------------------------------------------------
+    "sys_sync": {
+      "icon": "🔄",
+      "name": "Sync",
+      "purpose": "Run sync",
+      "functionType": "function",
+      "target": "internal:sync"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🧩
+    // Name: Add-on
+    // Purpose: Open add-on manager
+    // Function Type: popup
+    // Target: popup:addons
+    // Category: System Utility
+    // Trakt Sync: no
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens add-ons on press
+    // Notes: Extension management
+    // ------------------------------------------------------------
+    "sys_addon": {
+      "icon": "🧩",
+      "name": "Add-on",
+      "purpose": "Open add-ons",
+      "functionType": "popup",
+      "target": "popup:addons"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🗺️
+    // Name: Navigation
+    // Purpose: System navigation control
+    // Function Type: function
+    // Target: internal:navigation
+    // Category: System Utility
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Activates navigation on press
+    // Notes: Used for D-pad routing
+    // ------------------------------------------------------------
+    "sys_navigation": {
+      "icon": "🗺️",
+      "name": "Navigation",
+      "purpose": "Navigation control",
+      "functionType": "function",
+      "target": "internal:navigation"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📚
+    // Name: Collections
+    // Purpose: Open collections
+    // Function Type: popup
+    // Target: popup:collections
+    // Category: System Utility
+    // Trakt Sync: no
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens collections on press
+    // Notes: Collections view
+    // ------------------------------------------------------------
+    "sys_collections": {
+      "icon": "📚",
+      "name": "Collections",
+      "purpose": "Open collections",
+      "functionType": "popup",
+      "target": "popup:collections"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📎
+    // Name: Attach
+    // Purpose: Attach asset or note
+    // Function Type: function
+    // Target: internal:attach
+    // Category: System Utility
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Attaches on press
+    // Notes: Attachment helper
+    // ------------------------------------------------------------
+    "sys_attach": {
+      "icon": "📎",
+      "name": "Attach",
+      "purpose": "Attach asset",
+      "functionType": "function",
+      "target": "internal:attach"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 📶
+    // Name: Network
+    // Purpose: Network status
+    // Function Type: function
+    // Target: internal:network_status
+    // Category: System Utility
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Shows network info on press
+    // Notes: Status indicator
+    // ------------------------------------------------------------
+    "sys_network": {
+      "icon": "📶",
+      "name": "Network",
+      "purpose": "Network status",
+      "functionType": "function",
+      "target": "internal:network_status"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: 🧪
+    // Name: Experimental Source
+    // Purpose: Experimental media source placeholder
+    // Function Type: function
+    // Target: internal:experimental
+    // Category: Future-Proof
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Toggles experimental features on press
+    // Notes: Placeholder icon
+    // ------------------------------------------------------------
+    "future_experimental_source": {
+      "icon": "🧪",
+      "name": "Experimental Source",
+      "purpose": "Experimental source",
+      "functionType": "function",
+      "target": "internal:experimental"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: β
+    // Name: Beta Feature
+    // Purpose: Beta feature placeholder
+    // Function Type: function
+    // Target: internal:beta
+    // Category: Future-Proof
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Toggles beta features on press
+    // Notes: Placeholder icon
+    // ------------------------------------------------------------
+    "future_beta_feature": {
+      "icon": "β",
+      "name": "Beta Feature",
+      "purpose": "Beta feature",
+      "functionType": "function",
+      "target": "internal:beta"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ❔
+    // Name: User Choice
+    // Purpose: User selection placeholder
+    // Function Type: popup
+    // Target: popup:user_choice
+    // Category: Future-Proof
+    // Trakt Sync: no
+    // Popup Behavior: yes
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Opens user choice on press
+    // Notes: Placeholder icon
+    // ------------------------------------------------------------
+    "future_user_choice": {
+      "icon": "❔",
+      "name": "User Choice",
+      "purpose": "User selection",
+      "functionType": "popup",
+      "target": "popup:user_choice"
+    },
+
+    // ------------------------------------------------------------
+    // Icon: ⛔
+    // Name: System Block
+    // Purpose: System block placeholder
+    // Function Type: function
+    // Target: internal:block
+    // Category: Future-Proof
+    // Trakt Sync: no
+    // Popup Behavior: no
+    // Long-Press Behavior: no
+    // D-Pad Behavior: Blocks action on press
+    // Notes: Placeholder icon
+    // ------------------------------------------------------------
+    "future_system_block": {
+      "icon": "⛔",
+      "name": "System Block",
+      "purpose": "System block",
+      "functionType": "function",
+      "target": "internal:block"
+    }
+  },
+
   "image_sizes": {
     "show_width": 150,
     "movie_width": 150,
     "season_width": 1100,
     "episode_still_w": 100,
-
-    # Sets the small left thumbnail width (also impacts --cal-thumb-h because height is derived)
-    # The small poster/thumb on each calendar chip
     "calendar_thumb_w": 125,
     "hero_poster_w": 230,
     "hero_poster_min": 180,
@@ -210,19 +1269,9 @@
   },
 
   "ui_tuning": {
-    "calendar_button_scale": 0.75,
-    "calendar_card_density": 0.75,
     "logo_height": 25,
     "provider_logo_height": 25,
-
-    # Scales the URL buttons (S/E/▶) in chips and link buttons where transform: scale(var(--url-btn-scale)) is used
-    # URL buttons below episode stills
     "url_button_scale": 0.75,
-    "url_button_labels": {
-      "vidsrc": "🍿",
-      "videasy": "🌭",
-      "watch": "💾"
-    },
     "watch_toggle_width": 52,
     "watch_toggle_colors": {
       "show": "#2FE08A",

@@ -728,7 +728,7 @@ UPDATED: 2026-01-22
       }
 
       const voteStr = fmtVote(vote);
-      if (voteStr) pills.push({ label: "★ " + voteStr, dot: false });
+      if (voteStr) pills.push({ label: "Rating " + voteStr, dot: false });
 
       const net = safeStr(networkOrProvider).trim();
       if (net) pills.push({ label: net, dot: true });
