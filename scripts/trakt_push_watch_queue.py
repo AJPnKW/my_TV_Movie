@@ -52,6 +52,8 @@ QUEUE_PATH = DATA_DIR / "watch_queue.json"
 ACK_PATH = DATA_DIR / "watch_queue.acked.json"
 REPORT_PATH = DATA_DIR / "trakt_push_watch_queue_report.json"
 LOG_DIR = REPO_ROOT / "logs"
+TOK_OUT = DATA_DIR / "trakt_tokens_latest.json"
+TOK_FALLBACK = DATA_DIR / "trakt.json"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
 TRAKT_TOKEN_URL = "https://trakt.tv/oauth/token"
@@ -88,6 +90,16 @@ def load_json(path: Path) -> Dict[str, Any]:
         return json.loads(path.read_text(encoding="utf-8", errors="replace"))
     except Exception:
         return {}
+
+def load_tokens_file() -> Dict[str, Any]:
+    for path in (TOK_OUT, TOK_FALLBACK):
+        if not path.exists():
+            continue
+        try:
+            return json.loads(path.read_text(encoding="utf-8", errors="replace"))
+        except Exception:
+            continue
+    return {}
 
 
 def save_json(path: Path, obj: Any) -> None:
@@ -204,9 +216,14 @@ def main() -> int:
         log_line(log_fh, "START trakt_push_watch_queue")
 
         client_id = os.getenv("API_TRAKT_ID")
-        client_secret = os.getenv("API_TRAKT_KEY")
+        client_secret = os.getenv("API_TRAKT_SECRET") or os.getenv("API_TRAKT_KEY")
         access_token = os.getenv("API_TRAKT_ACCESS_TOKEN")
         refresh_token = os.getenv("API_TRAKT_REFRESH_TOKEN")
+
+        if blank(access_token):
+            tok = load_tokens_file()
+            access_token = tok.get("access_token") or access_token
+            refresh_token = tok.get("refresh_token") or refresh_token
 
         if blank(client_id) or blank(access_token):
             log_line(log_fh, "no-op (missing OAuth token/client id)")

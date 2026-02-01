@@ -36,6 +36,7 @@ from typing import Any, Dict
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_PATH = REPO_ROOT / "data" / "data.json"
 TOK_OUT = REPO_ROOT / "data" / "trakt_tokens_latest.json"
+TOK_FALLBACK = REPO_ROOT / "data" / "trakt.json"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
 TRAKT_TOKEN_URL = "https://trakt.tv/oauth/token"
@@ -88,6 +89,16 @@ def load_data() -> Dict[str, Any]:
     except Exception:
         return {"meta": {"generated_utc": _utc()}, "shows": [], "movies": [], "errors": []}
 
+def load_tokens_file() -> Dict[str, Any]:
+    for path in (TOK_OUT, TOK_FALLBACK):
+        if not path.is_file():
+            continue
+        try:
+            return json.loads(path.read_text(encoding="utf-8", errors="replace"))
+        except Exception:
+            continue
+    return {}
+
 
 def save_data(data: Dict[str, Any]) -> None:
     DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -96,9 +107,14 @@ def save_data(data: Dict[str, Any]) -> None:
 
 def main() -> int:
     client_id = os.getenv("API_TRAKT_ID")
-    client_secret = os.getenv("API_TRAKT_KEY")
+    client_secret = os.getenv("API_TRAKT_SECRET") or os.getenv("API_TRAKT_KEY")
     access_token = os.getenv("API_TRAKT_ACCESS_TOKEN")
     refresh_token = os.getenv("API_TRAKT_REFRESH_TOKEN")
+
+    if blank(access_token):
+        tok = load_tokens_file()
+        access_token = tok.get("access_token") or access_token
+        refresh_token = tok.get("refresh_token") or refresh_token
 
     if blank(access_token) or blank(client_id):
         # no-op (local-only feature)

@@ -48,47 +48,70 @@ def main() -> int:
     _write_line(logfp, f"python    : {py}")
     _write_line(logfp, f"log       : {logfp}")
 
-    # Required scope file (canonical)
-    inputs_json = os.path.join(REPO_ROOT, 'data', 'inputs.json')
-    if not os.path.isfile(inputs_json):
-        _write_line(logfp, f"RESULT    : FAIL (missing scope file: {inputs_json})")
-        return 2
+    use_trakt_primary = (os.getenv("TRAKT_PRIMARY") or "").strip().lower() in ("1", "true", "yes")
+    _write_line(logfp, f"trakt_primary : {use_trakt_primary}")
 
-    # 1) TMDB fetch
-    rc_tmdb = _run("TMDB", [py, os.path.join("scripts", "fetch_tmdb.py")], logfp)
-    if rc_tmdb != 0:
-        _write_line(logfp, f"RESULT    : FAIL (tmdb exit_code={rc_tmdb})")
-        return rc_tmdb
+    if not use_trakt_primary:
+        # Required scope file (canonical)
+        inputs_json = os.path.join(REPO_ROOT, 'data', 'inputs.json')
+        if not os.path.isfile(inputs_json):
+            _write_line(logfp, f"RESULT    : FAIL (missing scope file: {inputs_json})")
+            return 2
 
-    # 2) OMDb enrichment (optional; requires API_OMDB_KEY)
-    rc_omdb = _run("OMDB", [py, os.path.join("scripts", "fetch_omdb.py")], logfp)
-    if rc_omdb != 0:
-        _write_line(logfp, f"RESULT    : FAIL (omdb exit_code={rc_omdb})")
-        return rc_omdb
+    if use_trakt_primary:
+        # 1) Trakt primary fetch
+        rc_trakt_primary = _run("TRAKT_PRIMARY", [py, os.path.join("scripts", "fetch_trakt_primary.py")], logfp)
+        if rc_trakt_primary != 0:
+            _write_line(logfp, f"RESULT    : FAIL (trakt_primary exit_code={rc_trakt_primary})")
+            return rc_trakt_primary
 
-    # 3) Trakt enrichment (public)
-    rc_trakt = _run("TRAKT", [py, os.path.join("scripts", "fetch_trakt.py")], logfp)
-    if rc_trakt != 0:
-        _write_line(logfp, f"RESULT    : FAIL (trakt exit_code={rc_trakt})")
-        return rc_trakt
+        # 2) TMDB asset augment
+        rc_tmdb_assets = _run("TMDB_ASSETS", [py, os.path.join("scripts", "fetch_tmdb_assets.py")], logfp)
+        if rc_tmdb_assets != 0:
+            _write_line(logfp, f"RESULT    : FAIL (tmdb_assets exit_code={rc_tmdb_assets})")
+            return rc_tmdb_assets
 
-    # 3a) Migrate watchlist fields (inputs.json)
-    rc_watchlist = _run("WATCHLIST_MIGRATE", [py, os.path.join("scripts", "migrate_watchlist_fields.py")], logfp)
-    if rc_watchlist != 0:
-        _write_line(logfp, f"RESULT    : FAIL (migrate_watchlist_fields exit_code={rc_watchlist})")
-        return rc_watchlist
+        # 3) Trakt watch-state sync (OAuth; optional)
+        rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
+        if rc_watch != 0:
+            _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
+            return rc_watch
+    else:
+        # 1) TMDB fetch
+        rc_tmdb = _run("TMDB", [py, os.path.join("scripts", "fetch_tmdb.py")], logfp)
+        if rc_tmdb != 0:
+            _write_line(logfp, f"RESULT    : FAIL (tmdb exit_code={rc_tmdb})")
+            return rc_tmdb
 
-    # 3b) Trakt watch-state sync (OAuth; optional)
-    rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
-    if rc_watch != 0:
-        _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
-        return rc_watch
+        # 2) OMDb enrichment (optional; requires API_OMDB_KEY)
+        rc_omdb = _run("OMDB", [py, os.path.join("scripts", "fetch_omdb.py")], logfp)
+        if rc_omdb != 0:
+            _write_line(logfp, f"RESULT    : FAIL (omdb exit_code={rc_omdb})")
+            return rc_omdb
 
-    # 3c) Local watch-state sync (inputs.json -> data.json)
-    rc_local = _run("LOCAL_WATCH_STATE", [py, os.path.join("scripts", "sync_local_watch_state.py")], logfp)
-    if rc_local != 0:
-        _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
-        return rc_local
+        # 3) Trakt enrichment (public)
+        rc_trakt = _run("TRAKT", [py, os.path.join("scripts", "fetch_trakt.py")], logfp)
+        if rc_trakt != 0:
+            _write_line(logfp, f"RESULT    : FAIL (trakt exit_code={rc_trakt})")
+            return rc_trakt
+
+        # 3a) Migrate watchlist fields (inputs.json)
+        rc_watchlist = _run("WATCHLIST_MIGRATE", [py, os.path.join("scripts", "migrate_watchlist_fields.py")], logfp)
+        if rc_watchlist != 0:
+            _write_line(logfp, f"RESULT    : FAIL (migrate_watchlist_fields exit_code={rc_watchlist})")
+            return rc_watchlist
+
+        # 3b) Trakt watch-state sync (OAuth; optional)
+        rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
+        if rc_watch != 0:
+            _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
+            return rc_watch
+
+        # 3c) Local watch-state sync (inputs.json -> data.json)
+        rc_local = _run("LOCAL_WATCH_STATE", [py, os.path.join("scripts", "sync_local_watch_state.py")], logfp)
+        if rc_local != 0:
+            _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
+            return rc_local
 
     # 4) QA missing trakt ids
     rc_qa1 = _run("QA_MISSING_TRAKT", [py, os.path.join("scripts", "qa_missing_trakt_ids.py")], logfp)
