@@ -49,6 +49,20 @@ CHANGE NOTES:
     .rm{ font-size:12px; color:var(--mut); }
     .track{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--w); gap:10px; overflow-x:auto; padding-bottom:6px; }
     .track.tv-inline{ display:flex; gap:12px; }
+    .carousel-wrap{ position:relative; padding:0 34px; }
+    .carousel-btn{
+      position:absolute; top:50%; transform:translateY(-50%);
+      width:28px; height:28px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.24); background:rgba(7,12,20,.7); color:#f4f8ff;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:18px; line-height:1; cursor:pointer; z-index:2;
+      transition:background .18s ease, opacity .18s ease, border-color .18s ease;
+    }
+    .carousel-btn.left{ left:2px; }
+    .carousel-btn.right{ right:2px; }
+    .carousel-btn:hover{ background:rgba(22,32,50,.9); border-color:rgba(255,255,255,.42); }
+    .carousel-btn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
+    .carousel-btn:disabled{ opacity:.35; cursor:default; }
     .day-seg{ display:flex; flex-direction:column; gap:8px; padding-right:2px; border-right:1px solid rgba(255,255,255,.15); }
     .day-seg:last-child{ border-right:none; padding-right:0; }
     .day-pill{ align-self:flex-start; border:1px solid rgba(255,255,255,.2); border-radius:7px; background:var(--day-bg); color:var(--day-fg); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; padding:4px 8px; white-space:nowrap; }
@@ -417,6 +431,47 @@ CHANGE NOTES:
           });
         }
       }
+      function wireCarouselButtons(){
+        const rowsRoot = refs.rowsRoot;
+        const tracks = Array.from(rowsRoot.querySelectorAll(".track"));
+        for (const track of tracks){
+          let wrap = track.parentElement;
+          if (!wrap || !wrap.classList.contains("carousel-wrap")){
+            wrap = document.createElement("div");
+            wrap.className = "carousel-wrap";
+            track.parentNode.insertBefore(wrap, track);
+            wrap.appendChild(track);
+          }
+          let left = wrap.querySelector(".carousel-btn.left");
+          let right = wrap.querySelector(".carousel-btn.right");
+          if (!(left instanceof HTMLButtonElement)){
+            left = document.createElement("button");
+            left.type = "button";
+            left.className = "carousel-btn left";
+            left.setAttribute("aria-label", "Scroll left");
+            left.textContent = "‹";
+            wrap.appendChild(left);
+          }
+          if (!(right instanceof HTMLButtonElement)){
+            right = document.createElement("button");
+            right.type = "button";
+            right.className = "carousel-btn right";
+            right.setAttribute("aria-label", "Scroll right");
+            right.textContent = "›";
+            wrap.appendChild(right);
+          }
+          const step = () => Math.max(120, Math.floor(track.clientWidth * 0.8));
+          const update = () => {
+            const max = Math.max(0, track.scrollWidth - track.clientWidth);
+            left.disabled = track.scrollLeft <= 1;
+            right.disabled = track.scrollLeft >= max - 1;
+          };
+          left.addEventListener("click", () => track.scrollBy({ left: -step(), behavior: "smooth" }));
+          right.addEventListener("click", () => track.scrollBy({ left: step(), behavior: "smooth" }));
+          track.addEventListener("scroll", update);
+          update();
+        }
+      }
 
       function render(){
         const now = new Date(), mon = mondayOf(now), prev = addDays(mon,-7), next = addDays(mon,7), next2 = addDays(mon,14);
@@ -447,6 +502,7 @@ CHANGE NOTES:
           buildEpisodeUrl("https://vidsrc.net/embed/tv/1413#frag", 2, 6)
         ];
         console.log("WatchMe episode URL examples:", episodeUrlExamples);
+        wireCarouselButtons();
         wireKeyboardNav();
       }
 
