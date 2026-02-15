@@ -44,6 +44,7 @@ CHANGE NOTES:
     .main{ display:flex; flex-direction:column; gap:12px; min-width:0; overflow-x:auto; }
     .row{ border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025)); padding:10px; }
     .rh{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:9px; }
+    .tv-rh{ min-height:8px; margin-bottom:8px; }
     .rh h2{ margin:0; font-size:16px; font-weight:900; letter-spacing:.02em; }
     .rm{ font-size:12px; color:var(--mut); }
     .track{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--w); gap:10px; overflow-x:auto; padding-bottom:6px; }
@@ -334,7 +335,7 @@ CHANGE NOTES:
           vidsrc: buildEpisodeUrl(links.vidsrc, it.sn, it.en),
           videasy: buildEpisodeUrl(links.videasy, it.sn, it.en)
         };
-        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div><div class="d">${escHtml(dateLabel(it.firstAired))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${episodeLinks.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(episodeLinks.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${episodeLinks.videasy ? `<a class="iconbtn videasy" href="${escHtml(episodeLinks.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${episodeLinks.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(episodeLinks.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${episodeLinks.videasy ? `<a class="iconbtn videasy" href="${escHtml(episodeLinks.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
       }
       function movieCard(it){
         const links = mediaLinks(it.movie, it.movie), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
@@ -344,9 +345,9 @@ CHANGE NOTES:
         const cards = items.length ? items.map(cardFn).join("") : `<div class="empty">No items in this range for current filters.</div>`;
         return `<section class="row"><div class="rh"><h2>${escHtml(title)}</h2><div class="rm">${escHtml(meta)} | ${items.length} item${items.length===1?"":"s"}</div></div><div class="track">${cards}</div></section>`;
       }
-      function tvInlineWeekRowHtml(title, meta, items){
+      function tvInlineWeekRowHtml(items){
         if (!items.length){
-          return `<section class="row"><div class="rh"><h2>${escHtml(title)}</h2><div class="rm">${escHtml(meta)} | 0 items</div></div><div class="track"><div class="empty">No items in this range for current filters.</div></div></section>`;
+          return `<section class="row"><div class="rh tv-rh" aria-hidden="true"></div><div class="track"><div class="empty">No items in this range for current filters.</div></div></section>`;
         }
         const groups = new Map();
         for (const it of items){
@@ -361,7 +362,7 @@ CHANGE NOTES:
           const cards = dayItems.map(episodeCard).join("");
           return `<section class="day-seg"><div class="day-pill${todayClass}">${escHtml(dayPillLabel(dayDate))}</div><div class="day-cards">${cards}</div></section>`;
         }).join("");
-        return `<section class="row"><div class="rh"><h2>${escHtml(title)}</h2><div class="rm">${escHtml(meta)} | ${items.length} item${items.length===1?"":"s"}</div></div><div class="track tv-inline">${segments}</div></section>`;
+        return `<section class="row"><div class="rh tv-rh" aria-hidden="true"></div><div class="track tv-inline">${segments}</div></section>`;
       }
       function wireKeyboardNav(){
         const rowsRoot = refs.rowsRoot;
@@ -431,9 +432,9 @@ CHANGE NOTES:
         const last12 = sortList(uniqueByUid(last12Base), x => x.title, x => x.rd);
         const out = [];
         if (state.filters.includeTv){
-          out.push(tvInlineWeekRowHtml("TV: Current Week", `${dateLabel(mon)} to ${dateLabel(addDays(next,-1))}`, cur));
-          out.push(rowHtml("TV: Previous Week", `${dateLabel(prev)} to ${dateLabel(addDays(mon,-1))}`, prv, episodeCard));
-          out.push(rowHtml("TV: Next Week", `${dateLabel(next)} to ${dateLabel(addDays(next2,-1))}`, nxt, episodeCard));
+          out.push(tvInlineWeekRowHtml(cur));
+          out.push(tvInlineWeekRowHtml(prv));
+          out.push(tvInlineWeekRowHtml(nxt));
         }
         if (state.filters.includeMovie){
           out.push(rowHtml("NEW Movies: Released", `${dateLabel(newStart)} to ${dateLabel(addDays(nextMonth,-1))}`, newReleases, movieCard));
