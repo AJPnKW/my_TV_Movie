@@ -4,11 +4,10 @@
 my_TV_Movie / web / index.html
 
 VERSION
-  - v1.4.1 (2026-01-29)
+  - v1.4.4 (2026-02-01)
 
 CHANGE NOTES
-  - Trakt-inspired layout refinements (shell, cards, filters)
-  - calendar page split + shell layout
+  - Shared UI sync: dashboard icon rows + schedule thumbs + rec grids
 ================================================================================
 -->
 <html lang="en">
@@ -138,6 +137,10 @@ CHANGE NOTES
       border:1px solid var(--line);
       background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
     }
+    .dashblock.accent-orange{ border-color:rgba(249,115,22,0.35); box-shadow:0 0 0 2px rgba(249,115,22,0.1) inset; }
+    .dashblock.accent-pink{ border-color:rgba(236,72,153,0.35); box-shadow:0 0 0 2px rgba(236,72,153,0.1) inset; }
+    .dashblock.accent-green{ border-color:rgba(34,197,94,0.35); box-shadow:0 0 0 2px rgba(34,197,94,0.1) inset; }
+    .dashblock.accent-yellow{ border-color:rgba(234,179,8,0.35); box-shadow:0 0 0 2px rgba(234,179,8,0.1) inset; }
     .dashhead{
       display:flex;
       align-items:center;
@@ -159,21 +162,106 @@ CHANGE NOTES
       overflow-x:auto;
       padding-bottom:6px;
     }
+    .dashgrid{
+      display:grid;
+      grid-auto-flow:column;
+      grid-auto-columns:minmax(200px, 1fr);
+      gap:12px;
+      overflow-x:auto;
+      padding-bottom:6px;
+      align-items:start;
+    }
+    .dashcol{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.03);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-height:240px;
+    }
+    .dashcolhead{
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#f5c8ff;
+    }
+    .dashcolitem{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      padding:6px 4px;
+      border-bottom:1px dashed rgba(255,255,255,0.08);
+    }
+    .dashcolitem:last-child{ border-bottom:0; }
+    .dashcolitem .title{ font-size:12px; font-weight:800; }
+    .dashcolitem .meta{ font-size:11px; color:var(--muted); }
     .dashcard{
       border-radius:14px;
       border:1px solid rgba(255,255,255,0.08);
       background:rgba(255,255,255,0.04);
       padding:10px;
       display:flex;
-      gap:10px;
-      min-height:90px;
+      flex-direction:column;
+      gap:8px;
+      min-height:180px;
     }
-    .dashcard img{
-      width:64px;
-      height:90px;
-      object-fit:cover;
-      border-radius:10px;
+    .dashimgwrap{
+      position:relative;
+      width:100%;
+      border-radius:12px;
+      overflow:hidden;
       background:rgba(255,255,255,0.08);
+    }
+    .dashimgwrap.poster{ aspect-ratio:2/3; }
+    .dashimgwrap.wide{ aspect-ratio:16/9; }
+    .dashimgwrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .iconstrip{
+      position:absolute;
+      left:4px;
+      right:4px;
+      bottom:4px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      justify-content:space-between;
+      background:transparent;
+      border-radius:0;
+      padding:2px 4px;
+      backdrop-filter: none;
+    }
+    .iconstrip-left,
+    .iconstrip-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+    }
+    .iconstrip-left{ justify-content:flex-start; }
+    .iconstrip-right{ justify-content:flex-end; margin-left:auto; }
+    .iconstrip-btn{
+      border:0;
+      background:transparent;
+      color:var(--text);
+      font-size:12px;
+      font-weight:900;
+      line-height:1;
+      padding:0;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .iconstrip-pct{
+      font-size:11px;
+      font-weight:900;
+      color:var(--text);
     }
     .dashmeta{ display:flex; flex-direction:column; gap:6px; }
     .dashmeta .k{ font-weight:900; font-size:13px; }
@@ -185,6 +273,18 @@ CHANGE NOTES
       flex-wrap:wrap;
     }
     .dashactions .actionmenu{ position:absolute; top:26px; left:0; }
+    .menu-close{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:24px;
+      height:24px;
+      border:0;
+      background:transparent;
+      color:var(--text);
+      font-size:14px;
+      cursor:pointer;
+    }
 
     .dashlist{
       display:flex;
@@ -203,6 +303,39 @@ CHANGE NOTES
     }
     .dashitem .title{ font-size:13px; font-weight:800; }
     .dashitem .meta{ font-size:12px; color:var(--muted); }
+    .dashrecs{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    .dashrecgrid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:12px;
+    }
+    .dashreccol{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .dashwatchlist{
+      display:grid;
+      grid-auto-flow:column;
+      grid-auto-columns:minmax(180px, 1fr);
+      gap:12px;
+      overflow-x:auto;
+      padding-bottom:6px;
+    }
+    .dashwatchcard{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-height:180px;
+    }
 
     .top{
       display:flex;
@@ -394,6 +527,10 @@ CHANGE NOTES
     }
 
     .filters{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .filters input[type="range"],
+    .drawer .filtersbar input[type="range"]{
+      display:none !important;
+    }
     .filtersbar{
       position:sticky;
       top:calc(var(--sticky-top, 64px) + 2px);
@@ -1810,6 +1947,8 @@ CHANGE NOTES
     </div>
 
     <div class="footer" id="footer"></div>
+    <!-- verify: iso-date-check -->
+    <!-- verify: no-hover-menus -->
   </div>
 
   <!-- Modal kept for existing non-calendar usage (movie details). Calendar does not use this. -->
@@ -2012,14 +2151,7 @@ CHANGE NOTES
   }
 
   function fmtDate(d) {
-    if (!d) return "";
-    try {
-      const dt = new Date(d + "T00:00:00");
-      if (Number.isNaN(dt.getTime())) return safeText(d);
-      return dt.toLocaleDateString(undefined, { year:"numeric", month:"short", day:"numeric" });
-    } catch {
-      return safeText(d);
-    }
+    return formatDateShort(d);
   }
 
   function toDateKey(dt){
@@ -2168,18 +2300,22 @@ CHANGE NOTES
   }
 
   function isSeasonAvailable(season){
-    const d = safeText(season?.air_date || season?.first_air_date);
+    const d = pickAirDate(season);
     return isDateAvailable(d);
   }
 
   function isEpisodeAvailable(ep){
-    const d = safeText(ep?.air_date);
+    const d = pickAirDate(ep);
     return isDateAvailable(d);
   }
 
   function isMovieAvailable(movie){
-    const d = safeText(movie?.release_date);
+    const d = pickAirDate(movie);
     return isDateAvailable(d);
+  }
+
+  function pickAirDate(obj){
+    return safeText(obj?.air_date || obj?.first_aired || obj?.first_air_date || obj?.release_date || "");
   }
 
   async function checkApiAvailable(){
@@ -2507,24 +2643,16 @@ CHANGE NOTES
 
   function actionMenuHtml(kind, id, title){
     return `
-      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="list">
-        <div class="menutitle">Listed on 1 of 3 lists</div>
-        <button type="button" data-menu-action="watchlist" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title)}">Watchlist</button>
-        <button type="button" data-menu-action="to_watch" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title)}">To Watch</button>
-        <button type="button" data-menu-action="watching" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title)}">Watching</button>
-        <div class="divider"></div>
-        <button type="button" data-menu-action="watchlist_remove" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Remove from lists</button>
+      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="want">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
+        <div class="menutitle">Want</div>
+        <button type="button" data-menu-action="want_add" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title)}">Add to want</button>
+        <button type="button" data-menu-action="want_remove" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Remove from want</button>
       </div>
-      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="history">
+      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="watched">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
         <button type="button" data-menu-action="mark_watched" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Mark watched</button>
-        <button type="button" data-menu-action="mark_unwatched" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Remove from history</button>
-      </div>
-      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="date">
-        <div class="menutitle">When did you watch this?</div>
-        <button type="button" data-menu-action="watched_now" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Just finished</button>
-        <button type="button" data-menu-action="watched_release" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Release date</button>
-        <button type="button" data-menu-action="watched_unknown" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Unknown date</button>
-        <button type="button" data-menu-action="watched_other" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Other date</button>
+        <button type="button" data-menu-action="mark_unwatched" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Mark unwatched</button>
       </div>
     `;
   }
@@ -2559,24 +2687,37 @@ CHANGE NOTES
     if (!container) return;
     $$("[data-action-menu]", container).forEach(btn => {
       const host = btn.closest("[data-action-host]") || btn.parentElement;
-      if (host && !host.dataset.menuHoverBound){
-        host.dataset.menuHoverBound = "1";
-        host.addEventListener("mouseleave", () => closeAllActionMenus());
-      }
-      const toggleMenu = (forceOpen) => {
+      const openMenu = () => {
         const target = safeText(btn.getAttribute("data-action-menu"));
         const menu = host ? host.querySelector(`[data-action-menu-panel][data-menu-type="${target}"]`) : null;
         if (!menu) return;
         positionActionMenu(menu, btn, host);
-        const open = forceOpen ? true : !menu.classList.contains("open");
+        const open = !menu.classList.contains("open");
         closeAllActionMenus();
         menu.classList.toggle("open", open);
       };
+      const runDefault = () => {
+        const target = safeText(btn.getAttribute("data-action-menu"));
+        const menu = host ? host.querySelector(`[data-action-menu-panel][data-menu-type="${target}"]`) : null;
+        if (!menu) return;
+        const first = menu.querySelector("[data-menu-action]");
+        if (first) first.click();
+      };
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        toggleMenu(false);
+        if (btn.getAttribute("data-no-default") === "1" || btn.hasAttribute("data-action")) return;
+        runDefault();
       });
-      btn.addEventListener("mouseenter", () => toggleMenu(true));
+      btn.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        openMenu();
+      });
+    });
+    $$("[data-menu-close]", container).forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllActionMenus();
+      });
     });
     $$("[data-menu-action]", container).forEach(btn => {
       btn.addEventListener("click", async (e) => {
@@ -2586,21 +2727,11 @@ CHANGE NOTES
         const id = parseInt(btn.getAttribute("data-id") || "0", 10);
         const title = safeText(btn.getAttribute("data-title"));
         if (!action || !Number.isFinite(id)) return;
-        if (action === "watchlist"){
-          setWatchlistEntry(id, title, kind, "watching");
-        } else if (action === "to_watch"){
-          setWatchlistEntry(id, title, kind, "watching");
-        } else if (action === "watching" || action === "completed" || action === "dropped"){
-          setWatchlistEntry(id, title, kind, action);
-        } else if (action === "watchlist_remove"){
+        if (action === "want_add"){
+          setWatchlistEntry(id, title, kind, "watchlist");
+        } else if (action === "want_remove"){
           removeWatchlistItem(id);
         } else if (action === "mark_watched"){
-          if (kind === "movie") setMovieWatched(id, true);
-          if (kind === "show"){
-            const show = getShowById(id);
-            if (show) setShowWatched(id, show.seasons || [], true);
-          }
-        } else if (action === "watched_now" || action === "watched_release" || action === "watched_unknown" || action === "watched_other"){
           if (kind === "movie") setMovieWatched(id, true);
           if (kind === "show"){
             const show = getShowById(id);
@@ -2617,6 +2748,128 @@ CHANGE NOTES
         closeAllActionMenus();
         if (kind === "show") renderShows();
         if (kind === "movie") renderMovies();
+        if (typeof renderDashboard === "function") renderDashboard();
+      });
+    });
+  }
+
+  async function toggleWantForKind(kind, id, title){
+    if (!Number.isFinite(id)) return;
+    const wanted = getWatchlistSet().has(String(id));
+    if (wanted){
+      removeWatchlistItem(id);
+    } else {
+      setWatchlistEntry(id, title, kind, "watchlist");
+    }
+  }
+
+  async function toggleWatchedForKind(kind, id){
+    if (!Number.isFinite(id)) return;
+    if (kind === "movie"){
+      setMovieWatched(id, !isMovieWatched(getMovieById(id) || { tmdb_id: id }));
+      return;
+    }
+    const show = getShowById(id);
+    if (show) setShowWatched(id, show.seasons || [], !isShowWatched(show));
+  }
+
+  function openInfoForKind(kind, id){
+    if (!Number.isFinite(id)) return;
+    if (kind === "movie") return openMovieModal(id);
+    return gotoShow(id);
+  }
+
+  function wireIconStripActions(container, onUpdate){
+    if (!container) return;
+    $$("[data-action='open-info']", container).forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        openInfoForKind(kind, id);
+      });
+    });
+    $$("[data-action='toggle-want']", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        const title = safeText(btn.getAttribute("data-title"));
+        await toggleWantForKind(kind, id, title);
+        await saveInputs();
+        if (typeof onUpdate === "function") onUpdate();
+      });
+    });
+    $$("[data-action='toggle-watched']", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        await toggleWatchedForKind(kind, id);
+        await saveInputs();
+        if (typeof onUpdate === "function") onUpdate();
+      });
+    });
+  }
+
+  async function toggleWantForKind(kind, id, title){
+    if (!Number.isFinite(id)) return;
+    const wanted = getWatchlistSet().has(String(id));
+    if (wanted){
+      removeWatchlistItem(id);
+    } else {
+      setWatchlistEntry(id, title, kind, "watchlist");
+    }
+  }
+
+  async function toggleWatchedForKind(kind, id){
+    if (!Number.isFinite(id)) return;
+    if (kind === "movie"){
+      setMovieWatched(id, !isMovieWatched(getMovieById(id) || { tmdb_id: id }));
+      return;
+    }
+    const show = getShowById(id);
+    if (show) setShowWatched(id, show.seasons || [], !isShowWatched(show));
+  }
+
+  function openInfoForKind(kind, id){
+    if (!Number.isFinite(id)) return;
+    if (kind === "movie") return openMovieModal(id);
+    return gotoShow(id);
+  }
+
+  function wireIconStripActions(container, onUpdate){
+    if (!container) return;
+    $$("[data-action='open-info']", container).forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        openInfoForKind(kind, id);
+      });
+    });
+    $$("[data-action='toggle-want']", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        const title = safeText(btn.getAttribute("data-title"));
+        await toggleWantForKind(kind, id, title);
+        await saveInputs();
+        if (typeof onUpdate === "function") onUpdate();
+      });
+    });
+    $$("[data-action='toggle-watched']", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        await toggleWatchedForKind(kind, id);
+        await saveInputs();
+        if (typeof onUpdate === "function") onUpdate();
       });
     });
   }
@@ -2823,22 +3076,7 @@ CHANGE NOTES
   }
 
   function watchStatusBandHtml(kind, id, entry, available){
-    const cur = safeText(entry?.watch_status || "");
-    const options = [
-      { value: "watching", label: "watch" },
-      { value: "completed", label: "done" },
-      { value: "dropped", label: "drop" }
-    ];
-    return `
-      <div class="watchstatusband" data-watch-status-band="${escHtml(kind)}" data-id="${escHtml(id)}" data-status="${escHtml(cur)}">
-        ${options.map(opt => {
-          const active = cur === opt.value;
-          const title = watchStatusChoiceTitle(opt.value, available);
-          const color = watchStatusChoiceColor(opt.value, available);
-          return `<button type="button" class="opt ${active ? "active" : ""}" data-watch-status-choice="${escHtml(opt.value)}" data-watch-status-kind="${escHtml(kind)}" data-id="${escHtml(id)}" title="${escHtml(title)}" style="--opt-color:${escHtml(color)}">${escHtml(opt.label)}</button>`;
-        }).join("")}
-      </div>
-    `;
+    return "";
   }
 
   async function migrateWatchlist(){
@@ -3387,7 +3625,7 @@ CHANGE NOTES
       for (const season of seasons){
         const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
         for (const ep of episodes){
-          const adRaw = safeText(ep?.air_date).trim();
+          const adRaw = pickAirDate(ep).trim();
           const dateKey = adRaw ? adRaw.slice(0,10) : "";
           if (!dateKey || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
 
@@ -3419,7 +3657,7 @@ CHANGE NOTES
     }
 
     for (const movie of movies){
-      const rdRaw = safeText(movie?.release_date).trim();
+      const rdRaw = pickAirDate(movie).trim();
       const dateKey = rdRaw ? rdRaw.slice(0,10) : "";
       if (!dateKey || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
 
@@ -3548,12 +3786,7 @@ CHANGE NOTES
             return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
           }).join("");
           const epWatched = state.watchState ? isEpisodeWatched(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0) : false;
-          const watchToggleBtn = canToggle
-            ? `<label class="watch-toggle" title="${epWatched ? "Watched" : "Unwatched"}">
-                <input type="checkbox" data-watch-episode-card="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" ${epWatched ? "checked" : ""} />
-                <span class="watch-icon">${escHtml(iconChar("action_watched"))}</span>
-              </label>`
-            : "";
+          const watchToggleBtn = "";
           const netLogo = (it.network_logo_local || it.network_logo_tmdb)
             ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
             : "";
@@ -3619,12 +3852,7 @@ CHANGE NOTES
         const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
         const movieWatched = state.watchState ? isMovieWatched({ tmdb_id: it.tmdb_id }) : false;
         const watchedFlag = state.watchState ? watchFlagHtml(movieWatched) : "";
-        const watchToggleBtn = canToggle
-          ? `<label class="switch movie caltoggle">
-              <input type="checkbox" data-watch-movie-card="1" data-movie="${Number(it.tmdb_id)||0}" ${movieWatched ? "checked" : ""} />
-              <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
-            </label>`
-          : "";
+        const watchToggleBtn = "";
         const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
           ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
           : "";
@@ -3686,12 +3914,7 @@ CHANGE NOTES
             return src ? `<img class="netlogo-sm" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
           }).join("");
           const epWatched = state.watchState ? isEpisodeWatched(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0) : false;
-          const watchToggleBtn = canToggle
-            ? `<label class="watch-toggle" title="${epWatched ? "Watched" : "Unwatched"}">
-                <input type="checkbox" data-watch-episode-card="1" data-show="${it.show_tmdb_id}" data-season="${it.season_number || 0}" data-episode="${it.episode_number || 0}" ${epWatched ? "checked" : ""} />
-                <span class="watch-icon">${escHtml(iconChar("action_watched"))}</span>
-              </label>`
-            : "";
+          const watchToggleBtn = "";
           const netLogo = (it.network_logo_local || it.network_logo_tmdb)
             ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
             : "";
@@ -3755,9 +3978,7 @@ CHANGE NOTES
         const watchBtn = providers.length ? `<span class="mini watch">Watch</span>` : "";
         const movieWatched = state.watchState ? isMovieWatched({ tmdb_id: it.tmdb_id }) : false;
         const watchedFlag = state.watchState ? watchFlagHtml(movieWatched) : "";
-        const watchToggleBtn = canToggle
-          ? `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" role="button" tabindex="0" data-watch-movie-btn="1" data-movie="${Number(it.tmdb_id)||0}" data-watched="${movieWatched ? "1" : "0"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`
-          : `<span class="actionicon flag ${movieWatched ? "yes" : "no"}" title="${movieWatched ? "Watched" : "Unwatched"}">${movieWatched ? "Y" : "N"}</span>`;
+        const watchToggleBtn = "";
         const serviceLogo = (it.service_logo_local || it.service_logo_tmdb)
           ? `<img class="netlogo-sm" src="${escHtml(it.service_logo_local || it.service_logo_tmdb)}" data-fallback="${escHtml(it.service_logo_tmdb || "")}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
           : "";
@@ -3927,15 +4148,156 @@ CHANGE NOTES
     return out.sort((a,b)=>a.date.getTime()-b.date.getTime());
   }
 
+  function collectPastEvents(dayWindow=7){
+    const out = [];
+    const end = new Date();
+    end.setDate(end.getDate() - 1);
+    const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (dayWindow - 1));
+    const months = new Map();
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (cursor <= end){
+      const key = `${cursor.getFullYear()}-${pad2(cursor.getMonth()+1)}`;
+      if (!months.has(key)) months.set(key, buildCalendarEventsForMonth(cursor));
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    for (let d = new Date(start.getFullYear(), start.getMonth(), start.getDate()); d <= end; d.setDate(d.getDate()+1)){
+      const key = toDateKey(d);
+      for (const m of months.values()){
+        const list = m.get(key) || [];
+        for (const item of list){
+          out.push({ date: new Date(d), dateKey: key, item });
+        }
+      }
+    }
+    return out.sort((a,b)=>a.date.getTime()-b.date.getTime());
+  }
+
+  function formatDateShort(value){
+    const raw = safeText(value).trim();
+    if (!raw) return "";
+    const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso){
+      const y = Number(iso[1]);
+      const m = Number(iso[2]);
+      const d = Number(iso[3]);
+      if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)){
+        return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:"UTC" });
+      }
+    }
+    const parsed = new Date(raw);
+    if (!Number.isFinite(parsed?.getTime?.())) return "";
+    return new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate()))
+      .toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:"UTC" });
+  }
+
+  function normalizeImageSrc(src){
+    const raw = safeText(src).trim();
+    if (!raw) return "";
+    if (raw.startsWith("/")) return withBasePath(raw);
+    if (raw.startsWith("./")) return withBasePath("/" + raw.replace(/^\.\/+/, ""));
+    if (raw.startsWith("assets/") || raw.startsWith("assets\\")) return withBasePath("/" + raw.replace(/^assets[\\/]/, "assets/"));
+    return raw;
+  }
+
+  function buildIconStripHtml(kind, id, pct, titleText){
+    const pctText = pct != null ? `${pct}%` : "";
+    const hasTarget = kind && id;
+    const idStr = String(id || "");
+    const wanted = hasTarget ? getWatchlistSet().has(idStr) : false;
+    const watched = hasTarget
+      ? (kind === "movie" ? isMovieWatched(getMovieById(id) || { tmdb_id: id })
+        : isShowWatched(getShowById(id) || { tmdb_id: id }))
+      : false;
+    const wantBtn = hasTarget
+      ? `<button class="iconstrip-btn" type="button" title="${wanted ? "Remove from want" : "Want"}" data-action="toggle-want" data-kind="${escHtml(kind)}" data-id="${escHtml(idStr)}" data-title="${escHtml(titleText || "")}" data-wanted="${wanted ? "1" : "0"}" data-action-menu="want" data-no-default="1" data-function-type="${escHtml(iconType("trakt_add_to_list", "popup"))}">${escHtml(iconChar("trakt_add_to_list"))}</button>`
+      : `<span class="iconstrip-btn" aria-hidden="true">${escHtml(iconChar("trakt_add_to_list"))}</span>`;
+    const watchedBtn = hasTarget
+      ? `<button class="iconstrip-btn" type="button" title="${watched ? "Unwatched" : "Watched"}" data-action="toggle-watched" data-kind="${escHtml(kind)}" data-id="${escHtml(idStr)}" data-watched="${watched ? "1" : "0"}" data-action-menu="watched" data-no-default="1" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>`
+      : `<span class="iconstrip-btn" aria-hidden="true">${escHtml(iconChar("trakt_mark_watched"))}</span>`;
+    const infoBtn = hasTarget
+      ? `<button class="iconstrip-btn" type="button" title="Info" data-action="open-info" data-kind="${escHtml(kind)}" data-id="${escHtml(idStr)}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>`
+      : `<span class="iconstrip-btn" aria-hidden="true">${escHtml(iconChar("action_info"))}</span>`;
+    const rateBtn = hasTarget
+      ? `<button class="iconstrip-btn" type="button" title="Rate" data-action-menu="rate" data-no-default="1" data-function-type="${escHtml(iconType("trakt_rate_like", "popup"))}">${escHtml(iconChar("trakt_rate_like"))}</button>`
+      : `<span class="iconstrip-btn" aria-hidden="true">${escHtml(iconChar("trakt_rate_like"))}</span>`;
+    const actionMenus = hasTarget ? actionMenuHtml(kind, id, titleText || "") : "";
+    return `
+      <div class="iconstrip" data-action-host="1">
+        <div class="iconstrip-left">
+          ${wantBtn}
+          ${watchedBtn}
+          ${infoBtn}
+        </div>
+        <div class="iconstrip-right">
+          ${rateBtn}
+          ${pctText ? `<span class="iconstrip-pct">${escHtml(pctText)}</span>` : ""}
+        </div>
+        ${actionMenus}
+      </div>
+    `;
+  }
+
   function renderDashboard(){
     const upNext = $("#dashUpNext");
-    const schedule = $("#dashSchedule");
-    if (!upNext || !schedule) return;
+    const scheduleCols = $("#dashScheduleCols");
+    const lastWeekCols = $("#dashLastWeekCols");
+    const watchlistEl = $("#dashWatchlist");
+    const showRecs = $("#dashShowRecs");
+    const movieRecs = $("#dashMovieRecs");
+    if (!upNext || !scheduleCols || !lastWeekCols || !watchlistEl || !showRecs || !movieRecs) return;
+
+    const showMap = new Map((state.data?.shows || []).map(s => [String(s?.tmdb_id ?? ""), s]));
+    const movieMap = new Map((state.data?.movies || []).map(m => [String(m?.tmdb_id ?? ""), m]));
     const events = collectUpcomingEvents(21);
+    const pastEvents = collectPastEvents(7);
     const nextItems = events.slice(0, 10);
-    const scheduleItems = events.slice(0, 14);
     const meta = $("#dashNextMeta");
     if (meta) meta.textContent = nextItems.length ? `${nextItems.length} items` : "No upcoming items";
+
+    const percentForItem = (item) => {
+      let pct = progressPercent(item);
+      if (pct == null){
+        const v = Number(item?.vote_average ?? item?.rating ?? 0);
+        if (Number.isFinite(v) && v > 0) pct = Math.round(v * 10);
+      }
+      return pct;
+    };
+
+    const imageForItem = (item, mode) => {
+      const pick = (obj, keys) => {
+        for (const k of keys){
+          const v = obj?.[k];
+          if (v) return v;
+        }
+        return "";
+      };
+      const wideKeys = ["still_local", "still_path", "backdrop_local", "backdrop_path", "poster_local", "poster_path"];
+      const posterKeys = ["poster_local", "poster_path", "backdrop_local", "backdrop_path", "still_local", "still_path"];
+      const src = pick(item, mode === "wide" ? wideKeys : posterKeys);
+      if (src) return normalizeImageSrc(src);
+      if (item?.kind === "episode" && item?.show_tmdb_id){
+        const show = showMap.get(String(item.show_tmdb_id));
+        if (show){
+          return mode === "wide"
+            ? normalizeImageSrc(pick(show, ["backdrop_local", "backdrop_path", "poster_local", "poster_path"]))
+            : normalizeImageSrc(pick(show, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]));
+        }
+      }
+      if (item?.kind === "movie" && item?.tmdb_id){
+        const movie = movieMap.get(String(item.tmdb_id));
+        if (movie){
+          return mode === "wide"
+            ? normalizeImageSrc(pick(movie, ["backdrop_local", "backdrop_path", "poster_local", "poster_path"]))
+            : normalizeImageSrc(pick(movie, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]));
+        }
+      }
+      return "";
+    };
+
+    const infoTarget = (item) => {
+      if (item?.kind === "movie") return { kind: "movie", id: item?.tmdb_id };
+      return { kind: "show", id: item?.show_tmdb_id || item?.tmdb_id };
+    };
 
     upNext.innerHTML = nextItems.length ? nextItems.map(({dateKey, item}) => {
       const title = item.kind === "episode"
@@ -3944,123 +4306,175 @@ CHANGE NOTES
       const sub = item.kind === "episode"
         ? `${safeText(item.episode_name || "Episode")}`
         : "Movie release";
-      const img = item.thumb ? `<img loading="lazy" src="${escHtml(item.thumb)}" alt="" />` : `<img alt="" />`;
-      const links = item.links || {};
-      const mediaId = item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || "");
-      const pct = progressPercent(item);
-      const mediaLinks = buildMediaLinks(item.kind === "movie" ? "movie" : "show", mediaId, links);
-      const vidsrc = mediaLinks.vidsrc;
-      const videasy = mediaLinks.videasy;
-      const local = mediaLinks.local;
-      const wp = item.watch_providers;
-      const providers = collectProvidersForRegion(wp, "US").length
-        ? collectProvidersForRegion(wp, "US")
-        : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
-      const canWatch = providers.length > 0;
-    const watchBtn = canWatch
-      ? `<button class="iconbtn watch" type="button" title="Watch now" data-dash-watch="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_play", "single-click"))}">${escHtml(iconChar("action_play"))}</button>`
-      : "";
-    const actions = `
-      <div class="dashactions" data-action-host="1">
-        <button class="iconbtn list" type="button" title="Lists" data-action-menu="list" data-function-type="${escHtml(iconType("trakt_lists", "long-press"))}">${escHtml(iconChar("trakt_lists"))}</button>
-        <button class="iconbtn flag ${pct != null && pct >= 100 ? "yes" : "no"}" type="button" title="History" data-action-menu="history" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>
-        <button class="iconbtn date" type="button" title="When watched" data-action-menu="date" data-function-type="${escHtml(iconType("trakt_watch_date", "popup"))}">${escHtml(iconChar("trakt_watch_date"))}</button>
-        <button class="iconbtn info" type="button" title="Details" data-dash-open="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>
-        ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="Vidrsc" data-function-type="${escHtml(iconType("media_vidrsc", "link"))}">${escHtml(iconChar("media_vidrsc"))}</a>` : ""}
-        ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" data-function-type="${escHtml(iconType("media_videasy", "link"))}">${escHtml(iconChar("media_videasy"))}</a>` : ""}
-        ${local ? `<a class="iconbtn local" href="${escHtml(local)}" target="_blank" rel="noopener" title="Local media" data-function-type="${escHtml(iconType("media_local_file", "link"))}">${escHtml(iconChar("media_local_file"))}</a>` : ""}
-        ${watchBtn}
-        ${actionMenuHtml(item.kind, item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || ""), title)}
-      </div>
-      `;
+      const mode = "poster";
+      const imgSrc = imageForItem(item, mode);
+      const { kind, id } = infoTarget(item);
+      const pct = percentForItem(item);
       return `
         <div class="dashcard">
-          ${img}
+          <div class="dashimgwrap ${mode}">
+            ${imgSrc ? `<img loading="lazy" src="${escHtml(imgSrc)}" alt="" />` : `<img alt="" />`}
+          ${buildIconStripHtml(kind, id, pct, title)}
+          </div>
           <div class="dashmeta">
             <div class="k">${escHtml(title)}</div>
             <div class="s">${escHtml(sub)}</div>
-            <div class="s">${escHtml(fmtDate(dateKey))}</div>
-            ${actions}
+            <div class="s">${escHtml(formatDateShort(dateKey))}</div>
           </div>
         </div>
       `;
     }).join("") : `<div class="muted">No upcoming items found.</div>`;
 
-    schedule.innerHTML = scheduleItems.length ? scheduleItems.map(({dateKey, item}) => {
-      const title = item.kind === "episode"
-        ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
-        : safeText(item.title || "Movie");
-      const meta = item.kind === "episode"
-        ? safeText(item.episode_name || "Episode")
-        : "Movie release";
-      const links = item.links || {};
-      const mediaId = item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || "");
-      const pct = progressPercent(item);
-      const mediaLinks = buildMediaLinks(item.kind === "movie" ? "movie" : "show", mediaId, links);
-      const vidsrc = mediaLinks.vidsrc;
-      const videasy = mediaLinks.videasy;
-      const local = mediaLinks.local;
-      const wp = item.watch_providers;
-      const providers = collectProvidersForRegion(wp, "US").length
-        ? collectProvidersForRegion(wp, "US")
-        : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
-      const canWatch = providers.length > 0;
-      const watchBtn = canWatch
-        ? `<button class="iconbtn watch" type="button" title="Watch now" data-dash-watch="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_play", "single-click"))}">${escHtml(iconChar("action_play"))}</button>`
-        : "";
-      const actions = `
-        <div class="dashactions" data-action-host="1">
-          <button class="iconbtn list" type="button" title="Lists" data-action-menu="list" data-function-type="${escHtml(iconType("trakt_lists", "long-press"))}">${escHtml(iconChar("trakt_lists"))}</button>
-          <button class="iconbtn flag ${pct != null && pct >= 100 ? "yes" : "no"}" type="button" title="History" data-action-menu="history" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>
-          <button class="iconbtn date" type="button" title="When watched" data-action-menu="date" data-function-type="${escHtml(iconType("trakt_watch_date", "popup"))}">${escHtml(iconChar("trakt_watch_date"))}</button>
-          <button class="iconbtn info" type="button" title="Details" data-dash-open="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>
-          ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="Vidrsc" data-function-type="${escHtml(iconType("media_vidrsc", "link"))}">${escHtml(iconChar("media_vidrsc"))}</a>` : ""}
-          ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" data-function-type="${escHtml(iconType("media_videasy", "link"))}">${escHtml(iconChar("media_videasy"))}</a>` : ""}
-          ${local ? `<a class="iconbtn local" href="${escHtml(local)}" target="_blank" rel="noopener" title="Local media" data-function-type="${escHtml(iconType("media_local_file", "link"))}">${escHtml(iconChar("media_local_file"))}</a>` : ""}
-          ${watchBtn}
-          ${actionMenuHtml(item.kind, item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || ""), title)}
-        </div>
-      `;
+    const dateKeys = Array.from(new Set(events.map(e => e.dateKey))).slice(0, 7);
+    scheduleCols.innerHTML = dateKeys.length ? dateKeys.map(key => {
+      const dayItems = events.filter(e => e.dateKey === key).slice(0, 6);
+      const dayLabel = formatDateShort(key);
       return `
-        <div class="dashitem">
-          <div>
-            <div class="title">${escHtml(title)}</div>
-            <div class="meta">${escHtml(meta)}</div>
-            ${actions}
-          </div>
-          <div class="meta">${escHtml(fmtDate(dateKey))}</div>
+        <div class="dashcol">
+          <div class="dashcolhead">${escHtml(dayLabel)}</div>
+          ${dayItems.length ? dayItems.map(({item}) => {
+            const title = item.kind === "episode"
+              ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
+              : safeText(item.title || "Movie");
+            const metaText = item.kind === "episode"
+              ? safeText(item.episode_name || "Episode")
+              : "Movie release";
+            const mode = "poster";
+            const imgSrc = imageForItem(item, mode);
+            const { kind, id } = infoTarget(item);
+            const pct = percentForItem(item);
+            return `
+              <div class="dashcolitem">
+                <div class="dashimgwrap ${mode}">
+                  ${imgSrc ? `<img loading="lazy" src="${escHtml(imgSrc)}" alt="" />` : `<img alt="" />`}
+                ${buildIconStripHtml(kind, id, pct, title)}
+                </div>
+                <div class="title">${escHtml(title)}</div>
+                <div class="meta">${escHtml(metaText)}</div>
+              </div>
+            `;
+          }).join("") : `<div class="muted">No items</div>`}
         </div>
       `;
     }).join("") : `<div class="muted">No upcoming schedule.</div>`;
-    $$("[data-dash-watch]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const kind = safeText(btn.getAttribute("data-kind"));
-        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
-        if (!Number.isFinite(id)) return;
-        if (kind === "movie"){
-          const movie = getMovieById(id);
-          if (!movie) return;
-          const html = renderWatchProvidersHtml(movie, "movie");
-          openProviderModal(`${safeText(movie.title || "Movie")} • Where to watch`, html);
-          return;
-        }
-        const show = getShowById(id);
-        if (!show) return;
-        const html = renderWatchProvidersHtml(show, "tv");
-        openProviderModal(`${safeText(show.title || show.name || "Show")} • Where to watch`, html);
-      });
+
+    const pastDateKeys = Array.from(new Set(pastEvents.map(e => e.dateKey)));
+    const lastWeekMeta = $("#dashLastWeekMeta");
+    if (lastWeekMeta) lastWeekMeta.textContent = pastDateKeys.length ? `${pastDateKeys.length} days` : "No recent items";
+    lastWeekCols.innerHTML = pastDateKeys.length ? pastDateKeys.map(key => {
+      const dayItems = pastEvents.filter(e => e.dateKey === key).slice(0, 6);
+      const dayLabel = formatDateShort(key);
+      return `
+        <div class="dashcol">
+          <div class="dashcolhead">${escHtml(dayLabel)}</div>
+          ${dayItems.length ? dayItems.map(({item}) => {
+            const title = item.kind === "episode"
+              ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
+              : safeText(item.title || "Movie");
+            const metaText = item.kind === "episode"
+              ? safeText(item.episode_name || "Episode")
+              : "Movie release";
+            const mode = "poster";
+            const imgSrc = imageForItem(item, mode);
+            const { kind, id } = infoTarget(item);
+            const pct = percentForItem(item);
+            return `
+              <div class="dashcolitem">
+                <div class="dashimgwrap ${mode}">
+                  ${imgSrc ? `<img loading="lazy" src="${escHtml(imgSrc)}" alt="" />` : `<img alt="" />`}
+                ${buildIconStripHtml(kind, id, pct, title)}
+                </div>
+                <div class="title">${escHtml(title)}</div>
+                <div class="meta">${escHtml(metaText)}</div>
+              </div>
+            `;
+          }).join("") : `<div class="muted">No items</div>`}
+        </div>
+      `;
+    }).join("") : `<div class="muted">No recent schedule.</div>`;
+
+    const list = ensureWatchlist();
+    const watchMeta = $("#dashWatchMeta");
+    if (watchMeta) watchMeta.textContent = list.length ? `${list.length} items` : "No items";
+    const watchItems = list.slice(0, 10).map(entry => {
+      const id = String(entry?.tmdb_id ?? "");
+      const show = id ? showMap.get(id) : null;
+      const movie = id ? movieMap.get(id) : null;
+      const title = safeText(entry?.title || show?.title || show?.name || movie?.title || "Untitled");
+      const poster = show ? normalizeImageSrc(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path"))
+        : (movie ? normalizeImageSrc(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path")) : "");
+      const pct = percentForItem(show || movie || entry);
+      const infoKind = show ? "show" : (movie ? "movie" : "");
+      const infoId = show ? show?.tmdb_id : (movie ? movie?.tmdb_id : "");
+      return `
+        <div class="dashwatchcard">
+          <div class="dashimgwrap poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<img alt="" />`}
+          ${buildIconStripHtml(infoKind, infoId, pct, title)}
+          </div>
+          <div class="dashmeta">
+            <div class="k">${escHtml(title)}</div>
+            <div class="s">${escHtml(entry?.media_kind || (show ? "show" : (movie ? "movie" : "unknown")))}</div>
+          </div>
+        </div>
+      `;
     });
+    watchlistEl.innerHTML = watchItems.length ? watchItems.join("") : `<div class="muted">No watchlist items.</div>`;
+
+    const showRecsList = (state.data?.shows || []).slice().sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0)).slice(0, 10);
+    const movieRecsList = (state.data?.movies || []).slice().sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0)).slice(0, 10);
+    showRecs.innerHTML = showRecsList.length ? showRecsList.map(s => {
+      const poster = pickImage(s, "poster_local", "poster_path", "backdrop_local", "backdrop_path");
+      const pct = percentForItem(s);
+      return `
+        <div class="dashcard">
+          <div class="dashimgwrap poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<img alt="" />`}
+          ${buildIconStripHtml("show", s?.tmdb_id, pct, safeText(s?.title || s?.name || "Show"))}
+          </div>
+          <div class="dashmeta">
+            <div class="k">${escHtml(s?.title || s?.name || "Show")}</div>
+            <div class="s">${escHtml(s?.first_air_date ? fmtDate(s.first_air_date) : "")}</div>
+          </div>
+        </div>
+      `;
+    }).join("") : `<div class="muted">No recommendations.</div>`;
+
+    movieRecs.innerHTML = movieRecsList.length ? movieRecsList.map(m => {
+      const poster = pickImage(m, "poster_local", "poster_path", "backdrop_local", "backdrop_path");
+      const pct = percentForItem(m);
+      return `
+        <div class="dashcard">
+          <div class="dashimgwrap poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<img alt="" />`}
+          ${buildIconStripHtml("movie", m?.tmdb_id, pct, safeText(m?.title || "Movie"))}
+          </div>
+          <div class="dashmeta">
+            <div class="k">${escHtml(m?.title || "Movie")}</div>
+            <div class="s">${escHtml(m?.release_date ? fmtDate(m.release_date) : "")}</div>
+          </div>
+        </div>
+      `;
+    }).join("") : `<div class="muted">No recommendations.</div>`;
+
     wireActionMenus($("#dashUpNext"));
-    wireActionMenus($("#dashSchedule"));
-    $$("[data-dash-open]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const kind = safeText(btn.getAttribute("data-kind"));
-        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
-        if (!Number.isFinite(id)) return;
-        if (kind === "movie") return openMovieModal(id);
-        if (kind === "episode" || kind === "show") return gotoShow(id);
-      });
-    });
+    wireActionMenus($("#dashScheduleCols"));
+    wireActionMenus($("#dashLastWeekCols"));
+    wireActionMenus($("#dashWatchlist"));
+    wireActionMenus($("#dashShowRecs"));
+    wireActionMenus($("#dashMovieRecs"));
+    wireIconStripActions($("#dashUpNext"), renderDashboard);
+    wireIconStripActions($("#dashScheduleCols"), renderDashboard);
+    wireIconStripActions($("#dashLastWeekCols"), renderDashboard);
+    wireIconStripActions($("#dashWatchlist"), renderDashboard);
+    wireIconStripActions($("#dashShowRecs"), renderDashboard);
+    wireIconStripActions($("#dashMovieRecs"), renderDashboard);
+    wireIconStripActions($("#dashUpNext"), renderDashboard);
+    wireIconStripActions($("#dashScheduleCols"), renderDashboard);
+    wireIconStripActions($("#dashLastWeekCols"), renderDashboard);
+    wireIconStripActions($("#dashWatchlist"), renderDashboard);
+    wireIconStripActions($("#dashShowRecs"), renderDashboard);
+    wireIconStripActions($("#dashMovieRecs"), renderDashboard);
   }
 
   function renderShows(){
@@ -4155,6 +4569,8 @@ CHANGE NOTES
       });
     });
     wireActionMenus($("#showsGrid"));
+    wireIconStripActions($("#showsGrid"), renderShows);
+    wireIconStripActions($("#showsGrid"), renderShows);
     $$("[data-action='toggle-watched'][data-kind='show']", $("#showsGrid")).forEach(btn => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -4174,40 +4590,30 @@ CHANGE NOTES
     const id = Number(s?.tmdb_id) || 0;
     const title = safeText(s?.title || s?.name || "(Untitled)");
     const poster = pickImage(s, "poster_local", "poster_path");
-    const watched = isShowWatched(s);
-    const toggle = (state.watchStateSource === "local")
-      ? `<label class="switch show">
-          <input type="checkbox" data-watch-show="${id}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
-        </label>`
-      : "";
     const firstAir = safeText(s?.first_air_date);
     const lastAir = safeText(s?.last_air_date);
     const meta = [
       (firstAir ? `Since ${fmtDate(firstAir)}` : ""),
       (lastAir ? `• ${fmtDate(lastAir)}` : ""),
     ].join(" ").trim();
+    const ratingRaw = Number(s?.rating?.pct ?? s?.rating?.percent ?? s?.vote_average ?? s?.rating ?? 0);
+    const ratingPct = (Number.isFinite(ratingRaw) && ratingRaw > 0)
+      ? (ratingRaw <= 10 ? Math.round(ratingRaw * 10) : Math.round(ratingRaw))
+      : null;
+    const pct = progressPercent(s);
+    const iconstrip = buildIconStripHtml("show", id, (pct != null ? pct : ratingPct), title);
 
     const eyeClass = eye?.fade ? " faded" : "";
     return `
       <div class="card${eyeClass}">
+        <button type="button" class="imgbox" data-show-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
+          ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
+          ${iconstrip}
+        </button>
         <div class="cardbody">
           <div class="cardhead">
             <div class="cardtitle">${escHtml(title)}</div>
-            <div class="cardtoggle">${toggle}</div>
           </div>
-          <div class="actionbar" data-action-host="1">
-            <button class="iconbtn list" type="button" title="Lists" data-action-menu="list" data-function-type="${escHtml(iconType("trakt_lists", "long-press"))}">${escHtml(iconChar("trakt_lists"))}</button>
-            <button class="iconbtn flag ${watched ? "yes" : "no"}" type="button" title="History" data-action-menu="history" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>
-            <button class="iconbtn date" type="button" title="When watched" data-action-menu="date" data-function-type="${escHtml(iconType("trakt_watch_date", "popup"))}">${escHtml(iconChar("trakt_watch_date"))}</button>
-            <button class="iconbtn info" type="button" title="Details" data-show-open="${id}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>
-            ${actionMenuHtml("show", id, title)}
-          </div>
-        </div>
-        <button type="button" class="imgbox" data-show-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
-          ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
-        </button>
-        <div class="cardbody">
           <div class="cardmeta">${escHtml(meta)}</div>
         </div>
       </div>
@@ -4311,6 +4717,7 @@ CHANGE NOTES
       });
     });
     wireActionMenus($("#moviesGrid"));
+    wireIconStripActions($("#moviesGrid"), renderMovies);
     $$("[data-action='toggle-watched'][data-kind='movie']", $("#moviesGrid")).forEach(btn => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -4422,13 +4829,6 @@ CHANGE NOTES
     const id = Number(m?.tmdb_id) || 0;
     const title = safeText(m?.title || "(Untitled)");
     const poster = pickImage(m, "poster_local", "poster_path");
-    const watched = isMovieWatched(m);
-    const toggle = (state.watchStateSource === "local")
-      ? `<label class="switch movie">
-          <input type="checkbox" data-watch-movie="${id}" ${watched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
-        </label>`
-      : "";
     const rd = safeText(m?.release_date);
     const rt = m?.runtime;
     const genres = Array.isArray(m?.genres) ? m.genres.map(g => g?.name).filter(Boolean) : [];
@@ -4437,37 +4837,25 @@ CHANGE NOTES
       (rt ? `• ${rt} min` : ""),
       (genres.length ? `• ${genres.join(" / ")}` : "")
     ].join(" ").trim();
-
-    const links = m?.links && typeof m.links === "object" ? m.links : {};
-    const mediaLinks = buildMediaLinks("movie", id, links);
-    const vidsrc = mediaLinks.vidsrc;
-    const videasy = mediaLinks.videasy;
+    const ratingRaw = Number(m?.rating?.pct ?? m?.rating?.percent ?? m?.vote_average ?? m?.rating ?? 0);
+    const ratingPct = (Number.isFinite(ratingRaw) && ratingRaw > 0)
+      ? (ratingRaw <= 10 ? Math.round(ratingRaw * 10) : Math.round(ratingRaw))
+      : null;
+    const pct = progressPercent(m);
+    const iconstrip = buildIconStripHtml("movie", id, (pct != null ? pct : ratingPct), title);
 
     const eyeClass = eye?.fade ? " faded" : "";
     return `
       <div class="card${eyeClass}">
+        <button type="button" class="imgbox" data-movie-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
+          ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
+          ${iconstrip}
+        </button>
         <div class="cardbody">
           <div class="cardhead">
             <div class="cardtitle">${escHtml(title)}</div>
-            <div class="cardtoggle">${toggle}</div>
           </div>
-          <div class="actionbar" data-action-host="1">
-            <button class="iconbtn list" type="button" title="Lists" data-action-menu="list" data-function-type="${escHtml(iconType("trakt_lists", "long-press"))}">${escHtml(iconChar("trakt_lists"))}</button>
-            <button class="iconbtn flag ${watched ? "yes" : "no"}" type="button" title="History" data-action-menu="history" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>
-            <button class="iconbtn date" type="button" title="When watched" data-action-menu="date" data-function-type="${escHtml(iconType("trakt_watch_date", "popup"))}">${escHtml(iconChar("trakt_watch_date"))}</button>
-            <button class="iconbtn info" type="button" title="Details" data-movie-open="${id}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>
-            ${actionMenuHtml("movie", id, title)}
-          </div>
-        </div>
-        <button type="button" class="imgbox" data-movie-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
-          ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
-        </button>
-        <div class="cardbody">
           <div class="cardmeta">${escHtml(meta)}</div>
-          <div class="actionstack">
-            ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" aria-label="Vidrsc" data-function-type="${escHtml(iconType("media_vidrsc", "link"))}">${escHtml(iconChar("media_vidrsc"))}</a>` : ""}
-            ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" aria-label="VidEasy" data-function-type="${escHtml(iconType("media_videasy", "link"))}">${escHtml(iconChar("media_videasy"))}</a>` : ""}
-          </div>
         </div>
       </div>
     `;
@@ -4591,12 +4979,7 @@ CHANGE NOTES
     const backdrop = pickImage(show, "backdrop_local", "backdrop_path");
     const canToggle = (state.watchStateSource === "local");
     const showWatched = isShowWatched(show);
-    const showToggle = canToggle
-      ? `<label class="switch show">
-          <input type="checkbox" data-watch-show="${escHtml(show.tmdb_id ?? "")}" ${showWatched ? "checked" : ""} />
-          <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
-        </label>`
-      : "";
+    const showToggle = "";
 
     const seasons = Array.isArray(show.seasons) ? show.seasons : [];
     const seasonItems = seasons.map((s, idx) => {
@@ -4616,7 +4999,7 @@ CHANGE NOTES
     const seasonBackdrop = selSeason ? pickImage(selSeason, "backdrop_local", "backdrop_path") : "";
     const seasonName = safeText(selSeason?.name || (selItem?.n != null ? `Season ${selItem.n}` : "Season"));
     const seasonOverview = safeText(selSeason?.overview || "");
-    const seasonAir = safeText(selSeason?.air_date || selSeason?.first_air_date || "");
+    const seasonAir = pickAirDate(selSeason);
 
     const episodes = Array.isArray(selSeason?.episodes) ? selSeason.episodes : [];
     const seasonEpisodeCount = episodes.length;
@@ -4650,12 +5033,7 @@ CHANGE NOTES
       const checked = (Number.isFinite(it.n) && Number(it.n) === Number(selNum)) ? "checked" : "";
       const totalEpisodes = Array.isArray(it.s?.episodes) ? it.s.episodes.length : 0;
       const seasonWatched = state.watchState ? isSeasonWatched(show.tmdb_id, it.n, totalEpisodes) : false;
-      const seasonToggle = canToggle
-        ? `<label class="switch season">
-            <input type="checkbox" data-watch-season="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(it.n)}" ${seasonWatched ? "checked" : ""} />
-            <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
-          </label>`
-        : "";
+      const seasonToggle = "";
       return `
         <div class="seasonopt">
           <input type="radio" name="seasonPick" value="${escHtml(it.n)}" ${checked} />
@@ -4672,15 +5050,10 @@ CHANGE NOTES
       const epName = safeText(ep?.title || ep?.name || `Episode ${eNum || ""}`);
       const epOverview = safeText(ep?.overview || "");
       const epStill = pickImage(ep, "still_local", "still_path");
-      const epAir = safeText(ep?.air_date || "");
+      const epAir = pickAirDate(ep);
       const epRun = ep?.runtime;
       const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, sNum, eNum) : false;
-      const epToggle = canToggle
-        ? `<label class="switch episode">
-            <input type="checkbox" data-watch-episode="1" data-show="${escHtml(show.tmdb_id ?? "")}" data-season="${escHtml(sNum)}" data-episode="${escHtml(eNum)}" ${epWatched ? "checked" : ""} />
-            <span class="track"><span class="thumb"></span><span class="ontext">watched</span><span class="offtext">unwatched</span></span>
-          </label>`
-        : "";
+      const epToggle = "";
 
       const mediaLinks = buildMediaLinks("episode", show.tmdb_id, ep?.links || {});
       const vsrc = mediaLinks.vidsrc;

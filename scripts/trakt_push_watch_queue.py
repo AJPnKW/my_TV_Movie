@@ -40,6 +40,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 import datetime as _dt
 import urllib.request
 import urllib.error
@@ -47,17 +48,19 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from trakt_http import build_headers, header_names, USER_AGENT  # noqa: E402
 DATA_DIR = REPO_ROOT / "data"
 QUEUE_PATH = DATA_DIR / "watch_queue.json"
 ACK_PATH = DATA_DIR / "watch_queue.acked.json"
 REPORT_PATH = DATA_DIR / "trakt_push_watch_queue_report.json"
 LOG_DIR = REPO_ROOT / "logs"
-TOK_OUT = DATA_DIR / "trakt_tokens_latest.json"
-TOK_FALLBACK = DATA_DIR / "trakt.json"
+TOK_OUT = DATA_DIR / "trakt.json"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
 TRAKT_TOKEN_URL = "https://trakt.tv/oauth/token"
-TRAKT_API_VERSION = "2"
 DEFAULT_TIMEOUT = 45
 
 
@@ -92,14 +95,12 @@ def load_json(path: Path) -> Dict[str, Any]:
         return {}
 
 def load_tokens_file() -> Dict[str, Any]:
-    for path in (TOK_OUT, TOK_FALLBACK):
-        if not path.exists():
-            continue
-        try:
-            return json.loads(path.read_text(encoding="utf-8", errors="replace"))
-        except Exception:
-            continue
-    return {}
+    if not TOK_OUT.exists():
+        return {}
+    try:
+        return json.loads(TOK_OUT.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return {}
 
 
 def save_json(path: Path, obj: Any) -> None:
@@ -108,9 +109,8 @@ def save_json(path: Path, obj: Any) -> None:
 
 
 def trakt_headers(client_id: str, access_token: str | None = None) -> dict:
-    h = {"trakt-api-version": TRAKT_API_VERSION, "trakt-api-key": client_id, "Content-Type": "application/json"}
-    if access_token and not blank(access_token):
-        h["Authorization"] = f"Bearer {access_token}"
+    h = build_headers(client_id, access_token, include_auth=True)
+    h["Content-Type"] = "application/json"
     return h
 
 
@@ -131,7 +131,12 @@ def refresh_tokens(client_id: str, client_secret: str, refresh_token: str) -> di
         "client_secret": client_secret,
         "grant_type": "refresh_token",
     }
-    return http_json(TRAKT_TOKEN_URL, headers={"Content-Type": "application/json"}, method="POST", body_obj=payload)
+    return http_json(
+        TRAKT_TOKEN_URL,
+        headers={"Content-Type": "application/json", "User-Agent": USER_AGENT, "Accept": "application/json"},
+        method="POST",
+        body_obj=payload,
+    )
 
 
 def build_bulk_payload(items: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -217,13 +222,16 @@ def main() -> int:
 
         client_id = os.getenv("API_TRAKT_ID")
         client_secret = os.getenv("API_TRAKT_SECRET") or os.getenv("API_TRAKT_KEY")
-        access_token = os.getenv("API_TRAKT_ACCESS_TOKEN")
-        refresh_token = os.getenv("API_TRAKT_REFRESH_TOKEN")
+        access_token = None
+        refresh_token = None
+
+        tok = load_tokens_file()
+        access_token = tok.get("access_token") or access_token
+        refresh_token = tok.get("refresh_token") or refresh_token
 
         if blank(access_token):
-            tok = load_tokens_file()
-            access_token = tok.get("access_token") or access_token
-            refresh_token = tok.get("refresh_token") or refresh_token
+            access_token = os.getenv("API_TRAKT_ACCESS_TOKEN")
+            refresh_token = os.getenv("API_TRAKT_REFRESH_TOKEN") or refresh_token
 
         if blank(client_id) or blank(access_token):
             log_line(log_fh, "no-op (missing OAuth token/client id)")
@@ -273,7 +281,11 @@ def main() -> int:
                 return http_json(url, trakt_headers(client_id, tok), method="POST", body_obj=payload)
             except urllib.error.HTTPError as e:
                 body = e.read().decode("utf-8", errors="replace") if getattr(e, "fp", None) else ""
-                return {"status": int(getattr(e, "code", 0) or 0), "body": body[:800]}
+                return {
+                    "status": int(getattr(e, "code", 0) or 0),
+                    "headers": header_names(trakt_headers(client_id, tok)),
+                    "body": body[:300],
+                }
             except Exception as ex:
                 return {"error": str(ex)[:300]}
 
@@ -287,9 +299,8 @@ def main() -> int:
                     new_refresh = tok2.get("refresh_token")
                     if not blank(new_access) and not blank(new_refresh):
                         payload_tok = {"generated_utc": utc(), "access_token": new_access, "refresh_token": new_refresh}
-                        (DATA_DIR / "trakt_tokens_latest.json").write_text(json.dumps(payload_tok, indent=2), encoding="utf-8")
                         (DATA_DIR / "trakt.json").write_text(json.dumps(payload_tok, indent=2), encoding="utf-8")
-                        log_line(log_fh, "refreshed tokens written to data/trakt_tokens_latest.json and data/trakt.json")
+                        log_line(log_fh, "refreshed tokens written to data/trakt.json")
                         return do_post(path, payload, new_access)
                 except Exception as ex:
                     return {"status": 401, "refresh_error": str(ex)[:300], "original": resp}

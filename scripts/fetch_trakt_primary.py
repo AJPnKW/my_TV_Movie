@@ -2,17 +2,19 @@
 # ==============================================================================
 # [FILE]    scripts/fetch_trakt_primary.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Build primary dataset from Trakt (single source of truth)
-# [VERSION] v1.0.0
-# [UPDATED] 2026-02-01
+# [ROLE]    Build catalog from inputs.json and Trakt metadata + user state
+# [VERSION] v1.2.0
+# [UPDATED] 2026-02-02
+#
+# Inputs:
+#   data/inputs.json (catalog scope with tmdb_id + season_spec)
 #
 # Requires OAuth tokens:
 #   API_TRAKT_ID
-#   API_TRAKT_SECRET (or API_TRAKT_KEY)
-#   access/refresh tokens (env or data/trakt_tokens_latest.json)
+#   access token (env or data/trakt.json)
 #
 # Output:
-#   data/data.json (Trakt-primary)
+#   data/data.json (Trakt metadata + user state; TMDB only used later for assets)
 # ==============================================================================
 
 from __future__ import annotations
@@ -30,14 +32,18 @@ except Exception as ex:
     raise SystemExit("Missing dependency: requests. Run: python -m pip install -r requirements.txt") from ex
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from trakt_http import build_headers, header_names  # noqa: E402
+
 DATA_DIR = REPO_ROOT / "data"
+INPUTS_JSON = DATA_DIR / "inputs.json"
 DATA_JSON = DATA_DIR / "data.json"
-TOK_OUT = DATA_DIR / "trakt_tokens_latest.json"
-TOK_FALLBACK = DATA_DIR / "trakt.json"
-LOGS_DIR = REPO_ROOT / "logs"
+TOK_FILE = DATA_DIR / "trakt.json"
+CONFIG_JSON = REPO_ROOT / "web" / "config.json"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
-TRAKT_API_VERSION = "2"
 DEFAULT_TIMEOUT = 45
 
 
@@ -49,39 +55,183 @@ def blank(v: Any) -> bool:
     return v is None or str(v).strip() == ""
 
 
+def to_int(val: Any) -> Optional[int]:
+    try:
+        s = str(val).strip()
+        if not s:
+            return None
+        return int(s)
+    except Exception:
+        return None
+
+
+def read_text(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def strip_jsonc(s: str) -> str:
+    lines = []
+    for line in s.splitlines():
+        stripped = line.lstrip()
+        if stripped.startswith("//"):
+            continue
+        out = []
+        in_str = False
+        esc = False
+        i = 0
+        while i < len(line):
+            ch = line[i]
+            if in_str:
+                out.append(ch)
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == "\"":
+                    in_str = False
+                i += 1
+                continue
+            if ch == "\"":
+                in_str = True
+                out.append(ch)
+                i += 1
+                continue
+            if ch == "/" and i + 1 < len(line) and line[i + 1] == "/":
+                break
+            out.append(ch)
+            i += 1
+        lines.append("".join(out).rstrip())
+    cleaned = "\n".join(lines)
+    if not cleaned.lstrip().startswith("{"):
+        brace = cleaned.find("{")
+        if brace != -1:
+            cleaned = cleaned[brace:]
+    return cleaned
+
+
+def load_jsonc(path: Path) -> Dict[str, Any]:
+    return json.loads(strip_jsonc(read_text(path)))
+
+
 def load_tokens_file() -> Dict[str, Any]:
-    for path in (TOK_OUT, TOK_FALLBACK):
-        if not path.is_file():
-            continue
-        try:
-            return json.loads(path.read_text(encoding="utf-8", errors="replace"))
-        except Exception:
-            continue
-    return {}
+    if not TOK_FILE.is_file():
+        return {}
+    try:
+        return json.loads(TOK_FILE.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return {}
 
 
-def trakt_headers(client_id: str, access_token: Optional[str]) -> Dict[str, str]:
-    h = {"trakt-api-version": TRAKT_API_VERSION, "trakt-api-key": client_id}
-    if access_token and not blank(access_token):
-        h["Authorization"] = f"Bearer {access_token}"
-    return h
+def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    if not INPUTS_JSON.is_file():
+        raise FileNotFoundError(f"Missing required file: {INPUTS_JSON}")
+    js = json.loads(INPUTS_JSON.read_text(encoding="utf-8", errors="replace"))
+    tv = js.get("tv") or js.get("shows") or js.get("series") or []
+    mv = js.get("movies") or js.get("films") or []
+    if not isinstance(tv, list) or not isinstance(mv, list):
+        raise ValueError("inputs.json must contain arrays: { tv: [...], movies: [...] }")
+    return tv, mv
 
 
-def trakt_get(path: str, client_id: str, access_token: Optional[str], params: Optional[Dict[str, Any]] = None) -> Any:
+def trakt_get(
+    path: str,
+    client_id: str,
+    access_token: Optional[str],
+    params: Optional[Dict[str, Any]] = None,
+    include_auth: bool = True,
+) -> Any:
     url = f"{TRAKT_API_BASE}{path}"
-    r = requests.get(url, headers=trakt_headers(client_id, access_token), params=params or {}, timeout=DEFAULT_TIMEOUT)
+    headers = build_headers(client_id, access_token, include_auth=include_auth)
+    r = requests.get(url, headers=headers, params=params or {}, timeout=DEFAULT_TIMEOUT)
     if r.status_code != 200:
-        raise RuntimeError(f"TRAKT GET {path} failed: {r.status_code} {r.text[:300]}")
+        raise RuntimeError(
+            f"TRAKT GET {path} failed: {r.status_code} headers=[{header_names(headers)}] body={r.text[:300]}"
+        )
     return r.json()
 
 
-def to_genres_list(names: Any) -> List[Dict[str, Any]]:
-    if not isinstance(names, list):
-        return []
-    return [{"name": n} for n in names if isinstance(n, str) and n.strip()]
+def trakt_get_public(path: str, client_id: str, params: Optional[Dict[str, Any]] = None) -> Any:
+    return trakt_get(path, client_id, access_token=None, params=params, include_auth=False)
 
 
-def norm_show(obj: Dict[str, Any]) -> Dict[str, Any]:
+def parse_season_rule(spec: str) -> Tuple[str, Optional[List[int]], Optional[int]]:
+    s = (spec or "").strip()
+    if not s or s == "*":
+        return ("all", None, None)
+    if s.endswith("+"):
+        try:
+            return ("min", None, int(s[:-1]))
+        except Exception:
+            return ("all", None, None)
+    seasons: List[int] = []
+    for part in s.split(","):
+        p = part.strip()
+        if not p:
+            continue
+        if "-" in p:
+            a, b = p.split("-", 1)
+            try:
+                start = int(a)
+                end = int(b)
+                if start <= end:
+                    seasons.extend(list(range(start, end + 1)))
+                else:
+                    seasons.extend(list(range(end, start + 1)))
+            except Exception:
+                continue
+        else:
+            try:
+                seasons.append(int(p))
+            except Exception:
+                continue
+    seasons = sorted({x for x in seasons if x > 0})
+    return ("filter", seasons or None, None)
+
+
+def season_allowed(season_number: int, mode: str, flt: Optional[List[int]], mn: Optional[int]) -> bool:
+    if season_number <= 0:
+        return False
+    if mode == "all":
+        return True
+    if mode == "min":
+        return mn is not None and season_number >= mn
+    if mode == "filter":
+        return flt is not None and season_number in flt
+    return True
+
+
+def trakt_search_tmdb(client_id: str, access_token: str, media_type: str, tmdb_id: int) -> Optional[Dict[str, Any]]:
+    data = trakt_get_public(f"/search/tmdb/{tmdb_id}", client_id, params={"type": media_type, "extended": "full"})
+    if not isinstance(data, list) or not data:
+        return None
+    item = data[0].get(media_type)
+    return item if isinstance(item, dict) else None
+
+
+def trakt_slug_link(kind: str, ids: Dict[str, Any]) -> str:
+    slug = (ids or {}).get("slug")
+    if not slug:
+        return ""
+    base = "shows" if kind == "show" else "movies"
+    return f"https://trakt.tv/{base}/{slug}"
+
+
+def build_stream_links(cfg: Dict[str, Any], kind: str, tmdb_id: Any) -> Dict[str, str]:
+    tmdb = str(tmdb_id or "").strip()
+    if not tmdb:
+        return {}
+    streaming = cfg.get("streaming") if isinstance(cfg, dict) else {}
+    vidsrc_base = streaming.get("vidsrc_tv") if kind == "episode" else streaming.get("vidsrc_movie")
+    videasy_base = streaming.get("videasy_tv") if kind == "episode" else streaming.get("videasy_movie")
+    out: Dict[str, str] = {}
+    if vidsrc_base:
+        out["vidsrc"] = f"{vidsrc_base}{tmdb}"
+    if videasy_base:
+        out["videasy"] = f"{videasy_base}{tmdb}"
+    return out
+
+
+def normalize_show(obj: Dict[str, Any], season_mode: str, season_filter: Optional[List[int]], season_min: Optional[int]) -> Dict[str, Any]:
     ids = obj.get("ids") or {}
     return {
         "tmdb_id": ids.get("tmdb"),
@@ -97,14 +247,17 @@ def norm_show(obj: Dict[str, Any]) -> Dict[str, Any]:
         "network": obj.get("network"),
         "country": obj.get("country"),
         "language": obj.get("language"),
-        "genres": to_genres_list(obj.get("genres")),
+        "genres": [{"name": g} for g in (obj.get("genres") or []) if isinstance(g, str)],
         "number_of_episodes": obj.get("aired_episodes"),
+        "season_mode": season_mode,
+        "season_filter": season_filter,
+        "season_min": season_min,
         "seasons": [],
-        "links": {"trakt": obj.get("trakt_url") or ""},
+        "links": {"trakt": trakt_slug_link("show", ids)},
     }
 
 
-def norm_movie(obj: Dict[str, Any]) -> Dict[str, Any]:
+def normalize_movie(obj: Dict[str, Any]) -> Dict[str, Any]:
     ids = obj.get("ids") or {}
     return {
         "tmdb_id": ids.get("tmdb"),
@@ -115,19 +268,21 @@ def norm_movie(obj: Dict[str, Any]) -> Dict[str, Any]:
         "release_date": obj.get("released"),
         "runtime": obj.get("runtime"),
         "language": obj.get("language"),
-        "genres": to_genres_list(obj.get("genres")),
-        "links": {"trakt": obj.get("trakt_url") or ""},
+        "genres": [{"name": g} for g in (obj.get("genres") or []) if isinstance(g, str)],
+        "links": {"trakt": trakt_slug_link("movie", ids)},
     }
 
 
-def pull_show_seasons(show_id: str, client_id: str, access_token: str) -> List[Dict[str, Any]]:
+def pull_show_seasons(show_id: str, client_id: str, access_token: str, season_mode: str, season_filter: Optional[List[int]], season_min: Optional[int]) -> List[Dict[str, Any]]:
     seasons = trakt_get(f"/shows/{show_id}/seasons", client_id, access_token, params={"extended": "episodes"})
     out: List[Dict[str, Any]] = []
     for s in seasons or []:
         if not isinstance(s, dict):
             continue
         season_number = s.get("number")
-        if season_number is None:
+        if not isinstance(season_number, int):
+            continue
+        if not season_allowed(season_number, season_mode, season_filter, season_min):
             continue
         season_obj = {
             "season_number": season_number,
@@ -158,28 +313,27 @@ def pull_show_seasons(show_id: str, client_id: str, access_token: str) -> List[D
 
 def main() -> int:
     client_id = os.getenv("API_TRAKT_ID")
-    client_secret = os.getenv("API_TRAKT_SECRET") or os.getenv("API_TRAKT_KEY")
-    access_token = os.getenv("API_TRAKT_ACCESS_TOKEN")
-    refresh_token = os.getenv("API_TRAKT_REFRESH_TOKEN")
-
-    if blank(client_id) or blank(client_secret):
-        print("ERROR: Missing API_TRAKT_ID or API_TRAKT_SECRET.", file=sys.stderr)
+    if blank(client_id):
+        print("ERROR: Missing API_TRAKT_ID.", file=sys.stderr)
         return 2
 
+    access_token = None
+    tok = load_tokens_file()
+    access_token = tok.get("access_token") or access_token
     if blank(access_token):
-        tok = load_tokens_file()
-        access_token = tok.get("access_token") or access_token
-        refresh_token = tok.get("refresh_token") or refresh_token
-
+        access_token = os.getenv("API_TRAKT_ACCESS_TOKEN") or access_token
     if blank(access_token):
         print("ERROR: Missing Trakt access token. Run scripts/trakt_device_auth.py first.", file=sys.stderr)
         return 3
 
+    tv_list, movie_list = load_inputs()
+    cfg = load_jsonc(CONFIG_JSON)
+
     data: Dict[str, Any] = {
         "meta": {
             "generated_utc": _utc(),
-            "builder": {"script": "scripts/fetch_trakt_primary.py", "version": "v1.0.0"},
-            "source": "trakt_primary",
+            "builder": {"script": "scripts/fetch_trakt_primary.py", "version": "v1.2.0"},
+            "source": "inputs + trakt metadata + trakt user state",
         },
         "shows": [],
         "movies": [],
@@ -196,14 +350,27 @@ def main() -> int:
             errors.append({"type": "trakt_fetch", "path": path, "message": str(ex)[:300], "utc": _utc()})
             return []
 
+    def safe_get_public(path: str, params: Optional[Dict[str, Any]] = None) -> Any:
+        try:
+            return trakt_get_public(path, client_id, params=params)
+        except Exception as ex:
+            errors.append({"type": "trakt_fetch", "path": path, "message": str(ex)[:300], "utc": _utc()})
+            return []
+
+    # Resolve username for list endpoints
+    settings = safe_get("/users/settings")
+    user_obj = (settings or {}).get("user") or {}
+    username = user_obj.get("username") or (user_obj.get("ids") or {}).get("slug")
+
     # Core user datasets
-    lists = safe_get("/users/me/lists")
+    lists = safe_get(f"/users/{username}/lists") if username else []
     list_items: Dict[str, Any] = {}
     for lst in lists or []:
         list_id = lst.get("ids", {}).get("trakt")
         if list_id is None:
             continue
-        list_items[str(list_id)] = safe_get(f"/users/me/lists/{list_id}/items", params={"extended": "full"})
+        if username:
+            list_items[str(list_id)] = safe_get(f"/users/{username}/lists/{list_id}/items", params={"extended": "full"})
 
     collection_movies = safe_get("/sync/collection/movies", params={"extended": "full"})
     collection_shows = safe_get("/sync/collection/shows", params={"extended": "full"})
@@ -214,100 +381,222 @@ def main() -> int:
     playback = safe_get("/sync/playback")
     activity = safe_get("/sync/last_activities")
 
-    # Discovery / trends (public, but OK with auth headers)
-    trending_movies = safe_get("/movies/trending", params={"extended": "full"})
-    trending_shows = safe_get("/shows/trending", params={"extended": "full"})
-    popular_movies = safe_get("/movies/popular", params={"extended": "full"})
-    popular_shows = safe_get("/shows/popular", params={"extended": "full"})
-    anticipated_movies = safe_get("/movies/anticipated", params={"extended": "full"})
-    anticipated_shows = safe_get("/shows/anticipated", params={"extended": "full"})
-    recommended_movies = safe_get("/movies/recommended", params={"extended": "full"})
-    recommended_shows = safe_get("/shows/recommended", params={"extended": "full"})
+    genres_movies = safe_get_public("/genres/movies")
+    genres_shows = safe_get_public("/genres/shows")
 
-    # Calendar (next 7 days)
-    today = _dt.date.today().strftime("%Y-%m-%d")
-    calendar = safe_get(f"/calendars/my/shows/{today}/7", params={"extended": "full"})
+    def _tmdb_id_from(row: Dict[str, Any], key: str) -> Optional[int]:
+        obj = row.get(key) if isinstance(row, dict) else None
+        ids = obj.get("ids") if isinstance(obj, dict) else None
+        tmdb = ids.get("tmdb") if isinstance(ids, dict) else None
+        return tmdb if isinstance(tmdb, int) else None
 
-    # Supporting refs
-    genres_movies = safe_get("/genres/movies")
-    genres_shows = safe_get("/genres/shows")
+    summary_movies: Dict[str, Any] = {}
+    summary_shows: Dict[str, Any] = {}
+
+    def default_summary(tmdb_id: int) -> Dict[str, Any]:
+        return {
+            "tmdb_id": tmdb_id,
+            "in_collection": False,
+            "in_watchlist": False,
+            "watched": False,
+            "plays": 0,
+            "last_watched_at": None,
+            "progress": None,
+            "paused_at": None,
+            "completed": None,
+            "last_updated_at": None,
+        }
+
+    def ensure_movie(tmdb_id: int) -> Dict[str, Any]:
+        return summary_movies.setdefault(str(tmdb_id), default_summary(tmdb_id))
+
+    def ensure_show(tmdb_id: int) -> Dict[str, Any]:
+        return summary_shows.setdefault(str(tmdb_id), default_summary(tmdb_id))
+
+    for row in collection_movies or []:
+        tid = _tmdb_id_from(row, "movie")
+        if tid is None:
+            continue
+        entry = ensure_movie(tid)
+        entry["in_collection"] = True
+        if row.get("collected_at"):
+            entry["collected_at"] = row.get("collected_at")
+
+    for row in collection_shows or []:
+        tid = _tmdb_id_from(row, "show")
+        if tid is None:
+            continue
+        entry = ensure_show(tid)
+        entry["in_collection"] = True
+        if row.get("collected_at"):
+            entry["collected_at"] = row.get("collected_at")
+
+    for row in watchlist_movies or []:
+        tid = _tmdb_id_from(row, "movie")
+        if tid is None:
+            continue
+        entry = ensure_movie(tid)
+        entry["in_watchlist"] = True
+        if row.get("listed_at"):
+            entry["watchlist_added_at"] = row.get("listed_at")
+
+    for row in watchlist_shows or []:
+        tid = _tmdb_id_from(row, "show")
+        if tid is None:
+            continue
+        entry = ensure_show(tid)
+        entry["in_watchlist"] = True
+        if row.get("listed_at"):
+            entry["watchlist_added_at"] = row.get("listed_at")
+
+    for row in watched_movies or []:
+        tid = _tmdb_id_from(row, "movie")
+        if tid is None:
+            continue
+        entry = ensure_movie(tid)
+        entry["watched"] = True
+        entry["plays"] = row.get("plays")
+        entry["last_watched_at"] = row.get("last_watched_at")
+
+    for row in watched_shows or []:
+        tid = _tmdb_id_from(row, "show")
+        if tid is None:
+            continue
+        entry = ensure_show(tid)
+        entry["watched"] = True
+        entry["plays"] = row.get("plays")
+        entry["completed"] = row.get("completed")
+        entry["last_watched_at"] = row.get("last_watched_at")
+        entry["last_updated_at"] = row.get("last_updated_at")
+
+    for row in playback or []:
+        if not isinstance(row, dict):
+            continue
+        typ = row.get("type")
+        progress = row.get("progress")
+        if typ == "movie":
+            tid = _tmdb_id_from(row, "movie")
+            if tid is None:
+                continue
+            entry = ensure_movie(tid)
+            if progress is not None:
+                entry["progress"] = progress
+            if row.get("paused_at"):
+                entry["paused_at"] = row.get("paused_at")
+        elif typ == "episode":
+            show = row.get("show") or {}
+            ids = show.get("ids") or {}
+            tid = ids.get("tmdb") if isinstance(ids.get("tmdb"), int) else None
+            if tid is None:
+                continue
+            entry = ensure_show(tid)
+            if progress is not None:
+                entry["progress"] = progress
+            if row.get("paused_at"):
+                entry["paused_at"] = row.get("paused_at")
+
+    catalog_show_ids = {tid for x in tv_list if isinstance(x, dict) for tid in [to_int(x.get("tmdb_id"))] if tid is not None}
+    catalog_movie_ids = {tid for x in movie_list if isinstance(x, dict) for tid in [to_int(x.get("tmdb_id"))] if tid is not None}
+
+    def _filter_summary(src: Dict[str, Any], allowed: set[int]) -> Dict[str, Any]:
+        return {k: v for k, v in src.items() if k.isdigit() and int(k) in allowed}
+
+    for tid in catalog_movie_ids:
+        summary_movies.setdefault(str(tid), default_summary(tid))
+    for tid in catalog_show_ids:
+        summary_shows.setdefault(str(tid), default_summary(tid))
 
     data["trakt"] = {
-        "lists": lists,
-        "list_items": list_items,
-        "collection": {"movies": collection_movies, "shows": collection_shows},
-        "watchlist": {"movies": watchlist_movies, "shows": watchlist_shows},
-        "watched": {"movies": watched_movies, "shows": watched_shows},
-        "playback": playback,
-        "trending": {"movies": trending_movies, "shows": trending_shows},
-        "popular": {"movies": popular_movies, "shows": popular_shows},
-        "anticipated": {"movies": anticipated_movies, "shows": anticipated_shows},
-        "recommended": {"movies": recommended_movies, "shows": recommended_shows},
-        "calendar": calendar,
-        "activity": activity,
+        "user": {"username": username},
+        "summary": {
+            "movies": _filter_summary(summary_movies, catalog_movie_ids),
+            "shows": _filter_summary(summary_shows, catalog_show_ids),
+        },
+        "counts": {
+            "collection_movies": len(collection_movies or []),
+            "collection_shows": len(collection_shows or []),
+            "watchlist_movies": len(watchlist_movies or []),
+            "watchlist_shows": len(watchlist_shows or []),
+            "watched_movies": len(watched_movies or []),
+            "watched_shows": len(watched_shows or []),
+            "playback": len(playback or []),
+        },
         "supporting": {"genres": {"movies": genres_movies, "shows": genres_shows}},
     }
 
-    # Build canonical shows/movies lists (union from collection/watchlist/lists/watched)
-    show_map: Dict[int, Dict[str, Any]] = {}
-    movie_map: Dict[int, Dict[str, Any]] = {}
+    stats = {
+        "sources": {
+            "inputs_tv": len(tv_list),
+            "inputs_movies": len(movie_list),
+            "lists_index": len(lists or []),
+            "lists_items_total": sum(len(v or []) for v in list_items.values()),
+        },
+        "resolved": {"shows": 0, "movies": 0},
+        "drops": {"missing_tmdb": 0, "trakt_not_found": 0, "missing_ids": 0},
+    }
 
-    def add_show(obj: Dict[str, Any]) -> None:
-        ids = obj.get("ids") or {}
-        tmdb_id = ids.get("tmdb")
-        if not isinstance(tmdb_id, int):
-            return
-        if tmdb_id not in show_map:
-            show_map[tmdb_id] = norm_show(obj)
+    # Build shows from inputs.json -> Trakt
+    for item in tv_list:
+        tmdb_id = to_int(item.get("tmdb_id"))
+        if tmdb_id is None:
+            stats["drops"]["missing_tmdb"] += 1
+            continue
+        season_spec = str(item.get("season_spec") or item.get("seasons") or "").strip()
+        season_mode, season_filter, season_min = parse_season_rule(season_spec)
+        try:
+            show = trakt_search_tmdb(client_id, access_token, "show", int(tmdb_id))
+        except Exception as ex:
+            errors.append({"type": "trakt_search", "media": "show", "tmdb_id": tmdb_id, "message": str(ex)[:300], "utc": _utc()})
+            show = None
+        if not show:
+            stats["drops"]["trakt_not_found"] += 1
+            continue
+        ids = show.get("ids") or {}
+        if not ids.get("tmdb") or not ids.get("trakt"):
+            stats["drops"]["missing_ids"] += 1
+            continue
+        show_obj = normalize_show(show, season_mode, season_filter, season_min)
+        links = show_obj.get("links") if isinstance(show_obj.get("links"), dict) else {}
+        links.update(build_stream_links(cfg, "episode", tmdb_id))
+        show_obj["links"] = links
+        try:
+            show_obj["seasons"] = pull_show_seasons(str(ids.get("trakt")), client_id, access_token, season_mode, season_filter, season_min)
+        except Exception as ex:
+            errors.append({"type": "trakt_seasons", "trakt_id": ids.get("trakt"), "message": str(ex)[:300], "utc": _utc()})
+        for season in show_obj.get("seasons") or []:
+            for ep in season.get("episodes") or []:
+                links = ep.get("links") if isinstance(ep.get("links"), dict) else {}
+                links.update(build_stream_links(cfg, "episode", tmdb_id))
+                ep["links"] = links
+        data["shows"].append(show_obj)
+        stats["resolved"]["shows"] += 1
 
-    def add_movie(obj: Dict[str, Any]) -> None:
-        ids = obj.get("ids") or {}
-        tmdb_id = ids.get("tmdb")
-        if not isinstance(tmdb_id, int):
-            return
-        if tmdb_id not in movie_map:
-            movie_map[tmdb_id] = norm_movie(obj)
-
-    for row in collection_shows or []:
-        show = row.get("show") or {}
-        add_show(show)
-    for row in watchlist_shows or []:
-        show = row.get("show") or {}
-        add_show(show)
-    for row in watched_shows or []:
-        show = row.get("show") or {}
-        add_show(show)
-    for lst_items in list_items.values():
-        for row in lst_items or []:
-            if row.get("type") == "show":
-                add_show(row.get("show") or {})
-
-    for row in collection_movies or []:
-        movie = row.get("movie") or {}
-        add_movie(movie)
-    for row in watchlist_movies or []:
-        movie = row.get("movie") or {}
-        add_movie(movie)
-    for row in watched_movies or []:
-        movie = row.get("movie") or {}
-        add_movie(movie)
-    for lst_items in list_items.values():
-        for row in lst_items or []:
-            if row.get("type") == "movie":
-                add_movie(row.get("movie") or {})
-
-    # Enrich shows with seasons/episodes from Trakt
-    for show in list(show_map.values()):
-        trakt_id = show.get("trakt_id")
-        if not trakt_id:
+    # Build movies from inputs.json -> Trakt
+    for item in movie_list:
+        tmdb_id = to_int(item.get("tmdb_id"))
+        if tmdb_id is None:
+            stats["drops"]["missing_tmdb"] += 1
             continue
         try:
-            show["seasons"] = pull_show_seasons(str(trakt_id), client_id, access_token)
+            movie = trakt_search_tmdb(client_id, access_token, "movie", int(tmdb_id))
         except Exception as ex:
-            errors.append({"type": "trakt_seasons", "message": str(ex)[:300], "trakt_id": trakt_id, "utc": _utc()})
+            errors.append({"type": "trakt_search", "media": "movie", "tmdb_id": tmdb_id, "message": str(ex)[:300], "utc": _utc()})
+            movie = None
+        if not movie:
+            stats["drops"]["trakt_not_found"] += 1
+            continue
+        ids = movie.get("ids") or {}
+        if not ids.get("tmdb") or not ids.get("trakt"):
+            stats["drops"]["missing_ids"] += 1
+            continue
+        movie_obj = normalize_movie(movie)
+        links = movie_obj.get("links") if isinstance(movie_obj.get("links"), dict) else {}
+        links.update(build_stream_links(cfg, "movie", tmdb_id))
+        movie_obj["links"] = links
+        data["movies"].append(movie_obj)
+        stats["resolved"]["movies"] += 1
 
-    data["shows"] = list(show_map.values())
-    data["movies"] = list(movie_map.values())
+    data["meta"]["trakt_primary_stats"] = stats
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     DATA_JSON.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

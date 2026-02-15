@@ -43,7 +43,7 @@
 | Parse lists only | `python scripts/parse_txt_to_json.py` | `data/inputs_parsed.json` |
 | TMDB build only | `python scripts/fetch_tmdb.py` | `data/data.json` |
 | Trakt ID resolve only | `python scripts/fetch_trakt.py` | updates `data/data.json` |
-| Pull watch-state | `python scripts/trakt_sync_watch_state.py` | updates `data/data.json` and may write `data/trakt_tokens_latest.json` |
+| Pull watch-state | `python scripts/trakt_sync_watch_state.py` | updates `data/data.json` and may write `data/trakt.json` |
 
 ---
 
@@ -77,7 +77,7 @@
 | Item | Value |
 |---|---|
 | Inputs | `data/data.json`; Trakt OAuth tokens (secrets/env) |
-| Output | updates `data/data.json` with watch-state; may write `data/trakt_tokens_latest.json` |
+| Output | updates `data/data.json` with watch-state; may write `data/trakt.json` |
 | What it does | Pulls watched/progress from Trakt (`/sync/watched/*`, `/sync/history` style endpoints) |
 | Exit codes | non-zero on auth failures (401/403), network, schema issues |
 

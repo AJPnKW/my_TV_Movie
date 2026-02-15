@@ -49,9 +49,51 @@ def _log(f: Any, msg: str) -> None:
     f.flush()
 
 
+def _strip_jsonc(text: str) -> str:
+    lines = []
+    for line in text.splitlines():
+        if line.lstrip().startswith("//"):
+            continue
+        out = []
+        in_str = False
+        esc = False
+        i = 0
+        while i < len(line):
+            ch = line[i]
+            if in_str:
+                out.append(ch)
+                if esc:
+                    esc = False
+                elif ch == "\\":
+                    esc = True
+                elif ch == "\"":
+                    in_str = False
+                i += 1
+                continue
+            if ch == "\"":
+                in_str = True
+                out.append(ch)
+                i += 1
+                continue
+            if ch == "/" and i + 1 < len(line) and line[i + 1] == "/":
+                break
+            out.append(ch)
+            i += 1
+        lines.append("".join(out).rstrip())
+    cleaned = "\n".join(lines)
+    if not cleaned.lstrip().startswith("{"):
+        brace = cleaned.find("{")
+        if brace != -1:
+            cleaned = cleaned[brace:]
+    return cleaned
+
+
 def _load_json(path: str) -> Any:
     with open(path, "r", encoding="utf-8", errors="replace") as fh:
-        return json.load(fh)
+        raw = fh.read()
+    if path.endswith("config.json"):
+        raw = _strip_jsonc(raw)
+    return json.loads(raw)
 
 
 def _count_missing_trakt(items: List[Dict[str, Any]]) -> int:

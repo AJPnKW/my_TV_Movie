@@ -134,8 +134,6 @@ def main() -> int:
             print(json.dumps({"username": me2.get("username"), "name": me2.get("name"), "private": me2.get("private")}, indent=2))
 
             print("\nIMPORTANT: Update your env + GitHub secrets with the NEW tokens just issued.")
-            print(f"API_TRAKT_ACCESS_TOKEN  = {new_access}")
-            print(f"API_TRAKT_REFRESH_TOKEN = {new_refresh}")
             return 0
 
         except urllib.error.HTTPError as e2:

@@ -17,7 +17,7 @@
 # - If access token missing: exit(0) (no-op).
 # - If 401:
 #     - If refresh token available: refresh once, proceed in-memory, and write
-#       data/trakt_tokens_latest.json for manual secret updates.
+#       data/trakt.json for manual secret updates.
 #     - Else: record error in data.json and exit(0).
 # - Writes watch_state.trakt = {generated_utc, user, movies{}, shows{}}
 # - Keys are TMDB IDs (int) so UI can join with TMDB metadata.
@@ -34,14 +34,15 @@ from pathlib import Path
 from typing import Any, Dict
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from trakt_http import build_headers, header_names, USER_AGENT  # noqa: E402
 DATA_PATH = REPO_ROOT / "data" / "data.json"
-TOK_OUT = REPO_ROOT / "data" / "trakt_tokens_latest.json"
-TOK_FALLBACK = REPO_ROOT / "data" / "trakt.json"
+TOK_OUT = REPO_ROOT / "data" / "trakt.json"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
 TRAKT_TOKEN_URL = "https://trakt.tv/oauth/token"
-TRAKT_API_VERSION = "2"
-
 
 def _utc() -> str:
     return _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -64,13 +65,6 @@ def http_json(url: str, headers: dict, method: str = "GET", body_obj=None, timeo
         return json.loads(raw) if raw.strip() else {}
 
 
-def trakt_headers(client_id: str, access_token: str | None = None) -> dict:
-    h = {"trakt-api-version": TRAKT_API_VERSION, "trakt-api-key": client_id}
-    if access_token and not blank(access_token):
-        h["Authorization"] = f"Bearer {access_token}"
-    return h
-
-
 def refresh_tokens(client_id: str, client_secret: str, refresh_token: str) -> dict:
     payload = {
         "refresh_token": refresh_token,
@@ -78,7 +72,7 @@ def refresh_tokens(client_id: str, client_secret: str, refresh_token: str) -> di
         "client_secret": client_secret,
         "grant_type": "refresh_token",
     }
-    return http_json(TRAKT_TOKEN_URL, headers={}, method="POST", body_obj=payload)
+    return http_json(TRAKT_TOKEN_URL, headers={"User-Agent": USER_AGENT, "Accept": "application/json"}, method="POST", body_obj=payload)
 
 
 def load_data() -> Dict[str, Any]:
@@ -90,14 +84,12 @@ def load_data() -> Dict[str, Any]:
         return {"meta": {"generated_utc": _utc()}, "shows": [], "movies": [], "errors": []}
 
 def load_tokens_file() -> Dict[str, Any]:
-    for path in (TOK_OUT, TOK_FALLBACK):
-        if not path.is_file():
-            continue
-        try:
-            return json.loads(path.read_text(encoding="utf-8", errors="replace"))
-        except Exception:
-            continue
-    return {}
+    if not TOK_OUT.is_file():
+        return {}
+    try:
+        return json.loads(TOK_OUT.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return {}
 
 
 def save_data(data: Dict[str, Any]) -> None:
@@ -108,13 +100,16 @@ def save_data(data: Dict[str, Any]) -> None:
 def main() -> int:
     client_id = os.getenv("API_TRAKT_ID")
     client_secret = os.getenv("API_TRAKT_SECRET") or os.getenv("API_TRAKT_KEY")
-    access_token = os.getenv("API_TRAKT_ACCESS_TOKEN")
-    refresh_token = os.getenv("API_TRAKT_REFRESH_TOKEN")
+    access_token = None
+    refresh_token = None
+
+    tok = load_tokens_file()
+    access_token = tok.get("access_token") or access_token
+    refresh_token = tok.get("refresh_token") or refresh_token
 
     if blank(access_token):
-        tok = load_tokens_file()
-        access_token = tok.get("access_token") or access_token
-        refresh_token = tok.get("refresh_token") or refresh_token
+        access_token = os.getenv("API_TRAKT_ACCESS_TOKEN")
+        refresh_token = os.getenv("API_TRAKT_REFRESH_TOKEN") or refresh_token
 
     if blank(access_token) or blank(client_id):
         # no-op (local-only feature)
@@ -130,11 +125,11 @@ def main() -> int:
     me_url = f"{TRAKT_API_BASE}/users/me"
 
     def call_me(tok: str) -> dict:
-        return http_json(me_url, trakt_headers(client_id, tok))
+        return http_json(me_url, build_headers(client_id, tok, include_auth=True))
 
     def pull_all(tok: str) -> dict:
-        watched_movies = http_json(f"{TRAKT_API_BASE}/sync/watched/movies", trakt_headers(client_id, tok))
-        watched_shows = http_json(f"{TRAKT_API_BASE}/sync/watched/shows", trakt_headers(client_id, tok))
+        watched_movies = http_json(f"{TRAKT_API_BASE}/sync/watched/movies", build_headers(client_id, tok, include_auth=True))
+        watched_shows = http_json(f"{TRAKT_API_BASE}/sync/watched/shows", build_headers(client_id, tok, include_auth=True))
         return {"watched_movies": watched_movies, "watched_shows": watched_shows}
 
     try:
@@ -142,14 +137,15 @@ def main() -> int:
         pulled = pull_all(access_token)
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", errors="replace") if getattr(e, "fp", None) else ""
+        header_names_str = header_names(build_headers(client_id, access_token, include_auth=True))
         if e.code != 401:
-            record_err(f"HTTP {e.code} calling Trakt: {body[:500]}")
+            record_err(f"HTTP {e.code} calling Trakt headers=[{header_names_str}]: {body[:500]}")
             save_data(data)
             return 0
 
         # 401: try refresh once (cannot persist to secrets; writes a file for manual update)
         if blank(client_secret) or blank(refresh_token):
-            record_err("401 Unauthorized and no refresh token/secret available; skipped watch-state pull.")
+            record_err(f"401 Unauthorized headers=[{header_names_str}] and no refresh token/secret available; skipped watch-state pull.")
             save_data(data)
             return 0
 

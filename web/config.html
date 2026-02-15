@@ -126,6 +126,10 @@
       border:1px solid var(--line);
       background:linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
     }
+    .dashblock.accent-orange{ border-color:rgba(249,115,22,0.35); box-shadow:0 0 0 2px rgba(249,115,22,0.1) inset; }
+    .dashblock.accent-pink{ border-color:rgba(236,72,153,0.35); box-shadow:0 0 0 2px rgba(236,72,153,0.1) inset; }
+    .dashblock.accent-green{ border-color:rgba(34,197,94,0.35); box-shadow:0 0 0 2px rgba(34,197,94,0.1) inset; }
+    .dashblock.accent-yellow{ border-color:rgba(234,179,8,0.35); box-shadow:0 0 0 2px rgba(234,179,8,0.1) inset; }
     .dashhead{
       display:flex;
       align-items:center;
@@ -147,21 +151,99 @@
       overflow-x:auto;
       padding-bottom:6px;
     }
+    .dashgrid{
+      display:grid;
+      grid-auto-flow:column;
+      grid-auto-columns:minmax(200px, 1fr);
+      gap:12px;
+      overflow-x:auto;
+      padding-bottom:6px;
+      align-items:start;
+    }
+    .dashcol{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.03);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-height:240px;
+    }
+    .dashcolhead{
+      font-weight:900;
+      font-size:12px;
+      letter-spacing:0.08em;
+      text-transform:uppercase;
+      color:#f5c8ff;
+    }
+    .dashcolitem{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      padding:6px 4px;
+      border-bottom:1px dashed rgba(255,255,255,0.08);
+    }
+    .dashcolitem:last-child{ border-bottom:0; }
+    .dashcolitem .title{ font-size:12px; font-weight:800; }
+    .dashcolitem .meta{ font-size:11px; color:var(--muted); }
     .dashcard{
       border-radius:14px;
       border:1px solid rgba(255,255,255,0.08);
       background:rgba(255,255,255,0.04);
       padding:10px;
       display:flex;
-      gap:10px;
-      min-height:90px;
+      flex-direction:column;
+      gap:8px;
+      min-height:180px;
     }
-    .dashcard img{
-      width:64px;
-      height:90px;
-      object-fit:cover;
-      border-radius:10px;
+    .dashimgwrap{
+      position:relative;
+      width:100%;
+      border-radius:12px;
+      overflow:hidden;
       background:rgba(255,255,255,0.08);
+    }
+    .dashimgwrap.poster{ aspect-ratio:2/3; }
+    .dashimgwrap.wide{ aspect-ratio:16/9; }
+    .dashimgwrap img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+    .dashiconrow{
+      position:absolute;
+      left:4px;
+      right:4px;
+      bottom:4px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      justify-content:flex-start;
+      background:rgba(10,14,20,0.55);
+      border-radius:8px;
+      padding:2px 4px;
+      backdrop-filter: blur(6px);
+    }
+    .dashiconbtn{
+      border:0;
+      background:transparent;
+      color:var(--text);
+      font-size:12px;
+      font-weight:900;
+      line-height:1;
+      padding:0;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .dashiconpct{
+      margin-left:auto;
+      font-size:11px;
+      font-weight:900;
+      color:var(--text);
     }
     .dashmeta{ display:flex; flex-direction:column; gap:6px; }
     .dashmeta .k{ font-weight:900; font-size:13px; }
@@ -191,6 +273,39 @@
     }
     .dashitem .title{ font-size:13px; font-weight:800; }
     .dashitem .meta{ font-size:12px; color:var(--muted); }
+    .dashrecs{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    .dashrecgrid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+      gap:12px;
+    }
+    .dashreccol{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .dashwatchlist{
+      display:grid;
+      grid-auto-flow:column;
+      grid-auto-columns:minmax(180px, 1fr);
+      gap:12px;
+      overflow-x:auto;
+      padding-bottom:6px;
+    }
+    .dashwatchcard{
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.04);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      min-height:180px;
+    }
 
     .top{
       display:flex;
@@ -3840,15 +3955,109 @@
     return out.sort((a,b)=>a.date.getTime()-b.date.getTime());
   }
 
+  function collectPastEvents(dayWindow=7){
+    const out = [];
+    const end = new Date();
+    end.setDate(end.getDate() - 1);
+    const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (dayWindow - 1));
+    const months = new Map();
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (cursor <= end){
+      const key = `${cursor.getFullYear()}-${pad2(cursor.getMonth()+1)}`;
+      if (!months.has(key)) months.set(key, buildCalendarEventsForMonth(cursor));
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    for (let d = new Date(start.getFullYear(), start.getMonth(), start.getDate()); d <= end; d.setDate(d.getDate()+1)){
+      const key = toDateKey(d);
+      for (const m of months.values()){
+        const list = m.get(key) || [];
+        for (const item of list){
+          out.push({ date: new Date(d), dateKey: key, item });
+        }
+      }
+    }
+    return out.sort((a,b)=>a.date.getTime()-b.date.getTime());
+  }
+
   function renderDashboard(){
     const upNext = $("#dashUpNext");
-    const schedule = $("#dashSchedule");
-    if (!upNext || !schedule) return;
+    const scheduleCols = $("#dashScheduleCols");
+    const lastWeekCols = $("#dashLastWeekCols");
+    const watchlistEl = $("#dashWatchlist");
+    const showRecs = $("#dashShowRecs");
+    const movieRecs = $("#dashMovieRecs");
+    if (!upNext || !scheduleCols || !lastWeekCols || !watchlistEl || !showRecs || !movieRecs) return;
+
+    const showMap = new Map((state.data?.shows || []).map(s => [String(s?.tmdb_id ?? ""), s]));
+    const movieMap = new Map((state.data?.movies || []).map(m => [String(m?.tmdb_id ?? ""), m]));
     const events = collectUpcomingEvents(21);
+    const pastEvents = collectPastEvents(7);
     const nextItems = events.slice(0, 10);
-    const scheduleItems = events.slice(0, 14);
     const meta = $("#dashNextMeta");
     if (meta) meta.textContent = nextItems.length ? `${nextItems.length} items` : "No upcoming items";
+
+    const iconRowHtml = (kind, id, pct, titleText) => {
+      const pctText = pct != null ? `${pct}%` : "";
+      const hasTarget = kind && id;
+      const infoBtn = hasTarget
+        ? `<button class="dashiconbtn" type="button" title="Info" data-dash-open="1" data-kind="${escHtml(kind)}" data-id="${escHtml(String(id))}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>`
+        : `<span class="dashiconbtn" aria-hidden="true">${escHtml(iconChar("action_info"))}</span>`;
+      const actionMenus = hasTarget ? actionMenuHtml(kind, id, titleText || "") : "";
+      return `
+        <div class="dashiconrow" data-action-host="1">
+          ${hasTarget ? `<button class="dashiconbtn" type="button" title="Watched history" data-action-menu="history" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>` : `<span class="dashiconbtn" aria-hidden="true">${escHtml(iconChar("trakt_mark_watched"))}</span>`}
+          ${infoBtn}
+          ${hasTarget ? `<button class="dashiconbtn" type="button" title="Rate / Like" data-action-menu="rate" data-function-type="${escHtml(iconType("trakt_rate_like", "popup"))}">${escHtml(iconChar("trakt_rate_like"))}</button>` : `<span class="dashiconbtn" aria-hidden="true">${escHtml(iconChar("trakt_rate_like"))}</span>`}
+          ${pctText ? `<span class="dashiconpct">${escHtml(pctText)}</span>` : ""}
+          ${actionMenus}
+        </div>
+      `;
+    };
+
+    const percentForItem = (item) => {
+      let pct = progressPercent(item);
+      if (pct == null){
+        const v = Number(item?.vote_average ?? item?.rating ?? 0);
+        if (Number.isFinite(v) && v > 0) pct = Math.round(v * 10);
+      }
+      return pct;
+    };
+
+    const imageForItem = (item, mode) => {
+      const pick = (obj, keys) => {
+        for (const k of keys){
+          const v = obj?.[k];
+          if (v) return v;
+        }
+        return "";
+      };
+      const wideKeys = ["still_local", "still_path", "backdrop_local", "backdrop_path", "poster_local", "poster_path"];
+      const posterKeys = ["poster_local", "poster_path", "backdrop_local", "backdrop_path", "still_local", "still_path"];
+      const src = pick(item, mode === "wide" ? wideKeys : posterKeys);
+      if (src) return src;
+      if (item?.kind === "episode" && item?.show_tmdb_id){
+        const show = showMap.get(String(item.show_tmdb_id));
+        if (show){
+          return mode === "wide"
+            ? pick(show, ["backdrop_local", "backdrop_path", "poster_local", "poster_path"])
+            : pick(show, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]);
+        }
+      }
+      if (item?.kind === "movie" && item?.tmdb_id){
+        const movie = movieMap.get(String(item.tmdb_id));
+        if (movie){
+          return mode === "wide"
+            ? pick(movie, ["backdrop_local", "backdrop_path", "poster_local", "poster_path"])
+            : pick(movie, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]);
+        }
+      }
+      return "";
+    };
+
+    const infoTarget = (item) => {
+      if (item?.kind === "movie") return { kind: "movie", id: item?.tmdb_id };
+      return { kind: "show", id: item?.show_tmdb_id || item?.tmdb_id };
+    };
 
     upNext.innerHTML = nextItems.length ? nextItems.map(({dateKey, item}) => {
       const title = item.kind === "episode"
@@ -3857,114 +4066,164 @@
       const sub = item.kind === "episode"
         ? `${safeText(item.episode_name || "Episode")}`
         : "Movie release";
-      const img = item.thumb ? `<img loading="lazy" src="${escHtml(item.thumb)}" alt="" />` : `<img alt="" />`;
-      const links = item.links || {};
-      const mediaId = item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || "");
-      const pct = progressPercent(item);
-      const mediaLinks = buildMediaLinks(item.kind === "movie" ? "movie" : "show", mediaId, links);
-      const vidsrc = mediaLinks.vidsrc;
-      const videasy = mediaLinks.videasy;
-      const local = mediaLinks.local;
-      const wp = item.watch_providers;
-      const providers = collectProvidersForRegion(wp, "US").length
-        ? collectProvidersForRegion(wp, "US")
-        : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
-      const canWatch = providers.length > 0;
-    const watchBtn = canWatch
-      ? `<button class="iconbtn watch" type="button" title="Watch now" data-dash-watch="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_play", "single-click"))}">${escHtml(iconChar("action_play"))}</button>`
-      : "";
-    const actions = `
-      <div class="dashactions" data-action-host="1">
-        <button class="iconbtn list" type="button" title="Lists" data-action-menu="list" data-function-type="${escHtml(iconType("trakt_lists", "long-press"))}">${escHtml(iconChar("trakt_lists"))}</button>
-        <button class="iconbtn flag ${pct != null && pct >= 100 ? "yes" : "no"}" type="button" title="History" data-action-menu="history" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>
-        <button class="iconbtn date" type="button" title="When watched" data-action-menu="date" data-function-type="${escHtml(iconType("trakt_watch_date", "popup"))}">${escHtml(iconChar("trakt_watch_date"))}</button>
-        <button class="iconbtn info" type="button" title="Details" data-dash-open="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>
-        ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="Vidrsc" data-function-type="${escHtml(iconType("media_vidrsc", "link"))}">${escHtml(iconChar("media_vidrsc"))}</a>` : ""}
-        ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" data-function-type="${escHtml(iconType("media_videasy", "link"))}">${escHtml(iconChar("media_videasy"))}</a>` : ""}
-        ${local ? `<a class="iconbtn local" href="${escHtml(local)}" target="_blank" rel="noopener" title="Local media" data-function-type="${escHtml(iconType("media_local_file", "link"))}">${escHtml(iconChar("media_local_file"))}</a>` : ""}
-        ${watchBtn}
-        ${actionMenuHtml(item.kind, item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || ""), title)}
-      </div>
-      `;
+      const mode = "poster";
+      const imgSrc = imageForItem(item, mode);
+      const { kind, id } = infoTarget(item);
+      const pct = percentForItem(item);
       return `
         <div class="dashcard">
-          ${img}
+          <div class="dashimgwrap ${mode}">
+            ${imgSrc ? `<img loading="lazy" src="${escHtml(imgSrc)}" alt="" />` : `<img alt="" />`}
+            ${iconRowHtml(kind, id, pct, title)}
+          </div>
           <div class="dashmeta">
             <div class="k">${escHtml(title)}</div>
             <div class="s">${escHtml(sub)}</div>
             <div class="s">${escHtml(fmtDate(dateKey))}</div>
-            ${actions}
           </div>
         </div>
       `;
     }).join("") : `<div class="muted">No upcoming items found.</div>`;
 
-    schedule.innerHTML = scheduleItems.length ? scheduleItems.map(({dateKey, item}) => {
-      const title = item.kind === "episode"
-        ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
-        : safeText(item.title || "Movie");
-      const meta = item.kind === "episode"
-        ? safeText(item.episode_name || "Episode")
-        : "Movie release";
-      const links = item.links || {};
-      const mediaId = item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || "");
-      const pct = progressPercent(item);
-      const mediaLinks = buildMediaLinks(item.kind === "movie" ? "movie" : "show", mediaId, links);
-      const vidsrc = mediaLinks.vidsrc;
-      const videasy = mediaLinks.videasy;
-      const local = mediaLinks.local;
-      const wp = item.watch_providers;
-      const providers = collectProvidersForRegion(wp, "US").length
-        ? collectProvidersForRegion(wp, "US")
-        : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
-      const canWatch = providers.length > 0;
-      const watchBtn = canWatch
-        ? `<button class="iconbtn watch" type="button" title="Watch now" data-dash-watch="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_play", "single-click"))}">${escHtml(iconChar("action_play"))}</button>`
-        : "";
-      const actions = `
-        <div class="dashactions" data-action-host="1">
-          <button class="iconbtn list" type="button" title="Lists" data-action-menu="list" data-function-type="${escHtml(iconType("trakt_lists", "long-press"))}">${escHtml(iconChar("trakt_lists"))}</button>
-          <button class="iconbtn flag ${pct != null && pct >= 100 ? "yes" : "no"}" type="button" title="History" data-action-menu="history" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>
-          <button class="iconbtn date" type="button" title="When watched" data-action-menu="date" data-function-type="${escHtml(iconType("trakt_watch_date", "popup"))}">${escHtml(iconChar("trakt_watch_date"))}</button>
-          <button class="iconbtn info" type="button" title="Details" data-dash-open="1" data-kind="${escHtml(item.kind)}" data-id="${escHtml(mediaId)}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>
-          ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" title="Vidrsc" data-function-type="${escHtml(iconType("media_vidrsc", "link"))}">${escHtml(iconChar("media_vidrsc"))}</a>` : ""}
-          ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" title="VidEasy" data-function-type="${escHtml(iconType("media_videasy", "link"))}">${escHtml(iconChar("media_videasy"))}</a>` : ""}
-          ${local ? `<a class="iconbtn local" href="${escHtml(local)}" target="_blank" rel="noopener" title="Local media" data-function-type="${escHtml(iconType("media_local_file", "link"))}">${escHtml(iconChar("media_local_file"))}</a>` : ""}
-          ${watchBtn}
-          ${actionMenuHtml(item.kind, item.kind === "movie" ? (item.tmdb_id || "") : (item.show_tmdb_id || ""), title)}
-        </div>
-      `;
+    const dateKeys = Array.from(new Set(events.map(e => e.dateKey))).slice(0, 7);
+    scheduleCols.innerHTML = dateKeys.length ? dateKeys.map(key => {
+      const dayItems = events.filter(e => e.dateKey === key).slice(0, 6);
+      const dayLabel = fmtDate(key);
       return `
-        <div class="dashitem">
-          <div>
-            <div class="title">${escHtml(title)}</div>
-            <div class="meta">${escHtml(meta)}</div>
-            ${actions}
-          </div>
-          <div class="meta">${escHtml(fmtDate(dateKey))}</div>
+        <div class="dashcol">
+          <div class="dashcolhead">${escHtml(dayLabel)}</div>
+          ${dayItems.length ? dayItems.map(({item}) => {
+            const title = item.kind === "episode"
+              ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
+              : safeText(item.title || "Movie");
+            const metaText = item.kind === "episode"
+              ? safeText(item.episode_name || "Episode")
+              : "Movie release";
+            const mode = "poster";
+            const imgSrc = imageForItem(item, mode);
+            const { kind, id } = infoTarget(item);
+            const pct = percentForItem(item);
+            return `
+              <div class="dashcolitem">
+                <div class="dashimgwrap ${mode}">
+                  ${imgSrc ? `<img loading="lazy" src="${escHtml(imgSrc)}" alt="" />` : `<img alt="" />`}
+                  ${iconRowHtml(kind, id, pct, title)}
+                </div>
+                <div class="title">${escHtml(title)}</div>
+                <div class="meta">${escHtml(metaText)}</div>
+              </div>
+            `;
+          }).join("") : `<div class="muted">No items</div>`}
         </div>
       `;
     }).join("") : `<div class="muted">No upcoming schedule.</div>`;
-    $$("[data-dash-watch]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const kind = safeText(btn.getAttribute("data-kind"));
-        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
-        if (!Number.isFinite(id)) return;
-        if (kind === "movie"){
-          const movie = getMovieById(id);
-          if (!movie) return;
-          const html = renderWatchProvidersHtml(movie, "movie");
-          openProviderModal(`${safeText(movie.title || "Movie")} • Where to watch`, html);
-          return;
-        }
-        const show = getShowById(id);
-        if (!show) return;
-        const html = renderWatchProvidersHtml(show, "tv");
-        openProviderModal(`${safeText(show.title || show.name || "Show")} • Where to watch`, html);
-      });
+
+    const pastDateKeys = Array.from(new Set(pastEvents.map(e => e.dateKey)));
+    const lastWeekMeta = $("#dashLastWeekMeta");
+    if (lastWeekMeta) lastWeekMeta.textContent = pastDateKeys.length ? `${pastDateKeys.length} days` : "No recent items";
+    lastWeekCols.innerHTML = pastDateKeys.length ? pastDateKeys.map(key => {
+      const dayItems = pastEvents.filter(e => e.dateKey === key).slice(0, 6);
+      const dayLabel = fmtDate(key);
+      return `
+        <div class="dashcol">
+          <div class="dashcolhead">${escHtml(dayLabel)}</div>
+          ${dayItems.length ? dayItems.map(({item}) => {
+            const title = item.kind === "episode"
+              ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
+              : safeText(item.title || "Movie");
+            const metaText = item.kind === "episode"
+              ? safeText(item.episode_name || "Episode")
+              : "Movie release";
+            const mode = "poster";
+            const imgSrc = imageForItem(item, mode);
+            const { kind, id } = infoTarget(item);
+            const pct = percentForItem(item);
+            return `
+              <div class="dashcolitem">
+                <div class="dashimgwrap ${mode}">
+                  ${imgSrc ? `<img loading="lazy" src="${escHtml(imgSrc)}" alt="" />` : `<img alt="" />`}
+                  ${iconRowHtml(kind, id, pct, title)}
+                </div>
+                <div class="title">${escHtml(title)}</div>
+                <div class="meta">${escHtml(metaText)}</div>
+              </div>
+            `;
+          }).join("") : `<div class="muted">No items</div>`}
+        </div>
+      `;
+    }).join("") : `<div class="muted">No recent schedule.</div>`;
+
+    const list = ensureWatchlist();
+    const watchMeta = $("#dashWatchMeta");
+    if (watchMeta) watchMeta.textContent = list.length ? `${list.length} items` : "No items";
+    const watchItems = list.slice(0, 10).map(entry => {
+      const id = String(entry?.tmdb_id ?? "");
+      const show = id ? showMap.get(id) : null;
+      const movie = id ? movieMap.get(id) : null;
+      const title = safeText(entry?.title || show?.title || show?.name || movie?.title || "Untitled");
+      const poster = show ? pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path")
+        : (movie ? pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path") : "");
+      const pct = percentForItem(show || movie || entry);
+      const infoKind = show ? "show" : (movie ? "movie" : "");
+      const infoId = show ? show?.tmdb_id : (movie ? movie?.tmdb_id : "");
+      return `
+        <div class="dashwatchcard">
+          <div class="dashimgwrap poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<img alt="" />`}
+            ${iconRowHtml(infoKind, infoId, pct, title)}
+          </div>
+          <div class="dashmeta">
+            <div class="k">${escHtml(title)}</div>
+            <div class="s">${escHtml(entry?.media_kind || (show ? "show" : (movie ? "movie" : "unknown")))}</div>
+          </div>
+        </div>
+      `;
     });
+    watchlistEl.innerHTML = watchItems.length ? watchItems.join("") : `<div class="muted">No watchlist items.</div>`;
+
+    const showRecsList = (state.data?.shows || []).slice().sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0)).slice(0, 10);
+    const movieRecsList = (state.data?.movies || []).slice().sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0)).slice(0, 10);
+    showRecs.innerHTML = showRecsList.length ? showRecsList.map(s => {
+      const poster = pickImage(s, "poster_local", "poster_path", "backdrop_local", "backdrop_path");
+      const pct = percentForItem(s);
+      return `
+        <div class="dashcard">
+          <div class="dashimgwrap poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<img alt="" />`}
+            ${iconRowHtml("show", s?.tmdb_id, pct, safeText(s?.title || s?.name || "Show"))}
+          </div>
+          <div class="dashmeta">
+            <div class="k">${escHtml(s?.title || s?.name || "Show")}</div>
+            <div class="s">${escHtml(s?.first_air_date ? fmtDate(s.first_air_date) : "")}</div>
+          </div>
+        </div>
+      `;
+    }).join("") : `<div class="muted">No recommendations.</div>`;
+
+    movieRecs.innerHTML = movieRecsList.length ? movieRecsList.map(m => {
+      const poster = pickImage(m, "poster_local", "poster_path", "backdrop_local", "backdrop_path");
+      const pct = percentForItem(m);
+      return `
+        <div class="dashcard">
+          <div class="dashimgwrap poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<img alt="" />`}
+            ${iconRowHtml("movie", m?.tmdb_id, pct, safeText(m?.title || "Movie"))}
+          </div>
+          <div class="dashmeta">
+            <div class="k">${escHtml(m?.title || "Movie")}</div>
+            <div class="s">${escHtml(m?.release_date ? fmtDate(m.release_date) : "")}</div>
+          </div>
+        </div>
+      `;
+    }).join("") : `<div class="muted">No recommendations.</div>`;
+
     wireActionMenus($("#dashUpNext"));
-    wireActionMenus($("#dashSchedule"));
+    wireActionMenus($("#dashScheduleCols"));
+    wireActionMenus($("#dashLastWeekCols"));
+    wireActionMenus($("#dashWatchlist"));
+    wireActionMenus($("#dashShowRecs"));
+    wireActionMenus($("#dashMovieRecs"));
+
     $$("[data-dash-open]").forEach(btn => {
       btn.addEventListener("click", () => {
         const kind = safeText(btn.getAttribute("data-kind"));

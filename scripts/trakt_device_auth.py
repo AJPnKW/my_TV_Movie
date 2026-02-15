@@ -16,7 +16,6 @@
 #   API_TRAKT__REDIRECT_URL (unused in device flow, kept for compatibility)
 #
 # Output:
-#   data/trakt_tokens_latest.json
 #   data/trakt.json
 # ==============================================================================
 
@@ -26,15 +25,19 @@ import datetime as _dt
 import json
 import os
 import time
+import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any, Dict
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIR))
+
+from trakt_http import USER_AGENT  # noqa: E402
 DATA_DIR = REPO_ROOT / "data"
-TOK_OUT = DATA_DIR / "trakt_tokens_latest.json"
-TOK_ALT = DATA_DIR / "trakt.json"
+TOK_OUT = DATA_DIR / "trakt.json"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
 TRAKT_DEVICE_CODE = f"{TRAKT_API_BASE}/oauth/device/code"
@@ -67,15 +70,16 @@ def http_json(url: str, headers: dict, method: str = "GET", body_obj=None, timeo
         headers = dict(headers)
         headers["Content-Type"] = "application/json"
         headers["Accept"] = "application/json"
+        headers.setdefault("User-Agent", USER_AGENT)
     req = urllib.request.Request(url, data=data, headers=headers, method=method)
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         raw = resp.read().decode("utf-8", errors="replace")
         return json.loads(raw) if raw.strip() else {}
 
-
-def _post_json(url: str, body: dict) -> Dict[str, Any]:
+def _post_json(url: str, body: dict, headers: dict | None = None) -> Dict[str, Any]:
+    hdrs = headers or {}
     try:
-        return http_json(url, headers={}, method="POST", body_obj=body)
+        return http_json(url, headers=hdrs, method="POST", body_obj=body)
     except urllib.error.HTTPError as e:
         raw = e.read().decode("utf-8", errors="replace") if getattr(e, "fp", None) else ""
         try:
@@ -92,7 +96,12 @@ def main() -> int:
         raise RuntimeError("Missing API_TRAKT_SECRET (or API_TRAKT_KEY).")
 
     # Step 1: request device code
-    code_resp = _post_json(TRAKT_DEVICE_CODE, {"client_id": client_id})
+    scope = "public private watchlist history collection lists"
+    code_resp = _post_json(
+        TRAKT_DEVICE_CODE,
+        {"client_id": client_id, "scope": scope},
+        headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
+    )
     if not code_resp or "device_code" not in code_resp:
         raise RuntimeError(f"Failed to get device code: {code_resp}")
 
@@ -117,6 +126,7 @@ def main() -> int:
                 "client_id": client_id,
                 "client_secret": client_secret,
             },
+            headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
 
         if "access_token" in token_resp:
@@ -130,10 +140,8 @@ def main() -> int:
             }
             DATA_DIR.mkdir(parents=True, exist_ok=True)
             TOK_OUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-            TOK_ALT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
             print("✅ Tokens saved to:")
             print(f" - {TOK_OUT}")
-            print(f" - {TOK_ALT}")
             print("\nYou can now run pipeline scripts that pull Trakt user data.")
             return 0
 

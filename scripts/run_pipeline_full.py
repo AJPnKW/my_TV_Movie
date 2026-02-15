@@ -51,31 +51,42 @@ def main() -> int:
     use_trakt_primary = (os.getenv("TRAKT_PRIMARY") or "").strip().lower() in ("1", "true", "yes")
     _write_line(logfp, f"trakt_primary : {use_trakt_primary}")
 
-    if not use_trakt_primary:
-        # Required scope file (canonical)
-        inputs_json = os.path.join(REPO_ROOT, 'data', 'inputs.json')
-        if not os.path.isfile(inputs_json):
-            _write_line(logfp, f"RESULT    : FAIL (missing scope file: {inputs_json})")
-            return 2
+    # Required scope file (canonical)
+    inputs_json = os.path.join(REPO_ROOT, 'data', 'inputs.json')
+    if not os.path.isfile(inputs_json):
+        _write_line(logfp, f"RESULT    : FAIL (missing scope file: {inputs_json})")
+        return 2
 
     if use_trakt_primary:
-        # 1) Trakt primary fetch
+        # 1) Trakt catalog + user state (from inputs.json)
         rc_trakt_primary = _run("TRAKT_PRIMARY", [py, os.path.join("scripts", "fetch_trakt_primary.py")], logfp)
         if rc_trakt_primary != 0:
             _write_line(logfp, f"RESULT    : FAIL (trakt_primary exit_code={rc_trakt_primary})")
             return rc_trakt_primary
 
-        # 2) TMDB asset augment
+        # 2) TMDB asset augment (images only)
         rc_tmdb_assets = _run("TMDB_ASSETS", [py, os.path.join("scripts", "fetch_tmdb_assets.py")], logfp)
         if rc_tmdb_assets != 0:
             _write_line(logfp, f"RESULT    : FAIL (tmdb_assets exit_code={rc_tmdb_assets})")
             return rc_tmdb_assets
 
-        # 3) Trakt watch-state sync (OAuth; optional)
+        # 3) Migrate watchlist fields (inputs.json)
+        rc_watchlist = _run("WATCHLIST_MIGRATE", [py, os.path.join("scripts", "migrate_watchlist_fields.py")], logfp)
+        if rc_watchlist != 0:
+            _write_line(logfp, f"RESULT    : FAIL (migrate_watchlist_fields exit_code={rc_watchlist})")
+            return rc_watchlist
+
+        # 4) Trakt watch-state sync (OAuth; optional)
         rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
         if rc_watch != 0:
             _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
             return rc_watch
+
+        # 5) Local watch-state sync (inputs.json -> data.json)
+        rc_local = _run("LOCAL_WATCH_STATE", [py, os.path.join("scripts", "sync_local_watch_state.py")], logfp)
+        if rc_local != 0:
+            _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
+            return rc_local
     else:
         # 1) TMDB fetch
         rc_tmdb = _run("TMDB", [py, os.path.join("scripts", "fetch_tmdb.py")], logfp)
