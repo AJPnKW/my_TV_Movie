@@ -224,6 +224,20 @@ CHANGE NOTES:
         const b = owner?.links && typeof owner.links === "object" ? owner.links : {};
         return { vidsrc: String(a.vidsrc || b.vidsrc || "").trim(), videasy: String(a.videasy || b.videasy || "").trim() };
       }
+      function buildEpisodeUrl(baseUrl, sn, en){
+        const raw = String(baseUrl || "").trim();
+        if (!raw) return raw;
+        const s = Number(sn), e = Number(en);
+        if (!Number.isInteger(s) || !Number.isInteger(e) || s <= 0 || e <= 0) return raw;
+        const suffixAt = raw.search(/[?#]/);
+        const main = suffixAt >= 0 ? raw.slice(0, suffixAt) : raw;
+        const suffix = suffixAt >= 0 ? raw.slice(suffixAt) : "";
+        if (/\/tv\/[^/?#]+\/\d+\/\d+(?:\/|$)/i.test(main)) return raw;
+        const tvMatch = /\/tv\/[^/?#]+/i.exec(main);
+        if (!tvMatch || tvMatch.index == null) return raw;
+        const insertAt = tvMatch.index + tvMatch[0].length;
+        return `${main.slice(0, insertAt)}/${s}/${e}${main.slice(insertAt)}${suffix}`;
+      }
       function movieUid(movie){
         const id = movie?.tmdb_id ?? movie?.id ?? movie?.movie_id;
         return id == null ? "" : String(id).trim();
@@ -316,7 +330,11 @@ CHANGE NOTES:
 
       function episodeCard(it){
         const links = mediaLinks(it.ep, it.show), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
-        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div><div class="d">${escHtml(dateLabel(it.firstAired))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(links.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${links.videasy ? `<a class="iconbtn videasy" href="${escHtml(links.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
+        const episodeLinks = {
+          vidsrc: buildEpisodeUrl(links.vidsrc, it.sn, it.en),
+          videasy: buildEpisodeUrl(links.videasy, it.sn, it.en)
+        };
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div><div class="d">${escHtml(dateLabel(it.firstAired))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${episodeLinks.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(episodeLinks.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${episodeLinks.videasy ? `<a class="iconbtn videasy" href="${escHtml(episodeLinks.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
       }
       function movieCard(it){
         const links = mediaLinks(it.movie, it.movie), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
@@ -422,6 +440,12 @@ CHANGE NOTES:
           out.push(rowHtml("Movies: Last 12 Months (excluding NEW Movies: Released)", `${dateLabel(yearStart)} to ${dateLabel(addDays(monthStart,-1))}`, last12, movieCard));
         }
         refs.rowsRoot.innerHTML = out.length ? out.join("") : `<section class="row"><div class="empty">Enable at least one media type from filters.</div></section>`;
+        const episodeUrlExamples = [
+          buildEpisodeUrl("https://vidsrc.net/embed/tv/1413", 2, 6),
+          buildEpisodeUrl("https://player.videasy.net/tv/1413?autoplay=1", 2, 6),
+          buildEpisodeUrl("https://vidsrc.net/embed/tv/1413#frag", 2, 6)
+        ];
+        console.log("WatchMe episode URL examples:", episodeUrlExamples);
         wireKeyboardNav();
       }
 
