@@ -18,7 +18,7 @@ CHANGE NOTES:
     :root{
       --bg:#0b0f16; --panel:#121a28; --line:rgba(255,255,255,.14); --txt:#ecf2ff; --mut:#b5c3dd; --w:150px; --side-w:210px;
       --card-w:150px; --card-h:152px; --gap:10px; --section-gap:12px;
-      --carousel-btn-size:28px; --carousel-btn-hitbox:34px; --carousel-btn-border:1px;
+      --carousel-btn-size:56px; --carousel-btn-hitbox:64px; --carousel-btn-border:2px;
       --day-pill-h:26px; --day-seg-gap:8px; --carousel-rows:2;
       --sel-bg:rgba(255,255,255,.06); --sel-fg:#ecf2ff; --sel-opt-bg:#182132; --sel-opt-fg:#f0f5ff; --sel-opt-hover:#263248;
       --day-bg:rgba(255,255,255,.05); --day-fg:#d5e0f3; --day-today-bg:#dbe9ff; --day-today-fg:#0d1b33;
@@ -50,28 +50,40 @@ CHANGE NOTES:
     .tv-rh{ min-height:8px; margin-bottom:8px; }
     .rh h2{ margin:0; font-size:16px; font-weight:900; letter-spacing:.02em; }
     .rm{ font-size:12px; color:var(--mut); }
+    .navCtrlBar{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
+    .navCtrlBtn{
+      min-width:42px; height:36px; padding:0 10px; border-radius:10px;
+      border:1px solid rgba(255,255,255,.24); background:rgba(255,255,255,.06); color:#eef4ff;
+      font-size:16px; font-weight:800; cursor:pointer; line-height:1;
+    }
+    .navCtrlBtn:hover{ background:rgba(255,255,255,.12); }
+    .navCtrlBtn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
+    .navCtrlBtn:disabled{ opacity:.4; cursor:default; }
+    .navCtrlLabel{ min-width:300px; text-align:center; font-size:12px; letter-spacing:.04em; color:var(--mut); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .track{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--w); gap:var(--gap); overflow-x:auto; padding-bottom:6px; }
     .track.tv-inline{ display:flex; gap:12px; }
     .carousel-wrap{ position:relative; padding:0 calc(var(--carousel-btn-hitbox) / 2); }
     .carousel-btn{
       position:absolute; top:50%; transform:translateY(-50%);
-      width:var(--carousel-btn-size); height:var(--carousel-btn-size); border-radius:999px;
-      border:var(--carousel-btn-border) solid rgba(255,255,255,.24); background:rgba(7,12,20,.7); color:#f4f8ff; box-shadow:var(--carousel-btn-shadow, 0 2px 10px rgba(0,0,0,.38));
+      width:max(var(--carousel-btn-size),56px); height:max(var(--carousel-btn-size),56px); border-radius:999px;
+      border:var(--carousel-btn-border) solid rgba(214,230,255,.72); background:rgba(20,34,56,.92); color:#ffffff; box-shadow:var(--carousel-btn-shadow, 0 0 0 2px rgba(160,196,255,.22), 0 6px 18px rgba(0,0,0,.55));
       display:inline-flex; align-items:center; justify-content:center;
-      font-size:18px; line-height:1; cursor:pointer; z-index:2;
-      transition:background .18s ease, opacity .18s ease, border-color .18s ease;
+      font-size:28px; line-height:1; cursor:pointer; z-index:2;
+      transition:background .18s ease, opacity .18s ease, border-color .18s ease, box-shadow .18s ease;
     }
     .carousel-btn.left{ left:2px; }
     .carousel-btn.right{ right:2px; }
-    .carousel-btn:hover{ background:rgba(22,32,50,.9); border-color:rgba(255,255,255,.42); }
+    .carousel-wrap.tv-wrap .carousel-btn{ top:calc(50% + 18px); }
+    .carousel-btn:hover{ background:rgba(38,58,90,.98); border-color:rgba(235,244,255,.95); box-shadow:0 0 0 2px rgba(185,214,255,.35), 0 8px 20px rgba(0,0,0,.62); }
     .carousel-btn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
-    .carousel-btn:disabled{ opacity:.35; cursor:default; }
+    .carousel-btn:disabled{ opacity:.32; cursor:default; box-shadow:none; border-color:rgba(255,255,255,.28); background:rgba(27,36,52,.78); }
     .day-seg{ display:flex; flex-direction:column; gap:var(--day-seg-gap); padding-right:2px; border-right:1px solid rgba(255,255,255,.15); }
     .day-seg:last-child{ border-right:none; padding-right:0; }
     .day-pill{ align-self:flex-start; border:1px solid rgba(255,255,255,.2); border-radius:7px; background:var(--day-bg); color:var(--day-fg); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; padding:4px 8px; min-height:var(--day-pill-h); display:inline-flex; align-items:center; white-space:nowrap; }
     .day-pill.today{ border-color:rgba(219,233,255,.8); background:var(--day-today-bg); color:var(--day-today-fg); }
-    .day-cards{ display:flex; gap:var(--gap); }
-    .day-cards .card{ width:var(--card-w); flex:0 0 var(--card-w); min-height:var(--card-h); }
+    .day-cards{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--card-w); grid-template-rows:repeat(var(--carousel-rows), minmax(0,1fr)); gap:var(--gap); }
+    .day-cards .card{ width:var(--card-w); min-height:var(--card-h); }
+    .track.two-row{ grid-template-rows:repeat(var(--carousel-rows), minmax(0,1fr)); }
     .card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
     .media{ position:relative; background:rgba(255,255,255,.08); }
     .media.ep{ aspect-ratio:16/9; }
@@ -178,9 +190,9 @@ CHANGE NOTES:
         card_height_px: 152,
         card_gap_px: 10,
         section_gap_px: 12,
-        carousel_btn_size_px: 28,
-        carousel_btn_hitbox_px: 34,
-        carousel_btn_border_px: 1,
+        carousel_btn_size_px: 56,
+        carousel_btn_hitbox_px: 64,
+        carousel_btn_border_px: 2,
         carousel_btn_shadow: true,
         day_pill_height_px: 26,
         day_segment_gap_px: 8,
@@ -188,7 +200,8 @@ CHANGE NOTES:
       };
       const state = {
         shows: [], movies: [], episodes: [], normalizedMovies: [],
-        filters: { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" }
+        filters: { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" },
+        ui: { selectedTvWeekKey:"", selectedMovieModeIndex:0 }
       };
 
       function repoBase(){
@@ -309,24 +322,9 @@ CHANGE NOTES:
         if (b) return withBasePath(b);
         return "";
       }
-      function mediaLinks(item, owner){
+      function mediaLinks(item){
         const a = item?.links && typeof item.links === "object" ? item.links : {};
-        const b = owner?.links && typeof owner.links === "object" ? owner.links : {};
-        return { vidsrc: String(a.vidsrc || b.vidsrc || "").trim(), videasy: String(a.videasy || b.videasy || "").trim() };
-      }
-      function buildEpisodeUrl(baseUrl, sn, en){
-        const raw = String(baseUrl || "").trim();
-        if (!raw) return raw;
-        const s = Number(sn), e = Number(en);
-        if (!Number.isInteger(s) || !Number.isInteger(e) || s <= 0 || e <= 0) return raw;
-        const suffixAt = raw.search(/[?#]/);
-        const main = suffixAt >= 0 ? raw.slice(0, suffixAt) : raw;
-        const suffix = suffixAt >= 0 ? raw.slice(suffixAt) : "";
-        if (/\/tv\/[^/?#]+\/\d+\/\d+(?:\/|$)/i.test(main)) return raw;
-        const tvMatch = /\/tv\/[^/?#]+/i.exec(main);
-        if (!tvMatch || tvMatch.index == null) return raw;
-        const insertAt = tvMatch.index + tvMatch[0].length;
-        return `${main.slice(0, insertAt)}/${s}/${e}${main.slice(insertAt)}${suffix}`;
+        return { vidsrc: String(a.vidsrc || "").trim(), videasy: String(a.videasy || "").trim() };
       }
       function movieUid(movie){
         const id = movie?.tmdb_id ?? movie?.id ?? movie?.movie_id;
@@ -419,27 +417,58 @@ CHANGE NOTES:
       }
 
       function episodeCard(it){
-        const links = mediaLinks(it.ep, it.show), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
-        const episodeLinks = {
-          vidsrc: buildEpisodeUrl(links.vidsrc, it.sn, it.en),
-          videasy: buildEpisodeUrl(links.videasy, it.sn, it.en)
-        };
-        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${episodeLinks.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(episodeLinks.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${episodeLinks.videasy ? `<a class="iconbtn videasy" href="${escHtml(episodeLinks.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
+        const links = mediaLinks(it.ep), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(links.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${links.videasy ? `<a class="iconbtn videasy" href="${escHtml(links.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
       }
       function movieCard(it){
-        const links = mediaLinks(it.movie, it.movie), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
+        const links = mediaLinks(it.movie), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
         return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.genres[0] ? `<span class="chip">${escHtml(it.genres[0])}</span>` : ""}</div><div class="links">${links.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(links.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${links.videasy ? `<a class="iconbtn videasy" href="${escHtml(links.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
       }
-      function rowHtml(title, meta, items, cardFn){
-        const cards = items.length ? items.map(cardFn).join("") : `<div class="empty">No items in this range for current filters.</div>`;
-        return `<section class="row"><div class="rh"><h2>${escHtml(title)}</h2><div class="rm">${escHtml(meta)} | ${items.length} item${items.length===1?"":"s"}</div></div><div class="track">${cards}</div></section>`;
+      function buildTvWeeks(items){
+        const weeks = new Map();
+        for (const it of items){
+          const start = mondayOf(it.firstAired);
+          const key = dateKey(start);
+          if (!weeks.has(key)){
+            weeks.set(key, { key, start, end: addDays(start, 7), items: [] });
+          }
+          weeks.get(key).items.push(it);
+        }
+        const out = Array.from(weeks.values()).sort((a,b) => a.start - b.start);
+        for (const w of out){
+          w.items = sortList(w.items, x => `${x.title} ${x.epTitle}`, x => x.firstAired);
+          w.label = `${dateLabel(w.start)} to ${dateLabel(addDays(w.end, -1))}`;
+        }
+        return out;
       }
-      function tvInlineWeekRowHtml(items){
-        if (!items.length){
-          return `<section class="row"><div class="rh tv-rh" aria-hidden="true"></div><div class="track"><div class="empty">No items in this range for current filters.</div></div></section>`;
+      function buildMovieModes(items, now){
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const nextMonth = new Date(now.getFullYear(), now.getMonth()+1, 1);
+        const newStart = new Date(now.getFullYear(), now.getMonth()-2, 1);
+        const yearStart = new Date(now.getFullYear(), now.getMonth()-12, 1);
+        const prevYearStart = new Date(now.getFullYear(), now.getMonth()-24, 1);
+        const newReleases = sortList(uniqueByUid(items.filter(x => inRange(x.rd, newStart, nextMonth))), x => x.title, x => x.rd);
+        const newIds = new Set(newReleases.map(x => x.uid));
+        const recentYear = sortList(uniqueByUid(items.filter(x => inRange(x.rd, yearStart, monthStart) && !newIds.has(x.uid))), x => x.title, x => x.rd);
+        const previousYear = sortList(uniqueByUid(items.filter(x => inRange(x.rd, prevYearStart, yearStart) && !newIds.has(x.uid))), x => x.title, x => x.rd);
+        const modeTwoTitle = `Last ${12} Months (excluding ${"NEW"} Movies: Released)`;
+        const modeThreeTitle = `Previous ${12} Months`;
+        return [
+          { id: "new", title: "New Movies: Released", label: `${dateLabel(newStart)} to ${dateLabel(addDays(nextMonth, -1))}`, items: newReleases },
+          { id: "recent", title: modeTwoTitle, label: `${dateLabel(yearStart)} to ${dateLabel(addDays(monthStart, -1))}`, items: recentYear },
+          { id: "previous", title: modeThreeTitle, label: `${dateLabel(prevYearStart)} to ${dateLabel(addDays(yearStart, -1))}`, items: previousYear }
+        ];
+      }
+      function navCtrlBarHtml(kind, label){
+        const root = kind === "tv" ? "Week" : "Period";
+        return `<div class="navCtrlBar" data-nav-kind="${escHtml(kind)}"><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="first" aria-label="${root} fast back">&laquo;</button><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="prev" aria-label="${root} back">&lsaquo;</button><div class="navCtrlLabel">${escHtml(label)}</div><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="next" aria-label="${root} forward">&rsaquo;</button><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="last" aria-label="${root} fast forward">&raquo;</button></div>`;
+      }
+      function tvCarouselHtml(week){
+        if (!week){
+          return `<section class="row">${navCtrlBarHtml("tv", "No TV week data")}<div class="track"><div class="empty">No TV episodes in this range for current filters.</div></div></section>`;
         }
         const groups = new Map();
-        for (const it of items){
+        for (const it of week.items){
           const key = dateKey(it.firstAired);
           if (!groups.has(key)) groups.set(key, []);
           groups.get(key).push(it);
@@ -451,7 +480,11 @@ CHANGE NOTES:
           const cards = dayItems.map(episodeCard).join("");
           return `<section class="day-seg"><div class="day-pill${todayClass}">${escHtml(dayPillLabel(dayDate))}</div><div class="day-cards">${cards}</div></section>`;
         }).join("");
-        return `<section class="row"><div class="rh tv-rh" aria-hidden="true"></div><div class="track tv-inline">${segments}</div></section>`;
+        return `<section class="row">${navCtrlBarHtml("tv", week.label)}<div class="track tv-inline">${segments || `<div class="empty">No TV episodes in this range for current filters.</div>`}</div></section>`;
+      }
+      function moviesCarouselHtml(mode){
+        const cards = mode.items.length ? mode.items.map(movieCard).join("") : `<div class="empty">No movies in this range for current filters.</div>`;
+        return `<section class="row">${navCtrlBarHtml("movies", `${mode.title} • ${mode.label}`)}<div class="track two-row">${cards}</div></section>`;
       }
       function wireKeyboardNav(){
         const rowsRoot = refs.rowsRoot;
@@ -517,6 +550,7 @@ CHANGE NOTES:
             track.parentNode.insertBefore(wrap, track);
             wrap.appendChild(track);
           }
+          wrap.classList.toggle("tv-wrap", track.classList.contains("tv-inline"));
           let left = wrap.querySelector(".carousel-btn.left");
           let right = wrap.querySelector(".carousel-btn.right");
           if (!(left instanceof HTMLButtonElement)){
@@ -547,37 +581,88 @@ CHANGE NOTES:
           update();
         }
       }
+      function wireNavControls(tvWeeks, movieModes){
+        const rowsRoot = refs.rowsRoot;
+        const currentWeek = tvWeeks.findIndex(x => x.key === state.ui.selectedTvWeekKey);
+        const tvIndex = currentWeek >= 0 ? currentWeek : 0;
+        const maxMovieIndex = Math.max(0, movieModes.length - 1);
+        state.ui.selectedMovieModeIndex = Math.min(maxMovieIndex, Math.max(0, state.ui.selectedMovieModeIndex || 0));
+
+        for (const btn of rowsRoot.querySelectorAll(".navCtrlBtn")){
+          const type = btn.getAttribute("data-nav");
+          const action = btn.getAttribute("data-action");
+          if (type === "tv"){
+            btn.disabled = !tvWeeks.length || ((action === "first" || action === "prev") ? tvIndex <= 0 : tvIndex >= tvWeeks.length - 1);
+          } else if (type === "movies"){
+            const i = state.ui.selectedMovieModeIndex;
+            btn.disabled = !movieModes.length || ((action === "first" || action === "prev") ? i <= 0 : i >= movieModes.length - 1);
+          }
+          btn.addEventListener("click", () => {
+            if (type === "tv" && tvWeeks.length){
+              const i = tvWeeks.findIndex(x => x.key === state.ui.selectedTvWeekKey);
+              const cur = i >= 0 ? i : 0;
+              if (action === "first") state.ui.selectedTvWeekKey = tvWeeks[0].key;
+              if (action === "prev" && cur > 0) state.ui.selectedTvWeekKey = tvWeeks[cur - 1].key;
+              if (action === "next" && cur < tvWeeks.length - 1) state.ui.selectedTvWeekKey = tvWeeks[cur + 1].key;
+              if (action === "last") state.ui.selectedTvWeekKey = tvWeeks[tvWeeks.length - 1].key;
+              render();
+              return;
+            }
+            if (type === "movies" && movieModes.length){
+              let i = state.ui.selectedMovieModeIndex;
+              if (action === "first") i = 0;
+              if (action === "prev") i = Math.max(0, i - 1);
+              if (action === "next") i = Math.min(movieModes.length - 1, i + 1);
+              if (action === "last") i = movieModes.length - 1;
+              state.ui.selectedMovieModeIndex = i;
+              render();
+            }
+          });
+        }
+      }
+      function wireControlArrowNav(){
+        const groups = Array.from(refs.rowsRoot.querySelectorAll(".navCtrlBar, .carousel-wrap"));
+        for (const group of groups){
+          const btns = Array.from(group.querySelectorAll(".navCtrlBtn, .carousel-btn"));
+          for (const btn of btns){
+            if (!(btn instanceof HTMLElement)) continue;
+            btn.addEventListener("keydown", (ev) => {
+              if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+              const i = btns.indexOf(btn);
+              if (i < 0) return;
+              const n = ev.key === "ArrowRight" ? btns[i + 1] : btns[i - 1];
+              if (n instanceof HTMLElement){ n.focus(); ev.preventDefault(); }
+            });
+          }
+        }
+      }
 
       function render(){
-        const now = new Date(), mon = mondayOf(now), prev = addDays(mon,-7), next = addDays(mon,7), next2 = addDays(mon,14);
-        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1), nextMonth = new Date(now.getFullYear(), now.getMonth()+1, 1), yearStart = new Date(now.getFullYear(), now.getMonth()-12, 1), newStart = new Date(now.getFullYear(), now.getMonth()-2, 1);
-        const eps = filtEpisodes(state.episodes), mvs = filtMovies(state.normalizedMovies);
-        const cur = sortList(eps.filter(x => inRange(x.firstAired, mon, next)), x => `${x.title} ${x.epTitle}`, x => x.firstAired);
-        const prv = sortList(eps.filter(x => inRange(x.firstAired, prev, mon)), x => `${x.title} ${x.epTitle}`, x => x.firstAired);
-        const nxt = sortList(eps.filter(x => inRange(x.firstAired, next, next2)), x => `${x.title} ${x.epTitle}`, x => x.firstAired);
-        const newReleasesBase = mvs.filter(x => inRange(x.rd, newStart, nextMonth));
-        const newReleases = sortList(uniqueByUid(newReleasesBase), x => x.title, x => x.rd);
-        const newIds = new Set(newReleases.map(x => x.uid));
-        const last12Base = mvs.filter(x => inRange(x.rd, yearStart, monthStart) && !newIds.has(x.uid));
-        const last12 = sortList(uniqueByUid(last12Base), x => x.title, x => x.rd);
+        const now = new Date();
+        const eps = filtEpisodes(state.episodes);
+        const mvs = filtMovies(state.normalizedMovies);
+        const tvWeeks = buildTvWeeks(eps);
+        const moviesModes = buildMovieModes(mvs, now);
+        const currentWeekKey = dateKey(mondayOf(now));
+        if (!tvWeeks.some(x => x.key === state.ui.selectedTvWeekKey)){
+          state.ui.selectedTvWeekKey = tvWeeks.some(x => x.key === currentWeekKey) ? currentWeekKey : (tvWeeks[tvWeeks.length - 1]?.key || "");
+        }
+        if (state.ui.selectedMovieModeIndex < 0 || state.ui.selectedMovieModeIndex >= moviesModes.length){
+          state.ui.selectedMovieModeIndex = 0;
+        }
+        const selectedWeek = tvWeeks.find(x => x.key === state.ui.selectedTvWeekKey) || tvWeeks[tvWeeks.length - 1];
+        const selectedMode = moviesModes[state.ui.selectedMovieModeIndex] || moviesModes[0];
         const out = [];
         if (state.filters.includeTv){
-          out.push(tvInlineWeekRowHtml(cur));
-          out.push(tvInlineWeekRowHtml(prv));
-          out.push(tvInlineWeekRowHtml(nxt));
+          out.push(tvCarouselHtml(selectedWeek));
         }
-        if (state.filters.includeMovie){
-          out.push(rowHtml("NEW Movies: Released", `${dateLabel(newStart)} to ${dateLabel(addDays(nextMonth,-1))}`, newReleases, movieCard));
-          out.push(rowHtml("Movies: Last 12 Months (excluding NEW Movies: Released)", `${dateLabel(yearStart)} to ${dateLabel(addDays(monthStart,-1))}`, last12, movieCard));
+        if (state.filters.includeMovie && selectedMode){
+          out.push(moviesCarouselHtml(selectedMode));
         }
         refs.rowsRoot.innerHTML = out.length ? out.join("") : `<section class="row"><div class="empty">Enable at least one media type from filters.</div></section>`;
-        const episodeUrlExamples = [
-          buildEpisodeUrl("https://vidsrc.net/embed/tv/1413", 2, 6),
-          buildEpisodeUrl("https://player.videasy.net/tv/1413?autoplay=1", 2, 6),
-          buildEpisodeUrl("https://vidsrc.net/embed/tv/1413#frag", 2, 6)
-        ];
-        console.log("WatchMe episode URL examples:", episodeUrlExamples);
         wireCarouselButtons();
+        wireNavControls(tvWeeks, moviesModes);
+        wireControlArrowNav();
         wireKeyboardNav();
       }
 
