@@ -1,0 +1,451 @@
+<!doctype html>
+<!--
+FILE: web/watch_me/watch_me.html
+VERSION: 1.1.0
+UPDATED: 2026-02-14T00:00:00Z
+CHANGE NOTES:
+- Rebuilt page with clean validated markup/script after manual paste corruption
+- Data-driven 5-row carousel view from data/data.json with left filter/sort menu
+- VidSrc and VidEasy links rendered for episode and movie cards when present in data
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Watch Me</title>
+  <link rel="stylesheet" href="../css/my_tv_hub.css" />
+  <style>
+    :root{
+      --bg:#0b0f16; --panel:#121a28; --line:rgba(255,255,255,.14); --txt:#ecf2ff; --mut:#b5c3dd; --w:150px; --side-w:210px;
+      --sel-bg:rgba(255,255,255,.06); --sel-fg:#ecf2ff; --sel-opt-bg:#182132; --sel-opt-fg:#f0f5ff; --sel-opt-hover:#263248;
+      --day-bg:rgba(255,255,255,.05); --day-fg:#d5e0f3; --day-today-bg:#dbe9ff; --day-today-fg:#0d1b33;
+    }
+    html,body{ min-height:100%; height:auto; }
+    body{ margin:0; background:radial-gradient(1200px 700px at 15% -10%, rgba(34,130,255,.22), transparent 55%),var(--bg); color:var(--txt); font-family:"Space Grotesk","Segoe UI",sans-serif; overflow:auto; }
+    .app{ width:min(97vw,1900px); margin:0 auto; padding:14px; }
+    .head{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03)); padding:10px 14px; margin-bottom:14px; }
+    .head h1{ margin:0; font-size:24px; font-weight:900; letter-spacing:.03em; }
+    .head p{ margin:0; color:var(--mut); font-size:12px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+    .headcopy{ display:flex; align-items:baseline; gap:12px; }
+    .legend{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.08em; }
+    .legend img{ width:16px; height:16px; object-fit:contain; margin-right:5px; }
+    .layout{ display:grid; grid-template-columns:var(--side-w) minmax(0,1fr); gap:14px; }
+    .side{ position:sticky; top:10px; align-self:start; border:1px solid var(--line); border-radius:14px; background:var(--panel); padding:12px; display:flex; flex-direction:column; gap:12px; max-height:calc(100vh - 20px); overflow:auto; }
+    .grp{ display:flex; flex-direction:column; gap:7px; }
+    .gt{ font-size:11px; color:var(--mut); font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
+    .label{ font-size:12px; color:var(--mut); }
+    .inp,.sel{ width:100%; border:1px solid var(--line); border-radius:10px; background:var(--sel-bg); color:var(--sel-fg); font:inherit; font-size:13px; padding:8px 9px; }
+    .sel{ color-scheme:dark; }
+    .sel option{ color:var(--sel-opt-fg); background:var(--sel-opt-bg); }
+    .sel option:checked{ color:var(--sel-opt-fg); background:var(--sel-opt-hover); }
+    .sel option:hover{ color:var(--sel-opt-fg); background:var(--sel-opt-hover); }
+    .chk{ display:flex; align-items:center; gap:8px; font-size:12px; }
+    .reset{ border:1px solid rgba(255,255,255,.24); border-radius:10px; background:rgba(255,255,255,.05); color:#f2f7ff; font-weight:700; padding:8px 9px; cursor:pointer; }
+    .main{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+    .row{ border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025)); padding:10px; }
+    .rh{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:9px; }
+    .rh h2{ margin:0; font-size:16px; font-weight:900; letter-spacing:.02em; }
+    .rm{ font-size:12px; color:var(--mut); }
+    .track{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--w); gap:10px; overflow-x:auto; padding-bottom:6px; }
+    .track.tv-inline{ display:flex; gap:12px; }
+    .day-seg{ display:flex; flex-direction:column; gap:8px; padding-right:2px; border-right:1px solid rgba(255,255,255,.15); }
+    .day-seg:last-child{ border-right:none; padding-right:0; }
+    .day-pill{ align-self:flex-start; border:1px solid rgba(255,255,255,.2); border-radius:7px; background:var(--day-bg); color:var(--day-fg); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; padding:4px 8px; white-space:nowrap; }
+    .day-pill.today{ border-color:rgba(219,233,255,.8); background:var(--day-today-bg); color:var(--day-today-fg); }
+    .day-cards{ display:flex; gap:10px; }
+    .day-cards .card{ width:var(--w); flex:0 0 var(--w); }
+    .card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
+    .media{ position:relative; background:rgba(255,255,255,.08); }
+    .media.ep{ aspect-ratio:16/9; }
+    .media.mv{ aspect-ratio:2/3; }
+    .media img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .ov{ position:absolute; inset:auto 0 0 0; background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.86)); padding:7px; display:flex; flex-direction:column; gap:2px; min-height:58%; justify-content:flex-end; }
+    .k{ font-size:10px; color:#bfd0ea; text-transform:uppercase; letter-spacing:.05em; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .n{ font-size:12px; line-height:1.2; font-weight:800; color:#f2f6ff; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .d{ font-size:10px; color:#cfdbf0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .cb{ padding:8px; display:flex; flex-direction:column; gap:5px; }
+    .bad{ display:flex; align-items:center; gap:6px; }
+    .prov{ max-height:16px; max-width:58px; object-fit:contain; }
+    .chip{ display:inline-flex; align-items:center; border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:2px 6px; background:rgba(255,255,255,.06); font-size:10px; color:#d0dcef; text-transform:uppercase; letter-spacing:.05em; }
+    .links{ display:flex; gap:7px; }
+    .iconbtn{ width:28px; height:28px; border-radius:999px; border:1px solid rgba(255,255,255,.16); display:inline-flex; align-items:center; justify-content:center; text-decoration:none; overflow:hidden; }
+    .iconbtn img{ width:14px; height:14px; object-fit:contain; display:block; }
+    .iconbtn.vidsrc{ background:#22c55e; border-color:rgba(34,197,94,.45); }
+    .iconbtn.videasy{ background:#ec4899; border-color:rgba(236,72,153,.45); }
+    .card{ outline-offset:2px; }
+    .card:focus-visible{ outline:3px solid #ffffff; }
+    .day-pill{ outline-offset:2px; }
+    .day-pill:focus-visible{ outline:3px solid #ffffff; }
+    .empty{ border:1px dashed rgba(255,255,255,.22); border-radius:10px; padding:14px; color:var(--mut); font-size:12px; background:rgba(255,255,255,.03); align-self:start; }
+    @media (prefers-color-scheme:light){
+      :root{
+        --sel-bg:#ffffff; --sel-fg:#101a2e; --sel-opt-bg:#ffffff; --sel-opt-fg:#0f1b32; --sel-opt-hover:#dde7ff;
+        --day-bg:#edf2fc; --day-fg:#1d3155; --day-today-bg:#203960; --day-today-fg:#f4f8ff;
+      }
+      .sel{ color-scheme:light; }
+    }
+    @media (max-width:1120px){ .layout{ grid-template-columns:1fr; } .side{ position:relative; top:0; max-height:none; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="head">
+      <div class="headcopy">
+        <h1>Watch Me</h1>
+        <p>TV weekly episodes and movie release windows</p>
+      </div>
+      <div class="legend">
+        <span><img id="legendVidsrc" alt="" />VidSrc</span>
+        <span><img id="legendVideasy" alt="" />VidEasy</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="side" aria-label="Filters and sorting">
+        <div class="grp">
+          <div class="gt">Search</div>
+          <label class="label" for="searchText">Title contains</label>
+          <input id="searchText" class="inp" type="search" placeholder="Show, episode, or movie" autocomplete="off" />
+        </div>
+        <div class="grp">
+          <div class="gt">Sort</div>
+          <label class="label" for="sortBy">Order inside each row</label>
+          <select id="sortBy" class="sel">
+            <option value="play">Play order</option>
+            <option value="date_asc">Date oldest to newest</option>
+            <option value="date_desc">Date newest to oldest</option>
+            <option value="title">Title A to Z</option>
+          </select>
+        </div>
+        <div class="grp">
+          <div class="gt">Type</div>
+          <label class="chk"><input id="toggleTv" type="checkbox" checked /> Include TV rows</label>
+          <label class="chk"><input id="toggleMovie" type="checkbox" checked /> Include movie rows</label>
+        </div>
+        <div class="grp">
+          <div class="gt">Filters</div>
+          <label class="label" for="genreFilter">Genre</label>
+          <select id="genreFilter" class="sel"></select>
+          <label class="label" for="networkFilter">Network</label>
+          <select id="networkFilter" class="sel"></select>
+        </div>
+        <button id="resetFilters" class="reset" type="button">Reset filters</button>
+      </aside>
+      <main id="rowsRoot" class="main" aria-live="polite"></main>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const $ = (id) => document.getElementById(id);
+      const refs = {
+        rowsRoot: $("rowsRoot"),
+        searchText: $("searchText"),
+        sortBy: $("sortBy"),
+        toggleTv: $("toggleTv"),
+        toggleMovie: $("toggleMovie"),
+        genreFilter: $("genreFilter"),
+        networkFilter: $("networkFilter"),
+        resetFilters: $("resetFilters"),
+        legendVidsrc: $("legendVidsrc"),
+        legendVideasy: $("legendVideasy")
+      };
+
+      const ICONS = { vidsrc: "assets/icons/VidSrc_icon.png", videasy: "assets/icons/videasy_icon.png" };
+      const state = {
+        shows: [], movies: [], episodes: [], normalizedMovies: [],
+        filters: { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" }
+      };
+
+      function repoBase(){
+        const parts = location.pathname.split("/").filter(Boolean);
+        const wi = parts.indexOf("web");
+        return wi > 0 ? `/${parts[0]}` : "";
+      }
+      function withBasePath(path){
+        const p = String(path || "").trim();
+        if (!p) return "";
+        if (/^https?:\/\//i.test(p)) return p;
+        return p.startsWith("/") ? `${repoBase()}${p}` : `${repoBase()}/${p}`;
+      }
+      function escHtml(v){
+        return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#39;");
+      }
+      function parseDateOnly(raw){
+        const key = String(raw || "").trim().slice(0,10);
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
+        const [y,m,d] = key.split("-").map(Number);
+        const dt = new Date(y, m - 1, d); dt.setHours(0,0,0,0);
+        return Number.isNaN(dt.getTime()) ? null : dt;
+      }
+      function dateLabel(dt){
+        return dt instanceof Date && !Number.isNaN(dt.getTime()) ? dt.toLocaleDateString(undefined,{year:"numeric",month:"short",day:"numeric"}) : "";
+      }
+      function dayPillLabel(dt){
+        return dt instanceof Date && !Number.isNaN(dt.getTime()) ? dt.toLocaleDateString(undefined,{weekday:"long",month:"short",day:"numeric",year:"numeric"}) : "";
+      }
+      function dateKey(dt){
+        return dt instanceof Date && !Number.isNaN(dt.getTime()) ? `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())}` : "";
+      }
+      function pad2(n){ return String(Number(n) || 0).padStart(2, "0"); }
+      function seTag(s,e){ return `S${pad2(s)}E${pad2(e)}`; }
+      function mondayOf(d){ const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setHours(0,0,0,0); x.setDate(x.getDate() - ((x.getDay()+6)%7)); return x; }
+      function addDays(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+      function inRange(d,s,e){ return d instanceof Date && !Number.isNaN(d.getTime()) && d >= s && d < e; }
+      function textIncludes(h,n){ return !n || String(h || "").toLowerCase().includes(n); }
+      function normalizeList(v){ return Array.isArray(v) ? v.map(x => (x && typeof x === "object" ? String(x.name || "") : String(x || "")).trim()).filter(Boolean) : []; }
+
+      function providerLogo(obj){
+        const p = obj?.watch_providers?.results;
+        const region = p?.US || p?.CA || p?.GB || p?.AU;
+        const first = Array.isArray(region?.flatrate) ? region.flatrate[0] : (Array.isArray(region?.ads) ? region.ads[0] : null);
+        return withBasePath(first?.logo_path_local || "");
+      }
+      function episodeImage(ep, show){
+        const a = String(ep?.still_local || ep?.still_path_local || "").trim();
+        if (a) return withBasePath(a);
+        const b = String(show?.backdrop_path_local || "").trim();
+        if (b) return withBasePath(b);
+        const c = String(show?.poster_path_local || "").trim();
+        if (c) return withBasePath(c);
+        return "";
+      }
+      function movieImage(movie){
+        const a = String(movie?.poster_path_local || "").trim();
+        if (a) return withBasePath(a);
+        const b = String(movie?.backdrop_path_local || "").trim();
+        if (b) return withBasePath(b);
+        return "";
+      }
+      function mediaLinks(item, owner){
+        const a = item?.links && typeof item.links === "object" ? item.links : {};
+        const b = owner?.links && typeof owner.links === "object" ? owner.links : {};
+        return { vidsrc: String(a.vidsrc || b.vidsrc || "").trim(), videasy: String(a.videasy || b.videasy || "").trim() };
+      }
+      function movieUid(movie){
+        const id = movie?.tmdb_id ?? movie?.id ?? movie?.movie_id;
+        return id == null ? "" : String(id).trim();
+      }
+      function uniqueByUid(list){
+        const seen = new Set();
+        const out = [];
+        for (const it of list){
+          const uid = String(it?.uid || "").trim();
+          if (!uid || seen.has(uid)) continue;
+          seen.add(uid);
+          out.push(it);
+        }
+        return out;
+      }
+
+      function flattenData(data){
+        const shows = Array.isArray(data?.shows) ? data.shows : [];
+        const movies = Array.isArray(data?.movies) ? data.movies : [];
+        const episodes = [];
+        for (const show of shows){
+          const title = String(show?.title || show?.name || "Unknown Show").trim();
+          const showGenres = normalizeList(show?.genres);
+          const network = String(show?.network || "").trim();
+          for (const season of (Array.isArray(show?.seasons) ? show.seasons : [])){
+            const sn = Number(season?.season_number) || 0;
+            for (const ep of (Array.isArray(season?.episodes) ? season.episodes : [])){
+              const firstAired = parseDateOnly(ep?.first_aired);
+              if (!firstAired) continue;
+              episodes.push({
+                show, title, showGenres, network, sn,
+                ep, en: Number(ep?.episode_number) || 0,
+                epTitle: String(ep?.title || ep?.name || "Episode").trim() || "Episode",
+                firstAired, image: episodeImage(ep, show), prov: providerLogo(show)
+              });
+            }
+          }
+        }
+        const normalizedMovies = movies.map(movie => ({
+          movie, title: String(movie?.title || "Untitled Movie").trim() || "Untitled Movie",
+          rd: parseDateOnly(movie?.release_date), genres: normalizeList(movie?.genres),
+          image: movieImage(movie), prov: providerLogo(movie), uid: movieUid(movie)
+        })).filter(m => m.rd && m.uid);
+        return { shows, movies, episodes, normalizedMovies };
+      }
+
+      function buildFilterOptions(){
+        const gs = new Set(), ns = new Set();
+        for (const s of state.shows){ normalizeList(s?.genres).forEach(g => gs.add(g)); if (s?.network) ns.add(String(s.network).trim()); }
+        for (const m of state.movies){ normalizeList(m?.genres).forEach(g => gs.add(g)); }
+        const g = Array.from(gs).sort((a,b)=>a.localeCompare(b));
+        const n = Array.from(ns).sort((a,b)=>a.localeCompare(b));
+        refs.genreFilter.innerHTML = `<option value="all">All genres</option>${g.map(v => `<option value="${escHtml(v)}">${escHtml(v)}</option>`).join("")}`;
+        refs.networkFilter.innerHTML = `<option value="all">All networks</option>${n.map(v => `<option value="${escHtml(v)}">${escHtml(v)}</option>`).join("")}`;
+      }
+
+      function bindUi(){
+        refs.searchText.addEventListener("input", () => { state.filters.query = refs.searchText.value.trim().toLowerCase(); render(); });
+        refs.sortBy.addEventListener("change", () => { state.filters.sortBy = refs.sortBy.value; render(); });
+        refs.toggleTv.addEventListener("change", () => { state.filters.includeTv = !!refs.toggleTv.checked; render(); });
+        refs.toggleMovie.addEventListener("change", () => { state.filters.includeMovie = !!refs.toggleMovie.checked; render(); });
+        refs.genreFilter.addEventListener("change", () => { state.filters.genre = refs.genreFilter.value; render(); });
+        refs.networkFilter.addEventListener("change", () => { state.filters.network = refs.networkFilter.value; render(); });
+        refs.resetFilters.addEventListener("click", () => {
+          state.filters = { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" };
+          refs.searchText.value = ""; refs.sortBy.value = "play"; refs.toggleTv.checked = true; refs.toggleMovie.checked = true; refs.genreFilter.value = "all"; refs.networkFilter.value = "all";
+          render();
+        });
+      }
+
+      function filtEpisodes(list){
+        const q = state.filters.query, g = state.filters.genre, n = state.filters.network;
+        return list.filter(it => {
+          if (!textIncludes(`${it.title} ${it.epTitle} ${seTag(it.sn,it.en)}`, q)) return false;
+          if (g !== "all" && !it.showGenres.some(x => x.toLowerCase() === g.toLowerCase())) return false;
+          if (n !== "all" && String(it.network || "").toLowerCase() !== n.toLowerCase()) return false;
+          return true;
+        });
+      }
+      function filtMovies(list){
+        const q = state.filters.query, g = state.filters.genre;
+        return list.filter(it => textIncludes(it.title, q) && (g === "all" || it.genres.some(x => x.toLowerCase() === g.toLowerCase())));
+      }
+      function sortList(list, titleFn, dateFn){
+        const a = list.slice(), s = state.filters.sortBy;
+        if (s === "title"){ a.sort((x,y)=>titleFn(x).localeCompare(titleFn(y))); return a; }
+        if (s === "date_desc"){ a.sort((x,y)=>dateFn(y)-dateFn(x) || titleFn(x).localeCompare(titleFn(y))); return a; }
+        a.sort((x,y)=>dateFn(x)-dateFn(y) || titleFn(x).localeCompare(titleFn(y))); return a;
+      }
+
+      function episodeCard(it){
+        const links = mediaLinks(it.ep, it.show), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div><div class="d">${escHtml(dateLabel(it.firstAired))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(links.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${links.videasy ? `<a class="iconbtn videasy" href="${escHtml(links.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
+      }
+      function movieCard(it){
+        const links = mediaLinks(it.movie, it.movie), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
+        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.genres[0] ? `<span class="chip">${escHtml(it.genres[0])}</span>` : ""}</div><div class="links">${links.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(links.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${links.videasy ? `<a class="iconbtn videasy" href="${escHtml(links.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
+      }
+      function rowHtml(title, meta, items, cardFn){
+        const cards = items.length ? items.map(cardFn).join("") : `<div class="empty">No items in this range for current filters.</div>`;
+        return `<section class="row"><div class="rh"><h2>${escHtml(title)}</h2><div class="rm">${escHtml(meta)} | ${items.length} item${items.length===1?"":"s"}</div></div><div class="track">${cards}</div></section>`;
+      }
+      function tvInlineWeekRowHtml(title, meta, items){
+        if (!items.length){
+          return `<section class="row"><div class="rh"><h2>${escHtml(title)}</h2><div class="rm">${escHtml(meta)} | 0 items</div></div><div class="track"><div class="empty">No items in this range for current filters.</div></div></section>`;
+        }
+        const groups = new Map();
+        for (const it of items){
+          const key = dateKey(it.firstAired);
+          if (!groups.has(key)) groups.set(key, []);
+          groups.get(key).push(it);
+        }
+        const today = dateKey(new Date());
+        const segments = Array.from(groups.entries()).map(([key, dayItems]) => {
+          const dayDate = dayItems[0]?.firstAired;
+          const todayClass = key === today ? " today" : "";
+          const cards = dayItems.map(episodeCard).join("");
+          return `<section class="day-seg"><div class="day-pill${todayClass}">${escHtml(dayPillLabel(dayDate))}</div><div class="day-cards">${cards}</div></section>`;
+        }).join("");
+        return `<section class="row"><div class="rh"><h2>${escHtml(title)}</h2><div class="rm">${escHtml(meta)} | ${items.length} item${items.length===1?"":"s"}</div></div><div class="track tv-inline">${segments}</div></section>`;
+      }
+      function wireKeyboardNav(){
+        const rowsRoot = refs.rowsRoot;
+        const tracks = Array.from(rowsRoot.querySelectorAll(".track"));
+        for (const card of rowsRoot.querySelectorAll(".card")){
+          card.tabIndex = 0;
+        }
+        for (const pill of rowsRoot.querySelectorAll(".day-pill")){
+          pill.tabIndex = 0;
+        }
+        function moveInTrack(track, current, dir){
+          const focusables = Array.from(track.querySelectorAll(".day-pill, .card"));
+          const idx = focusables.indexOf(current);
+          if (idx < 0) return false;
+          const next = focusables[idx + dir];
+          if (!next) return false;
+          next.focus();
+          return true;
+        }
+        for (const track of tracks){
+          track.addEventListener("keydown", (ev) => {
+            const target = ev.target;
+            if (!(target instanceof HTMLElement)) return;
+            if (!target.matches(".card, .day-pill, .iconbtn")) return;
+            if (ev.key === "ArrowRight"){
+              if (target.matches(".iconbtn")) return;
+              if (moveInTrack(track, target, 1)) ev.preventDefault();
+              return;
+            }
+            if (ev.key === "ArrowLeft"){
+              if (target.matches(".iconbtn")) return;
+              if (moveInTrack(track, target, -1)) ev.preventDefault();
+              return;
+            }
+            if (ev.key !== "Enter") return;
+            if (target.matches(".card")){
+              const primary = target.querySelector(".links .iconbtn");
+              if (primary instanceof HTMLAnchorElement){
+                primary.click();
+                ev.preventDefault();
+              }
+              return;
+            }
+            if (target.matches(".day-pill")){
+              const seg = target.closest(".day-seg");
+              const firstCard = seg ? seg.querySelector(".card") : null;
+              if (firstCard instanceof HTMLElement){
+                firstCard.focus();
+                ev.preventDefault();
+              }
+            }
+          });
+        }
+      }
+
+      function render(){
+        const now = new Date(), mon = mondayOf(now), prev = addDays(mon,-7), next = addDays(mon,7), next2 = addDays(mon,14);
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1), nextMonth = new Date(now.getFullYear(), now.getMonth()+1, 1), yearStart = new Date(now.getFullYear(), now.getMonth()-12, 1), newStart = new Date(now.getFullYear(), now.getMonth()-2, 1);
+        const eps = filtEpisodes(state.episodes), mvs = filtMovies(state.normalizedMovies);
+        const cur = sortList(eps.filter(x => inRange(x.firstAired, mon, next)), x => `${x.title} ${x.epTitle}`, x => x.firstAired);
+        const prv = sortList(eps.filter(x => inRange(x.firstAired, prev, mon)), x => `${x.title} ${x.epTitle}`, x => x.firstAired);
+        const nxt = sortList(eps.filter(x => inRange(x.firstAired, next, next2)), x => `${x.title} ${x.epTitle}`, x => x.firstAired);
+        const newReleasesBase = mvs.filter(x => inRange(x.rd, newStart, nextMonth));
+        const newReleases = sortList(uniqueByUid(newReleasesBase), x => x.title, x => x.rd);
+        const newIds = new Set(newReleases.map(x => x.uid));
+        const last12Base = mvs.filter(x => inRange(x.rd, yearStart, monthStart) && !newIds.has(x.uid));
+        const last12 = sortList(uniqueByUid(last12Base), x => x.title, x => x.rd);
+        const out = [];
+        if (state.filters.includeTv){
+          out.push(tvInlineWeekRowHtml("TV: Current Week", `${dateLabel(mon)} to ${dateLabel(addDays(next,-1))}`, cur));
+          out.push(rowHtml("TV: Previous Week", `${dateLabel(prev)} to ${dateLabel(addDays(mon,-1))}`, prv, episodeCard));
+          out.push(rowHtml("TV: Next Week", `${dateLabel(next)} to ${dateLabel(addDays(next2,-1))}`, nxt, episodeCard));
+        }
+        if (state.filters.includeMovie){
+          out.push(rowHtml("NEW Movies: Released", `${dateLabel(newStart)} to ${dateLabel(addDays(nextMonth,-1))}`, newReleases, movieCard));
+          out.push(rowHtml("Movies: Last 12 Months (excluding NEW Movies: Released)", `${dateLabel(yearStart)} to ${dateLabel(addDays(monthStart,-1))}`, last12, movieCard));
+        }
+        refs.rowsRoot.innerHTML = out.length ? out.join("") : `<section class="row"><div class="empty">Enable at least one media type from filters.</div></section>`;
+        wireKeyboardNav();
+      }
+
+      async function loadData(){
+        const candidates = [`${repoBase()}/data/data.json`, "../../data/data.json", "../data/data.json", "/data/data.json"];
+        let payload = null;
+        for (const url of candidates){
+          try { const res = await fetch(url, { cache:"no-store" }); if (!res.ok) continue; payload = await res.json(); break; } catch (_e) {}
+        }
+        if (!payload) throw new Error("Unable to load data/data.json");
+        const f = flattenData(payload);
+        state.shows = f.shows; state.movies = f.movies; state.episodes = f.episodes; state.normalizedMovies = f.normalizedMovies;
+      }
+
+      async function init(){
+        refs.legendVidsrc.src = withBasePath(ICONS.vidsrc);
+        refs.legendVideasy.src = withBasePath(ICONS.videasy);
+        bindUi();
+        try { await loadData(); buildFilterOptions(); render(); }
+        catch (err){ refs.rowsRoot.innerHTML = `<section class="row"><div class="empty">Failed to load media data: ${escHtml(err?.message || String(err))}</div></section>`; }
+      }
+
+      init();
+    })();
+  </script>
+</body>
+</html>
