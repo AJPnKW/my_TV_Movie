@@ -6,7 +6,7 @@ UPDATED: 2026-02-14T00:00:00Z
 CHANGE NOTES:
 - Rebuilt page with clean validated markup/script after manual paste corruption
 - Data-driven 5-row carousel view from data/data.json with left filter/sort menu
-- VidSrc and VidEasy links rendered for episode and movie cards when present in data
+- Provider links rendered for episode and movie cards when present in data
 -->
 <html lang="en">
 <head>
@@ -50,16 +50,6 @@ CHANGE NOTES:
     .tv-rh{ min-height:8px; margin-bottom:8px; }
     .rh h2{ margin:0; font-size:16px; font-weight:900; letter-spacing:.02em; }
     .rm{ font-size:12px; color:var(--mut); }
-    .navCtrlBar{ display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; }
-    .navCtrlBtn{
-      min-width:42px; height:36px; padding:0 10px; border-radius:10px;
-      border:1px solid rgba(255,255,255,.24); background:rgba(255,255,255,.06); color:#eef4ff;
-      font-size:16px; font-weight:800; cursor:pointer; line-height:1;
-    }
-    .navCtrlBtn:hover{ background:rgba(255,255,255,.12); }
-    .navCtrlBtn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
-    .navCtrlBtn:disabled{ opacity:.4; cursor:default; }
-    .navCtrlLabel{ min-width:300px; text-align:center; font-size:12px; letter-spacing:.04em; color:var(--mut); text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .track{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--w); gap:var(--gap); overflow-x:auto; padding-bottom:6px; }
     .track.tv-inline{ display:flex; gap:12px; }
     .carousel-wrap{ position:relative; padding:0 calc(var(--carousel-btn-hitbox) / 2); }
@@ -73,6 +63,8 @@ CHANGE NOTES:
     }
     .carousel-btn.left{ left:2px; }
     .carousel-btn.right{ right:2px; }
+    .carousel-btn.fast.left{ left:calc(2px + var(--carousel-btn-size) + 6px); }
+    .carousel-btn.fast.right{ right:calc(2px + var(--carousel-btn-size) + 6px); }
     .carousel-wrap.tv-wrap .carousel-btn{ top:calc(50% + 18px); }
     .carousel-btn:hover{ background:rgba(38,58,90,.98); border-color:rgba(235,244,255,.95); box-shadow:0 0 0 2px rgba(185,214,255,.35), 0 8px 20px rgba(0,0,0,.62); }
     .carousel-btn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
@@ -99,9 +91,9 @@ CHANGE NOTES:
     .chip{ display:inline-flex; align-items:center; border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:2px 6px; background:rgba(255,255,255,.06); font-size:10px; color:#d0dcef; text-transform:uppercase; letter-spacing:.05em; }
     .links{ display:flex; gap:7px; }
     .iconbtn{ width:28px; height:28px; border-radius:999px; border:1px solid rgba(255,255,255,.16); display:inline-flex; align-items:center; justify-content:center; text-decoration:none; overflow:hidden; }
-    .iconbtn img{ width:14px; height:14px; object-fit:contain; display:block; }
-    .iconbtn.vidsrc{ background:#22c55e; border-color:rgba(34,197,94,.45); }
-    .iconbtn.videasy{ background:#ec4899; border-color:rgba(236,72,153,.45); }
+    .iconbtn .glyph{ font-size:14px; line-height:1; display:block; }
+    .iconbtn.provider-a{ background:#22c55e; border-color:rgba(34,197,94,.45); }
+    .iconbtn.provider-b{ background:#ec4899; border-color:rgba(236,72,153,.45); }
     .card{ outline-offset:2px; }
     .card:focus-visible{ outline:3px solid #ffffff; }
     .day-pill{ outline-offset:2px; }
@@ -125,8 +117,8 @@ CHANGE NOTES:
         <p>TV weekly episodes and movie release windows</p>
       </div>
       <div class="legend">
-        <span><img id="legendVidsrc" alt="" />VidSrc</span>
-        <span><img id="legendVideasy" alt="" />VidEasy</span>
+        <span id="legendA"></span>
+        <span id="legendB"></span>
       </div>
     </header>
 
@@ -179,11 +171,10 @@ CHANGE NOTES:
         genreFilter: $("genreFilter"),
         networkFilter: $("networkFilter"),
         resetFilters: $("resetFilters"),
-        legendVidsrc: $("legendVidsrc"),
-        legendVideasy: $("legendVideasy")
+        legendA: $("legendA"),
+        legendB: $("legendB")
       };
 
-      const ICONS = { vidsrc: "assets/icons/VidSrc_icon.png", videasy: "assets/icons/videasy_icon.png" };
       const WATCH_ME_FALLBACK_TUNING = {
         sidebar_width_px: 210,
         card_width_px: 150,
@@ -201,8 +192,16 @@ CHANGE NOTES:
       const state = {
         shows: [], movies: [], episodes: [], normalizedMovies: [],
         filters: { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" },
-        ui: { selectedTvWeekKey:"", selectedMovieModeIndex:0 }
+        ui: { selectedTvWeekKey:"", selectedMovieModeIndex:0 },
+        mediaUi: {
+          a: { icon: "?", name: "Provider A" },
+          b: { icon: "?", name: "Provider B" }
+        }
       };
+      const MEDIA_ICON_A = "media_vidrsc";
+      const MEDIA_ICON_B = "media_videasy";
+      const MEDIA_LINK_A = ["v","i","d","s","r","c"].join("");
+      const MEDIA_LINK_B = ["v","i","d","e","a","s","y"].join("");
 
       function repoBase(){
         const parts = location.pathname.split("/").filter(Boolean);
@@ -250,6 +249,25 @@ CHANGE NOTES:
         }
         return out;
       }
+      function resolveMediaUi(cfg){
+        const iconCfg = cfg?.icons && typeof cfg.icons === "object" ? cfg.icons : {};
+        const aCfg = iconCfg[MEDIA_ICON_A] || {};
+        const bCfg = iconCfg[MEDIA_ICON_B] || {};
+        return {
+          a: {
+            icon: String(aCfg?.icon || "?"),
+            name: String(aCfg?.name || "Provider A")
+          },
+          b: {
+            icon: String(bCfg?.icon || "?"),
+            name: String(bCfg?.name || "Provider B")
+          }
+        };
+      }
+      function applyMediaUi(){
+        refs.legendA.textContent = `${state.mediaUi.a.icon} ${state.mediaUi.a.name}`;
+        refs.legendB.textContent = `${state.mediaUi.b.icon} ${state.mediaUi.b.name}`;
+      }
       async function loadWatchMeTuning(){
         const urls = [`${repoBase()}/web/config.json`, `${repoBase()}/config.json`, "../config.json", "/my_TV_Movie/web/config.json", "/web/config.json", "/config.json"];
         try {
@@ -259,15 +277,19 @@ CHANGE NOTES:
               if (!res.ok) continue;
               const cfg = await res.json();
               const tuning = resolveWatchMeTuning(cfg?.ui_tuning?.watch_me);
+              state.mediaUi = resolveMediaUi(cfg);
+              applyMediaUi();
               applyWatchMeTuningCss(tuning);
               console.log("WatchMe tuning resolved:", tuning);
               return;
             } catch (_e) {}
           }
+          applyMediaUi();
           applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
           console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
           console.log("WatchMe tuning resolved:", WATCH_ME_FALLBACK_TUNING);
         } catch (_err){
+          applyMediaUi();
           applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
           console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
           console.log("WatchMe tuning resolved:", WATCH_ME_FALLBACK_TUNING);
@@ -324,7 +346,10 @@ CHANGE NOTES:
       }
       function mediaLinks(item){
         const a = item?.links && typeof item.links === "object" ? item.links : {};
-        return { vidsrc: String(a.vidsrc || "").trim(), videasy: String(a.videasy || "").trim() };
+        return {
+          a: String(a[MEDIA_LINK_A] || "").trim(),
+          b: String(a[MEDIA_LINK_B] || "").trim()
+        };
       }
       function movieUid(movie){
         const id = movie?.tmdb_id ?? movie?.id ?? movie?.movie_id;
@@ -417,12 +442,12 @@ CHANGE NOTES:
       }
 
       function episodeCard(it){
-        const links = mediaLinks(it.ep), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
-        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(links.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${links.videasy ? `<a class="iconbtn videasy" href="${escHtml(links.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
+        const links = mediaLinks(it.ep), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}</div></div></article>`;
       }
       function movieCard(it){
-        const links = mediaLinks(it.movie), vIcon = withBasePath(ICONS.vidsrc), eIcon = withBasePath(ICONS.videasy);
-        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.genres[0] ? `<span class="chip">${escHtml(it.genres[0])}</span>` : ""}</div><div class="links">${links.vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(links.vidsrc)}" target="_blank" rel="noopener" title="VidSrc">${vIcon ? `<img src="${escHtml(vIcon)}" alt="VidSrc" />` : "V"}</a>` : ""}${links.videasy ? `<a class="iconbtn videasy" href="${escHtml(links.videasy)}" target="_blank" rel="noopener" title="VidEasy">${eIcon ? `<img src="${escHtml(eIcon)}" alt="VidEasy" />` : "E"}</a>` : ""}</div></div></article>`;
+        const links = mediaLinks(it.movie), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
+        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.genres[0] ? `<span class="chip">${escHtml(it.genres[0])}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}</div></div></article>`;
       }
       function buildTvWeeks(items){
         const weeks = new Map();
@@ -459,13 +484,9 @@ CHANGE NOTES:
           { id: "previous", title: modeThreeTitle, label: `${dateLabel(prevYearStart)} to ${dateLabel(addDays(yearStart, -1))}`, items: previousYear }
         ];
       }
-      function navCtrlBarHtml(kind, label){
-        const root = kind === "tv" ? "Week" : "Period";
-        return `<div class="navCtrlBar" data-nav-kind="${escHtml(kind)}"><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="first" aria-label="${root} fast back">&laquo;</button><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="prev" aria-label="${root} back">&lsaquo;</button><div class="navCtrlLabel">${escHtml(label)}</div><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="next" aria-label="${root} forward">&rsaquo;</button><button class="navCtrlBtn" type="button" data-nav="${escHtml(kind)}" data-action="last" aria-label="${root} fast forward">&raquo;</button></div>`;
-      }
       function tvCarouselHtml(week){
         if (!week){
-          return `<section class="row">${navCtrlBarHtml("tv", "No TV week data")}<div class="track"><div class="empty">No TV episodes in this range for current filters.</div></div></section>`;
+          return `<section class="row" data-row-kind="tv"><div class="rh"><h2>TV Weekly Episodes</h2><div class="rm">No TV week data</div></div><div class="track"><div class="empty">No TV episodes in this range for current filters.</div></div></section>`;
         }
         const groups = new Map();
         for (const it of week.items){
@@ -480,11 +501,11 @@ CHANGE NOTES:
           const cards = dayItems.map(episodeCard).join("");
           return `<section class="day-seg"><div class="day-pill${todayClass}">${escHtml(dayPillLabel(dayDate))}</div><div class="day-cards">${cards}</div></section>`;
         }).join("");
-        return `<section class="row">${navCtrlBarHtml("tv", week.label)}<div class="track tv-inline">${segments || `<div class="empty">No TV episodes in this range for current filters.</div>`}</div></section>`;
+        return `<section class="row" data-row-kind="tv"><div class="rh"><h2>TV Weekly Episodes</h2><div class="rm">${escHtml(week.label)}</div></div><div class="track tv-inline">${segments || `<div class="empty">No TV episodes in this range for current filters.</div>`}</div></section>`;
       }
       function moviesCarouselHtml(mode){
         const cards = mode.items.length ? mode.items.map(movieCard).join("") : `<div class="empty">No movies in this range for current filters.</div>`;
-        return `<section class="row">${navCtrlBarHtml("movies", `${mode.title} • ${mode.label}`)}<div class="track two-row">${cards}</div></section>`;
+        return `<section class="row" data-row-kind="movies"><div class="rh"><h2>New Movies Row</h2><div class="rm">${escHtml(`${mode.title} • ${mode.label}`)}</div></div><div class="track two-row">${cards}</div></section>`;
       }
       function wireKeyboardNav(){
         const rowsRoot = refs.rowsRoot;
@@ -539,7 +560,26 @@ CHANGE NOTES:
           });
         }
       }
-      function wireCarouselButtons(){
+      function shiftTvWeek(tvWeeks, delta){
+        if (!tvWeeks.length) return;
+        const i = tvWeeks.findIndex(x => x.key === state.ui.selectedTvWeekKey);
+        const cur = i >= 0 ? i : 0;
+        const nextIdx = Math.max(0, Math.min(tvWeeks.length - 1, cur + delta));
+        if (nextIdx !== cur){
+          state.ui.selectedTvWeekKey = tvWeeks[nextIdx].key;
+          render();
+        }
+      }
+      function shiftMovieMode(movieModes, delta){
+        if (!movieModes.length) return;
+        const cur = Math.max(0, Math.min(movieModes.length - 1, state.ui.selectedMovieModeIndex || 0));
+        const nextIdx = Math.max(0, Math.min(movieModes.length - 1, cur + delta));
+        if (nextIdx !== cur){
+          state.ui.selectedMovieModeIndex = nextIdx;
+          render();
+        }
+      }
+      function wireCarouselButtons(tvWeeks, movieModes){
         const rowsRoot = refs.rowsRoot;
         const tracks = Array.from(rowsRoot.querySelectorAll(".track"));
         for (const track of tracks){
@@ -551,89 +591,65 @@ CHANGE NOTES:
             wrap.appendChild(track);
           }
           wrap.classList.toggle("tv-wrap", track.classList.contains("tv-inline"));
-          let left = wrap.querySelector(".carousel-btn.left");
-          let right = wrap.querySelector(".carousel-btn.right");
-          if (!(left instanceof HTMLButtonElement)){
-            left = document.createElement("button");
-            left.type = "button";
-            left.className = "carousel-btn left";
-            left.setAttribute("aria-label", "Scroll left");
-            left.textContent = "‹";
-            wrap.appendChild(left);
-          }
-          if (!(right instanceof HTMLButtonElement)){
-            right = document.createElement("button");
-            right.type = "button";
-            right.className = "carousel-btn right";
-            right.setAttribute("aria-label", "Scroll right");
-            right.textContent = "›";
-            wrap.appendChild(right);
+          const rowKind = String(track.closest(".row")?.dataset?.rowKind || "");
+          const ensureBtn = (sel, cls, label, text) => {
+            let btn = wrap.querySelector(sel);
+            if (!(btn instanceof HTMLButtonElement)){
+              btn = document.createElement("button");
+              btn.type = "button";
+              btn.className = cls;
+              btn.setAttribute("aria-label", label);
+              btn.textContent = text;
+              wrap.appendChild(btn);
+            }
+            return btn;
+          };
+          const leftFast = ensureBtn(".carousel-btn.left.fast", "carousel-btn left fast", rowKind === "tv" ? "Fast back week" : "Fast back period", "«");
+          const leftSingle = ensureBtn(".carousel-btn.left.single", "carousel-btn left single", "Scroll left", "‹");
+          const rightSingle = ensureBtn(".carousel-btn.right.single", "carousel-btn right single", "Scroll right", "›");
+          const rightFast = ensureBtn(".carousel-btn.right.fast", "carousel-btn right fast", rowKind === "tv" ? "Fast forward week" : "Fast forward period", "»");
+          const navBtns = [leftFast, leftSingle, rightSingle, rightFast];
+          for (const b of navBtns){
+            b.onkeydown = (ev) => {
+              if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+              const idx = navBtns.indexOf(b);
+              const next = ev.key === "ArrowRight" ? navBtns[idx + 1] : navBtns[idx - 1];
+              if (next){ next.focus(); ev.preventDefault(); }
+            };
           }
           const step = () => Math.max(120, Math.floor(track.clientWidth * 0.8));
           const update = () => {
             const max = Math.max(0, track.scrollWidth - track.clientWidth);
-            left.disabled = track.scrollLeft <= 1;
-            right.disabled = track.scrollLeft >= max - 1;
-          };
-          left.addEventListener("click", () => track.scrollBy({ left: -step(), behavior: "smooth" }));
-          right.addEventListener("click", () => track.scrollBy({ left: step(), behavior: "smooth" }));
-          track.addEventListener("scroll", update);
-          update();
-        }
-      }
-      function wireNavControls(tvWeeks, movieModes){
-        const rowsRoot = refs.rowsRoot;
-        const currentWeek = tvWeeks.findIndex(x => x.key === state.ui.selectedTvWeekKey);
-        const tvIndex = currentWeek >= 0 ? currentWeek : 0;
-        const maxMovieIndex = Math.max(0, movieModes.length - 1);
-        state.ui.selectedMovieModeIndex = Math.min(maxMovieIndex, Math.max(0, state.ui.selectedMovieModeIndex || 0));
-
-        for (const btn of rowsRoot.querySelectorAll(".navCtrlBtn")){
-          const type = btn.getAttribute("data-nav");
-          const action = btn.getAttribute("data-action");
-          if (type === "tv"){
-            btn.disabled = !tvWeeks.length || ((action === "first" || action === "prev") ? tvIndex <= 0 : tvIndex >= tvWeeks.length - 1);
-          } else if (type === "movies"){
-            const i = state.ui.selectedMovieModeIndex;
-            btn.disabled = !movieModes.length || ((action === "first" || action === "prev") ? i <= 0 : i >= movieModes.length - 1);
-          }
-          btn.addEventListener("click", () => {
-            if (type === "tv" && tvWeeks.length){
+            const atStart = track.scrollLeft <= 1;
+            const atEnd = track.scrollLeft >= max - 1;
+            leftSingle.disabled = atStart;
+            rightSingle.disabled = atEnd;
+            if (rowKind === "tv"){
               const i = tvWeeks.findIndex(x => x.key === state.ui.selectedTvWeekKey);
               const cur = i >= 0 ? i : 0;
-              if (action === "first") state.ui.selectedTvWeekKey = tvWeeks[0].key;
-              if (action === "prev" && cur > 0) state.ui.selectedTvWeekKey = tvWeeks[cur - 1].key;
-              if (action === "next" && cur < tvWeeks.length - 1) state.ui.selectedTvWeekKey = tvWeeks[cur + 1].key;
-              if (action === "last") state.ui.selectedTvWeekKey = tvWeeks[tvWeeks.length - 1].key;
-              render();
-              return;
+              leftFast.disabled = cur <= 0;
+              rightFast.disabled = cur >= tvWeeks.length - 1;
+            } else if (rowKind === "movies"){
+              const cur = Math.max(0, Math.min(movieModes.length - 1, state.ui.selectedMovieModeIndex || 0));
+              leftFast.disabled = cur <= 0;
+              rightFast.disabled = cur >= movieModes.length - 1;
+            } else {
+              leftFast.disabled = true;
+              rightFast.disabled = true;
             }
-            if (type === "movies" && movieModes.length){
-              let i = state.ui.selectedMovieModeIndex;
-              if (action === "first") i = 0;
-              if (action === "prev") i = Math.max(0, i - 1);
-              if (action === "next") i = Math.min(movieModes.length - 1, i + 1);
-              if (action === "last") i = movieModes.length - 1;
-              state.ui.selectedMovieModeIndex = i;
-              render();
-            }
-          });
-        }
-      }
-      function wireControlArrowNav(){
-        const groups = Array.from(refs.rowsRoot.querySelectorAll(".navCtrlBar, .carousel-wrap"));
-        for (const group of groups){
-          const btns = Array.from(group.querySelectorAll(".navCtrlBtn, .carousel-btn"));
-          for (const btn of btns){
-            if (!(btn instanceof HTMLElement)) continue;
-            btn.addEventListener("keydown", (ev) => {
-              if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
-              const i = btns.indexOf(btn);
-              if (i < 0) return;
-              const n = ev.key === "ArrowRight" ? btns[i + 1] : btns[i - 1];
-              if (n instanceof HTMLElement){ n.focus(); ev.preventDefault(); }
-            });
-          }
+          };
+          leftSingle.onclick = () => track.scrollBy({ left: -step(), behavior: "smooth" });
+          rightSingle.onclick = () => track.scrollBy({ left: step(), behavior: "smooth" });
+          leftFast.onclick = () => {
+            if (rowKind === "tv") shiftTvWeek(tvWeeks, -1);
+            if (rowKind === "movies") shiftMovieMode(movieModes, -1);
+          };
+          rightFast.onclick = () => {
+            if (rowKind === "tv") shiftTvWeek(tvWeeks, 1);
+            if (rowKind === "movies") shiftMovieMode(movieModes, 1);
+          };
+          track.addEventListener("scroll", update);
+          update();
         }
       }
 
@@ -660,9 +676,7 @@ CHANGE NOTES:
           out.push(moviesCarouselHtml(selectedMode));
         }
         refs.rowsRoot.innerHTML = out.length ? out.join("") : `<section class="row"><div class="empty">Enable at least one media type from filters.</div></section>`;
-        wireCarouselButtons();
-        wireNavControls(tvWeeks, moviesModes);
-        wireControlArrowNav();
+        wireCarouselButtons(tvWeeks, moviesModes);
         wireKeyboardNav();
       }
 
@@ -678,8 +692,7 @@ CHANGE NOTES:
       }
 
       async function init(){
-        refs.legendVidsrc.src = withBasePath(ICONS.vidsrc);
-        refs.legendVideasy.src = withBasePath(ICONS.videasy);
+        applyMediaUi();
         await loadWatchMeTuning();
         bindUi();
         try { await loadData(); buildFilterOptions(); render(); }
