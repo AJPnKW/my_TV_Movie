@@ -30,7 +30,7 @@ CHANGE NOTES:
     .legend{ display:flex; align-items:center; gap:10px; font-size:11px; color:var(--mut); text-transform:uppercase; letter-spacing:.08em; }
     .legend img{ width:16px; height:16px; object-fit:contain; margin-right:5px; }
     .layout{ display:grid; grid-template-columns:var(--side-w) minmax(0,1fr); gap:14px; }
-    .side{ position:sticky; top:10px; align-self:start; border:1px solid var(--line); border-radius:14px; background:var(--panel); padding:12px; display:flex; flex-direction:column; gap:12px; max-height:calc(100vh - 20px); overflow:auto; }
+    .side{ position:sticky; top:10px; align-self:start; width:var(--side-w); border:1px solid var(--line); border-radius:14px; background:var(--panel); padding:12px; display:flex; flex-direction:column; gap:12px; max-height:calc(100vh - 20px); overflow:auto; }
     .grp{ display:flex; flex-direction:column; gap:7px; }
     .gt{ font-size:11px; color:var(--mut); font-weight:900; letter-spacing:.1em; text-transform:uppercase; }
     .label{ font-size:12px; color:var(--mut); }
@@ -41,7 +41,7 @@ CHANGE NOTES:
     .sel option:hover{ color:var(--sel-opt-fg); background:var(--sel-opt-hover); }
     .chk{ display:flex; align-items:center; gap:8px; font-size:12px; }
     .reset{ border:1px solid rgba(255,255,255,.24); border-radius:10px; background:rgba(255,255,255,.05); color:#f2f7ff; font-weight:700; padding:8px 9px; cursor:pointer; }
-    .main{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+    .main{ display:flex; flex-direction:column; gap:12px; min-width:0; overflow-x:auto; }
     .row{ border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025)); padding:10px; }
     .rh{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:9px; }
     .rh h2{ margin:0; font-size:16px; font-weight:900; letter-spacing:.02em; }
@@ -84,7 +84,7 @@ CHANGE NOTES:
       }
       .sel{ color-scheme:light; }
     }
-    @media (max-width:1120px){ .layout{ grid-template-columns:1fr; } .side{ position:relative; top:0; max-height:none; } }
+    @media (max-width:1120px){ .side{ max-height:none; } }
   </style>
 </head>
 <body>
