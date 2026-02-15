@@ -17,6 +17,9 @@ CHANGE NOTES:
   <style>
     :root{
       --bg:#0b0f16; --panel:#121a28; --line:rgba(255,255,255,.14); --txt:#ecf2ff; --mut:#b5c3dd; --w:150px; --side-w:210px;
+      --card-w:150px; --card-h:152px; --gap:10px; --section-gap:12px;
+      --carousel-btn-size:28px; --carousel-btn-hitbox:34px; --carousel-btn-border:1px;
+      --day-pill-h:26px; --day-seg-gap:8px; --carousel-rows:2;
       --sel-bg:rgba(255,255,255,.06); --sel-fg:#ecf2ff; --sel-opt-bg:#182132; --sel-opt-fg:#f0f5ff; --sel-opt-hover:#263248;
       --day-bg:rgba(255,255,255,.05); --day-fg:#d5e0f3; --day-today-bg:#dbe9ff; --day-today-fg:#0d1b33;
     }
@@ -41,19 +44,19 @@ CHANGE NOTES:
     .sel option:hover{ color:var(--sel-opt-fg); background:var(--sel-opt-hover); }
     .chk{ display:flex; align-items:center; gap:8px; font-size:12px; }
     .reset{ border:1px solid rgba(255,255,255,.24); border-radius:10px; background:rgba(255,255,255,.05); color:#f2f7ff; font-weight:700; padding:8px 9px; cursor:pointer; }
-    .main{ display:flex; flex-direction:column; gap:12px; min-width:0; overflow-x:auto; }
+    .main{ display:flex; flex-direction:column; gap:var(--section-gap); min-width:0; overflow-x:auto; }
     .row{ border:1px solid var(--line); border-radius:14px; background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.025)); padding:10px; }
     .rh{ display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:9px; }
     .tv-rh{ min-height:8px; margin-bottom:8px; }
     .rh h2{ margin:0; font-size:16px; font-weight:900; letter-spacing:.02em; }
     .rm{ font-size:12px; color:var(--mut); }
-    .track{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--w); gap:10px; overflow-x:auto; padding-bottom:6px; }
+    .track{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--w); gap:var(--gap); overflow-x:auto; padding-bottom:6px; }
     .track.tv-inline{ display:flex; gap:12px; }
-    .carousel-wrap{ position:relative; padding:0 34px; }
+    .carousel-wrap{ position:relative; padding:0 calc(var(--carousel-btn-hitbox) / 2); }
     .carousel-btn{
       position:absolute; top:50%; transform:translateY(-50%);
-      width:28px; height:28px; border-radius:999px;
-      border:1px solid rgba(255,255,255,.24); background:rgba(7,12,20,.7); color:#f4f8ff;
+      width:var(--carousel-btn-size); height:var(--carousel-btn-size); border-radius:999px;
+      border:var(--carousel-btn-border) solid rgba(255,255,255,.24); background:rgba(7,12,20,.7); color:#f4f8ff; box-shadow:var(--carousel-btn-shadow, 0 2px 10px rgba(0,0,0,.38));
       display:inline-flex; align-items:center; justify-content:center;
       font-size:18px; line-height:1; cursor:pointer; z-index:2;
       transition:background .18s ease, opacity .18s ease, border-color .18s ease;
@@ -63,12 +66,12 @@ CHANGE NOTES:
     .carousel-btn:hover{ background:rgba(22,32,50,.9); border-color:rgba(255,255,255,.42); }
     .carousel-btn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
     .carousel-btn:disabled{ opacity:.35; cursor:default; }
-    .day-seg{ display:flex; flex-direction:column; gap:8px; padding-right:2px; border-right:1px solid rgba(255,255,255,.15); }
+    .day-seg{ display:flex; flex-direction:column; gap:var(--day-seg-gap); padding-right:2px; border-right:1px solid rgba(255,255,255,.15); }
     .day-seg:last-child{ border-right:none; padding-right:0; }
-    .day-pill{ align-self:flex-start; border:1px solid rgba(255,255,255,.2); border-radius:7px; background:var(--day-bg); color:var(--day-fg); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; padding:4px 8px; white-space:nowrap; }
+    .day-pill{ align-self:flex-start; border:1px solid rgba(255,255,255,.2); border-radius:7px; background:var(--day-bg); color:var(--day-fg); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; padding:4px 8px; min-height:var(--day-pill-h); display:inline-flex; align-items:center; white-space:nowrap; }
     .day-pill.today{ border-color:rgba(219,233,255,.8); background:var(--day-today-bg); color:var(--day-today-fg); }
-    .day-cards{ display:flex; gap:10px; }
-    .day-cards .card{ width:var(--w); flex:0 0 var(--w); }
+    .day-cards{ display:flex; gap:var(--gap); }
+    .day-cards .card{ width:var(--card-w); flex:0 0 var(--card-w); min-height:var(--card-h); }
     .card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
     .media{ position:relative; background:rgba(255,255,255,.08); }
     .media.ep{ aspect-ratio:16/9; }
@@ -169,6 +172,20 @@ CHANGE NOTES:
       };
 
       const ICONS = { vidsrc: "assets/icons/VidSrc_icon.png", videasy: "assets/icons/videasy_icon.png" };
+      const WATCH_ME_FALLBACK_TUNING = {
+        sidebar_width_px: 210,
+        card_width_px: 150,
+        card_height_px: 152,
+        card_gap_px: 10,
+        section_gap_px: 12,
+        carousel_btn_size_px: 28,
+        carousel_btn_hitbox_px: 34,
+        carousel_btn_border_px: 1,
+        carousel_btn_shadow: true,
+        day_pill_height_px: 26,
+        day_segment_gap_px: 8,
+        carousel_rows: 2
+      };
       const state = {
         shows: [], movies: [], episodes: [], normalizedMovies: [],
         filters: { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" }
@@ -184,6 +201,64 @@ CHANGE NOTES:
         if (!p) return "";
         if (/^https?:\/\//i.test(p)) return p;
         return p.startsWith("/") ? `${repoBase()}${p}` : `${repoBase()}/${p}`;
+      }
+      function applyWatchMeTuningCss(t){
+        const r = document.documentElement.style;
+        r.setProperty("--side-w", `${t.sidebar_width_px}px`);
+        r.setProperty("--w", `${t.card_width_px}px`);
+        r.setProperty("--card-w", `${t.card_width_px}px`);
+        r.setProperty("--card-h", `${t.card_height_px}px`);
+        r.setProperty("--gap", `${t.card_gap_px}px`);
+        r.setProperty("--section-gap", `${t.section_gap_px}px`);
+        r.setProperty("--carousel-btn-size", `${t.carousel_btn_size_px}px`);
+        r.setProperty("--carousel-btn-hitbox", `${t.carousel_btn_hitbox_px}px`);
+        r.setProperty("--carousel-btn-border", `${t.carousel_btn_border_px}px`);
+        r.setProperty("--day-pill-h", `${t.day_pill_height_px}px`);
+        r.setProperty("--day-seg-gap", `${t.day_segment_gap_px}px`);
+        r.setProperty("--carousel-rows", String(t.carousel_rows));
+        if (t.carousel_btn_shadow){
+          r.setProperty("--carousel-btn-shadow", "0 2px 10px rgba(0,0,0,.38)");
+        } else {
+          r.setProperty("--carousel-btn-shadow", "none");
+        }
+      }
+      function resolveWatchMeTuning(raw){
+        const out = { ...WATCH_ME_FALLBACK_TUNING };
+        if (!raw || typeof raw !== "object") return out;
+        for (const k of Object.keys(WATCH_ME_FALLBACK_TUNING)){
+          if (!(k in raw)) continue;
+          const v = raw[k];
+          if (typeof WATCH_ME_FALLBACK_TUNING[k] === "boolean"){
+            out[k] = !!v;
+          } else {
+            const n = Number(v);
+            if (Number.isFinite(n) && n > 0) out[k] = n;
+          }
+        }
+        return out;
+      }
+      async function loadWatchMeTuning(){
+        const urls = [`${repoBase()}/web/config.json`, `${repoBase()}/config.json`, "../config.json", "/my_TV_Movie/web/config.json", "/web/config.json", "/config.json"];
+        try {
+          for (const url of urls){
+            try {
+              const res = await fetch(url, { cache:"no-store" });
+              if (!res.ok) continue;
+              const cfg = await res.json();
+              const tuning = resolveWatchMeTuning(cfg?.ui_tuning?.watch_me);
+              applyWatchMeTuningCss(tuning);
+              console.log("WatchMe tuning resolved:", tuning);
+              return;
+            } catch (_e) {}
+          }
+          applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
+          console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
+          console.log("WatchMe tuning resolved:", WATCH_ME_FALLBACK_TUNING);
+        } catch (_err){
+          applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
+          console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
+          console.log("WatchMe tuning resolved:", WATCH_ME_FALLBACK_TUNING);
+        }
       }
       function escHtml(v){
         return String(v == null ? "" : v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#39;");
@@ -520,6 +595,7 @@ CHANGE NOTES:
       async function init(){
         refs.legendVidsrc.src = withBasePath(ICONS.vidsrc);
         refs.legendVideasy.src = withBasePath(ICONS.videasy);
+        await loadWatchMeTuning();
         bindUi();
         try { await loadData(); buildFilterOptions(); render(); }
         catch (err){ refs.rowsRoot.innerHTML = `<section class="row"><div class="empty">Failed to load media data: ${escHtml(err?.message || String(err))}</div></section>`; }
