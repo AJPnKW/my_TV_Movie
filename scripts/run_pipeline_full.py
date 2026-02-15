@@ -3,9 +3,9 @@
 # [FILE]    scripts/run_pipeline_full.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Orchestrate: data/inputs.json -> TMDB -> Trakt -> QA
-# [VERSION] v1.4.0
-# [UPDATED] 2026-01-19_00-00-00
-# [BUILD]   14.01.07
+# [VERSION] v1.5.0
+# [UPDATED] 2026-02-15_00-00-00
+# [BUILD]   14.01.08
 # ==============================================================================
 
 from __future__ import annotations
@@ -87,6 +87,22 @@ def main() -> int:
         if rc_local != 0:
             _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
             return rc_local
+
+        # 6) Export service logo sources from config
+        rc_logo_export = _run("SERVICE_LOGO_EXPORT", [py, os.path.join("scripts", "export_service_logos_sources.py")], logfp)
+        if rc_logo_export != 0:
+            _write_line(logfp, f"RESULT    : FAIL (export_service_logos_sources exit_code={rc_logo_export})")
+            return rc_logo_export
+
+        # 7) Download service logos from explicit source file
+        rc_logo_download = _run(
+            "SERVICE_LOGO_DOWNLOAD",
+            [py, os.path.join("scripts", "download_service_logos.py"), "--input", os.path.join("data", "service_logos_sources.json")],
+            logfp,
+        )
+        if rc_logo_download != 0:
+            _write_line(logfp, f"RESULT    : FAIL (download_service_logos exit_code={rc_logo_download})")
+            return rc_logo_download
     else:
         # 1) TMDB fetch
         rc_tmdb = _run("TMDB", [py, os.path.join("scripts", "fetch_tmdb.py")], logfp)
@@ -123,6 +139,22 @@ def main() -> int:
         if rc_local != 0:
             _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
             return rc_local
+
+        # 3d) Export service logo sources from config
+        rc_logo_export = _run("SERVICE_LOGO_EXPORT", [py, os.path.join("scripts", "export_service_logos_sources.py")], logfp)
+        if rc_logo_export != 0:
+            _write_line(logfp, f"RESULT    : FAIL (export_service_logos_sources exit_code={rc_logo_export})")
+            return rc_logo_export
+
+        # 3e) Download service logos from explicit source file
+        rc_logo_download = _run(
+            "SERVICE_LOGO_DOWNLOAD",
+            [py, os.path.join("scripts", "download_service_logos.py"), "--input", os.path.join("data", "service_logos_sources.json")],
+            logfp,
+        )
+        if rc_logo_download != 0:
+            _write_line(logfp, f"RESULT    : FAIL (download_service_logos exit_code={rc_logo_download})")
+            return rc_logo_download
 
     # 4) QA missing trakt ids
     rc_qa1 = _run("QA_MISSING_TRAKT", [py, os.path.join("scripts", "qa_missing_trakt_ids.py")], logfp)

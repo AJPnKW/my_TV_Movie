@@ -37,7 +37,8 @@ jobs:
           python scripts/migrate_watchlist_fields.py
           python scripts/trakt_sync_watch_state.py
           python scripts/download_tmdb_assets.py
-          python scripts/download_service_logos.py
+          python scripts/export_service_logos_sources.py
+          python scripts/download_service_logos.py --input data/service_logos_sources.json
           python scripts/sync_local_watch_state.py
           python scripts/qa_pipeline_integrity.py
         env:
