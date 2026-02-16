@@ -1,19 +1,21 @@
 <!doctype html>
 <!--
 FILE: web/watch_me/watch_me.html
-VERSION: 1.1.1
-UPDATED: 2026-02-14T00:00:00Z
+VERSION: 1.1.2
+UPDATED: 2026-02-16T00:00:00Z
 CHANGE NOTES:
 - Rebuilt page with clean validated markup/script after manual paste corruption
 - Data-driven 5-row carousel view from data/data.json with left filter/sort menu
 - Provider links rendered for episode and movie cards when present in data
+- Added per-client watched toggle state with HP LAN API + GitHub fallback read support
+- Added sidebar Client id input with localStorage persistence and reload behavior
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Watch Me</title>
-  <link rel="stylesheet" href="../css/my_tv_hub.css?v=1.1.1" />
+  <link rel="stylesheet" href="../css/my_tv_hub.css?v=1.1.2" />
   <style>
     :root{
       --bg:#0b0f16; --panel:#121a28; --line:rgba(255,255,255,.14); --txt:#ecf2ff; --mut:#b5c3dd; --w:150px; --side-w:210px;
@@ -101,6 +103,22 @@ CHANGE NOTES:
     .iconbtn.provider-a{ color:inherit; }
     .iconbtn.provider-b{ color:inherit; }
     .iconbtn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; border-radius:4px; }
+    .watched-toggle{
+      position:relative; width:36px; height:20px; border-radius:999px; border:1px solid rgba(255,255,255,.28); background:#9ff3ae; cursor:pointer;
+      transition:background .15s ease, border-color .15s ease; padding:0; margin-left:1px; flex:0 0 auto;
+    }
+    .watched-toggle::after{
+      content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:999px; background:#0c192d;
+      transition:left .15s ease, background .15s ease;
+    }
+    .watched-toggle.is-watched{ background:#8a909d; border-color:rgba(255,255,255,.24); }
+    .watched-toggle.is-watched::after{ left:18px; background:#f1f5ff; }
+    .watched-toggle.is-unsaved{ outline:1px dotted rgba(255,255,255,.9); outline-offset:2px; }
+    .watched-toggle:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
+    .sr-only{
+      position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+      clip:rect(0,0,0,0); white-space:nowrap; border:0;
+    }
     .warn-inline{ margin-bottom:8px; font-size:11px; color:#ffd9a3; letter-spacing:.02em; }
     .card{ outline-offset:2px; }
     .card:focus-visible{ outline:3px solid #ffffff; }
@@ -117,7 +135,7 @@ CHANGE NOTES:
     @media (max-width:1120px){ .side{ max-height:none; } }
   </style>
 </head>
-<body data-watchme-version="1.1.1">
+<body data-watchme-version="1.1.2">
   <div class="app">
     <header class="head">
       <div class="headcopy">
@@ -162,6 +180,11 @@ CHANGE NOTES:
           <label class="label" for="networkFilter">Network</label>
           <select id="networkFilter" class="sel"></select>
         </div>
+        <div class="grp">
+          <div class="gt">Device</div>
+          <label class="label" for="clientIdInput">Client id</label>
+          <input id="clientIdInput" class="inp" type="text" autocomplete="off" />
+        </div>
         <button id="resetFilters" class="reset" type="button">Reset filters</button>
       </aside>
       <main id="rowsRoot" class="main" aria-live="polite"></main>
@@ -181,13 +204,17 @@ CHANGE NOTES:
         toggleMovie: $("toggleMovie"),
         genreFilter: $("genreFilter"),
         networkFilter: $("networkFilter"),
+        clientIdInput: $("clientIdInput"),
         resetFilters: $("resetFilters"),
         todayBtn: $("todayBtn"),
         legendA: $("legendA"),
         legendB: $("legendB"),
         legendVersion: $("legendVersion")
       };
-      const WATCH_ME_VERSION = "1.1.1";
+      const WATCH_ME_VERSION = "1.1.2";
+      const WATCHED_CLIENT_KEY = "watchme_client_id";
+      const WATCHED_DEFAULT_CLIENT_ID = "tv_livingroom";
+      const WATCHED_DEFAULT_API_BASE_URL = "http://192.168.1.64:9192";
 
       const WATCH_ME_FALLBACK_TUNING = {
         sidebar_width_px: 210,
@@ -207,6 +234,10 @@ CHANGE NOTES:
         shows: [], movies: [], episodes: [], normalizedMovies: [],
         filters: { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" },
         ui: { selectedTvWeekKey:"", selectedMovieModeIndex:0, dataLoaded:false },
+        watched: new Map(),
+        watchedUnsaved: new Set(),
+        clientId: WATCHED_DEFAULT_CLIENT_ID,
+        watchedApiBaseUrl: WATCHED_DEFAULT_API_BASE_URL,
         mediaUi: {
           a: { icon: "?", name: "Provider A" },
           b: { icon: "?", name: "Provider B" }
@@ -292,6 +323,10 @@ CHANGE NOTES:
         refs.legendB.innerHTML = `<span class="glyph" title="${escHtml(state.mediaUi.b.name)}" aria-label="${escHtml(state.mediaUi.b.name)}">${escHtml(state.mediaUi.b.icon)}</span>`;
         refs.legendVersion.textContent = `v${WATCH_ME_VERSION}`;
       }
+      function resolveWatchedApiBaseUrl(cfg){
+        const configured = String(cfg?.ui_tuning?.watch_me_watched_api_base_url || "").trim();
+        return configured || WATCHED_DEFAULT_API_BASE_URL;
+      }
       async function loadWatchMeTuning(){
         const urls = [`${repoBase()}/web/config.json?v=${WATCH_ME_VERSION}`, `${repoBase()}/config.json?v=${WATCH_ME_VERSION}`, `../config.json?v=${WATCH_ME_VERSION}`, `/my_TV_Movie/web/config.json?v=${WATCH_ME_VERSION}`, `/web/config.json?v=${WATCH_ME_VERSION}`, `/config.json?v=${WATCH_ME_VERSION}`];
         try {
@@ -302,6 +337,7 @@ CHANGE NOTES:
               const cfg = await res.json();
               const tuning = resolveWatchMeTuning(cfg?.ui_tuning?.watch_me);
               state.mediaUi = resolveMediaUi(cfg);
+              state.watchedApiBaseUrl = resolveWatchedApiBaseUrl(cfg);
               applyMediaUi();
               applyWatchMeTuningCss(tuning);
               applyEpisodeStillCss(cfg?.ui_tuning || {});
@@ -310,12 +346,14 @@ CHANGE NOTES:
             } catch (_e) {}
           }
           applyMediaUi();
+          state.watchedApiBaseUrl = WATCHED_DEFAULT_API_BASE_URL;
           applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
           applyEpisodeStillCss({});
           console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
           console.log("WatchMe tuning resolved:", WATCH_ME_FALLBACK_TUNING);
         } catch (_err){
           applyMediaUi();
+          state.watchedApiBaseUrl = WATCHED_DEFAULT_API_BASE_URL;
           applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
           applyEpisodeStillCss({});
           console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
@@ -392,6 +430,74 @@ CHANGE NOTES:
         const id = movie?.tmdb_id ?? movie?.id ?? movie?.movie_id;
         return id == null ? "" : String(id).trim();
       }
+      function getClientId(){
+        const qs = new URLSearchParams(location.search);
+        const fromQuery = String(qs.get("client") || "").trim();
+        if (fromQuery) return fromQuery;
+        const fromStorage = String(localStorage.getItem(WATCHED_CLIENT_KEY) || "").trim();
+        if (fromStorage) return fromStorage;
+        return WATCHED_DEFAULT_CLIENT_ID;
+      }
+      function episodeWatchedId(it){
+        const showTmdbId = it?.show?.tmdb_id ?? it?.show?.id;
+        const showId = showTmdbId == null ? "" : String(showTmdbId).trim();
+        if (!showId) return "";
+        return `${showId}:s${pad2(it?.sn)}:e${pad2(it?.en)}`;
+      }
+      function watchedKeyForEpisode(it){
+        const id = episodeWatchedId(it);
+        return id ? `tv:${id}` : "";
+      }
+      function watchedKeyForMovie(it){
+        const movie = it?.movie || it;
+        const id = movieUid(movie);
+        return id ? `movie:${id}` : "";
+      }
+      async function loadWatchedMap(clientId){
+        const out = new Map();
+        const apiBase = String(state.watchedApiBaseUrl || WATCHED_DEFAULT_API_BASE_URL).replace(/\/+$/, "");
+        try {
+          const res = await fetch(`${apiBase}/api/watched?client=${encodeURIComponent(clientId)}`, { cache: "no-store" });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const payload = await res.json();
+          const items = payload?.items && typeof payload.items === "object" ? payload.items : {};
+          for (const [key, v] of Object.entries(items)){
+            out.set(String(key), !!v?.watched);
+          }
+          return out;
+        } catch (_apiErr) {
+          try {
+            const fallbackUrl = `${repoBase()}/data/watched_github.json`;
+            const fallbackRes = await fetch(fallbackUrl, { cache: "no-store" });
+            if (!fallbackRes.ok) return out;
+            const payload = await fallbackRes.json();
+            const items = payload?.items && typeof payload.items === "object"
+              ? payload.items
+              : (payload?.clients?.[clientId]?.items && typeof payload.clients[clientId].items === "object"
+                ? payload.clients[clientId].items
+                : {});
+            for (const [key, v] of Object.entries(items)){
+              out.set(String(key), !!v?.watched);
+            }
+            return out;
+          } catch (_fallbackErr){
+            return out;
+          }
+        }
+      }
+      async function setWatched(clientId, kind, id, watched){
+        const apiBase = String(state.watchedApiBaseUrl || WATCHED_DEFAULT_API_BASE_URL).replace(/\/+$/, "");
+        try {
+          const res = await fetch(`${apiBase}/api/set`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ client: clientId, kind, id, watched: !!watched })
+          });
+          return res.ok;
+        } catch (_e){
+          return false;
+        }
+      }
       function uniqueByUid(list){
         const seen = new Set();
         const out = [];
@@ -451,6 +557,21 @@ CHANGE NOTES:
         refs.toggleMovie.addEventListener("change", () => { state.filters.includeMovie = !!refs.toggleMovie.checked; render(); });
         refs.genreFilter.addEventListener("change", () => { state.filters.genre = refs.genreFilter.value; render(); });
         refs.networkFilter.addEventListener("change", () => { state.filters.network = refs.networkFilter.value; render(); });
+        const applyClientId = async () => {
+          const nextId = String(refs.clientIdInput.value || "").trim() || WATCHED_DEFAULT_CLIENT_ID;
+          refs.clientIdInput.value = nextId;
+          localStorage.setItem(WATCHED_CLIENT_KEY, nextId);
+          state.clientId = nextId;
+          state.watched = await loadWatchedMap(nextId);
+          state.watchedUnsaved = new Set();
+          render();
+        };
+        refs.clientIdInput.addEventListener("change", () => { applyClientId(); });
+        refs.clientIdInput.addEventListener("keydown", (ev) => {
+          if (ev.key !== "Enter") return;
+          applyClientId();
+          ev.preventDefault();
+        });
         refs.resetFilters.addEventListener("click", () => {
           state.filters = { query:"", sortBy:"play", includeTv:true, includeMovie:true, genre:"all", network:"all" };
           refs.searchText.value = ""; refs.sortBy.value = "play"; refs.toggleTv.checked = true; refs.toggleMovie.checked = true; refs.genreFilter.value = "all"; refs.networkFilter.value = "all";
@@ -470,6 +591,25 @@ CHANGE NOTES:
               pill.scrollIntoView({ behavior:"smooth", inline:"start", block:"nearest" });
             }
           });
+        });
+        refs.rowsRoot.addEventListener("click", async (ev) => {
+          const btn = ev.target instanceof Element ? ev.target.closest(".watched-toggle") : null;
+          if (!(btn instanceof HTMLButtonElement)) return;
+          const key = String(btn.dataset.watchedKey || "");
+          const kind = String(btn.dataset.kind || "");
+          const id = String(btn.dataset.itemId || "");
+          if (!key || !kind || !id) return;
+          const next = !(state.watched.get(key) === true);
+          state.watched.set(key, next);
+          state.watchedUnsaved.delete(key);
+          render();
+          const ok = await setWatched(state.clientId, kind, id, next);
+          if (!ok){
+            state.watchedUnsaved.add(key);
+          } else {
+            state.watchedUnsaved.delete(key);
+          }
+          render();
         });
       }
 
@@ -495,11 +635,27 @@ CHANGE NOTES:
 
       function episodeCard(it){
         const links = mediaLinks(it.ep), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
-        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}</div></div></article>`;
+        const watchedKey = watchedKeyForEpisode(it);
+        const watchedId = episodeWatchedId(it);
+        const watched = watchedKey ? state.watched.get(watchedKey) === true : false;
+        const unsaved = watchedKey ? state.watchedUnsaved.has(watchedKey) : false;
+        const watchedLabel = watched ? "Watched" : "Not watched";
+        const watchedToggle = watchedKey
+          ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${seTag(it.sn,it.en)} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="tv" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
+          : "";
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}${watchedToggle}</div></div></article>`;
       }
       function movieCard(it){
         const links = mediaLinks(it.movie), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
-        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.genres[0] ? `<span class="chip">${escHtml(it.genres[0])}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}</div></div></article>`;
+        const watchedKey = watchedKeyForMovie(it);
+        const watchedId = movieUid(it.movie);
+        const watched = watchedKey ? state.watched.get(watchedKey) === true : false;
+        const unsaved = watchedKey ? state.watchedUnsaved.has(watchedKey) : false;
+        const watchedLabel = watched ? "Watched" : "Not watched";
+        const watchedToggle = watchedKey
+          ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="movie" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
+          : "";
+        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.genres[0] ? `<span class="chip">${escHtml(it.genres[0])}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}${watchedToggle}</div></div></article>`;
       }
       function buildTvWeeks(items){
         const weeks = new Map();
@@ -759,7 +915,16 @@ CHANGE NOTES:
         applyMediaUi();
         await loadWatchMeTuning();
         bindUi();
-        try { await loadData(); buildFilterOptions(); render(); }
+        state.clientId = getClientId();
+        refs.clientIdInput.value = state.clientId;
+        localStorage.setItem(WATCHED_CLIENT_KEY, state.clientId);
+        try {
+          await loadData();
+          state.watched = await loadWatchedMap(state.clientId);
+          state.watchedUnsaved = new Set();
+          buildFilterOptions();
+          render();
+        }
         catch (err){ refs.rowsRoot.innerHTML = `<section class="row"><div class="empty">Failed to load media data: ${escHtml(err?.message || String(err))}</div></section>`; }
       }
 
