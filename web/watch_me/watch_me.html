@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
 FILE: web/watch_me/watch_me.html
-VERSION: 1.1.2
+VERSION: 1.1.3
 UPDATED: 2026-02-16T00:00:00Z
 CHANGE NOTES:
 - Rebuilt page with clean validated markup/script after manual paste corruption
@@ -9,13 +9,14 @@ CHANGE NOTES:
 - Provider links rendered for episode and movie cards when present in data
 - Added per-client watched toggle state with HP LAN API + GitHub fallback read support
 - Added sidebar Client id input with localStorage persistence and reload behavior
+- Added config-driven watched toggle size control and reduced default height
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Watch Me</title>
-  <link rel="stylesheet" href="../css/my_tv_hub.css?v=1.1.2" />
+  <link rel="stylesheet" href="../css/my_tv_hub.css?v=1.1.3" />
   <style>
     :root{
       --bg:#0b0f16; --panel:#121a28; --line:rgba(255,255,255,.14); --txt:#ecf2ff; --mut:#b5c3dd; --w:150px; --side-w:210px;
@@ -23,6 +24,7 @@ CHANGE NOTES:
       --carousel-btn-size:56px; --carousel-btn-hitbox:64px; --carousel-btn-border:2px;
       --day-pill-h:26px; --day-seg-gap:8px; --carousel-rows:2;
       --wm_ep_still_h_mult:1.5; --wm_ep_still_side_crop_pct:12.5%;
+      --wm_watch_toggle_h:10px; --wm_watch_toggle_w:18px; --wm_watch_toggle_thumb:6px;
       --sel-bg:rgba(255,255,255,.06); --sel-fg:#ecf2ff; --sel-opt-bg:#182132; --sel-opt-fg:#f0f5ff; --sel-opt-hover:#263248;
       --day-bg:rgba(255,255,255,.05); --day-fg:#d5e0f3; --day-today-bg:#dbe9ff; --day-today-fg:#0d1b33;
     }
@@ -104,15 +106,15 @@ CHANGE NOTES:
     .iconbtn.provider-b{ color:inherit; }
     .iconbtn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; border-radius:4px; }
     .watched-toggle{
-      position:relative; width:36px; height:20px; border-radius:999px; border:1px solid rgba(255,255,255,.28); background:#9ff3ae; cursor:pointer;
+      position:relative; width:var(--wm_watch_toggle_w); height:var(--wm_watch_toggle_h); border-radius:999px; border:1px solid rgba(255,255,255,.28); background:#9ff3ae; cursor:pointer;
       transition:background .15s ease, border-color .15s ease; padding:0; margin-left:1px; flex:0 0 auto;
     }
     .watched-toggle::after{
-      content:""; position:absolute; top:2px; left:2px; width:14px; height:14px; border-radius:999px; background:#0c192d;
+      content:""; position:absolute; top:2px; left:2px; width:var(--wm_watch_toggle_thumb); height:var(--wm_watch_toggle_thumb); border-radius:999px; background:#0c192d;
       transition:left .15s ease, background .15s ease;
     }
     .watched-toggle.is-watched{ background:#8a909d; border-color:rgba(255,255,255,.24); }
-    .watched-toggle.is-watched::after{ left:18px; background:#f1f5ff; }
+    .watched-toggle.is-watched::after{ left:calc(var(--wm_watch_toggle_w) - var(--wm_watch_toggle_thumb) - 2px); background:#f1f5ff; }
     .watched-toggle.is-unsaved{ outline:1px dotted rgba(255,255,255,.9); outline-offset:2px; }
     .watched-toggle:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
     .sr-only{
@@ -135,7 +137,7 @@ CHANGE NOTES:
     @media (max-width:1120px){ .side{ max-height:none; } }
   </style>
 </head>
-<body data-watchme-version="1.1.2">
+<body data-watchme-version="1.1.3">
   <div class="app">
     <header class="head">
       <div class="headcopy">
@@ -211,7 +213,7 @@ CHANGE NOTES:
         legendB: $("legendB"),
         legendVersion: $("legendVersion")
       };
-      const WATCH_ME_VERSION = "1.1.2";
+      const WATCH_ME_VERSION = "1.1.3";
       const WATCHED_CLIENT_KEY = "watchme_client_id";
       const WATCHED_DEFAULT_CLIENT_ID = "tv_livingroom";
       const WATCHED_DEFAULT_API_BASE_URL = "http://192.168.1.64:9192";
@@ -288,6 +290,16 @@ CHANGE NOTES:
         r.setProperty("--wm_ep_still_h_mult", String(heightMult));
         r.setProperty("--wm_ep_still_side_crop_pct", `${sideCrop}%`);
       }
+      function applyWatchedToggleCss(uiTuning){
+        const raw = Number(uiTuning?.watch_me_watched_toggle_height_px);
+        const height = Number.isFinite(raw) && raw >= 8 ? raw : 10;
+        const width = Math.max(14, Math.round(height * 1.8));
+        const thumb = Math.max(4, height - 4);
+        const r = document.documentElement.style;
+        r.setProperty("--wm_watch_toggle_h", `${height}px`);
+        r.setProperty("--wm_watch_toggle_w", `${width}px`);
+        r.setProperty("--wm_watch_toggle_thumb", `${thumb}px`);
+      }
       function resolveWatchMeTuning(raw){
         const out = { ...WATCH_ME_FALLBACK_TUNING };
         if (!raw || typeof raw !== "object") return out;
@@ -341,6 +353,7 @@ CHANGE NOTES:
               applyMediaUi();
               applyWatchMeTuningCss(tuning);
               applyEpisodeStillCss(cfg?.ui_tuning || {});
+              applyWatchedToggleCss(cfg?.ui_tuning || {});
               console.log("WatchMe tuning resolved:", tuning);
               return;
             } catch (_e) {}
@@ -349,6 +362,7 @@ CHANGE NOTES:
           state.watchedApiBaseUrl = WATCHED_DEFAULT_API_BASE_URL;
           applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
           applyEpisodeStillCss({});
+          applyWatchedToggleCss({});
           console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
           console.log("WatchMe tuning resolved:", WATCH_ME_FALLBACK_TUNING);
         } catch (_err){
@@ -356,6 +370,7 @@ CHANGE NOTES:
           state.watchedApiBaseUrl = WATCHED_DEFAULT_API_BASE_URL;
           applyWatchMeTuningCss(WATCH_ME_FALLBACK_TUNING);
           applyEpisodeStillCss({});
+          applyWatchedToggleCss({});
           console.warn("WatchMe tuning config load failed; using hardcoded fallback.");
           console.log("WatchMe tuning resolved:", WATCH_ME_FALLBACK_TUNING);
         }
