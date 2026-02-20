@@ -1,1 +1,26 @@
-name: Log Visiton:  repository_dispatch:    types: [log_visit]jobs:  append-log:    runs-on: ubuntu-latest    steps:      - name: Checkout repo        uses: actions/checkout@v3      - name: Append log entry        run: |          echo "${{ github.event.client_payload.entry }}" >> analytics/visits.json      - name: Commit and push        run: |          git config user.name "github-actions"          git config user.email "github-actions@github.com"          git add analytics/visits.json          git commit -m "Log visit"          git push
+name: log-visit
+on:
+  repository_dispatch:
+    types: [log_visit]
+
+jobs:
+  append-log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Append log entry
+        run: |
+          echo "${{ github.event.client_payload.entry }}" >> analytics/visits.json
+
+      - name: Commit and push
+        env:
+          PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
+        run: |
+          git config user.name "gitea-actions[bot]"
+          git config user.email "gitea-actions[bot]@users.noreply.local"
+          git add analytics/visits.json
+          git diff --cached --quiet || git commit -m "Log visit"
+          git remote set-url origin "http://andrew:${PUSH_TOKEN}@theboys-hp290server:3000/andrew/my_TV_Movie.git"
+          git push
