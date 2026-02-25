@@ -524,6 +524,27 @@ CHANGE NOTES:
         }
         return out;
       }
+      function uniqueTvEpisodesByStableKey(list){
+        const seen = new Set();
+        const out = [];
+        for (const it of list){
+          const showTmdbId = it?.show?.tmdb_id ?? it?.show?.id;
+          const sn = Number(it?.sn);
+          const en = Number(it?.en);
+          const showId = showTmdbId == null ? "" : String(showTmdbId).trim();
+          const hasSeason = Number.isFinite(sn) && sn > 0;
+          const hasEpisode = Number.isFinite(en) && en > 0;
+          if (!showId || !hasSeason || !hasEpisode){
+            out.push(it);
+            continue;
+          }
+          const key = `${showId}:s${pad2(sn)}:e${pad2(en)}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          out.push(it);
+        }
+        return out;
+      }
 
       function flattenData(data){
         const shows = Array.isArray(data?.shows) ? data.shows : [];
@@ -889,7 +910,7 @@ CHANGE NOTES:
 
       function render(){
         const now = new Date();
-        const eps = filtEpisodes(state.episodes);
+        const eps = uniqueTvEpisodesByStableKey(filtEpisodes(state.episodes));
         const mvs = filtMovies(state.normalizedMovies);
         const tvWeeks = buildTvWeeks(eps);
         const moviesModes = buildMovieModes(mvs, now);
