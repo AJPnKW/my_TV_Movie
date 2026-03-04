@@ -1014,6 +1014,13 @@ CHANGE NOTES
       align-items:start;
       width:100%;
     }
+    .calcol{
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      align-items:stretch;
+    }
     .dow{
       position:sticky;
       top:calc(var(--sticky-top, 64px) + var(--calbar-h, 44px));
@@ -1042,17 +1049,14 @@ CHANGE NOTES
       padding:6px;
       background:rgba(255,255,255,0.03);
       min-height:0;
-      max-height:340px;
       display:flex;
       flex-direction:column;
       gap:4px;
-      overflow:auto;
+      overflow:visible;
       min-width:0;
       width:100%;
       justify-self:stretch;
       align-self:start;
-      scrollbar-width:thin;
-      scrollbar-color:rgba(255,255,255,0.22) transparent;
     }
     .day.weekend{
       background:rgba(255,255,255,0.08);
@@ -3751,10 +3755,7 @@ CHANGE NOTES
 
     const eventsByDate = buildCalendarEventsForMonth(m);
 
-    const dows = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(s => {
-      const weekend = (s === "Sat" || s === "Sun") ? " weekend" : "";
-      return `<div class="dow${weekend}">${s}</div>`;
-    }).join("");
+    const dowLabels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
     const cells = days.map(({dt,key,inMonth,num}) => {
       const ev = eventsByDate.get(key) || [];
@@ -4037,9 +4038,16 @@ CHANGE NOTES
           <div class="chips">${chips}${more}${extra}</div>
         </div>
       `;
+    });
+
+    const calendarColumns = Array.from({ length: 7 }, (_, colIdx) => {
+      const dow = dowLabels[colIdx];
+      const weekend = (dow === "Sat" || dow === "Sun") ? " weekend" : "";
+      const colDays = cells.filter((_, dayIdx) => (dayIdx % 7) === colIdx).join("");
+      return `<div class="calcol"><div class="dow${weekend}">${dow}</div>${colDays}</div>`;
     }).join("");
 
-    $("#calendar").innerHTML = dows + cells;
+    $("#calendar").innerHTML = calendarColumns;
     requestAnimationFrame(() => updateCalendarStickyVars());
 
     // behaviors
