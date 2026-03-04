@@ -215,13 +215,17 @@ CHANGE NOTES
       overflow:hidden;
       background:rgba(255,255,255,0.08);
     }
-    .dashimgwrap.poster{ aspect-ratio:2/3; }
+    .dashimgwrap.poster{ aspect-ratio:16/9; }
     .dashimgwrap.wide{ aspect-ratio:16/9; }
     .dashimgwrap img{
       width:100%;
       height:100%;
       object-fit:cover;
       display:block;
+    }
+    .dashimgwrap.wide img{
+      width:102%;
+      margin-left:-1%;
     }
     .iconstrip{
       position:absolute;
@@ -998,7 +1002,7 @@ CHANGE NOTES
       display:grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
       gap:8px;
-      align-items:stretch;
+      align-items:start;
       width:100%;
     }
     .dow{
@@ -1016,6 +1020,7 @@ CHANGE NOTES
       min-width:0;
       width:100%;
       justify-self:stretch;
+      align-self:start;
     }
     .dow.weekend{
       background:rgba(255,255,255,0.08);
