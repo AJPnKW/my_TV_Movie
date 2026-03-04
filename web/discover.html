@@ -3757,7 +3757,7 @@ CHANGE NOTES
 
     const dowLabels = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 
-    const cells = days.map(({dt,key,inMonth,num}) => {
+    const cells = days.map(({dt,key,inMonth,num}, dayIdx) => {
       const ev = eventsByDate.get(key) || [];
       const max = 5;
       const top = ev.slice(0, max);
@@ -4032,18 +4032,28 @@ CHANGE NOTES
 
       const isWeekend = (dt.getDay() === 0 || dt.getDay() === 6);
       const cls = ["day", inMonth?"":"dim", key===todayKey?"today":"", isWeekend?"weekend":""].filter(Boolean).join(" ");
-      return `
+      const html = `
         <div class="${cls}" data-daycell="${key}">
           <div class="date">${num}</div>
           <div class="chips">${chips}${more}${extra}</div>
         </div>
       `;
+      return {
+        html,
+        col: dayIdx % 7,
+        inMonth: !!inMonth,
+        hasEvents: ev.length > 0,
+        isToday: key === todayKey
+      };
     });
 
     const calendarColumns = Array.from({ length: 7 }, (_, colIdx) => {
       const dow = dowLabels[colIdx];
       const weekend = (dow === "Sat" || dow === "Sun") ? " weekend" : "";
-      const colDays = cells.filter((_, dayIdx) => (dayIdx % 7) === colIdx).join("");
+      const colDays = cells
+        .filter(c => c.col === colIdx && c.inMonth && (c.hasEvents || c.isToday))
+        .map(c => c.html)
+        .join("");
       return `<div class="calcol"><div class="dow${weekend}">${dow}</div>${colDays}</div>`;
     }).join("");
 
