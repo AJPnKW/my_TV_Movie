@@ -262,6 +262,15 @@ CHANGE NOTES
       align-items:center;
       justify-content:center;
     }
+    .iconstrip-btn.iconstrip-view{
+      border:1px solid rgba(255,255,255,0.20);
+      background:rgba(255,255,255,0.06);
+      border-radius:999px;
+      padding:3px 8px;
+      font-size:11px;
+      font-weight:900;
+      line-height:1;
+    }
     .iconstrip-pct{
       font-size:11px;
       font-weight:900;
@@ -1030,16 +1039,20 @@ CHANGE NOTES
     .day{
       border:1px solid var(--line);
       border-radius:16px;
-      padding:8px;
+      padding:6px;
       background:rgba(255,255,255,0.03);
       min-height:0;
+      max-height:340px;
       display:flex;
       flex-direction:column;
-      gap:6px;
-      overflow:hidden; /* prevent images from expanding cell */
+      gap:4px;
+      overflow:auto;
       min-width:0;
       width:100%;
       justify-self:stretch;
+      align-self:start;
+      scrollbar-width:thin;
+      scrollbar-color:rgba(255,255,255,0.22) transparent;
     }
     .day.weekend{
       background:rgba(255,255,255,0.08);
@@ -1066,26 +1079,26 @@ CHANGE NOTES
       text-shadow:none;
     }
 
-    .chips{ display:flex; flex-direction:column; gap:6px; }
+    .chips{ display:flex; flex-direction:column; gap:4px; }
     .chip{ 
       width:100%;
       border:1px solid rgba(255,255,255,0.14);
       background:rgba(255,255,255,0.05);
-      border-radius:14px;
-      padding:6px;
+      border-radius:12px;
+      padding:4px;
       cursor:pointer;
       display:grid;
       grid-template-columns: minmax(0, var(--cal-thumb-w)) minmax(0, 1fr);
-      gap:6px;
+      gap:4px;
       align-items:start;
-      min-height:var(--cal-thumb-h);
+      min-height:0;
       text-align:left;
     }
     .chip.cal-episode{
       display:flex;
       flex-direction:column;
-      gap:6px;
-      padding:6px;
+      gap:4px;
+      padding:4px;
     }
     .chip:focus{ outline:3px solid rgba(255,255,255,0.85); outline-offset:2px; }
     .chip .thumb{
@@ -1216,7 +1229,7 @@ CHANGE NOTES
     .chip.cal-episode .epcard{
       display:flex;
       flex-direction:column;
-      gap:6px;
+      gap:4px;
       width:100%;
     }
     .chip.cal-episode .thumbwrap{
@@ -1237,7 +1250,7 @@ CHANGE NOTES
       left:8px;
       bottom:8px;
       font-weight:1000;
-      font-size:16px;
+      font-size:13px;
       line-height:1.05;
       text-transform:capitalize;
       color:#ff4b4b;
@@ -1247,18 +1260,18 @@ CHANGE NOTES
     }
     .chip.cal-episode .ep-side-actions{
       position:absolute;
-      top:8px;
-      right:8px;
+      top:6px;
+      right:6px;
       display:flex;
       flex-direction:column;
-      gap:6px;
+      gap:4px;
       z-index:2;
     }
     .chip.cal-episode .ep-side-actions .iconbtn{
-      width:24px;
-      height:24px;
+      width:20px;
+      height:20px;
       border-radius:999px;
-      font-size:12px;
+      font-size:11px;
       border:0;
       box-shadow:none;
       background:transparent;
@@ -1294,12 +1307,14 @@ CHANGE NOTES
     .chip.cal-episode .ep-actions-row{
       display:flex;
       align-items:center;
-      gap:6px;
+      gap:4px;
       width:100%;
+      flex-wrap:nowrap;
+      overflow-x:auto;
     }
     .chip.cal-episode .ep-actions-row .iconbtn{
-      width:20px;
-      height:20px;
+      width:18px;
+      height:18px;
       border-radius:6px;
       font-size:10px;
       border:0;
@@ -1315,20 +1330,30 @@ CHANGE NOTES
     .chip.cal-episode .ep-meta{
       text-align:center;
       display:grid;
-      gap:2px;
+      gap:1px;
     }
     .chip.cal-episode .ep-meta .ep-title{
-      font-size:12px;
+      font-size:11px;
       font-weight:900;
       color:var(--text);
+      line-height:1.2;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
     }
     .chip.cal-episode .ep-meta .ep-show{
-      font-size:11px;
+      font-size:10px;
       color:var(--muted);
+      line-height:1.2;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
     }
     .chip.cal-episode .ep-meta .ep-time{
-      font-size:11px;
+      font-size:10px;
       color:var(--muted);
+      line-height:1.2;
     }
     .chip.cal-episode .progress{ display:none; }
     .chip .urlband{
@@ -3775,7 +3800,7 @@ CHANGE NOTES
           const epFallback = it.still_path ? tmdbImageUrl("episode_still", it.still_path) : "";
           const thumb = it.thumb
             ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" data-fallback="${escHtml(epFallback)}" alt="" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" /></div>`
-            : `<div class="thumb"></div>`;
+            : ``;
           const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
           const mediaLinks = buildMediaLinks("episode", it.show_tmdb_id, it?.links || {});
           const vidsrc = mediaLinks.vidsrc;
@@ -3841,7 +3866,7 @@ CHANGE NOTES
         }
 
         // movie
-        const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+        const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : ``;
         const tmdb = safeText(it?.links?.tmdb || (it.tmdb_id ? tmdbMovieUrl(it.tmdb_id) : "")).trim();
         const mediaLinks = buildMediaLinks("movie", it.tmdb_id, it?.links || {});
         const vidsrc = mediaLinks.vidsrc;
@@ -3904,7 +3929,7 @@ CHANGE NOTES
           const epName = safeText(it.episode_name).trim() || "Episode";
           const epTag = (it.season_number || it.episode_number) ? seTag(it.season_number || 0, it.episode_number || 0) : "";
           const showTitle = safeText(it.show_title).trim() || "Unknown Show";
-          const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+          const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : ``;
           const tmdb = safeText(it?.links?.tmdb || tmdbEpisodeUrl(it.show_tmdb_id, it.season_number || 0, it.episode_number || 0)).trim();
           const mediaLinks = buildMediaLinks("episode", it.show_tmdb_id, it?.links || {});
           const vidsrc = mediaLinks.vidsrc;
@@ -3967,7 +3992,7 @@ CHANGE NOTES
             </button>
           `;
         }
-        const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : `<div class="thumb"></div>`;
+        const thumb = it.thumb ? `<div class="thumb"><img loading="lazy" src="${escHtml(it.thumb)}" alt="" /></div>` : ``;
         const tmdb = safeText(it?.links?.tmdb || (it.tmdb_id ? tmdbMovieUrl(it.tmdb_id) : "")).trim();
         const mediaLinks = buildMediaLinks("movie", it.tmdb_id, it?.links || {});
         const vidsrc = mediaLinks.vidsrc;
@@ -4221,7 +4246,7 @@ CHANGE NOTES
       ? `<button class="iconstrip-btn" type="button" title="${watched ? "Unwatched" : "Watched"}" data-action="toggle-watched" data-kind="${escHtml(kind)}" data-id="${escHtml(idStr)}" data-watched="${watched ? "1" : "0"}" data-action-menu="watched" data-no-default="1" data-function-type="${escHtml(iconType("trakt_mark_watched", "popup"))}">${escHtml(iconChar("trakt_mark_watched"))}</button>`
       : `<span class="iconstrip-btn" aria-hidden="true">${escHtml(iconChar("trakt_mark_watched"))}</span>`;
     const infoBtn = hasTarget
-      ? `<button class="iconstrip-btn" type="button" title="Info" data-action="open-info" data-kind="${escHtml(kind)}" data-id="${escHtml(idStr)}" data-function-type="${escHtml(iconType("action_info", "popup"))}">${escHtml(iconChar("action_info"))}</button>`
+      ? `<button class="iconstrip-btn iconstrip-view" type="button" title="View" data-action="open-info" data-kind="${escHtml(kind)}" data-id="${escHtml(idStr)}" data-function-type="${escHtml(iconType("action_info", "popup"))}">View</button>`
       : `<span class="iconstrip-btn" aria-hidden="true">${escHtml(iconChar("action_info"))}</span>`;
     const rateBtn = hasTarget
       ? `<button class="iconstrip-btn" type="button" title="Rate" data-action-menu="rate" data-no-default="1" data-function-type="${escHtml(iconType("trakt_rate_like", "popup"))}">${escHtml(iconChar("trakt_rate_like"))}</button>`
@@ -5491,3 +5516,4 @@ CHANGE NOTES
 </script>
 </body>
 </html>
+
