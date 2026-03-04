@@ -3771,11 +3771,15 @@ CHANGE NOTES
           const netLogo = (it.network_logo_local || it.network_logo_tmdb)
             ? `<img class="netlogo-sm" src="${escHtml(it.network_logo_local || it.network_logo_tmdb)}" data-fallback="${escHtml(it.network_logo_tmdb || "")}" alt="${escHtml(it.network_name || "")}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
             : "";
+          const providerRow = (providerIcons || netLogo)
+            ? `<div class="providerrow cal-providers">${providerIcons}${netLogo}</div>`
+            : "";
           const showLogo = safeText(it.show_logo_local || it.show_logo_tmdb || "").trim();
           const showBadge = showLogo
             ? `<img class="showbadge-img" src="${escHtml(showLogo)}" data-fallback="${escHtml(it.show_logo_tmdb || "")}" alt="${escHtml(showTitle)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />`
             : `<div class="showbadge-txt">${escHtml(showTitle)}</div>`;
           const pctLabel = (pct != null) ? `<div class="ep-pct">${pct.toFixed(0)}%</div>` : "";
+          const epTime = `${it.air_time || ""}${it.network_name ? ` on ${it.network_name}` : ""}`.trim();
 
           return `
             <button class="chip cal-episode" type="button" data-kind="episode" data-show="${it.show_tmdb_id}" data-day="${key}" data-idx="${idx}">
@@ -3801,14 +3805,11 @@ CHANGE NOTES
                   <button class="iconbtn" type="button" title="Rate / Like" data-action-menu="rate" data-function-type="${escHtml(iconType("trakt_rate_like", "popup"))}">${escHtml(iconChar("trakt_rate_like"))}</button>
                   ${pctLabel}
                 </div>
-                <div class="providerrow cal-providers">
-                  ${providerIcons}
-                  ${netLogo}
-                </div>
+                ${providerRow}
                 <div class="ep-meta">
                   <div class="ep-title">${escHtml(`${epTag ? `${epTag} ` : ""}${epName}`)}</div>
                   <div class="ep-show">${escHtml(showTitle)}</div>
-                  <div class="ep-time">${escHtml(`${it.air_time || ""}${it.network_name ? ` on ${it.network_name}` : ""}`.trim())}</div>
+                  ${epTime ? `<div class="ep-time">${escHtml(epTime)}</div>` : ""}
                 </div>
               </div>
             </button>
@@ -4264,10 +4265,14 @@ CHANGE NOTES
         }
         return "";
       };
-      const wideKeys = ["still_local", "still_path", "backdrop_local", "backdrop_path", "poster_local", "poster_path"];
-      const posterKeys = ["poster_local", "poster_path", "backdrop_local", "backdrop_path", "still_local", "still_path"];
+      const wideKeys = ["thumb", "still_local", "backdrop_local", "backdrop_path", "poster_local", "poster_path"];
+      const posterKeys = ["thumb", "poster_local", "poster_path", "backdrop_local", "backdrop_path", "still_local"];
       const src = pick(item, mode === "wide" ? wideKeys : posterKeys);
       if (src) return normalizeImageSrc(src);
+      if (item?.kind === "episode"){
+        const stillPath = safeText(item?.still_path).trim();
+        if (stillPath.startsWith("/")) return tmdbImageUrl("episode_still", stillPath);
+      }
       if (item?.kind === "episode" && item?.show_tmdb_id){
         const show = showMap.get(String(item.show_tmdb_id));
         if (show){
@@ -4299,7 +4304,7 @@ CHANGE NOTES
       const sub = item.kind === "episode"
         ? `${safeText(item.episode_name || "Episode")}`
         : "Movie release";
-      const mode = "poster";
+      const mode = (item.kind === "episode") ? "wide" : "poster";
       const imgSrc = imageForItem(item, mode);
       const { kind, id } = infoTarget(item);
       const pct = percentForItem(item);
@@ -4332,7 +4337,7 @@ CHANGE NOTES
             const metaText = item.kind === "episode"
               ? safeText(item.episode_name || "Episode")
               : "Movie release";
-            const mode = "poster";
+            const mode = (item.kind === "episode") ? "wide" : "poster";
             const imgSrc = imageForItem(item, mode);
             const { kind, id } = infoTarget(item);
             const pct = percentForItem(item);
@@ -4367,7 +4372,7 @@ CHANGE NOTES
             const metaText = item.kind === "episode"
               ? safeText(item.episode_name || "Episode")
               : "Movie release";
-            const mode = "poster";
+            const mode = (item.kind === "episode") ? "wide" : "poster";
             const imgSrc = imageForItem(item, mode);
             const { kind, id } = infoTarget(item);
             const pct = percentForItem(item);
