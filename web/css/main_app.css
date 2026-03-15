@@ -67,20 +67,13 @@ CHANGE NOTES:
     .shell{
       margin-top:12px;
       display:grid;
-      grid-template-columns: 240px 1fr;
+      grid-template-columns:1fr;
       gap:18px;
       align-items:start;
     }
 
     .sidebar{
-      position:sticky;
-      top:92px;
-      align-self:start;
-      padding:14px 12px;
-      border-radius:20px;
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
-      min-height:220px;
+      display:none;
     }
 
     .side-section{ margin-bottom:14px; }
@@ -144,6 +137,43 @@ CHANGE NOTES:
       font-size:18px;
       font-weight:900;
       letter-spacing:0.3px;
+    }
+    .control-panel{
+      display:grid;
+      gap:14px;
+    }
+    .control-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+    .control-row--primary{
+      align-items:stretch;
+    }
+    .control-input{
+      min-width:240px;
+      flex:1 1 260px;
+    }
+    .control-select{
+      min-width:160px;
+      flex:0 0 auto;
+    }
+    .control-group{
+      display:grid;
+      gap:8px;
+    }
+    .control-label{
+      font-size:11px;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:0.12em;
+      color:var(--muted);
+    }
+    .control-checks{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
     }
     .dashrow{
       display:grid;
