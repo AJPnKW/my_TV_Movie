@@ -744,6 +744,93 @@ CHANGE NOTES
       gap:6px;
     }
     .actionstack{ display:flex; flex-direction:column; gap:6px; align-items:flex-start; }
+    .actionbar{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-top:8px;
+      padding:8px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+    }
+    .actionbar-left,
+    .actionbar-right{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .actionbar-right{ margin-left:auto; }
+    .actionbar-btn{
+      border:1px solid rgba(255,255,255,0.18);
+      background:rgba(255,255,255,0.06);
+      color:var(--text);
+      border-radius:999px;
+      min-height:28px;
+      padding:6px 10px;
+      font-size:11px;
+      font-weight:900;
+      line-height:1;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+      text-decoration:none;
+    }
+    .actionbar-btn.popcorn{ padding-inline:12px; }
+    .actionbar-btn.favorite.active{
+      background:rgba(251,191,36,0.18);
+      border-color:rgba(251,191,36,0.45);
+    }
+    .actionbar-btn.status{
+      min-width:116px;
+      justify-content:space-between;
+    }
+    .actionbar-btn.rate{
+      width:28px;
+      padding:0;
+      justify-content:center;
+    }
+    .actionbar-label{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+    }
+    .actionbar-bullet{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:var(--status-color, rgba(255,255,255,0.35));
+      flex:0 0 auto;
+    }
+    .statusmenu{
+      min-width:180px;
+    }
+    .statusmenu button{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .statusmenu button.active{
+      border-color:rgba(255,255,255,0.16);
+      background:rgba(255,255,255,0.08);
+    }
+    .statusmenu .bulletrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .statusmenu .bulletdot{
+      width:9px;
+      height:9px;
+      border-radius:999px;
+      background:var(--watch-status-color, rgba(255,255,255,0.30));
+      flex:0 0 auto;
+    }
     .iconbtn{
       width:22px;
       height:22px;
@@ -846,40 +933,14 @@ CHANGE NOTES
       transform:translateX(calc((var(--toggle-w) - var(--toggle-h)) * var(--pos)));
     }
 
-    .watchstatusband{
-      display:inline-flex;
-      flex-wrap:nowrap;
-      gap:3px;
-      padding:2px;
-      border-radius:999px;
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(255,255,255,0.08);
-      max-width:100%;
-      overflow-x:auto;
-      -webkit-overflow-scrolling:touch;
+    .cardcontrols{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px;
+      margin-top:8px;
     }
-    .watchstatusband .opt{
-      font-size:9px;
-      font-weight:700;
-      letter-spacing:0.05px;
-      text-transform:none;
-      padding:2px 6px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.1);
-      background:rgba(255,255,255,0.04);
-      color:var(--muted);
-      cursor:pointer;
-      text-align:center;
-      white-space:nowrap;
-      line-height:1.1;
-      font-family:"Arial Narrow","HelveticaNeue-Condensed","Helvetica Neue Condensed","Nimbus Sans Narrow",sans-serif;
-    }
-    .watchstatusband .opt.active{
-      background:var(--opt-color, #bbf7d0);
-      color:#0b1020;
-      border-color:rgba(255,255,255,0.6);
-      box-shadow:0 4px 10px rgba(0,0,0,0.25);
-    }
+    .watchsourcebtn{ white-space:nowrap; }
 
     .urlbtn{
       width:calc(18px * var(--url-btn-scale, 1));
@@ -1899,6 +1960,86 @@ CHANGE NOTES
       object-fit:contain;
       display:inline-block;
     }
+    .providertext{
+      display:none;
+      align-items:center;
+      min-height:22px;
+      padding:0 2px;
+      font-size:11px;
+      font-weight:800;
+      line-height:1.1;
+    }
+    .providerchip.fallback-only .providertext,
+    .providerchip.no-logo .providertext{
+      display:inline-flex;
+    }
+    .providerchip.no-logo .providerlogo{
+      display:none;
+    }
+    .media_block,
+    .title_block,
+    .meta_row,
+    .provider_group,
+    .context_block,
+    .tag_group{
+      display:block;
+    }
+    .title_block{ margin-top:10px; }
+    .title_block .primary{
+      font-size:14px;
+      font-weight:900;
+      color:var(--text);
+    }
+    .title_block .secondary{
+      margin-top:3px;
+      font-size:12px;
+      color:var(--muted);
+      font-weight:800;
+    }
+    .meta_row,
+    .context_block{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:800;
+    }
+    .provider_group,
+    .tag_group{
+      margin-top:8px;
+    }
+    .provider_group .providerchips{
+      gap:8px;
+    }
+    .tag_group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+    }
+    .tag_group .pill{
+      margin:0;
+    }
+    .episode-row{
+      display:grid;
+      grid-template-columns:140px 1fr;
+      gap:12px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,0.10);
+      background:rgba(255,255,255,0.04);
+    }
+    .episode-row .media_block{
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,0.08);
+      background:rgba(255,255,255,0.03);
+      min-height:78px;
+    }
+    .episode-row .media_block img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
 
     .footer{ margin-top:10px; color:var(--muted); font-size:12px; padding:2px 4px; }
 
@@ -2293,6 +2434,40 @@ CHANGE NOTES
     return { name, local, tmdb };
   }
 
+  function providerLogoImgHtml(logo, cssClass="providerlogo"){
+    const src = safeText(logo?.local || logo?.tmdb || "").trim();
+    if (!src) return "";
+    return `<img class="${escHtml(cssClass)}" src="${escHtml(src)}" data-fallback="${escHtml(logo?.tmdb || "")}" alt="${escHtml(logo?.name || "Provider")}" onerror="this.onerror=null;const chip=this.closest('.providerchip');if(chip){chip.classList.add('fallback-only');}this.remove();" />`;
+  }
+
+  function providerChipHtml(logo, href){
+    const hasLogo = !!safeText(logo?.local || logo?.tmdb || "").trim();
+    const stateClass = hasLogo ? "" : " no-logo";
+    const inner = `${providerLogoImgHtml(logo)}<span class="providertext">${escHtml(logo?.name || "Provider")}</span>`;
+    if (href){
+      return `<a class="providerchip${stateClass}" href="${escHtml(href)}" target="_blank" rel="noopener">${inner}</a>`;
+    }
+    return `<span class="providerchip${stateClass}">${inner}</span>`;
+  }
+
+  function providerGroupHtml(item, kind, limit=4){
+    const wp = getWatchProviders(item);
+    const id = item?.tmdb_id ?? item?.id;
+    if (!wp || !id) return `<div class="provider_group"><div class="muted" style="font-size:11px;">Provider data unavailable</div></div>`;
+    const providers = collectProvidersForRegion(wp, "US").length
+      ? collectProvidersForRegion(wp, "US")
+      : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
+    if (!providers.length) return `<div class="provider_group"><div class="muted" style="font-size:11px;">No providers</div></div>`;
+    const watchUrl = tmdbWatchUrl(kind, id);
+    return `
+      <div class="provider_group">
+        <div class="providerchips">
+          ${providers.slice(0, limit).map(p => providerChipHtml(providerLogoUrl(p), watchUrl)).join("")}
+        </div>
+      </div>
+    `;
+  }
+
   function renderWatchProvidersHtml(item, kind){
     const wp = getWatchProviders(item);
     const id = item?.tmdb_id ?? item?.id;
@@ -2303,9 +2478,7 @@ CHANGE NOTES
       const watchUrl = tmdbWatchUrl(kind, id);
       const chips = providers.slice(0, 8).map(p => {
         const logo = providerLogoUrl(p);
-        const src = logo.local || logo.tmdb;
-        const img = src ? `<img class="providerlogo" src="${escHtml(src)}" data-fallback="${escHtml(logo.tmdb)}" alt="${escHtml(logo.name)}" onerror="this.onerror=null;if(this.dataset.fallback){this.src=this.dataset.fallback;}" />` : "";
-        return `<a class="providerchip" href="${escHtml(watchUrl)}" target="_blank" rel="noopener">${img}${escHtml(logo.name || "Provider")}</a>`;
+        return providerChipHtml(logo, watchUrl);
       }).join("");
       const body = chips || `<div class="muted" style="font-size:11px;">No providers</div>`;
       return `
@@ -2730,6 +2903,11 @@ CHANGE NOTES
         <button type="button" data-menu-action="mark_watched" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Mark watched</button>
         <button type="button" data-menu-action="mark_unwatched" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Mark unwatched</button>
       </div>
+      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="rate">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
+        <div class="menutitle">Rating</div>
+        <button type="button" disabled>Frontend placeholder</button>
+      </div>
     `;
   }
 
@@ -2781,6 +2959,11 @@ CHANGE NOTES
       };
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
+        const target = safeText(btn.getAttribute("data-action-menu"));
+        if (target === "status" || target === "rate"){
+          openMenu();
+          return;
+        }
         if (btn.getAttribute("data-no-default") === "1" || btn.hasAttribute("data-action")) return;
         runDefault();
       });
@@ -2802,6 +2985,11 @@ CHANGE NOTES
         const kind = safeText(btn.getAttribute("data-kind"));
         const id = parseInt(btn.getAttribute("data-id") || "0", 10);
         const title = safeText(btn.getAttribute("data-title"));
+        const context = {
+          showId: btn.getAttribute("data-status-show"),
+          seasonNumber: btn.getAttribute("data-status-season"),
+          episodeNumber: btn.getAttribute("data-status-episode")
+        };
         if (!action || !Number.isFinite(id)) return;
         if (action === "want_add"){
           setWatchlistEntry(id, title, kind, "watchlist");
@@ -2819,6 +3007,11 @@ CHANGE NOTES
             const show = getShowById(id);
             if (show) setShowWatched(id, show.seasons || [], false);
           }
+        } else if (action === "status_set"){
+          const statusValue = safeText(btn.getAttribute("data-status-value")).toLowerCase();
+          setLocalStatusValue(kind, id, context, statusValue, title);
+        } else if (action === "status_clear"){
+          setLocalStatusValue(kind, id, context, "", title);
         }
         await saveInputs();
         closeAllActionMenus();
@@ -3062,6 +3255,81 @@ CHANGE NOTES
     return list.find(x => String(x?.tmdb_id ?? "") === id) || null;
   }
 
+  function ensureLocalStatusMap(){
+    if (!state.inputs) state.inputs = { tv: [], movies: [], watchlist: [] };
+    if (!state.inputs.local_status_map || typeof state.inputs.local_status_map !== "object") state.inputs.local_status_map = {};
+    return state.inputs.local_status_map;
+  }
+
+  function statusEntityKey(kind, id, context={}){
+    const idStr = String(id ?? "");
+    if (kind === "season") return `season:${context.showId || context.parentId || ""}:${context.seasonNumber || idStr}`;
+    if (kind === "episode") return `episode:${context.showId || context.parentId || ""}:${context.seasonNumber || ""}:${context.episodeNumber || idStr}`;
+    return `${kind}:${idStr}`;
+  }
+
+  function getLocalStatusValue(kind, id, context={}){
+    const key = statusEntityKey(kind, id, context);
+    const localMap = ensureLocalStatusMap();
+    const local = localMap[key];
+    const localValue = safeText(local?.watch_status).toLowerCase();
+    if (localValue) return localValue;
+    if (kind === "show" || kind === "movie"){
+      const legacy = safeText(getWatchlistEntry(id)?.watch_status).toLowerCase();
+      if (legacy) return legacy;
+    }
+    return "";
+  }
+
+  function setLocalStatusValue(kind, id, context, watchStatus, title){
+    const key = statusEntityKey(kind, id, context);
+    const localMap = ensureLocalStatusMap();
+    if (!watchStatus){
+      delete localMap[key];
+      return;
+    }
+    localMap[key] = {
+      key,
+      tmdb_id: id,
+      media_kind: kind,
+      parent_tmdb_id: context.showId ?? context.parentId ?? null,
+      season_number: context.seasonNumber ?? null,
+      episode_number: context.episodeNumber ?? null,
+      title: title || "",
+      watch_status: watchStatus,
+      updated_utc: nowUtcIso()
+    };
+  }
+
+  function statusControlHtml(kind, id, title, context, available){
+    const current = getLocalStatusValue(kind, id, context);
+    const currentLabel = current ? watchStatusChoiceTitle(current, available) : "Status";
+    const currentColor = current ? watchStatusChoiceColor(current, available) : "rgba(255,255,255,0.30)";
+    const contextAttrs = [
+      (context?.showId != null ? ` data-status-show="${escHtml(context.showId)}"` : ""),
+      (context?.seasonNumber != null ? ` data-status-season="${escHtml(context.seasonNumber)}"` : ""),
+      (context?.episodeNumber != null ? ` data-status-episode="${escHtml(context.episodeNumber)}"` : "")
+    ].join("");
+    const options = WATCHLIST_STATUS_OPTIONS.map(opt => {
+      const active = opt.value === current ? " active" : "";
+      const color = watchStatusChoiceColor(opt.value, available);
+      const label = watchStatusChoiceTitle(opt.value, available);
+      return `<button class="${active.trim() ? "active" : ""}" type="button" data-menu-action="status_set" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title || "")}" data-status-value="${escHtml(opt.value)}"${contextAttrs} style="--watch-status-color:${escHtml(color)}"><span class="bulletrow"><span class="bulletdot"></span><span>${escHtml(label)}</span></span>${active ? `<span aria-hidden="true">•</span>` : ""}</button>`;
+    }).join("");
+    return `
+      <button class="actionbar-btn status" type="button" data-action-menu="status" data-no-default="1" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title || "")}" style="--status-color:${escHtml(currentColor)}"${contextAttrs}>
+        <span class="actionbar-label"><span class="actionbar-bullet"></span><span>${escHtml(currentLabel)}</span></span>
+      </button>
+      <div class="actionmenu statusmenu" data-action-menu-panel="1" data-menu-type="status">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
+        <div class="menutitle">Watch status</div>
+        ${options}
+        <div class="divider"></div>
+        <button type="button" data-menu-action="status_clear" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title || "")}"${contextAttrs}>Clear status</button>
+      </div>
+    `;
+  }
+
   function setWatchlistEntry(tmdbId, title, mediaKind, watchStatus){
     const id = String(tmdbId ?? "");
     if (!id) return;
@@ -3086,7 +3354,9 @@ CHANGE NOTES
 
   function watchStatusDisplay(entry, available){
     const raw = safeText(entry?.watch_status || "watching").toLowerCase();
+    if (raw === "watchlist") return { label: "Watchlist", color: (state.ui?.watch_status_colors?.to_be_watched || "#fef9c3") };
     if (raw === "watching" && !available) return { label: "To Be Watched", color: (state.ui?.watch_status_colors?.to_be_watched || "#fef9c3") };
+    if (raw === "paused") return { label: "Paused", color: (state.ui?.watch_status_colors?.paused || "#fde68a") };
     if (raw === "completed") return { label: "Completed", color: (state.ui?.watch_status_colors?.completed || "#bfdbfe") };
     if (raw === "dropped") return { label: "Dropped", color: (state.ui?.watch_status_colors?.dropped || "#fecaca") };
     return { label: "Watching", color: (state.ui?.watch_status_colors?.watching || "#bbf7d0") };
@@ -3094,21 +3364,68 @@ CHANGE NOTES
 
   function watchStatusChoiceColor(value, available){
     const colors = state.ui?.watch_status_colors || {};
+    if (value === "watchlist") return colors.to_be_watched || "#fef9c3";
     if (value === "watching" && !available) return colors.to_be_watched || "#fef9c3";
+    if (value === "paused") return colors.paused || "#fde68a";
     if (value === "completed") return colors.completed || "#bfdbfe";
     if (value === "dropped") return colors.dropped || "#fecaca";
     return colors.watching || "#bbf7d0";
   }
 
   function watchStatusChoiceTitle(value, available){
+    if (value === "watchlist") return "Watchlist";
     if (value === "watching") return available ? "Watching" : "To Be Watched";
+    if (value === "paused") return "Paused";
     if (value === "completed") return "Completed";
     if (value === "dropped") return "Dropped";
     return "Watching";
   }
 
-  function watchStatusBandHtml(kind, id, entry, available){
-    return "";
+  function watchToggleHtml(kind, attrs, checked){
+    const pairs = Object.entries(attrs || {})
+      .filter(([, value]) => value != null && value !== "")
+      .map(([key, value]) => ` ${escHtml(key)}="${escHtml(value)}"`)
+      .join("");
+    return `
+      <label class="switch ${escHtml(kind)}">
+        <input type="checkbox"${pairs}${checked ? " checked" : ""} />
+        <span class="track">
+          <span class="thumb"></span>
+          <span class="ontext">On</span>
+          <span class="offtext">Off</span>
+        </span>
+      </label>
+    `;
+  }
+
+  function buildActionBarHtml(kind, id, options={}){
+    const title = safeText(options.title || options.titleText || "").trim();
+    const pct = Number.isFinite(options.pct) && options.pct > 0 ? Math.round(options.pct) : null;
+    const wantActive = !!options.favoriteActive;
+    const canFavorite = (kind === "show" || kind === "movie");
+    const watchedToggle = options.watchedToggleHtml || "";
+    const watchNow = options.popcornAttrs ? `<button class="actionbar-btn popcorn" type="button" data-watch-source-open="${escHtml(options.popcornKind || kind)}"${Object.entries(options.popcornAttrs || {}).map(([key, value]) => value == null || value === "" ? "" : ` ${escHtml(key)}="${escHtml(value)}"`).join("")}><span aria-hidden="true">🍿</span><span>Watch now</span></button>` : "";
+    const favoriteBtn = canFavorite
+      ? `<button class="actionbar-btn favorite${wantActive ? " active" : ""}" type="button" title="${wantActive ? "Remove from favourites" : "Add to favourites"}" data-action="toggle-want" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title)}" data-wanted="${wantActive ? "1" : "0"}" data-no-default="1"><span aria-hidden="true">${escHtml(iconChar("trakt_add_to_list"))}</span><span>Favourites</span></button>`
+      : `<span class="actionbar-btn favorite" aria-hidden="true"><span>${escHtml(iconChar("trakt_add_to_list"))}</span><span>Favourites</span></span>`;
+    const statusControl = statusControlHtml(kind, id, title, options.statusContext || {}, !!options.available);
+    const rateBtn = `<button class="actionbar-btn rate" type="button" title="Rate" data-action-menu="rate" data-no-default="1" data-function-type="${escHtml(iconType("trakt_rate_like", "popup"))}">${escHtml(iconChar("trakt_rate_like"))}</button>`;
+    const actionMenus = actionMenuHtml(kind, id, title);
+    return `
+      <div class="actionbar action_bar" data-action-host="1">
+        <div class="actionbar-left">
+          ${watchNow}
+          ${favoriteBtn}
+          ${statusControl}
+          ${watchedToggle}
+        </div>
+        <div class="actionbar-right">
+          ${rateBtn}
+          ${pct != null ? `<span class="iconstrip-pct">${escHtml(`${pct}%`)}</span>` : ""}
+        </div>
+        ${actionMenus}
+      </div>
+    `;
   }
 
   async function migrateWatchlist(){
@@ -3161,6 +3478,132 @@ CHANGE NOTES
     const videasy = safeText(src.videasy || "").trim() || (videasyBase && slug ? `${videasyBase}${slug}` : "");
     const local = safeText(src.local_media || src.local || src.localMedia || "").trim();
     return { vidsrc, videasy, local };
+  }
+
+  function watchSourceButtonHtml(kind, attrs, label="Watch"){
+    const pairs = Object.entries(attrs || {})
+      .filter(([, value]) => value != null && value !== "")
+      .map(([key, value]) => ` ${escHtml(key)}="${escHtml(value)}"`)
+      .join("");
+    return `<button class="btn watchsourcebtn" type="button" data-watch-source-open="${escHtml(kind)}"${pairs} data-function-type="${escHtml(iconType("action_play", "popup"))}"><span class="btnicon">🍿</span>${escHtml(label)}</button>`;
+  }
+
+  function collectConfiguredWatchSources(item){
+    const links = item?.links && typeof item.links === "object" ? item.links : {};
+    const raw = []
+      .concat(Array.isArray(item?.watch_sources) ? item.watch_sources : [])
+      .concat(Array.isArray(item?.source_options) ? item.source_options : [])
+      .concat(Array.isArray(links.watch_sources) ? links.watch_sources : [])
+      .concat(Array.isArray(links.source_options) ? links.source_options : []);
+    return raw.map((entry, idx) => {
+      if (typeof entry === "string"){
+        return { type: "external", label: `Source ${idx + 1}`, href: entry };
+      }
+      if (!entry || typeof entry !== "object") return null;
+      const href = safeText(entry.href || entry.url || entry.link || "").trim();
+      if (!href) return null;
+      return {
+        type: safeText(entry.type || entry.kind || "external").trim().toLowerCase() || "external",
+        label: safeText(entry.label || entry.name || entry.title || `Source ${idx + 1}`),
+        note: safeText(entry.note || entry.description || ""),
+        href
+      };
+    }).filter(Boolean);
+  }
+
+  function collectWatchSourceOptions(kind, item, context={}){
+    if (!item || typeof item !== "object") return [];
+    const id = item?.tmdb_id ?? item?.id ?? context.showId ?? "";
+    const mediaLinks = buildMediaLinks(kind, id, item?.links || {});
+    const links = item?.links && typeof item.links === "object" ? item.links : {};
+    const options = [];
+    const push = (type, label, href, note="") => {
+      const safeHref = safeText(href).trim();
+      if (!safeHref) return;
+      options.push({ type, label, href: safeHref, note });
+    };
+    push("local", "Local / Owned", mediaLinks.local, "Configured local or owned media link");
+    push("embed", "Embed Source", mediaLinks.vidsrc, "Existing embed source");
+    push("embed", "Alternate Embed", mediaLinks.videasy, "Existing alternate embed source");
+    push("network", "Official Site", links.homepage || links.official || links.network || links.owned_url || links.owned, "Direct network or owned destination");
+    collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note));
+    const seen = new Set();
+    return options.filter(opt => {
+      const key = `${opt.type}|${opt.href}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function renderWatchSourceChooserHtml(item, kind, context={}){
+    const options = collectWatchSourceOptions(kind, item, context);
+    const providerItem = (kind === "season" || kind === "episode") ? (context.show || item) : item;
+    const providerKind = (kind === "movie") ? "movie" : "tv";
+    const providerHtml = renderWatchProvidersHtml(providerItem, providerKind);
+    const optionHtml = options.length ? options.map(opt => `
+      <a class="btn" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
+        <span class="btnicon">🍿</span>${escHtml(opt.label)}
+      </a>
+      ${opt.note ? `<div class="muted" style="font-size:11px;">${escHtml(opt.note)}</div>` : ""}
+    `).join("") : `<div class="muted" style="font-size:12px;">No configured direct watch sources for this item yet.</div>`;
+    return `
+      <div class="metablock">
+        <div class="metatitle">Watch source chooser</div>
+        <div class="metachips" style="display:grid;gap:8px;">
+          ${optionHtml}
+        </div>
+      </div>
+      ${providerHtml}
+    `;
+  }
+
+  function getSeasonItem(show, seasonNum){
+    if (!show) return null;
+    return (Array.isArray(show.seasons) ? show.seasons : []).find(season => Number(season?.season_number ?? season?.number ?? season?.season) === Number(seasonNum)) || null;
+  }
+
+  function getEpisodeItem(show, seasonNum, episodeNum){
+    const season = getSeasonItem(show, seasonNum);
+    return (Array.isArray(season?.episodes) ? season.episodes : []).find(ep => Number(ep?.episode_number ?? ep?.number ?? ep?.ep) === Number(episodeNum)) || null;
+  }
+
+  function wireWatchSourceButtons(container){
+    if (!container) return;
+    $$("[data-watch-source-open]", container).forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-watch-source-open"));
+        if (kind === "movie"){
+          const movie = getMovieById(Number(btn.getAttribute("data-id") || "0"));
+          if (!movie) return;
+          openProviderModal(`${safeText(movie.title || "Movie")} • Watch source`, renderWatchSourceChooserHtml(movie, "movie"));
+          return;
+        }
+        const show = getShowById(Number(btn.getAttribute("data-show") || btn.getAttribute("data-id") || "0"));
+        if (!show) return;
+        if (kind === "show"){
+          openProviderModal(`${safeText(show.title || show.name || "Show")} • Watch source`, renderWatchSourceChooserHtml(show, "show", { show }));
+          return;
+        }
+        if (kind === "season"){
+          const seasonNum = Number(btn.getAttribute("data-season") || "0");
+          const season = getSeasonItem(show, seasonNum);
+          if (!season) return;
+          openProviderModal(`${safeText(show.title || show.name || "Show")} • Season ${escHtml(seasonNum)} Watch source`, renderWatchSourceChooserHtml(season, "season", { show }));
+          return;
+        }
+        if (kind === "episode"){
+          const seasonNum = Number(btn.getAttribute("data-season") || "0");
+          const episodeNum = Number(btn.getAttribute("data-episode") || "0");
+          const episode = getEpisodeItem(show, seasonNum, episodeNum);
+          if (!episode) return;
+          const title = safeText(episode.title || episode.name || `Episode ${episodeNum}`);
+          openProviderModal(`${safeText(show.title || show.name || "Show")} • ${title} • Watch source`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id }));
+        }
+      });
+    });
   }
 
   function getRtLink(obj){
@@ -4547,12 +4990,11 @@ CHANGE NOTES
         if (y !== wantYear) return false;
       }
       const id = String(s?.tmdb_id ?? "");
-      const entry = id ? getWatchlistEntry(id) : null;
       if (wantWatchlist === "watchlist"){
         if (!id || !watchlistSet.has(id)) return false;
       }
       if (wantWatchStatus.length){
-        const status = safeText(entry?.watch_status || "");
+        const status = safeText(getLocalStatusValue("show", id)).toLowerCase();
         if (status){
           if (!wantWatchStatus.includes(status)) return false;
         } else if (wantWatchlist === "watchlist"){
@@ -4598,25 +5040,8 @@ CHANGE NOTES
         renderShows();
       });
     });
-    $$("[data-watch-status-choice][data-watch-status-kind='show']", $("#showsGrid")).forEach(btn => {
-      btn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
-        if (!Number.isFinite(id)) return;
-        const choice = safeText(btn.getAttribute("data-watch-status-choice"));
-        if (!choice) return;
-        if (btn.classList.contains("active")){
-          removeWatchlistItem(id);
-        } else {
-          const show = getShowById(id);
-          if (!show) return;
-          setWatchlistEntry(id, safeText(show.title || show.name), "show", choice);
-        }
-        await saveInputs();
-        renderShows();
-      });
-    });
     wireActionMenus($("#showsGrid"));
+    wireWatchSourceButtons($("#showsGrid"));
     $$("[data-action='toggle-watched'][data-kind='show']", $("#showsGrid")).forEach(btn => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -4639,6 +5064,8 @@ CHANGE NOTES
     const watched = isShowWatched(s);
     const firstAir = safeText(s?.first_air_date);
     const lastAir = safeText(s?.last_air_date);
+    const available = isShowAvailable(s);
+    const toggle = watchToggleHtml("show", { "data-watch-show": id }, watched);
     const pct = (() => {
       let v = progressPercent(s);
       if (v == null){
@@ -4647,25 +5074,36 @@ CHANGE NOTES
       }
       return v;
     })();
-    const meta = [
-      (firstAir ? `Since ${fmtDate(firstAir)}` : ""),
-      (lastAir ? `• ${fmtDate(lastAir)}` : ""),
-    ].join(" ").trim();
+    const seasons = Array.isArray(s?.seasons) ? s.seasons.length : 0;
+    const episodeCount = Array.isArray(s?.seasons) ? s.seasons.reduce((sum, season) => sum + (Array.isArray(season?.episodes) ? season.episodes.length : 0), 0) : 0;
+    const meta = [firstAir ? fmtDate(firstAir) : "", safeText(s?.status || ""), (seasons || episodeCount) ? `${seasons} Seasons • ${episodeCount} Episodes` : ""].filter(Boolean).join(" • ");
+    const networks = Array.isArray(s?.networks) ? s.networks.map(n => n?.name).filter(Boolean) : [];
+    const genres = Array.isArray(s?.genres) ? s.genres.map(g => g?.name).filter(Boolean) : [];
+    const actionBar = buildActionBarHtml("show", id, {
+      title,
+      pct,
+      favoriteActive: getWatchlistSet().has(String(id)),
+      watchedToggleHtml: toggle,
+      available
+    });
 
     const eyeClass = eye?.fade ? " faded" : "";
     return `
       <div class="card${eyeClass}">
-        <div class="cardbody">
-          <div class="cardhead">
-            <div class="cardtitle">${escHtml(title)}</div>
-          </div>
-        </div>
-        <button type="button" class="imgbox" data-show-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
+        <button type="button" class="imgbox media_block" data-show-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
           ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
         </button>
-        ${buildIconStripHtml("show", id, pct, title)}
         <div class="cardbody">
-          <div class="cardmeta">${escHtml(meta)}</div>
+          ${actionBar}
+          <div class="title_block">
+            <button type="button" class="cardtitle" data-show-open="${id}" style="padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;">${escHtml(title)}</button>
+          </div>
+          <button type="button" class="meta_row" data-show-open="${id}" style="padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;">${escHtml(meta)}</button>
+          ${providerGroupHtml(s, "tv")}
+          <div class="context_block">${escHtml(networks.join(" • ") || "Network unavailable")}</div>
+          <div class="tag_group">
+            ${genres.slice(0, 4).map(name => `<span class="pill">${escHtml(name)}</span>`).join("")}
+          </div>
         </div>
       </div>
     `;
@@ -4700,12 +5138,11 @@ CHANGE NOTES
         if (!cn.includes(wantCollection)) return false;
       }
       const id = String(m?.tmdb_id ?? "");
-      const entry = id ? getWatchlistEntry(id) : null;
       if (wantWatchlist === "watchlist"){
         if (!id || !watchlistSet.has(id)) return false;
       }
       if (wantWatchStatus.length){
-        const status = safeText(entry?.watch_status || "");
+        const status = safeText(getLocalStatusValue("movie", id)).toLowerCase();
         if (status){
           if (!wantWatchStatus.includes(status)) return false;
         } else if (wantWatchlist === "watchlist"){
@@ -4742,34 +5179,20 @@ CHANGE NOTES
       });
     });
     $$("[data-watch-movie]", $("#moviesGrid")).forEach(el => {
-      el.addEventListener("change", (e) => {
+      el.addEventListener("click", (e) => e.stopPropagation());
+      el.addEventListener("mousedown", (e) => e.stopPropagation());
+      el.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
+      el.addEventListener("change", async (e) => {
         e.stopPropagation();
         const id = parseInt(el.getAttribute("data-watch-movie"), 10);
         if (!Number.isFinite(id)) return;
-        const on = el.checked;
-        setMovieWatched(id, on);
-        renderMovies();
-      });
-    });
-    $$("[data-watch-status-choice][data-watch-status-kind='movie']", $("#moviesGrid")).forEach(btn => {
-      btn.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
-        if (!Number.isFinite(id)) return;
-        const choice = safeText(btn.getAttribute("data-watch-status-choice"));
-        if (!choice) return;
-        if (btn.classList.contains("active")){
-          removeWatchlistItem(id);
-        } else {
-          const movie = getMovieById(id);
-          if (!movie) return;
-          setWatchlistEntry(id, safeText(movie.title), "movie", choice);
-        }
+        setMovieWatched(id, el.checked);
         await saveInputs();
         renderMovies();
       });
     });
     wireActionMenus($("#moviesGrid"));
+    wireWatchSourceButtons($("#moviesGrid"));
     $$("[data-action='toggle-watched'][data-kind='movie']", $("#moviesGrid")).forEach(btn => {
       btn.addEventListener("click", async (e) => {
         e.stopPropagation();
@@ -4885,6 +5308,8 @@ CHANGE NOTES
     const rd = safeText(m?.release_date);
     const rt = m?.runtime;
     const genres = Array.isArray(m?.genres) ? m.genres.map(g => g?.name).filter(Boolean) : [];
+    const available = isMovieAvailable(m);
+    const toggle = watchToggleHtml("movie", { "data-watch-movie": id }, watched);
     const pct = (() => {
       let v = progressPercent(m);
       if (v == null){
@@ -4893,34 +5318,34 @@ CHANGE NOTES
       }
       return v;
     })();
-    const meta = [
-      (rd ? `Since ${fmtDate(rd)}` : ""),
-      (rt ? `• ${rt} min` : ""),
-      (genres.length ? `• ${genres.join(" / ")}` : "")
-    ].join(" ").trim();
-
-    const links = m?.links && typeof m.links === "object" ? m.links : {};
-    const mediaLinks = buildMediaLinks("movie", id, links);
-    const vidsrc = mediaLinks.vidsrc;
-    const videasy = mediaLinks.videasy;
+    const meta = rd ? fmtDate(rd) : "";
+    const contextNames = getCompanyNames(m?.production_companies).slice(0, 3);
+    const actionBar = buildActionBarHtml("movie", id, {
+      title,
+      pct,
+      favoriteActive: getWatchlistSet().has(String(id)),
+      watchedToggleHtml: toggle,
+      popcornAttrs: { "data-id": id },
+      popcornKind: "movie",
+      available
+    });
 
     const eyeClass = eye?.fade ? " faded" : "";
     return `
       <div class="card${eyeClass}">
-        <div class="cardbody">
-          <div class="cardhead">
-            <div class="cardtitle">${escHtml(title)}</div>
-          </div>
-        </div>
-        <button type="button" class="imgbox" data-movie-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
+        <button type="button" class="imgbox media_block" data-movie-open="${id}" style="padding:0;border:0;background:none;cursor:pointer;">
           ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ``}
         </button>
-        ${buildIconStripHtml("movie", id, pct, title)}
         <div class="cardbody">
-          <div class="cardmeta">${escHtml(meta)}</div>
-          <div class="actionstack">
-            ${vidsrc ? `<a class="iconbtn vidsrc" href="${escHtml(vidsrc)}" target="_blank" rel="noopener" aria-label="Vidrsc" data-function-type="${escHtml(iconType("media_vidrsc", "link"))}">${escHtml(iconChar("media_vidrsc"))}</a>` : ""}
-            ${videasy ? `<a class="iconbtn videasy" href="${escHtml(videasy)}" target="_blank" rel="noopener" aria-label="VidEasy" data-function-type="${escHtml(iconType("media_videasy", "link"))}">${escHtml(iconChar("media_videasy"))}</a>` : ""}
+          ${actionBar}
+          <div class="title_block">
+            <div class="primary">${escHtml(`${title}${rt ? ` • ${rt} min` : ""}`)}</div>
+          </div>
+          <div class="meta_row">${escHtml(meta)}</div>
+          ${providerGroupHtml(m, "movie")}
+          <div class="context_block">${escHtml(contextNames.join(" • ") || "Studio unavailable")}</div>
+          <div class="tag_group">
+            ${genres.slice(0, 4).map(name => `<span class="pill">${escHtml(name)}</span>`).join("")}
           </div>
         </div>
       </div>
@@ -4944,32 +5369,42 @@ CHANGE NOTES
     const rtUrl = getRtLink(m);
     const prodNames = getCompanyNames(m.production_companies);
     const watched = isMovieWatched(m);
-    const toggle = "";
-    const entry = getWatchlistEntry(m?.tmdb_id);
+    const toggle = watchToggleHtml("movie", { "data-watch-movie-popup": m?.tmdb_id ?? "" }, watched);
     const available = isMovieAvailable(m);
-    const watchStatusBand = watchStatusBandHtml("movie", m?.tmdb_id ?? "", entry, available);
-
-    const providersHtml = renderWatchProvidersHtml(m, "movie");
-    const whereBtn = providersHtml
-      ? `<button class="btn" type="button" data-where-watch="movie" data-id="${escHtml(m?.tmdb_id ?? "")}">Where to watch</button>`
-      : "";
+    const pct = (() => {
+      let v = progressPercent(m);
+      if (v == null){
+        const raw = Number(m?.vote_average ?? m?.rating ?? 0);
+        if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
+      }
+      return v;
+    })();
+    const actionBar = buildActionBarHtml("movie", m?.tmdb_id ?? "", {
+      title,
+      pct,
+      favoriteActive: getWatchlistSet().has(String(m?.tmdb_id ?? "")),
+      watchedToggleHtml: toggle,
+      popcornAttrs: { "data-id": m?.tmdb_id ?? "" },
+      popcornKind: "movie",
+      available
+    });
     const html = `
       <div style="display:grid;grid-template-columns:180px 1fr;gap:12px;align-items:start;">
-        <div style="border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.03);aspect-ratio:2/3;">
+        <div class="media_block" style="border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.10);background:rgba(255,255,255,0.03);aspect-ratio:2/3;">
           ${poster ? `<img loading=\"lazy\" src=\"${escHtml(poster)}\" style=\"width:100%;height:100%;object-fit:cover;display:block;\"/>` : ``}
         </div>
         <div>
-          <div style="font-weight:950;font-size:18px;">${escHtml(title)}</div>
-          <div class="popupwatch">
-            ${toggle}
-            ${watchStatusBand}
+          ${actionBar}
+          <div class="title_block">
+            <div class="primary">${escHtml(title)}</div>
           </div>
+          <div class="meta_row">${escHtml([rd ? fmtDate(rd) : "", rt ? `${rt} min` : ""].filter(Boolean).join(" • "))}</div>
+          ${providerGroupHtml(m, "movie")}
+          <div class="context_block">${escHtml(prodNames.slice(0, 3).join(" • ") || "Studio unavailable")}</div>
+          <div class="tag_group">${(Array.isArray(m?.genres) ? m.genres.map(g => g?.name).filter(Boolean) : []).slice(0, 5).map(name => `<span class="pill">${escHtml(name)}</span>`).join("")}</div>
           <div style="margin-top:8px;color:rgba(255,255,255,0.80);line-height:1.35;">${escHtml(overview)}</div>
           <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
-            ${linkOrDisabled("media_vidrsc", vidsrc)}
-            ${linkOrDisabled("media_videasy", videasy)}
             ${linkOrDisabled("meta_rt_critics", rtUrl, "Rotten Tomatoes")}
-            ${whereBtn}
           </div>
           ${prodNames.length ? `
             <div class="metablock">
@@ -4997,29 +5432,8 @@ CHANGE NOTES
       await saveInputs();
       openMovieModal(movieId);
     });
-    $$("[data-where-watch='movie']", host).forEach(wbtn => {
-      wbtn.addEventListener("click", () => {
-        const movie = getMovieById(movieId);
-        if (!movie) return;
-        const html = renderWatchProvidersHtml(movie, "movie");
-        openProviderModal(`${safeText(movie.title || "Movie")} • Where to watch`, html);
-      });
-    });
-    $$("[data-watch-status-choice][data-watch-status-kind='movie']", host).forEach(choiceBtn => {
-      choiceBtn.addEventListener("click", async () => {
-        const choice = safeText(choiceBtn.getAttribute("data-watch-status-choice"));
-        if (!choice) return;
-        if (choiceBtn.classList.contains("active")){
-          removeWatchlistItem(movieId);
-        } else {
-          const movie = getMovieById(movieId);
-          if (!movie) return;
-          setWatchlistEntry(movieId, safeText(movie.title), "movie", choice);
-        }
-        await saveInputs();
-        openMovieModal(movieId);
-      });
-    });
+    wireActionMenus(host);
+    wireWatchSourceButtons(host);
   }
 
   function openShowModal(showId){
@@ -5040,7 +5454,7 @@ CHANGE NOTES
     const backdrop = pickImage(show, "backdrop_local", "backdrop_path");
     const canToggle = (state.watchStateSource === "local");
     const showWatched = isShowWatched(show);
-    const showToggle = "";
+    const showToggle = watchToggleHtml("show", { "data-watch-show": show.tmdb_id ?? "" }, showWatched);
 
     const seasons = Array.isArray(show.seasons) ? show.seasons : [];
     const seasonItems = seasons.map((s, idx) => {
@@ -5088,13 +5502,28 @@ CHANGE NOTES
     const tmdbUrl = safeText(show?.links?.tmdb || (show.tmdb_id != null ? tmdbShowUrl(show.tmdb_id) : "")).trim();
     const rtUrl = getRtLink(show);
     const prodNames = getCompanyNames(show.production_companies);
+    const showPct = (() => {
+      let v = progressPercent(show);
+      if (v == null){
+        const raw = Number(show?.vote_average ?? show?.rating ?? 0);
+        if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
+      }
+      return v;
+    })();
+    const showActionBar = buildActionBarHtml("show", show.tmdb_id ?? "", {
+      title,
+      pct: showPct,
+      favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
+      watchedToggleHtml: showToggle,
+      available: isShowAvailable(show)
+    });
 
     const seasonOptions = seasonItems.map(it => {
       const nm = safeText(it.s?.name || (Number.isFinite(it.n) ? `Season ${it.n}` : "Season"));
       const checked = (Number.isFinite(it.n) && Number(it.n) === Number(selNum)) ? "checked" : "";
       const totalEpisodes = Array.isArray(it.s?.episodes) ? it.s.episodes.length : 0;
       const seasonWatched = state.watchState ? isSeasonWatched(show.tmdb_id, it.n, totalEpisodes) : false;
-      const seasonToggle = "";
+      const seasonToggle = watchToggleHtml("season", { "data-watch-season": it.n, "data-show": show.tmdb_id ?? "" }, seasonWatched);
       return `
         <div class="seasonopt">
           <input type="radio" name="seasonPick" value="${escHtml(it.n)}" ${checked} />
@@ -5114,34 +5543,45 @@ CHANGE NOTES
       const epAir = pickAirDate(ep);
       const epRun = ep?.runtime;
       const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, sNum, eNum) : false;
-      const epToggle = "";
-
-      const mediaLinks = buildMediaLinks("episode", show.tmdb_id, ep?.links || {});
-      const vsrc = mediaLinks.vidsrc;
-      const vezy = mediaLinks.videasy;
+      const epToggle = watchToggleHtml("episode", { "data-watch-episode": eNum, "data-show": show.tmdb_id ?? "", "data-season": sNum }, epWatched);
+      const epPct = (() => {
+        let v = progressPercent(ep);
+        if (v == null){
+          const raw = Number(ep?.vote_average ?? ep?.rating ?? ep?.rating_percent ?? ep?.rating_pct ?? 0);
+          if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
+        }
+        return v;
+      })();
+      const epActionBar = buildActionBarHtml("episode", eNum, {
+        title: epName,
+        pct: epPct,
+        favoriteActive: false,
+        watchedToggleHtml: epToggle,
+        popcornAttrs: { "data-show": show.tmdb_id ?? "", "data-season": sNum, "data-episode": eNum },
+        popcornKind: "episode",
+        available: true,
+        statusContext: { showId: show.tmdb_id ?? "", seasonNumber: sNum, episodeNumber: eNum }
+      });
 
       const img = epStill
         ? `<img src="${escHtml(epStill)}" alt="" loading="lazy" />`
         : ``;
 
       return `
-        <div class="epcard" tabindex="0">
-          <div class="epimg">
-            ${img}
-            ${epToggle}
-            <div class="badge">${escHtml(seTag(sNum, eNum))}</div>
+        <div class="episode-row episode_row" tabindex="0">
+          <div class="media_block">
+            ${img || `<div class="posterFallback">No Still</div>`}
           </div>
-          <div class="epbody">
-            <div class="eptitle">${escHtml(epName)}</div>
-            <div class="epmeta">
-              ${epAir ? `<span>${escHtml(fmtDate(epAir))}</span>` : ""}
-              ${epRun != null ? `<span>${escHtml(epRun)}m</span>` : ""}
+          <div>
+            ${epActionBar}
+            <div class="title_block">
+              <div class="primary">${escHtml(`${epName} • ${seTag(sNum, eNum)}${epRun != null ? ` • ${epRun}m` : ""}`)}</div>
+              <div class="secondary">${escHtml(title)}</div>
             </div>
-            ${epOverview ? `<div class="epov">${escHtml(epOverview)}</div>` : ""}
-            <div class="epactions">
-              ${linkOrDisabled("media_vidrsc", vsrc)}
-              ${linkOrDisabled("media_videasy", vezy)}
-            </div>
+            <div class="meta_row">${escHtml(epAir ? fmtDate(epAir) : "Air date unavailable")}</div>
+            ${providerGroupHtml(ep?.watch_providers ? ep : show, "tv")}
+            <div class="context_block">${escHtml(networkName || "Network unavailable")}</div>
+            ${epOverview ? `<div class="secondary" style="margin-top:8px;">${escHtml(epOverview)}</div>` : ""}
           </div>
         </div>`;
     }).join("");
@@ -5155,14 +5595,6 @@ CHANGE NOTES
           </div>
         </div>`
       : "";
-    const providersHtml = renderWatchProvidersHtml(show, "tv");
-    const whereBtn = providersHtml
-      ? `<button class="btn" type="button" data-where-watch="show" data-id="${escHtml(show.tmdb_id ?? "")}">Where to watch</button>`
-      : "";
-    const entry = getWatchlistEntry(show.tmdb_id);
-    const available = isShowAvailable(show);
-    const watchStatusBand = watchStatusBandHtml("show", show.tmdb_id ?? "", entry, available);
-
     return `
       <div class="showwrap">
         ${backdrop ? `<div class="showback" style="background-image:url('${escHtml(backdrop)}')"></div>` : ""}
@@ -5186,11 +5618,12 @@ CHANGE NOTES
               ${poster ? `<img src="${escHtml(poster)}" alt="" loading="lazy" />` : `<div class="posterFallback">No Poster</div>`}
             </div>
             <div class="heroright">
+              ${showActionBar}
               <div class="showtitle">${escHtml(title)}</div>
-              <div class="showwatch">
-                ${showToggle}
-                ${watchStatusBand}
-              </div>
+              <div class="meta_row">${escHtml([premiered ? fmtDate(premiered) : "", statusText, seasonItems.length ? `${seasonItems.length} Seasons` : ""].filter(Boolean).join(" • "))}</div>
+              ${providerGroupHtml(show, "tv")}
+              <div class="context_block">${escHtml(networks.join(" • ") || "Network unavailable")}</div>
+              <div class="tag_group">${genreNames.map(n => `<span class="pill">${escHtml(n)}</span>`).join("")}</div>
               <div class="pills">${pills}</div>
               <div class="showmeta">
                 ${statusText ? `<div>Status <span>${escHtml(statusText)}</span></div>` : ""}
@@ -5201,10 +5634,9 @@ CHANGE NOTES
                 ${lastAir ? `<div>Last <span>${escHtml(fmtDate(lastAir))}</span></div>` : ""}
                 ${show?.tmdb_id != null ? `<div>TMDB <span>${escHtml(show.tmdb_id)}</span></div>` : ""}
               </div>
-            <div class="showactions">
-              ${linkOrDisabled("meta_rt_critics", rtUrl, "Rotten Tomatoes")}
-              ${whereBtn}
-            </div>
+              <div class="showactions">
+                ${linkOrDisabled("meta_rt_critics", rtUrl, "Rotten Tomatoes")}
+              </div>
               ${overview ? `<div class="overview">${escHtml(overview)}</div>` : ""}
               ${prodHtml}
             </div>
@@ -5285,15 +5717,6 @@ CHANGE NOTES
         wireShowPopup(id);
       });
     });
-    $$("[data-where-watch='show']", host).forEach(wbtn => {
-      wbtn.addEventListener("click", () => {
-        const show = getShowById(showId);
-        if (!show) return;
-        const html = renderWatchProvidersHtml(show, "tv");
-        openProviderModal(`${safeText(show.title || show.name || "Show")} • Where to watch`, html);
-      });
-    });
-
     $$("[data-watch-season]", host).forEach(btn => {
       btn.addEventListener("change", async () => {
         const id = parseInt(btn.getAttribute("data-show") || "0", 10);
@@ -5325,26 +5748,8 @@ CHANGE NOTES
       });
     });
 
-    $$("[data-watch-status-choice][data-watch-status-kind='show']", host).forEach(btn => {
-      btn.addEventListener("click", async () => {
-        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
-        if (!Number.isFinite(id)) return;
-        const choice = safeText(btn.getAttribute("data-watch-status-choice"));
-        if (!choice) return;
-        if (btn.classList.contains("active")){
-          removeWatchlistItem(id);
-        } else {
-          const show = getShowById(id);
-          if (!show) return;
-          setWatchlistEntry(id, safeText(show.title || show.name), "show", choice);
-        }
-        await saveInputs();
-        const show = getShowById(id);
-        if (!show) return;
-        $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(id);
-      });
-    });
+    wireActionMenus(host);
+    wireWatchSourceButtons(host);
 
     const track = $(".carousel", host);
     const prev = $("[data-ep-nav='prev']", host);
