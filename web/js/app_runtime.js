@@ -53,8 +53,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     search: { shows: "", movies: "" },
     sort: { shows: "title", movies: "title" },
     filters: {
-      shows: { genres: [], year: "", watchlist: "all", watch_status: ["watching"], availability: "all", watched: "all" },
-      movies: { genres: [], year: "", collection: "", watchlist: "all", watch_status: ["watching"], availability: "all", watched: "all" },
+      shows: { genres: [], year: "", scope: "all", watchlist: "all", watch_status: [], availability: "all", watched: "all" },
+      movies: { genres: [], year: "", collection: "", scope: "all", watchlist: "all", watch_status: [], availability: "all", watched: "all" },
       watchlist: { watch_status: "all", media_kind: "all", search: "" }
     },
     view: {
@@ -107,16 +107,26 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       <div id="panel-shows" class="panel hidden">
         <div class="dash">
           <section class="dashblock">
-            <div class="dashhead"><h2>Shows</h2><span class="muted">Library</span></div>
-            <div style="display:grid;gap:12px;">
-              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                <input id="searchShows" class="input" type="search" placeholder="Search shows" style="min-width:240px;flex:1 1 240px;" />
-                <input id="filterShowsYear" class="input" type="text" placeholder="Year" style="width:120px;" />
-                <button id="showsEyeBtn" class="calbtn" type="button">Eye</button>
+            <div class="dashhead"><h2>Shows</h2><span id="showsSummary" class="muted">Library</span></div>
+            <div class="control-panel">
+              <div class="control-row control-row--primary">
+                <input id="searchShows" class="input control-input" type="search" placeholder="Search shows" />
+                <select id="filterShowsYear" class="input control-select"></select>
+                <select id="sortShows" class="input control-select">
+                  <option value="title">Title A-Z</option>
+                  <option value="title_desc">Title Z-A</option>
+                  <option value="release">Newest first</option>
+                  <option value="popularity">Popularity</option>
+                  <option value="vote">Rating</option>
+                </select>
               </div>
-              <div style="display:grid;gap:10px;">
-                <div id="filterShowsGenres" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
-                <div id="filterShowsWatchStatus" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+              <div id="filterShowsScope" class="control-row control-row--chips">
+                <button class="segbtn active" type="button" data-scope="all">All Shows</button>
+                <button class="segbtn" type="button" data-scope="upcoming">Upcoming</button>
+                <button class="segbtn" type="button" data-scope="returning">Returning</button>
+                <button class="segbtn" type="button" data-scope="ended">Ended</button>
+              </div>
+              <div class="control-row control-row--chips">
                 <div id="filterShowsAvailability" style="display:flex;gap:8px;flex-wrap:wrap;">
                   <button class="segbtn active" type="button" data-availability="all">All availability</button>
                   <button class="segbtn" type="button" data-availability="available">Available</button>
@@ -131,13 +141,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   <button class="segbtn active" type="button" data-watchlist="all">All watchlist</button>
                   <button class="segbtn" type="button" data-watchlist="watchlist">Watchlist</button>
                 </div>
-                <div id="sortShows" style="display:flex;gap:8px;flex-wrap:wrap;">
-                  <button class="segbtn active" type="button" data-sort="title">Title</button>
-                  <button class="segbtn" type="button" data-sort="title_desc">Title desc</button>
-                  <button class="segbtn" type="button" data-sort="popularity">Popularity</button>
-                  <button class="segbtn" type="button" data-sort="vote">Rating</button>
-                  <button class="segbtn" type="button" data-sort="release">Release</button>
-                </div>
+              </div>
+              <div class="control-group">
+                <div class="control-label">Genres</div>
+                <div id="filterShowsGenres" class="control-checks"></div>
               </div>
             </div>
           </section>
@@ -152,17 +159,26 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       <div id="panel-movies" class="panel hidden">
         <div class="dash">
           <section class="dashblock">
-            <div class="dashhead"><h2>Movies</h2><span class="muted">Library</span></div>
-            <div style="display:grid;gap:12px;">
-              <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                <input id="searchMovies" class="input" type="search" placeholder="Search movies" style="min-width:240px;flex:1 1 240px;" />
-                <input id="filterMoviesYear" class="input" type="text" placeholder="Year" style="width:120px;" />
-                <input id="filterMoviesCollection" class="input" type="text" placeholder="Collection" style="min-width:180px;" />
-                <button id="moviesEyeBtn" class="calbtn" type="button">Eye</button>
+            <div class="dashhead"><h2>Movies</h2><span id="moviesSummary" class="muted">Library</span></div>
+            <div class="control-panel">
+              <div class="control-row control-row--primary">
+                <input id="searchMovies" class="input control-input" type="search" placeholder="Search movies" />
+                <select id="filterMoviesYear" class="input control-select"></select>
+                <select id="filterMoviesCollection" class="input control-select"></select>
+                <select id="sortMovies" class="input control-select">
+                  <option value="title">Title A-Z</option>
+                  <option value="title_desc">Title Z-A</option>
+                  <option value="release">Newest first</option>
+                  <option value="popularity">Popularity</option>
+                  <option value="vote">Rating</option>
+                </select>
               </div>
-              <div style="display:grid;gap:10px;">
-                <div id="filterMoviesGenres" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
-                <div id="filterMoviesWatchStatus" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+              <div id="filterMoviesScope" class="control-row control-row--chips">
+                <button class="segbtn active" type="button" data-scope="all">All Movies</button>
+                <button class="segbtn" type="button" data-scope="upcoming">Upcoming</button>
+                <button class="segbtn" type="button" data-scope="released">Released</button>
+              </div>
+              <div class="control-row control-row--chips">
                 <div id="filterMoviesAvailability" style="display:flex;gap:8px;flex-wrap:wrap;">
                   <button class="segbtn active" type="button" data-availability="all">All availability</button>
                   <button class="segbtn" type="button" data-availability="available">Available</button>
@@ -177,13 +193,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   <button class="segbtn active" type="button" data-watchlist="all">All watchlist</button>
                   <button class="segbtn" type="button" data-watchlist="watchlist">Watchlist</button>
                 </div>
-                <div id="sortMovies" style="display:flex;gap:8px;flex-wrap:wrap;">
-                  <button class="segbtn active" type="button" data-sort="title">Title</button>
-                  <button class="segbtn" type="button" data-sort="title_desc">Title desc</button>
-                  <button class="segbtn" type="button" data-sort="popularity">Popularity</button>
-                  <button class="segbtn" type="button" data-sort="vote">Rating</button>
-                  <button class="segbtn" type="button" data-sort="release">Release</button>
-                </div>
+              </div>
+              <div class="control-group">
+                <div class="control-label">Genres</div>
+                <div id="filterMoviesGenres" class="control-checks"></div>
               </div>
             </div>
           </section>
@@ -836,20 +849,21 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     renderChecklist($("#filterMoviesGenres"), movieGenres, state.filters.movies.genres);
 
     const showsYearSel = $("#filterShowsYear");
+    if (showsYearSel){
+      showsYearSel.innerHTML = `<option value="">All years</option>${showYears.map(year => `<option value="${escHtml(year)}">${escHtml(year)}</option>`).join("")}`;
+      showsYearSel.value = state.filters.shows.year || "";
+    }
     const moviesYearSel = $("#filterMoviesYear");
-    if (showsYearSel) showsYearSel.value = state.filters.shows.year || "";
-    if (moviesYearSel) moviesYearSel.value = state.filters.movies.year || "";
+    if (moviesYearSel){
+      moviesYearSel.innerHTML = `<option value="">All years</option>${movieYears.map(year => `<option value="${escHtml(year)}">${escHtml(year)}</option>`).join("")}`;
+      moviesYearSel.value = state.filters.movies.year || "";
+    }
 
     const moviesCollectionInput = $("#filterMoviesCollection");
-    if (moviesCollectionInput) moviesCollectionInput.value = state.filters.movies.collection || "";
-
-    const watchStatusOpts = [
-      { value: "watching", label: "watch" },
-      { value: "completed", label: "done" },
-      { value: "dropped", label: "drop" }
-    ];
-    renderChecklist($("#filterShowsWatchStatus"), watchStatusOpts, state.filters.shows.watch_status);
-    renderChecklist($("#filterMoviesWatchStatus"), watchStatusOpts, state.filters.movies.watch_status);
+    if (moviesCollectionInput){
+      moviesCollectionInput.innerHTML = `<option value="">All collections</option>${movieCollections.map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join("")}`;
+      moviesCollectionInput.value = state.filters.movies.collection || "";
+    }
 
     setSegActive($("#filterShowsAvailability"), "availability", state.filters.shows.availability || "all");
     setSegActive($("#filterMoviesAvailability"), "availability", state.filters.movies.availability || "all");
@@ -859,9 +873,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     setSegActive($("#filterShowsWatchlist"), "watchlist", state.filters.shows.watchlist || "all");
     setSegActive($("#filterMoviesWatchlist"), "watchlist", state.filters.movies.watchlist || "all");
+    setSegActive($("#filterShowsScope"), "scope", state.filters.shows.scope || "all");
+    setSegActive($("#filterMoviesScope"), "scope", state.filters.movies.scope || "all");
 
-    setSegActive($("#sortShows"), "sort", state.sort.shows || "title");
-    setSegActive($("#sortMovies"), "sort", state.sort.movies || "title");
+    const sortShows = $("#sortShows");
+    if (sortShows) sortShows.value = state.sort.shows || "title";
+    const sortMovies = $("#sortMovies");
+    if (sortMovies) sortMovies.value = state.sort.movies || "title";
 
     if (!hasWatchlist){
       $$("#filterShowsWatchlist .segbtn, #filterMoviesWatchlist .segbtn").forEach(btn => {
@@ -2070,13 +2088,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return "";
     };
 
-    const mapEpisodeStill = (ep) => {
+    const mapEpisodeStill = (ep, season, show) => {
       const sl = withBasePath(ep?.still_local);
       if (sl) return sl;
       const sp = safeText(ep?.still_path).trim();
-      // still_path is TMDB-style (/abc.jpg) in your screenshots
       if (sp && sp.startsWith("/")) return withBasePath("/assets/stills/episodes/" + sp.split("/").pop());
-      return "";
+      return pickImage(season, "poster_local", "poster_path")
+        || pickImage(show, "poster_local", "poster_path")
+        || pickImage(show, "backdrop_local", "backdrop_path")
+        || "";
     };
 
     for (const show of shows){
@@ -2106,7 +2126,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             episode_name: safeText(ep?.title || ep?.name).trim(),
 
             runtime: (ep?.runtime == null) ? null : Number(ep?.runtime),
-            thumb: mapEpisodeStill(ep),
+            thumb: mapEpisodeStill(ep, season, show),
             still_path: safeText(ep?.still_path).trim(),
 
             // For future use (routing/buttons)
@@ -2996,6 +3016,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const q = state.search.shows.trim().toLowerCase();
     const sort = state.sort.shows;
     const f = state.filters.shows;
+    const scope = safeText(f.scope || "all");
     const wantGenres = Array.isArray(f.genres) ? f.genres : [];
     const wantYear = safeText(f.year);
     const wantWatched = safeText(f.watched);
@@ -3027,8 +3048,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           return false;
         }
       }
+      const statusText = safeText(s?.status).toLowerCase();
+      const firstAirRaw = safeText(s?.first_air_date);
+      const firstAirDate = firstAirRaw ? new Date(firstAirRaw) : null;
+      const isUpcoming = firstAirDate instanceof Date && !Number.isNaN(firstAirDate.valueOf()) && firstAirDate > new Date();
+      if (scope === "upcoming" && !isUpcoming) return false;
+      if (scope === "returning" && statusText !== "returning series") return false;
+      if (scope === "ended" && statusText !== "ended") return false;
       if (wantAvailability !== "all"){
-        if (!entry) return false;
         const available = isShowAvailable(s);
         if (wantAvailability === "available" && !available) return false;
         if (wantAvailability === "unreleased" && available) return false;
@@ -3047,6 +3074,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (sort === "release") shows.sort((a,b)=>safeText(b?.first_air_date).localeCompare(safeText(a?.first_air_date)));
 
     $("#showsGrid").innerHTML = shows.map(s => showCardHtml(s, applyEyeFilter("shows", s))).join("");
+    const showsSummary = $("#showsSummary");
+    if (showsSummary) showsSummary.textContent = `${shows.length} results`;
     wireActionMenus($("#showsGrid"));
     wireIconStripActions($("#showsGrid"), renderShows);
 
@@ -3139,6 +3168,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const q = state.search.movies.trim().toLowerCase();
     const sort = state.sort.movies;
     const f = state.filters.movies;
+    const scope = safeText(f.scope || "all");
     const wantGenres = Array.isArray(f.genres) ? f.genres : [];
     const wantYear = safeText(f.year);
     const wantWatched = safeText(f.watched);
@@ -3175,8 +3205,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           return false;
         }
       }
+      const releaseRaw = safeText(m?.release_date);
+      const releaseDate = releaseRaw ? new Date(releaseRaw) : null;
+      const isUpcoming = releaseDate instanceof Date && !Number.isNaN(releaseDate.valueOf()) && releaseDate > new Date();
+      if (scope === "upcoming" && !isUpcoming) return false;
+      if (scope === "released" && isUpcoming) return false;
       if (wantAvailability !== "all"){
-        if (!entry) return false;
         const available = isMovieAvailable(m);
         if (wantAvailability === "available" && !available) return false;
         if (wantAvailability === "unreleased" && available) return false;
@@ -3195,6 +3229,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (sort === "release") movies.sort((a,b)=>safeText(b?.release_date).localeCompare(safeText(a?.release_date)));
 
     $("#moviesGrid").innerHTML = movies.map(m => movieCardHtml(m, applyEyeFilter("movies", m))).join("");
+    const moviesSummary = $("#moviesSummary");
+    if (moviesSummary) moviesSummary.textContent = `${movies.length} results`;
     wireActionMenus($("#moviesGrid"));
     wireIconStripActions($("#moviesGrid"), renderMovies);
 
@@ -4416,8 +4452,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       }
     });
   });
-  initEyeMenu("showsEyeBtn", "showsEyeMenu", "shows");
-  initEyeMenu("moviesEyeBtn", "moviesEyeMenu", "movies");
   initDrawer("showsFilterBtn", "showsFilterBack", "showsFilterClose");
   initDrawer("moviesFilterBtn", "moviesFilterBack", "moviesFilterClose");
 
@@ -4446,12 +4480,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     state.filters.shows.genres = getCheckedValues($("#filterShowsGenres"));
     renderShows();
   });
-  on($("#filterShowsYear"), "input", (e) => {
+  on($("#filterShowsYear"), "change", (e) => {
     state.filters.shows.year = e.target.value || "";
     renderShows();
   });
-  on($("#filterShowsWatchStatus"), "change", () => {
-    state.filters.shows.watch_status = getCheckedValues($("#filterShowsWatchStatus"));
+  on($("#filterShowsScope"), "click", (e) => {
+    const btn = e.target.closest("[data-scope]");
+    if (!btn) return;
+    state.filters.shows.scope = btn.getAttribute("data-scope") || "all";
+    setSegActive($("#filterShowsScope"), "scope", state.filters.shows.scope);
     renderShows();
   });
   on($("#filterShowsAvailability"), "click", (e) => {
@@ -4475,11 +4512,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     setSegActive($("#filterShowsWatchlist"), "watchlist", state.filters.shows.watchlist);
     renderShows();
   });
-  on($("#sortShows"), "click", (e) => {
-    const btn = e.target.closest("[data-sort]");
-    if (!btn) return;
-    state.sort.shows = btn.getAttribute("data-sort") || "title";
-    setSegActive($("#sortShows"), "sort", state.sort.shows);
+  on($("#sortShows"), "change", (e) => {
+    state.sort.shows = e.target.value || "title";
     renderShows();
   });
 
@@ -4491,16 +4525,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     state.filters.movies.genres = getCheckedValues($("#filterMoviesGenres"));
     renderMovies();
   });
-  on($("#filterMoviesYear"), "input", (e) => {
+  on($("#filterMoviesYear"), "change", (e) => {
     state.filters.movies.year = e.target.value || "";
     renderMovies();
   });
-  on($("#filterMoviesCollection"), "input", (e) => {
+  on($("#filterMoviesCollection"), "change", (e) => {
     state.filters.movies.collection = e.target.value || "";
     renderMovies();
   });
-  on($("#filterMoviesWatchStatus"), "change", () => {
-    state.filters.movies.watch_status = getCheckedValues($("#filterMoviesWatchStatus"));
+  on($("#filterMoviesScope"), "click", (e) => {
+    const btn = e.target.closest("[data-scope]");
+    if (!btn) return;
+    state.filters.movies.scope = btn.getAttribute("data-scope") || "all";
+    setSegActive($("#filterMoviesScope"), "scope", state.filters.movies.scope);
     renderMovies();
   });
   on($("#filterMoviesAvailability"), "click", (e) => {
@@ -4524,11 +4561,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     setSegActive($("#filterMoviesWatchlist"), "watchlist", state.filters.movies.watchlist);
     renderMovies();
   });
-  on($("#sortMovies"), "click", (e) => {
-    const btn = e.target.closest("[data-sort]");
-    if (!btn) return;
-    state.sort.movies = btn.getAttribute("data-sort") || "title";
-    setSegActive($("#sortMovies"), "sort", state.sort.movies);
+  on($("#sortMovies"), "change", (e) => {
+    state.sort.movies = e.target.value || "title";
     renderMovies();
   });
 
