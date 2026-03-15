@@ -7,6 +7,7 @@ CHANGE NOTES:
 
 # ui_tuning.watch_me
 
+This section documents `web/config.json > ui_tuning.watch_me`. It is Watch Me page specific and does not change other pages.
 
 Template used for every setting:
 - Purpose
