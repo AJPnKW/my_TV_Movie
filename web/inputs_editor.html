@@ -55,6 +55,7 @@ DATE: 2026-01-20
         <span class="inputs_editor_meta">v1.0.3</span>
         <span class="inputs_editor_meta" id="serverStatus">Server: …</span>
         <span class="inputs_editor_meta" id="tmdbStatus">TMDB: …</span>
+        <a class="inputs_editor_link" href="./index.html#inputs-editor">Back to Hub</a>
       </div>
       <div class="inputs_editor_bd">
         <div class="banner" id="banner" style="display:none"></div>
@@ -171,8 +172,8 @@ function renderMine(){
     if(mineSelected.has(`${it._type}:${it.tmdb_id}`)) row.classList.add("selected");
     const meta=document.createElement("div"); meta.style.flex="1";
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=it.title||"(untitled)";
-    const tags=document.createElement("div"); tags.className="inputs_editor_tags";
-    tags.innerHTML=`<span class="inputs_editor_tag">${it._type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>`;
+    const metaTags=document.createElement("div"); metaTags.className="inputs_editor_tags";
+    metaTags.innerHTML=`<span class="inputs_editor_tag">${it._type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>`;
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=mineSelected.has(`${it._type}:${it.tmdb_id}`);
     sel.onchange=()=>{ toggleMineSelected(it._type,it.tmdb_id,sel.checked); row.classList.toggle("selected", sel.checked); };
@@ -209,11 +210,11 @@ function renderMine(){
       controls.appendChild(lbl);
     }
 
-    const tags=document.createElement("input"); tags.type="text"; tags.className="small";
-    tags.placeholder="Tags (comma-separated)";
-    tags.value=(it.tags||[]).join(", ");
-    tags.onchange=()=>{ setTags(it._type,it.tmdb_id,tags.value); setDirty(true); };
-    controls.appendChild(tags);
+    const tagsInput=document.createElement("input"); tagsInput.type="text"; tagsInput.className="small";
+    tagsInput.placeholder="Tags (comma-separated)";
+    tagsInput.value=(it.tags||[]).join(", ");
+    tagsInput.onchange=()=>{ setTags(it._type,it.tmdb_id,tagsInput.value); setDirty(true); };
+    controls.appendChild(tagsInput);
 
     const notes=document.createElement("input"); notes.type="text"; notes.className="small";
     notes.placeholder="Notes";
@@ -225,7 +226,7 @@ function renderMine(){
     del.onclick=()=>{ removeItem(it._type,it.tmdb_id); setDirty(true); renderMine(); counts(); };
     controls.appendChild(del);
 
-    meta.appendChild(title); meta.appendChild(tags); meta.appendChild(controls);
+    meta.appendChild(title); meta.appendChild(metaTags); meta.appendChild(controls);
     row.appendChild(meta); box.appendChild(row);
   }
 }
