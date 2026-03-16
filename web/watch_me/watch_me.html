@@ -32,6 +32,9 @@ CHANGE NOTES:
     html,body{ min-height:100%; height:auto; }
     body{ margin:0; background:radial-gradient(1200px 700px at 15% -10%, rgba(34,130,255,.22), transparent 55%),var(--bg); color:var(--txt); font-family:"Space Grotesk","Segoe UI",sans-serif; overflow:auto; }
     .app{ width:min(97vw,1900px); margin:0 auto; padding:14px; }
+    .watchme-top{ margin-bottom:14px; }
+    .watchme-top .nav{ flex:1 1 auto; }
+    .watchme-top .status{ margin-left:auto; }
     .head{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03)); padding:10px 14px; margin-bottom:14px; }
     .head h1{ margin:0; font-size:24px; font-weight:900; letter-spacing:.03em; }
     .head p{ margin:0; color:var(--mut); font-size:12px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
@@ -90,16 +93,16 @@ CHANGE NOTES:
     .watchme-episode-card,
     .watchme-movie-card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
     .watchme-episode-card{ grid-template-columns:1fr; }
-    .watchme-episode-card .media_block,
+    .watchme-episode-card .media-card__poster,
     .watchme-movie-card .media-card__poster{ min-height:96px; background:rgba(255,255,255,.08); }
-    .watchme-episode-card .media_block img,
+    .watchme-episode-card .media-card__poster img,
     .watchme-movie-card .media-card__poster img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .watchme-episode-card .episode-row__body,
+    .watchme-episode-card .media-card__body,
     .watchme-movie-card .media-card__body{ padding:8px; gap:8px; }
-    .watchme-episode-card .episode-row__body--compact .title_block,
-    .watchme-episode-card .episode-row__body--compact > .secondary{ display:none; }
-    .watchme-episode-card .title_block .primary,
+    .watchme-episode-card .media-card__eyebrow{ font-size:10px; color:#bfd0ea; }
+    .watchme-episode-card .media-card__title,
     .watchme-movie-card .media-card__title{ font-size:12px; line-height:1.2; font-weight:800; }
+    .watchme-episode-card .media-card__meta,
     .watchme-movie-card .media-card__meta{ font-size:10px; color:#cfdbf0; }
     .media{ position:relative; background:rgba(255,255,255,.08); }
     .media.ep{ aspect-ratio:calc((16 / 9) / var(--wm_ep_still_h_mult)); overflow:hidden; }
@@ -137,6 +140,32 @@ CHANGE NOTES:
 </head>
 <body data-watchme-version="1.1.3">
   <div class="app">
+    <div class="top watchme-top">
+      <div class="brand">
+        <div class="logo" aria-label="MY TV HUB"><div class="logo_txt"><div>MY TV</div><div>HUB</div></div></div>
+        <div class="titlebox">
+          <div class="title" style="display:none"></div>
+          <div class="subtitle" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="nav" role="tablist" aria-label="Primary">
+        <a class="tab" href="../index.html" role="tab" aria-selected="false">Dashboard</a>
+        <a class="tab" href="../shows.html" role="tab" aria-selected="false">Shows</a>
+        <a class="tab" href="../movies.html" role="tab" aria-selected="false">Movies</a>
+        <a class="tab active" href="./watch_me.html" role="tab" aria-selected="true">Watch Me</a>
+        <a class="tab" href="../calendar.html" role="tab" aria-selected="false">Calendar</a>
+        <a class="tab" href="../discover.html" role="tab" aria-selected="false">Discover</a>
+        <a class="tab" href="../config.html" role="tab" aria-selected="false">Config</a>
+        <a class="tab" href="../inputs_editor.html" role="tab" aria-selected="false">Inputs Editor</a>
+      </div>
+
+      <div class="status" aria-live="polite">
+        <div class="dot"></div>
+        <span>Watch Me</span>
+      </div>
+    </div>
+
     <header class="head">
       <div class="headcopy">
         <h1>Watch Me</h1>
@@ -687,7 +716,6 @@ CHANGE NOTES:
           watch: opts.watchHref ? { kind, attrs: { href: opts.watchHref } } : null,
           favourite: opts.favoriteId ? { attrs: { "data-watchme-favorite": opts.favoriteId }, icon: "☆" } : null,
           watched: opts.watchedKey ? { active: !!opts.watched, attrs: { "data-watched-key": opts.watchedKey, "data-kind": opts.dataKind || kind, "data-item-id": opts.itemId || "" }, icon: "✓" } : null,
-          like: { icon: "♥" },
           rating: { icon: "%" }
         });
       }
@@ -699,9 +727,9 @@ CHANGE NOTES:
         const watched = watchedKey ? state.watched.get(watchedKey) === true : false;
         return window.MyTVHubCardRenderer.renderCompactEpisodeCardHtml({
           image: it.image,
+          eyebrow: it.title,
           title: it.epTitle,
-          meta: seTag(it.sn,it.en),
-          submeta: it.title,
+          meta: `${seTag(it.sn,it.en)} • ${dateLabel(it.firstAired)}`,
           overlay: true,
           actionBarHtml: watchMeActionBarHtml("episode", { watchHref: links.a || links.b, watchedKey, watched, itemId: watchedId, dataKind:"tv" }),
           articleAttrs: { tabindex:"0" },
@@ -830,7 +858,7 @@ CHANGE NOTES:
             }
             if (ev.key !== "Enter") return;
             if (target.matches(".watchme-episode-card, .watchme-movie-card")){
-              const primary = target.querySelector(".actionbar-btn.popcorn");
+              const primary = target.querySelector(".actionbar-btn--watch, [data-watch-source-open]");
               if (primary instanceof HTMLElement){
                 primary.click();
                 ev.preventDefault();

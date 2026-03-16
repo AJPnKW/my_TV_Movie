@@ -85,18 +85,24 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-calendar", `
       <div id="panel-calendar" class="panel hidden">
-        <div class="dash">
-          <section class="dashblock">
-            <div class="dashhead">
-              <h2>Calendar</h2>
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <div class="browse-layout browse-layout--calendar">
+          <aside class="browse-sidebar" aria-label="Calendar controls">
+            <div class="browse-sidebar__group">
+              <div class="browse-sidebar__eyebrow">Calendar</div>
+              <h2 class="browse-sidebar__title">Month View</h2>
+              <p class="browse-sidebar__copy">Release activity in a wall-calendar layout with the same card contract used everywhere else.</p>
+            </div>
+            <div class="browse-sidebar__group browse-sidebar__group--controls">
+              <div id="calMonth" class="browse-sidebar__meta">Month</div>
+              <div class="browse-button-row">
                 <button id="calPrev" class="calbtn" type="button" aria-label="Previous month">Prev</button>
-                <div id="calMonth" class="muted">Month</div>
                 <button id="calNext" class="calbtn" type="button" aria-label="Next month">Next</button>
                 <button id="calToday" class="calbtn" type="button">Today</button>
-                <span id="calTodayLabel" class="muted"></span>
               </div>
+              <span id="calTodayLabel" class="muted"></span>
             </div>
+          </aside>
+          <section class="browse-content">
             <div id="calendar" class="calendar-grid"></div>
           </section>
         </div>
@@ -105,11 +111,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-shows", `
       <div id="panel-shows" class="panel hidden">
-        <div class="dash">
-          <section class="dashblock">
-            <div class="dashhead"><h2>Shows</h2><span id="showsSummary" class="muted">Library</span></div>
-            <div class="control-panel">
-              <div class="control-row control-row--primary">
+        <div class="browse-layout">
+          <aside class="browse-sidebar" aria-label="Show filters">
+            <div class="browse-sidebar__group">
+              <div class="browse-sidebar__eyebrow">Browse</div>
+              <h2 class="browse-sidebar__title">Shows</h2>
+              <div id="showsSummary" class="browse-sidebar__meta">Library</div>
+            </div>
+            <div class="control-panel control-panel--sidebar">
+              <div class="control-row control-row--primary control-row--stack">
                 <input id="searchShows" class="input control-input" type="search" placeholder="Search shows" />
                 <select id="filterShowsYear" class="input control-select"></select>
                 <select id="sortShows" class="input control-select">
@@ -147,9 +157,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                 <div id="filterShowsGenres" class="control-checks"></div>
               </div>
             </div>
-          </section>
-          <section class="dashblock">
-            <div id="showsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--show_card_min),1fr));gap:12px;"></div>
+          </aside>
+          <section class="browse-content">
+            <div id="showsGrid" class="media-grid media-grid--shows"></div>
           </section>
         </div>
       </div>
@@ -157,11 +167,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-movies", `
       <div id="panel-movies" class="panel hidden">
-        <div class="dash">
-          <section class="dashblock">
-            <div class="dashhead"><h2>Movies</h2><span id="moviesSummary" class="muted">Library</span></div>
-            <div class="control-panel">
-              <div class="control-row control-row--primary">
+        <div class="browse-layout">
+          <aside class="browse-sidebar" aria-label="Movie filters">
+            <div class="browse-sidebar__group">
+              <div class="browse-sidebar__eyebrow">Browse</div>
+              <h2 class="browse-sidebar__title">Movies</h2>
+              <div id="moviesSummary" class="browse-sidebar__meta">Library</div>
+            </div>
+            <div class="control-panel control-panel--sidebar">
+              <div class="control-row control-row--primary control-row--stack">
                 <input id="searchMovies" class="input control-input" type="search" placeholder="Search movies" />
                 <select id="filterMoviesYear" class="input control-select"></select>
                 <select id="filterMoviesCollection" class="input control-select"></select>
@@ -199,9 +213,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                 <div id="filterMoviesGenres" class="control-checks"></div>
               </div>
             </div>
-          </section>
-          <section class="dashblock">
-            <div id="moviesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--movie_card_min),1fr));gap:12px;"></div>
+          </aside>
+          <section class="browse-content">
+            <div id="moviesGrid" class="media-grid media-grid--movies"></div>
           </section>
         </div>
       </div>
@@ -209,14 +223,26 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-discover", `
       <div id="panel-discover" class="panel hidden">
-        <div class="dash">
-          <section class="dashblock accent-green">
-            <div class="dashhead"><h2>Discover Shows</h2><span class="muted">Popular and available</span></div>
-            <div id="discoverShowsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--show_card_min),1fr));gap:12px;"></div>
-          </section>
-          <section class="dashblock accent-yellow">
-            <div class="dashhead"><h2>Discover Movies</h2><span class="muted">Popular and available</span></div>
-            <div id="discoverMoviesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--movie_card_min),1fr));gap:12px;"></div>
+        <div class="browse-layout">
+          <aside class="browse-sidebar" aria-label="Discover overview">
+            <div class="browse-sidebar__group">
+              <div class="browse-sidebar__eyebrow">Discover</div>
+              <h2 class="browse-sidebar__title">Ready To Watch</h2>
+              <p class="browse-sidebar__copy">High-signal titles with the same shared card system used across dashboard, browse, calendar, and watch-me surfaces.</p>
+            </div>
+            <div class="browse-sidebar__group">
+              <div class="browse-sidebar__meta">Shows and movies stay intentionally separate, but the layout and interaction contract now match.</div>
+            </div>
+          </aside>
+          <section class="browse-content browse-content--stack">
+            <section class="dashblock accent-green">
+              <div class="dashhead"><h2>Discover Shows</h2><span class="muted">Popular and available</span></div>
+              <div id="discoverShowsGrid" class="media-grid media-grid--shows"></div>
+            </section>
+            <section class="dashblock accent-yellow">
+              <div class="dashhead"><h2>Discover Movies</h2><span class="muted">Popular and available</span></div>
+              <div id="discoverMoviesGrid" class="media-grid media-grid--movies"></div>
+            </section>
           </section>
         </div>
       </div>
@@ -1467,7 +1493,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       favourite: (kind === "show" || kind === "movie") ? { active: !!options.favoriteActive, icon: iconChar("trakt_add_to_list") || "☆", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } } : null,
       status: options.showStatusAction ? { icon: iconChar("meta_status") || "•", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
       watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: iconChar("trakt_mark_watched") || "✓", attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
-      like: { icon: iconChar("trakt_rate_like") || "♥", attrs: { "data-kind": kind, "data-id": id } },
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "%" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
@@ -2762,6 +2787,34 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return value ? `<div class="media-card__summary">${escHtml(value)}</div>` : "";
   }
 
+  function formatRuntimeMinutes(value){
+    const runtime = Number(value);
+    return Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "";
+  }
+
+  function formatMovieCardMeta(movie){
+    return [safeText(movie?.release_date) ? fmtDate(movie.release_date) : "", formatRuntimeMinutes(movie?.runtime)].filter(Boolean);
+  }
+
+  function formatShowCardMeta(show){
+    return [safeText(show?.first_air_date) ? fmtDate(show.first_air_date) : ""].filter(Boolean);
+  }
+
+  function formatSeasonCardMeta(season){
+    const air = pickAirDate(season);
+    return [safeText(air) ? fmtDate(air) : ""].filter(Boolean);
+  }
+
+  function formatEpisodeCardMeta(showTitle, episode, fallbackSeasonNum){
+    const seasonNum = Number(episode?.season_number ?? fallbackSeasonNum ?? 0) || 0;
+    const episodeNum = Number(episode?.episode_number ?? episode?.number ?? episode?.ep ?? 0) || 0;
+    return {
+      eyebrow: safeText(showTitle || ""),
+      title: safeText(episode?.title || episode?.name || `Episode ${episodeNum || ""}`),
+      meta: [seTag(seasonNum, episodeNum), safeText(pickAirDate(episode)) ? fmtDate(pickAirDate(episode)) : "", formatRuntimeMinutes(episode?.runtime)].filter(Boolean).join(" • ")
+    };
+  }
+
   function buildMediaCardShell(kind, id, options = {}){
     return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
       kind,
@@ -3867,6 +3920,27 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const host = $("#modalBody");
     if (!host) return;
 
+    $$("[data-season-select]", host).forEach(card => {
+      const activate = () => {
+        const v = Number(card.getAttribute("data-season-select") || "0");
+        if (!Number.isFinite(v)) return;
+        state.show.selectedSeasonNumber = v;
+        const show = getShowById(showId);
+        if (!show) return;
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(showId);
+      };
+      card.addEventListener("click", (e) => {
+        if (e.target.closest(".actionbar")) return;
+        activate();
+      });
+      card.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        activate();
+      });
+    });
+
     $$(".seasonopt", host).forEach(row => {
       row.addEventListener("click", (e) => {
         if (e.target.closest(".switch")) return;
@@ -3940,6 +4014,22 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         wireShowPopup(id);
       });
     });
+    $$("[data-action='toggle-watched'][data-kind='season'][data-watch-season]", host).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const id = parseInt(btn.getAttribute("data-show") || "0", 10);
+        const seasonNum = Number(btn.getAttribute("data-watch-season") || btn.getAttribute("data-season") || "0");
+        if (!Number.isFinite(id) || !Number.isFinite(seasonNum)) return;
+        const show = getShowById(id);
+        if (!show) return;
+        const season = (show.seasons || []).find(s => Number(s?.season_number ?? s?.number) === Number(seasonNum)) || null;
+        const eps = (season?.episodes || []).map(ep => Number(ep?.episode_number ?? ep?.number)).filter(n => Number.isFinite(n));
+        setSeasonWatched(id, seasonNum, eps, !isSeasonWatched(id, seasonNum, eps.length));
+        await saveInputs();
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(id);
+      });
+    });
 
     $$("[data-watch-episode]", host).forEach(btn => {
       btn.addEventListener("change", async () => {
@@ -3989,6 +4079,22 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       track.addEventListener("scroll", update);
       update();
     }
+
+    const seasonTrack = $(".season-carousel", host);
+    const seasonPrev = $("[data-season-nav='prev']", host);
+    const seasonNext = $("[data-season-nav='next']", host);
+    if (seasonTrack && seasonPrev && seasonNext){
+      const scrollBy = () => Math.max(240, Math.floor(seasonTrack.clientWidth * 0.8));
+      seasonPrev.addEventListener("click", () => seasonTrack.scrollBy({ left: -scrollBy(), behavior: "smooth" }));
+      seasonNext.addEventListener("click", () => seasonTrack.scrollBy({ left: scrollBy(), behavior: "smooth" }));
+      const update = () => {
+        const max = Math.max(0, seasonTrack.scrollWidth - seasonTrack.clientWidth);
+        seasonPrev.disabled = seasonTrack.scrollLeft <= 2;
+        seasonNext.disabled = seasonTrack.scrollLeft >= max - 2;
+      };
+      seasonTrack.addEventListener("scroll", update);
+      update();
+    }
   }
 
   function renderCalendar(){
@@ -4012,15 +4118,16 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const showId = Number(item.show_tmdb_id) || 0;
         const seasonNum = Number(item.season_number) || 0;
         const episodeNum = Number(item.episode_number) || 0;
+        const cardMeta = formatEpisodeCardMeta(item.show_title || "Show", item, seasonNum);
         const available = isEpisodeAvailable(item);
         const epWatched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
         const pct = Number.isFinite(item.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
         const hasSources = collectWatchSourceOptions("episode", item, { showId }).length > 0;
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
           image: item.thumb,
-          title: item.episode_name || "Episode",
-          meta: seTag(seasonNum, episodeNum),
-          submeta: item.show_title || "Show",
+          eyebrow: cardMeta.eyebrow,
+          title: cardMeta.title,
+          meta: cardMeta.meta,
           overlay: true,
           actionBarHtml: buildActionBarHtml("episode", episodeNum, {
             title: item.episode_name || "Episode",
@@ -4049,8 +4156,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         id: movieId,
         image: item.thumb,
         title: item.title || "Movie",
-        meta: "Movie",
-        submeta: "Release day",
+        meta: [dateKey ? fmtDate(dateKey) : "", "Release day"].filter(Boolean).join(" • "),
         overlay: true,
         actionBarHtml: buildActionBarHtml("movie", movieId, {
           title: item.title || "Movie",
@@ -4154,11 +4260,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const showId = Number(item.show_tmdb_id) || 0;
         const seasonNum = Number(item.season_number) || 0;
         const episodeNum = Number(item.episode_number) || 0;
+        const cardMeta = formatEpisodeCardMeta(item.show_title || "Show", item, seasonNum);
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
           image: imageForItem(item),
-          title: safeText(item.episode_name || "Episode"),
-          meta: seTag(seasonNum, episodeNum),
-          submeta: safeText(item.show_title || "Show"),
+          eyebrow: cardMeta.eyebrow,
+          title: cardMeta.title,
+          meta: cardMeta.meta,
           overlay: true,
           actionBarHtml: buildActionBarHtml("episode", episodeNum, {
             title: safeText(item.episode_name || "Episode"),
@@ -4281,7 +4388,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         watchedToggleHtml: watchToggleHtml("show", { "data-watch-show": id }, isShowWatched(show)),
         available: isShowAvailable(show)
       }),
-      meta: yearFromDate(show?.first_air_date),
+      meta: formatShowCardMeta(show).join(" • "),
       eyeClass: eye?.fade ? " faded" : ""
     });
   }
@@ -4312,7 +4419,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         popcornKind: "movie",
         available: isMovieAvailable(movie)
       }),
-      meta: yearFromDate(movie?.release_date),
+      meta: formatMovieCardMeta(movie).join(" • "),
       eyeClass: eye?.fade ? " faded" : ""
     });
   }
@@ -4519,20 +4626,58 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </div>
         </div>
         <div class="section section-card">
-          <div class="seasonsgrid">
-            <div class="seasonpicker">
-              <div class="seasonpickerhead">Season</div>
-              <div class="seasonlist">
-                ${seasonItems.map(it => `<div class="seasonopt"><input type="radio" name="seasonPick" value="${escHtml(it.n)}" ${Number(it.n) === Number(selected?.n) ? "checked" : ""} /><span class="labelrow"><span class="label">${escHtml(it.s?.name || `Season ${it.n}`)}</span></span>${watchToggleHtml("season", { "data-watch-season": it.n, "data-show": show.tmdb_id ?? "" }, state.watchState ? isSeasonWatched(show.tmdb_id, it.n, Array.isArray(it.s?.episodes) ? it.s.episodes.length : 0) : false)}</div>`).join("") || `<div class="muted">No seasons available.</div>`}
-              </div>
+          <div class="episodestitle">Seasons</div>
+          <div class="season-carousel-wrap">
+            <button class="epnavbtn" type="button" data-season-nav="prev">‹</button>
+            <div class="season-carousel" role="list">
+              ${seasonItems.map(it => {
+                const seasonName = safeText(it.s?.name || `Season ${it.n}`);
+                const totalEpisodes = Array.isArray(it.s?.episodes) ? it.s.episodes.length : 0;
+                const seasonPct = (() => {
+                  let v = progressPercent(it.s);
+                  if (v == null){
+                    const raw = Number(it.s?.vote_average ?? it.s?.rating ?? 0);
+                    if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
+                  }
+                  return v;
+                })();
+                return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
+                  kind: "season",
+                  id: `${show.tmdb_id ?? ""}-${it.n}`,
+                  title: seasonName,
+                  image: pickImage(it.s, "poster_local", "poster_path", "backdrop_local", "backdrop_path"),
+                  meta: formatSeasonCardMeta(it.s).join(" • "),
+                  submeta: totalEpisodes ? `${totalEpisodes} Episodes` : "",
+                  overlay: true,
+                  actionBarHtml: buildActionBarHtml("season", it.n, {
+                    title: seasonName,
+                    compact: true,
+                    pct: seasonPct,
+                    watchedActive: state.watchState ? isSeasonWatched(show.tmdb_id, it.n, totalEpisodes) : false,
+                    showWatchedAction: true,
+                    showStatusAction: true,
+                    watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-watch-season": it.n, "data-season": it.n },
+                    statusContext: { showId: show.tmdb_id ?? "", seasonNumber: it.n },
+                    available: isSeasonAvailable(it.s)
+                  }),
+                  articleAttrs: {
+                    "data-season-select": it.n,
+                    "data-show-id": show.tmdb_id ?? "",
+                    tabindex: "0"
+                  },
+                  extraClass: `season-card${Number(it.n) === Number(selected?.n) ? " season-card--active" : ""}`
+                });
+              }).join("") || `<div class="muted">No seasons available.</div>`}
             </div>
-            <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path"))}');"` : ""}>
+            <button class="epnavbtn" type="button" data-season-nav="next">›</button>
+          </div>
+          <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path"))}');"` : ""}>
               <div class="seasonmeta">
                 <div class="seasonname">${escHtml(season?.name || (selected ? `Season ${selected.n}` : "Season"))}</div>
                 <div class="seasonair">${escHtml(pickAirDate(season) ? `Premiered ${fmtDate(pickAirDate(season))}` : "Season details")}</div>
+                ${Number.isFinite(Array.isArray(season?.episodes) ? season.episodes.length : NaN) ? `<div class="seasonair">${escHtml(`${Array.isArray(season?.episodes) ? season.episodes.length : 0} episodes`)}</div>` : ""}
                 ${compactOverviewHtml(season?.overview || "", 220)}
               </div>
-            </div>
           </div>
         </div>
         <div class="section section-card">
@@ -4541,6 +4686,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             ${episodes.map(ep => {
               const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
               const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
+              const cardMeta = formatEpisodeCardMeta(title, ep, seasonNum);
               const epPct = (() => {
                 let v = progressPercent(ep);
                 if (v == null){
@@ -4552,9 +4698,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, seasonNum, episodeNum) : false;
               return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
                 image: pickImage(ep, "still_local", "still_path"),
-                title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                meta: seTag(seasonNum, episodeNum),
-                submeta: title,
+                eyebrow: cardMeta.eyebrow,
+                title: cardMeta.title,
+                meta: cardMeta.meta,
                 description: safeText(ep?.overview || ""),
                 actionBarHtml: buildActionBarHtml("episode", episodeNum, {
                   title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
