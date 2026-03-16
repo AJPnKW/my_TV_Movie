@@ -84,9 +84,23 @@ CHANGE NOTES:
     .day-pill{ align-self:flex-start; border:1px solid rgba(255,255,255,.2); border-radius:7px; background:var(--day-bg); color:var(--day-fg); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; padding:4px 8px; min-height:var(--day-pill-h); display:inline-flex; align-items:center; white-space:nowrap; }
     .day-pill.today{ border-color:rgba(219,233,255,.8); background:var(--day-today-bg); color:var(--day-today-fg); }
     .day-cards{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--card-w); grid-template-rows:repeat(var(--carousel-rows), minmax(0,1fr)); gap:var(--gap); }
-    .day-cards .card{ width:var(--card-w); min-height:var(--card-h); }
+    .day-cards .watchme-episode-card,
+    .track.two-row .watchme-movie-card{ width:var(--card-w); min-height:var(--card-h); }
     .track.two-row{ grid-template-rows:repeat(var(--carousel-rows), minmax(0,1fr)); }
-    .card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
+    .watchme-episode-card,
+    .watchme-movie-card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
+    .watchme-episode-card{ grid-template-columns:1fr; }
+    .watchme-episode-card .media_block,
+    .watchme-movie-card .media-card__poster{ min-height:96px; background:rgba(255,255,255,.08); }
+    .watchme-episode-card .media_block img,
+    .watchme-movie-card .media-card__poster img{ width:100%; height:100%; object-fit:cover; display:block; }
+    .watchme-episode-card .episode-row__body,
+    .watchme-movie-card .media-card__body{ padding:8px; gap:8px; }
+    .watchme-episode-card .episode-row__body--compact .title_block,
+    .watchme-episode-card .episode-row__body--compact > .secondary{ display:none; }
+    .watchme-episode-card .title_block .primary,
+    .watchme-movie-card .media-card__title{ font-size:12px; line-height:1.2; font-weight:800; }
+    .watchme-movie-card .media-card__meta{ font-size:10px; color:#cfdbf0; }
     .media{ position:relative; background:rgba(255,255,255,.08); }
     .media.ep{ aspect-ratio:calc((16 / 9) / var(--wm_ep_still_h_mult)); overflow:hidden; }
     .media.mv{ aspect-ratio:2/3; }
@@ -98,15 +112,16 @@ CHANGE NOTES:
     .d{ font-size:10px; color:#cfdbf0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .cb{ padding:8px; display:flex; flex-direction:column; gap:8px; }
     .watchme-actionbar{ margin-top:auto; }
-    .watchme-actionbar .actionbar-btn{ min-height:28px; padding:5px 8px; font-size:10px; }
     .watchme-actionbar .actionbar-right{ display:none; }
     .sr-only{
       position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
       clip:rect(0,0,0,0); white-space:nowrap; border:0;
     }
     .warn-inline{ margin-bottom:8px; font-size:11px; color:#ffd9a3; letter-spacing:.02em; }
-    .card{ outline-offset:2px; }
-    .card:focus-visible{ outline:3px solid #ffffff; }
+    .watchme-episode-card,
+    .watchme-movie-card{ outline-offset:2px; }
+    .watchme-episode-card:focus-visible,
+    .watchme-movie-card:focus-visible{ outline:3px solid #ffffff; }
     .day-pill{ outline-offset:2px; }
     .day-pill:focus-visible{ outline:3px solid #ffffff; }
     .empty{ border:1px dashed rgba(255,255,255,.22); border-radius:10px; padding:14px; color:var(--mut); font-size:12px; background:rgba(255,255,255,.03); align-self:start; }
@@ -453,11 +468,20 @@ CHANGE NOTES:
         const id = movieUid(movie);
         return id ? `movie:${id}` : "";
       }
+      async function fetchWithTimeout(url, options = {}, timeoutMs = 1500){
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+          return await fetch(url, { ...options, signal: controller.signal });
+        } finally {
+          clearTimeout(timer);
+        }
+      }
       async function loadWatchedMap(clientId){
         const out = new Map();
         const apiBase = String(state.watchedApiBaseUrl || WATCHED_DEFAULT_API_BASE_URL).replace(/\/+$/, "");
         try {
-          const res = await fetch(`${apiBase}/api/watched?client=${encodeURIComponent(clientId)}`, { cache: "no-store" });
+          const res = await fetchWithTimeout(`${apiBase}/api/watched?client=${encodeURIComponent(clientId)}`, { cache: "no-store" }, 1500);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const payload = await res.json();
           const items = payload?.items && typeof payload.items === "object" ? payload.items : {};
@@ -488,11 +512,11 @@ CHANGE NOTES:
       async function setWatched(clientId, kind, id, watched){
         const apiBase = String(state.watchedApiBaseUrl || WATCHED_DEFAULT_API_BASE_URL).replace(/\/+$/, "");
         try {
-          const res = await fetch(`${apiBase}/api/set`, {
+          const res = await fetchWithTimeout(`${apiBase}/api/set`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ client: clientId, kind, id, watched: !!watched })
-          });
+          }, 1500);
           return res.ok;
         } catch (_e){
           return false;
@@ -676,7 +700,11 @@ CHANGE NOTES:
         return window.MyTVHubCardRenderer.renderCompactEpisodeCardHtml({
           image: it.image,
           title: it.epTitle,
+          meta: seTag(it.sn,it.en),
+          submeta: it.title,
+          overlay: true,
           actionBarHtml: watchMeActionBarHtml("episode", { watchHref: links.a || links.b, watchedKey, watched, itemId: watchedId, dataKind:"tv" }),
+          articleAttrs: { tabindex:"0" },
           extraClass: "watchme-episode-card"
         });
       }
@@ -691,7 +719,9 @@ CHANGE NOTES:
           title: it.title,
           image: it.image,
           meta: dateLabel(it.rd),
+          overlay: true,
           actionBarHtml: watchMeActionBarHtml("movie", { watchHref: links.a || links.b, favoriteId: watchedId, watchedKey, watched, itemId: watchedId, dataKind:"movie" }),
+          articleAttrs: { tabindex:"0" },
           extraClass: "watchme-movie-card"
         });
       }
@@ -768,14 +798,14 @@ CHANGE NOTES:
       function wireKeyboardNav(){
         const rowsRoot = refs.rowsRoot;
         const tracks = Array.from(rowsRoot.querySelectorAll(".track"));
-        for (const card of rowsRoot.querySelectorAll(".card")){
+        for (const card of rowsRoot.querySelectorAll(".watchme-episode-card, .watchme-movie-card")){
           card.tabIndex = 0;
         }
         for (const pill of rowsRoot.querySelectorAll(".day-pill")){
           pill.tabIndex = 0;
         }
         function moveInTrack(track, current, dir){
-          const focusables = Array.from(track.querySelectorAll(".day-pill, .card"));
+          const focusables = Array.from(track.querySelectorAll(".day-pill, .watchme-episode-card, .watchme-movie-card"));
           const idx = focusables.indexOf(current);
           if (idx < 0) return false;
           const next = focusables[idx + dir];
@@ -787,21 +817,21 @@ CHANGE NOTES:
           track.addEventListener("keydown", (ev) => {
             const target = ev.target;
             if (!(target instanceof HTMLElement)) return;
-            if (!target.matches(".card, .day-pill, .iconbtn")) return;
+            if (!target.matches(".watchme-episode-card, .watchme-movie-card, .day-pill, .actionbar-btn")) return;
             if (ev.key === "ArrowRight"){
-              if (target.matches(".iconbtn")) return;
+              if (target.matches(".actionbar-btn")) return;
               if (moveInTrack(track, target, 1)) ev.preventDefault();
               return;
             }
             if (ev.key === "ArrowLeft"){
-              if (target.matches(".iconbtn")) return;
+              if (target.matches(".actionbar-btn")) return;
               if (moveInTrack(track, target, -1)) ev.preventDefault();
               return;
             }
             if (ev.key !== "Enter") return;
-            if (target.matches(".card")){
-              const primary = target.querySelector(".links .iconbtn");
-              if (primary instanceof HTMLAnchorElement){
+            if (target.matches(".watchme-episode-card, .watchme-movie-card")){
+              const primary = target.querySelector(".actionbar-btn.popcorn");
+              if (primary instanceof HTMLElement){
                 primary.click();
                 ev.preventDefault();
               }
@@ -809,7 +839,7 @@ CHANGE NOTES:
             }
             if (target.matches(".day-pill")){
               const seg = target.closest(".day-seg");
-              const firstCard = seg ? seg.querySelector(".card") : null;
+              const firstCard = seg ? seg.querySelector(".watchme-episode-card, .watchme-movie-card") : null;
               if (firstCard instanceof HTMLElement){
                 firstCard.focus();
                 ev.preventDefault();
@@ -958,9 +988,11 @@ CHANGE NOTES:
         localStorage.setItem(WATCHED_CLIENT_KEY, state.clientId);
         try {
           await loadData();
+          state.watched = new Map();
+          buildFilterOptions();
+          render();
           state.watched = await loadWatchedMap(state.clientId);
           state.watchedUnsaved = new Set();
-          buildFilterOptions();
           render();
         }
         catch (err){ refs.rowsRoot.innerHTML = `<section class="row"><div class="empty">Failed to load media data: ${escHtml(err?.message || String(err))}</div></section>`; }

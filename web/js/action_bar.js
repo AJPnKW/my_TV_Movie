@@ -10,6 +10,7 @@ CHANGE NOTES:
 export const ACTION_BAR_ORDER = Object.freeze([
   'watch',
   'favourite',
+  'status',
   'watched',
   'like',
   'rating'
@@ -53,6 +54,10 @@ export function renderActionBarHtml(options = {}){
   if (options.favourite){
     const favouriteLink = splitAttrs(options.favourite.attrs || {});
     actions.push(`<a class="actionbar-btn favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Favourite" title="Favourite" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span aria-hidden="true">${options.favourite.icon || '☆'}</span></a>`);
+  }
+  if (options.status){
+    const statusLink = splitAttrs(options.status.attrs || {});
+    actions.push(`<a class="actionbar-btn status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Status" title="Status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span aria-hidden="true">${options.status.icon || '•'}</span></a>`);
   }
   if (options.watched){
     const watchedLink = splitAttrs(options.watched.attrs || {});

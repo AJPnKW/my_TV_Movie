@@ -43,13 +43,15 @@ export function renderCompactCardHtml(options = {}){
   const articleAttrs = options.articleAttrs || {};
   const posterAttrs = options.posterAttrs || {};
   const titleAttrs = options.titleAttrs || {};
+  const overlay = !!options.overlay;
   return `
     <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${attrString(articleAttrs)}>
       <button type="button" class="imgbox media-card__poster media_block"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;cursor:pointer;">
         ${options.image ? `<img loading="lazy" src="${esc(options.image)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+        ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy"><span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
       </button>
       <div class="cardbody media-card__body">
-        <div class="media-card__copy">
+        <div class="media-card__copy${overlay ? ' media-card__copy--hidden' : ''}">
           <button type="button" class="media-card__title"${idAttr}${attrString(titleAttrs)} style="padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;">${esc(options.title)}</button>
           ${options.meta ? `<div class="media-card__meta">${esc(options.meta)}</div>` : ''}
           ${options.submeta ? `<div class="media-card__meta media-card__meta--subtle">${esc(options.submeta)}</div>` : ''}
@@ -62,13 +64,15 @@ export function renderCompactCardHtml(options = {}){
 
 export function renderCompactEpisodeCardHtml(options = {}){
   const articleAttrs = options.articleAttrs || {};
+  const overlay = !!options.overlay;
   return `
     <article class="episode-row episode_row${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${attrString(articleAttrs)}>
       <div class="media_block">
         ${options.image ? `<img loading="lazy" src="${esc(options.image)}" alt="" />` : `<div class="posterFallback">No Still</div>`}
+        ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy"><span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
       </div>
-      <div class="episode-row__body">
-        <div class="title_block"><div class="primary">${esc(options.title)}</div>${options.meta ? `<div class="secondary">${esc(options.meta)}</div>` : ''}</div>
+      <div class="episode-row__body${overlay ? ' episode-row__body--compact' : ''}">
+        <div class="title_block"><div class="primary">${esc(options.title)}</div>${options.meta ? `<div class="secondary">${esc(options.meta)}</div>` : ''}${options.submeta ? `<div class="secondary">${esc(options.submeta)}</div>` : ''}</div>
         ${options.actionBarHtml || ''}
         ${options.description ? `<div class="secondary">${esc(options.description)}</div>` : ''}
       </div>
