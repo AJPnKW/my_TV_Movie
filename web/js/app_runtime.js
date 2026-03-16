@@ -85,14 +85,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-calendar", `
       <div id="panel-calendar" class="panel hidden">
-        <div class="browse-layout browse-layout--calendar">
-          <aside class="browse-sidebar" aria-label="Calendar controls">
-            <div class="browse-sidebar__group">
+        <div class="calendar-shell">
+          <div class="calendar-toolbar">
+            <div class="calendar-toolbar__copy">
               <div class="browse-sidebar__eyebrow">Calendar</div>
               <h2 class="browse-sidebar__title">Month View</h2>
-              <p class="browse-sidebar__copy">Release activity in a wall-calendar layout with the same card contract used everywhere else.</p>
+              <p class="browse-sidebar__copy">Release activity in a real wall-calendar layout with shared cards and shared actions.</p>
             </div>
-            <div class="browse-sidebar__group browse-sidebar__group--controls">
+            <div class="calendar-toolbar__controls">
               <div id="calMonth" class="browse-sidebar__meta">Month</div>
               <div class="browse-button-row">
                 <button id="calPrev" class="calbtn" type="button" aria-label="Previous month">Prev</button>
@@ -101,8 +101,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               </div>
               <span id="calTodayLabel" class="muted"></span>
             </div>
-          </aside>
-          <section class="browse-content">
+          </div>
+          <section class="calendar-shell__content">
             <div id="calendar" class="calendar-grid"></div>
           </section>
         </div>
@@ -1487,12 +1487,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function buildActionBarHtml(kind, id, options={}){
     const title = safeText(options.title || options.titleText || "").trim();
     const statusContext = options.statusContext || {};
+    const normalizedKind = safeText(kind).toLowerCase();
+    const supportsWatchSource = normalizedKind === "movie" || normalizedKind === "episode";
+    const favoriteKind = safeText(options.favoriteKind || ((normalizedKind === "season" || normalizedKind === "episode") ? "show" : kind)).toLowerCase();
+    const favoriteId = options.favoriteId != null ? options.favoriteId : ((normalizedKind === "season" || normalizedKind === "episode") ? statusContext.showId : id);
+    const supportsFavourite = (favoriteKind === "show" || favoriteKind === "movie") && favoriteId != null && favoriteId !== "";
     return window.MyTVHubSharedModules.actionBar.renderActionBarHtml({
+      kind: normalizedKind,
       compact: !!options.compact,
-      watch: options.popcornAttrs ? { kind: options.popcornKind || kind, attrs: options.popcornAttrs || {} } : null,
-      favourite: (kind === "show" || kind === "movie") ? { active: !!options.favoriteActive, icon: iconChar("trakt_add_to_list") || "☆", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } } : null,
+      watch: (supportsWatchSource && options.popcornAttrs) ? { kind: options.popcornKind || kind, attrs: options.popcornAttrs || {} } : null,
+      favourite: supportsFavourite ? { active: !!options.favoriteActive, icon: iconChar("trakt_add_to_list") || "💕", attrs: { "data-kind": favoriteKind, "data-id": favoriteId, "data-title": safeText(options.favoriteTitle || title), "data-no-default": "1" } } : null,
       status: options.showStatusAction ? { icon: iconChar("meta_status") || "•", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
-      watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: iconChar("trakt_mark_watched") || "✓", attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
+      watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: iconChar("trakt_mark_watched") || "🔖", attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "%" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
@@ -2247,7 +2253,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function updateCalendarStickyVars(){
     const topBar = $(".top");
-    const calbar = $("#panel-calendar .dashhead");
+    const calbar = $("#panel-calendar .calendar-toolbar");
     if (topBar) document.documentElement.style.setProperty("--sticky-top", `${topBar.offsetHeight + 8}px`);
     if (calbar) document.documentElement.style.setProperty("--calbar-h", `${calbar.offsetHeight}px`);
   }
@@ -2274,7 +2280,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return true;
   }
 
-  function renderCalendar(){
+  function renderCalendarLegacy(){
     const m = state.calendarMonth;
     $("#calMonth").textContent = m.toLocaleDateString(undefined, { month:"long", year:"numeric" });
     updateTodayLabel();
@@ -2876,7 +2882,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
-  function renderDashboard(){
+  function renderDashboardLegacy(){
     const upNext = $("#dashUpNext");
     const scheduleCols = $("#dashScheduleCols");
     const lastWeekCols = $("#dashLastWeekCols");
@@ -3186,7 +3192,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
-  function showCardHtml(s, eye){
+  function showCardHtmlLegacy(s, eye){
     const id = Number(s?.tmdb_id) || 0;
     const title = safeText(s?.title || s?.name || "(Untitled)");
     const poster = pickImage(s, "poster_local", "poster_path");
@@ -3436,7 +3442,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
-  function movieCardHtml(m, eye){
+  function movieCardHtmlLegacy(m, eye){
     const id = Number(m?.tmdb_id) || 0;
     const title = safeText(m?.title || "(Untitled)");
     const poster = pickImage(m, "poster_local", "poster_path");
@@ -3488,7 +3494,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     `;
   }
 
-  function renderDiscover(){
+  function renderDiscoverLegacy(){
     const showsRoot = $("#discoverShowsGrid");
     const moviesRoot = $("#discoverMoviesGrid");
     if (!showsRoot || !moviesRoot) return;
@@ -3570,7 +3576,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       : "Inputs Editor requires the local editor server. The embedded view points to http://127.0.0.1:8787/web/inputs_editor.html.";
   }
 
-  function openMovieModal(tmdbId){
+  function openMovieModalLegacy(tmdbId){
     const m = getMovieById(tmdbId);
     if (!m){
       openModal("Movie", `<div>Movie not found: ${escHtml(tmdbId)}</div>`);
@@ -3680,7 +3686,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     wireShowPopup(showId);
   }
 
-  function buildShowPopupHtml(show){
+  function buildShowPopupHtmlLegacy(show){
     const title = safeText(show.title || show.name || "(Untitled)");
     const overview = safeText(show.overview || "");
     const poster = pickImage(show, "poster_local", "poster_path");
@@ -4133,6 +4139,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             title: item.episode_name || "Episode",
             compact: true,
             pct,
+            favoriteActive: getWatchlistSet().has(String(showId)),
+            favoriteId: showId,
+            favoriteKind: "show",
+            favoriteTitle: item.show_title || "Show",
             showWatchedAction: true,
             watchedActive: epWatched,
             watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
@@ -4271,6 +4281,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             title: safeText(item.episode_name || "Episode"),
             compact: true,
             pct: percentForItem(item),
+            favoriteActive: getWatchlistSet().has(String(showId)),
+            favoriteId: showId,
+            favoriteKind: "show",
+            favoriteTitle: item.show_title || "Show",
             watchedActive: state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false,
             showWatchedAction: true,
             showStatusAction: true,
@@ -4653,6 +4667,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     title: seasonName,
                     compact: true,
                     pct: seasonPct,
+                    favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
+                    favoriteId: show.tmdb_id ?? "",
+                    favoriteKind: "show",
+                    favoriteTitle: title,
                     watchedActive: state.watchState ? isSeasonWatched(show.tmdb_id, it.n, totalEpisodes) : false,
                     showWatchedAction: true,
                     showStatusAction: true,
@@ -4706,6 +4724,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
                   compact: true,
                   pct: epPct,
+                  favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
+                  favoriteId: show.tmdb_id ?? "",
+                  favoriteKind: "show",
+                  favoriteTitle: title,
                   watchedActive: epWatched,
                   showWatchedAction: true,
                   showStatusAction: true,

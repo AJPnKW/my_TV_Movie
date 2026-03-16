@@ -2174,6 +2174,9 @@ CHANGE NOTES:
       background:transparent;
       box-shadow:none;
     }
+    .dashcard--clean .media-card__copy{
+      display:none;
+    }
     .dashcard--clean .media-card__poster{
       aspect-ratio:16/9;
       min-height:128px;
@@ -2267,18 +2270,41 @@ CHANGE NOTES:
       align-items:start;
       margin-top:10px;
     }
-    #panel-calendar .dashhead{
+    .calendar-shell{
+      display:grid;
+      gap:14px;
+    }
+    .calendar-toolbar{
       position:sticky;
       top:var(--sticky-top, 0px);
       z-index:22;
       background:rgba(11,16,24,0.96);
       backdrop-filter:blur(12px);
-      padding-block:10px;
-      margin-bottom:10px;
+      padding:12px 14px;
+      margin-bottom:0;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,0.10);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .calendar-toolbar__copy,
+    .calendar-toolbar__controls{
+      display:grid;
+      gap:8px;
+    }
+    .calendar-toolbar__controls{
+      justify-items:end;
+      margin-left:auto;
+    }
+    .calendar-shell__content{
+      min-width:0;
     }
     .calendar-month-grid__dow{
       position:sticky;
-      top:calc(var(--sticky-top, 0px) + var(--calbar-h, 0px) + 6px);
+      top:calc(var(--sticky-top, 0px) + var(--calbar-h, 0px) + 14px);
       z-index:18;
       padding:10px 12px;
       border-radius:12px;
@@ -2996,6 +3022,7 @@ CHANGE NOTES:
       font-weight:900;
       letter-spacing:0.02em;
       color:#fde68a;
+      white-space:nowrap;
     }
     .actionbar-glyph{
       display:inline-flex;
@@ -3067,6 +3094,10 @@ CHANGE NOTES:
       }
       .browse-sidebar{
         position:static;
+      }
+      .calendar-toolbar__controls{
+        justify-items:start;
+        margin-left:0;
       }
     }
     @media (max-width: 820px){

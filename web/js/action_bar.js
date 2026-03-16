@@ -8,10 +8,10 @@ CHANGE NOTES:
 */
 
 export const ACTION_BAR_ORDER = Object.freeze([
-  'watch',
   'status',
   'favourite',
   'watched',
+  'watch',
   'rating'
 ]);
 
@@ -45,22 +45,28 @@ function splitAttrs(attrs = {}){
 }
 
 export function renderActionBarHtml(options = {}){
+  const kind = String(options.kind || '').toLowerCase();
+  const isWatchSourceKind = kind === 'movie' || kind === 'episode';
+  const shouldRenderStatus = !!options.status;
+  const shouldRenderFavourite = !!options.favourite;
+  const shouldRenderWatched = !!options.watched;
+  const shouldRenderWatch = !!options.watch && isWatchSourceKind;
   const actions = [];
-  if (options.watch){
+  if (shouldRenderWatch){
     const watchLink = splitAttrs(options.watch.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--watch" href="${String(watchLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Choose watch source" title="Choose watch source" data-watch-source-open="${options.watch.kind || 'movie'}"${attrString(watchLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">⌚</span></a>`);
+    actions.push(`<a class="actionbar-btn actionbar-btn--watch" href="${String(watchLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Choose watch source" title="Choose watch source" data-watch-source-open="${options.watch.kind || 'movie'}"${attrString(watchLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">🍿</span></a>`);
   }
-  if (options.status){
+  if (shouldRenderStatus){
     const statusLink = splitAttrs(options.status.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Watch status" title="Watch status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.status.icon || '◌'}</span></a>`);
+    actions.push(`<a class="actionbar-btn actionbar-btn--status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Watch status" title="Watch status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">⌚</span></a>`);
   }
-  if (options.favourite){
+  if (shouldRenderFavourite){
     const favouriteLink = splitAttrs(options.favourite.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle watchlist" title="Toggle watchlist" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.favourite.icon || '♥'}</span></a>`);
+    actions.push(`<a class="actionbar-btn actionbar-btn--favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle favorites" title="Toggle favorites" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">💕</span></a>`);
   }
-  if (options.watched){
+  if (shouldRenderWatched){
     const watchedLink = splitAttrs(options.watched.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--watched${options.watched.active ? ' active' : ''}" href="${String(watchedLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle watched" title="Toggle watched" data-action="toggle-watched"${attrString(watchedLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.watched.icon || '✓'}</span></a>`);
+    actions.push(`<a class="actionbar-btn actionbar-btn--watched${options.watched.active ? ' active' : ''}" href="${String(watchedLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle bookmark" title="Toggle bookmark" data-action="toggle-watched"${attrString(watchedLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">🔖</span></a>`);
   }
   if (options.rating){
     actions.push(`<span class="actionbar-btn actionbar-btn--rating" aria-label="Ratings" title="Ratings"><span class="actionbar-rating" aria-hidden="true">⭐${options.rating.icon || ''}</span></span>`);
