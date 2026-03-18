@@ -8,10 +8,10 @@ CHANGE NOTES:
 */
 
 export const ACTION_BAR_ORDER = Object.freeze([
+  'watch',
   'status',
   'favourite',
-  'watched',
-  'watch',
+  'bookmark',
   'rating'
 ]);
 
@@ -46,32 +46,31 @@ function splitAttrs(attrs = {}){
 
 export function renderActionBarHtml(options = {}){
   const kind = String(options.kind || '').toLowerCase();
-  const isWatchSourceKind = kind === 'movie' || kind === 'episode';
-  const shouldRenderStatus = !!options.status;
-  const shouldRenderFavourite = !!options.favourite;
-  const shouldRenderWatched = !!options.watched;
-  const shouldRenderWatch = !!options.watch && isWatchSourceKind;
-  const actions = [];
-  if (shouldRenderWatch){
+  const leftActions = [];
+  const middleActions = [];
+  const rightActions = [];
+
+  if (options.watch && (kind === 'movie' || kind === 'episode')){
     const watchLink = splitAttrs(options.watch.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--watch" href="${String(watchLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Choose watch source" title="Choose watch source" data-watch-source-open="${options.watch.kind || 'movie'}"${attrString(watchLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">🍿</span></a>`);
+    leftActions.push(`<a class="actionbar-btn actionbar-btn--watch" href="${String(watchLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Choose watch source" title="Choose watch source" data-watch-source-open="${options.watch.kind || 'movie'}"${attrString(watchLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">🍿</span></a>`);
   }
-  if (shouldRenderStatus){
+  if (options.status){
     const statusLink = splitAttrs(options.status.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Watch status" title="Watch status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">⌚</span></a>`);
+    middleActions.push(`<a class="actionbar-btn actionbar-btn--status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Watch status" title="Watch status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.status.icon || '◌'}</span></a>`);
   }
-  if (shouldRenderFavourite){
+  if (options.favourite){
     const favouriteLink = splitAttrs(options.favourite.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle favorites" title="Toggle favorites" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">💕</span></a>`);
+    middleActions.push(`<a class="actionbar-btn actionbar-btn--favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle favourites" title="Toggle favourites" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.favourite.icon || '♥'}</span></a>`);
   }
-  if (shouldRenderWatched){
+  if (options.watched){
     const watchedLink = splitAttrs(options.watched.attrs || {});
-    actions.push(`<a class="actionbar-btn actionbar-btn--watched${options.watched.active ? ' active' : ''}" href="${String(watchedLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle bookmark" title="Toggle bookmark" data-action="toggle-watched"${attrString(watchedLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">🔖</span></a>`);
+    middleActions.push(`<a class="actionbar-btn actionbar-btn--bookmark${options.watched.active ? ' active' : ''}" href="${String(watchedLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle bookmark" title="Toggle bookmark" data-action="toggle-watched"${attrString(watchedLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.watched.icon || '🔖'}</span></a>`);
   }
   if (options.rating){
-    actions.push(`<span class="actionbar-btn actionbar-btn--rating" aria-label="Ratings" title="Ratings"><span class="actionbar-rating" aria-hidden="true">⭐${options.rating.icon || ''}</span></span>`);
+    rightActions.push(`<span class="actionbar-btn actionbar-btn--rating" aria-label="Ratings" title="Ratings"><span class="actionbar-rating" aria-hidden="true"><span class="actionbar-rating__star">★</span><span class="actionbar-rating__value">${options.rating.icon || '%'}</span></span></span>`);
   }
-  return `<div class="actionbar action_bar${options.compact ? ' actionbar--minimal' : ''}" data-action-host="1">${actions.join('')}${options.menusHtml || ''}</div>`;
+
+  return `<div class="actionbar action_bar${options.compact ? ' actionbar--minimal' : ''}" data-action-host="1"><span class="actionbar__group actionbar__group--left${leftActions.length ? '' : ' actionbar__group--empty'}">${leftActions.join('')}</span><span class="actionbar__group actionbar__group--middle">${middleActions.join('')}</span><span class="actionbar__group actionbar__group--right">${rightActions.join('')}</span>${options.menusHtml || ''}</div>`;
 }
 
 if (typeof window !== 'undefined'){

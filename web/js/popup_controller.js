@@ -10,6 +10,6 @@ CHANGE NOTES:
 export function applyRuntimeContract(doc = document){
   const root = doc.documentElement;
   if (!root) return;
-  root.setAttribute('data-popup-contract', 'show_movie_detail_v3');
-  root.setAttribute('data-season-model', 'show_detail_only');
+  root.setAttribute('data-popup-contract', 'show_movie_detail_v4_dense');
+  root.setAttribute('data-season-model', 'show_detail_carousel_canonical_episode_cards');
 }

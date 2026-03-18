@@ -85,27 +85,21 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-calendar", `
       <div id="panel-calendar" class="panel hidden">
-        <div class="calendar-shell">
-          <div class="calendar-toolbar">
+        <section class="browse-content browse-content--calendar">
+          <div class="calendar-toolbar" aria-label="Calendar controls">
             <div class="calendar-toolbar__copy">
               <div class="browse-sidebar__eyebrow">Calendar</div>
-              <h2 class="browse-sidebar__title">Month View</h2>
-              <p class="browse-sidebar__copy">Release activity in a real wall-calendar layout with shared cards and shared actions.</p>
+              <h2 id="calMonth" class="calendar-toolbar__title">Month</h2>
+              <span id="calTodayLabel" class="calendar-toolbar__meta muted"></span>
             </div>
-            <div class="calendar-toolbar__controls">
-              <div id="calMonth" class="browse-sidebar__meta">Month</div>
-              <div class="browse-button-row">
-                <button id="calPrev" class="calbtn" type="button" aria-label="Previous month">Prev</button>
-                <button id="calNext" class="calbtn" type="button" aria-label="Next month">Next</button>
-                <button id="calToday" class="calbtn" type="button">Today</button>
-              </div>
-              <span id="calTodayLabel" class="muted"></span>
+            <div class="calendar-toolbar__actions">
+              <button id="calPrev" class="calbtn" type="button" aria-label="Previous month">Prev</button>
+              <button id="calToday" class="calbtn" type="button">Today</button>
+              <button id="calNext" class="calbtn" type="button" aria-label="Next month">Next</button>
             </div>
           </div>
-          <section class="calendar-shell__content">
-            <div id="calendar" class="calendar-grid"></div>
-          </section>
-        </div>
+          <div id="calendar" class="calendar-grid"></div>
+        </section>
       </div>
     `);
 
@@ -1489,14 +1483,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const statusContext = options.statusContext || {};
     const normalizedKind = safeText(kind).toLowerCase();
     const supportsWatchSource = normalizedKind === "movie" || normalizedKind === "episode";
-    const favoriteKind = safeText(options.favoriteKind || ((normalizedKind === "season" || normalizedKind === "episode") ? "show" : kind)).toLowerCase();
-    const favoriteId = options.favoriteId != null ? options.favoriteId : ((normalizedKind === "season" || normalizedKind === "episode") ? statusContext.showId : id);
-    const supportsFavourite = (favoriteKind === "show" || favoriteKind === "movie") && favoriteId != null && favoriteId !== "";
+    const favouriteAttrs = options.favoriteAttrs || ((normalizedKind === "show" || normalizedKind === "movie")
+      ? { "data-kind": normalizedKind, "data-id": id, "data-title": title, "data-no-default": "1" }
+      : null);
     return window.MyTVHubSharedModules.actionBar.renderActionBarHtml({
       kind: normalizedKind,
       compact: !!options.compact,
       watch: (supportsWatchSource && options.popcornAttrs) ? { kind: options.popcornKind || kind, attrs: options.popcornAttrs || {} } : null,
-      favourite: supportsFavourite ? { active: !!options.favoriteActive, icon: iconChar("trakt_add_to_list") || "💕", attrs: { "data-kind": favoriteKind, "data-id": favoriteId, "data-title": safeText(options.favoriteTitle || title), "data-no-default": "1" } } : null,
+      favourite: favouriteAttrs ? { active: !!options.favoriteActive, icon: iconChar("trakt_add_to_list") || "♥", attrs: favouriteAttrs } : null,
       status: options.showStatusAction ? { icon: iconChar("meta_status") || "•", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
       watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: iconChar("trakt_mark_watched") || "🔖", attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "%" },
@@ -1701,12 +1695,43 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return list.map(c => c?.name).filter(Boolean);
   }
 
+  function getCountryNames(list){
+    if (!Array.isArray(list)) return [];
+    return list.map(c => c?.name || c?.iso_3166_1).filter(Boolean);
+  }
+
+  function summarizeProviders(item){
+    const wp = getWatchProviders(item);
+    const providers = collectProvidersForRegion(wp, "US").length
+      ? collectProvidersForRegion(wp, "US")
+      : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
+    return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
+  }
+
+  let scrollLockY = 0;
+
+  function syncModalScrollLock(){
+    const locked = ($("#providerBack")?.style.display === "flex") || ($("#modalBack")?.style.display === "flex");
+    if (locked && !document.body.classList.contains("modal-open")){
+      scrollLockY = window.scrollY || window.pageYOffset || 0;
+      document.body.classList.add("modal-open");
+      document.body.style.top = `-${scrollLockY}px`;
+      document.body.style.width = "100%";
+    } else if (!locked && document.body.classList.contains("modal-open")){
+      document.body.classList.remove("modal-open");
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, scrollLockY);
+    }
+  }
+
   function openModal(title, html) {
     lastFocusEl = document.activeElement;
     $("#modalTitle").textContent = title;
     $("#modalBody").innerHTML = html;
     $("#modalBack").style.display = "flex";
     $("#modalBack").setAttribute("aria-hidden", "false");
+    syncModalScrollLock();
     const card = $("#modalCard");
     if (card) {
       card.scrollTop = 0;
@@ -1719,6 +1744,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#modalBack").style.display = "none";
     $("#modalBack").setAttribute("aria-hidden", "true");
     $("#modalBody").innerHTML = "";
+    syncModalScrollLock();
     if (lastFocusEl && typeof lastFocusEl.focus === "function") {
       lastFocusEl.focus();
     }
@@ -1730,6 +1756,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#providerBody").innerHTML = html;
     $("#providerBack").style.display = "flex";
     $("#providerBack").setAttribute("aria-hidden", "false");
+    syncModalScrollLock();
     const card = $("#providerCard");
     if (card){
       card.scrollTop = 0;
@@ -1742,6 +1769,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#providerBack").style.display = "none";
     $("#providerBack").setAttribute("aria-hidden", "true");
     $("#providerBody").innerHTML = "";
+    syncModalScrollLock();
     if (lastFocusEl && typeof lastFocusEl.focus === "function") {
       lastFocusEl.focus();
     }
@@ -4090,6 +4118,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const seasonPrev = $("[data-season-nav='prev']", host);
     const seasonNext = $("[data-season-nav='next']", host);
     if (seasonTrack && seasonPrev && seasonNext){
+      const activeSeason = $(".season-card--active", host);
       const scrollBy = () => Math.max(240, Math.floor(seasonTrack.clientWidth * 0.8));
       seasonPrev.addEventListener("click", () => seasonTrack.scrollBy({ left: -scrollBy(), behavior: "smooth" }));
       seasonNext.addEventListener("click", () => seasonTrack.scrollBy({ left: scrollBy(), behavior: "smooth" }));
@@ -4099,6 +4128,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         seasonNext.disabled = seasonTrack.scrollLeft >= max - 2;
       };
       seasonTrack.addEventListener("scroll", update);
+      if (activeSeason?.scrollIntoView) activeSeason.scrollIntoView({ block: "nearest", inline: "center" });
       update();
     }
   }
@@ -4140,9 +4170,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             compact: true,
             pct,
             favoriteActive: getWatchlistSet().has(String(showId)),
-            favoriteId: showId,
-            favoriteKind: "show",
-            favoriteTitle: item.show_title || "Show",
+            favoriteAttrs: { "data-kind": "show", "data-id": showId, "data-title": item.show_title || "Show", "data-no-default": "1" },
             showWatchedAction: true,
             watchedActive: epWatched,
             watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
@@ -4153,7 +4181,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             available
           }),
           articleAttrs: { "data-day": dateKey, "data-kind": "episode", "data-show": showId, tabindex: "0" },
-          extraClass: `calendar-item calendar-item--episode${hidden ? " hidden" : ""}`
+          extraClass: `calendar-item calendar-item--episode${hidden ? " hidden calendar-item--extra" : ""}`
         });
       }
 
@@ -4181,7 +4209,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           available: isDateAvailable(item.release_date || dateKey)
         }),
         articleAttrs: { "data-day": dateKey, "data-kind": "movie", "data-movie": movieId, tabindex: "0" },
-        extraClass: `calendar-item calendar-item--movie${hidden ? " hidden" : ""}`
+        extraClass: `calendar-item calendar-item--movie${hidden ? " hidden calendar-item--extra" : ""}`
       });
     };
 
@@ -4190,8 +4218,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         ${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(label => `<div class="calendar-month-grid__dow">${escHtml(label)}</div>`).join("")}
         ${days.map(({ dt, key, inMonth, num }) => {
           const items = eventsByDate.get(key) || [];
-          const visible = items.slice(0, 4).map(item => renderItem(item, key)).join("");
-          const hidden = items.slice(4).map(item => renderItem(item, key, true)).join("");
+          const visible = items.slice(0, 3).map(item => renderItem(item, key)).join("");
+          const hidden = items.slice(3).map(item => renderItem(item, key, true)).join("");
           return `
             <section class="calendar-day${inMonth ? "" : " calendar-day--dim"}${key === today ? " calendar-day--today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-day--weekend" : ""}" data-daycell="${key}">
               <div class="calendar-day__head">
@@ -4201,7 +4229,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               <div class="calendar-day__items">
                 ${visible || `<div class="calendar-day__empty">${inMonth ? "No releases" : ""}</div>`}
                 ${hidden}
-                ${items.length > 4 ? `<button class="calendar-item__more" type="button" data-calendar-more="${key}" data-count="${items.length - 4}" data-open="0">+${items.length - 4} more</button>` : ""}
+                ${items.length > 3 ? `<button class="calendar-item__more" type="button" data-calendar-more="${key}" data-count="${items.length - 3}" data-open="0">+${items.length - 3} more</button>` : ""}
               </div>
             </section>
           `;
@@ -4221,7 +4249,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       btn.addEventListener("click", () => {
         const key = safeText(btn.getAttribute("data-calendar-more"));
         const open = btn.getAttribute("data-open") === "1";
-        $$(`.calendar-item.hidden[data-day='${key}']`).forEach(el => el.classList.toggle("hidden", open));
+        $$(`.calendar-item--extra[data-day='${key}']`).forEach(el => el.classList.toggle("hidden", open));
         btn.setAttribute("data-open", open ? "0" : "1");
         btn.textContent = open ? `+${safeText(btn.getAttribute("data-count"))} more` : "Show less";
       });
@@ -4282,9 +4310,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             compact: true,
             pct: percentForItem(item),
             favoriteActive: getWatchlistSet().has(String(showId)),
-            favoriteId: showId,
-            favoriteKind: "show",
-            favoriteTitle: item.show_title || "Show",
+            favoriteAttrs: { "data-kind": "show", "data-id": showId, "data-title": item.show_title || "Show", "data-no-default": "1" },
             watchedActive: state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false,
             showWatchedAction: true,
             showStatusAction: true,
@@ -4592,6 +4618,21 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
     const networks = Array.isArray(show.networks) ? show.networks.map(n => n?.name).filter(Boolean) : [];
     const genres = Array.isArray(show?.genres) ? show.genres.map(g => g?.name).filter(Boolean) : [];
+    const creators = Array.isArray(show?.created_by) ? show.created_by.map(p => p?.name).filter(Boolean) : [];
+    const countries = Array.isArray(show?.origin_country) ? show.origin_country.filter(Boolean) : [];
+    const nextEpisode = show?.next_episode_to_air || null;
+    const lastEpisode = show?.last_episode_to_air || null;
+    const seasonAir = pickAirDate(season);
+    const seasonEpisodeCount = Array.isArray(season?.episodes) ? season.episodes.length : 0;
+    const currentRuntime = Number(Array.isArray(show?.episode_run_time) ? show.episode_run_time[0] : (show?.runtime ?? 0));
+    const showPct = (() => {
+      let v = progressPercent(show);
+      if (v == null){
+        const raw = Number(show?.vote_average ?? show?.rating ?? 0);
+        if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
+      }
+      return v;
+    })();
     return `
       <div class="popup-shell popup-shell--show">
         <div class="popup-hero">
@@ -4601,16 +4642,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <div class="popup-hero__body">
             <div class="popup-hero__eyebrow">Show Detail</div>
             <h2 class="popup-hero__title">${escHtml(title)}</h2>
+            ${safeText(show?.original_name || "").trim() && safeText(show?.original_name || "").trim() !== title ? `<div class="popup-hero__subline">${escHtml(show.original_name)}</div>` : ""}
             ${buildActionBarHtml("show", show.tmdb_id ?? "", {
               title,
-              pct: (() => {
-                let v = progressPercent(show);
-                if (v == null){
-                  const raw = Number(show?.vote_average ?? show?.rating ?? 0);
-                  if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
-                }
-                return v;
-              })(),
+              pct: showPct,
               favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
               watchedToggleHtml: watchToggleHtml("show", { "data-watch-show": show.tmdb_id ?? "" }, isShowWatched(show)),
               watchedActive: isShowWatched(show),
@@ -4619,24 +4654,25 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               available: isShowAvailable(show)
             })}
             <div class="popup-detail-grid">
-              <div class="popup-detail"><span>Providers</span><strong>${escHtml((() => {
-                const wp = getWatchProviders(show);
-                const providers = collectProvidersForRegion(wp, "US").length
-                  ? collectProvidersForRegion(wp, "US")
-                  : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
-                return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
-              })())}</strong></div>
+              <div class="popup-detail"><span>Providers</span><strong>${escHtml(summarizeProviders(show))}</strong></div>
               <div class="popup-detail"><span>Genres</span><strong>${escHtml(genres.join(" • ") || "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Runtime</span><strong>${escHtml((() => {
-                const value = Number(Array.isArray(show?.episode_run_time) ? show.episode_run_time[0] : (show?.runtime ?? 0));
-                return Number.isFinite(value) && value > 0 ? `${value} min` : "Series";
-              })())}</strong></div>
+              <div class="popup-detail"><span>Runtime</span><strong>${escHtml(Number.isFinite(currentRuntime) && currentRuntime > 0 ? `${currentRuntime} min` : "Series")}</strong></div>
               <div class="popup-detail"><span>Network</span><strong>${escHtml(networks.join(" • ") || "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Season Info</span><strong>${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Status</span><strong>${escHtml([safeText(show?.status || ""), show?.in_production ? "In production" : ""].filter(Boolean).join(" • ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Release Window</span><strong>${escHtml([safeText(show?.first_air_date) ? fmtDate(show.first_air_date) : "", safeText(show?.last_air_date) ? `to ${fmtDate(show.last_air_date)}` : ""].filter(Boolean).join(" ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Series Totals</span><strong>${escHtml(`${seasonItems.length || 0} seasons • ${Number(show?.number_of_episodes || 0) || 0} episodes`)}</strong></div>
+              <div class="popup-detail"><span>Creators</span><strong>${escHtml(creators.join(" • ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Origin</span><strong>${escHtml(countries.join(" • ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Current Season</span><strong>${escHtml(selected ? `Season ${selected.n}` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Season Release</span><strong>${escHtml(seasonAir ? fmtDate(seasonAir) : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Season Episodes</span><strong>${escHtml(seasonEpisodeCount ? `${seasonEpisodeCount} episodes` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Next Episode</span><strong>${escHtml(nextEpisode ? `${seTag(nextEpisode.season_number, nextEpisode.episode_number)} • ${fmtDate(nextEpisode.air_date)}` : "No next episode data")}</strong></div>
+              <div class="popup-detail"><span>Last Aired</span><strong>${escHtml(lastEpisode ? `${seTag(lastEpisode.season_number, lastEpisode.episode_number)} • ${fmtDate(lastEpisode.air_date)}` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Rating</span><strong>${escHtml(`${showPct || 0}% • ${Number(show?.vote_count || 0) || 0} votes`)}</strong></div>
               <div class="popup-detail"><span>TMDB</span><strong>${escHtml(String(show?.tmdb_id ?? ""))}</strong></div>
             </div>
             <div class="popup-description">${compactOverviewHtml(show?.overview || "", 320)}</div>
-            <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(show), "Rotten Tomatoes")}</div>
+            <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(show), "Rotten Tomatoes")} ${linkOrDisabled("meta_web", show?.homepage || show?.links?.homepage || "", "Homepage")} ${linkOrDisabled("meta_imdb", show?.links?.imdb || (show?.imdb_id ? `https://www.imdb.com/title/${show.imdb_id}` : ""), "IMDb")}</div>
           </div>
         </div>
         <div class="section section-card">
@@ -4668,13 +4704,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     compact: true,
                     pct: seasonPct,
                     favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
-                    favoriteId: show.tmdb_id ?? "",
-                    favoriteKind: "show",
-                    favoriteTitle: title,
-                    watchedActive: state.watchState ? isSeasonWatched(show.tmdb_id, it.n, totalEpisodes) : false,
-                    showWatchedAction: true,
-                    showStatusAction: true,
-                    watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-watch-season": it.n, "data-season": it.n },
+                  favoriteAttrs: { "data-kind": "show", "data-id": show.tmdb_id ?? "", "data-title": title, "data-no-default": "1" },
+                  watchedActive: state.watchState ? isSeasonWatched(show.tmdb_id, it.n, totalEpisodes) : false,
+                  showWatchedAction: true,
+                  showStatusAction: true,
+                  watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-watch-season": it.n, "data-season": it.n },
                     statusContext: { showId: show.tmdb_id ?? "", seasonNumber: it.n },
                     available: isSeasonAvailable(it.s)
                   }),
@@ -4692,8 +4726,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path"))}');"` : ""}>
               <div class="seasonmeta">
                 <div class="seasonname">${escHtml(season?.name || (selected ? `Season ${selected.n}` : "Season"))}</div>
-                <div class="seasonair">${escHtml(pickAirDate(season) ? `Premiered ${fmtDate(pickAirDate(season))}` : "Season details")}</div>
-                ${Number.isFinite(Array.isArray(season?.episodes) ? season.episodes.length : NaN) ? `<div class="seasonair">${escHtml(`${Array.isArray(season?.episodes) ? season.episodes.length : 0} episodes`)}</div>` : ""}
+                <div class="seasonair">${escHtml(seasonAir ? `Premiered ${fmtDate(seasonAir)}` : "Season details")}</div>
+                <div class="seasonair">${escHtml(seasonEpisodeCount ? `${seasonEpisodeCount} episodes` : "Episode count unavailable")}</div>
+                ${nextEpisode && Number(nextEpisode?.season_number) === Number(selected?.n) ? `<div class="seasonair">${escHtml(`Next: ${seTag(nextEpisode.season_number, nextEpisode.episode_number)} • ${fmtDate(nextEpisode.air_date)}`)}</div>` : ""}
                 ${compactOverviewHtml(season?.overview || "", 220)}
               </div>
           </div>
@@ -4725,9 +4760,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   compact: true,
                   pct: epPct,
                   favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
-                  favoriteId: show.tmdb_id ?? "",
-                  favoriteKind: "show",
-                  favoriteTitle: title,
+                  favoriteAttrs: { "data-kind": "show", "data-id": show.tmdb_id ?? "", "data-title": title, "data-no-default": "1" },
                   watchedActive: epWatched,
                   showWatchedAction: true,
                   showStatusAction: true,

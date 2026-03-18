@@ -50,7 +50,7 @@ export function renderCompactCardHtml(options = {}){
     <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${attrString(articleAttrs)}>
       <button type="button" class="imgbox media-card__poster media_block"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;color:inherit;cursor:pointer;">
         ${options.image ? `<img loading="lazy" src="${esc(options.image)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
-        ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy"><span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
+        ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy">${options.eyebrow ? `<span class="media-card__overlay-eyebrow">${esc(options.eyebrow)}</span>` : ''}<span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
       </button>
       <div class="cardbody media-card__body">
         <div class="media-card__copy${overlay ? ' media-card__copy--hidden' : ''}">

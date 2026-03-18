@@ -1,33 +1,19 @@
 <!doctype html>
-<!--
-FILE: web/config.html
-VERSION: v1.0.0
-UPDATED: 2026-03-15T04:28:23Z
-CHANGE NOTES:
-- Converted to a thin main-app shell backed by shared runtime modules.
-- Removed duplicated large inline CSS and JS payloads.
-- Rebased this view onto the normalized shared runtime path.
--->
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="color-scheme" content="dark" />
-  <title>My TV Hub — Config</title>
+  <title>My TV Hub - Config</title>
   <link rel="stylesheet" href="./css/my_tv_hub.css" />
   <link rel="stylesheet" href="./css/main_app.css" />
 </head>
 <body data-app-family="main" data-page="config">
-<div class="app">
+  <div class="app">
     <div class="top">
       <div class="brand">
         <div class="logo" aria-label="MY TV HUB"><div class="logo_txt"><div>MY TV</div><div>HUB</div></div></div>
-        <div class="titlebox">
-          <div class="title" style="display:none"></div>
-          <div class="subtitle" style="display:none"></div>
-        </div>
       </div>
-
       <div class="nav" role="tablist" aria-label="Primary">
         <a class="tab" data-tab="dashboard" href="./index.html" role="tab" aria-selected="false">Dashboard</a>
         <a class="tab" data-tab="shows" href="./shows.html" role="tab" aria-selected="false">Shows</a>
@@ -38,119 +24,35 @@ CHANGE NOTES:
         <a class="tab active" data-tab="config" href="./config.html" role="tab" aria-selected="true">Config</a>
         <a class="tab" data-tab="inputs-editor" href="./inputs_editor.html" role="tab" aria-selected="false">Inputs Editor</a>
       </div>
-
       <div class="status" aria-live="polite">
         <div id="statusDot" class="dot"></div>
         <span id="statusText">Loading</span>
         <button id="verBadge" class="calbtn" type="button" aria-label="Version">ver</button>
       </div>
     </div>
-
     <div class="shell">
-      <aside class="sidebar" aria-label="Sidebar">
-        <div class="side-section">
-          <div class="side-title">My</div>
-          <button class="side-link active" type="button">Shows &amp; Movies</button>
-          <button class="side-link" type="button">Shows</button>
-          <button class="side-link" type="button">Premieres</button>
-          <button class="side-link" type="button">New Shows</button>
-          <button class="side-link" type="button">Finales</button>
-          <button class="side-link" type="button">Movies</button>
-          <button class="side-link" type="button">Streaming</button>
-          <button class="side-link" type="button">DVD &amp; Blu-ray</button>
-        </div>
-        <div class="side-section">
-          <div class="side-title">Filters</div>
-          <button class="side-link" type="button">Watched</button>
-          <button class="side-link" type="button">Watchlist</button>
-          <button class="side-link" type="button">Not Watched</button>
-          <button class="side-link" type="button">In Library</button>
-        </div>
-      </aside>
-      <div class="main">
-          <div id="panel-dashboard" class="panel">
-          <div class="dash">
-            <section class="dashblock accent-pink">
-              <div class="dashhead">
-                <h2>Last Week</h2>
-                <span class="muted" id="dashLastWeekMeta"></span>
-              </div>
-              <div id="dashLastWeekCols" class="dashgrid"></div>
-            </section>
-            <section class="dashblock accent-orange">
-              <div class="dashhead">
-                <h2>Up Next</h2>
-                <span class="muted" id="dashNextMeta"></span>
-              </div>
-              <div id="dashUpNext" class="dashrow"></div>
-            </section>
-            <section class="dashblock accent-pink">
-              <div class="dashhead">
-                <h2>Upcoming Schedule</h2>
-                <span class="muted">Next 7 days</span>
-              </div>
-              <div id="dashScheduleCols" class="dashgrid"></div>
-            </section>
-            <section class="dashblock accent-green">
-              <div class="dashhead">
-                <h2>Watchlist</h2>
-                <span class="muted" id="dashWatchMeta"></span>
-              </div>
-              <div id="dashWatchlist" class="dashwatchlist"></div>
-            </section>
-            <section class="dashblock accent-yellow">
-              <div class="dashhead">
-                <h2>Recommendations</h2>
-                <span class="muted">Shows &amp; Movies</span>
-              </div>
-              <div class="dashrecs">
-                <div class="dashreccol">
-                  <div class="dashhead" style="margin-bottom:4px;">
-                    <h2 style="font-size:15px;">Shows</h2>
-                  </div>
-                  <div id="dashShowRecs" class="dashrecgrid"></div>
-                </div>
-                <div class="dashreccol">
-                  <div class="dashhead" style="margin-bottom:4px;">
-                    <h2 style="font-size:15px;">Movies</h2>
-                  </div>
-                  <div id="dashMovieRecs" class="dashrecgrid"></div>
-                </div>
-              </div>
-            </section>
-          </div>
-        </div>
-        <div id="panel-show" class="panel hidden">
-          <div id="showRoot"></div>
-        </div>
-      </div>
+      <main class="main"></main>
     </div>
-
     <div class="footer" id="footer"></div>
-    <!-- verify: no-hover-menus -->
-    <!-- verify: iso-date-check -->
   </div>
-
-  <!-- Modal kept for existing non-calendar usage (movie details). Calendar does not use this. -->
-  <div id="modalBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:flex-start;justify-content:center;padding:18px;z-index:200;overflow:auto;-webkit-overflow-scrolling:touch;" aria-hidden="true" role="dialog" aria-modal="true">
-    <div id="modalCard" tabindex="0" style="width:min(940px,100%);max-height:calc(100vh - 36px);overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));margin:6px 0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);z-index:5;box-shadow:0 8px 16px rgba(0,0,0,0.25);">
-        <div id="modalTitle" style="font-weight:950;">Details</div>
+  <div id="modalBack" class="app-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="modalCard" class="app-modal-card" tabindex="0">
+      <div class="app-modal-header">
+        <div id="modalTitle" class="app-modal-title">Details</div>
         <button id="modalClose" class="calbtn" type="button">Close</button>
       </div>
-      <div id="modalBody" style="padding:14px;"></div>
+      <div id="modalBody" class="app-modal-body"></div>
     </div>
   </div>
-
-  <div id="providerBack" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);align-items:flex-start;justify-content:center;padding:18px;z-index:220;overflow:auto;-webkit-overflow-scrolling:touch;" aria-hidden="true" role="dialog" aria-modal="true">
-    <div id="providerCard" tabindex="0" style="width:min(760px,100%);max-height:calc(100vh - 36px);overflow:auto;outline:none;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;border-radius:18px;border:1px solid rgba(255,255,255,0.12);background:linear-gradient(180deg, rgba(16,22,32,0.98), rgba(12,18,26,0.98));margin:6px 0;">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.10);position:sticky;top:0;background:rgba(12,18,26,0.98);z-index:5;box-shadow:0 8px 16px rgba(0,0,0,0.25);">
-        <div id="providerTitle" style="font-weight:950;">Where to watch</div>
+  <div id="providerBack" class="app-modal-backdrop app-modal-backdrop--provider" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="providerCard" class="app-modal-card app-modal-card--provider" tabindex="0">
+      <div class="app-modal-header">
+        <div id="providerTitle" class="app-modal-title">Where to watch</div>
         <button id="providerClose" class="calbtn" type="button">Close</button>
       </div>
-      <div id="providerBody" style="padding:14px;"></div>
+      <div id="providerBody" class="app-modal-body"></div>
     </div>
   </div>
-<script type="module" src="./js/app_runtime.js"></script>
+  <script type="module" src="./js/app_runtime.js"></script>
 </body>
 </html>
