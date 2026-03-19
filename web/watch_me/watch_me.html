@@ -17,7 +17,6 @@ CHANGE NOTES:
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>Watch Me</title>
   <link rel="stylesheet" href="../css/my_tv_hub.css?v=1.1.3" />
-  <link rel="stylesheet" href="../css/main_app.css" />
   <style>
     :root{
       --bg:#0b0f16; --panel:#121a28; --line:rgba(255,255,255,.14); --txt:#ecf2ff; --mut:#b5c3dd; --w:150px; --side-w:210px;
@@ -32,9 +31,6 @@ CHANGE NOTES:
     html,body{ min-height:100%; height:auto; }
     body{ margin:0; background:radial-gradient(1200px 700px at 15% -10%, rgba(34,130,255,.22), transparent 55%),var(--bg); color:var(--txt); font-family:"Space Grotesk","Segoe UI",sans-serif; overflow:auto; }
     .app{ width:min(97vw,1900px); margin:0 auto; padding:14px; }
-    .watchme-top{ margin-bottom:14px; }
-    .watchme-top .nav{ flex:1 1 auto; }
-    .watchme-top .status{ margin-left:auto; }
     .head{ display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; border:1px solid var(--line); border-radius:16px; background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03)); padding:10px 14px; margin-bottom:14px; }
     .head h1{ margin:0; font-size:24px; font-weight:900; letter-spacing:.03em; }
     .head p{ margin:0; color:var(--mut); font-size:12px; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
@@ -87,23 +83,9 @@ CHANGE NOTES:
     .day-pill{ align-self:flex-start; border:1px solid rgba(255,255,255,.2); border-radius:7px; background:var(--day-bg); color:var(--day-fg); font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.12em; padding:4px 8px; min-height:var(--day-pill-h); display:inline-flex; align-items:center; white-space:nowrap; }
     .day-pill.today{ border-color:rgba(219,233,255,.8); background:var(--day-today-bg); color:var(--day-today-fg); }
     .day-cards{ display:grid; grid-auto-flow:column; grid-auto-columns:var(--card-w); grid-template-rows:repeat(var(--carousel-rows), minmax(0,1fr)); gap:var(--gap); }
-    .day-cards .watchme-episode-card,
-    .track.two-row .watchme-movie-card{ width:var(--card-w); min-height:var(--card-h); }
+    .day-cards .card{ width:var(--card-w); min-height:var(--card-h); }
     .track.two-row{ grid-template-rows:repeat(var(--carousel-rows), minmax(0,1fr)); }
-    .watchme-episode-card,
-    .watchme-movie-card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
-    .watchme-episode-card{ grid-template-columns:1fr; }
-    .watchme-episode-card .media-card__poster,
-    .watchme-movie-card .media-card__poster{ min-height:96px; background:rgba(255,255,255,.08); }
-    .watchme-episode-card .media-card__poster img,
-    .watchme-movie-card .media-card__poster img{ width:100%; height:100%; object-fit:cover; display:block; }
-    .watchme-episode-card .media-card__body,
-    .watchme-movie-card .media-card__body{ padding:8px; gap:8px; }
-    .watchme-episode-card .media-card__eyebrow{ font-size:10px; color:#bfd0ea; }
-    .watchme-episode-card .media-card__title,
-    .watchme-movie-card .media-card__title{ font-size:12px; line-height:1.2; font-weight:800; }
-    .watchme-episode-card .media-card__meta,
-    .watchme-movie-card .media-card__meta{ font-size:10px; color:#cfdbf0; }
+    .card{ border:1px solid rgba(255,255,255,.13); border-radius:12px; overflow:hidden; background:rgba(255,255,255,.06); display:flex; flex-direction:column; }
     .media{ position:relative; background:rgba(255,255,255,.08); }
     .media.ep{ aspect-ratio:calc((16 / 9) / var(--wm_ep_still_h_mult)); overflow:hidden; }
     .media.mv{ aspect-ratio:2/3; }
@@ -113,18 +95,42 @@ CHANGE NOTES:
     .k{ font-size:10px; color:#bfd0ea; text-transform:uppercase; letter-spacing:.05em; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .n{ font-size:12px; line-height:1.2; font-weight:800; color:#f2f6ff; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .d{ font-size:10px; color:#cfdbf0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .cb{ padding:8px; display:flex; flex-direction:column; gap:8px; }
-    .watchme-actionbar{ margin-top:auto; }
-    .watchme-actionbar .actionbar__group--right{ display:flex; }
+    .cb{ padding:8px; display:flex; flex-direction:column; gap:5px; }
+    .wm-icons{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;white-space:nowrap;}
+    .wm-icons__left,.wm-icons__center,.wm-icons__right{display:flex;align-items:center;gap:10px;}
+    .wm-icons__left--empty{visibility:hidden;}
+    .wm-icons__center{justify-content:center;}
+    .wm-icons__right{justify-content:flex-end;}
+    .wm-glyph{font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
+    .wm-rating{font-size:12px;font-weight:900;color:#fde68a;}
+    .bad{ display:flex; align-items:center; gap:6px; }
+    .prov{ max-height:16px; max-width:58px; object-fit:contain; }
+    .chip{ display:inline-flex; align-items:center; border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:2px 6px; background:rgba(255,255,255,.06); font-size:10px; color:#d0dcef; text-transform:uppercase; letter-spacing:.05em; }
+    .links{ display:flex; gap:7px; }
+    .iconbtn{ display:inline-flex; align-items:center; justify-content:center; text-decoration:none; background:transparent; border:none; width:auto; height:auto; border-radius:0; padding:0; }
+    .iconbtn .glyph{ font-size:21px; line-height:1; display:block; }
+    .iconbtn.provider-a{ color:inherit; }
+    .iconbtn.provider-b{ color:inherit; }
+    .iconbtn:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; border-radius:4px; }
+    .watched-toggle{
+      position:relative; width:var(--wm_watch_toggle_w); height:var(--wm_watch_toggle_h); border-radius:999px; border:1px solid rgba(255,255,255,.28); background:#9ff3ae; cursor:pointer;
+      transition:background .15s ease, border-color .15s ease; padding:0; margin-left:1px; flex:0 0 auto;
+    }
+    .watched-toggle::after{
+      content:""; position:absolute; top:2px; left:2px; width:var(--wm_watch_toggle_thumb); height:var(--wm_watch_toggle_thumb); border-radius:999px; background:#0c192d;
+      transition:left .15s ease, background .15s ease;
+    }
+    .watched-toggle.is-watched{ background:#8a909d; border-color:rgba(255,255,255,.24); }
+    .watched-toggle.is-watched::after{ left:calc(var(--wm_watch_toggle_w) - var(--wm_watch_toggle_thumb) - 2px); background:#f1f5ff; }
+    .watched-toggle.is-unsaved{ outline:1px dotted rgba(255,255,255,.9); outline-offset:2px; }
+    .watched-toggle:focus-visible{ outline:3px solid #ffffff; outline-offset:2px; }
     .sr-only{
       position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
       clip:rect(0,0,0,0); white-space:nowrap; border:0;
     }
     .warn-inline{ margin-bottom:8px; font-size:11px; color:#ffd9a3; letter-spacing:.02em; }
-    .watchme-episode-card,
-    .watchme-movie-card{ outline-offset:2px; }
-    .watchme-episode-card:focus-visible,
-    .watchme-movie-card:focus-visible{ outline:3px solid #ffffff; }
+    .card{ outline-offset:2px; }
+    .card:focus-visible{ outline:3px solid #ffffff; }
     .day-pill{ outline-offset:2px; }
     .day-pill:focus-visible{ outline:3px solid #ffffff; }
     .empty{ border:1px dashed rgba(255,255,255,.22); border-radius:10px; padding:14px; color:var(--mut); font-size:12px; background:rgba(255,255,255,.03); align-self:start; }
@@ -140,32 +146,6 @@ CHANGE NOTES:
 </head>
 <body data-watchme-version="1.1.3">
   <div class="app">
-    <div class="top watchme-top">
-      <div class="brand">
-        <div class="logo" aria-label="MY TV HUB"><div class="logo_txt"><div>MY TV</div><div>HUB</div></div></div>
-        <div class="titlebox">
-          <div class="title" style="display:none"></div>
-          <div class="subtitle" style="display:none"></div>
-        </div>
-      </div>
-
-      <div class="nav" role="tablist" aria-label="Primary">
-        <a class="tab" href="../index.html" role="tab" aria-selected="false">Dashboard</a>
-        <a class="tab" href="../shows.html" role="tab" aria-selected="false">Shows</a>
-        <a class="tab" href="../movies.html" role="tab" aria-selected="false">Movies</a>
-        <a class="tab active" href="./watch_me.html" role="tab" aria-selected="true">Watch Me</a>
-        <a class="tab" href="../calendar.html" role="tab" aria-selected="false">Calendar</a>
-        <a class="tab" href="../discover.html" role="tab" aria-selected="false">Discover</a>
-        <a class="tab" href="../config.html" role="tab" aria-selected="false">Config</a>
-        <a class="tab" href="../inputs_editor.html" role="tab" aria-selected="false">Inputs Editor</a>
-      </div>
-
-      <div class="status" aria-live="polite">
-        <div class="dot"></div>
-        <span>Watch Me</span>
-      </div>
-    </div>
-
     <header class="head">
       <div class="headcopy">
         <h1>Watch Me</h1>
@@ -220,8 +200,6 @@ CHANGE NOTES:
     </div>
   </div>
 
-  <script type="module" src="../js/action_bar.js"></script>
-  <script type="module" src="../js/card_renderer.js"></script>
   <script>
     (() => {
       "use strict";
@@ -497,20 +475,11 @@ CHANGE NOTES:
         const id = movieUid(movie);
         return id ? `movie:${id}` : "";
       }
-      async function fetchWithTimeout(url, options = {}, timeoutMs = 1500){
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
-        try {
-          return await fetch(url, { ...options, signal: controller.signal });
-        } finally {
-          clearTimeout(timer);
-        }
-      }
       async function loadWatchedMap(clientId){
         const out = new Map();
         const apiBase = String(state.watchedApiBaseUrl || WATCHED_DEFAULT_API_BASE_URL).replace(/\/+$/, "");
         try {
-          const res = await fetchWithTimeout(`${apiBase}/api/watched?client=${encodeURIComponent(clientId)}`, { cache: "no-store" }, 1500);
+          const res = await fetch(`${apiBase}/api/watched?client=${encodeURIComponent(clientId)}`, { cache: "no-store" });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const payload = await res.json();
           const items = payload?.items && typeof payload.items === "object" ? payload.items : {};
@@ -541,11 +510,11 @@ CHANGE NOTES:
       async function setWatched(clientId, kind, id, watched){
         const apiBase = String(state.watchedApiBaseUrl || WATCHED_DEFAULT_API_BASE_URL).replace(/\/+$/, "");
         try {
-          const res = await fetchWithTimeout(`${apiBase}/api/set`, {
+          const res = await fetch(`${apiBase}/api/set`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ client: clientId, kind, id, watched: !!watched })
-          }, 1500);
+          });
           return res.ok;
         } catch (_e){
           return false;
@@ -667,9 +636,8 @@ CHANGE NOTES:
           });
         });
         refs.rowsRoot.addEventListener("click", async (ev) => {
-          const btn = ev.target instanceof Element ? ev.target.closest("[data-watched-key]") : null;
-          if (!(btn instanceof HTMLElement)) return;
-          ev.preventDefault();
+          const btn = ev.target instanceof Element ? ev.target.closest(".watched-toggle") : null;
+          if (!(btn instanceof HTMLButtonElement)) return;
           const key = String(btn.dataset.watchedKey || "");
           const kind = String(btn.dataset.kind || "");
           const id = String(btn.dataset.itemId || "");
@@ -708,50 +676,41 @@ CHANGE NOTES:
         a.sort((x,y)=>dateFn(x)-dateFn(y) || titleFn(x).localeCompare(titleFn(y))); return a;
       }
 
-      function watchMeActionBarHtml(kind, opts){
-        const api = window.MyTVHubActionBar;
-        if (!api?.renderActionBarHtml) return "";
-        return api.renderActionBarHtml({
-          compact: true,
-          watch: opts.watchHref ? { kind, attrs: { href: opts.watchHref } } : null,
-          favourite: opts.favoriteId ? { attrs: { "data-watchme-favorite": opts.favoriteId }, icon: "☆" } : null,
-          watched: opts.watchedKey ? { active: !!opts.watched, attrs: { "data-watched-key": opts.watchedKey, "data-kind": opts.dataKind || kind, "data-item-id": opts.itemId || "" }, icon: "✓" } : null,
-          rating: { icon: "%" }
-        });
-      }
 
-      function episodeCard(it){
-        const links = mediaLinks(it.ep);
+function ratingPct(value){
+  const n = Number(value);
+  if (!Number.isFinite(n) || n <= 0) return '%';
+  return `${Math.round(n <= 10 ? n * 10 : n)}%`;
+}
+function wmActionRow(links, rating){
+  const popcorn = links.a || links.b ? `<span class="wm-icons__left"><span class="wm-glyph" aria-hidden="true">🍿</span></span>` : `<span class="wm-icons__left wm-icons__left--empty"></span>`;
+  const center = `<span class="wm-icons__center"><span class="wm-glyph" aria-hidden="true">⌚</span><span class="wm-glyph" aria-hidden="true">💕</span><span class="wm-glyph" aria-hidden="true">🔖</span></span>`;
+  const right = `<span class="wm-icons__right"><span class="wm-glyph" aria-hidden="true">★</span><span class="wm-rating">${escHtml(rating)}</span></span>`;
+  return `<div class="wm-icons">${popcorn}${center}${right}</div>`;
+}
+function episodeCard(it){
+        const links = mediaLinks(it.ep), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
         const watchedKey = watchedKeyForEpisode(it);
         const watchedId = episodeWatchedId(it);
         const watched = watchedKey ? state.watched.get(watchedKey) === true : false;
-        return window.MyTVHubCardRenderer.renderCompactEpisodeCardHtml({
-          image: it.image,
-          eyebrow: it.title,
-          title: it.epTitle,
-          meta: `${seTag(it.sn,it.en)} • ${dateLabel(it.firstAired)}`,
-          overlay: true,
-          actionBarHtml: watchMeActionBarHtml("episode", { watchHref: links.a || links.b, watchedKey, watched, itemId: watchedId, dataKind:"tv" }),
-          articleAttrs: { tabindex:"0" },
-          extraClass: "watchme-episode-card"
-        });
+        const unsaved = watchedKey ? state.watchedUnsaved.has(watchedKey) : false;
+        const watchedLabel = watched ? "Watched" : "Not watched";
+        const watchedToggle = watchedKey
+          ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${seTag(it.sn,it.en)} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="tv" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
+          : "";
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb">${wmActionRow(links, ratingPct(it.ep?.vote_average || it.ep?.rating || it.ep?.rating_percent))}</div></article>`;
       }
       function movieCard(it){
-        const links = mediaLinks(it.movie);
+        const links = mediaLinks(it.movie), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
         const watchedKey = watchedKeyForMovie(it);
         const watchedId = movieUid(it.movie);
         const watched = watchedKey ? state.watched.get(watchedKey) === true : false;
-        return window.MyTVHubCardRenderer.renderCompactCardHtml({
-          kind: "movie",
-          id: watchedId,
-          title: it.title,
-          image: it.image,
-          meta: dateLabel(it.rd),
-          overlay: true,
-          actionBarHtml: watchMeActionBarHtml("movie", { watchHref: links.a || links.b, favoriteId: watchedId, watchedKey, watched, itemId: watchedId, dataKind:"movie" }),
-          articleAttrs: { tabindex:"0" },
-          extraClass: "watchme-movie-card"
-        });
+        const unsaved = watchedKey ? state.watchedUnsaved.has(watchedKey) : false;
+        const watchedLabel = watched ? "Watched" : "Not watched";
+        const watchedToggle = watchedKey
+          ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="movie" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
+          : "";
+        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb">${wmActionRow(links, ratingPct(it.movie?.vote_average || it.movie?.rating || it.movie?.rating_percent))}</div></article>`;
       }
       function buildTvWeeks(items){
         const weeks = new Map();
@@ -826,14 +785,14 @@ CHANGE NOTES:
       function wireKeyboardNav(){
         const rowsRoot = refs.rowsRoot;
         const tracks = Array.from(rowsRoot.querySelectorAll(".track"));
-        for (const card of rowsRoot.querySelectorAll(".watchme-episode-card, .watchme-movie-card")){
+        for (const card of rowsRoot.querySelectorAll(".card")){
           card.tabIndex = 0;
         }
         for (const pill of rowsRoot.querySelectorAll(".day-pill")){
           pill.tabIndex = 0;
         }
         function moveInTrack(track, current, dir){
-          const focusables = Array.from(track.querySelectorAll(".day-pill, .watchme-episode-card, .watchme-movie-card"));
+          const focusables = Array.from(track.querySelectorAll(".day-pill, .card"));
           const idx = focusables.indexOf(current);
           if (idx < 0) return false;
           const next = focusables[idx + dir];
@@ -845,21 +804,21 @@ CHANGE NOTES:
           track.addEventListener("keydown", (ev) => {
             const target = ev.target;
             if (!(target instanceof HTMLElement)) return;
-            if (!target.matches(".watchme-episode-card, .watchme-movie-card, .day-pill, .actionbar-btn")) return;
+            if (!target.matches(".card, .day-pill, .iconbtn")) return;
             if (ev.key === "ArrowRight"){
-              if (target.matches(".actionbar-btn")) return;
+              if (target.matches(".iconbtn")) return;
               if (moveInTrack(track, target, 1)) ev.preventDefault();
               return;
             }
             if (ev.key === "ArrowLeft"){
-              if (target.matches(".actionbar-btn")) return;
+              if (target.matches(".iconbtn")) return;
               if (moveInTrack(track, target, -1)) ev.preventDefault();
               return;
             }
             if (ev.key !== "Enter") return;
-            if (target.matches(".watchme-episode-card, .watchme-movie-card")){
-              const primary = target.querySelector(".actionbar-btn--watch, [data-watch-source-open]");
-              if (primary instanceof HTMLElement){
+            if (target.matches(".card")){
+              const primary = target.querySelector(".links .iconbtn");
+              if (primary instanceof HTMLAnchorElement){
                 primary.click();
                 ev.preventDefault();
               }
@@ -867,7 +826,7 @@ CHANGE NOTES:
             }
             if (target.matches(".day-pill")){
               const seg = target.closest(".day-seg");
-              const firstCard = seg ? seg.querySelector(".watchme-episode-card, .watchme-movie-card") : null;
+              const firstCard = seg ? seg.querySelector(".card") : null;
               if (firstCard instanceof HTMLElement){
                 firstCard.focus();
                 ev.preventDefault();
@@ -1016,11 +975,9 @@ CHANGE NOTES:
         localStorage.setItem(WATCHED_CLIENT_KEY, state.clientId);
         try {
           await loadData();
-          state.watched = new Map();
-          buildFilterOptions();
-          render();
           state.watched = await loadWatchedMap(state.clientId);
           state.watchedUnsaved = new Set();
+          buildFilterOptions();
           render();
         }
         catch (err){ refs.rowsRoot.innerHTML = `<section class="row"><div class="empty">Failed to load media data: ${escHtml(err?.message || String(err))}</div></section>`; }
