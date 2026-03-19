@@ -96,13 +96,6 @@ CHANGE NOTES:
     .n{ font-size:12px; line-height:1.2; font-weight:800; color:#f2f6ff; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
     .d{ font-size:10px; color:#cfdbf0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .cb{ padding:8px; display:flex; flex-direction:column; gap:5px; }
-    .wm-icons{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;white-space:nowrap;}
-    .wm-icons__left,.wm-icons__center,.wm-icons__right{display:flex;align-items:center;gap:10px;}
-    .wm-icons__left--empty{visibility:hidden;}
-    .wm-icons__center{justify-content:center;}
-    .wm-icons__right{justify-content:flex-end;}
-    .wm-glyph{font-size:18px;line-height:1;display:inline-flex;align-items:center;justify-content:center;}
-    .wm-rating{font-size:12px;font-weight:900;color:#fde68a;}
     .bad{ display:flex; align-items:center; gap:6px; }
     .prov{ max-height:16px; max-width:58px; object-fit:contain; }
     .chip{ display:inline-flex; align-items:center; border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:2px 6px; background:rgba(255,255,255,.06); font-size:10px; color:#d0dcef; text-transform:uppercase; letter-spacing:.05em; }
@@ -142,7 +135,20 @@ CHANGE NOTES:
       .sel{ color-scheme:light; }
     }
     @media (max-width:1120px){ .side{ max-height:none; } }
-  </style>
+  
+    .wm-icons{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;margin-top:4px;white-space:nowrap;}
+    .wm-icons__left,.wm-icons__mid,.wm-icons__right{display:flex;align-items:center;gap:7px;}
+    .wm-icons__mid{justify-content:center;}
+    .wm-icons__right{justify-content:flex-end;}
+    .wm-iconbtn,.wm-icon{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:none;border:0;padding:0;font-size:16px;line-height:1;color:#f5f8ff;}
+    .wm-iconbtn--watch{color:#fff1b3;}
+    .wm-icon--status{color:#bfdbfe;}
+    .wm-icon--fav{color:#fda4af;}
+    .wm-icon--bookmark{color:#bbf7d0;}
+    .wm-rating{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:900;color:#fde68a;}
+    .wm-rating__star{font-size:13px;}
+    .cb .bad{display:none;}
+    </style>
 </head>
 <body data-watchme-version="1.1.3">
   <div class="app">
@@ -676,19 +682,7 @@ CHANGE NOTES:
         a.sort((x,y)=>dateFn(x)-dateFn(y) || titleFn(x).localeCompare(titleFn(y))); return a;
       }
 
-
-function ratingPct(value){
-  const n = Number(value);
-  if (!Number.isFinite(n) || n <= 0) return '%';
-  return `${Math.round(n <= 10 ? n * 10 : n)}%`;
-}
-function wmActionRow(links, rating){
-  const popcorn = links.a || links.b ? `<span class="wm-icons__left"><span class="wm-glyph" aria-hidden="true">🍿</span></span>` : `<span class="wm-icons__left wm-icons__left--empty"></span>`;
-  const center = `<span class="wm-icons__center"><span class="wm-glyph" aria-hidden="true">⌚</span><span class="wm-glyph" aria-hidden="true">💕</span><span class="wm-glyph" aria-hidden="true">🔖</span></span>`;
-  const right = `<span class="wm-icons__right"><span class="wm-glyph" aria-hidden="true">★</span><span class="wm-rating">${escHtml(rating)}</span></span>`;
-  return `<div class="wm-icons">${popcorn}${center}${right}</div>`;
-}
-function episodeCard(it){
+      function episodeCard(it){
         const links = mediaLinks(it.ep), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
         const watchedKey = watchedKeyForEpisode(it);
         const watchedId = episodeWatchedId(it);
@@ -698,7 +692,8 @@ function episodeCard(it){
         const watchedToggle = watchedKey
           ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${seTag(it.sn,it.en)} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="tv" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
           : "";
-        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb">${wmActionRow(links, ratingPct(it.ep?.vote_average || it.ep?.rating || it.ep?.rating_percent))}</div></article>`;
+        const pct = Number.isFinite(Number(it.rating_pct)) ? Math.round(Number(it.rating_pct)) : "";
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="wm-icons"><span class="wm-icons__left">${links.a || links.b ? `<a class="wm-iconbtn wm-iconbtn--watch" href="${escHtml(links.a || links.b)}" target="_blank" rel="noopener" title="Watch source" aria-label="Watch source">🍿</a>` : `<span class="wm-icon wm-iconbtn--watch">🍿</span>`}</span><span class="wm-icons__mid"><span class="wm-icon wm-icon--status">⌚</span><span class="wm-icon wm-icon--fav">💕</span><span class="wm-icon wm-icon--bookmark">🔖</span></span><span class="wm-icons__right"><span class="wm-rating"><span class="wm-rating__star">★</span><span>${pct || '%'}</span></span></span></div></div></article>`;
       }
       function movieCard(it){
         const links = mediaLinks(it.movie), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
@@ -710,7 +705,8 @@ function episodeCard(it){
         const watchedToggle = watchedKey
           ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="movie" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
           : "";
-        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb">${wmActionRow(links, ratingPct(it.movie?.vote_average || it.movie?.rating || it.movie?.rating_percent))}</div></article>`;
+        const pct = Number.isFinite(Number(it.rating_pct)) ? Math.round(Number(it.rating_pct)) : "";
+        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="wm-icons"><span class="wm-icons__left">${links.a || links.b ? `<a class="wm-iconbtn wm-iconbtn--watch" href="${escHtml(links.a || links.b)}" target="_blank" rel="noopener" title="Watch source" aria-label="Watch source">🍿</a>` : `<span class="wm-icon wm-iconbtn--watch">🍿</span>`}</span><span class="wm-icons__mid"><span class="wm-icon wm-icon--status">⌚</span><span class="wm-icon wm-icon--fav">💕</span><span class="wm-icon wm-icon--bookmark">🔖</span></span><span class="wm-icons__right"><span class="wm-rating"><span class="wm-rating__star">★</span><span>${pct || '%'}</span></span></span></div></div></article>`;
       }
       function buildTvWeeks(items){
         const weeks = new Map();

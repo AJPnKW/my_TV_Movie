@@ -67,7 +67,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     }
   };
   let lastFocusEl = null;
-  const safeCardImage = (...args) => (window.MyTVHubSharedModules?.cardRenderer?.safeCardImage ? window.MyTVHubSharedModules.cardRenderer.safeCardImage(...args) : String(args[0] || ''));
 
   function ensureMainAppShell(){
     const nav = $(".nav");
@@ -820,18 +819,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function pickImage(obj, localKey, pathKey){
     if (!obj) return "";
-    const title = safeText(obj?.title || obj?.name || obj?.original_title || obj?.original_name || "");
+    const local = withBasePath(obj[localKey]);
+    if (local) return local;
+
+    const rawPath = safeText(obj[pathKey]).trim();
+    if (!rawPath) return "";
+    if (/^https?:\/\//i.test(rawPath)) return rawPath;
+    if (rawPath.startsWith("/assets/")) return withBasePath(rawPath);
+
     const kind = (pathKey === "still_path")
       ? "episode_still"
       : (pathKey === "backdrop_path" ? "backdrop" : inferPosterKind(obj));
-    const local = withBasePath(obj[localKey]);
-    if (local) return safeCardImage(local, pathKey === "still_path" ? "still" : "poster", title);
-
-    const rawPath = safeText(obj[pathKey]).trim();
-    if (!rawPath) return safeCardImage("", pathKey === "still_path" ? "still" : "poster", title);
-    if (/^https?:\/\//i.test(rawPath)) return safeCardImage(rawPath, pathKey === "still_path" ? "still" : "poster", title);
-    if (rawPath.startsWith("/assets/")) return safeCardImage(withBasePath(rawPath), pathKey === "still_path" ? "still" : "poster", title);
-    return safeCardImage(tmdbImageUrl(kind, rawPath), pathKey === "still_path" ? "still" : "poster", title);
+    return tmdbImageUrl(kind, rawPath);
   }
 
   function linkOrDisabled(iconKey, href, label){
@@ -1491,9 +1490,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       kind: normalizedKind,
       compact: !!options.compact,
       watch: (supportsWatchSource && options.popcornAttrs) ? { kind: options.popcornKind || kind, attrs: options.popcornAttrs || {} } : null,
-      favourite: favouriteAttrs ? { active: !!options.favoriteActive, icon: '💕', attrs: favouriteAttrs } : null,
-      status: options.showStatusAction ? { icon: '⌚', attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
-      watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: '🔖', attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
+      favourite: favouriteAttrs ? { active: !!options.favoriteActive, icon: "💕", attrs: favouriteAttrs } : null,
+      status: options.showStatusAction ? { icon: "⌚", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
+      watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: "🔖", attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "%" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
@@ -2881,7 +2880,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       meta: tertiary || subtitle,
       actionBarHtml: actionBar,
       overlay: true,
-      extraClass: `dashcard dashcard--clean${options.extraClass ? ` ${options.extraClass}` : ""}`
+      extraClass: `dashcard dashcard--clean dashcard--media${options.extraClass ? ` ${options.extraClass}` : ""}`
     });
   }
 
@@ -4222,7 +4221,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           const visible = items.slice(0, 3).map(item => renderItem(item, key)).join("");
           const hidden = items.slice(3).map(item => renderItem(item, key, true)).join("");
           return `
-            <section class="calendar-day${inMonth ? "" : " calendar-day--dim"}${key === today ? " calendar-day--today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-day--weekend" : ""}" data-daycell="${key}">
+            <section class="calendar-day${key === today ? " calendar-day--today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-day--weekend" : ""}" data-daycell="${key}">
               <div class="calendar-day__head">
                 <div class="calendar-day__date">${num}</div>
                 <div class="calendar-day__label">${escHtml(dt.toLocaleDateString(undefined, { weekday: "short" }))}</div>
@@ -4322,7 +4321,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
           }),
           articleAttrs: { "data-show": showId, tabindex: "0" },
-          extraClass: "dashcard dashcard--clean"
+          extraClass: "dashcard dashcard--clean dashcard--episode"
         });
       }
       const target = infoTarget(item);
