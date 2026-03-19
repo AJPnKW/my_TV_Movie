@@ -1490,9 +1490,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       kind: normalizedKind,
       compact: !!options.compact,
       watch: (supportsWatchSource && options.popcornAttrs) ? { kind: options.popcornKind || kind, attrs: options.popcornAttrs || {} } : null,
-      favourite: favouriteAttrs ? { active: !!options.favoriteActive, icon: iconChar("trakt_add_to_list") || "♥", attrs: favouriteAttrs } : null,
-      status: options.showStatusAction ? { icon: iconChar("meta_status") || "•", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
-      watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: iconChar("trakt_mark_watched") || "🔖", attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
+      favourite: favouriteAttrs ? { active: !!options.favoriteActive, icon: "💕", attrs: favouriteAttrs } : null,
+      status: options.showStatusAction ? { icon: "⌚", attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
+      watched: (options.showWatchedAction || options.watchedToggleHtml) ? { active: !!options.watchedActive, icon: "🔖", attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } } : null,
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "%" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
@@ -4160,7 +4160,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const pct = Number.isFinite(item.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
         const hasSources = collectWatchSourceOptions("episode", item, { showId }).length > 0;
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
-          image: item.thumb,
+          image: safeCardImage(item.thumb, item.still_path, item.backdrop_local, item.backdrop_path, item.poster_local, item.poster_path),
           eyebrow: cardMeta.eyebrow,
           title: cardMeta.title,
           meta: cardMeta.meta,
@@ -4192,7 +4192,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
         kind: "movie",
         id: movieId,
-        image: item.thumb,
+        image: safeCardImage(item.thumb, item.still_path, item.backdrop_local, item.backdrop_path, item.poster_local, item.poster_path),
         title: item.title || "Movie",
         meta: [dateKey ? fmtDate(dateKey) : "", "Release day"].filter(Boolean).join(" • "),
         overlay: true,
@@ -4288,10 +4288,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (item?.thumb) return normalizeImageSrc(item.thumb);
       if (item?.kind === "episode"){
         const show = showMap.get(String(item?.show_tmdb_id ?? ""));
-        return normalizeImageSrc(pickImage(show, "backdrop_local", "backdrop_path", "poster_local", "poster_path"));
+        return safeCardImage(pickImage(show, "backdrop_local", "backdrop_path", "poster_local", "poster_path"), pickImage(show, "poster_local", "poster_path"));
       }
       const media = item?.kind === "movie" ? movieMap.get(String(item?.tmdb_id ?? "")) : showMap.get(String(item?.tmdb_id ?? ""));
-      return normalizeImageSrc(pickImage(media || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path"));
+      return safeCardImage(pickImage(media || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path"), pickImage(media || item, "backdrop_local", "backdrop_path"));
     };
     const eventCard = (item, tertiary = "") => {
       if (item.kind === "episode"){
@@ -4367,7 +4367,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return buildDashboardCard(show ? "show" : "movie", media?.tmdb_id, {
         title: safeText(entry?.title || show?.title || show?.name || movie?.title || "Untitled"),
         subtitle: safeText(entry?.watch_status || "watchlist"),
-        image: normalizeImageSrc(pickImage(media, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+        image: safeCardImage(pickImage(media, "poster_local", "poster_path", "backdrop_local", "backdrop_path"), pickImage(media, "backdrop_local", "backdrop_path")),
         pct: percentForItem(media),
         facts: [factChipHtml(show ? "Show" : "Movie"), factChipHtml("Watchlist", "tone-accent")]
       });
@@ -4378,7 +4378,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       title: safeText(show?.title || show?.name || "Show"),
       subtitle: truncateText(show?.overview || "", 84),
       tertiary: show?.first_air_date ? formatDateShort(show.first_air_date) : "",
-      image: normalizeImageSrc(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+      image: safeCardImage(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path"), pickImage(show, "backdrop_local", "backdrop_path")),
       pct: percentForItem(show),
       facts: [factChipHtml("Discover"), (show?.genres || []).length ? factChipHtml(show.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
@@ -4388,7 +4388,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       title: safeText(movie?.title || "Movie"),
       subtitle: truncateText(movie?.overview || "", 84),
       tertiary: movie?.release_date ? formatDateShort(movie.release_date) : "",
-      image: normalizeImageSrc(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+      image: safeCardImage(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path"), pickImage(movie, "backdrop_local", "backdrop_path")),
       pct: percentForItem(movie),
       facts: [factChipHtml("Movie"), (movie?.genres || []).length ? factChipHtml(movie.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
