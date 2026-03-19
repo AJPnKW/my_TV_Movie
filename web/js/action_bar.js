@@ -56,11 +56,11 @@ export function renderActionBarHtml(options = {}){
   }
   if (options.status){
     const statusLink = splitAttrs(options.status.attrs || {});
-    middleActions.push(`<a class="actionbar-btn actionbar-btn--status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Watch status" title="Watch status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.status.icon || '◌'}</span></a>`);
+    middleActions.push(`<a class="actionbar-btn actionbar-btn--status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Watch status" title="Watch status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.status.icon || '⌚'}</span></a>`);
   }
   if (options.favourite){
     const favouriteLink = splitAttrs(options.favourite.attrs || {});
-    middleActions.push(`<a class="actionbar-btn actionbar-btn--favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle favourites" title="Toggle favourites" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.favourite.icon || '♥'}</span></a>`);
+    middleActions.push(`<a class="actionbar-btn actionbar-btn--favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle favourites" title="Toggle favourites" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.favourite.icon || '💕'}</span></a>`);
   }
   if (options.watched){
     const watchedLink = splitAttrs(options.watched.attrs || {});
