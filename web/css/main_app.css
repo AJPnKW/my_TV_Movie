@@ -3415,37 +3415,133 @@ CHANGE NOTES:
       }
     }
 
-/* 2026-03-19 overlay v7 */
-.actionbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:nowrap;width:100%;}
-.actionbar__group{display:inline-flex;align-items:center;gap:10px;min-width:0;flex-wrap:nowrap;}
-.actionbar__group--left{justify-content:flex-start;flex:0 0 auto;}
-.actionbar__group--middle{justify-content:center;flex:1 1 auto;min-width:0;}
-.actionbar__group--right{justify-content:flex-end;flex:0 0 auto;margin-left:auto;}
-.actionbar__group--empty{visibility:hidden;width:1px;min-width:1px;}
-.actionbar-btn{font-size:18px;line-height:1;white-space:nowrap;}
-.actionbar-btn--rating{font-size:14px;}
-.media-grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr));}
-.media-card--show .media-card__poster,.media-card--movie .media-card__poster{aspect-ratio:0.72;min-height:330px;}
-.media-card--show .media-card__poster img,.media-card--movie .media-card__poster img{object-position:center center;}
-.dashcard--clean .media-card__poster{aspect-ratio:16/9;min-height:118px;}
-.dashcard--episode .media-card__poster,.calendar-item--episode .media-card__poster{aspect-ratio:16/9;min-height:112px;}
-.dashcard--episode .media-card__poster img,.calendar-item--episode .media-card__poster img{width:120%;max-width:none;margin-left:-10%;object-position:center 18%;}
-.dashcard--episode .media-card__overlay-copy,.calendar-item--episode .media-card__overlay-copy{gap:2px;}
-.dashcard--episode .media-card__overlay-eyebrow,.calendar-item--episode .media-card__overlay-eyebrow{font-size:10px;}
-.dashcard--episode .media-card__overlay-title,.calendar-item--episode .media-card__overlay-title{font-size:15px;}
-.dashcard--episode .media-card__overlay-meta,.calendar-item--episode .media-card__overlay-meta{font-size:11px;}
-.dashcol{min-width:220px;}
-.dashgrid{grid-auto-columns:minmax(220px,1fr);}
-.calendar-month-grid{grid-template-columns:repeat(7,minmax(180px,1fr));min-width:1260px;}
-.calendar-shell__content,.browse-content--calendar{overflow-x:auto;}
-.calendar-day--dim{opacity:1;}
-.calendar-item .media-card__poster,.calendar-item .media_block{aspect-ratio:16/9;min-height:118px;}
-.calendar-item .media-card__poster img{width:120%;max-width:none;margin-left:-10%;object-position:center 18%;}
-.calendar-item .actionbar{padding-top:4px;}
-.calendar-item .actionbar__group--middle{gap:8px;}
-.calendar-item .actionbar__group--right{margin-left:auto;}
-.browse-layout{grid-template-columns:minmax(240px,var(--browse-sidebar-w,260px)) minmax(0,1fr);align-items:start;}
-.browse-sidebar{min-width:0;position:sticky;top:14px;}
-.browse-content{min-width:0;overflow:hidden;}
-@media (max-width: 1200px){.media-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr));}.media-card--show .media-card__poster,.media-card--movie .media-card__poster{min-height:300px;}}
-@media (max-width: 820px){.calendar-month-grid{min-width:980px;}.media-card--show .media-card__poster,.media-card--movie .media-card__poster{min-height:250px;}}
+
+/* 2026-03-20 overlay v8 stabilization */
+:root{
+  --browse-sidebar-w: 280px;
+  --media-card-radius: 18px;
+}
+.browse-layout{
+  grid-template-columns:minmax(250px,var(--browse-sidebar-w,280px)) minmax(0,1fr);
+}
+.browse-content{min-width:0; overflow:hidden;}
+.media-grid{grid-template-columns:repeat(auto-fill,minmax(210px,1fr));}
+.media-grid--shows .media-card__poster,
+.media-grid--movies .media-card__poster,
+#dashboardUpcoming .media-card__poster,
+#dashboardRecommendedShows .media-card__poster,
+#dashboardRecommendedMovies .media-card__poster{
+  aspect-ratio:2/3;
+  min-height:300px;
+}
+.media-card--show .media-card__poster img,
+.media-card--movie .media-card__poster img{
+  object-fit:cover;
+  object-position:center 18%;
+}
+.media-card--episode .media-card__poster,
+.calendar-item--episode .media-card__poster,
+.watchme-episode-card .media-card__poster,
+.episode-row .media-card__poster{
+  aspect-ratio:16/9;
+  min-height:170px;
+}
+.media-card--episode .media-card__poster img,
+.calendar-item--episode .media-card__poster img,
+.watchme-episode-card .media-card__poster img,
+.episode-row .media-card__poster img{
+  object-fit:cover;
+  object-position:center center;
+  transform:scale(1.1);
+  transform-origin:center center;
+}
+.media-card__body--episode, .calendar-item--episode .media-card__body, .watchme-episode-card .media-card__body{
+  padding:12px 12px 10px;
+  gap:10px;
+}
+.media-card__overlay-copy{
+  max-width:100%;
+}
+.actionbar{
+  display:grid !important;
+  grid-template-columns:minmax(24px,auto) 1fr auto;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-width:0;
+  flex-wrap:nowrap !important;
+  white-space:nowrap;
+}
+.actionbar__group{
+  display:flex !important;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  white-space:nowrap;
+}
+.actionbar__group--middle{justify-content:center; overflow:hidden;}
+.actionbar__group--right{justify-content:flex-end;}
+.actionbar__group--empty{visibility:hidden;}
+.actionbar-btn{
+  font-size:17px !important;
+  line-height:1;
+  padding:0 !important;
+  border:0 !important;
+  background:none !important;
+  box-shadow:none !important;
+  border-radius:0 !important;
+  min-width:auto !important;
+}
+.actionbar-rating{font-size:12px; font-weight:900;}
+.actionbar-rating__star{font-size:15px;}
+.calendar-shell, .browse-content--calendar{min-width:0; overflow-x:auto;}
+.calendar-month-grid{
+  display:grid !important;
+  grid-template-columns:repeat(7,minmax(175px,1fr)) !important;
+  gap:12px;
+  min-width:1240px;
+}
+.calendar-month-grid__dow{
+  position:sticky;
+  top:calc(var(--sticky-top,0px) + var(--calbar-h,0px) + 12px);
+  z-index:18;
+}
+.calendar-day{
+  min-height:300px;
+  opacity:1 !important;
+}
+.calendar-day--dim{opacity:1 !important;}
+.calendar-day__items{gap:8px;}
+.calendar-item .media-card__overlay-title{font-size:13px;}
+.calendar-item .media-card__overlay-meta,
+.calendar-item .media-card__overlay-meta--subtle,
+.calendar-item .media-card__overlay-eyebrow{font-size:10px;}
+.posterFallback{
+  display:grid;
+  place-items:center;
+  gap:6px;
+  text-align:center;
+  min-height:100%;
+  background:linear-gradient(180deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+  color:#d7dfef;
+  padding:14px;
+}
+.posterFallback__label{font-size:12px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#93c5fd;}
+.posterFallback__title{font-size:12px;line-height:1.35;max-width:18ch;overflow:hidden;}
+@media (max-width: 1300px){
+  .browse-layout{grid-template-columns:250px minmax(0,1fr);}
+  .calendar-shell, .browse-content--calendar{overflow-x:auto;}
+}
+@media (max-width: 1100px){
+  .browse-layout{grid-template-columns:1fr;}
+  .browse-sidebar{position:static;}
+  .calendar-shell, .browse-content--calendar{overflow-x:auto;}
+  .calendar-month-grid{min-width:1120px;}
+}
+@media (max-width: 820px){
+  .media-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}
+  .media-grid--shows .media-card__poster,
+  .media-grid--movies .media-card__poster{min-height:260px;}
+  .calendar-month-grid{min-width:980px;}
+  .actionbar{gap:8px;}
+}

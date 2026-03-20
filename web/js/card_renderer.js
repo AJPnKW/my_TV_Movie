@@ -29,16 +29,6 @@ export function providerFallbackLabel(name){
   return String(name || 'Provider').trim() || 'Provider';
 }
 
-export function safeCardImage(value){
-  const src = String(value || '').trim();
-  if (!src || src === 'null' || src === 'undefined') return '';
-  return src;
-}
-
-function fallbackLabel(kind){
-  return kind === 'episode' ? 'No Still' : 'No Poster';
-}
-
 function esc(value){
   return String(value || '')
     .replaceAll('&', '&amp;')
@@ -47,6 +37,14 @@ function esc(value){
     .replaceAll('"', '&quot;');
 }
 
+
+function safeCardImage(image, kind, title){
+  const src = String(image || '').trim();
+  if (src) return `<img loading="lazy" src="${esc(src)}" alt="" />`;
+  const label = kind === 'episode' ? 'No Still' : 'No Poster';
+  const tag = title ? esc(String(title).slice(0,42)) : label;
+  return `<div class="posterFallback posterFallback--${esc(kind)}" aria-label="${esc(label)}"><span class="posterFallback__label">${esc(label)}</span><span class="posterFallback__title">${tag}</span></div>`;
+}
 export function renderCompactCardHtml(options = {}){
   const kind = options.kind || 'show';
   const idAttr = kind === 'movie'
@@ -58,11 +56,11 @@ export function renderCompactCardHtml(options = {}){
   const overlay = !!options.overlay;
   return `
     <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${attrString(articleAttrs)}>
-      <button type="button" class="imgbox media-card__poster media_block"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;color:inherit;cursor:pointer;">
-        ${safeCardImage(options.image) ? `<img loading="lazy" src="${esc(safeCardImage(options.image))}" alt="" />` : `<div class="posterFallback">${esc(fallbackLabel(kind))}</div>`}
+      <button type="button" class="imgbox media-card__poster media-card__poster--${esc(kind)} media_block"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;color:inherit;cursor:pointer;">
+        ${safeCardImage(options.image, kind, options.title)}
         ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy">${options.eyebrow ? `<span class="media-card__overlay-eyebrow">${esc(options.eyebrow)}</span>` : ''}<span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
       </button>
-      <div class="cardbody media-card__body">
+      <div class="cardbody media-card__body media-card__body--${esc(kind)}">
         <div class="media-card__copy${overlay ? ' media-card__copy--hidden' : ''}">
           ${options.eyebrow ? `<div class="media-card__eyebrow">${esc(options.eyebrow)}</div>` : ''}
           <button type="button" class="media-card__title"${idAttr}${attrString(titleAttrs)} style="padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;">${esc(options.title)}</button>
@@ -96,7 +94,6 @@ if (typeof window !== 'undefined'){
     NORMALIZED_BLOCKS,
     applyRuntimeContract,
     providerFallbackLabel,
-    safeCardImage,
     renderCompactCardHtml,
     renderCompactEpisodeCardHtml
   });
