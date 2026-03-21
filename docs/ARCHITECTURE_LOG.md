@@ -75,3 +75,11 @@ Commit
 - Rebuilt `web/watch_me/watch_me.html` around the shared shell, shared card renderer, and shared action bar instead of a separate card/icon system.
 - Removed blocking prompts from the asset QA/repair scripts and added a current validation workflow under `.github/workflows/validate.yml`.
 - Implementation commit: `6440404`
+
+## 2026-03-21 — Shared card/action/focus cleanup
+- Reduced the dashboard-family pages back to thin shell files so `web/js/app_runtime.js` owns the active view layout and there is no page-level drift between dashboard, shows, movies, calendar, discover, and config.
+- Removed duplicate `showCardHtml`, `movieCardHtml`, `renderDiscover`, and `renderCalendar` implementations from `web/js/app_runtime.js` so one shared card/action/calendar path remains active.
+- Restored shows and movies to the left-rail browse layout, kept calendar full-width, and kept `watch_me` on its own page while aligning it to the shared shell, card, action, and focus contract.
+- Added `web/js/chrometv_focus.js` as the single shared D-pad engine and reduced the main runtime focus path to a wrapper over that module instead of a second spatial-navigation implementation.
+- Normalized the action bar and calendar CSS contract by deleting contradictory legacy selectors that hid ratings or dimmed out-of-month cells under the new grid.
+- Implementation commit: `pending grouped commit`

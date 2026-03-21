@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="./css/my_tv_hub.css" />
   <link rel="stylesheet" href="./css/main_app.css" />
 </head>
-<body data-app-family="main" data-page="calendar">
+<body data-app-family="main" data-page="calendar" data-focus-global="off">
   <div class="app">
     <div class="top">
       <div class="brand">
@@ -19,7 +19,7 @@
         <a class="tab" data-tab="shows" href="./shows.html" role="tab" aria-selected="false">Shows</a>
         <a class="tab" data-tab="movies" href="./movies.html" role="tab" aria-selected="false">Movies</a>
         <a class="tab" data-tab="watch-me" href="./watch_me/watch_me.html" role="tab" aria-selected="false">Watch Me</a>
-        <a class="tab active" data-tab="calendar" href="./calendar.html" role="tab" aria-selected="true">Calendar</a>
+        <a class="tab" data-tab="calendar" href="./calendar.html" role="tab" aria-selected="false">Calendar</a>
         <a class="tab" data-tab="discover" href="./discover.html" role="tab" aria-selected="false">Discover</a>
         <a class="tab" data-tab="config" href="./config.html" role="tab" aria-selected="false">Config</a>
         <a class="tab" data-tab="inputs-editor" href="http://127.0.0.1:8787/web/inputs_editor.html" role="tab" aria-selected="false">Inputs Editor</a>
@@ -30,11 +30,12 @@
         <button id="verBadge" class="calbtn" type="button" aria-label="Version">ver</button>
       </div>
     </div>
-    <div class="shell">
-      <main class="main"></main>
+    <div class="shell shell--app">
+      <main class="main" id="appMain"></main>
     </div>
     <div class="footer" id="footer"></div>
   </div>
+
   <div id="modalBack" class="app-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
     <div id="modalCard" class="app-modal-card" tabindex="0">
       <div class="app-modal-header">
@@ -44,6 +45,7 @@
       <div id="modalBody" class="app-modal-body"></div>
     </div>
   </div>
+
   <div id="providerBack" class="app-modal-backdrop app-modal-backdrop--provider" aria-hidden="true" role="dialog" aria-modal="true">
     <div id="providerCard" class="app-modal-card app-modal-card--provider" tabindex="0">
       <div class="app-modal-header">
@@ -53,6 +55,8 @@
       <div id="providerBody" class="app-modal-body"></div>
     </div>
   </div>
+
+  <script src="./js/chrometv_focus.js"></script>
   <script type="module" src="./js/app_runtime.js"></script>
 </body>
 </html>

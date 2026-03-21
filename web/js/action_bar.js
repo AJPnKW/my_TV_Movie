@@ -1,10 +1,10 @@
 /*
 FILE: web/js/action_bar.js
-VERSION: v1.0.0
-UPDATED: 2026-03-15T04:28:23Z
+VERSION: v1.1.0
+UPDATED: 2026-03-21T00:00:00Z
 CHANGE NOTES:
-- Centralized normalized action-bar contract metadata for the shared main app runtime.
-- Declares the locked action ordering and watch-status values.
+- Enforced shared left/center/right action strip contract.
+- Standardized glyphs toward popcorn / watch-status / favourites / bookmark / star+percent.
 */
 
 export const ACTION_BAR_ORDER = Object.freeze([
@@ -14,6 +14,14 @@ export const ACTION_BAR_ORDER = Object.freeze([
   'bookmark',
   'rating'
 ]);
+
+const CONTRACT_ICONS = Object.freeze({
+  watch: '🍿',
+  status: '⌚',
+  favourite: '♥',
+  bookmark: '🔖',
+  star: '★'
+});
 
 export const WATCH_STATUS_VALUES = Object.freeze([
   'watchlist',
@@ -30,10 +38,18 @@ export function applyRuntimeContract(doc = document){
   root.setAttribute('data-watch-status-values', WATCH_STATUS_VALUES.join(','));
 }
 
+function escAttr(v){
+  return String(v)
+    .replaceAll('&', '&amp;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;');
+}
+
 function attrString(attrs = {}){
   return Object.entries(attrs)
     .filter(([, value]) => value != null && value !== '')
-    .map(([key, value]) => ` ${String(key)}="${String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}"`)
+    .map(([key, value]) => ` ${String(key)}="${escAttr(value)}"`)
     .join('');
 }
 
@@ -44,33 +60,53 @@ function splitAttrs(attrs = {}){
   return { href, attrs: next };
 }
 
-export function renderActionBarHtml(options = {}){
-  const kind = String(options.kind || '').toLowerCase();
-  const leftActions = [];
-  const middleActions = [];
-  const rightActions = [];
+function renderAnchor(cls, href, label, title, icon, attrs = {}){
+  return `<a class="actionbar-btn ${cls}" href="${escAttr(href)}" aria-label="${escAttr(label)}" title="${escAttr(title)}"${attrString(attrs)}><span aria-hidden="true">${icon}</span></a>`;
+}
 
-  if (options.watch && (kind === 'movie' || kind === 'episode')){
+export function renderActionBarHtml(options = {}){
+  const left = [];
+  const center = [];
+  const right = [];
+
+  if (options.watch){
     const watchLink = splitAttrs(options.watch.attrs || {});
-    leftActions.push(`<a class="actionbar-btn actionbar-btn--watch" href="${String(watchLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Choose watch source" title="Choose watch source" data-watch-source-open="${options.watch.kind || 'movie'}"${attrString(watchLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">🍿</span></a>`);
+    left.push(renderAnchor('popcorn', watchLink.href, 'Watch source', 'Watch source', CONTRACT_ICONS.watch, {
+      'data-watch-source-open': options.watch.kind || 'movie',
+      ...watchLink.attrs
+    }));
   }
   if (options.status){
     const statusLink = splitAttrs(options.status.attrs || {});
-    middleActions.push(`<a class="actionbar-btn actionbar-btn--status" href="${String(statusLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Watch status" title="Watch status" data-action-menu="status" data-no-default="1"${attrString(statusLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.status.icon || '◌'}</span></a>`);
+    center.push(renderAnchor('status', statusLink.href, 'Watch status', 'Watch status', CONTRACT_ICONS.status, {
+      'data-action-menu': 'status',
+      'data-no-default': '1',
+      ...statusLink.attrs
+    }));
   }
   if (options.favourite){
     const favouriteLink = splitAttrs(options.favourite.attrs || {});
-    middleActions.push(`<a class="actionbar-btn actionbar-btn--favorite${options.favourite.active ? ' active' : ''}" href="${String(favouriteLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle favourites" title="Toggle favourites" data-action="toggle-want"${attrString(favouriteLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.favourite.icon || '♥'}</span></a>`);
+    center.push(renderAnchor(`favorite${options.favourite.active ? ' active' : ''}`, favouriteLink.href, 'Favourite', 'Favourite', CONTRACT_ICONS.favourite, {
+      'data-action': 'toggle-want',
+      ...favouriteLink.attrs
+    }));
   }
   if (options.watched){
     const watchedLink = splitAttrs(options.watched.attrs || {});
-    middleActions.push(`<a class="actionbar-btn actionbar-btn--bookmark${options.watched.active ? ' active' : ''}" href="${String(watchedLink.href).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')}" aria-label="Toggle bookmark" title="Toggle bookmark" data-action="toggle-watched"${attrString(watchedLink.attrs)}><span class="actionbar-glyph" aria-hidden="true">${options.watched.icon || '🔖'}</span></a>`);
+    center.push(renderAnchor(`bookmark${options.watched.active ? ' active' : ''}`, watchedLink.href, 'Bookmark', 'Bookmark', CONTRACT_ICONS.bookmark, {
+      'data-action': 'toggle-watched',
+      ...watchedLink.attrs
+    }));
   }
-  if (options.rating){
-    rightActions.push(`<span class="actionbar-btn actionbar-btn--rating" aria-label="Ratings" title="Ratings"><span class="actionbar-rating" aria-hidden="true"><span class="actionbar-rating__star">★</span><span class="actionbar-rating__value">${options.rating.icon || '%'}</span></span></span>`);
-  }
+  const ratingText = (options.rating && options.rating.text) ? options.rating.text : (options.rating && options.rating.icon ? options.rating.icon : '%');
+  right.push(`<span class="actionbar-rating" aria-label="Rating" title="Rating"><span class="actionbar-rating__star" aria-hidden="true">${CONTRACT_ICONS.star}</span><span class="actionbar-rating__text">${ratingText}</span></span>`);
 
-  return `<div class="actionbar action_bar${options.compact ? ' actionbar--minimal' : ''}" data-action-host="1"><span class="actionbar__group actionbar__group--left${leftActions.length ? '' : ' actionbar__group--empty'}">${leftActions.join('')}</span><span class="actionbar__group actionbar__group--middle">${middleActions.join('')}</span><span class="actionbar__group actionbar__group--right">${rightActions.join('')}</span>${options.menusHtml || ''}</div>`;
+  return `<div class="actionbar action_bar${options.compact ? ' actionbar--minimal' : ''}" data-action-host="1">
+    <div class="actionbar-left">${left.join('')}</div>
+    <div class="actionbar-center">${center.join('')}</div>
+    <div class="actionbar-right">${right.join('')}</div>
+    ${options.menusHtml || ''}
+  </div>`;
 }
 
 if (typeof window !== 'undefined'){

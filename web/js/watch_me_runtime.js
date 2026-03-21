@@ -107,9 +107,9 @@ function buildActionBar(kind, item, context = {}) {
     kind,
     compact: true,
     watch: (kind === 'movie' || kind === 'episode') ? { kind, attrs: { href: watchHref } } : null,
-    status: { icon: '⌚', attrs: { href: '#', 'data-no-default': '1', 'data-kind': kind, 'data-id': id } },
-    favourite: { icon: '💕', attrs: { href: '#', 'data-kind': kind, 'data-id': id } },
-    watched: { icon: '🔖', attrs: { href: '#', 'data-kind': kind, 'data-id': id } },
+    status: { attrs: { href: '#', 'data-no-default': '1', 'data-kind': kind, 'data-id': id } },
+    favourite: { attrs: { href: '#', 'data-kind': kind, 'data-id': id } },
+    watched: { attrs: { href: '#', 'data-kind': kind, 'data-id': id } },
     rating: { icon: ratingPercent(item) ? `${ratingPercent(item)}%` : '%' }
   });
 }
@@ -170,6 +170,7 @@ function matchesSearch(texts) {
 
 function renderEpisodeCard(entry) {
   const episode = entry.episode;
+  const watchHref = `../watch.me.html?tv=${encodeURIComponent(entry.show?.tmdb_id ?? '')}`;
   return cardRenderer.renderCompactEpisodeCardHtml({
     image: pickImage(episode, 'still_local', 'still_path'),
     eyebrow: entry.showTitle,
@@ -178,9 +179,9 @@ function renderEpisodeCard(entry) {
     submeta: safeText(episode?.runtime) ? `${episode.runtime} min` : '',
     overlay: true,
     actionBarHtml: buildActionBar('episode', episode, { showId: entry.show?.tmdb_id }),
-    articleAttrs: {
-      tabindex: '0',
-      'data-watch-link': `../watch.me.html?tv=${encodeURIComponent(entry.show?.tmdb_id ?? '')}`
+    posterAttrs: {
+      'data-watch-link': watchHref,
+      'aria-label': `Open ${entry.showTitle} ${seTag(entry.seasonNumber, entry.episodeNumber)}`
     },
     extraClass: 'watchme-episode-card'
   });
@@ -188,6 +189,7 @@ function renderEpisodeCard(entry) {
 
 function renderMovieCard(entry) {
   const movie = entry.movie;
+  const watchHref = `../watch.me.html?m=${encodeURIComponent(movie?.tmdb_id ?? '')}`;
   return cardRenderer.renderCompactCardHtml({
     kind: 'movie',
     id: movie?.tmdb_id ?? '',
@@ -197,9 +199,9 @@ function renderMovieCard(entry) {
     submeta: safeText(movie?.runtime) ? `${movie.runtime} min` : '',
     overlay: true,
     actionBarHtml: buildActionBar('movie', movie),
-    articleAttrs: {
-      tabindex: '0',
-      'data-watch-link': `../watch.me.html?m=${encodeURIComponent(movie?.tmdb_id ?? '')}`
+    posterAttrs: {
+      'data-watch-link': watchHref,
+      'aria-label': `Open ${entry.title}`
     },
     extraClass: 'watchme-movie-card'
   });
@@ -219,7 +221,7 @@ function renderGroupedSection(title, items, renderer) {
     <section class="dashblock">
       <div class="dashhead"><h2>${esc(title)}</h2><span class="muted">${items.length} items</span></div>
       ${groups.map(([, groupItems]) => `
-        <div class="watchme-day-group">
+        <div class="watchme-day-group" data-date-key="${esc(groupItems[0].key)}">
           <div class="watchme-day-group__head">
             <div class="watchme-day-group__title">${esc(formatDate(groupItems[0].date))}</div>
             <div class="watchme-day-group__meta">${esc(groupItems.length === 1 ? '1 title' : `${groupItems.length} titles`)}</div>
@@ -240,11 +242,19 @@ function render() {
   if (type === 'all' || type === 'movies') sections.push(renderGroupedSection('Upcoming Movies', movies, renderMovieCard));
   $('#watchMeSections').innerHTML = sections.join('') || `<section class="dashblock"><div class="muted">No items match the current filters.</div></section>`;
   $('#watchMeSummary').textContent = `${episodes.length} episodes • ${movies.length} movies • next ${state.filters.windowDays} days`;
-  $$('.watchme-episode-card [data-watch-link], .watchme-movie-card [data-watch-link]').forEach(card => {
-    card.addEventListener('click', event => {
+  $$('.watchme-episode-card [data-watch-link], .watchme-movie-card [data-watch-link]').forEach(target => {
+    target.addEventListener('click', event => {
       if (event.target.closest('.actionbar')) return;
-      const href = card.getAttribute('data-watch-link');
+      const href = target.getAttribute('data-watch-link');
       if (href) window.location.href = href;
+    });
+    target.addEventListener('keydown', event => {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      if (event.target.closest('.actionbar')) return;
+      const href = target.getAttribute('data-watch-link');
+      if (!href) return;
+      event.preventDefault();
+      window.location.href = href;
     });
   });
 }
@@ -268,6 +278,15 @@ function bind() {
     $('#watchMeType').value = 'all';
     $('#watchMeWindow').value = '14';
     render();
+  });
+  $('#watchMeToday')?.addEventListener('click', () => {
+    const today = dateKey(new Date());
+    const group = document.querySelector(`.watchme-day-group[data-date-key="${today}"]`);
+    if (group instanceof HTMLElement){
+      group.scrollIntoView({ block: 'start', inline: 'nearest', behavior: 'smooth' });
+      const firstCard = group.querySelector('[data-watch-link]');
+      if (firstCard instanceof HTMLElement) firstCard.focus({ preventScroll: true });
+    }
   });
 }
 
