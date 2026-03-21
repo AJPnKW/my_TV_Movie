@@ -90,4 +90,4 @@ Commit
 - Chained availability validation/enrichment into the actual TMDB→OMDB→Trakt runner in `scripts/run_pipeline_tmdb_trakt.py`.
 - Extended the shared UI runtime so cards, calendar rows, watch_me cards, show seasons, and show/movie popups all render one shared availability badge/detail pattern from enriched `data.json`.
 - Updated the availability docs set to match the live repo’s actual keys, workflow runner, validation mode, and QA artifacts.
-- Implementation commit: `pending grouped commit`
+- Implementation commit: `8d11c7b`
