@@ -9,14 +9,9 @@ DATE: 2026-01-20
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>my_TV_Movie • Inputs Editor</title>
+  <!-- launched by local server on :8787 -->
   <link rel="stylesheet" href="/web/css/my_tv_hub.css"/>
   <style>
-    body{margin:0;background:#091018;color:#eef4ff;font-family:"Space Grotesk","Segoe UI",sans-serif}
-    .inputs_editor_launcher{display:none;min-height:100vh;place-items:center;padding:24px}
-    .inputs_editor_launcher_card{width:min(780px,100%);border:1px solid rgba(255,255,255,.14);border-radius:20px;background:rgba(255,255,255,.05);padding:24px;display:grid;gap:14px}
-    .inputs_editor_launcher_actions{display:flex;gap:10px;flex-wrap:wrap}
-    body.inputs-editor-launcher .inputs_editor_wrap{display:none}
-    body.inputs-editor-launcher .inputs_editor_launcher{display:grid}
     .inputs_editor_wrap{max-width:1380px;margin:0 auto;padding:14px;display:grid;grid-template-columns:1.05fr 0.9fr 1.05fr;gap:12px}
     @media(max-width:1100px){.inputs_editor_wrap{grid-template-columns:1fr}}
     .inputs_editor_card{border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(0,0,0,.22);overflow:hidden}
@@ -54,19 +49,6 @@ DATE: 2026-01-20
   </style>
 </head>
 <body>
-  <section class="inputs_editor_launcher" id="launcherCard">
-    <div class="inputs_editor_launcher_card">
-      <div class="inputs_editor_meta">Canonical editor: <strong>data/inputs.json</strong></div>
-      <h1 style="margin:0;font-size:32px;">Inputs Editor Requires The Local Editor Server</h1>
-      <div class="inputs_editor_meta" id="launcherStatus">Checking local server on http://127.0.0.1:8787 …</div>
-      <div>The usable editor runs at <code>http://127.0.0.1:8787/web/inputs_editor.html</code>. The app shell on port 8000 is only a launcher surface.</div>
-      <div class="inputs_editor_launcher_actions">
-        <a class="primary" id="launcherOpenServer" href="http://127.0.0.1:8787/web/inputs_editor.html" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;">Open Local Editor</a>
-        <a class="ghost" href="./index.html#inputs-editor" style="text-decoration:none;display:inline-flex;align-items:center;justify-content:center;padding:10px 12px;border-radius:12px;border:1px solid rgba(255,255,255,.18);">Back to Hub</a>
-      </div>
-      <div class="inputs_editor_meta">Launcher script: <code>tools/start_inputs_editor.cmd</code></div>
-    </div>
-  </section>
   <div class="inputs_editor_wrap">
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
@@ -158,7 +140,6 @@ DATE: 2026-01-20
 let inputs=null, imgBase="https://image.tmdb.org/t/p/", dirty=false;
 let tmdbResults=[], tmdbSelected=new Set(), mineSelected=new Set();
 let queueItems=[], queueSelected=new Set();
-let apiAvailable=false;
 
 function setDirty(v){ dirty=v; document.getElementById("dirty").textContent="Unsaved: "+(dirty?"yes":"no"); }
 function norm(s){ return (s||"").toString().toLowerCase().trim(); }
@@ -167,7 +148,6 @@ function showBanner(lines){ const b=document.getElementById("banner"); b.style.d
 
 async function apiGet(p){ const r=await fetch(p,{cache:"no-store"}); return await r.json(); }
 async function apiPost(p,o){ const r=await fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}); return await r.json(); }
-async function apiRefresh(){ const r=await fetch("/api/refresh-runtime",{method:"POST"}); return await r.json(); }
 
 async function loadInputs(){
   const j=await apiGet("/api/inputs"); if(!j.ok) throw new Error(j.error||"load failed");
@@ -499,30 +479,20 @@ async function saveInputs(){
   const msg=document.getElementById("saveMsg"); msg.textContent="";
   const j=await apiPost("/api/inputs",inputs);
   if(!j.ok){ msg.textContent="Save failed: "+(j.error||"unknown"); return; }
-  msg.textContent="Saved @ "+j.utc+(j.backup?` • backup ${j.backup}`:""); setDirty(false);
-}
-
-async function refreshRuntime(){
-  const msg=document.getElementById("saveMsg");
-  msg.textContent="Refreshing runtime data and missing assets…";
-  const j=await apiRefresh();
-  msg.textContent=j.ok?"Runtime refresh completed.":"Runtime refresh failed: "+(j.stderr||j.stdout||"unknown");
+  msg.textContent="Saved @ "+j.utc; setDirty(false);
 }
 
 (async function boot(){
   try{
     const h=await apiGet("/api/health");
-    apiAvailable=!!h.ok;
     document.getElementById("serverStatus").textContent=h.ok?"Server: ok":"Server: error";
   }catch(_){
-    document.body.classList.add("inputs-editor-launcher");
-    document.getElementById("launcherStatus").textContent="Local editor server not reachable. Run tools/start_inputs_editor.cmd, then open the local editor URL.";
-    return;
-  }
-
-  if(!apiAvailable){
-    document.body.classList.add("inputs-editor-launcher");
-    document.getElementById("launcherStatus").textContent="Editor server is not healthy.";
+    document.getElementById("serverStatus").textContent="Server: not running";
+    showBanner([
+      "You opened this from the wrong server (ex: :8000). Save cannot work here.",
+      "Run:  python tools/inputs_editor/inputs_editor_server.py --port 8787",
+      "Open: http://127.0.0.1:8787/web/inputs_editor.html"
+    ]);
     return;
   }
 
@@ -542,8 +512,6 @@ async function refreshRuntime(){
   document.getElementById("btnQueueClear").onclick=queueClear;
   document.getElementById("btnReload").onclick=loadInputs;
   document.getElementById("btnSave").onclick=saveInputs;
-  document.getElementById("saveMsg").insertAdjacentHTML("afterend", `<div class="inputs_editor_row" style="margin-top:8px;"><button id="btnRefreshRuntime">Refresh runtime + missing assets</button></div>`);
-  document.getElementById("btnRefreshRuntime").onclick=refreshRuntime;
   document.getElementById("qMine").addEventListener("input",()=>renderMine());
   document.getElementById("mineType").addEventListener("change",renderMine);
   document.getElementById("mineScope").addEventListener("change",renderMine);
