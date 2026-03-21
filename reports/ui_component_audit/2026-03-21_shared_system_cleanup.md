@@ -57,3 +57,6 @@
 ## Remaining Non-Blocking Items
 - `tools/start_inputs_editor.ps1`, `web/inputs_editor.html`, and `web/library_editor.html` were already dirty and were intentionally left out of this pass.
 - Untracked overlay patch reports remain local and were intentionally not included.
+
+## Implementation Commit
+- `aa70abc` — `Stabilize shared shell cards calendar and focus runtime`

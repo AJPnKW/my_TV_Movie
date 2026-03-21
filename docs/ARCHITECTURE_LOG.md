@@ -82,4 +82,4 @@ Commit
 - Restored shows and movies to the left-rail browse layout, kept calendar full-width, and kept `watch_me` on its own page while aligning it to the shared shell, card, action, and focus contract.
 - Added `web/js/chrometv_focus.js` as the single shared D-pad engine and reduced the main runtime focus path to a wrapper over that module instead of a second spatial-navigation implementation.
 - Normalized the action bar and calendar CSS contract by deleting contradictory legacy selectors that hid ratings or dimmed out-of-month cells under the new grid.
-- Implementation commit: `pending grouped commit`
+- Implementation commit: `aa70abc`
