@@ -1,0 +1,352 @@
+	API_TRAKT_ID-	Client ID: 4df56aee811e8e6245138536c816da8273d34d569dc6b0db1c92293dc8733baa
+	API_TRAKT_KEY-	Client Secret: 9eac359b1cc1f801ec67f145fbb8e10023da8ed496380772ae7298c593074da4
+	API_TMDB_KEY
+	d6d2232ed588f24c6050734b74b632c1
+	API_TVMAZE_KEY
+	s_xiW7KxKVXrXUbVv4Xd2rrMC9fb0vVo
+	API_OMDB_KEY
+	9b3345dd
+
+API_OMDB_KEY
+API_OPENAI_KEY
+API_TMDB_KEY
+API_TMDB_TOKEN
+API_TRAKT.TV_USER
+API_TRAKT_CLIENT_ID
+API_TRAKT_CLIENT_SECRET
+API_TVMAZE_EMAIL
+API_TVMAZE_KEY
+API_TVMAZE_PROFILE
+
+
+
+	I have Repository secrets for 
+	API_TRAKT_ID
+	API_TRAKT_KEY
+	API_TRAKT_OAUTH_REFIRECT_URL:urn:ietf:wg:oauth:2.0:oob
+        API_TVMAZE_KEY
+
+
+https://www.ctv.ca/shows/happys-place/promises-promises-s2e1
+https://www.ctv.ca/shows/shifting-gears/loyalty-s2e6
+https://www.ctv.ca/shows/shifting-gears/date-s2e2
+https://www.ctv.ca/shows/the-good-stuff-with-mary-berg/friday-november-7-2025-s3e48
+https://gem.cbc.ca/this-hour-has-22-minutes/s33?autoplay=1
+https://gem.cbc.ca/this-hour-has-22-minutes/s33?autoplay=1
+
+and the URL are as follows
+https://www.themoviedb.org/tv/256624
+https://vidsrc.net/embed/tv/256624
+https://player.videasy.net/tv/256624
+
+    File: web/index.html
+    Project: my_TV_Movie
+    Version: v2.8.02 (2025-11-09)
+requested change to
+    File: web/index.html
+    Project: my_TV_Movie
+    Version: v2.8.02 (2025-11-08 14:27 EST)
+    
+Website Error Message:
+i got this message, so there must be an issue with the the webpage or the yaml workflow - No movies loaded.
+Data built: 2025-11-07T06:29:22.455092Z · Shows: 34 · Movies: 0
+
+Rested Change:
+update the infor message line
+Data built: 2025-11-07T06:29:22.455092Z · Shows: 34 · Movies: 0
+can we improve the info provided, the format and make i more human readable somehjting like this
+
+index.html: v2.8.02 (2025-11-08 14:27 EST) • config.html: v1.4.0 (2025-11-09 14:26 EST)  • Data built:N(2025-11-09 17:26 EST) • Shows: 34 • Movies: 0  • LiveTV 0
+
+
+
+here is the file info from github
+movies_list.txt		updates		17 hours ago
+so teh file ha not changd in 17 hours and for atleast of 12 of the house it wored fine, so the issue is with the code, please compare the current yaml file previsouly verions were we knwo the movie data was pulled and collected and against the current version as that has to be the issue, as i ti snot and cnat the the tcxt file, the file raw url is https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/refs/heads/main/movies_list.txt
+the raw file has line breaks, even a screen shot is added.
+
+
+
+No movies loaded.
+index.html: v2.8.02 (2025-11-08 14:27 EST) • config.html: v1.4.0 (2025-11-09 14:26 EST) • Data built: 2025-11-07T06:29:22.455092Z • Shows: 34 • Movies: 0 • LiveTV: 0
+
+
+Wayward
+Monsters
+Monsters, mutiple seasons and differetn name per season
+black rabbot
+orange is teh new black
+ozark
+the residence
+the new adventures of sabrinat
+dahmer
+the waterfrtong
+ratched
+sence 8
+boots
+you
+devil in idaho
+fate the winx sage
+hollywood
+eschoes
+the politician
+carry-on
+the umbrealla academy
+the boys in teh band
+leave the world behind
+the circle
+anonomous
+the silence
+requium
+flaked
+archieve 81
+travlers
+upload
+the society
+departure
+hostage
+the diplomat
+annimal kinddon
+heatstopper
+dune
+aks charlie sheen
+dept.q
+manifest
+north of north
+outer banks
+dead boy detectives
+ransom
+the sinner
+loke & key
+you
+the recrute
+night agent
+queer eye
+black mirros
+srcher
+you
+dark
+the glass dome
+riverdale
+grace andf frankie
+shadow and bone
+lucy
+13 resaons why
+pine gap
+biutten
+bodygaurd (ik)
+the gray man
+MIB
+The Order
+Titans
+Cabinet of curiopsites
+list in space
+a series of unfortunate events
+the thrsday murder club
+carry-on
+the school of good and evil
+lockwood and co
+black doves
+red notice
+criminal united kingdon
+uglies
+boides
+behind her eyes
+luther
+ad vitam
+the beauru of magical things
+nonnasrussian doll
+you royals
+the womanin the window
+beef
+bros
+the crew
+gone girls
+stranger things
+blockbuster
+taco chroinicles
+unlocked
+
+
+
+
+
+
+So i have a lot of issues with this build
+1. App Shell (Global)
+1.1 Global Header is no longer sticky
+
+2. Calendar View
+2.3 Day Cell: TV Episode Entry
+2.3.1 Poster – the was missed increase in size by 50%, was applied to the Show card and not the Day Cell: TV Episode Entry
+2.3 Day Cell: TV Episode Entry did have the runtine added•	Insert Episode run time
+2.3.4 Network/service chips  are almost ipissble to see except for HBO, i think they need to be doun the sixe and maybe focus on the width of the logo vs teh height and have teh width the constat value for the logos vs the height
+the vidsrc and the videay logos are so smalle the are less wide that the word "work" from waht I see
+Show popup is missing poster
+missing Insert episode run time, likley need an update to the fetch scripts, and missing from all insert requests
+logos in popups are tiny tiny tiny and i can tell what they are
+
+3. Shows View
+3.2 Show Card
+3.2.1 Poster was increased by 50% and was not to be increased, the incresae was noed for the 2.3.1 Poster – increase in size by 50% also this is new hyper link the poster to click → 7.1 Show Popup (P1)
+missing Insert movie run time, likley need an update to the fetch scripts, and missing from all insert requests
+logos in popups are tiny tiny tiny and i can tell what they are, this is an across the board issue.
+no link/popup 3.2.3 “Current Season” line (click → 7.2 Season Episodes Popup)
+
+4. Movies View
+not working is missing details for 
+4.1.2 Status filter (“In Theatres”, “Released”, “In Production”, “Announced”)
+4.1.3 Sort (Title / Release date)
+4.1.4 Watched filter (future)
+missing runtime 4.2.4 Release date + status line +and include movie’s runtime
+
+6. Config View is missing
+6.2 Maintenance Shortcuts
+6.3 Integration Info
+6.4 Edit Helpers
+and only has 6.1 Display Settings
+
+can you look back at previous vresions and look at how these items where implkemetned and compare tto the current version and 
+reappy this fucntionality into the current design
+6. Config View is missing
+6.2 Maintenance Shortcuts
+6.3 Integration Info
+6.4 Edit Helpers
+and only has 6.1 Display Settings
+
+revert back to the Poster size settings
+revert back to  4.1.2 Status filter (“In Theatres”, “Released”, “In Production”, “Announced”)
+4.1.3 Sort (Title / Release date)
+4.1.4 Watched filter (future)
+
+and can you also go back to the last 5 issue where the movies did load and give me a list os what was cahnged or fixed that results in teh moves not being included.
+
+can you look back at previous vresions and look at how these items where implkemetned and compare tto the current version and 
+reappy this fucntionality into the current design
+6. Config View is missing
+6.2 Maintenance Shortcuts
+6.3 Integration Info
+6.4 Edit Helpers
+and only has 6.1 Display Settings
+
+revert back to the Poster size settings
+revert back to  4.1.2 Status filter (“In Theatres”, “Released”, “In Production”, “Announced”)
+4.1.3 Sort (Title / Release date)
+4.1.4 Watched filter (future)
+
+and can you also go back to the last 5 issue where the movies did load and give me a list os what was cahnged or fixed that results in teh moves not being included.
+
+
+
+You’re right to be annoyed; some of this regressed when we were chasing the movies bug and loader issues.
+
+I’ll do three things in this reply:
+    Restore the missing Config sections (6.2 / 6.3 / 6.4) and keep them aligned with the current design.
+    Fix poster sizing (calendar vs shows vs popups) and restore the Movies filters (4.1.2–4.1.4).
+    Summarize what (realistically) caused the movies to disappear so we don’t gaslight ourselves next time.
+Here’s a clean, drop-in web/index.html that folds all of that in one place.
+
+==================================================================
+Short answer: yes, and you’re absolutely right to want this written down so we stop chasing ghosts. Here’s the matrix based on our actual saga in this thread.
+
+Note: counts are per distinct incident where that cause (or fix) was the real reason, not how many times we talked about it.
+
+#	Root Cause	Times It Was The Actual Fix	Where It Showed Up
+1	Parser expectations vs file content	2	(a) movies_list.txt line format / separators; (b) hidden/odd formatting causing movies to be skipped.
+2	Filename / wiring drift	1	Workflow / scripts briefly not aligned on movies_list.txt vs other names/paths.
+3	data.json overwritten on “bad” build	1	Build succeeded but wrote movies: [], so site looked broken until next good run.
+
+So, practical takeaway for future “Movies vanished” panics, in this order:
+
+Open /data/data.json → check "movies" count.
+
+If 0:
+
+Confirm movies_list.txt format (no weird separators/encoding, proper name|id).
+
+Confirm scripts/build are pointing at movies_list.txt (no drift).
+
+Re-run build; make sure it fails loudly instead of silently publishing bad data.json.
+==================================================================
+
+2. Movies disappeared again – let’s talk root causes properly
+
+You’re right: saying “it was exactly 3–4 times” is too shallow. Pattern-wise, across everything you’ve described, the failures cluster into a few recurring classes (sometimes overlapping in the same incident):
+Class A – Input format / parser mismatch
+
+Examples:
+    Separator lines (-----), rich comments, or stray characters treated as data.
+    Headers or version lines added without the parser explicitly skipping them.
+    Encodings / line endings (copying from Word/HTML/raw view adds hidden junk).
+Effect: fetch_tmdb.py quietly skips those lines → valid entries count = 0 → data.json written with "movies": [] → UI “no movies”.
+
+This is the one that has bitten you multiple times (more than two), in different flavors.
+Class B – Wiring / naming drift
+    Workflow or script temporarily pointed at:
+        The wrong filename (movies.txt vs movies_list.txt).
+        The wrong relative path (./movies_list.txt vs repo root vs data/).
+    Renames like fetch_live_tv_stub.py → fetch_live_tv.py without updating the workflow in sync.
+Effect: Build runs “fine” but script never sees any movie rows → "movies": [].
+
+Happened at least once clearly, likely contributed in combination to others.
+Class C – “Successful” bad builds overwriting good data
+    Python exits 0 (no crash), but logic produced empty/partial arrays due to A/B.
+    build-data.yml then:
+        Uploads and deploys that data.json.
+    Frontend is correct, but it’s rendering exactly what it’s handed: an empty movies list.
+
+This has happened at least twice: once with no movies, once with partial regressions.
+Class D – Frontend schema mismatch (less frequent, but real risk)
+    Index expecting fields that aren’t always present:
+        e.g., using mv.name vs mv.title, or assuming runtime/belongs_to_collection.
+    If we filteed or dereferenced based on a missing field, a sloppy check could hide valid entries.
+
+We’ve mostly avoided this, but every time we refactor index.html without re-checking data.json, it’s a potential cause.
+==================================================================
+
+NEXT________
+can you also add in "[tmdb_id] after the show or movie name in all the pop up cards
+also allow the font to go up to 2X
+also adjsut the post on shows as the height does for into the width limitations
+increase the TMDB, VidSrc and Videasy icons by 100%
+and I am not gettign ay morives again
+index.html: v2.8.11 • config.html: v1.4.4 • Data built: 2025-11-07T06:29:22.455092Z • Shows: 34 • Movies: 0 • LiveTV: 0
+gap you also do a gap analysis against the intdned dsign as well list seperte the thinkg ion the parked list, which of course are not gaps 
+
+in
+index.html: v2.8.20 • config.html: v1.4.4 • Data built: n/a • Shows: 58 • Movies: 63 • LiveTV: 0
+the calendar is completely broken, there is no post image, non of the links work anymore
+remove the text of "Episodes + movie releases by air date."
+in shows nothing is displaying
+also check the folder and selection this is wrong and make sure thinkg like "line 1" or "Line:" is not displayed
+in movies nothing is displaying
+and the filter and navigation is wonky as well
+remove the # in the menu of 1 Calendar, 2 Shows, 3 Movies, 4 Live TV, 5 Config
+you needd to toally QA this release and fix it all it was workign and now it is not.
+this release is a nightmare.
+
+
+
+There is a lot or Stuff  missing in calendar, shows and moistly likely movies
+Can you do a gap analyses
+is icon need their own line other wise they get left out of the cell and I can't see them
+it doesnt make sene to me that there would not be proper QA before proving the code or analyses in code version to make coding and makeing code changes  is a free for all with not struture or approach or methood, this is why i leverage you as you can do that an dI cant., as wll I dont code or design I and not in the domain of knowledge and skils, 
+we waste more time and money and resourcs that it woudl ahve taken to properly keep track of the code teh cdoe changes, do qa and comparitive analsyes on changes 
+TOu dont need to tell teh me obious, you haef siad his beofre and I gave you the data and you can access teh file sa the projecy is open to all, there is nto data for - For Movies to show up, your ../data/data.json must contain:
+and tellme i need data is a wast fo time, as the code isnt p getting it and saving it at the moment.
+and it as annoying as I gave you this feedbacvk, you seem to nly read part of the nformatin i gove you in a prompt and then igmore the resit of it -- For Movies to show up, your ../data/data.json must contain:
+you hae previsou didn analsysis on where this breats - Where it can break (for movies and soe you woudl have a short lis of things to look at in the current code and be able to see if any of tehs issues that we had befoer are back and need to be fixed.
+
+
+
+for 
+
+in the past there were issues with prooviding a download file, are you able to do that now, i thihnkng it is easier adn faster than posting all teh code to the ptoimpt thread, is yuoou can noe withouth error post the remaining file as downloaf files, let do that please. and please are previously asked please add a time stam to the date info version details in the headers
+
+
+
+
+
+
+we also need daa from tvmaze and trakt and potentially omdb.
+especia;lly what my watch status is ad this hsould be papied to the shows and movies.
