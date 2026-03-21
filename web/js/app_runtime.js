@@ -261,10 +261,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             <div id="inputsEditorPanel" style="display:grid;gap:12px;">
               <div id="inputsEditorPanelMeta" class="muted"></div>
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <a id="inputsEditorOpen" class="calbtn" href="./inputs_editor.html" target="_blank" rel="noopener">Open editor</a>
+                <a id="inputsEditorOpen" class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open local editor</a>
                 <a id="inputsEditorServer" class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open local-server editor</a>
               </div>
-              <iframe id="inputsEditorFrame" title="Inputs Editor" style="width:100%;min-height:78vh;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:rgba(0,0,0,0.2);"></iframe>
+              <div class="inputs-editor-shell-note">The hosted shell no longer embeds a dead editor view. Use the local editor flow on port 8787.</div>
             </div>
           </section>
         </div>
@@ -1757,6 +1757,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#providerBack").style.display = "flex";
     $("#providerBack").setAttribute("aria-hidden", "false");
     syncModalScrollLock();
+    $$("a[data-watch-source-type]", $("#providerBody")).forEach(link => {
+      link.addEventListener("click", () => {
+        closeProviderModal();
+      }, { once: true });
+    });
     const card = $("#providerCard");
     if (card){
       card.scrollTop = 0;
@@ -3586,22 +3591,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function renderInputsEditor(){
-    const frame = $("#inputsEditorFrame");
     const meta = $("#inputsEditorPanelMeta");
     const openBtn = $("#inputsEditorOpen");
     const serverBtn = $("#inputsEditorServer");
-    if (!frame || !meta || !openBtn || !serverBtn) return;
-
-    const sameOriginUrl = `${window.location.origin}/web/inputs_editor.html`;
+    if (!meta || !openBtn || !serverBtn) return;
     const localServerUrl = `http://127.0.0.1:8787/web/inputs_editor.html`;
-    const targetUrl = state.apiAvailable ? sameOriginUrl : localServerUrl;
-
-    frame.src = targetUrl;
-    openBtn.href = targetUrl;
+    openBtn.href = localServerUrl;
     serverBtn.href = localServerUrl;
-    meta.textContent = state.apiAvailable
-      ? "Inputs Editor is available on this server and embedded below."
-      : "Inputs Editor requires the local editor server. The embedded view points to http://127.0.0.1:8787/web/inputs_editor.html.";
+    meta.innerHTML = `Inputs Editor is a local-server flow. Launch <code>${escHtml(localServerUrl)}</code> or run <code>tools/start_inputs_editor.cmd</code>.`;
   }
 
   function openMovieModalLegacy(tmdbId){

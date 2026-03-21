@@ -156,6 +156,7 @@ def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", default=str(DEFAULT_REPO_ROOT))
+    parser.add_argument("--no-pause", action="store_true")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -207,7 +208,8 @@ def main() -> int:
     print(summary_txt)
     print("")
     print(f"Detailed report folder: {out_dir}")
-    input("Press ENTER to exit...")
+    if not args.no_pause:
+        input("Press ENTER to exit...")
     return 0
 
 if __name__ == "__main__":

@@ -10,9 +10,11 @@ CHANGE NOTES:
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import mimetypes
 import os
+import subprocess
 import sys
 import tempfile
 import urllib.request
@@ -26,6 +28,7 @@ INPUTS_JSON = DATA_DIR / "inputs.json"
 WEB_DIR = REPO_ROOT / "web"
 UI_FILE = WEB_DIR / "inputs_editor.html"
 CONFIG_JSON = WEB_DIR / "config.json"
+BACKUP_DIR = DATA_DIR / "backups"
 
 TMDB_KEY_ENV = "API_TMDB_KEY"
 TMDB_BASE = "https://api.themoviedb.org/3"
@@ -44,6 +47,7 @@ def _json(handler: BaseHTTPRequestHandler, code: int, obj: dict):
     handler.send_header("Content-Type", "application/json; charset=utf-8")
     handler.send_header("Content-Length", str(len(data)))
     handler.send_header("Cache-Control", "no-store")
+    handler.send_header("Access-Control-Allow-Origin", "*")
     handler.end_headers()
     handler.wfile.write(data)
 
@@ -59,6 +63,7 @@ def _text(
     handler.send_header("Content-Type", ctype)
     handler.send_header("Content-Length", str(len(data)))
     handler.send_header("Cache-Control", "no-store")
+    handler.send_header("Access-Control-Allow-Origin", "*")
     handler.end_headers()
     handler.wfile.write(data)
 
@@ -90,6 +95,74 @@ def _atomic_write(path: Path, obj: dict):
                 tmp.unlink()
             except Exception:
                 pass
+
+
+def _backup_inputs() -> str | None:
+    if not INPUTS_JSON.exists():
+        return None
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    backup_path = BACKUP_DIR / f"inputs_{_now_utc_iso().replace(':', '').replace('-', '')}.json"
+    backup_path.write_text(INPUTS_JSON.read_text(encoding="utf-8"), encoding="utf-8")
+    return str(backup_path)
+
+
+def _normalize_media_entry(entry: dict, media_type: str) -> dict:
+    normalized = copy.deepcopy(entry)
+    normalized["title"] = str(normalized.get("title", "")).strip()
+    if not normalized["title"]:
+        raise ValueError(f"{media_type} entries require a title")
+    tmdb_id = normalized.get("tmdb_id")
+    if not isinstance(tmdb_id, int):
+        if isinstance(tmdb_id, str) and tmdb_id.strip().isdigit():
+            tmdb_id = int(tmdb_id.strip())
+        else:
+            raise ValueError(f"{media_type} '{normalized['title']}' requires an integer tmdb_id")
+    normalized["tmdb_id"] = tmdb_id
+    normalized["in_scope"] = normalized.get("in_scope", True) is not False
+    if media_type == "tv":
+        normalized["season_spec"] = str(normalized.get("season_spec", "*") or "*").strip() or "*"
+        normalized["include_future"] = normalized.get("include_future", True) is not False
+    if "tags" in normalized:
+        tags = normalized.get("tags") or []
+        if not isinstance(tags, list):
+            raise ValueError(f"{media_type} '{normalized['title']}' tags must be a list")
+        normalized["tags"] = [str(tag).strip() for tag in tags if str(tag).strip()]
+    if "notes" in normalized:
+        normalized["notes"] = str(normalized.get("notes", "") or "").strip()
+    return normalized
+
+
+def _validate_inputs_payload(obj: dict) -> dict:
+    if not isinstance(obj, dict):
+        raise ValueError("inputs payload must be an object")
+    tv = obj.get("tv", [])
+    movies = obj.get("movies", [])
+    watchlist = obj.get("watchlist", [])
+    if not isinstance(tv, list) or not isinstance(movies, list) or not isinstance(watchlist, list):
+        raise ValueError("inputs must contain lists: tv, movies, watchlist")
+    validated = copy.deepcopy(obj)
+    validated["tv"] = [_normalize_media_entry(entry, "tv") for entry in tv]
+    validated["movies"] = [_normalize_media_entry(entry, "movie") for entry in movies]
+    validated["watchlist"] = watchlist
+    return validated
+
+
+def _run_editor_refresh() -> dict:
+    command = [sys.executable, str(REPO_ROOT / "scripts" / "run_pipeline_full.py"), "--editor-refresh"]
+    completed = subprocess.run(
+        command,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=900,
+        check=False,
+    )
+    return {
+        "ok": completed.returncode == 0,
+        "returncode": completed.returncode,
+        "stdout": completed.stdout[-8000:],
+        "stderr": completed.stderr[-8000:],
+    }
 
 
 def _tmdb_search(query: str) -> dict:
@@ -137,6 +210,13 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args):
         sys.stdout.write("%s - %s\n" % (self.address_string(), fmt % args))
 
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
     def do_GET(self):
         parsed = urlparse(self.path)
         path = parsed.path
@@ -174,6 +254,11 @@ class Handler(BaseHTTPRequestHandler):
                 return
             result = _tmdb_search(query)
             _json(self, 200 if result.get("ok") else 400, result)
+            return
+
+        if path == "/api/refresh-runtime":
+            result = _run_editor_refresh()
+            _json(self, 200 if result["ok"] else 500, result)
             return
 
         if path.startswith("/web/"):
@@ -233,6 +318,11 @@ class Handler(BaseHTTPRequestHandler):
             _json(self, 200, {"ok": True})
             return
 
+        if parsed.path == "/api/refresh-runtime":
+            result = _run_editor_refresh()
+            _json(self, 200 if result["ok"] else 500, result)
+            return
+
         if parsed.path != "/api/inputs":
             _json(self, 404, {"ok": False, "error": "Not found"})
             return
@@ -246,13 +336,16 @@ class Handler(BaseHTTPRequestHandler):
             _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
             return
 
-        if not isinstance(obj.get("tv", []), list) or not isinstance(obj.get("movies", []), list):
-            _json(self, 400, {"ok": False, "error": "inputs must contain lists: tv, movies"})
+        try:
+            validated = _validate_inputs_payload(obj)
+        except ValueError as exc:
+            _json(self, 400, {"ok": False, "error": str(exc)})
             return
 
-        obj["generated_utc"] = _now_utc_iso()
-        _atomic_write(INPUTS_JSON, obj)
-        _json(self, 200, {"ok": True, "saved": str(INPUTS_JSON), "utc": obj["generated_utc"]})
+        validated["generated_utc"] = _now_utc_iso()
+        backup_path = _backup_inputs()
+        _atomic_write(INPUTS_JSON, validated)
+        _json(self, 200, {"ok": True, "saved": str(INPUTS_JSON), "backup": backup_path, "utc": validated["generated_utc"]})
 
 
 def main():

@@ -1,94 +1,34 @@
-# -----------------------------
-# Python
-# -----------------------------
 __pycache__/
 *.pyc
 .venv/
-
-# -----------------------------
-# Node / package managers
-# -----------------------------
 node_modules/
-
-# -----------------------------
-# Build / generated outputs
-# -----------------------------
 out/
 build/
 dist/
 logs/
-reports/
-
-# -----------------------------
-# Local AI / helper working folders
-# -----------------------------
 .ai_downloads/
 .ai_apply/
 .ai_state/
 .codex.files/
 .my_notes/
 .txt_files_4_AI_attachments/
-
-# -----------------------------
-# Local scratch / inventory / packages
-# -----------------------------
 _local/
 inventory/
 *.bak
 *.bak_*
 *.tmp
-*.zip
-
-# -----------------------------
-# Local archived / scratch data
-# -----------------------------
+*_package.zip
+*_patch_input.zip
+*_restart_package.zip
+README_overlay_apply*.txt
 data/archived/
 data/inputs.cleaned.json
-
-# -----------------------------
-# Local tool / archive folders
-# -----------------------------
 tools/inputs_editor/archive/
 web/.archive/
-
-# -----------------------------
-# Local-only helper scripts
-# -----------------------------
 tools/fix_inputs.py
 tools/fix_inputs_specific.py
-
-# -----------------------------
-# Local inventory / listing / exports
-# -----------------------------
 *files+folders*
-*listing*.txt
-*inventory*.txt
-*summary*.txt
-
-# -----------------------------
-# Local-only docs / guardrails / notes
-# -----------------------------
+Files+Folders_listing.txt
+Curated-Files+Folders_listing.txt
 AGENTS.md
-docs/AI_AGENT_RULES.md
-docs/ARCHITECTURE.md
-docs/ARCHITECTURE_LOG.md
-docs/UI_COMPONENTS.md
-docs/UI_GAP_ANALYSIS.md
-docs/calendar_view.md
-docs/episode_card.md
-docs/focus_navigation_tv.md
-docs/movie_card.md
-docs/movie_popup.md
-docs/show_card.md
-docs/show_popup.md
-
-# -----------------------------
-# Local-only README / overlay helpers
-# -----------------------------
-README_overlay_apply*.txt
-README_overlay_apply*.md
-
-# -----------------------------
-# Local-only web bundles
-# -----------------------------
 web/web_folder.zip
