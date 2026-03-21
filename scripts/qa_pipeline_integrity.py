@@ -19,9 +19,11 @@ from typing import Any, Dict, List, Tuple
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA_JSON = os.path.join(REPO_ROOT, "data", "data.json")
 INPUTS_JSON = os.path.join(REPO_ROOT, 'data', 'inputs.json')
+AVAILABILITY_JSON = os.path.join(REPO_ROOT, "data", "watch_source_availability.json")
 WEB_CONFIG = os.path.join(REPO_ROOT, "web", "config.json")
 LOG_DIR = os.path.join(REPO_ROOT, "logs")
 REPORT_DIR = os.path.join(REPO_ROOT, "reports")
+ALLOWED_AVAILABILITY = {"not_yet_released", "available", "unavailable", "unknown"}
 
 
 def _utc_ts() -> str:
@@ -133,6 +135,7 @@ def main() -> int:
         _log(logf, f"[qa_pipeline_integrity] START repo_root={REPO_ROOT}")
         _log(logf, f"[qa_pipeline_integrity] data_json={DATA_JSON}")
         _log(logf, f"[qa_pipeline_integrity] inputs_json={INPUTS_JSON}")
+        _log(logf, f"[qa_pipeline_integrity] availability_json={AVAILABILITY_JSON}")
         _log(logf, f"[qa_pipeline_integrity] log={log_path}")
 
         if not os.path.isfile(DATA_JSON):
@@ -233,6 +236,36 @@ def main() -> int:
             checks.append(("missing_local_asset_files_zero", len(missing_local_files) == 0, f"missing local asset files: {len(missing_local_files)}"))
             checks.append(("missing_local_asset_fields_zero", len(missing_local_fields) == 0, f"missing *_local fields when *_path present: {len(missing_local_fields)}"))
 
+        availability_doc = _load_json(AVAILABILITY_JSON) if os.path.isfile(AVAILABILITY_JSON) else None
+        checks.append(("availability_source_exists", isinstance(availability_doc, dict), "data/watch_source_availability.json must exist and parse"))
+
+        availability_missing: List[str] = []
+        availability_invalid: List[str] = []
+
+        def _check_availability(entity: Dict[str, Any], label: str) -> None:
+            status = str(entity.get("availability_status") or "").strip()
+            if status not in ALLOWED_AVAILABILITY:
+                availability_invalid.append(f"{label} invalid availability_status={status!r}")
+            if not str(entity.get("availability_checked_at") or "").strip():
+                availability_missing.append(f"{label} missing availability_checked_at")
+            if not str(entity.get("availability_source") or "").strip():
+                availability_missing.append(f"{label} missing availability_source")
+            if not str(entity.get("availability_reason") or "").strip():
+                availability_missing.append(f"{label} missing availability_reason")
+
+        for s in shows:
+            _check_availability(s, f"show {s.get('tmdb_id')}")
+            for se in s.get("seasons") or []:
+                _check_availability(se, f"season {s.get('tmdb_id')}:{se.get('season_number')}")
+                for ep in se.get("episodes") or []:
+                    _check_availability(ep, f"episode {s.get('tmdb_id')}:{ep.get('season_number')}:{ep.get('episode_number')}")
+
+        for m in movies:
+            _check_availability(m, f"movie {m.get('tmdb_id')}")
+
+        checks.append(("availability_fields_present", len(availability_missing) == 0, f"entities missing availability fields: {len(availability_missing)}"))
+        checks.append(("availability_status_enum_valid", len(availability_invalid) == 0, f"entities with invalid availability_status: {len(availability_invalid)}"))
+
         ok = True
         for name, passed, detail in checks:
             _log(logf, f"[qa_pipeline_integrity] CHECK {name} => {'OK' if passed else 'FAIL'} | {detail}")
@@ -261,6 +294,11 @@ def main() -> int:
                 "missing_local_files": missing_local_files[:50],
                 "missing_local_fields": missing_local_fields[:50],
                 "null_episode_still_paths": null_still_paths,
+            },
+            "availability": {
+                "availability_source_exists": isinstance(availability_doc, dict),
+                "missing_fields_sample": availability_missing[:50],
+                "invalid_status_sample": availability_invalid[:50],
             },
             "checks": [{"name": n, "passed": p, "detail": d} for (n, p, d) in checks],
             "result": "OK" if ok else "FAIL",

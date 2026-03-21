@@ -1,0 +1,40 @@
+{
+  "version": "1.1.0",
+  "generated_at": "2026-03-21T00:00:00Z",
+  "defaults": {
+    "validation_mode": "structural",
+    "entities": {
+      "movie": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc",
+          "local"
+        ]
+      },
+      "show": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc"
+        ]
+      },
+      "season": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc"
+        ]
+      },
+      "episode": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc",
+          "local"
+        ]
+      }
+    }
+  },
+  "records": []
+}

@@ -1,0 +1,37 @@
+# Availability Status End-to-End Delivery Plan
+
+## Delivery goal
+Implement the feature across data, workflows, validation, and UI without breaking existing repo behavior.
+
+## Required grouped delivery phases
+| Phase | Required outcome |
+|---|---|
+| 1. Repo inspection | Confirm current source-of-truth files, `data.json` location, entity keys, current page/component structure, current workflows |
+| 2. Design alignment | Update any repo docs that still reflect legacy assumptions |
+| 3. Data implementation | Add source file model, validator, enrichment script |
+| 4. Workflow integration | Add manual and/or chained workflow support |
+| 5. UI integration | Show status in index/list/detail/card/episode views |
+| 6. QA pass | Validate syntax, JSON, merge results, UI visibility |
+| 7. Final reporting | Output exact changed files, validations, and remaining risks |
+
+## Live implementation mapping
+- Source file: `data/watch_source_availability.json`
+- Shared logic: `scripts/availability_status_lib.py`
+- Validator: `scripts/validate_availability_overlay.py`
+- Enricher: `scripts/enrich_data_with_availability.py`
+- QA summary: `scripts/qa_availability_status.py`
+- Manual chained runner: `scripts/run_pipeline_tmdb_trakt.py`
+- CI validation hook: `.github/workflows/validate.yml`
+- Shared UI helper: `web/js/availability_ui.js`
+
+## Hard implementation rules
+| Rule | Required |
+|---|---:|
+| Do not guess repo paths | Yes |
+| Do not assume legacy docs are current | Yes |
+| Update stale docs first if needed | Yes |
+| Reuse existing helpers/components where possible | Yes |
+| Preserve repo structure | Yes |
+| No rewrite-from-scratch | Yes |
+| Provide complete changed files | Yes |
+| Produce grouped implementation pass, grouped fix pass, grouped QA pass | Yes |

@@ -10,6 +10,7 @@ CHANGE NOTES:
 
 import * as configLoader from './config_loader.js';
 import * as dataLoader from './data_loader.js';
+import * as availabilityUi from './availability_ui.js';
 import * as cardRenderer from './card_renderer.js';
 import * as popupController from './popup_controller.js';
 import * as actionBar from './action_bar.js';
@@ -18,6 +19,7 @@ import '../config.js';
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
   dataLoader,
+  availabilityUi,
   cardRenderer,
   popupController,
   actionBar
@@ -643,19 +645,32 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return key <= todayKey();
   }
 
+  function availabilityStatusOf(item){
+    const raw = safeText(item?.availability_status).toLowerCase();
+    if (raw === "available" || raw === "unavailable" || raw === "not_yet_released" || raw === "unknown") return raw;
+    const release = pickAirDate(item);
+    if (!release) return "unknown";
+    return isDateAvailable(release) ? "available" : "not_yet_released";
+  }
+
+  function availabilityLabelOf(item){
+    return window.MyTVHubSharedModules.availabilityUi.availabilityLabel(availabilityStatusOf(item));
+  }
+
+  function availabilityBadgeHtml(item, options = {}){
+    return window.MyTVHubSharedModules.availabilityUi.availabilityBadgeHtml(availabilityStatusOf(item), options);
+  }
+
   function isShowAvailable(show){
-    const first = safeText(show?.first_air_date);
-    return isDateAvailable(first);
+    return availabilityStatusOf(show) === "available";
   }
 
   function isSeasonAvailable(season){
-    const d = pickAirDate(season);
-    return isDateAvailable(d);
+    return availabilityStatusOf(season) === "available";
   }
 
   function isEpisodeAvailable(ep){
-    const d = pickAirDate(ep);
-    return isDateAvailable(d);
+    return availabilityStatusOf(ep) === "available";
   }
 
   function pickAirDate(obj){
@@ -663,8 +678,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function isMovieAvailable(movie){
-    const d = safeText(movie?.release_date);
-    return isDateAvailable(d);
+    return availabilityStatusOf(movie) === "available";
   }
 
   async function checkApiAvailable(){
@@ -2425,6 +2439,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       id,
       title: safeText(options.title || "(Untitled)"),
       image: safeText(options.image || "").trim(),
+      badgeHtml: safeText(options.badgeHtml || "").trim(),
       meta: safeText(options.meta || "").trim(),
       submeta: safeText(options.submeta || "").trim(),
       actionBarHtml: safeText(options.actionBar || ""),
@@ -2447,6 +2462,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       id,
       title,
       image,
+      badgeHtml: safeText(options.badgeHtml || "").trim(),
       meta: tertiary || subtitle,
       actionBarHtml: actionBar,
       overlay: true,
@@ -2562,6 +2578,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         subtitle: sub,
         tertiary: formatDateShort(dateKey),
         image: imgSrc,
+        badgeHtml: availabilityBadgeHtml(item, { compact: true }),
         pct
       });
     }).join("") : `<div class="muted">No upcoming items found.</div>`;
@@ -2588,6 +2605,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               title,
               subtitle: metaText,
               image: imgSrc,
+              badgeHtml: availabilityBadgeHtml(item, { compact: true }),
               pct,
               extraClass: "dashcolitem-card"
             });
@@ -2620,6 +2638,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               title,
               subtitle: metaText,
               image: imgSrc,
+              badgeHtml: availabilityBadgeHtml(item, { compact: true }),
               pct,
               extraClass: "dashcolitem-card"
             });
@@ -2645,6 +2664,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         title,
         subtitle: entry?.media_kind || (show ? "show" : (movie ? "movie" : "unknown")),
         image: poster,
+        badgeHtml: availabilityBadgeHtml(show || movie || entry, { compact: true }),
         pct,
         extraClass: "dashwatchcard"
       });
@@ -2660,6 +2680,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         title: safeText(s?.title || s?.name || "Show"),
         subtitle: s?.first_air_date ? formatDateShort(s.first_air_date) : "",
         image: poster,
+        badgeHtml: availabilityBadgeHtml(s, { compact: true }),
         pct
       });
     }).join("") : `<div class="muted">No recommendations.</div>`;
@@ -2671,6 +2692,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         title: safeText(m?.title || "Movie"),
         subtitle: m?.release_date ? formatDateShort(m.release_date) : "",
         image: poster,
+        badgeHtml: availabilityBadgeHtml(m, { compact: true }),
         pct
       });
     }).join("") : `<div class="muted">No recommendations.</div>`;
@@ -2734,9 +2756,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (scope === "returning" && statusText !== "returning series") return false;
       if (scope === "ended" && statusText !== "ended") return false;
       if (wantAvailability !== "all"){
-        const available = isShowAvailable(s);
-        if (wantAvailability === "available" && !available) return false;
-        if (wantAvailability === "unreleased" && available) return false;
+        const status = availabilityStatusOf(s);
+        if (wantAvailability === "available" && status !== "available") return false;
+        if (wantAvailability === "unreleased" && status !== "not_yet_released") return false;
       }
       if (wantWatched === "watched" && !isShowWatched(s)) return false;
       if (wantWatched === "unwatched" && isShowWatched(s)) return false;
@@ -2837,9 +2859,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (scope === "upcoming" && !isUpcoming) return false;
       if (scope === "released" && isUpcoming) return false;
       if (wantAvailability !== "all"){
-        const available = isMovieAvailable(m);
-        if (wantAvailability === "available" && !available) return false;
-        if (wantAvailability === "unreleased" && available) return false;
+        const status = availabilityStatusOf(m);
+        if (wantAvailability === "available" && status !== "available") return false;
+        if (wantAvailability === "unreleased" && status !== "not_yet_released") return false;
       }
     if (wantWatched === "watched" && !isMovieWatched(m)) return false;
     if (wantWatched === "unwatched" && isMovieWatched(m)) return false;
@@ -3527,6 +3549,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
           image: item.thumb,
           title: item.episode_name || "Episode",
+          badgeHtml: availabilityBadgeHtml(item, { compact: true }),
           meta: seTag(seasonNum, episodeNum),
           submeta: item.show_title || "Show",
           overlay: true,
@@ -3557,6 +3580,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         id: movieId,
         image: item.thumb,
         title: item.title || "Movie",
+        badgeHtml: availabilityBadgeHtml(item, { compact: true }),
         meta: "Movie",
         submeta: "Release day",
         overlay: true,
@@ -3665,6 +3689,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
           image: imageForItem(item),
           title: safeText(item.episode_name || "Episode"),
+          badgeHtml: availabilityBadgeHtml(item, { compact: true }),
           meta: seTag(seasonNum, episodeNum),
           submeta: safeText(item.show_title || "Show"),
           overlay: true,
@@ -3729,6 +3754,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         title: safeText(entry?.title || show?.title || show?.name || movie?.title || "Untitled"),
         subtitle: safeText(entry?.watch_status || "watchlist"),
         image: normalizeImageSrc(pickImage(media, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+        badgeHtml: availabilityBadgeHtml(media, { compact: true }),
         pct: percentForItem(media),
         facts: [factChipHtml(show ? "Show" : "Movie"), factChipHtml("Watchlist", "tone-accent")]
       });
@@ -3740,6 +3766,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       subtitle: truncateText(show?.overview || "", 84),
       tertiary: show?.first_air_date ? formatDateShort(show.first_air_date) : "",
       image: normalizeImageSrc(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+      badgeHtml: availabilityBadgeHtml(show, { compact: true }),
       pct: percentForItem(show),
       facts: [factChipHtml("Discover"), (show?.genres || []).length ? factChipHtml(show.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
@@ -3750,6 +3777,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       subtitle: truncateText(movie?.overview || "", 84),
       tertiary: movie?.release_date ? formatDateShort(movie.release_date) : "",
       image: normalizeImageSrc(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+      badgeHtml: availabilityBadgeHtml(movie, { compact: true }),
       pct: percentForItem(movie),
       facts: [factChipHtml("Movie"), (movie?.genres || []).length ? factChipHtml(movie.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
@@ -3771,6 +3799,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return buildMediaCardShell("show", id, {
       title,
       image: pickImage(show, "poster_local", "poster_path"),
+      badgeHtml: availabilityBadgeHtml(show, { compact: true }),
       actionBar: buildActionBarHtml("show", id, {
         title,
         compact: true,
@@ -3800,6 +3829,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return buildMediaCardShell("movie", id, {
       title,
       image: pickImage(movie, "poster_local", "poster_path"),
+      badgeHtml: availabilityBadgeHtml(movie, { compact: true }),
       actionBar: buildActionBarHtml("movie", id, {
         title,
         compact: true,
@@ -3947,6 +3977,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               available: isMovieAvailable(movie)
             })}
             <div class="popup-detail-grid">
+              <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(movie))}</strong></div>
               <div class="popup-detail"><span>Providers</span><strong>${escHtml((() => {
                 const wp = getWatchProviders(movie);
                 const providers = collectProvidersForRegion(wp, "US").length
@@ -4006,6 +4037,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               available: isShowAvailable(show)
             })}
             <div class="popup-detail-grid">
+              <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(show))}</strong></div>
               <div class="popup-detail"><span>Providers</span><strong>${escHtml((() => {
                 const wp = getWatchProviders(show);
                 const providers = collectProvidersForRegion(wp, "US").length
@@ -4038,6 +4070,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               <div class="seasonmeta">
                 <div class="seasonname">${escHtml(season?.name || (selected ? `Season ${selected.n}` : "Season"))}</div>
                 <div class="seasonair">${escHtml(pickAirDate(season) ? `Premiered ${fmtDate(pickAirDate(season))}` : "Season details")}</div>
+                ${availabilityBadgeHtml(season, { compact: true })}
                 ${compactOverviewHtml(season?.overview || "", 220)}
               </div>
             </div>
@@ -4061,6 +4094,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
                 image: pickImage(ep, "still_local", "still_path"),
                 title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
+                badgeHtml: availabilityBadgeHtml(ep, { compact: true }),
                 meta: seTag(seasonNum, episodeNum),
                 submeta: title,
                 description: safeText(ep?.overview || ""),

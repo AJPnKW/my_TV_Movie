@@ -1,5 +1,6 @@
 import * as configLoader from './config_loader.js';
 import * as dataLoader from './data_loader.js';
+import * as availabilityUi from './availability_ui.js';
 import * as cardRenderer from './card_renderer.js';
 import * as actionBar from './action_bar.js';
 
@@ -175,6 +176,7 @@ function renderEpisodeCard(entry) {
     image: pickImage(episode, 'still_local', 'still_path'),
     eyebrow: entry.showTitle,
     title: `${seTag(entry.seasonNumber, entry.episodeNumber)} • ${entry.title}`,
+    badgeHtml: availabilityUi.availabilityBadgeHtml(episode?.availability_status, { compact: true }),
     meta: formatDate(entry.date),
     submeta: safeText(episode?.runtime) ? `${episode.runtime} min` : '',
     overlay: true,
@@ -195,6 +197,7 @@ function renderMovieCard(entry) {
     id: movie?.tmdb_id ?? '',
     image: pickImage(movie, 'poster_local', 'poster_path'),
     title: entry.title,
+    badgeHtml: availabilityUi.availabilityBadgeHtml(movie?.availability_status, { compact: true }),
     meta: formatDate(entry.date),
     submeta: safeText(movie?.runtime) ? `${movie.runtime} min` : '',
     overlay: true,

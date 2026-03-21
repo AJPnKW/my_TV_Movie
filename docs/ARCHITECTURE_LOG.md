@@ -83,3 +83,11 @@ Commit
 - Added `web/js/chrometv_focus.js` as the single shared D-pad engine and reduced the main runtime focus path to a wrapper over that module instead of a second spatial-navigation implementation.
 - Normalized the action bar and calendar CSS contract by deleting contradictory legacy selectors that hid ratings or dimmed out-of-month cells under the new grid.
 - Implementation commit: `aa70abc`
+
+## 2026-03-21 — Availability status end-to-end
+- Added a normalized availability layer driven by `data/watch_source_availability.json`, resolved into additive fields on `data/data.json`.
+- Implemented shared availability validation/enrichment helpers under `scripts/availability_status_lib.py`, with dedicated validator, enricher, and QA scripts.
+- Chained availability validation/enrichment into the actual TMDB→OMDB→Trakt runner in `scripts/run_pipeline_tmdb_trakt.py`.
+- Extended the shared UI runtime so cards, calendar rows, watch_me cards, show seasons, and show/movie popups all render one shared availability badge/detail pattern from enriched `data.json`.
+- Updated the availability docs set to match the live repo’s actual keys, workflow runner, validation mode, and QA artifacts.
+- Implementation commit: `pending grouped commit`

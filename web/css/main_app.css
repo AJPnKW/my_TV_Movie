@@ -2697,6 +2697,9 @@ CHANGE NOTES:
       font-size:13px;
       line-height:1.35;
     }
+    .seasonmeta .availability-badge{
+      margin-top:6px;
+    }
     .popup-description{
       display:grid;
       gap:8px;
@@ -2953,6 +2956,46 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   display:grid;
   gap:12px;
   padding:12px;
+}
+.availability-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:max-content;
+  max-width:100%;
+  padding:4px 8px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,0.16);
+  background:rgba(255,255,255,0.08);
+  color:#eaf1ff;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+}
+.availability-badge--compact{
+  padding:3px 7px;
+  font-size:10px;
+}
+.availability-badge--available{
+  background:rgba(47,224,138,0.18);
+  color:#baf7d5;
+  border-color:rgba(47,224,138,0.34);
+}
+.availability-badge--unavailable{
+  background:rgba(255,92,114,0.18);
+  color:#ffd5db;
+  border-color:rgba(255,92,114,0.34);
+}
+.availability-badge--not_yet_released{
+  background:rgba(255,209,102,0.18);
+  color:#fff1c2;
+  border-color:rgba(255,209,102,0.34);
+}
+.availability-badge--unknown{
+  background:rgba(148,163,184,0.18);
+  color:#dbe7ff;
+  border-color:rgba(148,163,184,0.34);
 }
 .media-card__overlay{
   min-height:68%;

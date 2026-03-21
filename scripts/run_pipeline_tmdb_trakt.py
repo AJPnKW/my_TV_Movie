@@ -21,6 +21,9 @@ LOGS_DIR = REPO_ROOT / "logs"
 FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
 FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
+VALIDATE_AVAILABILITY = SCRIPTS_DIR / "validate_availability_overlay.py"
+ENRICH_AVAILABILITY = SCRIPTS_DIR / "enrich_data_with_availability.py"
+QA_AVAILABILITY = SCRIPTS_DIR / "qa_availability_status.py"
 
 
 def _ts() -> str:
@@ -79,6 +82,27 @@ def main() -> int:
         return rc
 
     rc = _run_one("TRAKT", FETCH_TRAKT)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_VALIDATE", VALIDATE_AVAILABILITY)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_ENRICH", ENRICH_AVAILABILITY)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_QA", QA_AVAILABILITY)
     finished = _ts()
 
     tmdb_log = _latest_log("fetch_tmdb.*.log.txt")
