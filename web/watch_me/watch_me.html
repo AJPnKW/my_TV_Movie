@@ -18,6 +18,18 @@ CHANGE NOTES:
   <title>Watch Me</title>
   <link rel="stylesheet" href="../css/my_tv_hub.css?v=1.1.3" />
   <style>
+
+    .app-top-shell{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));padding:12px 14px;margin-bottom:14px}
+    .app-brand{display:flex;align-items:center}
+    .app-logo{display:inline-flex;flex-direction:column;justify-content:center;align-items:center;width:72px;height:56px;border-radius:14px;border:1px solid rgba(140,190,255,.45);background:linear-gradient(180deg,rgba(43,93,160,.24),rgba(22,34,58,.85));box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);color:#dbe8ff;text-decoration:none;font-weight:900;font-size:11px;letter-spacing:.11em;line-height:1.05}
+    .app-top-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .app-tab{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 18px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#dce7fb;text-decoration:none;font-weight:800}
+    .app-tab.active,.app-tab[aria-current="page"]{background:#4f8cff;color:#081221;border-color:#6aa2ff}
+    .app-status{display:inline-flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:rgba(255,255,255,.04);padding:10px 14px;color:#dce7fb;font-size:13px;font-weight:800}
+    .app-status-dot{width:10px;height:10px;border-radius:999px;background:#34d279;display:inline-block}
+    @media (max-width: 900px){ .app-top-shell{grid-template-columns:1fr;align-items:start} .app-status{justify-self:start} }
+
+
     :root{
       --bg:#0b0f16; --panel:#121a28; --line:rgba(255,255,255,.14); --txt:#ecf2ff; --mut:#b5c3dd; --w:150px; --side-w:210px;
       --card-w:150px; --card-h:152px; --gap:10px; --section-gap:12px;
@@ -135,23 +147,28 @@ CHANGE NOTES:
       .sel{ color-scheme:light; }
     }
     @media (max-width:1120px){ .side{ max-height:none; } }
-  
-    .wm-icons{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6px;margin-top:4px;white-space:nowrap;}
-    .wm-icons__left,.wm-icons__mid,.wm-icons__right{display:flex;align-items:center;gap:7px;}
-    .wm-icons__mid{justify-content:center;}
-    .wm-icons__right{justify-content:flex-end;}
-    .wm-iconbtn,.wm-icon{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:none;border:0;padding:0;font-size:16px;line-height:1;color:#f5f8ff;}
-    .wm-iconbtn--watch{color:#fff1b3;}
-    .wm-icon--status{color:#bfdbfe;}
-    .wm-icon--fav{color:#fda4af;}
-    .wm-icon--bookmark{color:#bbf7d0;}
-    .wm-rating{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:900;color:#fde68a;}
-    .wm-rating__star{font-size:13px;}
-    .cb .bad{display:none;}
-    </style>
+  </style>
 </head>
 <body data-watchme-version="1.1.3">
   <div class="app">
+
+    <header class="app-top-shell" aria-label="Application shell">
+      <div class="app-brand">
+        <a class="app-logo" href="../index.html" aria-label="MY TV HUB"><span>MY TV</span><span>HUB</span></a>
+      </div>
+      <nav class="app-top-nav" aria-label="Primary">
+        <a class="app-tab" href="../index.html">Dashboard</a>
+        <a class="app-tab" href="../shows.html">Shows</a>
+        <a class="app-tab" href="../movies.html">Movies</a>
+        <a class="app-tab active" href="./watch_me.html" aria-current="page">Watch Me</a>
+        <a class="app-tab" href="../calendar.html">Calendar</a>
+        <a class="app-tab" href="../discover.html">Discover</a>
+        <a class="app-tab" href="../config.html">Config</a>
+        <a class="app-tab" href="http://127.0.0.1:8787/web/inputs_editor.html">Inputs Editor</a>
+      </nav>
+      <div class="app-status"><span class="app-status-dot"></span><span>Watch Me</span></div>
+    </header>
+
     <header class="head">
       <div class="headcopy">
         <h1>Watch Me</h1>
@@ -692,8 +709,7 @@ CHANGE NOTES:
         const watchedToggle = watchedKey
           ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${seTag(it.sn,it.en)} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="tv" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
           : "";
-        const pct = Number.isFinite(Number(it.rating_pct)) ? Math.round(Number(it.rating_pct)) : "";
-        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="wm-icons"><span class="wm-icons__left">${links.a || links.b ? `<a class="wm-iconbtn wm-iconbtn--watch" href="${escHtml(links.a || links.b)}" target="_blank" rel="noopener" title="Watch source" aria-label="Watch source">🍿</a>` : `<span class="wm-icon wm-iconbtn--watch">🍿</span>`}</span><span class="wm-icons__mid"><span class="wm-icon wm-icon--status">⌚</span><span class="wm-icon wm-icon--fav">💕</span><span class="wm-icon wm-icon--bookmark">🔖</span></span><span class="wm-icons__right"><span class="wm-rating"><span class="wm-rating__star">★</span><span>${pct || '%'}</span></span></span></div></div></article>`;
+        return `<article class="card"><div class="media ep">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} ${escHtml(seTag(it.sn,it.en))}" loading="lazy" />` : ""}<div class="ov"><div class="k">${escHtml(it.title)}</div><div class="n">${escHtml(it.epTitle)}</div><div class="d">${escHtml(seTag(it.sn,it.en))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.network ? `<span class="chip">${escHtml(it.network)}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}${watchedToggle}</div></div></article>`;
       }
       function movieCard(it){
         const links = mediaLinks(it.movie), aMeta = state.mediaUi.a, bMeta = state.mediaUi.b;
@@ -705,8 +721,7 @@ CHANGE NOTES:
         const watchedToggle = watchedKey
           ? `<button class="watched-toggle${watched ? " is-watched" : ""}${unsaved ? " is-unsaved" : ""}" type="button" role="switch" aria-checked="${watched ? "true" : "false"}" aria-label="${escHtml(`${it.title} ${watchedLabel}`)}" data-watched-key="${escHtml(watchedKey)}" data-kind="movie" data-item-id="${escHtml(watchedId)}"><span class="sr-only">${escHtml(watchedLabel)}</span></button>`
           : "";
-        const pct = Number.isFinite(Number(it.rating_pct)) ? Math.round(Number(it.rating_pct)) : "";
-        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="wm-icons"><span class="wm-icons__left">${links.a || links.b ? `<a class="wm-iconbtn wm-iconbtn--watch" href="${escHtml(links.a || links.b)}" target="_blank" rel="noopener" title="Watch source" aria-label="Watch source">🍿</a>` : `<span class="wm-icon wm-iconbtn--watch">🍿</span>`}</span><span class="wm-icons__mid"><span class="wm-icon wm-icon--status">⌚</span><span class="wm-icon wm-icon--fav">💕</span><span class="wm-icon wm-icon--bookmark">🔖</span></span><span class="wm-icons__right"><span class="wm-rating"><span class="wm-rating__star">★</span><span>${pct || '%'}</span></span></span></div></div></article>`;
+        return `<article class="card"><div class="media mv">${it.image ? `<img src="${escHtml(it.image)}" alt="${escHtml(it.title)} poster" loading="lazy" />` : ""}<div class="ov"><div class="k">Movie</div><div class="n">${escHtml(it.title)}</div><div class="d">${escHtml(dateLabel(it.rd))}</div></div></div><div class="cb"><div class="bad">${it.prov ? `<img class="prov" src="${escHtml(it.prov)}" alt="Provider logo" loading="lazy" />` : ""}${it.genres[0] ? `<span class="chip">${escHtml(it.genres[0])}</span>` : ""}</div><div class="links">${links.a ? `<a class="iconbtn provider-a" href="${escHtml(links.a)}" target="_blank" rel="noopener" title="${escHtml(aMeta.name)}" aria-label="${escHtml(aMeta.name)}"><span class="glyph">${escHtml(aMeta.icon)}</span></a>` : ""}${links.b ? `<a class="iconbtn provider-b" href="${escHtml(links.b)}" target="_blank" rel="noopener" title="${escHtml(bMeta.name)}" aria-label="${escHtml(bMeta.name)}"><span class="glyph">${escHtml(bMeta.icon)}</span></a>` : ""}${watchedToggle}</div></div></article>`;
       }
       function buildTvWeeks(items){
         const weeks = new Map();
