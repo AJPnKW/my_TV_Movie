@@ -2,6 +2,7 @@
 
 ## Root Causes Fixed
 
+- Implementation commit: `6440404`
 - Rebased `web/index.html` back to a thin canonical shell so `web/js/app_runtime.js` and `web/css/main_app.css` are authoritative again.
 - Removed the fake embedded Inputs Editor surface from the main shell and pointed all app-shell editor links to the real local-server flow on `127.0.0.1:8787`.
 - Hardened the editor server save path with payload validation, backup creation, atomic write, CORS-safe health checks, and a runtime refresh endpoint.
