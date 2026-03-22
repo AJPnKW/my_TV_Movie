@@ -80,4 +80,4 @@ Date: 2026-03-22
 
 ## Implementation commit
 
-- UI drift cleanup implementation commit: `pending grouped commit`
+- UI drift cleanup implementation commit: `4a5aed2`

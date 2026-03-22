@@ -111,4 +111,4 @@ Commit
 - Re-aligned dashboard, calendar, watch_me, and popup episodes to one shared episode-card content order with the double-heart favourite icon restored.
 - Corrected CSS contract drift that was collapsing the calendar grid, wrapping the action strip, forcing shows/movies off the left rail, and turning dashboard recommendation posters into widescreen cards.
 - Added `docs/VIEW_NAVIGATION_TREE.md` as the review map for pages, views, modal layers, and shared card families.
-- Implementation commit: `pending grouped commit`
+- Implementation commit: `4a5aed2`
