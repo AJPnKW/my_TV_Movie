@@ -3,7 +3,7 @@
 # [FILE]    scripts/validate_availability_overlay.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Validate data/watch_source_availability.json against the live catalog.
-# [VERSION] v1.0.0
+# [VERSION] v2.0.0
 # [UPDATED] 2026-03-21
 # [BUILD]   21.03.01
 # ==============================================================================
@@ -39,6 +39,8 @@ def main() -> int:
         "data_json": str(data_path),
         "source_json": str(source_path),
         "record_count": len(normalized.get("records", [])),
+        "validation_mode": normalized.get("defaults", {}).get("validation_mode"),
+        "network_defaults": normalized.get("defaults", {}).get("network"),
         "errors": errors,
         "result": "OK" if not errors else "FAIL",
     }

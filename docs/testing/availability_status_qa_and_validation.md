@@ -44,3 +44,16 @@
 | validation summary | what passed |
 | logs or report files | evidence |
 | known gaps | if any remain |
+
+## Phase 2 additions
+- Additional QA commands:
+  - `python scripts/qa_availability_phase2.py`
+  - `python scripts/validate_runtime_assets.py`
+  - `python scripts/validate_runtime_catalog_integrity.py`
+  - `python scripts/qa_availability_ui.py`
+- Additional artifact paths:
+  - `reports/availability_status/availability_phase2_qa_*.json`
+  - `reports/availability_status/runtime_asset_validation_*.json`
+  - `reports/availability_status/runtime_catalog_integrity_*.json`
+  - `reports/availability_status/availability_ui_*.json`
+- Default workflow limit: provider-aware validation is deterministic by default; optional live HTTP verification exists but is intentionally not required for normal repo runs.

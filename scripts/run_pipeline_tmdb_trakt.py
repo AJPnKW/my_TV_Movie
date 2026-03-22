@@ -3,7 +3,7 @@
 # [FILE]    scripts/run_pipeline_tmdb_trakt.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    One-command local runner: TMDB build -> Trakt enrich
-# [VERSION] v1.3.0
+# [VERSION] v1.4.0
 # [UPDATED] 2026-01-19_00-00-00
 # [BUILD]   14.01.08
 # ==============================================================================
@@ -21,9 +21,13 @@ LOGS_DIR = REPO_ROOT / "logs"
 FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
 FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
+FETCH_TMDB_ASSETS = SCRIPTS_DIR / "fetch_tmdb_assets.py"
 VALIDATE_AVAILABILITY = SCRIPTS_DIR / "validate_availability_overlay.py"
 ENRICH_AVAILABILITY = SCRIPTS_DIR / "enrich_data_with_availability.py"
 QA_AVAILABILITY = SCRIPTS_DIR / "qa_availability_status.py"
+QA_AVAILABILITY_PHASE2 = SCRIPTS_DIR / "qa_availability_phase2.py"
+VALIDATE_RUNTIME_ASSETS = SCRIPTS_DIR / "validate_runtime_assets.py"
+VALIDATE_RUNTIME_CATALOG = SCRIPTS_DIR / "validate_runtime_catalog_integrity.py"
 
 
 def _ts() -> str:
@@ -88,6 +92,13 @@ def main() -> int:
         print(f"finished: {_ts()}")
         return rc
 
+    rc = _run_one("TMDB_ASSETS", FETCH_TMDB_ASSETS)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
     rc = _run_one("AVAILABILITY_VALIDATE", VALIDATE_AVAILABILITY)
     if rc != 0:
         print("\n--- SUMMARY ---")
@@ -103,6 +114,30 @@ def main() -> int:
         return rc
 
     rc = _run_one("AVAILABILITY_QA", QA_AVAILABILITY)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_PHASE2_QA", QA_AVAILABILITY_PHASE2)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("RUNTIME_ASSETS_VALIDATE", VALIDATE_RUNTIME_ASSETS)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("RUNTIME_CATALOG_VALIDATE", VALIDATE_RUNTIME_CATALOG)
     finished = _ts()
 
     tmdb_log = _latest_log("fetch_tmdb.*.log.txt")

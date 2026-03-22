@@ -91,3 +91,10 @@ Commit
 - Extended the shared UI runtime so cards, calendar rows, watch_me cards, show seasons, and show/movie popups all render one shared availability badge/detail pattern from enriched `data.json`.
 - Updated the availability docs set to match the live repo’s actual keys, workflow runner, validation mode, and QA artifacts.
 - Implementation commit: `8d11c7b`
+
+## 2026-03-21 — Availability status phase 2 hardening
+- Hardened validation from structural-only to provider-aware validation in `scripts/availability_status_lib.py`, with optional cached network verification support that remains disabled by default.
+- Added deterministic phase-2 QA and production-state validators for override precedence, runtime asset coverage, runtime catalog integrity, and browser-level badge placement.
+- Moved shared availability badges onto the upper-right image surface for cards and popup visual surfaces instead of relying on copy-only placement.
+- Updated the local TMDB→OMDB→Trakt runner to fetch missing TMDB assets before runtime asset validation so rebuilt `*_local` refs no longer fail the final production-state pass.
+- Implementation commit: `pending grouped commit`

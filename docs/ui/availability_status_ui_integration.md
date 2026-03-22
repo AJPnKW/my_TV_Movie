@@ -44,3 +44,8 @@ Codex must inspect the current component/helper/page architecture and integrate 
 - movie popup detail grid
 - season detail block inside show popup
 - episode cards inside show popup
+
+## Phase 2 placement rule
+- Shared card badges render on the image surface in the upper-right corner via `media-card__surface-badge`.
+- Popup hero posters and popup visual surfaces render the same contract via `popup-surface-badge`.
+- Copy-only placement is no longer the primary availability surface for cards.

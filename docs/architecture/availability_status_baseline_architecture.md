@@ -56,3 +56,13 @@ Actual implementation files:
 | Avoid merge-loss in `data.json` | Recompute from external source each run |
 | Support episode granularity | External file supports any depth |
 | Keep pages simple | Pages only read final fields from `data.json` |
+
+## Phase 2 hardening
+- Default validation mode is now `provider_structural`, not structural-only.
+- Optional cached network validation is implemented in `scripts/availability_status_lib.py`, but remains disabled by default so the pipeline and CI stay deterministic.
+- Show and season availability can now derive from child-status aggregation when release dates are missing.
+- The local runner now refreshes missing TMDB assets before runtime asset validation.
+- Additional production-state validators now exist:
+  - `scripts/qa_availability_phase2.py`
+  - `scripts/validate_runtime_assets.py`
+  - `scripts/validate_runtime_catalog_integrity.py`

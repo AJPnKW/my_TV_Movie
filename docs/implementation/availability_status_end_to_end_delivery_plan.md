@@ -35,3 +35,11 @@ Implement the feature across data, workflows, validation, and UI without breakin
 | No rewrite-from-scratch | Yes |
 | Provide complete changed files | Yes |
 | Produce grouped implementation pass, grouped fix pass, grouped QA pass | Yes |
+
+## Phase 2 completion additions
+- Provider-aware validation is now the default model.
+- Optional cached network verification support exists but is not enabled in default workflow runs.
+- Runtime asset-contract validation is now handled by `scripts/validate_runtime_assets.py`.
+- Runtime JSON/integrity validation is now handled by `scripts/validate_runtime_catalog_integrity.py`.
+- Deterministic phase-2 QA coverage is now handled by `scripts/qa_availability_phase2.py`.
+- Local runner integration now includes `scripts/fetch_tmdb_assets.py` before final asset validation.

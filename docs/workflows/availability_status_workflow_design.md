@@ -28,3 +28,11 @@
 ## Live repo workflow files
 - manual/local chain: `scripts/run_pipeline_tmdb_trakt.py`
 - CI validation: `.github/workflows/validate.yml`
+
+## Phase 2 workflow note
+- Local production workflow now includes `fetch_tmdb_assets.py` before runtime asset validation so rebuilt `*_local` refs are fetched before validation.
+- CI still validates the tracked repo state without downloading assets.
+- Runtime validation now also includes:
+  - `scripts/qa_availability_phase2.py`
+  - `scripts/validate_runtime_assets.py`
+  - `scripts/validate_runtime_catalog_integrity.py`

@@ -73,3 +73,11 @@ In the current repo:
 - seasons expose `id` and `season_number`
 - episodes expose `id`, `show_id`, `season_number`, and `episode_number`
 - the enrichment layer matches seasons and episodes by the composite show/season/episode key above
+
+## Phase 2 source-file additions
+- `defaults.validation_mode` now supports:
+  - `structural`
+  - `provider_structural`
+  - `provider_structural_cached_head`
+- `defaults.network` now defines the optional cached network-check policy used only when explicitly enabled.
+- Manual `records[]` remain supported, but the live catalog currently requires `0` explicit seeded overrides because phase-2 derivation and child-status fallback cover the current dataset without justified manual exceptions.

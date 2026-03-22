@@ -63,3 +63,8 @@ Default URL validation mode is structural validation of the resolved primary wat
 | Replacing the current build pipeline | No |
 | Refactoring the input editor in this change | No |
 | Inferring availability by inheritance only | No |
+
+## Phase 2 design notes
+- The validation model is now provider-aware against the live `web/config.json` streaming bases.
+- Network verification support exists, with timeout/retry/cache controls, but remains disabled in the default repo workflow because third-party stream hosts are not stable enough for CI-grade required checks.
+- Explicit overrides remain available at movie/show/season/episode granularity, but phase 2 intentionally did not seed synthetic live overrides where the catalog itself did not justify them.

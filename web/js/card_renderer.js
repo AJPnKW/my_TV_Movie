@@ -58,13 +58,13 @@ export function renderCompactCardHtml(options = {}){
     <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${attrString(articleAttrs)}>
       <button type="button" class="imgbox media-card__poster media-card__poster--${esc(kind)} media_block"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;color:inherit;cursor:pointer;">
         ${safeCardImage(options.image, kind, options.title)}
-        ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy">${options.eyebrow ? `<span class="media-card__overlay-eyebrow">${esc(options.eyebrow)}</span>` : ''}<span class="media-card__overlay-title">${esc(options.title)}</span>${options.badgeHtml || ''}${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
+        ${options.badgeHtml ? `<div class="media-card__surface-badge">${options.badgeHtml}</div>` : ''}
+        ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy">${options.eyebrow ? `<span class="media-card__overlay-eyebrow">${esc(options.eyebrow)}</span>` : ''}<span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
       </button>
       <div class="cardbody media-card__body media-card__body--${esc(kind)}">
         <div class="media-card__copy${overlay ? ' media-card__copy--hidden' : ''}">
           ${options.eyebrow ? `<div class="media-card__eyebrow">${esc(options.eyebrow)}</div>` : ''}
           <button type="button" class="media-card__title"${idAttr}${attrString(titleAttrs)} style="padding:0;border:0;background:none;color:inherit;text-align:left;cursor:pointer;">${esc(options.title)}</button>
-          ${options.badgeHtml || ''}
           ${options.meta ? `<div class="media-card__meta">${esc(options.meta)}</div>` : ''}
           ${options.submeta ? `<div class="media-card__submeta">${esc(options.submeta)}</div>` : ''}
           ${options.description ? `<div class="media-card__summary">${esc(options.description)}</div>` : ''}

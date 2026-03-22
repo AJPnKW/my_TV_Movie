@@ -2,31 +2,38 @@
 # ==============================================================================
 # [FILE]    scripts/availability_status_lib.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Shared availability-status helpers for source validation and data
+# [ROLE]    Shared availability-status helpers for source validation, provider-
+#           aware URL checks, optional cached network validation, and runtime
 #           enrichment.
-# [VERSION] v1.0.0
+# [VERSION] v2.0.0
 # [UPDATED] 2026-03-21
-# [BUILD]   21.03.01
+# [BUILD]   21.03.02
 # ==============================================================================
 
 from __future__ import annotations
 
 import datetime as _dt
+import hashlib
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Iterable, Iterator, List, Optional
+from typing import Any, Dict, Iterable, Iterator, List, Optional, Tuple
+from urllib import error as _urlerror
+from urllib import request as _urlrequest
 from urllib.parse import urlparse
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_JSON = REPO_ROOT / "data" / "data.json"
 SOURCE_JSON = REPO_ROOT / "data" / "watch_source_availability.json"
 CONFIG_JSON = REPO_ROOT / "web" / "config.json"
+NETWORK_CACHE_JSON = REPO_ROOT / "logs" / "availability_status_network_cache.json"
 
 ALLOWED_ENTITY_TYPES = ("movie", "show", "season", "episode")
 ALLOWED_AVAILABILITY = ("not_yet_released", "available", "unavailable", "unknown")
 ALLOWED_URL_TEST = ("pass", "fail", "skip", "unknown")
-DEFAULT_SOURCE_VERSION = "1.1.0"
+ALLOWED_SOURCES = ("videasy", "vidsrc", "local")
+ALLOWED_VALIDATION_MODES = ("structural", "provider_structural", "provider_structural_cached_head")
+DEFAULT_SOURCE_VERSION = "1.2.0"
 
 
 def utc_iso() -> str:
@@ -106,8 +113,25 @@ def normalize_url_test(value: Any) -> str:
     return text if text in ALLOWED_URL_TEST else ""
 
 
+def normalize_source(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    return text if text in ALLOWED_SOURCES else ""
+
+
+def normalize_validation_mode(value: Any) -> str:
+    text = str(value or "").strip().lower()
+    return text if text in ALLOWED_VALIDATION_MODES else ""
+
+
 def safe_text(value: Any) -> str:
     return str(value or "").strip()
+
+
+def safe_int(value: Any, default: int = 0) -> int:
+    try:
+        return int(str(value).strip())
+    except Exception:
+        return default
 
 
 def to_date_key(value: Any) -> str:
@@ -132,7 +156,14 @@ def is_future_date(value: Any) -> bool:
 
 def canonical_defaults() -> Dict[str, Any]:
     return {
-        "validation_mode": "structural",
+        "validation_mode": "provider_structural",
+        "network": {
+            "enabled": False,
+            "timeout_seconds": 5,
+            "retry_count": 1,
+            "cache_ttl_hours": 24,
+            "cache_file": str(NETWORK_CACHE_JSON.relative_to(REPO_ROOT)).replace("\\", "/"),
+        },
         "entities": {
             "movie": {"requires_url": True, "preferred_sources": ["videasy", "vidsrc", "local"]},
             "show": {"requires_url": True, "preferred_sources": ["videasy", "vidsrc"]},
@@ -146,6 +177,7 @@ def canonical_source_document(existing: Optional[Dict[str, Any]] = None) -> Dict
     existing = existing if isinstance(existing, dict) else {}
     defaults = canonical_defaults()
     incoming_defaults = existing.get("defaults") if isinstance(existing.get("defaults"), dict) else {}
+    incoming_network = incoming_defaults.get("network") if isinstance(incoming_defaults.get("network"), dict) else {}
     entity_defaults = incoming_defaults.get("entities") if isinstance(incoming_defaults.get("entities"), dict) else {}
     merged_entities: Dict[str, Any] = {}
     for entity_type, entity_default in defaults["entities"].items():
@@ -160,7 +192,14 @@ def canonical_source_document(existing: Optional[Dict[str, Any]] = None) -> Dict
         "version": safe_text(existing.get("version")) or DEFAULT_SOURCE_VERSION,
         "generated_at": safe_text(existing.get("generated_at")) or utc_iso(),
         "defaults": {
-            "validation_mode": safe_text(incoming_defaults.get("validation_mode")) or defaults["validation_mode"],
+            "validation_mode": normalize_validation_mode(incoming_defaults.get("validation_mode")) or defaults["validation_mode"],
+            "network": {
+                "enabled": bool(incoming_network.get("enabled", defaults["network"]["enabled"])),
+                "timeout_seconds": max(1, safe_int(incoming_network.get("timeout_seconds"), defaults["network"]["timeout_seconds"])),
+                "retry_count": max(0, safe_int(incoming_network.get("retry_count"), defaults["network"]["retry_count"])),
+                "cache_ttl_hours": max(1, safe_int(incoming_network.get("cache_ttl_hours"), defaults["network"]["cache_ttl_hours"])),
+                "cache_file": safe_text(incoming_network.get("cache_file")) or defaults["network"]["cache_file"],
+            },
             "entities": merged_entities,
         },
         "records": list(records) if isinstance(records, list) else [],
@@ -206,7 +245,11 @@ def build_url_from_base(base: str, *parts: Any) -> str:
     if not root:
         return ""
     if "{" in root and "}" in root:
-        values = {"tmdb_id": parts[0] if len(parts) > 0 else "", "season": parts[1] if len(parts) > 1 else "", "episode": parts[2] if len(parts) > 2 else ""}
+        values = {
+            "tmdb_id": parts[0] if len(parts) > 0 else "",
+            "season": parts[1] if len(parts) > 1 else "",
+            "episode": parts[2] if len(parts) > 2 else "",
+        }
         try:
             return root.format(**values)
         except Exception:
@@ -254,23 +297,39 @@ def entity_candidates(entity_type: str, entity: Dict[str, Any], context: Dict[st
     return {key: value for key, value in candidates.items() if safe_text(value)}
 
 
-def choose_primary_watch_url(entity_type: str, entity: Dict[str, Any], context: Dict[str, Any], defaults: Dict[str, Any], streaming: Dict[str, str], record: Optional[Dict[str, Any]] = None) -> str:
+def choose_primary_watch_url(
+    entity_type: str,
+    entity: Dict[str, Any],
+    context: Dict[str, Any],
+    defaults: Dict[str, Any],
+    streaming: Dict[str, str],
+    record: Optional[Dict[str, Any]] = None,
+) -> Tuple[str, str]:
     explicit = safe_text((record or {}).get("primary_watch_url"))
+    explicit_source = normalize_source((record or {}).get("preferred_source"))
     if explicit:
-        return explicit
+        return explicit, explicit_source or detect_provider_kind(explicit, streaming)
     entities = defaults.get("entities") if isinstance(defaults.get("entities"), dict) else {}
     entity_defaults = entities.get(entity_type) if isinstance(entities.get(entity_type), dict) else {}
     preferred = entity_defaults.get("preferred_sources")
     candidates = entity_candidates(entity_type, entity, context, streaming)
-    order = list(preferred) if isinstance(preferred, list) and preferred else ["videasy", "vidsrc", "local"]
+    order = []
+    if explicit_source:
+        order.append(explicit_source)
+    order.extend(list(preferred) if isinstance(preferred, list) and preferred else ["videasy", "vidsrc", "local"])
+    seen: set[str] = set()
     for key in order:
-        url = safe_text(candidates.get(str(key)))
+        source_key = normalize_source(key)
+        if not source_key or source_key in seen:
+            continue
+        seen.add(source_key)
+        url = safe_text(candidates.get(source_key))
         if url:
-            return url
-    for value in candidates.values():
+            return url, source_key
+    for source_key, value in candidates.items():
         if safe_text(value):
-            return safe_text(value)
-    return ""
+            return safe_text(value), normalize_source(source_key)
+    return "", explicit_source
 
 
 def is_valid_primary_url(url: str) -> bool:
@@ -281,6 +340,24 @@ def is_valid_primary_url(url: str) -> bool:
         return True
     parsed = urlparse(value)
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def detect_provider_kind(url: str, streaming: Dict[str, str]) -> str:
+    value = safe_text(url)
+    if not value:
+        return ""
+    if value.startswith("/") or os.path.isabs(value):
+        return "local"
+    parsed = urlparse(value)
+    host = parsed.netloc.lower()
+    for source in ("videasy", "vidsrc"):
+        for key, base in streaming.items():
+            if not key.startswith(source):
+                continue
+            parsed_base = urlparse(safe_text(base))
+            if parsed_base.netloc and parsed_base.netloc.lower() == host:
+                return source
+    return ""
 
 
 def explicit_url_test_result(record: Optional[Dict[str, Any]]) -> str:
@@ -338,6 +415,240 @@ def build_catalog_key_index(data: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
     return out
 
 
+def network_cache_path(defaults: Dict[str, Any]) -> Path:
+    network = defaults.get("network") if isinstance(defaults.get("network"), dict) else {}
+    raw = safe_text(network.get("cache_file"))
+    if not raw:
+        return NETWORK_CACHE_JSON
+    path = Path(raw)
+    return path if path.is_absolute() else (REPO_ROOT / path)
+
+
+def load_network_cache(defaults: Dict[str, Any]) -> Dict[str, Any]:
+    path = network_cache_path(defaults)
+    if not path.exists():
+        return {"version": 1, "entries": {}}
+    try:
+        cache = load_json(path)
+    except Exception:
+        return {"version": 1, "entries": {}}
+    if not isinstance(cache, dict):
+        return {"version": 1, "entries": {}}
+    entries = cache.get("entries")
+    cache["entries"] = entries if isinstance(entries, dict) else {}
+    cache["version"] = cache.get("version") or 1
+    return cache
+
+
+def write_network_cache(defaults: Dict[str, Any], cache: Dict[str, Any]) -> None:
+    path = network_cache_path(defaults)
+    write_json_atomic(path, cache)
+
+
+def _url_cache_key(url: str) -> str:
+    return hashlib.sha256(safe_text(url).encode("utf-8")).hexdigest()
+
+
+def _cache_is_fresh(entry: Dict[str, Any], ttl_hours: int) -> bool:
+    checked_at = safe_text(entry.get("checked_at"))
+    if not checked_at:
+        return False
+    try:
+        dt = _dt.datetime.fromisoformat(checked_at.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    age = _dt.datetime.now(_dt.timezone.utc) - dt.astimezone(_dt.timezone.utc)
+    return age.total_seconds() <= ttl_hours * 3600
+
+
+def _expected_base_for_source(source_key: str, entity_type: str, streaming: Dict[str, str]) -> str:
+    if source_key == "local":
+        return ""
+    suffix = "movie" if entity_type == "movie" else "tv"
+    return safe_text(streaming.get(f"{source_key}_{suffix}"))
+
+
+def _expected_suffix(entity_type: str, context: Dict[str, Any], entity: Dict[str, Any]) -> str:
+    show_id = safe_text(context.get("show_tmdb_id"))
+    season_number = safe_text(context.get("season_number"))
+    episode_number = safe_text(context.get("episode_number"))
+    tmdb_id = safe_text(entity.get("tmdb_id") or entity.get("id") or show_id)
+    if entity_type == "movie":
+        return tmdb_id
+    if entity_type == "show":
+        return tmdb_id
+    if entity_type == "season":
+        return "/".join(part for part in [show_id, season_number] if part)
+    if entity_type == "episode":
+        return "/".join(part for part in [show_id, season_number, episode_number] if part)
+    return ""
+
+
+def validate_url_provider_structure(
+    url: str,
+    entity_type: str,
+    entity: Dict[str, Any],
+    context: Dict[str, Any],
+    streaming: Dict[str, str],
+    source_key: str = "",
+) -> Tuple[str, str, str]:
+    value = safe_text(url)
+    if not value:
+        return "fail", "primary watch URL is missing", source_key
+    if value.startswith("/") or os.path.isabs(value):
+        return "pass", "local path passed structural validation", "local"
+    parsed = urlparse(value)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        return "fail", "primary watch URL failed structural validation", source_key
+    active_source = normalize_source(source_key) or detect_provider_kind(value, streaming)
+    if not active_source:
+        return "pass", "primary watch URL passed structural validation with unrecognized provider", ""
+    if active_source == "local":
+        return "pass", "local path passed structural validation", active_source
+    expected_base = _expected_base_for_source(active_source, entity_type, streaming).rstrip("/")
+    if not expected_base:
+        return "fail", f"{active_source} base URL is not configured", active_source
+    normalized_value = value.rstrip("/")
+    if not normalized_value.startswith(expected_base):
+        return "fail", f"primary watch URL does not match configured {active_source} base", active_source
+    expected_suffix = _expected_suffix(entity_type, context, entity)
+    if expected_suffix:
+        actual_suffix = normalized_value[len(expected_base):].strip("/")
+        expected_parts = [part for part in expected_suffix.split("/") if part]
+        actual_parts = [part for part in actual_suffix.split("/") if part]
+        if actual_parts[: len(expected_parts)] != expected_parts:
+            return "fail", f"primary watch URL path does not match expected {entity_type} identifier pattern", active_source
+    return "pass", f"primary watch URL passed {active_source} provider validation", active_source
+
+
+def _network_probe_once(url: str, timeout_seconds: int) -> Tuple[str, str, Optional[int]]:
+    headers = {"User-Agent": "my_TV_Movie-availability-check/2.0"}
+    methods = ("HEAD", "GET")
+    for method in methods:
+        request = _urlrequest.Request(url, headers=headers, method=method)
+        if method == "GET":
+            request.add_header("Range", "bytes=0-0")
+        try:
+            with _urlrequest.urlopen(request, timeout=timeout_seconds) as response:
+                code = int(getattr(response, "status", response.getcode()))
+                if 200 <= code < 400:
+                    return "pass", f"network validation returned HTTP {code}", code
+                return "fail", f"network validation returned HTTP {code}", code
+        except _urlerror.HTTPError as exc:
+            code = int(getattr(exc, "code", 0) or 0)
+            if method == "HEAD" and code in {403, 405, 429}:
+                continue
+            return ("pass" if 200 <= code < 400 else "fail", f"network validation returned HTTP {code}", code)
+        except Exception as exc:
+            if method == "HEAD":
+                continue
+            return "unknown", f"network validation error: {exc.__class__.__name__}", None
+    return "unknown", "network validation unavailable", None
+
+
+def validate_primary_watch_url(
+    url: str,
+    entity_type: str,
+    entity: Dict[str, Any],
+    context: Dict[str, Any],
+    streaming: Dict[str, str],
+    defaults: Dict[str, Any],
+    source_key: str = "",
+    allow_network: bool = False,
+    cache: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    validation_mode = normalize_validation_mode(defaults.get("validation_mode")) or "provider_structural"
+    base_result = {
+        "url_test_result": "fail",
+        "validation_reason": "primary watch URL is missing",
+        "provider_source": normalize_source(source_key),
+        "validation_mode": validation_mode,
+        "network_checked": False,
+        "http_status": None,
+        "cache_hit": False,
+    }
+    if validation_mode == "structural":
+        if is_valid_primary_url(url):
+            base_result.update({
+                "url_test_result": "pass",
+                "validation_reason": "primary watch URL passed structural validation",
+                "provider_source": normalize_source(source_key) or detect_provider_kind(url, streaming),
+            })
+        return base_result
+
+    url_test_result, validation_reason, provider_source = validate_url_provider_structure(url, entity_type, entity, context, streaming, source_key)
+    base_result.update({
+        "url_test_result": url_test_result,
+        "validation_reason": validation_reason,
+        "provider_source": provider_source,
+    })
+    if url_test_result != "pass":
+        return base_result
+
+    network_defaults = defaults.get("network") if isinstance(defaults.get("network"), dict) else {}
+    network_enabled = allow_network or bool(network_defaults.get("enabled")) or validation_mode == "provider_structural_cached_head"
+    if not network_enabled:
+        return base_result
+    if not safe_text(url) or safe_text(url).startswith("/") or os.path.isabs(safe_text(url)):
+        return base_result
+
+    timeout_seconds = max(1, safe_int(network_defaults.get("timeout_seconds"), 5))
+    retry_count = max(0, safe_int(network_defaults.get("retry_count"), 1))
+    ttl_hours = max(1, safe_int(network_defaults.get("cache_ttl_hours"), 24))
+    cache_doc = cache if isinstance(cache, dict) else {"version": 1, "entries": {}}
+    entries = cache_doc.setdefault("entries", {})
+    cache_key = _url_cache_key(url)
+    cached = entries.get(cache_key) if isinstance(entries, dict) else None
+    if isinstance(cached, dict) and _cache_is_fresh(cached, ttl_hours):
+        base_result.update({
+            "url_test_result": normalize_url_test(cached.get("url_test_result")) or base_result["url_test_result"],
+            "validation_reason": safe_text(cached.get("validation_reason")) or base_result["validation_reason"],
+            "network_checked": bool(cached.get("network_checked")),
+            "http_status": cached.get("http_status"),
+            "cache_hit": True,
+        })
+        return base_result
+
+    final_result = "unknown"
+    final_reason = "network validation unavailable"
+    final_code: Optional[int] = None
+    for _ in range(retry_count + 1):
+        final_result, final_reason, final_code = _network_probe_once(url, timeout_seconds)
+        if final_result in {"pass", "fail"}:
+            break
+
+    entry = {
+        "url": safe_text(url),
+        "checked_at": utc_iso(),
+        "url_test_result": final_result,
+        "validation_reason": final_reason,
+        "network_checked": True,
+        "http_status": final_code,
+    }
+    entries[cache_key] = entry
+    base_result["network_checked"] = True
+    base_result["http_status"] = final_code
+    if final_result in {"pass", "fail"}:
+        base_result["url_test_result"] = final_result
+        base_result["validation_reason"] = final_reason
+    else:
+        base_result["validation_reason"] = f"{base_result['validation_reason']}; {final_reason}; structural result retained"
+    return base_result
+
+
+def derive_status_from_children(child_statuses: Iterable[str]) -> Tuple[str, str]:
+    normalized = [normalize_status(value) for value in child_statuses if normalize_status(value)]
+    if not normalized:
+        return "unknown", "child availability unavailable"
+    if "available" in normalized:
+        return "available", "derived from child availability"
+    if "unavailable" in normalized:
+        return "unavailable", "derived from child availability"
+    if "not_yet_released" in normalized:
+        return "not_yet_released", "derived from child availability"
+    return "unknown", "child availability indeterminate"
+
+
 def validate_source_document(source: Dict[str, Any], known_keys: Optional[Iterable[str]] = None) -> List[str]:
     errors: List[str] = []
     if not isinstance(source, dict):
@@ -348,6 +659,14 @@ def validate_source_document(source: Dict[str, Any], known_keys: Optional[Iterab
     if not isinstance(defaults, dict):
         errors.append("defaults must be an object")
     else:
+        if normalize_validation_mode(defaults.get("validation_mode")) != safe_text(defaults.get("validation_mode")):
+            errors.append("defaults.validation_mode must be one of: " + ", ".join(ALLOWED_VALIDATION_MODES))
+        network = defaults.get("network")
+        if network is not None and not isinstance(network, dict):
+            errors.append("defaults.network must be an object")
+        elif isinstance(network, dict):
+            if safe_text(network.get("cache_file")) and ".." in safe_text(network.get("cache_file")).replace("\\", "/").split("/"):
+                errors.append("defaults.network.cache_file must stay inside the repo")
         entities = defaults.get("entities")
         if not isinstance(entities, dict):
             errors.append("defaults.entities must be an object")
@@ -362,7 +681,7 @@ def validate_source_document(source: Dict[str, Any], known_keys: Optional[Iterab
                 preferred = payload.get("preferred_sources")
                 if not isinstance(preferred, list) or not preferred:
                     errors.append(f"defaults.entities.{entity_type}.preferred_sources must be a non-empty list")
-                elif any(safe_text(item) not in {"videasy", "vidsrc", "local"} for item in preferred):
+                elif any(normalize_source(item) != safe_text(item) for item in preferred):
                     errors.append(f"defaults.entities.{entity_type}.preferred_sources contains unsupported source")
     seen: Dict[str, int] = {}
     key_set = set(known_keys or [])
@@ -386,6 +705,9 @@ def validate_source_document(source: Dict[str, Any], known_keys: Optional[Iterab
         url_test_result = record.get("url_test_result")
         if url_test_result not in (None, "") and not normalize_url_test(url_test_result):
             errors.append(f"records[{idx}] invalid url_test_result: {url_test_result}")
+        preferred_source = record.get("preferred_source")
+        if preferred_source not in (None, "") and not normalize_source(preferred_source):
+            errors.append(f"records[{idx}] invalid preferred_source: {preferred_source}")
         primary_watch_url = safe_text(record.get("primary_watch_url"))
         if primary_watch_url and not is_valid_primary_url(primary_watch_url):
             errors.append(f"records[{idx}] invalid primary_watch_url: {primary_watch_url}")
@@ -397,22 +719,45 @@ def validate_source_document(source: Dict[str, Any], known_keys: Optional[Iterab
     return errors
 
 
-def resolve_availability(entity_type: str, entity: Dict[str, Any], context: Dict[str, Any], defaults: Dict[str, Any], streaming: Dict[str, str], record: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+def resolve_availability(
+    entity_type: str,
+    entity: Dict[str, Any],
+    context: Dict[str, Any],
+    defaults: Dict[str, Any],
+    streaming: Dict[str, str],
+    record: Optional[Dict[str, Any]] = None,
+    *,
+    child_statuses: Optional[Iterable[str]] = None,
+    allow_network: bool = False,
+    cache: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     release_date = to_date_key((record or {}).get("release_date_override")) or pick_release_date(entity_type, entity)
-    primary_watch_url = choose_primary_watch_url(entity_type, entity, context, defaults, streaming, record)
+    primary_watch_url, selected_source = choose_primary_watch_url(entity_type, entity, context, defaults, streaming, record)
     entities = defaults.get("entities") if isinstance(defaults.get("entities"), dict) else {}
     entity_defaults = entities.get(entity_type) if isinstance(entities.get(entity_type), dict) else {}
     requires_url = bool((record or {}).get("requires_url", entity_defaults.get("requires_url", True)))
     override = normalize_status((record or {}).get("status_override"))
     explicit_test = explicit_url_test_result(record)
+    validation = validate_primary_watch_url(
+        primary_watch_url,
+        entity_type,
+        entity,
+        context,
+        streaming,
+        defaults,
+        source_key=normalize_source((record or {}).get("preferred_source")) or selected_source,
+        allow_network=allow_network,
+        cache=cache,
+    )
     if explicit_test:
         url_test_result = explicit_test
+        validation_reason = safe_text((record or {}).get("reason")) or "manual url_test_result override"
     elif not requires_url:
         url_test_result = "skip"
-    elif is_valid_primary_url(primary_watch_url):
-        url_test_result = "pass"
+        validation_reason = "URL validation skipped for this entity"
     else:
-        url_test_result = "fail"
+        url_test_result = validation["url_test_result"]
+        validation_reason = validation["validation_reason"]
 
     if override:
         status = override
@@ -422,13 +767,18 @@ def resolve_availability(entity_type: str, entity: Dict[str, Any], context: Dict
         status = "not_yet_released"
         reason = safe_text((record or {}).get("reason")) or f"release date {release_date} is in the future"
         source = "watch_source_availability.json:release_date"
+    elif not release_date and entity_type in {"show", "season"}:
+        child_status, child_reason = derive_status_from_children(child_statuses or [])
+        status = child_status
+        reason = safe_text((record or {}).get("reason")) or child_reason
+        source = "watch_source_availability.json:child_status"
     elif not release_date:
         status = "unknown"
         reason = safe_text((record or {}).get("reason")) or "release date missing"
         source = "watch_source_availability.json:unknown"
     elif requires_url and url_test_result == "pass":
         status = "available"
-        reason = safe_text((record or {}).get("reason")) or "released and primary watch URL passed structural validation"
+        reason = safe_text((record or {}).get("reason")) or validation_reason
         source = "watch_source_availability.json:derived"
     elif requires_url and not primary_watch_url:
         status = "unavailable"
@@ -436,7 +786,7 @@ def resolve_availability(entity_type: str, entity: Dict[str, Any], context: Dict
         source = "watch_source_availability.json:derived"
     elif requires_url:
         status = "unavailable"
-        reason = safe_text((record or {}).get("reason")) or "released but primary watch URL failed validation"
+        reason = safe_text((record or {}).get("reason")) or validation_reason or "released but primary watch URL failed validation"
         source = "watch_source_availability.json:derived"
     else:
         status = "unknown"
@@ -450,6 +800,12 @@ def resolve_availability(entity_type: str, entity: Dict[str, Any], context: Dict
         "availability_reason": reason,
         "primary_watch_url_tested": primary_watch_url or None,
         "url_test_result": url_test_result,
+        "url_validation_reason": validation_reason,
+        "provider_source": validation.get("provider_source") or selected_source or None,
+        "validation_mode": validation.get("validation_mode") or normalize_validation_mode(defaults.get("validation_mode")) or "provider_structural",
+        "network_checked": bool(validation.get("network_checked")),
+        "cache_hit": bool(validation.get("cache_hit")),
+        "http_status": validation.get("http_status"),
         "release_date": release_date,
         "requires_url": requires_url,
     }

@@ -3953,6 +3953,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="popup-hero">
           <div class="popup-hero__poster">
             ${pickImage(movie, "poster_local", "poster_path") ? `<img loading="lazy" src="${escHtml(pickImage(movie, "poster_local", "poster_path"))}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+            <div class="popup-surface-badge">${availabilityBadgeHtml(movie, { compact: true })}</div>
           </div>
           <div class="popup-hero__body">
             <div class="popup-hero__eyebrow">Movie Detail</div>
@@ -3994,7 +3995,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(movie), "Rotten Tomatoes")}</div>
           </div>
         </div>
-        ${pickImage(movie, "backdrop_local", "backdrop_path") ? `<div class="popup-backdrop"><img loading="lazy" src="${escHtml(pickImage(movie, "backdrop_local", "backdrop_path"))}" alt="" /></div>` : ""}
+        ${pickImage(movie, "backdrop_local", "backdrop_path") ? `<div class="popup-backdrop"><img loading="lazy" src="${escHtml(pickImage(movie, "backdrop_local", "backdrop_path"))}" alt="" /><div class="popup-surface-badge">${availabilityBadgeHtml(movie, { compact: true })}</div></div>` : ""}
       </div>
     `);
     wireMoviePopup(Number(movie?.tmdb_id) || 0);
@@ -4015,6 +4016,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="popup-hero">
           <div class="popup-hero__poster">
             ${pickImage(show, "poster_local", "poster_path") ? `<img loading="lazy" src="${escHtml(pickImage(show, "poster_local", "poster_path"))}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+            <div class="popup-surface-badge">${availabilityBadgeHtml(show, { compact: true })}</div>
           </div>
           <div class="popup-hero__body">
             <div class="popup-hero__eyebrow">Show Detail</div>
@@ -4067,10 +4069,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               </div>
             </div>
             <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path"))}');"` : ""}>
+              <div class="popup-surface-badge">${availabilityBadgeHtml(season, { compact: true })}</div>
               <div class="seasonmeta">
                 <div class="seasonname">${escHtml(season?.name || (selected ? `Season ${selected.n}` : "Season"))}</div>
                 <div class="seasonair">${escHtml(pickAirDate(season) ? `Premiered ${fmtDate(pickAirDate(season))}` : "Season details")}</div>
-                ${availabilityBadgeHtml(season, { compact: true })}
                 ${compactOverviewHtml(season?.overview || "", 220)}
               </div>
             </div>

@@ -23,3 +23,8 @@
 | Actual page/component helpers may already exist | Reuse instead of rebuilding |
 | Existing workflows may already have a post-build stage | Integrate there if present |
 | Existing CSS/icon system may already define status patterns | Reuse consistent design tokens |
+
+## Phase 2 impact additions
+- Workflow impact: local pipeline now refreshes referenced TMDB assets before runtime asset validation.
+- QA impact: browser-level badge-placement validation and runtime asset/integrity validators are now part of the production-readiness pass.
+- Behavior impact: provider-aware validation reclassified some previously `available` episode items to `unavailable` when canonical watch URLs failed the stronger provider-pattern check.
