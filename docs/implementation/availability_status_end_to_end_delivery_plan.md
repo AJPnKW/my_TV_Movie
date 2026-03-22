@@ -43,3 +43,10 @@ Implement the feature across data, workflows, validation, and UI without breakin
 - Runtime JSON/integrity validation is now handled by `scripts/validate_runtime_catalog_integrity.py`.
 - Deterministic phase-2 QA coverage is now handled by `scripts/qa_availability_phase2.py`.
 - Local runner integration now includes `scripts/fetch_tmdb_assets.py` before final asset validation.
+
+## Metadata hardening additions
+- `scripts/self_heal_asset_metadata.py` now performs deterministic asset-metadata repair before final validation.
+- Repair logic backfills:
+  - missing `*_path` from existing local asset filenames when safe
+  - missing `*_local` from existing remote metadata using canonical config folders
+- The local runner now executes secret-drift validation and asset self-heal before availability validation/enrichment.

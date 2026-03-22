@@ -36,3 +36,11 @@
   - `scripts/qa_availability_phase2.py`
   - `scripts/validate_runtime_assets.py`
   - `scripts/validate_runtime_catalog_integrity.py`
+
+## Metadata hardening workflow note
+- The local runner now executes:
+  - `scripts/validate_secret_name_drift.py`
+  - `scripts/self_heal_asset_metadata.py --fetch-missing`
+  - availability validation/enrichment
+  - runtime asset/catalog validation
+- This order ensures recoverable metadata gaps and missing fetched assets are addressed before the final runtime validator runs.

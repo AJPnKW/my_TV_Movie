@@ -21,11 +21,12 @@ LOGS_DIR = REPO_ROOT / "logs"
 FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
 FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
-FETCH_TMDB_ASSETS = SCRIPTS_DIR / "fetch_tmdb_assets.py"
+SELF_HEAL_ASSET_METADATA = SCRIPTS_DIR / "self_heal_asset_metadata.py"
 VALIDATE_AVAILABILITY = SCRIPTS_DIR / "validate_availability_overlay.py"
 ENRICH_AVAILABILITY = SCRIPTS_DIR / "enrich_data_with_availability.py"
 QA_AVAILABILITY = SCRIPTS_DIR / "qa_availability_status.py"
 QA_AVAILABILITY_PHASE2 = SCRIPTS_DIR / "qa_availability_phase2.py"
+VALIDATE_SECRET_DRIFT = SCRIPTS_DIR / "validate_secret_name_drift.py"
 VALIDATE_RUNTIME_ASSETS = SCRIPTS_DIR / "validate_runtime_assets.py"
 VALIDATE_RUNTIME_CATALOG = SCRIPTS_DIR / "validate_runtime_catalog_integrity.py"
 
@@ -50,13 +51,13 @@ def _latest_log(glob_pat: str) -> Path | None:
         return None
 
 
-def _run_one(label: str, script_path: Path) -> int:
+def _run_one(label: str, script_path: Path, *extra_args: str) -> int:
     py = Path(sys.executable)
     print(f"\n[{label}] RUN {script_path}")
     if not script_path.exists():
         print(f"[{label}] ERROR missing: {script_path}")
         return 2
-    p = subprocess.run([str(py), str(script_path)], cwd=str(REPO_ROOT))
+    p = subprocess.run([str(py), str(script_path), *extra_args], cwd=str(REPO_ROOT))
     print(f"[{label}] exit_code={p.returncode}")
     return int(p.returncode)
 
@@ -92,7 +93,14 @@ def main() -> int:
         print(f"finished: {_ts()}")
         return rc
 
-    rc = _run_one("TMDB_ASSETS", FETCH_TMDB_ASSETS)
+    rc = _run_one("SECRET_DRIFT_VALIDATE", VALIDATE_SECRET_DRIFT)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("ASSET_METADATA_SELF_HEAL", SELF_HEAL_ASSET_METADATA, "--fetch-missing")
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")

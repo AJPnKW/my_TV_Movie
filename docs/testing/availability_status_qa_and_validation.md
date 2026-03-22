@@ -57,3 +57,12 @@
   - `reports/availability_status/runtime_catalog_integrity_*.json`
   - `reports/availability_status/availability_ui_*.json`
 - Default workflow limit: provider-aware validation is deterministic by default; optional live HTTP verification exists but is intentionally not required for normal repo runs.
+
+## Metadata hardening additions
+- Secret drift validation:
+  - `python scripts/validate_secret_name_drift.py`
+- Asset metadata self-heal:
+  - `python scripts/self_heal_asset_metadata.py`
+- Additional artifact paths:
+  - `reports/availability_status/secret_name_drift_validation.json`
+  - `reports/availability_status/asset_metadata_self_heal_*.json`

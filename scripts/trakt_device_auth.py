@@ -13,7 +13,7 @@
 #   API_TRAKT_ID
 #   API_TRAKT_SECRET   (preferred) or API_TRAKT_KEY
 # Optional:
-#   API_TRAKT__REDIRECT_URL (unused in device flow, kept for compatibility)
+#   API_TRAKT_REDIRECT_URL (unused in device flow; canonical redirect secret name)
 #
 # Output:
 #   data/trakt.json
@@ -63,6 +63,15 @@ def _env_optional(*names: str) -> str:
     return ""
 
 
+def _warn_redirect_secret_drift() -> None:
+    canonical = os.getenv("API_TRAKT_REDIRECT_URL")
+    typo = os.getenv("API_TRAKT__REDIRECT_URL")
+    if typo and not canonical:
+        print("WARNING: API_TRAKT__REDIRECT_URL is deprecated. Rename it to API_TRAKT_REDIRECT_URL.", file=sys.stderr)
+    elif typo and canonical and typo.strip() != canonical.strip():
+        print("WARNING: Conflicting Trakt redirect env vars detected. Use only API_TRAKT_REDIRECT_URL.", file=sys.stderr)
+
+
 def http_json(url: str, headers: dict, method: str = "GET", body_obj=None, timeout: int = 45) -> Dict[str, Any]:
     data = None
     if body_obj is not None:
@@ -89,6 +98,7 @@ def _post_json(url: str, body: dict, headers: dict | None = None) -> Dict[str, A
 
 
 def main() -> int:
+    _warn_redirect_secret_drift()
     client_id = _env_required("API_TRAKT_ID")
     client_secret = _env_optional("API_TRAKT_SECRET", "API_TRAKT_KEY")
 
