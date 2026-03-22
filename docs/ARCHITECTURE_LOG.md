@@ -97,4 +97,4 @@ Commit
 - Added deterministic phase-2 QA and production-state validators for override precedence, runtime asset coverage, runtime catalog integrity, and browser-level badge placement.
 - Moved shared availability badges onto the upper-right image surface for cards and popup visual surfaces instead of relying on copy-only placement.
 - Updated the local TMDB→OMDB→Trakt runner to fetch missing TMDB assets before runtime asset validation so rebuilt `*_local` refs no longer fail the final production-state pass.
-- Implementation commit: `pending grouped commit`
+- Implementation commit: `680bef3`

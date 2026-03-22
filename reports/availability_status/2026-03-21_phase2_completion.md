@@ -59,4 +59,4 @@ Date: 2026-03-21
 - Optional network validation support exists but is intentionally not enabled by default.
 
 ## Implementation commit
-- Phase 2 implementation commit: `pending grouped commit`
+- Phase 2 implementation commit: `680bef3`
