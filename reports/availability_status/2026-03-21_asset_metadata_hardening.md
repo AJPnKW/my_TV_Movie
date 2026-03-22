@@ -54,4 +54,4 @@ Date: 2026-03-21
 - The local runner completed successfully with this order.
 
 ## Implementation commit
-- Metadata hardening implementation commit: `pending grouped commit`
+- Metadata hardening implementation commit: `f036936`
