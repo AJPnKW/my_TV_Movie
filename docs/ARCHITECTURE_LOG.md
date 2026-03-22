@@ -104,3 +104,11 @@ Commit
 - Added `scripts/self_heal_asset_metadata.py` to classify unrecoverable upstream metadata gaps and deterministically repair recoverable `*_path` / `*_local` drift before final validation.
 - Updated the local runner to execute secret drift validation and asset metadata self-heal before availability validation/enrichment, keeping the final runtime asset validator at the end of the chain.
 - Implementation commit: `f036936`
+
+## 2026-03-22 — Popup, calendar, and shared card cleanup
+- Removed active popup drift in `web/js/app_runtime.js` by retiring duplicated legacy popup/dashboard definitions and restoring one active show-popup path.
+- Rebuilt the active show popup around a dense series hero, plain fact rows, dedicated provider section, horizontal season rail, and horizontal episode rail.
+- Re-aligned dashboard, calendar, watch_me, and popup episodes to one shared episode-card content order with the double-heart favourite icon restored.
+- Corrected CSS contract drift that was collapsing the calendar grid, wrapping the action strip, forcing shows/movies off the left rail, and turning dashboard recommendation posters into widescreen cards.
+- Added `docs/VIEW_NAVIGATION_TREE.md` as the review map for pages, views, modal layers, and shared card families.
+- Implementation commit: `pending grouped commit`

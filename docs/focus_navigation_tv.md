@@ -21,7 +21,7 @@ Defines first-class Android TV and D-pad behavior for the shared runtime. TV beh
 ## Popup Focus Trap
 
 - opening a popup stores the previously focused element
-- focus moves into the popup header close button or popup card container immediately
+- focus moves into the popup header exit button immediately
 - Tab and Shift+Tab loop inside the topmost popup only
 - provider popup above a show or movie popup becomes the active focus layer
 - closing the top popup restores focus to the last element in the layer below, or the original invoker if no deeper popup remains
@@ -37,6 +37,7 @@ Defines first-class Android TV and D-pad behavior for the shared runtime. TV beh
 - provider modal supersedes movie/show popup
 - show/movie popup supersedes page content
 - page content cannot reclaim focus while a popup is open
+- launching a watch source from the provider popup closes the provider layer so return focus goes back to the underlying page or popup
 
 ## Browse Surface Rules
 

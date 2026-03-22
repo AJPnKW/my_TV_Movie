@@ -147,8 +147,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       <div id="panel-calendar" class="panel hidden">
         <section class="dashblock dashblock--calendar">
           <div class="dashhead">
-            <h2>Calendar</h2>
-            <div class="calendar-toolbar__controls">
+            <div class="calendar-toolbar__controls" aria-label="Calendar controls">
               <button id="calPrev" class="calbtn" type="button" aria-label="Previous month">Prev</button>
               <div id="calMonth" class="muted">Month</div>
               <button id="calNext" class="calbtn" type="button" aria-label="Next month">Next</button>
@@ -167,7 +166,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <aside class="browse-sidebar">
             <div class="browse-sidebar__header">
               <div class="browse-sidebar__eyebrow">Browse</div>
-              <h2 class="browse-sidebar__title">Shows</h2>
+              <h2 class="browse-sidebar__title">Library Filters</h2>
               <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
             </div>
             <div class="control-panel">
@@ -212,7 +211,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </aside>
           <section class="browse-content">
             <div class="dashblock">
-              <div class="dashhead"><h2>Shows</h2><span id="showsSummary" class="muted">Library</span></div>
+              <div class="dashhead dashhead--compact"><span id="showsSummary" class="muted">Library</span></div>
               <div id="showsGrid" class="media-grid media-grid--shows"></div>
             </div>
           </section>
@@ -226,7 +225,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <aside class="browse-sidebar">
             <div class="browse-sidebar__header">
               <div class="browse-sidebar__eyebrow">Browse</div>
-              <h2 class="browse-sidebar__title">Movies</h2>
+              <h2 class="browse-sidebar__title">Library Filters</h2>
               <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
             </div>
             <div class="control-panel">
@@ -271,7 +270,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </aside>
           <section class="browse-content">
             <div class="dashblock">
-              <div class="dashhead"><h2>Movies</h2><span id="moviesSummary" class="muted">Library</span></div>
+              <div class="dashhead dashhead--compact"><span id="moviesSummary" class="muted">Library</span></div>
               <div id="moviesGrid" class="media-grid media-grid--movies"></div>
             </div>
           </section>
@@ -298,7 +297,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       <div id="panel-config" class="panel hidden">
         <div class="dash">
           <section class="dashblock">
-            <div class="dashhead"><h2>Config</h2><span class="muted">Runtime configuration</span></div>
             <div id="configRoot"></div>
           </section>
         </div>
@@ -1753,6 +1751,37 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return list.map(c => c?.name).filter(Boolean);
   }
 
+  function getCreatorNames(list){
+    if (!Array.isArray(list)) return [];
+    return list.map(person => person?.name).filter(Boolean);
+  }
+
+  function formatProviderSummary(item){
+    const wp = getWatchProviders(item);
+    const providers = collectProvidersForRegion(wp, "US").length
+      ? collectProvidersForRegion(wp, "US")
+      : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
+    return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
+  }
+
+  function getLastSeasonAirDate(season){
+    const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
+    const today = new Date();
+    const valid = episodes
+      .map(ep => safeText(ep?.air_date || "").trim())
+      .filter(Boolean)
+      .map(value => ({ value, date: new Date(value) }))
+      .filter(entry => !Number.isNaN(entry.date.valueOf()) && entry.date <= today)
+      .sort((a, b) => a.date - b.date);
+    return valid.length ? valid[valid.length - 1].value : "";
+  }
+
+  function episodeMetaLine(seasonNum, episodeNum, runtime){
+    return [seTag(seasonNum, episodeNum), Number.isFinite(Number(runtime)) && Number(runtime) > 0 ? `${Number(runtime)} min` : ""]
+      .filter(Boolean)
+      .join(" • ");
+  }
+
   function openModal(title, html) {
     lastFocusEl = document.activeElement;
     $("#modalTitle").textContent = title;
@@ -1762,7 +1791,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const card = $("#modalCard");
     if (card) {
       card.scrollTop = 0;
-      card.focus();
+      $("#modalClose")?.focus();
     } else {
       $("#modalClose").focus();
     }
@@ -1782,10 +1811,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#providerBody").innerHTML = html;
     $("#providerBack").style.display = "flex";
     $("#providerBack").setAttribute("aria-hidden", "false");
+    $$("a[data-watch-source-type]", $("#providerBody")).forEach(link => {
+      link.addEventListener("click", () => {
+        setTimeout(() => closeProviderModal(), 0);
+      });
+    });
     const card = $("#providerCard");
     if (card){
       card.scrollTop = 0;
-      card.focus();
+      $("#providerClose")?.focus();
     } else {
       $("#providerClose").focus();
     }
@@ -2285,7 +2319,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const el = $("#calTodayLabel");
     if (!el) return;
     const today = new Date();
-    el.textContent = `Today: ${today.toLocaleDateString(undefined, { weekday:"short", month:"short", day:"numeric", year:"numeric" })}`;
+    el.textContent = `Today ${today.toLocaleDateString("en-US", { month:"2-digit", day:"2-digit", year:"2-digit" })}`;
   }
 
   function scrollToDayCell(dateKey){
@@ -2466,7 +2500,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       meta: tertiary || subtitle,
       actionBarHtml: actionBar,
       overlay: true,
-      extraClass: `dashcard dashcard--clean${options.extraClass ? ` ${options.extraClass}` : ""}`
+      extraClass: `dashcard dashcard--clean dashcard--poster${options.extraClass ? ` ${options.extraClass}` : ""}`
     });
   }
 
@@ -2496,7 +2530,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
-  function renderDashboard(){
+  function legacyRenderDashboard(){
     const upNext = $("#dashUpNext");
     const scheduleCols = $("#dashScheduleCols");
     const lastWeekCols = $("#dashLastWeekCols");
@@ -3050,7 +3084,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       : "Inputs Editor requires the local editor server. The embedded view points to http://127.0.0.1:8787/web/inputs_editor.html.";
   }
 
-  function openMovieModal(tmdbId){
+  function legacyOpenMovieModal(tmdbId){
     const m = getMovieById(tmdbId);
     if (!m){
       openModal("Movie", `<div>Movie not found: ${escHtml(tmdbId)}</div>`);
@@ -3161,7 +3195,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     wireShowPopup(showId);
   }
 
-  function buildShowPopupHtml(show){
+  function legacyBuildShowPopupHtml(show){
     const title = safeText(show.title || show.name || "(Untitled)");
     const overview = safeText(show.overview || "");
     const poster = pickImage(show, "poster_local", "poster_path");
@@ -3397,28 +3431,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const host = $("#modalBody");
     if (!host) return;
 
-    $$(".seasonopt", host).forEach(row => {
-      row.addEventListener("click", (e) => {
-        if (e.target.closest(".switch")) return;
-        if (e.target.matches("input[type='radio']")) return;
-        const radio = $("input[type='radio'][name='seasonPick']", row);
-        if (radio && !radio.checked){
-          radio.checked = true;
-          radio.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-      });
-    });
-
-    $$("input[name='seasonPick']", host).forEach(inp => {
-      inp.addEventListener("change", () => {
-        const v = Number(inp.value);
-        if (Number.isFinite(v)){
-          state.show.selectedSeasonNumber = v;
-          const show = getShowById(showId);
-          if (!show) return;
-          $("#modalBody").innerHTML = buildShowPopupHtml(show);
-          wireShowPopup(showId);
-        }
+    $$("[data-season-pick]", host).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.getAttribute("data-season-pick") || "0");
+        if (!Number.isFinite(v)) return;
+        state.show.selectedSeasonNumber = v;
+        const show = getShowById(showId);
+        if (!show) return;
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(showId);
       });
     });
 
@@ -3475,7 +3496,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       btn.addEventListener("change", async () => {
         const id = parseInt(btn.getAttribute("data-show") || "0", 10);
         const seasonNum = Number(btn.getAttribute("data-season") || "0");
-        const episodeNum = Number(btn.getAttribute("data-episode") || "0");
+        const episodeNum = Number(btn.getAttribute("data-watch-episode") || btn.getAttribute("data-episode") || "0");
         if (!Number.isFinite(id) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
         setEpisodeWatched(id, seasonNum, episodeNum, !!btn.checked);
         const show = getShowById(id);
@@ -3504,21 +3525,24 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     wireActionMenus(host);
     wireWatchSourceButtons(host);
 
-    const track = $(".carousel", host);
-    const prev = $("[data-ep-nav='prev']", host);
-    const next = $("[data-ep-nav='next']", host);
-    if (track && prev && next){
-      const scrollBy = () => Math.max(240, Math.floor(track.clientWidth * 0.85));
-      prev.addEventListener("click", () => track.scrollBy({ left: -scrollBy(), behavior: "smooth" }));
-      next.addEventListener("click", () => track.scrollBy({ left: scrollBy(), behavior: "smooth" }));
-      const update = () => {
-        const max = Math.max(0, track.scrollWidth - track.clientWidth);
-        prev.disabled = track.scrollLeft <= 2;
-        next.disabled = track.scrollLeft >= max - 2;
-      };
-      track.addEventListener("scroll", update);
-      update();
-    }
+    const bindCarousel = (trackSelector, attrName) => {
+      const track = $(trackSelector, host);
+      const buttons = $$(`[${attrName}]`, host);
+      if (!track || !buttons.length) return;
+      const scrollBy = (multiplier = 1) => Math.max(220, Math.floor(track.clientWidth * 0.72 * multiplier));
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const action = safeText(btn.getAttribute(attrName));
+          if (action === "prev") track.scrollBy({ left: -scrollBy(1), behavior: "smooth" });
+          if (action === "next") track.scrollBy({ left: scrollBy(1), behavior: "smooth" });
+          if (action === "jump-prev") track.scrollBy({ left: -scrollBy(2), behavior: "smooth" });
+          if (action === "jump-next") track.scrollBy({ left: scrollBy(2), behavior: "smooth" });
+        });
+      });
+    };
+
+    bindCarousel("[data-season-track]", "data-season-nav");
+    bindCarousel(".carousel", "data-ep-nav");
   }
 
   function renderCalendar(){
@@ -3548,10 +3572,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const hasSources = collectWatchSourceOptions("episode", item, { showId }).length > 0;
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
           image: item.thumb,
+          eyebrow: item.show_title || "Show",
           title: item.episode_name || "Episode",
           badgeHtml: availabilityBadgeHtml(item, { compact: true }),
-          meta: seTag(seasonNum, episodeNum),
-          submeta: item.show_title || "Show",
+          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
+          submeta: formatDateShort(dateKey),
           overlay: true,
           actionBarHtml: buildActionBarHtml("episode", episodeNum, {
             title: item.episode_name || "Episode",
@@ -3688,10 +3713,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const episodeNum = Number(item.episode_number) || 0;
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
           image: imageForItem(item),
+          eyebrow: safeText(item.show_title || "Show"),
           title: safeText(item.episode_name || "Episode"),
           badgeHtml: availabilityBadgeHtml(item, { compact: true }),
-          meta: seTag(seasonNum, episodeNum),
-          submeta: safeText(item.show_title || "Show"),
+          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
+          submeta: tertiary,
           overlay: true,
           actionBarHtml: buildActionBarHtml("episode", episodeNum, {
             title: safeText(item.episode_name || "Episode"),
@@ -3868,7 +3894,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <section class="discover-intro">
           <div class="discover-hero">
             <div>
-              <div class="discover-hero__eyebrow">Discover</div>
+              <div class="discover-hero__eyebrow">Library Picks</div>
               <h2>Browse what is ready to watch</h2>
               <p>Popular shows and movies, cleaned up into a real browse surface instead of a placeholder shell.</p>
             </div>
@@ -3909,7 +3935,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     root.innerHTML = `
       <section class="config-hero">
         <div>
-          <div class="discover-hero__eyebrow">Config</div>
+          <div class="discover-hero__eyebrow">System</div>
           <h2>Runtime configuration at a glance</h2>
           <p>Validation and raw config are still available below, but the important runtime facts are visible first.</p>
         </div>
@@ -4011,6 +4037,29 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
     const networks = Array.isArray(show.networks) ? show.networks.map(n => n?.name).filter(Boolean) : [];
     const genres = Array.isArray(show?.genres) ? show.genres.map(g => g?.name).filter(Boolean) : [];
+    const creators = getCreatorNames(show.created_by);
+    const totalEpisodes = Number(show?.number_of_episodes ?? episodes.length) || episodes.length;
+    const premiered = pickAirDate(show);
+    const lastAir = safeText(show?.last_air_date || "").trim();
+    const seasonPremiered = pickAirDate(season);
+    const seasonLastAir = getLastSeasonAirDate(season);
+    const seasonEpisodeCount = episodes.length;
+    const showRuntime = Number(Array.isArray(show?.episode_run_time) ? show.episode_run_time[0] : (show?.runtime ?? 0));
+    const seasonWatched = season ? isSeasonWatched(show.tmdb_id, selected?.n, seasonEpisodeCount) : false;
+    const seasonToggle = season ? watchToggleHtml("season", { "data-watch-season": selected?.n, "data-show": show.tmdb_id ?? "", "data-season": selected?.n }, seasonWatched) : "";
+    const seasonLabel = safeText(season?.name || (selected ? `Season ${selected.n}` : "Season"));
+    const seasonSummary = [
+      Number.isFinite(seasonEpisodeCount) && seasonEpisodeCount > 0 ? `${seasonEpisodeCount} episodes` : "",
+      seasonPremiered ? `Premiered ${fmtDate(seasonPremiered)}` : "",
+      seasonLastAir ? `Last available ${fmtDate(seasonLastAir)}` : ""
+    ].filter(Boolean).join(" • ");
+    const heroSummary = [
+      creators.length ? `Created by ${creators.slice(0, 2).join(" • ")}` : "",
+      premiered ? new Date(premiered).getFullYear() : "",
+      Number.isFinite(totalEpisodes) && totalEpisodes > 0 ? `${totalEpisodes} eps.` : "",
+      showRuntime > 0 ? `${showRuntime} min` : "",
+      genres[0] || ""
+    ].filter(Boolean).join(" • ");
     return `
       <div class="popup-shell popup-shell--show">
         <div class="popup-hero">
@@ -4019,8 +4068,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             <div class="popup-surface-badge">${availabilityBadgeHtml(show, { compact: true })}</div>
           </div>
           <div class="popup-hero__body">
-            <div class="popup-hero__eyebrow">Show Detail</div>
+            <div class="popup-hero__eyebrow">Series Detail</div>
             <h2 class="popup-hero__title">${escHtml(title)}</h2>
+            ${heroSummary ? `<div class="popup-hero__summary">${escHtml(heroSummary)}</div>` : ""}
             ${buildActionBarHtml("show", show.tmdb_id ?? "", {
               title,
               pct: (() => {
@@ -4038,90 +4088,132 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               showStatusAction: true,
               available: isShowAvailable(show)
             })}
-            <div class="popup-detail-grid">
+            <div class="popup-detail-grid popup-detail-grid--plain">
               <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(show))}</strong></div>
-              <div class="popup-detail"><span>Providers</span><strong>${escHtml((() => {
-                const wp = getWatchProviders(show);
-                const providers = collectProvidersForRegion(wp, "US").length
-                  ? collectProvidersForRegion(wp, "US")
-                  : (collectProvidersForRegion(wp, "CA").length ? collectProvidersForRegion(wp, "CA") : collectProvidersForRegion(wp, "AU"));
-                return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
-              })())}</strong></div>
-              <div class="popup-detail"><span>Genres</span><strong>${escHtml(genres.join(" • ") || "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Runtime</span><strong>${escHtml((() => {
-                const value = Number(Array.isArray(show?.episode_run_time) ? show.episode_run_time[0] : (show?.runtime ?? 0));
-                return Number.isFinite(value) && value > 0 ? `${value} min` : "Series";
-              })())}</strong></div>
+              <div class="popup-detail"><span>Where to watch</span><strong>${escHtml(formatProviderSummary(show))}</strong></div>
+              <div class="popup-detail"><span>Status</span><strong>${escHtml(safeText(show?.status || "Unavailable"))}</strong></div>
               <div class="popup-detail"><span>Network</span><strong>${escHtml(networks.join(" • ") || "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Season Info</span><strong>${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>TMDB</span><strong>${escHtml(String(show?.tmdb_id ?? ""))}</strong></div>
+              <div class="popup-detail"><span>Seasons</span><strong>${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Episodes</span><strong>${escHtml(totalEpisodes ? `${totalEpisodes}` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Runtime</span><strong>${escHtml(showRuntime > 0 ? `${showRuntime} min` : "Series")}</strong></div>
+              <div class="popup-detail"><span>TMDB Score</span><strong>${escHtml(show?.vote_average != null ? `${show.vote_average}${show?.vote_count != null ? ` (${show.vote_count})` : ""}` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Premiered</span><strong>${escHtml(premiered ? fmtDate(premiered) : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Last aired</span><strong>${escHtml(lastAir ? fmtDate(lastAir) : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Genres</span><strong>${escHtml(genres.join(" • ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Created by</span><strong>${escHtml(creators.join(" • ") || "Unavailable")}</strong></div>
             </div>
-            <div class="popup-description">${compactOverviewHtml(show?.overview || "", 320)}</div>
+            <div class="popup-description popup-description--show">${compactOverviewHtml(show?.overview || "", 420)}</div>
             <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(show), "Rotten Tomatoes")}</div>
           </div>
         </div>
         <div class="section section-card">
-          <div class="seasonsgrid">
-            <div class="seasonpicker">
-              <div class="seasonpickerhead">Season</div>
-              <div class="seasonlist">
-                ${seasonItems.map(it => `<div class="seasonopt"><input type="radio" name="seasonPick" value="${escHtml(it.n)}" ${Number(it.n) === Number(selected?.n) ? "checked" : ""} /><span class="labelrow"><span class="label">${escHtml(it.s?.name || `Season ${it.n}`)}</span></span>${watchToggleHtml("season", { "data-watch-season": it.n, "data-show": show.tmdb_id ?? "" }, state.watchState ? isSeasonWatched(show.tmdb_id, it.n, Array.isArray(it.s?.episodes) ? it.s.episodes.length : 0) : false)}</div>`).join("") || `<div class="muted">No seasons available.</div>`}
-              </div>
+          <div class="section-card__head">
+            <div class="section-card__title">Season Navigator</div>
+            <div class="section-card__meta">${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "No seasons")}</div>
+          </div>
+          <div class="seasonrail">
+            <div class="carousel-controls">
+              <button class="epnavbtn" type="button" data-season-nav="jump-prev" aria-label="Jump back seasons">«</button>
+              <button class="epnavbtn" type="button" data-season-nav="prev" aria-label="Previous seasons">‹</button>
+              <button class="epnavbtn" type="button" data-season-nav="next" aria-label="Next seasons">›</button>
+              <button class="epnavbtn" type="button" data-season-nav="jump-next" aria-label="Jump forward seasons">»</button>
             </div>
-            <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path"))}');"` : ""}>
-              <div class="popup-surface-badge">${availabilityBadgeHtml(season, { compact: true })}</div>
-              <div class="seasonmeta">
-                <div class="seasonname">${escHtml(season?.name || (selected ? `Season ${selected.n}` : "Season"))}</div>
-                <div class="seasonair">${escHtml(pickAirDate(season) ? `Premiered ${fmtDate(pickAirDate(season))}` : "Season details")}</div>
-                ${compactOverviewHtml(season?.overview || "", 220)}
-              </div>
+            <div class="seasonlist seasonlist--carousel" data-season-track>
+              ${seasonItems.map(it => `
+                <button class="seasonopt${Number(it.n) === Number(selected?.n) ? " is-active" : ""}" type="button" data-season-pick="${escHtml(it.n)}">
+                  <span class="labelrow">
+                    <span class="label">${escHtml(it.s?.name || `Season ${it.n}`)}</span>
+                    <span class="seasonopt__meta">${escHtml([Array.isArray(it.s?.episodes) ? `${it.s.episodes.length} eps` : "", pickAirDate(it.s) ? fmtDate(pickAirDate(it.s)) : ""].filter(Boolean).join(" • "))}</span>
+                  </span>
+                  <span class="seasonopt__availability">${availabilityBadgeHtml(it.s, { compact: true })}</span>
+                </button>
+              `).join("") || `<div class="muted">No seasons available.</div>`}
             </div>
           </div>
+          <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path"))}');"` : ""}>
+            <div class="popup-surface-badge">${availabilityBadgeHtml(season, { compact: true })}</div>
+            <div class="seasonmeta">
+              <div class="seasoneyebrow">Selected season</div>
+              <div class="seasonname">${escHtml(seasonLabel)}</div>
+              ${seasonSummary ? `<div class="seasonair">${escHtml(seasonSummary)}</div>` : `<div class="seasonair">Season details unavailable</div>`}
+              <div class="seasonstatusrow">
+                ${seasonToggle}
+              </div>
+              ${season?.overview ? `<div class="seasonov">${escHtml(season.overview)}</div>` : `<div class="seasonov seasonov--muted">No season description available.</div>`}
+            </div>
+          </div>
+        </div>
+        <div class="section section-card section-card--providers">
+          <div class="section-card__head">
+            <div class="section-card__title">Where to Watch</div>
+            <div class="section-card__meta">${escHtml(formatProviderSummary(show))}</div>
+          </div>
+          ${renderWatchProvidersHtml(show, "tv")}
         </div>
         <div class="section section-card">
-          <div class="episodestitle">Episodes</div>
-          <div class="episode-list">
-            ${episodes.map(ep => {
-              const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
-              const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
-              const epPct = (() => {
-                let v = progressPercent(ep);
-                if (v == null){
-                  const raw = Number(ep?.vote_average ?? ep?.rating ?? ep?.rating_percent ?? ep?.rating_pct ?? 0);
-                  if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
-                }
-                return v;
-              })();
-              const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, seasonNum, episodeNum) : false;
-              return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
-                image: pickImage(ep, "still_local", "still_path"),
-                title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                badgeHtml: availabilityBadgeHtml(ep, { compact: true }),
-                meta: seTag(seasonNum, episodeNum),
-                submeta: title,
-                description: safeText(ep?.overview || ""),
-                actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+          <div class="section-card__head">
+            <div class="section-card__title">Episodes</div>
+            <div class="section-card__meta">${escHtml(seasonEpisodeCount ? `${seasonEpisodeCount} episodes` : "No episodes")}</div>
+          </div>
+          <div class="epnav">
+            <div class="carousel-controls">
+              <button class="epnavbtn" type="button" data-ep-nav="jump-prev" aria-label="Jump back episodes">«</button>
+              <button class="epnavbtn" type="button" data-ep-nav="prev" aria-label="Previous episodes">‹</button>
+            </div>
+            <div class="carousel" role="list">
+              ${episodes.map(ep => {
+                const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
+                const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
+                const epPct = (() => {
+                  let v = progressPercent(ep);
+                  if (v == null){
+                    const raw = Number(ep?.vote_average ?? ep?.rating ?? ep?.rating_percent ?? ep?.rating_pct ?? 0);
+                    if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
+                  }
+                  return v;
+                })();
+                const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, seasonNum, episodeNum) : false;
+                return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+                  image: pickImage(ep, "still_local", "still_path"),
+                  eyebrow: title,
                   title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                  compact: true,
-                  pct: epPct,
-                  watchedActive: epWatched,
-                  showWatchedAction: true,
-                  showStatusAction: true,
-                  watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
-                  popcornAttrs: collectWatchSourceOptions("episode", ep, { showId: show.tmdb_id ?? "" }).length ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
-                  popcornKind: "episode",
-                  available: isEpisodeAvailable(ep),
-                  statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
-                })
-              });
-            }).join("") || `<div class="muted">No episodes available for this season.</div>`}
+                  badgeHtml: availabilityBadgeHtml(ep, { compact: true }),
+                  meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime),
+                  submeta: safeText(pickAirDate(ep) ? fmtDate(pickAirDate(ep)) : ""),
+                  description: safeText(ep?.overview || ""),
+                  actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+                    title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
+                    compact: true,
+                    pct: epPct,
+                    watchedActive: epWatched,
+                    showWatchedAction: true,
+                    showStatusAction: true,
+                    watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
+                    popcornAttrs: collectWatchSourceOptions("episode", ep, { showId: show.tmdb_id ?? "" }).length ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
+                    popcornKind: "episode",
+                    available: isEpisodeAvailable(ep),
+                    statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
+                  }),
+                  overlay: true,
+                  articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
+                  extraClass: "popup-episode-card"
+                });
+              }).join("") || `<div class="muted">No episodes available for this season.</div>`}
+            </div>
+            <div class="carousel-controls">
+              <button class="epnavbtn" type="button" data-ep-nav="next" aria-label="Next episodes">›</button>
+              <button class="epnavbtn" type="button" data-ep-nav="jump-next" aria-label="Jump forward episodes">»</button>
+            </div>
           </div>
         </div>
+        ${pickImage(show, "backdrop_local", "backdrop_path") ? `<div class="popup-backdrop"><img loading="lazy" src="${escHtml(pickImage(show, "backdrop_local", "backdrop_path"))}" alt="" /><div class="popup-surface-badge">${availabilityBadgeHtml(show, { compact: true })}</div></div>` : ""}
       </div>
     `;
   }
 
   ensureMainAppShell();
+  if ($("#modalClose")) $("#modalClose").textContent = "Exit";
+  if ($("#providerClose")) $("#providerClose").textContent = "Exit";
 
   // NAV
   $$(".tab").forEach(btn => {

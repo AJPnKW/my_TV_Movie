@@ -18,7 +18,7 @@ export const ACTION_BAR_ORDER = Object.freeze([
 const CONTRACT_ICONS = Object.freeze({
   watch: '🍿',
   status: '⌚',
-  favourite: '♥',
+  favourite: '💕',
   bookmark: '🔖',
   star: '★'
 });

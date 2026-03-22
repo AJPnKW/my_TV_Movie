@@ -175,10 +175,12 @@ function renderEpisodeCard(entry) {
   return cardRenderer.renderCompactEpisodeCardHtml({
     image: pickImage(episode, 'still_local', 'still_path'),
     eyebrow: entry.showTitle,
-    title: `${seTag(entry.seasonNumber, entry.episodeNumber)} • ${entry.title}`,
+    title: entry.title,
     badgeHtml: availabilityUi.availabilityBadgeHtml(episode?.availability_status, { compact: true }),
-    meta: formatDate(entry.date),
-    submeta: safeText(episode?.runtime) ? `${episode.runtime} min` : '',
+    meta: [seTag(entry.seasonNumber, entry.episodeNumber), safeText(episode?.runtime) ? `${episode.runtime} min` : '']
+      .filter(Boolean)
+      .join(' • '),
+    submeta: formatDate(entry.date),
     overlay: true,
     actionBarHtml: buildActionBar('episode', episode, { showId: entry.show?.tmdb_id }),
     posterAttrs: {
