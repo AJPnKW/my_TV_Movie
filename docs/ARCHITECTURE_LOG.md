@@ -112,3 +112,11 @@ Commit
 - Corrected CSS contract drift that was collapsing the calendar grid, wrapping the action strip, forcing shows/movies off the left rail, and turning dashboard recommendation posters into widescreen cards.
 - Added `docs/VIEW_NAVIGATION_TREE.md` as the review map for pages, views, modal layers, and shared card families.
 - Implementation commit: `4a5aed2`
+
+## 2026-03-22 — Discover/sidebar/calendar follow-up cleanup
+- Removed the remaining Discover intro/counter/featured-copy drift so the active view is just a two-column browse surface with shows on the left and movies on the right.
+- Re-asserted the left-rail sizing contract for shows, movies, and watch_me so sidebar controls cannot overflow into the main content area at TV-like widths.
+- Re-asserted the shared episode-card action strip contract across dashboard, calendar, watch_me, and popup rails so icon rows stay on one line with the shared left/center/right spacing model.
+- Tightened calendar cell presentation with stronger day outlines and corrected sticky day-head positioning relative to the calendar toolbar/weekday row.
+- Archived spec working notes under `docs/spec/archive/working_notes/` and kept the normalized `Section N - ...` files as the active spec body.
+- Implementation commit: `PENDING`

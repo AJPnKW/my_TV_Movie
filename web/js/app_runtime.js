@@ -280,13 +280,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-discover", `
       <div id="panel-discover" class="panel hidden">
-        <div class="dash">
+        <div class="discover-split">
           <section class="dashblock accent-green">
-            <div class="dashhead"><h2>Discover Shows</h2><span class="muted">Popular and available</span></div>
+            <div class="dashhead dashhead--compact"><span class="muted">Shows</span></div>
             <div id="discoverShowsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--show_card_min),1fr));gap:12px;"></div>
           </section>
           <section class="dashblock accent-yellow">
-            <div class="dashhead"><h2>Discover Movies</h2><span class="muted">Popular and available</span></div>
+            <div class="dashhead dashhead--compact"><span class="muted">Movies</span></div>
             <div id="discoverMoviesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--movie_card_min),1fr));gap:12px;"></div>
           </section>
         </div>
@@ -2504,6 +2504,41 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
+  function buildSharedEpisodeCard(item, options = {}){
+    const showId = Number(item?.show_tmdb_id ?? item?.show_id ?? item?.tmdb_id) || 0;
+    const seasonNum = Number(item?.season_number ?? item?.season ?? 0) || 0;
+    const episodeNum = Number(item?.episode_number ?? item?.episode ?? 0) || 0;
+    const pct = Number.isFinite(item?.progress) ? Math.max(0, Math.min(100, item.progress)) : (Number.isFinite(options.pct) ? options.pct : null);
+    const available = isEpisodeAvailable(item);
+    const watched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
+    const hasSources = collectWatchSourceOptions("episode", item, { showId }).length > 0;
+    return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+      id: showId,
+      image: safeText(options.image || "").trim(),
+      eyebrow: safeText(options.eyebrow || item?.show_title || "Show"),
+      title: safeText(options.title || item?.episode_name || "Episode"),
+      badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+      meta: options.meta || episodeMetaLine(seasonNum, episodeNum, item?.runtime),
+      submeta: options.submeta || "",
+      overlay: options.overlay !== false,
+      actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+        title: safeText(options.title || item?.episode_name || "Episode"),
+        compact: true,
+        pct,
+        showWatchedAction: true,
+        watchedActive: watched,
+        watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
+        showStatusAction: true,
+        statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum },
+        popcornAttrs: hasSources ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
+        popcornKind: "episode",
+        available
+      }),
+      articleAttrs: options.articleAttrs || { tabindex: "0", "data-kind": "episode", "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum },
+      extraClass: options.extraClass || ""
+    });
+  }
+
   function buildIconStripHtml(kind, id, pct, titleText){
     const hasTarget = kind && id;
     if (!hasTarget) return "";
@@ -2591,27 +2626,20 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return "";
     };
 
-    const infoTarget = (item) => {
-      if (item?.kind === "movie") return { kind: "movie", id: item?.tmdb_id };
-      return { kind: "show", id: item?.show_tmdb_id || item?.tmdb_id };
-    };
-
     upNext.innerHTML = nextItems.length ? nextItems.map(({dateKey, item}) => {
-      const title = item.kind === "episode"
-        ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
-        : safeText(item.title || "Movie");
-      const sub = item.kind === "episode"
-        ? `${safeText(item.episode_name || "Episode")}`
-        : "Movie release";
-      const mode = (item.kind === "episode") ? "wide" : "poster";
-      const imgSrc = imageForItem(item, mode);
-      const { kind, id } = infoTarget(item);
+      if (item.kind === "episode"){
+        return buildSharedEpisodeCard(item, {
+          image: imageForItem(item, "wide"),
+          submeta: formatDateShort(dateKey),
+          extraClass: "dashcard dashcard--clean"
+        });
+      }
       const pct = percentForItem(item);
-      return buildDashboardCard(kind, id, {
-        title,
-        subtitle: sub,
+      return buildDashboardCard("movie", item?.tmdb_id, {
+        title: safeText(item.title || "Movie"),
+        subtitle: "Movie release",
         tertiary: formatDateShort(dateKey),
-        image: imgSrc,
+        image: imageForItem(item, "poster"),
         badgeHtml: availabilityBadgeHtml(item, { compact: true }),
         pct
       });
@@ -2625,20 +2653,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="dashcol">
           <div class="dashcolhead">${escHtml(dayLabel)}</div>
           ${dayItems.length ? dayItems.map(({item}) => {
-            const title = item.kind === "episode"
-              ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
-              : safeText(item.title || "Movie");
-            const metaText = item.kind === "episode"
-              ? safeText(item.episode_name || "Episode")
-              : "Movie release";
-            const mode = (item.kind === "episode") ? "wide" : "poster";
-            const imgSrc = imageForItem(item, mode);
-            const { kind, id } = infoTarget(item);
+            if (item.kind === "episode"){
+              return buildSharedEpisodeCard(item, {
+                image: imageForItem(item, "wide"),
+                submeta: formatDateShort(key),
+                extraClass: "dashcard dashcard--clean dashcolitem-card"
+              });
+            }
             const pct = percentForItem(item);
-            return buildDashboardCard(kind, id, {
-              title,
-              subtitle: metaText,
-              image: imgSrc,
+            return buildDashboardCard("movie", item?.tmdb_id, {
+              title: safeText(item.title || "Movie"),
+              subtitle: "Movie release",
+              image: imageForItem(item, "poster"),
               badgeHtml: availabilityBadgeHtml(item, { compact: true }),
               pct,
               extraClass: "dashcolitem-card"
@@ -2658,20 +2684,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="dashcol">
           <div class="dashcolhead">${escHtml(dayLabel)}</div>
           ${dayItems.length ? dayItems.map(({item}) => {
-            const title = item.kind === "episode"
-              ? `${safeText(item.show_title)} • ${seTag(item.season_number || 0, item.episode_number || 0)}`
-              : safeText(item.title || "Movie");
-            const metaText = item.kind === "episode"
-              ? safeText(item.episode_name || "Episode")
-              : "Movie release";
-            const mode = (item.kind === "episode") ? "wide" : "poster";
-            const imgSrc = imageForItem(item, mode);
-            const { kind, id } = infoTarget(item);
+            if (item.kind === "episode"){
+              return buildSharedEpisodeCard(item, {
+                image: imageForItem(item, "wide"),
+                submeta: formatDateShort(key),
+                extraClass: "dashcard dashcard--clean dashcolitem-card"
+              });
+            }
             const pct = percentForItem(item);
-            return buildDashboardCard(kind, id, {
-              title,
-              subtitle: metaText,
-              image: imgSrc,
+            return buildDashboardCard("movie", item?.tmdb_id, {
+              title: safeText(item.title || "Movie"),
+              subtitle: "Movie release",
+              image: imageForItem(item, "poster"),
               badgeHtml: availabilityBadgeHtml(item, { compact: true }),
               pct,
               extraClass: "dashcolitem-card"
@@ -3889,36 +3913,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     const shows = (state.data?.shows || []).filter(isShowAvailable).sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
     const movies = (state.data?.movies || []).filter(isMovieAvailable).sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
-    if (!panel.querySelector(".discover-intro")){
-      panel.insertAdjacentHTML("afterbegin", `
-        <section class="discover-intro">
-          <div class="discover-hero">
-            <div>
-              <div class="discover-hero__eyebrow">Library Picks</div>
-              <h2>Browse what is ready to watch</h2>
-              <p>Popular shows and movies, cleaned up into a real browse surface instead of a placeholder shell.</p>
-            </div>
-            <div class="discover-hero__stats">
-              <div class="discover-stat"><strong>${shows.length}</strong><span>shows</span></div>
-              <div class="discover-stat"><strong>${movies.length}</strong><span>movies</span></div>
-            </div>
-          </div>
-          <div class="discover-feature-grid">
-            <div id="discoverFeaturedShow"></div>
-            <div id="discoverFeaturedMovie"></div>
-          </div>
-        </section>
-      `);
-    }
-    const featuredShow = $("#discoverFeaturedShow");
-    const featuredMovie = $("#discoverFeaturedMovie");
-    if (featuredShow) featuredShow.innerHTML = shows[0] ? `<article class="discover-feature"><div class="discover-feature__eyebrow">Featured Show</div><div class="discover-feature__title">${escHtml(shows[0].title || shows[0].name || "Show")}</div><div class="discover-feature__summary">${escHtml(truncateText(shows[0].overview || "", 180) || "Open show detail to browse seasons and episodes.")}</div><button class="btn" type="button" data-show-open="${escHtml(shows[0].tmdb_id)}">Open show</button></article>` : "";
-    if (featuredMovie) featuredMovie.innerHTML = movies[0] ? `<article class="discover-feature"><div class="discover-feature__eyebrow">Featured Movie</div><div class="discover-feature__title">${escHtml(movies[0].title || "Movie")}</div><div class="discover-feature__summary">${escHtml(truncateText(movies[0].overview || "", 180) || "Open movie detail for sources and context.")}</div><button class="btn" type="button" data-movie-open="${escHtml(movies[0].tmdb_id)}">Open movie</button></article>` : "";
 
     showsRoot.innerHTML = shows.slice(0, 12).map(show => showCardHtml(show, { fade: false })).join("") || `<div class="muted">No discoverable shows available.</div>`;
     moviesRoot.innerHTML = movies.slice(0, 12).map(movie => movieCardHtml(movie, { fade: false })).join("") || `<div class="muted">No discoverable movies available.</div>`;
 
-    [featuredShow, featuredMovie, showsRoot, moviesRoot].forEach(root => {
+    [showsRoot, moviesRoot].forEach(root => {
       if (!root) return;
       wireActionMenus(root);
       wireIconStripActions(root, renderDiscover);
