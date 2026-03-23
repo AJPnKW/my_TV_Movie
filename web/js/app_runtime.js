@@ -63,6 +63,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       shows: { eye: "show_all" },
       movies: { eye: "show_all" }
     },
+    dashboard: {
+      lastWeekOffsetWeeks: 0
+    },
     show: {
       tmdb_id: null,
       selectedSeasonNumber: null,
@@ -92,21 +95,22 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <section class="dashblock accent-pink">
             <div class="dashhead">
               <h2>Last Week</h2>
-              <span class="muted" id="dashLastWeekMeta"></span>
+              <div class="dashhead__actions">
+                <span class="muted" id="dashLastWeekMeta"></span>
+                <div class="dashnav" aria-label="Last Week navigation">
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="jump-back" aria-label="Jump back four weeks">«</button>
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="back" aria-label="Previous week">‹</button>
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="forward" aria-label="Next week">›</button>
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="jump-forward" aria-label="Jump forward four weeks">»</button>
+                </div>
+              </div>
             </div>
             <div id="dashLastWeekCols" class="dashgrid"></div>
-          </section>
-          <section class="dashblock accent-orange">
-            <div class="dashhead">
-              <h2>Up Next</h2>
-              <span class="muted" id="dashNextMeta"></span>
-            </div>
-            <div id="dashUpNext" class="dashrow"></div>
           </section>
           <section class="dashblock accent-pink">
             <div class="dashhead">
               <h2>Upcoming Schedule</h2>
-              <span class="muted">Next 7 days</span>
+              <span class="muted">Next 6 release days</span>
             </div>
             <div id="dashScheduleCols" class="dashgrid"></div>
           </section>
@@ -2398,10 +2402,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return out.sort((a,b)=>a.date.getTime()-b.date.getTime());
   }
 
-  function collectPastEvents(dayWindow=7){
+  function collectPastEvents(dayWindow=7, offsetWeeks=0){
     const out = [];
     const end = new Date();
-    end.setDate(end.getDate() - 1);
+    end.setDate(end.getDate() - 1 - (Math.max(0, Number(offsetWeeks) || 0) * 7));
     const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (dayWindow - 1));
     const months = new Map();
     const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
@@ -3652,7 +3656,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     $("#calendar").innerHTML = `
       <div class="calendar-month-grid">
-        ${["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(label => `<div class="calendar-month-grid__dow">${escHtml(label)}</div>`).join("")}
         ${days.map(({ dt, key, inMonth, num }) => {
           const items = eventsByDate.get(key) || [];
           const visible = items.slice(0, 4).map(item => renderItem(item, key)).join("");
@@ -3697,18 +3700,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function renderDashboard(){
-    const upNext = $("#dashUpNext");
     const scheduleCols = $("#dashScheduleCols");
     const lastWeekCols = $("#dashLastWeekCols");
     const watchlistEl = $("#dashWatchlist");
     const showRecs = $("#dashShowRecs");
     const movieRecs = $("#dashMovieRecs");
-    if (!upNext || !scheduleCols || !lastWeekCols || !watchlistEl || !showRecs || !movieRecs) return;
+    if (!scheduleCols || !lastWeekCols || !watchlistEl || !showRecs || !movieRecs) return;
 
     const showMap = new Map((state.data?.shows || []).map(s => [String(s?.tmdb_id ?? ""), s]));
     const movieMap = new Map((state.data?.movies || []).map(m => [String(m?.tmdb_id ?? ""), m]));
     const events = collectUpcomingEvents(21);
-    const pastEvents = collectPastEvents(7);
+    const lastWeekOffset = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
+    const pastEvents = collectPastEvents(7, lastWeekOffset);
 
     const percentForItem = (item) => {
       let pct = progressPercent(item);
@@ -3774,11 +3777,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       });
     };
 
-    const nextItems = events.slice(0, 8);
-    const nextMeta = $("#dashNextMeta");
-    if (nextMeta) nextMeta.textContent = nextItems.length ? `${nextItems.length} upcoming picks` : "Nothing queued";
-    upNext.innerHTML = nextItems.length ? nextItems.map(({ dateKey, item }) => eventCard(item, formatDateShort(dateKey))).join("") : `<div class="muted">No upcoming items found.</div>`;
-
     const buildDateColumns = (entries) => Array.from(new Set(entries.map(e => e.dateKey))).slice(0, 6).map(dateKey => `
       <div class="dashcol dashcol--clean">
         <div class="dashcolhead">${escHtml(formatDateShort(dateKey))}</div>
@@ -3789,7 +3787,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     `).join("");
     scheduleCols.innerHTML = buildDateColumns(events) || `<div class="muted">No upcoming schedule.</div>`;
     const lastWeekMeta = $("#dashLastWeekMeta");
-    if (lastWeekMeta) lastWeekMeta.textContent = pastEvents.length ? "Recently released" : "No recent items";
+    if (lastWeekMeta) {
+      if (pastEvents.length) {
+        const first = pastEvents[0]?.dateKey ? formatDateShort(pastEvents[0].dateKey) : "";
+        const last = pastEvents[pastEvents.length - 1]?.dateKey ? formatDateShort(pastEvents[pastEvents.length - 1].dateKey) : "";
+        lastWeekMeta.textContent = first && last ? `${first} - ${last}` : "Recently released";
+      } else {
+        lastWeekMeta.textContent = "No recent items";
+      }
+    }
     lastWeekCols.innerHTML = buildDateColumns(pastEvents) || `<div class="muted">No recent schedule.</div>`;
 
     const watchlist = ensureWatchlist().slice(0, 8);
@@ -3832,7 +3838,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       facts: [factChipHtml("Movie"), (movie?.genres || []).length ? factChipHtml(movie.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
 
-    [upNext, scheduleCols, lastWeekCols, watchlistEl, showRecs, movieRecs].forEach(root => {
+    [scheduleCols, lastWeekCols, watchlistEl, showRecs, movieRecs].forEach(root => {
       wireActionMenus(root);
       wireIconStripActions(root, renderDashboard);
       wireWatchSourceButtons(root);
@@ -3840,6 +3846,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         if (e.target.closest(".actionbar")) return;
         gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
       }));
+    });
+    $$("[data-dash-lastweek-nav]").forEach(btn => btn.addEventListener("click", () => {
+      const action = btn.getAttribute("data-dash-lastweek-nav") || "";
+      const current = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
+      if (action === "back") state.dashboard.lastWeekOffsetWeeks = current + 1;
+      if (action === "jump-back") state.dashboard.lastWeekOffsetWeeks = current + 4;
+      if (action === "forward") state.dashboard.lastWeekOffsetWeeks = Math.max(0, current - 1);
+      if (action === "jump-forward") state.dashboard.lastWeekOffsetWeeks = Math.max(0, current - 4);
+      renderDashboard();
+    }));
+    $$("[data-dash-lastweek-nav='forward'], [data-dash-lastweek-nav='jump-forward']").forEach(btn => {
+      btn.disabled = lastWeekOffset === 0;
     });
   }
 

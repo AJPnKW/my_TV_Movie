@@ -120,3 +120,12 @@ Commit
 - Tightened calendar cell presentation with stronger day outlines and corrected sticky day-head positioning relative to the calendar toolbar/weekday row.
 - Archived spec working notes under `docs/spec/archive/working_notes/` and kept the normalized `Section N - ...` files as the active spec body.
 - Implementation commit: `9dd68c1`
+
+## 2026-03-22 — Calendar/header/dashboard episode-card normalization
+- Removed the separate sticky weekday row from the calendar grid and made the in-cell day head the single active weekday/date header for each day cell.
+- Restyled the calendar day-head surface so non-today cells use an accent-tinted header band and today uses the active-view accent color directly.
+- Retired dashboard `Up Next` so dashboard episode browsing now flows through `Upcoming Schedule` and the paged `Last Week` history strip.
+- Added week-step and jump-step controls to dashboard `Last Week`, preserving D-pad-friendly backward/forward navigation through prior week segments.
+- Set the shared poster-width token back to one config-driven source across dashboard recommendations, discover, shows, and movies instead of changing dashboard recommendations independently.
+- Documented the current episode-card baseline as calendar visual layout plus dashboard last-week action-row spacing.
+- Implementation commit: `PENDING`
