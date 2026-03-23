@@ -128,4 +128,4 @@ Commit
 - Added week-step and jump-step controls to dashboard `Last Week`, preserving D-pad-friendly backward/forward navigation through prior week segments.
 - Set the shared poster-width token back to one config-driven source across dashboard recommendations, discover, shows, and movies instead of changing dashboard recommendations independently.
 - Documented the current episode-card baseline as calendar visual layout plus dashboard last-week action-row spacing.
-- Implementation commit: `PENDING`
+- Implementation commit: `115837e`
