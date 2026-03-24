@@ -129,3 +129,12 @@ Commit
 - Set the shared poster-width token back to one config-driven source across dashboard recommendations, discover, shows, and movies instead of changing dashboard recommendations independently.
 - Documented the current episode-card baseline as calendar visual layout plus dashboard last-week action-row spacing.
 - Implementation commit: `115837e`
+
+## 2026-03-23 — TV focus and shared card hardening
+- Removed the duplicate arrow-key interception from `web/js/app_runtime.js` so the global TV focus path stays owned by `web/js/chrometv_focus.js`.
+- Tightened active-layer detection for provider modal, popup modal, and visible panel focus routing.
+- Reduced overlay/action-row clipping pressure in the shared card CSS so long dashboard/show/movie titles and rating text do not truncate as aggressively.
+- Updated movie browse cards to expose full release date plus runtime instead of year-only metadata.
+- Removed the redundant show-popup provider block so the popup now flows hero facts -> season band -> episode rail.
+- Added a focused UI audit report at `reports/ui_component_audit/2026-03-23_dpad_and_card_gap_audit.md`.
+- Implementation commit: `cd17cf8`
