@@ -175,9 +175,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             </div>
             <div class="control-panel">
               <div class="control-row control-row--primary">
-                <input id="searchShows" class="input control-input" type="search" placeholder="Search shows" />
-                <select id="filterShowsYear" class="input control-select"></select>
-                <select id="sortShows" class="input control-select">
+                <input id="searchShows" class="input control-input" type="search" placeholder="Search shows" tabindex="-1" data-tv-skip="1" />
+                <select id="filterShowsYear" class="input control-select" tabindex="-1" data-tv-skip="1"></select>
+                <select id="sortShows" class="input control-select" tabindex="-1" data-tv-skip="1">
                   <option value="title">Title A-Z</option>
                   <option value="title_desc">Title Z-A</option>
                   <option value="release">Newest first</option>
@@ -234,10 +234,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             </div>
             <div class="control-panel">
               <div class="control-row control-row--primary">
-                <input id="searchMovies" class="input control-input" type="search" placeholder="Search movies" />
-                <select id="filterMoviesYear" class="input control-select"></select>
-                <select id="filterMoviesCollection" class="input control-select"></select>
-                <select id="sortMovies" class="input control-select">
+                <input id="searchMovies" class="input control-input" type="search" placeholder="Search movies" tabindex="-1" data-tv-skip="1" />
+                <select id="filterMoviesYear" class="input control-select" tabindex="-1" data-tv-skip="1"></select>
+                <select id="filterMoviesCollection" class="input control-select" tabindex="-1" data-tv-skip="1"></select>
+                <select id="sortMovies" class="input control-select" tabindex="-1" data-tv-skip="1">
                   <option value="title">Title A-Z</option>
                   <option value="title_desc">Title Z-A</option>
                   <option value="release">Newest first</option>
@@ -1553,7 +1553,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       favourite: { active: !!options.favoriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } },
       status: options.showStatusAction ? { attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
       watched: { active: !!options.watchedActive, attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } },
-      rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "%" },
+      rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "--%" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
   }
@@ -1879,7 +1879,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function isTypingField(el){
     if (!el) return false;
     const tag = (el.tagName || "").toLowerCase();
-    if (tag === "textarea" || tag === "select") return true;
+    if (tag === "textarea") return true;
     if (tag === "input"){
       const type = (el.getAttribute("type") || "text").toLowerCase();
       return !["button","submit","checkbox","radio","range","color"].includes(type);
@@ -3894,6 +3894,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function movieCardHtml(movie, eye){
     const id = Number(movie?.tmdb_id) || 0;
     const title = safeText(movie?.title || "(Untitled)");
+    const releaseDate = safeText(movie?.release_date || "").trim();
+    const runtime = Number(movie?.runtime);
     return buildMediaCardShell("movie", id, {
       title,
       image: pickImage(movie, "poster_local", "poster_path"),
@@ -3918,7 +3920,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         popcornKind: "movie",
         available: isMovieAvailable(movie)
       }),
-      meta: yearFromDate(movie?.release_date),
+      meta: releaseDate ? formatDateShort(releaseDate) : yearFromDate(movie?.release_date),
+      submeta: Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "",
       eyeClass: eye?.fade ? " faded" : ""
     });
   }
@@ -4124,11 +4127,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </div>
         </div>
         <div class="section section-card">
-          <div class="section-card__head">
-            <div class="section-card__title">Season Navigator</div>
-            <div class="section-card__meta">${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "No seasons")}</div>
-          </div>
           <div class="seasonrail">
+            <div class="section-card__head">
+              <div class="section-card__title">Season Band</div>
+              <div class="section-card__meta">${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "No seasons")}</div>
+            </div>
             <div class="carousel-controls">
               <button class="epnavbtn" type="button" data-season-nav="jump-prev" aria-label="Jump back seasons">«</button>
               <button class="epnavbtn" type="button" data-season-nav="prev" aria-label="Previous seasons">‹</button>
@@ -4159,13 +4162,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               ${season?.overview ? `<div class="seasonov">${escHtml(season.overview)}</div>` : `<div class="seasonov seasonov--muted">No season description available.</div>`}
             </div>
           </div>
-        </div>
-        <div class="section section-card section-card--providers">
-          <div class="section-card__head">
-            <div class="section-card__title">Where to Watch</div>
-            <div class="section-card__meta">${escHtml(formatProviderSummary(show))}</div>
-          </div>
-          ${renderWatchProvidersHtml(show, "tv")}
         </div>
         <div class="section section-card">
           <div class="section-card__head">
@@ -4389,17 +4385,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           active.click();
         }
         return;
-      }
-    }
-    if (e.key === "ArrowLeft" || e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "ArrowDown"){
-      if ((window.MyTVHubFocus && window.MyTVHubFocus.isTypingField && window.MyTVHubFocus.isTypingField(e.target)) || isTypingField(e.target)) return;
-      e.preventDefault();
-      const moved = window.MyTVHubFocus?.moveInRoot
-        ? window.MyTVHubFocus.moveInRoot(activeRoot(), e.key, document.activeElement)
-        : moveFocus(e.key);
-      if (!moved && isModalOpen()){
-        if (e.key === "ArrowDown") scrollActiveModal(120);
-        if (e.key === "ArrowUp") scrollActiveModal(-120);
       }
     }
   });

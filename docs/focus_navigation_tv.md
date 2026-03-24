@@ -17,6 +17,8 @@ Defines first-class Android TV and D-pad behavior for the shared runtime. TV beh
 - up/down move vertically to the nearest visible actionable target
 - if no candidate exists in that direction inside an active popup, the popup scrolls for up/down
 - Enter and Space activate the focused control
+- only one global arrow-key navigation system may be active at runtime
+- hidden panels, inactive forms, and background layers must never respond to arrow navigation while another layer is active
 
 ## Popup Focus Trap
 
@@ -45,6 +47,8 @@ Defines first-class Android TV and D-pad behavior for the shared runtime. TV beh
 - action-strip icons are separately focusable
 - action-strip navigation must not wrap into a second row
 - season carousel buttons and cards participate in the same spatial navigation map
+- sidebar filters must remain navigable with D-pad without focus dropping to the document body
+- native browse search and select rows are not part of the TV-primary focus path on coarse-pointer devices; chip rows, toggles, and check groups are the active TV browse controls
 
 ## Android TV Specific Implications
 

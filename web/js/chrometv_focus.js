@@ -1,14 +1,14 @@
 (function(){
   function activeRoot(){
     var providerBack = document.getElementById('providerBack');
-    if (providerBack && getComputedStyle(providerBack).display !== 'none'){
+    if (providerBack && getComputedStyle(providerBack).display !== 'none' && providerBack.getAttribute('aria-hidden') !== 'true'){
       return document.getElementById('providerCard') || providerBack;
     }
     var modalBack = document.getElementById('modalBack');
-    if (modalBack && getComputedStyle(modalBack).display !== 'none'){
+    if (modalBack && getComputedStyle(modalBack).display !== 'none' && modalBack.getAttribute('aria-hidden') !== 'true'){
       return document.getElementById('modalCard') || modalBack;
     }
-    return document.querySelector('.panel:not(.hidden)') || document.querySelector('main') || document.body;
+    return document.querySelector('.panel:not(.hidden):not([aria-hidden="true"])') || document.querySelector('main') || document.body;
   }
 
   function isVisible(el){
@@ -21,7 +21,7 @@
   function isTypingField(el){
     if (!el) return false;
     var tag = (el.tagName || '').toLowerCase();
-    if (tag === 'textarea' || tag === 'select') return true;
+    if (tag === 'textarea') return true;
     if (tag === 'input'){
       var type = (el.getAttribute('type') || 'text').toLowerCase();
       return ['button','submit','checkbox','radio','range','color'].indexOf(type) === -1;
@@ -32,8 +32,26 @@
   function getCandidates(root){
     if (!root) return [];
     return Array.from(root.querySelectorAll('a,button,input,select,textarea,[tabindex]')).filter(function(el){
-      return !el.disabled && isVisible(el);
+      if (el.disabled || !isVisible(el)) return false;
+      if (el.getAttribute('data-tv-skip') === '1') return false;
+      return true;
     });
+  }
+
+  function nearestScope(el){
+    if (!el) return activeRoot();
+    return el.closest('.browse-sidebar, .watchme-sidebar, #modalCard, #providerCard, .panel') || activeRoot();
+  }
+
+  function redirectSkippedFocus(target){
+    if (!target || target.getAttribute('data-tv-skip') !== '1') return false;
+    var scope = nearestScope(target);
+    var list = getCandidates(scope);
+    if (!list.length) return false;
+    var fallback = list[0];
+    fallback.focus({ preventScroll: true });
+    try { fallback.scrollIntoView({ block:'nearest', inline:'nearest', behavior:'smooth' }); } catch (_) {}
+    return true;
   }
 
   function moveInRoot(root, dir, current){
@@ -76,6 +94,11 @@
 
   function handleArrowKey(event){
     if (!event || ['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].indexOf(event.key) === -1) return false;
+    if (event.target && event.target.getAttribute && event.target.getAttribute('data-tv-skip') === '1'){
+      event.preventDefault();
+      redirectSkippedFocus(event.target);
+      return moveInRoot(activeRoot(), event.key, document.activeElement);
+    }
     if (isTypingField(event.target)) return false;
     event.preventDefault();
     return moveInRoot(activeRoot(), event.key, document.activeElement);
@@ -92,5 +115,14 @@
   document.addEventListener('keydown', function(event){
     if (document.body && document.body.dataset.focusGlobal === 'off') return;
     handleArrowKey(event);
+  }, true);
+
+  document.addEventListener('focusin', function(event){
+    if (document.body && document.body.dataset.focusGlobal === 'off') return;
+    redirectSkippedFocus(event.target);
+  }, true);
+  document.addEventListener('focus', function(event){
+    if (document.body && document.body.dataset.focusGlobal === 'off') return;
+    redirectSkippedFocus(event.target);
   }, true);
 })();

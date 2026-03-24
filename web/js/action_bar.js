@@ -98,7 +98,7 @@ export function renderActionBarHtml(options = {}){
       ...watchedLink.attrs
     }));
   }
-  const ratingText = (options.rating && options.rating.text) ? options.rating.text : (options.rating && options.rating.icon ? options.rating.icon : '%');
+  const ratingText = (options.rating && options.rating.text) ? options.rating.text : (options.rating && options.rating.icon ? options.rating.icon : '--%');
   right.push(`<span class="actionbar-rating" aria-label="Rating" title="Rating"><span class="actionbar-rating__star" aria-hidden="true">${CONTRACT_ICONS.star}</span><span class="actionbar-rating__text">${ratingText}</span></span>`);
 
   return `<div class="actionbar action_bar${options.compact ? ' actionbar--minimal' : ''}" data-action-host="1">
