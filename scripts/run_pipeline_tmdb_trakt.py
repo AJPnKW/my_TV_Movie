@@ -3,9 +3,9 @@
 # [FILE]    scripts/run_pipeline_tmdb_trakt.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    One-command local runner: TMDB build -> Trakt enrich
-# [VERSION] v1.4.0
-# [UPDATED] 2026-01-19_00-00-00
-# [BUILD]   14.01.08
+# [VERSION] v1.5.0
+# [UPDATED] 2026-03-29_00-00-00
+# [BUILD]   15.00.00
 # ==============================================================================
 from __future__ import annotations
 
@@ -21,6 +21,7 @@ LOGS_DIR = REPO_ROOT / "logs"
 FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
 FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
+FETCH_TMDB_ASSETS = SCRIPTS_DIR / "fetch_tmdb_assets.py"
 SELF_HEAL_ASSET_METADATA = SCRIPTS_DIR / "self_heal_asset_metadata.py"
 VALIDATE_AVAILABILITY = SCRIPTS_DIR / "validate_availability_overlay.py"
 ENRICH_AVAILABILITY = SCRIPTS_DIR / "enrich_data_with_availability.py"
@@ -87,6 +88,13 @@ def main() -> int:
         return rc
 
     rc = _run_one("TRAKT", FETCH_TRAKT)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("TMDB_ASSETS", FETCH_TMDB_ASSETS)
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")

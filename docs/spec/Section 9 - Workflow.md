@@ -28,6 +28,14 @@ The system must support the following workflow categories:
 - **Integrity Validation Workflows**  
 - **Scheduled Maintenance Workflows**  
 
+## **Live Workflow Files**
+
+The current live repo implementation uses:
+
+- `.github/workflows/build-data.yml` for production data rebuilds and committed runtime artifact refresh
+- `.github/workflows/validate.yml` for validation-only checks against the tracked repo state
+- `scripts/run_pipeline_tmdb_trakt.py` as the authoritative end-to-end local runner mirrored by the build-data workflow
+
 ---
 
 # **9.3 Metadata Refresh Workflows**  

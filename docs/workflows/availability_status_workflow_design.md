@@ -27,11 +27,18 @@
 
 ## Live repo workflow files
 - manual/local chain: `scripts/run_pipeline_tmdb_trakt.py`
+- production data build: `.github/workflows/build-data.yml`
 - CI validation: `.github/workflows/validate.yml`
 
+## Current source hierarchy note
+- The repo also contains `scripts/fetch_trakt_primary.py`, which reflects the Trakt-primary catalog intent.
+- The active production rebuild chain restored in this phase mirrors the current live runner: `fetch_tmdb.py -> fetch_omdb.py -> fetch_trakt.py -> fetch_tmdb_assets.py -> self-heal/availability/runtime validation`.
+- This means the repo currently has a real Trakt-primary builder available, but the active production workflow still uses the TMDB-first runner until that source-authority migration is completed explicitly.
+
 ## Phase 2 workflow note
-- Local production workflow now includes `fetch_tmdb_assets.py` before runtime asset validation so rebuilt `*_local` refs are fetched before validation.
-- CI still validates the tracked repo state without downloading assets.
+- The production data-build workflow now runs the same end-to-end runner as local rebuilds and commits regenerated `data/data.json` plus changed `assets/**` back to `main`.
+- The local production runner explicitly includes `fetch_tmdb_assets.py` before final self-heal and runtime validation so rebuilt `*_local` refs are fetched before validation.
+- The validation workflow still validates the tracked repo state without rebuilding data artifacts.
 - Runtime validation now also includes:
   - `scripts/qa_availability_phase2.py`
   - `scripts/validate_runtime_assets.py`

@@ -26,7 +26,18 @@ ALLOWED_TYPO_FILES = {
     "scripts/trakt_test_tokens.py",
     "scripts/validate_secret_name_drift.py",
 }
-SKIP_PARTS = {".git", ".my_notes", "logs", "node_modules", "__pycache__", ".venv", "dist", "build"}
+SKIP_PARTS = {
+    ".git",
+    ".my_notes",
+    ".ai_downloads",
+    ".codex.files",
+    "logs",
+    "node_modules",
+    "__pycache__",
+    ".venv",
+    "dist",
+    "build",
+}
 
 
 def _is_text(path: Path) -> bool:
