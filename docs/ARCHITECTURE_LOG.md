@@ -138,3 +138,11 @@ Commit
 - Removed the redundant show-popup provider block so the popup now flows hero facts -> season band -> episode rail.
 - Added a focused UI audit report at `reports/ui_component_audit/2026-03-23_dpad_and_card_gap_audit.md`.
 - Implementation commit: `cd17cf8`
+
+## 2026-03-29 — Restored production data-build workflow
+- Restored a real GitHub Actions production rebuild workflow in `.github/workflows/build-data.yml` so pushes affecting `data/inputs.json`, pipeline scripts, or `web/config.json` can regenerate `data/data.json` and changed `assets/**` automatically instead of only validating tracked state.
+- Re-aligned `scripts/run_pipeline_tmdb_trakt.py` with the live end-to-end build path by restoring the explicit `fetch_tmdb_assets.py` step before final self-heal and runtime validation.
+- Hardened `scripts/validate_secret_name_drift.py` to ignore local artifact trees like `.ai_downloads` and `.codex.files`, preventing false pipeline failures from local handoff bundles.
+- Rebuilt the runtime dataset locally and confirmed `Happy's Place` moved from `data/inputs.json` into `data/data.json` with runtime availability and local poster metadata.
+- Updated workflow docs to reflect the current live repo reality: the repo now has both `.github/workflows/build-data.yml` and `.github/workflows/validate.yml`, and it explicitly notes that `scripts/fetch_trakt_primary.py` exists while the active production runner remains the TMDB-first chain.
+- Implementation commit: `be0efbd`
