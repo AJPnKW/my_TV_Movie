@@ -490,7 +490,7 @@ async function saveInputs(){
     document.getElementById("serverStatus").textContent="Server: not running";
     showBanner([
       "You opened this from the wrong server (ex: :8000). Save cannot work here.",
-      "Run:  python tools/inputs_editor/inputs_editor_server.py --port 8787",
+      "Run:  tools/start_inputs_editor.cmd",
       "Open: http://127.0.0.1:8787/web/inputs_editor.html"
     ]);
     return;

@@ -49,6 +49,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     watchState: null,
     watchStateSource: null,
     apiAvailable: false,
+    inputsEditorServerAvailable: false,
     inputsDirty: false,
     icons: {},
     ui: {},
@@ -315,8 +316,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             <div id="inputsEditorPanel" style="display:grid;gap:12px;">
               <div id="inputsEditorPanelMeta" class="muted"></div>
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <a id="inputsEditorOpen" class="calbtn" href="./inputs_editor.html" target="_blank" rel="noopener">Open editor</a>
-                <a id="inputsEditorServer" class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open local-server editor</a>
+                <a id="inputsEditorOpen" class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open local Inputs Editor</a>
               </div>
               <iframe id="inputsEditorFrame" title="Inputs Editor" style="width:100%;min-height:78vh;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:rgba(0,0,0,0.2);"></iframe>
             </div>
@@ -686,6 +686,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   async function checkApiAvailable(){
     try {
       const r = await fetch("/api/health", { cache: "no-store" });
+      return r.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function checkInputsEditorServerAvailable(){
+    try {
+      const r = await fetch("http://127.0.0.1:8787/api/health", { cache: "no-store" });
       return r.ok;
     } catch {
       return false;
@@ -2066,6 +2075,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
       // Detect local inputs editor API (for write-back)
       state.apiAvailable = await checkApiAvailable();
+      state.inputsEditorServerAvailable = await checkInputsEditorServerAvailable();
 
       // Prefer local watch_state (inputs/data), fallback to Trakt
       setWatchStateSource();
@@ -3097,19 +3107,53 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const frame = $("#inputsEditorFrame");
     const meta = $("#inputsEditorPanelMeta");
     const openBtn = $("#inputsEditorOpen");
-    const serverBtn = $("#inputsEditorServer");
-    if (!frame || !meta || !openBtn || !serverBtn) return;
-
-    const sameOriginUrl = `${window.location.origin}/web/inputs_editor.html`;
     const localServerUrl = `http://127.0.0.1:8787/web/inputs_editor.html`;
-    const targetUrl = state.apiAvailable ? sameOriginUrl : localServerUrl;
+    if (!frame || !meta || !openBtn) return;
 
-    frame.src = targetUrl;
-    openBtn.href = targetUrl;
-    serverBtn.href = localServerUrl;
-    meta.textContent = state.apiAvailable
-      ? "Inputs Editor is available on this server and embedded below."
-      : "Inputs Editor requires the local editor server. The embedded view points to http://127.0.0.1:8787/web/inputs_editor.html.";
+    const frameDoc = `
+      <!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style>
+          body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#0b0f14;color:#e8eef7;font:16px/1.5 "Segoe UI",sans-serif}
+          .card{max-width:760px;padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+          h3{margin:0 0 12px;font-size:28px;line-height:1.1}
+          p{margin:0 0 12px;color:#c3cddd}
+          code{padding:2px 6px;border-radius:8px;background:rgba(255,255,255,.08)}
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h3>Local editor server not running</h3>
+          <p>The Inputs Editor only works on your own PC through the dedicated local server at <code>127.0.0.1:8787</code>.</p>
+          <p>Start it with <code>tools\\start_inputs_editor.cmd</code>, then reopen this panel or use the button above.</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    if (state.inputsEditorServerAvailable){
+      frame.removeAttribute("srcdoc");
+      frame.src = localServerUrl;
+      openBtn.href = localServerUrl;
+      openBtn.title = "Open the local Inputs Editor in a new tab";
+      openBtn.tabIndex = 0;
+      openBtn.removeAttribute("aria-disabled");
+      openBtn.classList.remove("disabled");
+      meta.textContent = "Inputs Editor server is running on this PC. The live editor is embedded below.";
+      return;
+    }
+
+    frame.removeAttribute("src");
+    frame.srcdoc = frameDoc;
+    openBtn.removeAttribute("href");
+    openBtn.title = "Start tools/start_inputs_editor.cmd from the repo first";
+    openBtn.tabIndex = -1;
+    openBtn.setAttribute("aria-disabled", "true");
+    openBtn.classList.add("disabled");
+    meta.textContent = "Inputs Editor is local-only. Start tools/start_inputs_editor.cmd first, then open http://127.0.0.1:8787/web/inputs_editor.html.";
   }
 
   function legacyOpenMovieModal(tmdbId){
@@ -3966,7 +4010,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </div>
       </section>
       <section class="config-quicklinks">
-        <a class="btn" href="./inputs_editor.html">Open Inputs Editor</a>
+        <a class="btn" href="./index.html#inputs-editor">Open Inputs Editor</a>
         <a class="btn" href="./index.html#inputs-editor">Open In-App Editor Route</a>
       </section>
       <div id="configRuntimeSurface"></div>
