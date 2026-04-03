@@ -1809,6 +1809,56 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       $("#modalClose").focus();
     }
   }
+
+  async function copyTextToClipboard(text){
+    const value = safeText(text);
+    try{
+      if (navigator?.clipboard?.writeText){
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+    }catch(_){/* noop */}
+    try{
+      const area = document.createElement("textarea");
+      area.value = value;
+      area.setAttribute("readonly", "true");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      const ok = document.execCommand("copy");
+      area.remove();
+      return !!ok;
+    }catch(_){
+      return false;
+    }
+  }
+
+  function openInputsEditorHelp(){
+    openModal("Start Inputs Editor", `
+      <div style="display:grid;gap:14px;">
+        <div>The browser cannot start <code>tools/start_inputs_editor.cmd</code> directly. Local script launch is blocked by browser security.</div>
+        <div>Start the editor on this PC first, then reopen the editor tab.</div>
+        <div style="padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);">
+          <div style="font-weight:700;margin-bottom:8px;">Run from the repo root:</div>
+          <code id="inputsEditorStartCommand" style="display:block;white-space:pre-wrap;word-break:break-word;">tools/start_inputs_editor.cmd</code>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button id="copyInputsEditorCommand" class="calbtn" type="button">Copy Start Command</button>
+          <a class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Editor After Start</a>
+        </div>
+        <div class="muted">Workflow: start <code>tools/start_inputs_editor.cmd</code>, wait for the local server window to open, then use <code>http://127.0.0.1:8787/web/inputs_editor.html</code>.</div>
+      </div>
+    `);
+    const copyBtn = $("#copyInputsEditorCommand");
+    if (copyBtn){
+      copyBtn.addEventListener("click", async () => {
+        const ok = await copyTextToClipboard("tools/start_inputs_editor.cmd");
+        copyBtn.textContent = ok ? "Copied" : "Copy Failed";
+      }, { once: true });
+    }
+  }
   function closeModal(){
     $("#modalBack").style.display = "none";
     $("#modalBack").setAttribute("aria-hidden", "true");
@@ -3138,10 +3188,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       frame.removeAttribute("srcdoc");
       frame.src = localServerUrl;
       openBtn.href = localServerUrl;
+      openBtn.textContent = "Open local Inputs Editor";
       openBtn.title = "Open the local Inputs Editor in a new tab";
       openBtn.tabIndex = 0;
       openBtn.removeAttribute("aria-disabled");
       openBtn.classList.remove("disabled");
+      openBtn.onclick = null;
       meta.textContent = "Inputs Editor server is running on this PC. The live editor is embedded below.";
       return;
     }
@@ -3149,10 +3201,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     frame.removeAttribute("src");
     frame.srcdoc = frameDoc;
     openBtn.removeAttribute("href");
+    openBtn.textContent = "How To Start Editor";
     openBtn.title = "Start tools/start_inputs_editor.cmd from the repo first";
-    openBtn.tabIndex = -1;
-    openBtn.setAttribute("aria-disabled", "true");
-    openBtn.classList.add("disabled");
+    openBtn.tabIndex = 0;
+    openBtn.setAttribute("aria-disabled", "false");
+    openBtn.classList.remove("disabled");
+    openBtn.onclick = (event) => {
+      event.preventDefault();
+      openInputsEditorHelp();
+    };
     meta.textContent = "Inputs Editor is local-only. Start tools/start_inputs_editor.cmd first, then open http://127.0.0.1:8787/web/inputs_editor.html.";
   }
 
