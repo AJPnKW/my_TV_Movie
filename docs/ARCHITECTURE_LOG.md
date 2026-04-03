@@ -118,6 +118,13 @@ Commit
 - Re-asserted the left-rail sizing contract for shows, movies, and watch_me so sidebar controls cannot overflow into the main content area at TV-like widths.
 - Replaced the lingering dashboard episode show-card fallback with the shared episode-card renderer and re-asserted the shared action-strip contract across dashboard, calendar, watch_me, and popup rails so icon rows stay on one line with the shared left/center/right spacing model.
 - Tightened calendar cell presentation with stronger day outlines and corrected sticky day-head positioning relative to the calendar toolbar/weekday row.
+
+## 2026-04-03 — Calendar/popup/push flow follow-up
+- Reworked the shared calendar toolbar into explicit left and right control groups, restored a sticky week-band above the month grid, and removed redundant per-card episode dates so the grouped date structure stays readable on smaller screens.
+- Changed dashboard schedule windows so `Last Week` leads with today and moves backward while `Upcoming Schedule` starts tomorrow and runs forward through the next week.
+- Rebuilt the active show/movie popup surfaces to use the backdrop as the popup background, moved title/action content into a dense header, embedded a two-column watch source panel, prioritized Canada in provider summaries, and removed the retired bottom-backdrop treatment.
+- Hardened the inputs editor git push path to fetch and rebase against the selected remote branch before pushing so non-fast-forward GitHub updates can be integrated from the editor workflow.
+- Implementation commit: `18f3c57`
 - Archived spec working notes under `docs/spec/archive/working_notes/` and kept the normalized `Section N - ...` files as the active spec body.
 - Implementation commit: `9dd68c1`
 
