@@ -46,6 +46,20 @@ DATE: 2026-01-20
     .inputs_editor_kbd{font-family:ui-monospace,Consolas,monospace;font-size:11px;padding:2px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.2);opacity:.8}
     .inputs_editor_link{font-size:12px;opacity:.8}
     .inputs_editor_hint{font-size:11px;opacity:.75}
+    .inputs_editor_tag--ok{border-color:rgba(120,220,160,.35);background:rgba(120,220,160,.12)}
+    .inputs_editor_tag--warn{border-color:rgba(255,210,90,.35);background:rgba(255,210,90,.12)}
+    .inputs_editor_tag--info{border-color:rgba(120,180,255,.35);background:rgba(120,180,255,.12)}
+    .inputs_editor_modal_back{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.62);z-index:1000}
+    .inputs_editor_modal_card{width:min(960px,100%);max-height:92vh;overflow:auto;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:#111823;box-shadow:0 24px 80px rgba(0,0,0,.45)}
+    .inputs_editor_modal_hd{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.10);display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .inputs_editor_modal_bd{padding:16px;display:grid;gap:14px}
+    .inputs_editor_modal_grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    @media(max-width:900px){.inputs_editor_modal_grid{grid-template-columns:1fr}}
+    .inputs_editor_panel{border:1px solid rgba(255,255,255,.10);border-radius:14px;padding:12px;background:rgba(255,255,255,.03)}
+    .inputs_editor_panel h3{margin:0 0 10px;font-size:14px}
+    .inputs_editor_modal_actions{display:flex;gap:10px;flex-wrap:wrap}
+    .inputs_editor_season_grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+    .inputs_editor_season_opt{display:flex;gap:6px;align-items:center;padding:8px 10px;border:1px solid rgba(255,255,255,.10);border-radius:12px;background:rgba(255,255,255,.03);font-size:12px}
   </style>
 </head>
 <body>
@@ -53,7 +67,7 @@ DATE: 2026-01-20
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
         <h2>Find on TMDB</h2>
-        <span class="inputs_editor_meta">v1.0.3</span>
+        <span class="inputs_editor_meta">v1.0.4</span>
         <span class="inputs_editor_meta" id="serverStatus">Server: …</span>
         <span class="inputs_editor_meta" id="tmdbStatus">TMDB: …</span>
         <a class="inputs_editor_link" href="./index.html#inputs-editor">Back to Hub</a>
@@ -77,7 +91,7 @@ DATE: 2026-01-20
           <button class="primary" id="btnAddSelected">Add selected</button>
         </div>
         <div class="inputs_editor_meta" id="tmdbCount">0 results</div>
-        <div class="inputs_editor_hint">Tip: double-click a result to add immediately.</div>
+        <div class="inputs_editor_hint">Already-added items are flagged here. Existing shows open the season editor so you can merge, replace, or remove seasons.</div>
         <div class="inputs_editor_list" id="tmdbList"></div>
       </div>
     </section>
@@ -110,6 +124,7 @@ DATE: 2026-01-20
           <input id="qMine" type="search" placeholder="Filter my list…"/>
           <button id="btnReload">Reload</button>
           <button class="primary" id="btnSave">Save</button>
+          <button id="btnPushGitHub">Push GitHub</button>
         </div>
         <div class="inputs_editor_row">
           <select id="mineType">
@@ -135,16 +150,28 @@ DATE: 2026-01-20
       </div>
     </section>
   </div>
+  <div class="inputs_editor_modal_back" id="seasonModalBack" aria-hidden="true">
+    <div class="inputs_editor_modal_card" role="dialog" aria-modal="true" aria-labelledby="seasonModalTitle">
+      <div class="inputs_editor_modal_hd">
+        <h2 id="seasonModalTitle" style="margin:0;font-size:18px;">Edit Show Seasons</h2>
+        <button id="seasonModalClose" class="ghost" type="button">Close</button>
+      </div>
+      <div class="inputs_editor_modal_bd" id="seasonModalBody"></div>
+    </div>
+  </div>
 
 <script>
 let inputs=null, imgBase="https://image.tmdb.org/t/p/", dirty=false;
 let tmdbResults=[], tmdbSelected=new Set(), mineSelected=new Set();
 let queueItems=[], queueSelected=new Set();
+const showDetailsCache=new Map();
 
 function setDirty(v){ dirty=v; document.getElementById("dirty").textContent="Unsaved: "+(dirty?"yes":"no"); }
 function norm(s){ return (s||"").toString().toLowerCase().trim(); }
 function counts(){ const tv=(inputs?.tv||[]).length, mv=(inputs?.movies||[]).length; document.getElementById("counts").textContent=`TV: ${tv} • Movies: ${mv}`; }
 function showBanner(lines){ const b=document.getElementById("banner"); b.style.display="block"; b.innerHTML=lines.map(x=>`<div class="inputs_editor_meta">${x}</div>`).join(""); }
+function escHtml(v){ return (v??"").toString().replace(/[&<>\"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[ch]||ch)); }
+function normalizeTags(val){ return (val||"").split(",").map(x=>x.trim()).filter(Boolean); }
 
 async function apiGet(p){ const r=await fetch(p,{cache:"no-store"}); return await r.json(); }
 async function apiPost(p,o){ const r=await fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}); return await r.json(); }
@@ -152,7 +179,7 @@ async function apiPost(p,o){ const r=await fetch(p,{method:"POST",headers:{"Cont
 async function loadInputs(){
   const j=await apiGet("/api/inputs"); if(!j.ok) throw new Error(j.error||"load failed");
   inputs=j.inputs; inputs.tv=inputs.tv||[]; inputs.movies=inputs.movies||[]; inputs.watchlist=inputs.watchlist||[];
-  setDirty(false); counts(); renderMine();
+  setDirty(false); counts(); renderMine(); renderTmdb(); renderQueue();
 }
 
 function renderMine(){
@@ -174,7 +201,7 @@ function renderMine(){
     const meta=document.createElement("div"); meta.style.flex="1";
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=it.title||"(untitled)";
     const metaTags=document.createElement("div"); metaTags.className="inputs_editor_tags";
-    metaTags.innerHTML=`<span class="inputs_editor_tag">${it._type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>`;
+    metaTags.innerHTML=`<span class="inputs_editor_tag">${it._type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>${it._type==="tv"?`<span class="inputs_editor_tag inputs_editor_tag--warn">Seasons ${escHtml(seasonSpecSummary(it.season_spec||"*"))}</span>`:`<span class="inputs_editor_tag inputs_editor_tag--ok">Added</span>`}`;
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=mineSelected.has(`${it._type}:${it.tmdb_id}`);
     sel.onchange=()=>{ toggleMineSelected(it._type,it.tmdb_id,sel.checked); row.classList.toggle("selected", sel.checked); };
@@ -202,6 +229,10 @@ function renderMine(){
       value.onchange=update;
       seasonBox.appendChild(mode); seasonBox.appendChild(value); seasonBox.appendChild(preview);
       controls.appendChild(seasonBox);
+
+      const editBtn=document.createElement("button"); editBtn.textContent="Season Editor";
+      editBtn.onclick=()=>{ void addItemFull({ ...it, type:"tv", tags:it.tags||[], notes:it.notes||"" }); };
+      controls.appendChild(editBtn);
 
       const lbl=document.createElement("label"); lbl.className="inputs_editor_toggle";
       const cb=document.createElement("input"); cb.type="checkbox";
@@ -237,48 +268,58 @@ function setSeasonSpec(id,spec){ const i=inputs.tv.findIndex(x=>x.tmdb_id===id);
 function setIncludeFuture(id,val){ const i=inputs.tv.findIndex(x=>x.tmdb_id===id); if(i>=0) inputs.tv[i].include_future=(val===true); }
 function setTags(type,id,val){
   const list=(type==="tv")?inputs.tv:inputs.movies; const i=list.findIndex(x=>x.tmdb_id===id);
-  if(i>=0){ const t=(val||"").split(",").map(x=>x.trim()).filter(Boolean); list[i].tags=t; }
+  if(i>=0){ list[i].tags=normalizeTags(val); }
 }
 function setNotes(type,id,val){ const list=(type==="tv")?inputs.tv:inputs.movies; const i=list.findIndex(x=>x.tmdb_id===id); if(i>=0) list[i].notes=(val||"").trim(); }
 function removeItem(type,id){ if(type==="tv") inputs.tv=inputs.tv.filter(x=>x.tmdb_id!==id); else inputs.movies=inputs.movies.filter(x=>x.tmdb_id!==id); }
-function addItem(type,id,title){
-  if(type==="tv"){ if(inputs.tv.some(x=>x.tmdb_id===id)) return; inputs.tv.push({title,tmdb_id:id,season_spec:"*",include_future:true,in_scope:true}); }
-  else { if(inputs.movies.some(x=>x.tmdb_id===id)) return; inputs.movies.push({title,tmdb_id:id,in_scope:true}); }
-  setDirty(true); renderMine(); counts();
+function applyIncomingMetadata(existing,item){
+  if(item?.title && !existing.title) existing.title=item.title;
+  if(typeof item?.in_scope==="boolean") existing.in_scope=item.in_scope;
+  if(Array.isArray(item?.tags) && item.tags.length) existing.tags=[...item.tags];
+  if(typeof item?.notes==="string" && item.notes.trim()) existing.notes=item.notes.trim();
 }
-function addItemFull(item){
+async function addItem(type,id,title){
+  return await addItemFull({ type, tmdb_id:Number(id), title:title||"", season_spec:"*", include_future:true, in_scope:true, tags:[], notes:"" });
+}
+async function addItemFull(item){
   const list=(item.type==="tv")?inputs.tv:inputs.movies;
   const existing=list.find(x=>x.tmdb_id===item.tmdb_id);
-  if(existing){
-    if(item.type==="tv"){
-      if(item.season_spec) existing.season_spec=item.season_spec;
-      if(typeof item.include_future==="boolean") existing.include_future=item.include_future;
-    }
-    if(typeof item.in_scope==="boolean") existing.in_scope=item.in_scope;
-    if(Array.isArray(item.tags)) existing.tags=item.tags;
-    if(item.notes) existing.notes=item.notes;
-  }else{
-    if(item.type==="tv"){
-      list.push({
-        title:item.title||"",
-        tmdb_id:item.tmdb_id,
-        season_spec:item.season_spec||"*",
-        include_future: item.include_future!==false,
-        in_scope: item.in_scope!==false,
-        tags: item.tags||[],
-        notes: item.notes||""
-      });
-    }else{
-      list.push({
-        title:item.title||"",
-        tmdb_id:item.tmdb_id,
-        in_scope: item.in_scope!==false,
-        tags: item.tags||[],
-        notes: item.notes||""
-      });
-    }
+  if(item.type==="movie"){
+    if(existing) applyIncomingMetadata(existing,item);
+    else list.push({ title:item.title||"", tmdb_id:item.tmdb_id, in_scope:item.in_scope!==false, tags:item.tags||[], notes:item.notes||"" });
+    setDirty(true); renderMine(); renderTmdb(); renderQueue(); counts();
+    return;
   }
-  setDirty(true); renderMine(); counts();
+  if(existing){
+    let details;
+    try{ details=await fetchShowDetails(item.tmdb_id); }
+    catch(ex){ alert(`Could not load show season details: ${ex?.message||ex}`); return; }
+    const modal=await openShowSeasonModal(existing,item,details);
+    if(!modal) return;
+    const total=Number(modal.totalSeasons||details?.total_seasons||0);
+    const currentSet=seasonSpecToSet(existing.season_spec||"*", total);
+    const picked=new Set(Array.from(modal.selected||[]));
+    let nextSet=new Set(currentSet);
+    if(modal.action==="replace") nextSet=new Set(picked);
+    if(modal.action==="add") picked.forEach(n=>nextSet.add(n));
+    if(modal.action==="remove") picked.forEach(n=>nextSet.delete(n));
+    const nextSpec=seasonSetToSpec(nextSet,total);
+    if(!nextSpec){ alert("A show must keep at least one season."); return; }
+    existing.season_spec=nextSpec;
+    existing.include_future=modal.includeFuture!==false;
+    applyIncomingMetadata(existing,item);
+  }else{
+    list.push({
+      title:item.title||"",
+      tmdb_id:item.tmdb_id,
+      season_spec:item.season_spec||"*",
+      include_future:item.include_future!==false,
+      in_scope:item.in_scope!==false,
+      tags:item.tags||[],
+      notes:item.notes||""
+    });
+  }
+  setDirty(true); renderMine(); renderTmdb(); renderQueue(); counts();
 }
 function toggleMineSelected(type,id,checked){
   const key=`${type}:${id}`;
@@ -323,13 +364,14 @@ function renderTmdb(){
     const meta=document.createElement("div"); meta.style.flex="1";
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=r.title||"(untitled)";
     const tags=document.createElement("div"); tags.className="inputs_editor_tags";
-    tags.innerHTML=`<span class="inputs_editor_tag">${r.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${r.tmdb_id}</span>${r.year?`<span class="inputs_editor_tag">${r.year}</span>`:""}`;
+    const existing=getExistingState(r.type, Number(r.tmdb_id));
+    tags.innerHTML=`<span class="inputs_editor_tag">${r.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${r.tmdb_id}</span>${r.year?`<span class="inputs_editor_tag">${r.year}</span>`:""}${existing?`<span class="inputs_editor_tag ${existing.className}">${escHtml(existing.label)}</span>`:""}`;
 
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=tmdbSelected.has(`${r.type}:${r.tmdb_id}`);
     sel.onchange=()=>{ toggleTmdbSelected(r.type,r.tmdb_id,sel.checked); row.classList.toggle("selected", sel.checked); };
     controls.appendChild(sel);
-    const btn=document.createElement("button"); btn.className="primary"; btn.textContent="Add"; btn.onclick=()=>addItem(r.type,r.tmdb_id,r.title||"");
+    const btn=document.createElement("button"); btn.className="primary"; btn.textContent=r.type==="tv" && existing ? "Edit Seasons" : (existing ? "Update" : "Add"); btn.onclick=()=>{ void addItem(r.type,r.tmdb_id,r.title||""); };
     controls.appendChild(btn);
     const link=document.createElement("a"); link.href=`https://www.themoviedb.org/${r.type}/${r.tmdb_id}`; link.target="_blank"; link.rel="noopener";
     link.textContent="Open TMDB"; link.className="inputs_editor_link";
@@ -337,7 +379,7 @@ function renderTmdb(){
 
     meta.appendChild(title); meta.appendChild(tags); meta.appendChild(controls);
     row.appendChild(meta); box.appendChild(row);
-    row.ondblclick=()=>addItem(r.type,r.tmdb_id,r.title||"");
+    row.ondblclick=()=>{ void addItem(r.type,r.tmdb_id,r.title||""); };
   }
 }
 function toggleTmdbSelected(type,id,checked){
@@ -350,11 +392,11 @@ function selectAllTmdb(){
   }
   renderTmdb();
 }
-function addSelected(){
+async function addSelected(){
   for(const key of Array.from(tmdbSelected)){
     const [type,id]=key.split(":");
     const r=tmdbResults.find(x=>x.type===type && String(x.tmdb_id)===id);
-    addItem(type, Number(id), r?.title||"");
+    await addItem(type, Number(id), r?.title||"");
   }
   tmdbSelected.clear();
   renderTmdb();
@@ -398,7 +440,8 @@ function renderQueue(){
     const meta=document.createElement("div"); meta.style.flex="1";
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=it.title||"(untitled)";
     const tags=document.createElement("div"); tags.className="inputs_editor_tags";
-    tags.innerHTML=`<span class="inputs_editor_tag">${it.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>${it.year?`<span class="inputs_editor_tag">${it.year}</span>`:""}`;
+    const existing=getExistingState(it.type, Number(it.tmdb_id));
+    tags.innerHTML=`<span class="inputs_editor_tag">${it.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>${it.year?`<span class="inputs_editor_tag">${it.year}</span>`:""}${existing?`<span class="inputs_editor_tag ${existing.className}">${escHtml(existing.label)}</span>`:""}`;
 
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=queueSelected.has(key);
@@ -430,7 +473,7 @@ function renderQueue(){
 
     const tagsIn=document.createElement("input"); tagsIn.type="text"; tagsIn.className="small";
     tagsIn.placeholder="Tags (comma-separated)"; tagsIn.value=(it.tags||[]).join(", ");
-    tagsIn.onchange=()=>{ it.tags=(tagsIn.value||"").split(",").map(x=>x.trim()).filter(Boolean); };
+    tagsIn.onchange=()=>{ it.tags=normalizeTags(tagsIn.value||""); };
     controls.appendChild(tagsIn);
 
     const notesIn=document.createElement("input"); notesIn.type="text"; notesIn.className="small";
@@ -438,8 +481,8 @@ function renderQueue(){
     notesIn.onchange=()=>{ it.notes=(notesIn.value||"").trim(); };
     controls.appendChild(notesIn);
 
-    const addBtn=document.createElement("button"); addBtn.className="primary"; addBtn.textContent="Add";
-    addBtn.onclick=()=>{ addItemFull(it); };
+    const addBtn=document.createElement("button"); addBtn.className="primary"; addBtn.textContent=it.type==="tv" && existing ? "Edit / Merge" : (existing ? "Update" : "Add");
+    addBtn.onclick=()=>{ void addItemFull(it); };
     controls.appendChild(addBtn);
 
     meta.appendChild(title); meta.appendChild(tags); meta.appendChild(controls);
@@ -453,8 +496,8 @@ function queueRemoveSelected(){
   queueItems=keep; queueSelected.clear(); renderQueue();
 }
 function queueClear(){ queueItems=[]; queueSelected.clear(); renderQueue(); }
-function queueAddSelectedToInputs(){
-  for(const it of queueItems){ const key=`${it.type}:${it.tmdb_id}`; if(queueSelected.size===0 || queueSelected.has(key)) addItemFull(it); }
+async function queueAddSelectedToInputs(){
+  for(const it of queueItems){ const key=`${it.type}:${it.tmdb_id}`; if(queueSelected.size===0 || queueSelected.has(key)) await addItemFull(it); }
   if(queueSelected.size>0) queueRemoveSelected();
 }
 
@@ -475,11 +518,163 @@ function buildSeasonSpec(mode,val){
   return v || "*";
 }
 
+function allSeasonNumbers(total){ const out=[]; for(let i=1;i<=total;i++) out.push(i); return out; }
+function compactSeasonRanges(numbers){
+  const vals=[...new Set((numbers||[]).map(n=>Number(n)).filter(n=>Number.isInteger(n)&&n>0))].sort((a,b)=>a-b);
+  if(!vals.length) return "none";
+  const parts=[]; let start=vals[0], prev=vals[0];
+  for(let i=1;i<=vals.length;i++){
+    const cur=vals[i];
+    if(cur===prev+1){ prev=cur; continue; }
+    parts.push(start===prev ? `${start}` : `${start}-${prev}`);
+    start=cur; prev=cur;
+  }
+  return parts.join(", ");
+}
+function seasonSpecToSet(spec,totalSeasons){
+  const total=Number(totalSeasons);
+  if(!Number.isInteger(total) || total<=0) return new Set();
+  const s=(spec||"*").trim();
+  if(!s || s==="*") return new Set(allSeasonNumbers(total));
+  const minMatch=s.match(/^\s*S?(\d+)\+\s*$/i);
+  if(minMatch){
+    const start=Math.max(1, Number(minMatch[1]||1));
+    return new Set(allSeasonNumbers(total).filter(n=>n>=start));
+  }
+  const out=new Set();
+  for(const token of s.split(",")){
+    const t=(token||"").trim().replace(/^S/i,"");
+    if(!t) continue;
+    const range=t.match(/^(\d+)\s*-\s*(\d+)$/);
+    if(range){
+      let a=Number(range[1]), b=Number(range[2]);
+      if(a>b){ const tmp=a; a=b; b=tmp; }
+      for(let n=a;n<=b;n++) if(n>=1 && n<=total) out.add(n);
+      continue;
+    }
+    const n=Number(t);
+    if(Number.isInteger(n) && n>=1 && n<=total) out.add(n);
+  }
+  return out;
+}
+function seasonSetToSpec(seasonSet,totalSeasons){
+  const total=Number(totalSeasons);
+  const vals=[...new Set(Array.from(seasonSet||[]).map(n=>Number(n)).filter(n=>Number.isInteger(n)&&n>0))].sort((a,b)=>a-b);
+  if(!vals.length) return "";
+  if(Number.isInteger(total) && total>0){
+    const all=allSeasonNumbers(total);
+    if(vals.length===all.length && vals.every((v,i)=>v===all[i])) return "*";
+    if(vals[vals.length-1]===total){
+      let contiguous=true;
+      for(let i=1;i<vals.length;i++){ if(vals[i]!==vals[i-1]+1){ contiguous=false; break; } }
+      if(contiguous) return `${vals[0]}+`;
+    }
+  }
+  return compactSeasonRanges(vals);
+}
+function seasonSpecSummary(spec,totalSeasons){
+  const total=Number(totalSeasons);
+  if(Number.isInteger(total) && total>0){
+    const set=seasonSpecToSet(spec,total);
+    if(!set.size) return "none";
+    if(set.size===total) return "all seasons";
+    return compactSeasonRanges(set);
+  }
+  return (spec||"*").trim() || "*";
+}
+function getExistingEntry(type,id){ return type==="tv" ? (inputs?.tv||[]).find(x=>x.tmdb_id===id) : (inputs?.movies||[]).find(x=>x.tmdb_id===id); }
+function getExistingState(type,id){
+  const existing=getExistingEntry(type,id);
+  if(!existing) return null;
+  if(type==="tv") return { label:`Already added • Seasons ${seasonSpecSummary(existing.season_spec||"*")}`, className:"inputs_editor_tag--warn" };
+  return { label:"Already added", className:"inputs_editor_tag--ok" };
+}
+async function fetchShowDetails(id){
+  const key=Number(id);
+  if(showDetailsCache.has(key)) return showDetailsCache.get(key);
+  const j=await apiGet(`/api/tmdb/tv?id=${encodeURIComponent(key)}`);
+  if(!j.ok) throw new Error(j.error||"TMDB show details failed");
+  const details=j.show||{};
+  showDetailsCache.set(key, details);
+  return details;
+}
+function closeSeasonModal(){
+  const back=document.getElementById("seasonModalBack");
+  const body=document.getElementById("seasonModalBody");
+  back.style.display="none";
+  back.setAttribute("aria-hidden","true");
+  body.innerHTML="";
+  back.onclick=null;
+}
+function openShowSeasonModal(existing,item,details){
+  return new Promise((resolve)=>{
+    const totalSeasons=Number(details?.total_seasons||0);
+    const title=item?.title||existing?.title||details?.title||"Show";
+    const existingSet=seasonSpecToSet(existing?.season_spec||"*", totalSeasons);
+    const all=allSeasonNumbers(totalSeasons);
+    const added=all.filter(n=>existingSet.has(n));
+    const missing=all.filter(n=>!existingSet.has(n));
+    const selected=new Set(missing.length ? missing : added);
+    const back=document.getElementById("seasonModalBack");
+    const body=document.getElementById("seasonModalBody");
+    document.getElementById("seasonModalTitle").textContent=`Edit Seasons • ${title}`;
+    body.innerHTML=`<div class="inputs_editor_modal_grid"><section class="inputs_editor_panel"><h3>Current Entry</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag inputs_editor_tag--warn">Existing seasons: ${escHtml(seasonSpecSummary(existing?.season_spec||"*", totalSeasons))}</span><span class="inputs_editor_tag">Include future: ${(existing?.include_future!==false)?"on":"off"}</span></div><div class="inputs_editor_hint" style="margin-top:10px;">Already added: ${escHtml(added.length ? compactSeasonRanges(added) : "none")}</div><div class="inputs_editor_hint" style="margin-top:6px;">Not yet added: ${escHtml(missing.length ? compactSeasonRanges(missing) : "none")}</div></section><section class="inputs_editor_panel"><h3>Incoming Edit</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag">TMDB ${escHtml(item?.tmdb_id)}</span><span class="inputs_editor_tag inputs_editor_tag--info">Incoming seasons: ${escHtml(seasonSpecSummary(item?.season_spec||"*", totalSeasons))}</span></div><label class="inputs_editor_toggle" style="margin-top:10px;"><input id="seasonModalFuture" type="checkbox" ${(item?.include_future!==false && existing?.include_future!==false)?"checked":""}/><span>Include future episodes</span></label></section></div><section class="inputs_editor_panel"><h3>Select Seasons</h3><div class="inputs_editor_hint" style="margin-bottom:10px;">Add, replace, or remove the selected seasons from the existing show.</div><div class="inputs_editor_modal_actions" style="margin-bottom:10px;"><button id="seasonModalSelectMissing" type="button">Select missing</button><button id="seasonModalSelectAdded" type="button">Select added</button><button id="seasonModalSelectAll" type="button">Select all</button><button id="seasonModalSelectNone" type="button">Clear selection</button></div><div class="inputs_editor_season_grid" id="seasonModalGrid"></div></section><div class="inputs_editor_modal_actions"><button class="primary" id="seasonModalAdd" type="button">Add Selected Seasons</button><button id="seasonModalReplace" type="button">Replace With Selected</button><button class="danger" id="seasonModalRemove" type="button">Remove Selected Seasons</button><button class="ghost" id="seasonModalCancel" type="button">Cancel</button></div>`;
+    const grid=document.getElementById("seasonModalGrid");
+    const renderGrid=()=>{
+      grid.innerHTML="";
+      for(let n=1;n<=totalSeasons;n++){
+        const lbl=document.createElement("label");
+        lbl.className="inputs_editor_season_opt";
+        const cb=document.createElement("input");
+        cb.type="checkbox";
+        cb.checked=selected.has(n);
+        cb.onchange=()=>{ if(cb.checked) selected.add(n); else selected.delete(n); };
+        lbl.appendChild(cb);
+        lbl.appendChild(document.createTextNode(`Season ${n}`));
+        grid.appendChild(lbl);
+      }
+    };
+    const finish=(action)=>{
+      if(action==="cancel"){ closeSeasonModal(); resolve(null); return; }
+      const includeFuture=document.getElementById("seasonModalFuture").checked;
+      closeSeasonModal();
+      resolve({ action, selected:new Set(selected), includeFuture, totalSeasons });
+    };
+    document.getElementById("seasonModalClose").onclick=()=>finish("cancel");
+    document.getElementById("seasonModalCancel").onclick=()=>finish("cancel");
+    document.getElementById("seasonModalAdd").onclick=()=>finish("add");
+    document.getElementById("seasonModalReplace").onclick=()=>finish("replace");
+    document.getElementById("seasonModalRemove").onclick=()=>finish("remove");
+    document.getElementById("seasonModalSelectMissing").onclick=()=>{ selected.clear(); missing.forEach(n=>selected.add(n)); renderGrid(); };
+    document.getElementById("seasonModalSelectAdded").onclick=()=>{ selected.clear(); added.forEach(n=>selected.add(n)); renderGrid(); };
+    document.getElementById("seasonModalSelectAll").onclick=()=>{ selected.clear(); all.forEach(n=>selected.add(n)); renderGrid(); };
+    document.getElementById("seasonModalSelectNone").onclick=()=>{ selected.clear(); renderGrid(); };
+    back.onclick=(e)=>{ if(e.target===back) finish("cancel"); };
+    renderGrid();
+    back.style.display="flex";
+    back.setAttribute("aria-hidden","false");
+  });
+}
+
 async function saveInputs(){
   const msg=document.getElementById("saveMsg"); msg.textContent="";
   const j=await apiPost("/api/inputs",inputs);
-  if(!j.ok){ msg.textContent="Save failed: "+(j.error||"unknown"); return; }
+  if(!j.ok){ msg.textContent="Save failed: "+(j.error||"unknown"); return false; }
   msg.textContent="Saved @ "+j.utc; setDirty(false);
+  return true;
+}
+
+async function pushInputsToGitHub(){
+  const msg=document.getElementById("saveMsg");
+  msg.textContent="Saving before push…";
+  const saved=await saveInputs();
+  if(!saved) return;
+  msg.textContent="Pushing data/inputs.json to GitHub…";
+  const j=await apiPost("/api/push-inputs",{remote:"github", branch:"main"});
+  if(!j.ok){ msg.textContent="Push failed: "+(j.error||"unknown"); return; }
+  msg.textContent=j.pushed
+    ? `Pushed to GitHub @ ${j.remote}/${j.branch} (${j.commit||"HEAD"})`
+    : `No new inputs.json changes to push. Remote ${j.remote}/${j.branch} is already current.`;
 }
 
 (async function boot(){
@@ -505,13 +700,14 @@ async function saveInputs(){
   document.getElementById("tmdbYearMax").addEventListener("input",renderTmdb);
   document.getElementById("btnTmdbSelectAll").onclick=selectAllTmdb;
   document.getElementById("btnQueueSelected").onclick=queueAddSelected;
-  document.getElementById("btnAddSelected").onclick=addSelected;
+  document.getElementById("btnAddSelected").onclick=()=>{ void addSelected(); };
   document.getElementById("btnQueueSelectAll").onclick=queueSelectAll;
-  document.getElementById("btnQueueAddSelected").onclick=queueAddSelectedToInputs;
+  document.getElementById("btnQueueAddSelected").onclick=()=>{ void queueAddSelectedToInputs(); };
   document.getElementById("btnQueueRemoveSelected").onclick=queueRemoveSelected;
   document.getElementById("btnQueueClear").onclick=queueClear;
   document.getElementById("btnReload").onclick=loadInputs;
-  document.getElementById("btnSave").onclick=saveInputs;
+  document.getElementById("btnSave").onclick=()=>{ void saveInputs(); };
+  document.getElementById("btnPushGitHub").onclick=()=>{ void pushInputsToGitHub(); };
   document.getElementById("qMine").addEventListener("input",()=>renderMine());
   document.getElementById("mineType").addEventListener("change",renderMine);
   document.getElementById("mineScope").addEventListener("change",renderMine);
@@ -532,7 +728,9 @@ async function saveInputs(){
     renderMine();
   };
   document.getElementById("btnRemoveSelected").onclick=removeSelected;
+  document.getElementById("seasonModalClose").onclick=closeSeasonModal;
   document.getElementById("tmdbStatus").textContent="TMDB: ready";
+  renderTmdb();
   renderQueue();
 })();
 </script>

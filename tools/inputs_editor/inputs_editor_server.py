@@ -18,6 +18,7 @@ import subprocess
 import sys
 import tempfile
 import urllib.request
+from urllib.error import HTTPError, URLError
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, quote, urlparse
@@ -165,6 +166,50 @@ def _run_editor_refresh() -> dict:
     }
 
 
+def _run_git_command(args: list[str]) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git", *args],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=180,
+        check=False,
+    )
+
+
+def _push_inputs_to_remote(remote: str, branch: str) -> dict:
+    remote_name = (remote or "github").strip() or "github"
+    branch_name = (branch or "main").strip() or "main"
+
+    add_result = _run_git_command(["add", "--", str(INPUTS_JSON.relative_to(REPO_ROOT))])
+    if add_result.returncode != 0:
+        return {"ok": False, "error": add_result.stderr.strip() or add_result.stdout.strip() or "git add failed"}
+
+    diff_result = _run_git_command(["diff", "--cached", "--quiet", "--", str(INPUTS_JSON.relative_to(REPO_ROOT))])
+    if diff_result.returncode == 0:
+        push_result = _run_git_command(["push", remote_name, branch_name])
+        if push_result.returncode != 0:
+            return {"ok": False, "error": push_result.stderr.strip() or push_result.stdout.strip() or "git push failed"}
+        return {"ok": True, "pushed": False, "remote": remote_name, "branch": branch_name}
+
+    commit_message = f"Update inputs.json via inputs editor {_now_utc_iso()}"
+    commit_result = _run_git_command(["commit", "-m", commit_message, "--", str(INPUTS_JSON.relative_to(REPO_ROOT))])
+    if commit_result.returncode != 0:
+        return {"ok": False, "error": commit_result.stderr.strip() or commit_result.stdout.strip() or "git commit failed"}
+
+    head_result = _run_git_command(["rev-parse", "--short", "HEAD"])
+    push_result = _run_git_command(["push", remote_name, branch_name])
+    if push_result.returncode != 0:
+        return {"ok": False, "error": push_result.stderr.strip() or push_result.stdout.strip() or "git push failed"}
+    return {
+        "ok": True,
+        "pushed": True,
+        "remote": remote_name,
+        "branch": branch_name,
+        "commit": (head_result.stdout or "").strip(),
+    }
+
+
 def _tmdb_search(query: str) -> dict:
     key = os.environ.get(TMDB_KEY_ENV, "").strip()
     if not key:
@@ -204,6 +249,58 @@ def _tmdb_search(query: str) -> dict:
             }
         )
     return {"ok": True, "results": results, "img_base": TMDB_IMG_BASE}
+
+
+def _tmdb_request_json(path: str, qs: dict[str, object] | None = None) -> dict:
+    key = os.environ.get(TMDB_KEY_ENV, "").strip()
+    if not key:
+        return {"ok": False, "error": f"Missing env var {TMDB_KEY_ENV} (TMDB disabled)"}
+
+    query_items = {"api_key": key, "language": "en-US"}
+    if qs:
+        query_items.update(qs)
+    query_string = "&".join(
+        [f"{name}={quote(str(value))}" for name, value in query_items.items() if value is not None]
+    )
+    url = f"{TMDB_BASE}{path}?{query_string}"
+    request = urllib.request.Request(url, headers={"Accept": "application/json"})
+    try:
+        with urllib.request.urlopen(request, timeout=25) as response:
+            raw = response.read().decode("utf-8", errors="replace")
+        return {"ok": True, "data": json.loads(raw)}
+    except HTTPError as exc:
+        body = exc.read().decode("utf-8", errors="replace")
+        return {"ok": False, "error": f"TMDB HTTP {exc.code}: {body[:400]}"}
+    except URLError as exc:
+        return {"ok": False, "error": f"TMDB request failed: {exc.reason}"}
+    except Exception as exc:
+        return {"ok": False, "error": f"TMDB request failed: {exc}"}
+
+
+def _tmdb_tv_details(tmdb_id: int) -> dict:
+    result = _tmdb_request_json(f"/tv/{int(tmdb_id)}")
+    if not result.get("ok"):
+        return result
+    data = result.get("data") or {}
+    seasons = [
+        {
+            "season_number": season.get("season_number"),
+            "name": season.get("name") or "",
+            "episode_count": season.get("episode_count") or 0,
+            "air_date": season.get("air_date") or "",
+        }
+        for season in data.get("seasons", [])
+        if isinstance(season.get("season_number"), int) and int(season.get("season_number")) > 0
+    ]
+    return {
+        "ok": True,
+        "show": {
+            "tmdb_id": int(data.get("id") or tmdb_id),
+            "title": data.get("name") or "",
+            "total_seasons": len(seasons),
+            "seasons": seasons,
+        },
+    }
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -253,6 +350,15 @@ class Handler(BaseHTTPRequestHandler):
                 _json(self, 400, {"ok": False, "error": "Missing q"})
                 return
             result = _tmdb_search(query)
+            _json(self, 200 if result.get("ok") else 400, result)
+            return
+
+        if path == "/api/tmdb/tv":
+            raw_id = (parse_qs(parsed.query).get("id") or [""])[0].strip()
+            if not raw_id.isdigit():
+                _json(self, 400, {"ok": False, "error": "Missing numeric id"})
+                return
+            result = _tmdb_tv_details(int(raw_id))
             _json(self, 200 if result.get("ok") else 400, result)
             return
 
@@ -321,6 +427,22 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/api/refresh-runtime":
             result = _run_editor_refresh()
             _json(self, 200 if result["ok"] else 500, result)
+            return
+
+        if parsed.path == "/api/push-inputs":
+            body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
+                "utf-8", errors="replace"
+            )
+            try:
+                obj = json.loads(body) if body.strip() else {}
+            except Exception as exc:
+                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+                return
+            result = _push_inputs_to_remote(
+                str(obj.get("remote") or "github"),
+                str(obj.get("branch") or "main"),
+            )
+            _json(self, 200 if result.get("ok") else 500, result)
             return
 
         if parsed.path != "/api/inputs":
