@@ -152,3 +152,9 @@ Commit
 - Simplified the shared inputs-editor panel to one local-editor launch action and replaced the refused-connection iframe state with an explicit local-only startup message tied to live `127.0.0.1:8787` health detection.
 - Redirected the retired `web/library_editor.html` surface back to the in-app inputs-editor route while keeping `web/inputs_editor.html` as the canonical editor served by the dedicated local server.
 - Implementation commit: `3d0cb6c`
+
+## 2026-04-03 — Inputs editor duplicate, season, and GitHub sync restoration
+- Restored live duplicate-state signaling in the canonical `web/inputs_editor.html` TMDB and queue surfaces so existing movies and shows are visibly marked before add/update actions.
+- Replaced silent show overwrite behavior with a season-aware editor flow backed by TMDB show-detail lookup, allowing existing shows to add, replace, or remove selected seasons while preserving the single canonical `data/inputs.json` entry.
+- Added a dedicated editor-side GitHub sync path so the local inputs editor can save `data/inputs.json` and push that file through the `github` remote without depending on the unavailable `origin` server on `theboys-hp290:3000`.
+- Implementation commit: `da8deea`
