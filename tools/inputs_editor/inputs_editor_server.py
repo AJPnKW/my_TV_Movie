@@ -180,33 +180,43 @@ def _run_git_command(args: list[str]) -> subprocess.CompletedProcess:
 def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     remote_name = (remote or "github").strip() or "github"
     branch_name = (branch or "main").strip() or "main"
+    relative_inputs = str(INPUTS_JSON.relative_to(REPO_ROOT))
 
-    add_result = _run_git_command(["add", "--", str(INPUTS_JSON.relative_to(REPO_ROOT))])
+    add_result = _run_git_command(["add", "--", relative_inputs])
     if add_result.returncode != 0:
         return {"ok": False, "error": add_result.stderr.strip() or add_result.stdout.strip() or "git add failed"}
 
-    diff_result = _run_git_command(["diff", "--cached", "--quiet", "--", str(INPUTS_JSON.relative_to(REPO_ROOT))])
-    if diff_result.returncode == 0:
-        push_result = _run_git_command(["push", remote_name, branch_name])
-        if push_result.returncode != 0:
-            return {"ok": False, "error": push_result.stderr.strip() or push_result.stdout.strip() or "git push failed"}
-        return {"ok": True, "pushed": False, "remote": remote_name, "branch": branch_name}
+    diff_result = _run_git_command(["diff", "--cached", "--quiet", "--", relative_inputs])
+    commit_id = ""
+    committed = False
+    if diff_result.returncode != 0:
+        commit_message = f"Update inputs.json via inputs editor {_now_utc_iso()}"
+        commit_result = _run_git_command(["commit", "-m", commit_message, "--", relative_inputs])
+        if commit_result.returncode != 0:
+            return {"ok": False, "error": commit_result.stderr.strip() or commit_result.stdout.strip() or "git commit failed"}
+        committed = True
+        head_result = _run_git_command(["rev-parse", "--short", "HEAD"])
+        commit_id = (head_result.stdout or "").strip()
 
-    commit_message = f"Update inputs.json via inputs editor {_now_utc_iso()}"
-    commit_result = _run_git_command(["commit", "-m", commit_message, "--", str(INPUTS_JSON.relative_to(REPO_ROOT))])
-    if commit_result.returncode != 0:
-        return {"ok": False, "error": commit_result.stderr.strip() or commit_result.stdout.strip() or "git commit failed"}
+    fetch_result = _run_git_command(["fetch", remote_name, branch_name])
+    if fetch_result.returncode != 0:
+        return {"ok": False, "error": fetch_result.stderr.strip() or fetch_result.stdout.strip() or "git fetch failed"}
 
-    head_result = _run_git_command(["rev-parse", "--short", "HEAD"])
+    rebase_result = _run_git_command(["rebase", "--autostash", f"{remote_name}/{branch_name}"])
+    if rebase_result.returncode != 0:
+        _run_git_command(["rebase", "--abort"])
+        return {"ok": False, "error": rebase_result.stderr.strip() or rebase_result.stdout.strip() or "git rebase failed"}
+
     push_result = _run_git_command(["push", remote_name, branch_name])
     if push_result.returncode != 0:
         return {"ok": False, "error": push_result.stderr.strip() or push_result.stdout.strip() or "git push failed"}
     return {
         "ok": True,
-        "pushed": True,
+        "pushed": committed,
+        "rebased": True,
         "remote": remote_name,
         "branch": branch_name,
-        "commit": (head_result.stdout or "").strip(),
+        "commit": commit_id,
     }
 
 
