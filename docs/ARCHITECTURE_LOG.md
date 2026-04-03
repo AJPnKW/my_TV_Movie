@@ -146,3 +146,9 @@ Commit
 - Rebuilt the runtime dataset locally and confirmed `Happy's Place` moved from `data/inputs.json` into `data/data.json` with runtime availability and local poster metadata.
 - Updated workflow docs to reflect the current live repo reality: the repo now has both `.github/workflows/build-data.yml` and `.github/workflows/validate.yml`, and it explicitly notes that `scripts/fetch_trakt_primary.py` exists while the active production runner remains the TMDB-first chain.
 - Implementation commit: `be0efbd`
+
+## 2026-04-03 — Inputs editor local launch clarification
+- Rebased the shared app shells so the `Inputs Editor` nav route stays in-app first instead of hard-jumping every page to `http://127.0.0.1:8787`, preventing dead localhost navigation when the editor server is not running.
+- Simplified the shared inputs-editor panel to one local-editor launch action and replaced the refused-connection iframe state with an explicit local-only startup message tied to live `127.0.0.1:8787` health detection.
+- Redirected the retired `web/library_editor.html` surface back to the in-app inputs-editor route while keeping `web/inputs_editor.html` as the canonical editor served by the dedicated local server.
+- Implementation commit: `3d0cb6c`
