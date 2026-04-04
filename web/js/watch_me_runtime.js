@@ -102,8 +102,8 @@ function ratingPercent(item) {
 function buildActionBar(kind, item, context = {}) {
   const id = item?.tmdb_id ?? item?.id ?? context.showId ?? '';
   const watchHref = kind === 'movie'
-    ? `../watch.me.html?m=${encodeURIComponent(id)}`
-    : `../watch.me.html?tv=${encodeURIComponent(context.showId || id)}`;
+    ? `../watch_me/watch_me.html?m=${encodeURIComponent(id)}`
+    : `../watch_me/watch_me.html?tv=${encodeURIComponent(context.showId || id)}`;
   return actionBar.renderActionBarHtml({
     kind,
     compact: true,
@@ -171,7 +171,7 @@ function matchesSearch(texts) {
 
 function renderEpisodeCard(entry) {
   const episode = entry.episode;
-  const watchHref = `../watch.me.html?tv=${encodeURIComponent(entry.show?.tmdb_id ?? '')}`;
+  const watchHref = `../watch_me/watch_me.html?tv=${encodeURIComponent(entry.show?.tmdb_id ?? '')}`;
   return cardRenderer.renderCompactEpisodeCardHtml({
     image: pickImage(episode, 'still_local', 'still_path'),
     eyebrow: entry.showTitle,
@@ -193,7 +193,7 @@ function renderEpisodeCard(entry) {
 
 function renderMovieCard(entry) {
   const movie = entry.movie;
-  const watchHref = `../watch.me.html?m=${encodeURIComponent(movie?.tmdb_id ?? '')}`;
+  const watchHref = `../watch_me/watch_me.html?m=${encodeURIComponent(movie?.tmdb_id ?? '')}`;
   return cardRenderer.renderCompactCardHtml({
     kind: 'movie',
     id: movie?.tmdb_id ?? '',

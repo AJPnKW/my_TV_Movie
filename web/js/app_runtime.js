@@ -3892,7 +3892,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       </section>
       <section class="config-quicklinks">
         <a class="btn" href="./index.html#inputs-editor">Open Inputs Editor</a>
-        <a class="btn" href="./index.html#inputs-editor">Open In-App Editor Route</a>
+        <a class="btn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Local Editor</a>
       </section>
       <div id="configRuntimeSurface"></div>
     `;

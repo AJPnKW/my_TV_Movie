@@ -131,6 +131,11 @@ Commit
 - Pointed shared runtime save/health probes at the local inputs editor server on `127.0.0.1:8787` instead of the static-site origin so dashboard/watch-state writeback and editor availability checks no longer emit false 404s under the canonical local server workflow.
 - Updated the canonical shell pages and the inputs editor shell to declare an explicit favicon and aligned the smoke-test page list to the real dashboard/calendar/shows/movies/config/watch-me shells used by the app.
 - Implementation commit: `9f1cdc4`
+
+## 2026-04-03 — Final retirement cleanup
+- Repointed shared watch-me navigation and action links to the canonical `web/watch_me/watch_me.html` shell instead of the legacy `web/watch.me.html` page path.
+- Retired `web/watch.me.html` into a redirect-only shell that preserves incoming `?tv=` / `?m=` query parameters and forwards them to the canonical watch-me page.
+- Simplified remaining editor quick links so config and retired editor surfaces no longer show duplicated in-app route buttons.
 - Archived spec working notes under `docs/spec/archive/working_notes/` and kept the normalized `Section N - ...` files as the active spec body.
 - Implementation commit: `9dd68c1`
 
