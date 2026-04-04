@@ -125,6 +125,12 @@ Commit
 - Rebuilt the active show/movie popup surfaces to use the backdrop as the popup background, moved title/action content into a dense header, embedded a two-column watch source panel, prioritized Canada in provider summaries, and removed the retired bottom-backdrop treatment.
 - Hardened the inputs editor git push path to fetch and rebase against the selected remote branch before pushing so non-fast-forward GitHub updates can be integrated from the editor workflow.
 - Implementation commit: `18f3c57`
+
+## 2026-04-03 — Runtime QA drift cleanup
+- Removed the stale duplicate `legacyRenderDashboard()` implementation so the active dashboard order and card/date behavior cannot silently diverge from the shared runtime path.
+- Pointed shared runtime save/health probes at the local inputs editor server on `127.0.0.1:8787` instead of the static-site origin so dashboard/watch-state writeback and editor availability checks no longer emit false 404s under the canonical local server workflow.
+- Updated the canonical shell pages and the inputs editor shell to declare an explicit favicon and aligned the smoke-test page list to the real dashboard/calendar/shows/movies/config/watch-me shells used by the app.
+- Implementation commit: `9f1cdc4`
 - Archived spec working notes under `docs/spec/archive/working_notes/` and kept the normalized `Section N - ...` files as the active spec body.
 - Implementation commit: `9dd68c1`
 
