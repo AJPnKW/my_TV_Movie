@@ -23,9 +23,10 @@ $inputsPort = 8787
 
 $staticUrls = @(
     "http://127.0.0.1:$staticPort/web/index.html",
-    "http://127.0.0.1:$staticPort/web/watch.me.html",
-    "http://127.0.0.1:$staticPort/web/tv_shows_listing.html",
-    "http://127.0.0.1:$staticPort/web/heated-rivalry.html",
+    "http://127.0.0.1:$staticPort/web/calendar.html",
+    "http://127.0.0.1:$staticPort/web/shows.html",
+    "http://127.0.0.1:$staticPort/web/movies.html",
+    "http://127.0.0.1:$staticPort/web/config.html",
     "http://127.0.0.1:$staticPort/web/watch_me/watch_me.html"
 )
 

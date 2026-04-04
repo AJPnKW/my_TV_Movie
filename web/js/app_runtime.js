@@ -686,9 +686,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return availabilityStatusOf(movie) === "available";
   }
 
+  function editorApiUrl(path=""){
+    const clean = safeText(path).startsWith("/") ? safeText(path) : `/${safeText(path)}`;
+    return `http://127.0.0.1:8787${clean}`;
+  }
+
   async function checkApiAvailable(){
     try {
-      const r = await fetch("/api/health", { cache: "no-store" });
+      const r = await fetch(editorApiUrl("/api/health"), { cache: "no-store" });
       return r.ok;
     } catch {
       return false;
@@ -697,7 +702,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   async function checkInputsEditorServerAvailable(){
     try {
-      const r = await fetch("http://127.0.0.1:8787/api/health", { cache: "no-store" });
+      const r = await fetch(editorApiUrl("/api/health"), { cache: "no-store" });
       return r.ok;
     } catch {
       return false;
@@ -739,7 +744,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return false;
     }
     try{
-      const r = await fetch("/api/inputs", {
+      const r = await fetch(editorApiUrl("/api/inputs"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(state.inputs || {})
@@ -2634,211 +2639,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       popcornKind: kind === "movie" ? "movie" : kind,
       available: kind === "movie" ? isMovieAvailable(item || {}) : isShowAvailable(item || {})
     });
-  }
-
-  function legacyRenderDashboard(){
-    const upNext = $("#dashUpNext");
-    const scheduleCols = $("#dashScheduleCols");
-    const lastWeekCols = $("#dashLastWeekCols");
-    const watchlistEl = $("#dashWatchlist");
-    const showRecs = $("#dashShowRecs");
-    const movieRecs = $("#dashMovieRecs");
-    if (!upNext || !scheduleCols || !lastWeekCols || !watchlistEl || !showRecs || !movieRecs) return;
-
-    const showMap = new Map((state.data?.shows || []).map(s => [String(s?.tmdb_id ?? ""), s]));
-    const movieMap = new Map((state.data?.movies || []).map(m => [String(m?.tmdb_id ?? ""), m]));
-    const events = collectUpcomingEvents(21);
-    const pastEvents = collectPastEvents(7);
-    const nextItems = events.slice(0, 10);
-    const meta = $("#dashNextMeta");
-    if (meta) meta.textContent = nextItems.length ? `${nextItems.length} items` : "No upcoming items";
-
-    const percentForItem = (item) => {
-      let pct = progressPercent(item);
-      if (pct == null){
-        const v = Number(item?.vote_average ?? item?.rating ?? 0);
-        if (Number.isFinite(v) && v > 0) pct = Math.round(v * 10);
-      }
-      return pct;
-    };
-
-    const imageForItem = (item, mode) => {
-      const pick = (obj, keys) => {
-        for (const k of keys){
-          const v = obj?.[k];
-          if (v) return v;
-        }
-        return "";
-      };
-      const wideKeys = ["thumb", "still_local", "backdrop_local", "backdrop_path", "poster_local", "poster_path"];
-      const posterKeys = ["thumb", "poster_local", "poster_path", "backdrop_local", "backdrop_path", "still_local"];
-      const src = pick(item, mode === "wide" ? wideKeys : posterKeys);
-      if (src) return normalizeImageSrc(src);
-      if (item?.kind === "episode"){
-        const stillPath = safeText(item?.still_path).trim();
-        if (stillPath.startsWith("/")) return tmdbImageUrl("episode_still", stillPath);
-      }
-      if (item?.kind === "episode" && item?.show_tmdb_id){
-        const show = showMap.get(String(item.show_tmdb_id));
-        if (show){
-          return mode === "wide"
-            ? normalizeImageSrc(pick(show, ["backdrop_local", "backdrop_path", "poster_local", "poster_path"]))
-            : normalizeImageSrc(pick(show, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]));
-        }
-      }
-      if (item?.kind === "movie" && item?.tmdb_id){
-        const movie = movieMap.get(String(item.tmdb_id));
-        if (movie){
-          return mode === "wide"
-            ? normalizeImageSrc(pick(movie, ["backdrop_local", "backdrop_path", "poster_local", "poster_path"]))
-            : normalizeImageSrc(pick(movie, ["poster_local", "poster_path", "backdrop_local", "backdrop_path"]));
-        }
-      }
-      return "";
-    };
-
-    upNext.innerHTML = nextItems.length ? nextItems.map(({dateKey, item}) => {
-      if (item.kind === "episode"){
-        return buildSharedEpisodeCard(item, {
-          image: imageForItem(item, "wide"),
-          submeta: formatDateShort(dateKey),
-          extraClass: "dashcard dashcard--clean"
-        });
-      }
-      const pct = percentForItem(item);
-      return buildDashboardCard("movie", item?.tmdb_id, {
-        title: safeText(item.title || "Movie"),
-        subtitle: "Movie release",
-        tertiary: formatDateShort(dateKey),
-        image: imageForItem(item, "poster"),
-        badgeHtml: availabilityBadgeHtml(item, { compact: true }),
-        pct
-      });
-    }).join("") : `<div class="muted">No upcoming items found.</div>`;
-
-    const dateKeys = Array.from(new Set(events.map(e => e.dateKey))).slice(0, 7);
-    scheduleCols.innerHTML = dateKeys.length ? dateKeys.map(key => {
-      const dayItems = events.filter(e => e.dateKey === key).slice(0, 6);
-      const dayLabel = formatDateShort(key);
-      return `
-        <div class="dashcol">
-          <div class="dashcolhead">${escHtml(dayLabel)}</div>
-          ${dayItems.length ? dayItems.map(({item}) => {
-            if (item.kind === "episode"){
-              return buildSharedEpisodeCard(item, {
-                image: imageForItem(item, "wide"),
-                submeta: formatDateShort(key),
-                extraClass: "dashcard dashcard--clean dashcolitem-card"
-              });
-            }
-            const pct = percentForItem(item);
-            return buildDashboardCard("movie", item?.tmdb_id, {
-              title: safeText(item.title || "Movie"),
-              subtitle: "Movie release",
-              image: imageForItem(item, "poster"),
-              badgeHtml: availabilityBadgeHtml(item, { compact: true }),
-              pct,
-              extraClass: "dashcolitem-card"
-            });
-          }).join("") : `<div class="muted">No items</div>`}
-        </div>
-      `;
-    }).join("") : `<div class="muted">No upcoming schedule.</div>`;
-
-    const pastDateKeys = Array.from(new Set(pastEvents.map(e => e.dateKey)));
-    const lastWeekMeta = $("#dashLastWeekMeta");
-    if (lastWeekMeta) lastWeekMeta.textContent = pastDateKeys.length ? `${pastDateKeys.length} days` : "No recent items";
-    lastWeekCols.innerHTML = pastDateKeys.length ? pastDateKeys.map(key => {
-      const dayItems = pastEvents.filter(e => e.dateKey === key).slice(0, 6);
-      const dayLabel = formatDateShort(key);
-      return `
-        <div class="dashcol">
-          <div class="dashcolhead">${escHtml(dayLabel)}</div>
-          ${dayItems.length ? dayItems.map(({item}) => {
-            if (item.kind === "episode"){
-              return buildSharedEpisodeCard(item, {
-                image: imageForItem(item, "wide"),
-                submeta: formatDateShort(key),
-                extraClass: "dashcard dashcard--clean dashcolitem-card"
-              });
-            }
-            const pct = percentForItem(item);
-            return buildDashboardCard("movie", item?.tmdb_id, {
-              title: safeText(item.title || "Movie"),
-              subtitle: "Movie release",
-              image: imageForItem(item, "poster"),
-              badgeHtml: availabilityBadgeHtml(item, { compact: true }),
-              pct,
-              extraClass: "dashcolitem-card"
-            });
-          }).join("") : `<div class="muted">No items</div>`}
-        </div>
-      `;
-    }).join("") : `<div class="muted">No recent schedule.</div>`;
-
-    const list = ensureWatchlist();
-    const watchMeta = $("#dashWatchMeta");
-    if (watchMeta) watchMeta.textContent = list.length ? `${list.length} items` : "No items";
-    const watchItems = list.slice(0, 10).map(entry => {
-      const id = String(entry?.tmdb_id ?? "");
-      const show = id ? showMap.get(id) : null;
-      const movie = id ? movieMap.get(id) : null;
-      const title = safeText(entry?.title || show?.title || show?.name || movie?.title || "Untitled");
-      const poster = show ? normalizeImageSrc(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path"))
-        : (movie ? normalizeImageSrc(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path")) : "");
-      const pct = percentForItem(show || movie || entry);
-      const infoKind = show ? "show" : (movie ? "movie" : "");
-      const infoId = show ? show?.tmdb_id : (movie ? movie?.tmdb_id : "");
-      return buildDashboardCard(infoKind, infoId, {
-        title,
-        subtitle: entry?.media_kind || (show ? "show" : (movie ? "movie" : "unknown")),
-        image: poster,
-        badgeHtml: availabilityBadgeHtml(show || movie || entry, { compact: true }),
-        pct,
-        extraClass: "dashwatchcard"
-      });
-    });
-    watchlistEl.innerHTML = watchItems.length ? watchItems.join("") : `<div class="muted">No watchlist items.</div>`;
-
-    const showRecsList = (state.data?.shows || []).slice().sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0)).slice(0, 10);
-    const movieRecsList = (state.data?.movies || []).slice().sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0)).slice(0, 10);
-    showRecs.innerHTML = showRecsList.length ? showRecsList.map(s => {
-      const poster = normalizeImageSrc(pickImage(s, "poster_local", "poster_path", "backdrop_local", "backdrop_path"));
-      const pct = percentForItem(s);
-      return buildDashboardCard("show", s?.tmdb_id, {
-        title: safeText(s?.title || s?.name || "Show"),
-        subtitle: s?.first_air_date ? formatDateShort(s.first_air_date) : "",
-        image: poster,
-        badgeHtml: availabilityBadgeHtml(s, { compact: true }),
-        pct
-      });
-    }).join("") : `<div class="muted">No recommendations.</div>`;
-
-    movieRecs.innerHTML = movieRecsList.length ? movieRecsList.map(m => {
-      const poster = normalizeImageSrc(pickImage(m, "poster_local", "poster_path", "backdrop_local", "backdrop_path"));
-      const pct = percentForItem(m);
-      return buildDashboardCard("movie", m?.tmdb_id, {
-        title: safeText(m?.title || "Movie"),
-        subtitle: m?.release_date ? formatDateShort(m.release_date) : "",
-        image: poster,
-        badgeHtml: availabilityBadgeHtml(m, { compact: true }),
-        pct
-      });
-    }).join("") : `<div class="muted">No recommendations.</div>`;
-
-    wireActionMenus($("#dashUpNext"));
-    wireActionMenus($("#dashScheduleCols"));
-    wireActionMenus($("#dashLastWeekCols"));
-    wireActionMenus($("#dashWatchlist"));
-    wireActionMenus($("#dashShowRecs"));
-    wireActionMenus($("#dashMovieRecs"));
-
-    wireIconStripActions($("#dashUpNext"), renderDashboard);
-    wireIconStripActions($("#dashScheduleCols"), renderDashboard);
-    wireIconStripActions($("#dashLastWeekCols"), renderDashboard);
-    wireIconStripActions($("#dashWatchlist"), renderDashboard);
-    wireIconStripActions($("#dashShowRecs"), renderDashboard);
-    wireIconStripActions($("#dashMovieRecs"), renderDashboard);
   }
 
   function renderShows(){
