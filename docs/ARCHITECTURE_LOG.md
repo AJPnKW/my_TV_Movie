@@ -136,6 +136,11 @@ Commit
 - Repointed shared watch-me navigation and action links to the canonical `web/watch_me/watch_me.html` shell instead of the legacy `web/watch.me.html` page path.
 - Retired `web/watch.me.html` into a redirect-only shell that preserves incoming `?tv=` / `?m=` query parameters and forwards them to the canonical watch-me page.
 - Simplified remaining editor quick links so config and retired editor surfaces no longer show duplicated in-app route buttons.
+
+## 2026-04-03 — Dead runtime path cleanup
+- Deleted the remaining unused legacy movie-popup and show-popup builder functions from `web/js/app_runtime.js` so only the active popup implementation remains in the shared runtime.
+- Updated the project status note to reflect that the prior `/favicon.ico` and `/api/health` shell noise has been resolved in the current hardened local-server flow.
+- Revalidated the canonical dashboard, calendar, inputs editor, and retired watch redirect paths with headless Chrome after the cleanup pass.
 - Archived spec working notes under `docs/spec/archive/working_notes/` and kept the normalized `Section N - ...` files as the active spec body.
 - Implementation commit: `9dd68c1`
 

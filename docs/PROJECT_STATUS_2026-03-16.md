@@ -82,6 +82,6 @@ Confirmed in that pass:
 
 ## Known Non-Blocking Notes
 
-- Static local-server validation produced expected non-render-blocking 404 noise for `/favicon.ico` and `/api/health`.
+- Static local-server validation no longer emits the earlier `/favicon.ico` and `/api/health` shell noise after the runtime and shell hardening passes.
 - `watch_me` still attempts a watched-state LAN fallback request when that service is unavailable.
 - The main local worktree may contain additional uncommitted user files that are not part of the pushed canonical remote state.
