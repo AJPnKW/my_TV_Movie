@@ -142,10 +142,9 @@ All maintenance actions must log:
 # **4.5.6 List File Editors**
 This section allows editing of:
 
-- `tv_list.txt`  
-- `movies_list.txt`  
-- `live_tv_list.txt`  
-- `watchlist.txt' ( formerly 'show_pages.txt')
+- `data/inputs.json`
+- `data/watch_source_availability.json`
+- local watch-state and watchlist outputs when present
 
 ### **4.5.6.1 Editor Requirements**
 Each editor must include:

@@ -40,6 +40,27 @@ def _check_entity(entity_type: str, entity: Dict[str, Any], issues: List[str], c
     tested = str(entity.get("primary_watch_url_tested") or "").strip()
     if tested and not is_valid_primary_url(tested):
         issues.append(f"{entity_type} invalid primary_watch_url_tested={tested!r}")
+    watch_sources = entity.get("watch_sources")
+    if watch_sources not in (None, ""):
+        if not isinstance(watch_sources, list):
+            issues.append(f"{entity_type} watch_sources must be a list")
+        else:
+            seen = set()
+            for idx, row in enumerate(watch_sources):
+                if not isinstance(row, dict):
+                    issues.append(f"{entity_type} watch_sources[{idx}] must be an object")
+                    continue
+                for field in ("key", "label", "href", "type"):
+                    if not str(row.get(field) or "").strip():
+                        issues.append(f"{entity_type} watch_sources[{idx}] missing {field}")
+                href = str(row.get("href") or "").strip()
+                if href and not is_valid_primary_url(href):
+                    issues.append(f"{entity_type} watch_sources[{idx}] invalid href")
+                key = str(row.get("key") or "").strip()
+                if key:
+                    if key in seen:
+                        issues.append(f"{entity_type} duplicate watch_sources key={key}")
+                    seen.add(key)
 
 
 def main() -> int:

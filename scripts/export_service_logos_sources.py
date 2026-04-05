@@ -162,7 +162,7 @@ def _load_json(path: Path) -> Dict[str, Any]:
 
 def _build_rows(cfg: Dict[str, Any]) -> Tuple[List[Dict[str, str]], List[str]]:
     tmdb_image_base = str(((cfg.get("image_cache") or {}).get("tmdb_image_base") or "https://image.tmdb.org/t/p")).strip()
-    sections = ["service_logos", "streaming_services", "streaming"]
+    sections = ["service_logos"]
 
     rows: List[Dict[str, str]] = []
     errors: List[str] = []
@@ -208,7 +208,7 @@ def main() -> int:
             return 4
 
         if not rows:
-            _write_log(log_fp, "FAIL no service logo sources found in config sections: service_logos, streaming_services, streaming")
+            _write_log(log_fp, "FAIL no service logo sources found in config section: service_logos")
             return 5
 
         for idx, row in enumerate(rows):

@@ -2297,9 +2297,9 @@ CHANGE NOTES:
     }
     .calendar-month-grid{
       display:grid;
-      grid-template-columns:repeat(7, minmax(128px, 1fr));
+      grid-template-columns:repeat(7, minmax(0, 1fr));
       gap:8px;
-      min-width:920px;
+      min-width:0;
       align-items:start;
       margin-top:10px;
     }
@@ -2366,7 +2366,7 @@ CHANGE NOTES:
       color:var(--text);
     }
     .calendar-day{
-      min-height:180px;
+      min-height:clamp(170px, 16vw, 224px);
       padding:10px;
       border-radius:18px;
       border:1px solid rgba(255,255,255,0.10);
@@ -2870,10 +2870,10 @@ CHANGE NOTES:
       text-transform:uppercase;
       color:#93c5fd;
     }
-    .watch-source-links{
-      display:grid;
-      gap:8px;
-    }
+.watch-source-links{
+  display:grid;
+  gap:8px;
+}
     .watch-option-btn{
       display:grid;
       gap:3px;
@@ -2884,16 +2884,23 @@ CHANGE NOTES:
       color:var(--text);
       text-decoration:none;
     }
-    .watch-option-btn__label{
-      font-size:15px;
-      font-weight:900;
-      line-height:1.1;
-    }
-    .watch-option-btn__href{
-      font-size:11px;
-      line-height:1.2;
-      color:var(--muted);
-      overflow-wrap:anywhere;
+.watch-option-btn__label{
+  font-size:15px;
+  font-weight:900;
+  line-height:1.1;
+}
+.watch-option-btn__note{
+  font-size:11px;
+  line-height:1.2;
+  color:#93c5fd;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+}
+.watch-option-btn__href{
+  font-size:11px;
+  line-height:1.2;
+  color:var(--muted);
+  overflow-wrap:anywhere;
     }
     .section-card{
       border:1px solid rgba(255,255,255,0.10);
@@ -3362,17 +3369,17 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 }
 
 .calendar-grid{
-  overflow-x:auto;
+  overflow-x:clip;
 }
 .calendar-month-grid{
   display:grid;
-  grid-template-columns:repeat(7, minmax(170px, 1fr));
+  grid-template-columns:repeat(7, minmax(0, 1fr));
   gap:10px;
-  min-width:1190px;
+  min-width:0;
   align-items:start;
 }
 .calendar-day{
-  min-height:260px;
+  min-height:clamp(180px, 18vw, 240px);
 }
 .calendar-day--other-month{
   opacity:1;
@@ -3462,8 +3469,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
     position:static;
   }
   .calendar-month-grid{
-    grid-template-columns:repeat(7, minmax(104px, 1fr));
-    min-width:760px;
+    grid-template-columns:repeat(7, minmax(0, 1fr));
+    min-width:0;
   }
   .dashgrid{
     grid-auto-columns:minmax(152px, 1fr);
@@ -3499,7 +3506,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 }
 .calendar-month-grid{
   row-gap:8px;
-  column-gap:10px;
+  column-gap:8px;
 }
 .calendar-day{
   border:1px solid rgba(255,255,255,0.18);
@@ -3554,6 +3561,17 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   align-items:center;
   gap:10px;
   margin-left:auto;
+}
+#dashScheduleCols,
+#dashLastWeekCols{
+  grid-template-columns:repeat(7, minmax(0, 1fr));
+  grid-auto-flow:unset;
+  grid-auto-columns:auto;
+  overflow-x:clip;
+}
+#dashScheduleCols .dashcol,
+#dashLastWeekCols .dashcol{
+  min-width:0;
 }
 .dashnav{
   display:flex;

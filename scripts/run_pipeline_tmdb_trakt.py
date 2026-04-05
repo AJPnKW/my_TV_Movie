@@ -30,6 +30,7 @@ QA_AVAILABILITY_PHASE2 = SCRIPTS_DIR / "qa_availability_phase2.py"
 VALIDATE_SECRET_DRIFT = SCRIPTS_DIR / "validate_secret_name_drift.py"
 VALIDATE_RUNTIME_ASSETS = SCRIPTS_DIR / "validate_runtime_assets.py"
 VALIDATE_RUNTIME_CATALOG = SCRIPTS_DIR / "validate_runtime_catalog_integrity.py"
+QA_PIPELINE_INTEGRITY = SCRIPTS_DIR / "qa_pipeline_integrity.py"
 
 
 def _ts() -> str:
@@ -154,6 +155,14 @@ def main() -> int:
         return rc
 
     rc = _run_one("RUNTIME_CATALOG_VALIDATE", VALIDATE_RUNTIME_CATALOG)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("PIPELINE_INTEGRITY_QA", QA_PIPELINE_INTEGRITY)
     finished = _ts()
 
     tmdb_log = _latest_log("fetch_tmdb.*.log.txt")

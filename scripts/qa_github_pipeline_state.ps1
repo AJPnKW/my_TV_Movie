@@ -30,13 +30,11 @@ try {
   $urlWorkflow = "$baseRaw/.github/workflows/build-data.yml"
   $urlConfig   = "$baseRaw/web/config.json"
   $urlData     = "$baseRaw/data/data.json"
-  $urlDlScript = "$baseRaw/scripts/download_tmdb_assets.py"
 
   Write-Host "=== REMOTE URLS ==="
   Write-Host $urlWorkflow
   Write-Host $urlConfig
   Write-Host $urlData
-  Write-Host $urlDlScript
   Write-Host ""
 
   function Get-RemoteText([string]$url) {
@@ -47,22 +45,29 @@ try {
   $remoteWorkflow = Get-RemoteText $urlWorkflow
   $remoteConfig   = Get-RemoteText $urlConfig
   $remoteData     = Get-RemoteText $urlData
-  $remoteDlScript = Get-RemoteText $urlDlScript
-  Write-Host "OK: downloaded workflow/config/data/downloader from GitHub raw"
+  Write-Host "OK: downloaded workflow/config/data from GitHub raw"
   Write-Host ""
 
   $cfg = $remoteConfig | ConvertFrom-Json
   $data = $remoteData | ConvertFrom-Json
 
-  Write-Host "=== QA 1: WORKFLOW CONTAINS ASSET DOWNLOADER STEP ==="
-  $hasDownloaderStep = ($remoteWorkflow -match "download_tmdb_assets\.py")
-  if ($hasDownloaderStep) {
-    Write-Host "build-data.yml contains download_tmdb_assets.py step: YES"
+  Write-Host "=== QA 1: WORKFLOW USES CANONICAL PIPELINE RUNNER ==="
+  $hasCanonicalRunner = ($remoteWorkflow -match "run:\s+python scripts/run_pipeline_tmdb_trakt\.py")
+  $commitsRuntimeArtifacts = (
+    ($remoteWorkflow -match "git diff --quiet -- data/data\.json assets") -and
+    ($remoteWorkflow -match "git add data/data\.json assets")
+  )
+  if ($hasCanonicalRunner) {
+    Write-Host "build-data.yml runs scripts/run_pipeline_tmdb_trakt.py: YES"
   } else {
-    Write-Host "build-data.yml contains download_tmdb_assets.py step: NO"
-    Write-Host "FAIL: Add this step after run_pipeline_full.py:"
-    Write-Host "  - name: Download TMDB assets"
-    Write-Host "    run: python scripts/download_tmdb_assets.py"
+    Write-Host "build-data.yml runs scripts/run_pipeline_tmdb_trakt.py: NO"
+    Write-Host "FAIL: build-data.yml must run the canonical production pipeline runner"
+  }
+  if ($commitsRuntimeArtifacts) {
+    Write-Host "build-data.yml commits data/data.json and assets: YES"
+  } else {
+    Write-Host "build-data.yml commits data/data.json and assets: NO"
+    Write-Host "FAIL: build-data.yml must diff/add both data/data.json and assets"
   }
   Write-Host ""
 
@@ -74,11 +79,11 @@ try {
     Write-Host ("config image_cache.folders.{0} = {1}" -f $k, $v)
   }
 
-  $badCfg = (($remoteConfig -match "/assets/images/tmdb") -or ($remoteConfig -match '"folders_legacy"') -or ($remoteConfig -match '"streaming_services"'))
+  $badCfg = (($remoteConfig -match "/assets/images/tmdb") -or ($remoteConfig -match '"folders_legacy"'))
   if ($badCfg) {
-    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy, streaming_services): YES"
+    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy): YES"
   } else {
-    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy, streaming_services): NO"
+    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy): NO"
   }
   Write-Host ""
 

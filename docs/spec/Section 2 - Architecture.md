@@ -29,9 +29,10 @@ The system is a **static Single‑Page Application (SPA)** deployed on GitHub Pa
 The architecture consists of the following immutable layers:
 
 1. **Data Layer**  
-   - `data/data.json` (single source of truth)  
+   - `data/inputs.json` (canonical editable scope)  
+   - `data/data.json` (canonical generated runtime output)  
    - local cached images (posters, backdrops, logos)  
-   - list files (`tv_list.txt`, `movies_list.txt`, `live_tv_list.txt`)  
+   - availability metadata (`data/watch_source_availability.json`)  
    - metadata files  
 
 2. **Rendering Layer**  

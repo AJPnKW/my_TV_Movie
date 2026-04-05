@@ -1,8 +1,8 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.4.4",
-    "updated_utc": "2026-01-31T00:00:00Z",
+    "version": "v1.5.0",
+    "updated_utc": "2026-04-04T00:00:00Z",
     "notes": [
       "JSONC is required for this file. Documentation uses line comments.",
       "Palette system is a registry: ui_palette.palettes[ui_palette.active] is applied at runtime.",
@@ -16,7 +16,92 @@
     "vidsrc_tv": "https://vidsrc.net/embed/tv/",
     "vidsrc_movie": "https://vidsrc.net/embed/movie/",
     "videasy_tv": "https://player.videasy.net/tv/",
-    "videasy_movie": "https://player.videasy.net/movie/"
+    "videasy_movie": "https://player.videasy.net/movie/",
+    "fallback_order": [
+      "vidsrc_net",
+      "videasy",
+      "superembed",
+      "multiembed",
+      "smashystream",
+      "flixhq",
+      "sflix",
+      "2embed_cc",
+      "2embed_org"
+    ],
+    "embed_providers": [
+      {
+        "key": "vidsrc_net",
+        "name": "VidSrc",
+        "tv_template": "https://vidsrc.net/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.net/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "videasy",
+        "name": "VidEasy",
+        "tv_template": "https://player.videasy.net/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://player.videasy.net/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "superembed",
+        "name": "SuperEmbed",
+        "tv_template": "https://superembed.stream/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://superembed.stream/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "multiembed",
+        "name": "MultiEmbed",
+        "tv_template": "https://multiembed.mov/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://multiembed.mov/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "smashystream",
+        "name": "SmashyStream",
+        "tv_template": "https://smashystream.com/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://smashystream.com/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "flixhq",
+        "name": "FlixHQ",
+        "tv_template": "https://flixhq.to/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://flixhq.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "sflix",
+        "name": "SFlix",
+        "tv_template": "https://sflix.to/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://sflix.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "2embed_cc",
+        "name": "2Embed CC",
+        "tv_template": "https://www.2embed.cc/embedtv/{tmdb_id}&s={season}&e={episode}",
+        "movie_template": "https://www.2embed.cc/embed/{tmdb_id}",
+        "style": "mixed",
+        "status": "warn"
+      },
+      {
+        "key": "2embed_org",
+        "name": "2Embed Org",
+        "tv_template": "https://www.2embed.org/embed/tv?tmdb={tmdb_id}&season={season}&episode={episode}",
+        "movie_template": "https://www.2embed.org/embed/movie?tmdb={tmdb_id}",
+        "style": "query",
+        "status": "warn"
+      }
+    ]
   },
   "service_logos": [
     {
@@ -199,8 +284,8 @@
     },
     "media_vidrsc": {
       "icon": "\ud83c\udf7f",
-      "name": "Vidrsc",
-      "purpose": "Vidrsc stream link",
+      "name": "VidSrc",
+      "purpose": "VidSrc stream link",
       "functionType": "link",
       "target": "streaming.vidsrc_* + tmdb_id"
     },

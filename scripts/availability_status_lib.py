@@ -31,7 +31,19 @@ NETWORK_CACHE_JSON = REPO_ROOT / "logs" / "availability_status_network_cache.jso
 ALLOWED_ENTITY_TYPES = ("movie", "show", "season", "episode")
 ALLOWED_AVAILABILITY = ("not_yet_released", "available", "unavailable", "unknown")
 ALLOWED_URL_TEST = ("pass", "fail", "skip", "unknown")
-ALLOWED_SOURCES = ("videasy", "vidsrc", "local")
+ALLOWED_SOURCES = (
+    "videasy",
+    "vidsrc",
+    "vidsrc_net",
+    "superembed",
+    "multiembed",
+    "smashystream",
+    "flixhq",
+    "sflix",
+    "2embed_cc",
+    "2embed_org",
+    "local",
+)
 ALLOWED_VALIDATION_MODES = ("structural", "provider_structural", "provider_structural_cached_head")
 DEFAULT_SOURCE_VERSION = "1.2.0"
 
@@ -261,15 +273,26 @@ def build_url_from_base(base: str, *parts: Any) -> str:
 
 def load_streaming_config(config_path: Path = CONFIG_JSON) -> Dict[str, str]:
     cfg = load_json(config_path, allow_jsonc=True)
-    streaming = cfg.get("streaming") or cfg.get("streaming_services") or {}
+    streaming = cfg.get("streaming") or {}
     if not isinstance(streaming, dict):
         streaming = {}
-    return {
+    out = {
         "vidsrc_tv": safe_text(streaming.get("vidsrc_tv")),
         "vidsrc_movie": safe_text(streaming.get("vidsrc_movie")),
         "videasy_tv": safe_text(streaming.get("videasy_tv")),
         "videasy_movie": safe_text(streaming.get("videasy_movie")),
     }
+    providers = streaming.get("embed_providers")
+    if isinstance(providers, list):
+        for provider in providers:
+            if not isinstance(provider, dict):
+                continue
+            key = safe_text(provider.get("key"))
+            if not key:
+                continue
+            out[f"{key}_tv"] = safe_text(provider.get("tv_template"))
+            out[f"{key}_movie"] = safe_text(provider.get("movie_template"))
+    return out
 
 
 def entity_candidates(entity_type: str, entity: Dict[str, Any], context: Dict[str, Any], streaming: Dict[str, str]) -> Dict[str, str]:
@@ -282,6 +305,18 @@ def entity_candidates(entity_type: str, entity: Dict[str, Any], context: Dict[st
     local = safe_text(links.get("local_media") or links.get("local") or links.get("localMedia"))
     if local:
         candidates["local"] = local
+    configured_sources = []
+    configured_sources.extend(entity.get("watch_sources") if isinstance(entity.get("watch_sources"), list) else [])
+    configured_sources.extend(entity.get("source_options") if isinstance(entity.get("source_options"), list) else [])
+    configured_sources.extend(links.get("watch_sources") if isinstance(links.get("watch_sources"), list) else [])
+    configured_sources.extend(links.get("source_options") if isinstance(links.get("source_options"), list) else [])
+    for entry in configured_sources:
+        if not isinstance(entry, dict):
+            continue
+        key = normalize_source(entry.get("key") or entry.get("provider") or entry.get("source"))
+        href = safe_text(entry.get("href") or entry.get("url") or entry.get("link"))
+        if key and href:
+            candidates[key] = href
     if entity_type == "movie":
         candidates["videasy"] = safe_text(links.get("videasy")) or build_url_from_base(streaming.get("videasy_movie", ""), tmdb_id)
         candidates["vidsrc"] = safe_text(links.get("vidsrc")) or build_url_from_base(streaming.get("vidsrc_movie", ""), tmdb_id)
@@ -350,13 +385,11 @@ def detect_provider_kind(url: str, streaming: Dict[str, str]) -> str:
         return "local"
     parsed = urlparse(value)
     host = parsed.netloc.lower()
-    for source in ("videasy", "vidsrc"):
-        for key, base in streaming.items():
-            if not key.startswith(source):
-                continue
-            parsed_base = urlparse(safe_text(base))
-            if parsed_base.netloc and parsed_base.netloc.lower() == host:
-                return source
+    for key, base in streaming.items():
+        parsed_base = urlparse(safe_text(base))
+        if parsed_base.netloc and parsed_base.netloc.lower() == host:
+            source = key[:-6] if key.endswith("_movie") else key[:-3] if key.endswith("_tv") else key
+            return normalize_source(source) or source
     return ""
 
 
@@ -465,6 +498,8 @@ def _expected_base_for_source(source_key: str, entity_type: str, streaming: Dict
     if source_key == "local":
         return ""
     suffix = "movie" if entity_type == "movie" else "tv"
+    if source_key == "vidsrc":
+        return safe_text(streaming.get(f"vidsrc_{suffix}") or streaming.get(f"vidsrc_net_{suffix}"))
     return safe_text(streaming.get(f"{source_key}_{suffix}"))
 
 

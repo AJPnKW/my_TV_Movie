@@ -1617,12 +1617,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function buildMediaLinks(kind, id, links){
     const src = links && typeof links === "object" ? links : {};
     const streaming = state.cfg && typeof state.cfg === "object" ? state.cfg.streaming : null;
-    const isTv = kind === "show" || kind === "tv" || kind === "episode";
+    const isTv = kind === "show" || kind === "tv" || kind === "season" || kind === "episode";
     const slug = safeText(id).trim();
     const vidsrcBase = streaming ? (isTv ? streaming.vidsrc_tv : streaming.vidsrc_movie) : "";
     const videasyBase = streaming ? (isTv ? streaming.videasy_tv : streaming.videasy_movie) : "";
-    const vidsrc = safeText(src.vidsrc || "").trim() || (vidsrcBase && slug ? `${vidsrcBase}${slug}` : "");
-    const videasy = safeText(src.videasy || "").trim() || (videasyBase && slug ? `${videasyBase}${slug}` : "");
+    const generatedSources = []
+      .concat(Array.isArray(src.watch_sources) ? src.watch_sources : [])
+      .concat(Array.isArray(src.source_options) ? src.source_options : []);
+    const lookupGenerated = (key) => {
+      const hit = generatedSources.find(entry => safeText(entry?.key || entry?.provider || entry?.source).trim().toLowerCase() === key && safeText(entry?.href || entry?.url || entry?.link).trim());
+      return hit ? safeText(hit.href || hit.url || hit.link).trim() : "";
+    };
+    const vidsrc = safeText(src.vidsrc || "").trim() || lookupGenerated("vidsrc_net") || lookupGenerated("vidsrc") || (vidsrcBase && slug ? `${vidsrcBase}${slug}` : "");
+    const videasy = safeText(src.videasy || "").trim() || lookupGenerated("videasy") || (videasyBase && slug ? `${videasyBase}${slug}` : "");
     const local = safeText(src.local_media || src.local || src.localMedia || "").trim();
     return { vidsrc, videasy, local };
   }
@@ -1642,20 +1649,31 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       .concat(Array.isArray(item?.source_options) ? item.source_options : [])
       .concat(Array.isArray(links.watch_sources) ? links.watch_sources : [])
       .concat(Array.isArray(links.source_options) ? links.source_options : []);
+    const fallbackOrder = Array.isArray(state.cfg?.streaming?.fallback_order) ? state.cfg.streaming.fallback_order.map(v => safeText(v).trim().toLowerCase()) : [];
     return raw.map((entry, idx) => {
       if (typeof entry === "string"){
-        return { type: "external", label: `Source ${idx + 1}`, href: entry };
+        return { key: "", type: "external", label: `Source ${idx + 1}`, href: entry, priority: idx };
       }
       if (!entry || typeof entry !== "object") return null;
       const href = safeText(entry.href || entry.url || entry.link || "").trim();
       if (!href) return null;
+      const key = safeText(entry.key || entry.provider || entry.source || "").trim().toLowerCase();
+      const priority = key ? fallbackOrder.indexOf(key) : -1;
       return {
+        key,
         type: safeText(entry.type || entry.kind || "external").trim().toLowerCase() || "external",
         label: safeText(entry.label || entry.name || entry.title || `Source ${idx + 1}`),
         note: safeText(entry.note || entry.description || ""),
-        href
+        status: safeText(entry.status || ""),
+        href,
+        priority: priority >= 0 ? priority : 100 + idx
       };
-    }).filter(Boolean);
+    }).filter(Boolean).sort((a, b) => {
+      const pa = Number.isFinite(a.priority) ? a.priority : 999;
+      const pb = Number.isFinite(b.priority) ? b.priority : 999;
+      if (pa !== pb) return pa - pb;
+      return safeText(a.label).localeCompare(safeText(b.label));
+    });
   }
 
   function collectWatchSourceOptions(kind, item, context={}){
@@ -1673,7 +1691,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     push("embed", "Vidsrc", mediaLinks.vidsrc, "Existing embed source");
     push("embed", "Videasy", mediaLinks.videasy, "Existing alternate embed source");
     push("network", "Official Site", links.homepage || links.official || links.network || links.owned_url || links.owned, "Direct network or owned destination");
-    collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note));
+    collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note || opt.status));
     const seen = new Set();
     return options.filter(opt => {
       const key = `${opt.type}|${opt.href}`;
@@ -1691,6 +1709,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const optionHtml = options.length ? options.map(opt => `
       <a class="watch-option-btn watch-option-btn--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
         <span class="watch-option-btn__label">${escHtml(opt.label)}</span>
+        ${opt.note ? `<span class="watch-option-btn__note">${escHtml(opt.note)}</span>` : ""}
         <span class="watch-option-btn__href">${escHtml(opt.href)}</span>
       </a>
     `).join("") : `<div class="muted" style="font-size:12px;">No configured direct watch sources for this item yet.</div>`;

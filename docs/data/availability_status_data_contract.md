@@ -52,6 +52,7 @@ Recommended path:
 | `availability_checked_at` | Yes |
 | `availability_source` | Yes |
 | `availability_reason` | Yes |
+| `watch_sources[]` | Yes for generated movie/show/season/episode entities with configured embed sources |
 
 ## Matching rules Codex must verify against the real repo
 | Entity | Preferred matching order |
@@ -81,3 +82,9 @@ In the current repo:
   - `provider_structural_cached_head`
 - `defaults.network` now defines the optional cached network-check policy used only when explicitly enabled.
 - Manual `records[]` remain supported, but the live catalog currently requires `0` explicit seeded overrides because phase-2 derivation and child-status fallback cover the current dataset without justified manual exceptions.
+- Runtime entities now also carry normalized `watch_sources[]` rows shaped as:
+  - `key`
+  - `label`
+  - `href`
+  - `type`
+  - optional `status`, `style`, `priority`

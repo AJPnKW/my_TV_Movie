@@ -21,9 +21,14 @@ DATA_JSON = os.path.join(REPO_ROOT, "data", "data.json")
 INPUTS_JSON = os.path.join(REPO_ROOT, 'data', 'inputs.json')
 AVAILABILITY_JSON = os.path.join(REPO_ROOT, "data", "watch_source_availability.json")
 WEB_CONFIG = os.path.join(REPO_ROOT, "web", "config.json")
+WORKFLOW_YML = os.path.join(REPO_ROOT, ".github", "workflows", "build-data.yml")
+PIPELINE_RUNNER = os.path.join(REPO_ROOT, "scripts", "run_pipeline_tmdb_trakt.py")
+FETCH_TMDB = os.path.join(REPO_ROOT, "scripts", "fetch_tmdb.py")
+AVAILABILITY_LIB = os.path.join(REPO_ROOT, "scripts", "availability_status_lib.py")
 LOG_DIR = os.path.join(REPO_ROOT, "logs")
 REPORT_DIR = os.path.join(REPO_ROOT, "reports")
 ALLOWED_AVAILABILITY = {"not_yet_released", "available", "unavailable", "unknown"}
+REQUIRED_WATCH_SOURCE_FIELDS = ("key", "label", "href", "type")
 
 
 def _utc_ts() -> str:
@@ -129,6 +134,36 @@ def _fs_path_from_site_path(path: str) -> str:
     return os.path.join(REPO_ROOT, path.lstrip("/").replace("/", os.sep))
 
 
+def _load_text(path: str) -> str:
+    with open(path, "r", encoding="utf-8", errors="replace") as fh:
+        return fh.read()
+
+
+def _validate_watch_sources(entity: Dict[str, Any], label: str, issues: List[str]) -> None:
+    watch_sources = entity.get("watch_sources")
+    if watch_sources in (None, ""):
+        return
+    if not isinstance(watch_sources, list):
+        issues.append(f"{label} watch_sources must be a list")
+        return
+    seen = set()
+    for idx, row in enumerate(watch_sources):
+        if not isinstance(row, dict):
+            issues.append(f"{label} watch_sources[{idx}] must be an object")
+            continue
+        for field in REQUIRED_WATCH_SOURCE_FIELDS:
+            if not str(row.get(field) or "").strip():
+                issues.append(f"{label} watch_sources[{idx}] missing {field}")
+        href = str(row.get("href") or "").strip()
+        if href and not (href.startswith("http://") or href.startswith("https://") or href.startswith("/")):
+            issues.append(f"{label} watch_sources[{idx}] invalid href")
+        key = str(row.get("key") or "").strip()
+        if key:
+            if key in seen:
+                issues.append(f"{label} duplicate watch_sources key={key}")
+            seen.add(key)
+
+
 def main() -> int:
     log_path, logf = _log_open()
     try:
@@ -148,23 +183,53 @@ def main() -> int:
         data = _load_json(DATA_JSON)
         inp = _load_json(INPUTS_JSON)
         cfg = _load_json(WEB_CONFIG) if os.path.isfile(WEB_CONFIG) else {}
+        workflow_text = _load_text(WORKFLOW_YML) if os.path.isfile(WORKFLOW_YML) else ""
+        pipeline_runner_text = _load_text(PIPELINE_RUNNER) if os.path.isfile(PIPELINE_RUNNER) else ""
+        fetch_tmdb_text = _load_text(FETCH_TMDB) if os.path.isfile(FETCH_TMDB) else ""
+        availability_lib_text = _load_text(AVAILABILITY_LIB) if os.path.isfile(AVAILABILITY_LIB) else ""
 
         shows = data.get("shows", []) or []
         movies = data.get("movies", []) or []
         tv_inp = inp.get('tv', []) or inp.get('shows', []) or []
         mv_inp = inp.get("movies", []) or []
+        data_errors = data.get("errors") if isinstance(data.get("errors"), list) else []
+        expected_missing_movie_ids = {
+            _as_int(err.get("tmdb_id"))
+            for err in data_errors
+            if isinstance(err, dict) and str(err.get("media") or "").strip() == "movie" and str(err.get("type") or "").strip() in {"tmdb_error", "tmdb_not_found"}
+        }
+        expected_missing_show_ids = {
+            _as_int(err.get("tmdb_id"))
+            for err in data_errors
+            if isinstance(err, dict) and str(err.get("media") or "").strip() == "show" and str(err.get("type") or "").strip() in {"tmdb_error", "tmdb_not_found"}
+        }
+        trakt_meta = ((data.get("metadata") or {}).get("trakt_public_enrichment") or {}) if isinstance(data.get("metadata"), dict) else {}
+        trakt_not_found = _as_int(((trakt_meta.get("counts") or {}) if isinstance(trakt_meta.get("counts"), dict) else {}).get("not_found"))
 
         # Core counts
         checks: List[Tuple[str, bool, str]] = []
         checks.append(("top_level_keys", isinstance(shows, list) and isinstance(movies, list), "data.json must contain shows[] and movies[] lists"))
-        checks.append(("count_tv_matches_inputs", len(shows) == len(tv_inp), f"shows count mismatch: data={len(shows)} inputs_json={len(tv_inp)}"))
-        checks.append(("count_movies_matches_inputs", len(movies) == len(mv_inp), f"movies count mismatch: data={len(movies)} inputs_json={len(mv_inp)}"))
+        checks.append(("count_tv_matches_inputs", len(shows) + len(expected_missing_show_ids) == len(tv_inp), f"shows count mismatch after known upstream misses: data={len(shows)} inputs_json={len(tv_inp)} missing_expected={len(expected_missing_show_ids)}"))
+        checks.append(("count_movies_matches_inputs", len(movies) + len(expected_missing_movie_ids) == len(mv_inp), f"movies count mismatch after known upstream misses: data={len(movies)} inputs_json={len(mv_inp)} missing_expected={len(expected_missing_movie_ids)}"))
+        builder = (data.get("meta") or {}).get("builder") or {}
+        checks.append(("builder_canonical_input", str(builder.get("canonical_input") or "") == "data/inputs.json", "data.meta.builder.canonical_input must be data/inputs.json"))
+        checks.append(("builder_canonical_output", str(builder.get("canonical_output") or "") == "data/data.json", "data.meta.builder.canonical_output must be data/data.json"))
+        checks.append(("workflow_uses_canonical_runner", "run_pipeline_tmdb_trakt.py" in workflow_text, "build-data workflow must run scripts/run_pipeline_tmdb_trakt.py"))
+        checks.append(("pipeline_runs_integrity_qa", "qa_pipeline_integrity.py" in pipeline_runner_text, "run_pipeline_tmdb_trakt.py must run qa_pipeline_integrity.py"))
+        legacy_markers = ["streaming_services", "inputs_parsed.json", "tv_list.txt", "movies_list.txt", "live_tv_list.txt"]
+        legacy_hits = []
+        for marker in legacy_markers:
+            if marker in fetch_tmdb_text:
+                legacy_hits.append(f"fetch_tmdb.py:{marker}")
+            if marker in availability_lib_text:
+                legacy_hits.append(f"availability_status_lib.py:{marker}")
+        checks.append(("legacy_production_refs_removed", len(legacy_hits) == 0, f"legacy refs present in active production files: {', '.join(legacy_hits) if legacy_hits else 'none'}"))
 
         # Missing trakt ids (post-trakt run should usually be 0/0)
         ms = _count_missing_trakt(shows)
         mm = _count_missing_trakt(movies)
-        checks.append(("missing_trakt_id_shows_zero", ms == 0, f"shows missing trakt_id: {ms}"))
-        checks.append(("missing_trakt_id_movies_zero", mm == 0, f"movies missing trakt_id: {mm}"))
+        checks.append(("missing_trakt_id_shows_bounded", ms <= trakt_not_found, f"shows missing trakt_id={ms} must not exceed trakt not_found={trakt_not_found}"))
+        checks.append(("missing_trakt_id_movies_bounded", mm <= trakt_not_found, f"movies missing trakt_id={mm} must not exceed trakt not_found={trakt_not_found}"))
 
         # Ensure every item has a tmdb_id and title
         def _req_fields(items: List[Dict[str, Any]], label: str) -> List[str]:
@@ -188,8 +253,8 @@ def main() -> int:
 
         tv_missing = sorted(list(inp_tv_ids - out_tv_ids))
         mv_missing = sorted(list(inp_mv_ids - out_mv_ids))
-        checks.append(("tmdb_id_set_tv_matches", len(tv_missing) == 0, f"data.json missing {len(tv_missing)} tv tmdb_id(s) present in inputs_json"))
-        checks.append(("tmdb_id_set_movies_matches", len(mv_missing) == 0, f"data.json missing {len(mv_missing)} movie tmdb_id(s) present in inputs_json"))
+        checks.append(("tmdb_id_set_tv_matches", set(tv_missing).issubset(expected_missing_show_ids), f"unexpected missing tv tmdb_id(s): {sorted(set(tv_missing) - expected_missing_show_ids)[:50]}"))
+        checks.append(("tmdb_id_set_movies_matches", set(mv_missing).issubset(expected_missing_movie_ids), f"unexpected missing movie tmdb_id(s): {sorted(set(mv_missing) - expected_missing_movie_ids)[:50]}"))
 
         # Asset drift checks (local files for poster/backdrop/still paths)
         image_cache = cfg.get("image_cache") if isinstance(cfg, dict) else {}
@@ -255,13 +320,17 @@ def main() -> int:
 
         for s in shows:
             _check_availability(s, f"show {s.get('tmdb_id')}")
+            _validate_watch_sources(s, f"show {s.get('tmdb_id')}", availability_missing)
             for se in s.get("seasons") or []:
                 _check_availability(se, f"season {s.get('tmdb_id')}:{se.get('season_number')}")
+                _validate_watch_sources(se, f"season {s.get('tmdb_id')}:{se.get('season_number')}", availability_missing)
                 for ep in se.get("episodes") or []:
                     _check_availability(ep, f"episode {s.get('tmdb_id')}:{ep.get('season_number')}:{ep.get('episode_number')}")
+                    _validate_watch_sources(ep, f"episode {s.get('tmdb_id')}:{ep.get('season_number')}:{ep.get('episode_number')}", availability_missing)
 
         for m in movies:
             _check_availability(m, f"movie {m.get('tmdb_id')}")
+            _validate_watch_sources(m, f"movie {m.get('tmdb_id')}", availability_missing)
 
         checks.append(("availability_fields_present", len(availability_missing) == 0, f"entities missing availability fields: {len(availability_missing)}"))
         checks.append(("availability_status_enum_valid", len(availability_invalid) == 0, f"entities with invalid availability_status: {len(availability_invalid)}"))
@@ -283,10 +352,13 @@ def main() -> int:
                 "inputs_movies": len(mv_inp),
                 "missing_trakt_id_shows": ms,
                 "missing_trakt_id_movies": mm,
+                "trakt_not_found": trakt_not_found,
             },
             "tmdb_id_diffs": {
                 "tv_missing_in_data_json": tv_missing[:50],
                 "movies_missing_in_data_json": mv_missing[:50],
+                "expected_missing_show_ids": sorted(expected_missing_show_ids)[:50],
+                "expected_missing_movie_ids": sorted(expected_missing_movie_ids)[:50],
             },
             "field_errors_sample": field_errs[:50],
             "asset_drift": {

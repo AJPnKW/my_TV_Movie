@@ -8,8 +8,9 @@
 # [BUILD]   24.01.01
 #
 # [PATCH GOALS]
-# - Fix broken streaming links caused by config key mismatch (streaming vs streaming_services)
-# - Compute robust streaming URLs (supports {tmdb_id}/{season}/{episode} placeholders or simple base+suffix)
+# - Enforce data/inputs.json as the sole production input scope
+# - Compute robust streaming URLs from the canonical streaming config
+# - Emit normalized watch_sources arrays for movie/show/season/episode contexts
 # - Add core rich TMDB fields (NO translations) to support UI cards:
 #   * movie: imdb_id, poster_path, backdrop_path, overview, status, popularity, vote_average, vote_count, genres, runtime, homepage
 #   * tv: tvdb_id, poster_path, backdrop_path, overview, status, popularity, vote_average, vote_count, genres, networks, created_by,
@@ -19,16 +20,14 @@
 # - Preserve existing minimal fields and placeholders (seasons:[], links:{} for TV)
 #
 # [NOTE]
-# Deep-build of seasons/episodes is NOT implemented here (still a separate stage if you add it later).
+# Season/episode deep-build is active and aligns to the canonical UI/runtime contract.
 # ==============================================================================
 
-import dataclasses
 import datetime as _dt
 import hashlib
 import json
 import logging
 import os
-import re
 import sys
 import time
 from dataclasses import dataclass
@@ -64,26 +63,12 @@ REPO_ROOT = SCRIPT_PATH.parents[1]
 WEB_DIR = REPO_ROOT / "web"
 DATA_DIR = REPO_ROOT / "data"
 
-# Inputs (support both legacy and inputs/)
-TV_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "tv_list.txt", REPO_ROOT / "tv_list.txt"]
-MOVIES_LIST_CANDIDATES = [REPO_ROOT / "inputs" / "movies_list.txt", REPO_ROOT / "movies_list.txt"]
-WATCHLIST_CANDIDATES = [REPO_ROOT / "inputs" / "watchlist.txt", REPO_ROOT / "watchlist.txt"]
-
-# Optional intermediate JSON from parse_txt_to_json.py
-PARSED_INPUTS_JSON = DATA_DIR / "inputs_parsed.json"
 INPUTS_JSON_DEFAULT = DATA_DIR / "inputs.json"
 
 OUT_DATA_JSON = DATA_DIR / "data.json"
 LOG_DIR = REPO_ROOT / "logs"
 
 CONFIG_JSON = WEB_DIR / "config.json"
-
-# -------------------------
-# Regex helpers
-# -------------------------
-RE_COMMENT = re.compile(r"^\s*#")
-RE_PIPE = re.compile(r"\s*\|\s*")
-RE_WS = re.compile(r"\s+")
 
 # -------------------------
 # Logging
@@ -134,6 +119,8 @@ class StreamingConfig:
     vidsrc_movie: str
     videasy_tv: str
     videasy_movie: str
+    fallback_order: List[str]
+    embed_providers: List[Dict[str, str]]
 
 
 @dataclass
@@ -148,30 +135,44 @@ class Config:
     image_cache: ImageCacheConfig
 
 
-def _coalesce_streaming(cfg: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Canonical keys: cfg['streaming'].*
-    Backward-compat: cfg['streaming_services'].*
-    Precedence: streaming.* overrides streaming_services.*
-    """
-    s1 = cfg.get("streaming", {}) or {}
-    s2 = cfg.get("streaming_services", {}) or {}
-    out: Dict[str, Any] = {}
-    for k in ("vidsrc_tv", "vidsrc_movie", "videasy_tv", "videasy_movie"):
-        v = s1.get(k)
-        if v in (None, ""):
-            v = s2.get(k)
-        out[k] = "" if v is None else str(v)
-    return out
-
-
 def load_config(path: Path) -> Config:
     if not path.exists():
         raise FileNotFoundError(f"Missing required file: {path}")
 
     cfg = json.loads(read_text_file(path))
+    streaming = cfg.get("streaming")
+    if not isinstance(streaming, dict):
+        raise ValueError("web/config.json must contain a streaming object")
+    for key in ("vidsrc_tv", "vidsrc_movie", "videasy_tv", "videasy_movie"):
+        if not str(streaming.get(key, "")).strip():
+            raise ValueError(f"web/config.json missing required streaming.{key}")
 
-    streaming = _coalesce_streaming(cfg)
+    raw_providers = streaming.get("embed_providers")
+    if not isinstance(raw_providers, list) or not raw_providers:
+        raise ValueError("web/config.json streaming.embed_providers must be a non-empty array")
+    embed_providers: List[Dict[str, str]] = []
+    for idx, provider in enumerate(raw_providers):
+        if not isinstance(provider, dict):
+            raise ValueError(f"streaming.embed_providers[{idx}] must be an object")
+        key = str(provider.get("key") or "").strip()
+        name = str(provider.get("name") or key).strip()
+        tv_template = str(provider.get("tv_template") or "").strip()
+        movie_template = str(provider.get("movie_template") or "").strip()
+        if not key or not tv_template or not movie_template:
+            raise ValueError(f"streaming.embed_providers[{idx}] must define key, tv_template, movie_template")
+        embed_providers.append(
+            {
+                "key": key,
+                "name": name,
+                "tv_template": tv_template,
+                "movie_template": movie_template,
+                "style": str(provider.get("style") or "path").strip(),
+                "status": str(provider.get("status") or "ok").strip(),
+            }
+        )
+    fallback_order = [str(x).strip() for x in (streaming.get("fallback_order") or []) if str(x).strip()]
+    if not fallback_order:
+        fallback_order = [provider["key"] for provider in embed_providers]
 
     image_cache = cfg.get("image_cache", {}) or {}
     folders = (image_cache.get("folders", {}) or {})
@@ -183,6 +184,8 @@ def load_config(path: Path) -> Config:
             vidsrc_movie=str(streaming.get("vidsrc_movie", "")),
             videasy_tv=str(streaming.get("videasy_tv", "")),
             videasy_movie=str(streaming.get("videasy_movie", "")),
+            fallback_order=fallback_order,
+            embed_providers=embed_providers,
         ),
         image_cache=ImageCacheConfig(
             base_dir=base_dir,
@@ -234,6 +237,7 @@ def build_tv_links(cfg: Config, tmdb_id: int, season: int, episode: int) -> Dict
     suffix = f"{tmdb_id}/{season}/{episode}"
     return {
         "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}/season/{season}/episode/{episode}",
+        "provider_page": f"https://www.themoviedb.org/tv/{tmdb_id}/watch",
         "vidsrc": _format_or_join(cfg.streaming.vidsrc_tv, tmdb_id=tmdb_id, season=season, episode=episode) if "{" in cfg.streaming.vidsrc_tv else _join_url(cfg.streaming.vidsrc_tv, suffix),
         "videasy": _format_or_join(cfg.streaming.videasy_tv, tmdb_id=tmdb_id, season=season, episode=episode) if "{" in cfg.streaming.videasy_tv else _join_url(cfg.streaming.videasy_tv, suffix),
     }
@@ -242,9 +246,68 @@ def build_tv_links(cfg: Config, tmdb_id: int, season: int, episode: int) -> Dict
 def build_movie_links(cfg: Config, tmdb_id: int) -> Dict[str, str]:
     return {
         "tmdb": f"https://www.themoviedb.org/movie/{tmdb_id}",
+        "provider_page": f"https://www.themoviedb.org/movie/{tmdb_id}/watch",
         "vidsrc": _format_or_join(cfg.streaming.vidsrc_movie, tmdb_id=tmdb_id),
         "videasy": _format_or_join(cfg.streaming.videasy_movie, tmdb_id=tmdb_id),
     }
+
+
+def build_show_links(cfg: Config, tmdb_id: int) -> Dict[str, str]:
+    return {
+        "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}",
+        "provider_page": f"https://www.themoviedb.org/tv/{tmdb_id}/watch",
+        "vidsrc": _format_or_join(cfg.streaming.vidsrc_tv, tmdb_id=tmdb_id),
+        "videasy": _format_or_join(cfg.streaming.videasy_tv, tmdb_id=tmdb_id),
+    }
+
+
+def build_season_links(cfg: Config, tmdb_id: int, season: int) -> Dict[str, str]:
+    suffix = f"{tmdb_id}/{season}"
+    return {
+        "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}/season/{season}",
+        "provider_page": f"https://www.themoviedb.org/tv/{tmdb_id}/watch",
+        "vidsrc": _format_or_join(cfg.streaming.vidsrc_tv, tmdb_id=tmdb_id, season=season) if "{" in cfg.streaming.vidsrc_tv else _join_url(cfg.streaming.vidsrc_tv, suffix),
+        "videasy": _format_or_join(cfg.streaming.videasy_tv, tmdb_id=tmdb_id, season=season) if "{" in cfg.streaming.videasy_tv else _join_url(cfg.streaming.videasy_tv, suffix),
+    }
+
+
+def build_watch_sources(cfg: Config, media: str, tmdb_id: int, season: Optional[int] = None, episode: Optional[int] = None) -> List[Dict[str, Any]]:
+    if media not in {"movie", "show", "season", "episode"}:
+        return []
+    if media == "show":
+        links = build_show_links(cfg, tmdb_id)
+        return [
+            {"key": "vidsrc_net", "label": "VidSrc", "href": links["vidsrc"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 0},
+            {"key": "videasy", "label": "VidEasy", "href": links["videasy"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 1},
+        ]
+    if media == "season":
+        links = build_season_links(cfg, tmdb_id, int(season or 0))
+        return [
+            {"key": "vidsrc_net", "label": "VidSrc", "href": links["vidsrc"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 0},
+            {"key": "videasy", "label": "VidEasy", "href": links["videasy"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 1},
+        ]
+    media_key = "movie" if media == "movie" else "tv"
+    priorities = {key: idx for idx, key in enumerate(cfg.streaming.fallback_order)}
+    results: List[Dict[str, Any]] = []
+    for provider in cfg.streaming.embed_providers:
+        template = provider["movie_template"] if media_key == "movie" else provider["tv_template"]
+        href = _format_or_join(template, tmdb_id=tmdb_id, season=season or "", episode=episode or "")
+        if not href:
+            continue
+        results.append(
+            {
+                "key": provider["key"],
+                "label": provider["name"],
+                "href": href,
+                "type": "embed",
+                "provider_family": "embed",
+                "style": provider["style"],
+                "status": provider["status"],
+                "priority": priorities.get(provider["key"], len(priorities)),
+            }
+        )
+    results.sort(key=lambda row: (int(row.get("priority", 999)), str(row.get("label", "")).lower()))
+    return results
 
 
 # -------------------------
@@ -342,17 +405,6 @@ class TMDBClient:
         logging.info("[tmdb] precheck ok")
 
 
-# -------------------------
-# Inputs parsing
-# -------------------------
-def _first_existing(candidates: List[Path]) -> Optional[Path]:
-    for p in candidates:
-        if p.exists():
-            return p
-    return None
-
-
-
 def compute_local_season_poster(cfg: Config, poster_path: Optional[str]) -> Optional[str]:
     name = _basename_from_tmdb_path(poster_path)
     if not name:
@@ -432,7 +484,8 @@ def build_tv_seasons_episodes(
             "vote_count": season.get("vote_count"),
             "poster_path": poster_path,
             "poster_local": compute_local_season_poster(cfg, poster_path),
-            "links": {"tmdb": f"https://www.themoviedb.org/tv/{int(show_tmdb_id)}/season/{int(sn)}"},
+            "links": build_season_links(cfg, int(show_tmdb_id), int(sn)),
+            "watch_sources": build_watch_sources(cfg, "season", int(show_tmdb_id), int(sn)),
             "episodes": [],
         }
 
@@ -461,6 +514,7 @@ def build_tv_seasons_episodes(
                 "vote_average": ep.get("vote_average"),
                 "vote_count": ep.get("vote_count"),
                 "links": build_tv_links(cfg, int(show_tmdb_id), int(season_number), int(ep_num)),
+                "watch_sources": build_watch_sources(cfg, "episode", int(show_tmdb_id), int(season_number), int(ep_num)),
             }
             season_obj["episodes"].append(ep_obj)
 
@@ -469,46 +523,6 @@ def build_tv_seasons_episodes(
 
     return seasons_out
 
-
-
-def parse_pipe_lines(path: Path, media: str) -> List[Dict[str, Any]]:
-    """
-    TV:    name|tmdb_id|season_spec|tvmaze_id
-    Movie: name|tmdb_id
-    Season spec rules:
-      - blank => all
-      - "S1,S2,S3" or "1,2,3"
-      - "S1-3" or "1-3"
-    """
-    out: List[Dict[str, Any]] = []
-    for raw in read_text_file(path).splitlines():
-        if not raw.strip():
-            continue
-        if RE_COMMENT.match(raw):
-            continue
-
-        parts = RE_PIPE.split(raw.strip())
-        parts = [RE_WS.sub(" ", p.strip()) for p in parts]
-
-        if media == "show":
-            name = parts[0] if len(parts) > 0 else ""
-            tmdb_id = parts[1] if len(parts) > 1 else ""
-            season_spec = parts[2] if len(parts) > 2 else ""
-            tvmaze_id = parts[3] if len(parts) > 3 else ""
-            out.append(
-                {
-                    "title": name,
-                    "tmdb_id": tmdb_id,
-                    "season_spec": season_spec,
-                    "tvmaze_id": tvmaze_id,
-                }
-            )
-        else:
-            name = parts[0] if len(parts) > 0 else ""
-            tmdb_id = parts[1] if len(parts) > 1 else ""
-            out.append({"title": name, "tmdb_id": tmdb_id})
-
-    return out
 
 
 def parse_season_rule(spec: str) -> Tuple[str, Optional[List[int]], Optional[int]]:
@@ -569,8 +583,10 @@ def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         raise FileNotFoundError(f"Missing required file: {inputs_path}")
 
     js = json.loads(read_text_file(inputs_path))
-    tv = js.get("tv") or js.get("shows") or js.get("series") or []
-    mv = js.get("movies") or js.get("films") or []
+    if "tv" not in js or "movies" not in js:
+        raise ValueError("inputs.json must contain canonical keys: { tv: [...], movies: [...] }")
+    tv = js.get("tv") or []
+    mv = js.get("movies") or []
     if not isinstance(tv, list) or not isinstance(mv, list):
         raise ValueError("inputs.json must contain arrays: { tv: [...], movies: [...] }")
 
@@ -632,6 +648,9 @@ def main() -> int:
             "builder": {
                 "script": "scripts/fetch_tmdb.py",
                 "version": "v2.9.0",
+                "canonical_input": "data/inputs.json",
+                "canonical_output": "data/data.json",
+                "streaming_contract": "streaming.embed_providers",
                 "config_sha1": sha1_text(read_text_file(CONFIG_JSON)),
             },
         },
@@ -725,7 +744,8 @@ def main() -> int:
                 "poster_local": poster_local,
                 "backdrop_local": backdrop_local,
                 "seasons": [],  # built below
-                "links": {"tmdb": f"https://www.themoviedb.org/tv/{int(tmdb_id)}"},
+                "links": build_show_links(cfg, int(tmdb_id)),
+                "watch_sources": build_watch_sources(cfg, "show", int(tmdb_id)),
                 "season_mode": season_mode,
                 "season_filter": seasons,  # None => all
                 "include_future": include_future,
@@ -829,6 +849,7 @@ def main() -> int:
                 "poster_local": poster_local,
                 "backdrop_local": backdrop_local,
                 "links": build_movie_links(cfg, int(tmdb_id)),
+                "watch_sources": build_watch_sources(cfg, "movie", int(tmdb_id)),
 
                 # --- rich TMDB fields (NO translations) ---
                 "id": int(tmdb_id),

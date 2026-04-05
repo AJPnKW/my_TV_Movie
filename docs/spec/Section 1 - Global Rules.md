@@ -134,11 +134,11 @@ The workflow must fail if:
 ### **1.7.2 No Silent Success**  
 Workflows must never pass with invalid data.
 ### **1.7.3 Canonical File Naming**  
-All list files must follow canonical names:
-- `tv_list.txt`  
-- `movies_list.txt`  
-- `live_tv_list.txt` 
-- `watchlist.txt` (previous named 'show_pages.txt'
+Canonical production files must follow these names:
+- `data/inputs.json`
+- `data/data.json`
+- `data/watch_source_availability.json`
+- `watchlist.txt` (local watch-state legacy helper only)
 ### **1.7.4 Atomic Writes**  
 Workflows must write data atomically.
 ---
