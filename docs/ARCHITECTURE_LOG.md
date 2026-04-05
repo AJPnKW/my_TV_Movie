@@ -188,3 +188,11 @@ Commit
 - Hardened the TV-first dashboard and calendar surfaces so the seven-day week grid stays visible without horizontal overflow, sticky day/date presentation no longer collides with card content, and the runtime watch-source chooser consumes the expanded provider data consistently.
 - Refreshed generated runtime artifacts and newly discovered canonical assets, and preserved the passing pipeline integrity artifact under `reports/_qa_pipeline_integrity_2026-04-05_00-10-21.json`.
 - Implementation commit: `fe58ce0`
+
+## 2026-04-05 — Split runtime activation and HP static deployment
+- Replaced active first-load runtime dependence on `data/data.json` by moving shared list/dashboard/watch-me loaders to `data/catalog_index.json`, moving date-oriented rendering to `data/calendar.json`, and lazy-loading popup/detail views from `data/catalog_detail/<tmdb_id>.json`.
+- Added a dedicated split-runtime builder plus matching validation so the final active runtime contract now uses one normalized `watch.embed[]` and `watch.providers.{CA,US,GB,AU}[]` model without leaking `watch_sources`, `source_options`, or `watch_providers` into split artifacts.
+- Retired the old standalone `web/tv_shows_listing.html` utility as a redirect shell to avoid leaving an active page bound to the old monolithic runtime shape.
+- Fixed popup drift in the shared runtime by restoring a defined popup D-pad handler and stopping provider-logo 404 churn by honoring only verified local logo assets in split detail output.
+- Added the HP deployment unit `deploy/my-tv-movie-static.service`, synced the built static payload into `/srv/my_tv_movie/app`, and enabled the host-side service-managed static app on port `8011`.
+- Implementation commit: `db11f0e`
