@@ -1,0 +1,15 @@
+[Unit]
+Description=My TV Movie Static App
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=andrew
+WorkingDirectory=/srv/my_tv_movie/app
+ExecStart=/usr/bin/python3 -m http.server 8011 --bind 0.0.0.0 --directory /srv/my_tv_movie/app
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

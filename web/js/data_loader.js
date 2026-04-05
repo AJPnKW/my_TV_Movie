@@ -9,12 +9,28 @@ CHANGE NOTES:
 
 import { loadJsonFirst } from './config_loader.js';
 
-let catalogPromise = null;
+let catalogIndexPromise = null;
+let calendarPromise = null;
 let inputsPromise = null;
+const detailPromises = new Map();
 
-export async function loadCatalogFirst(urls = ['../data/data.json']){
-  if (!catalogPromise) catalogPromise = loadJsonFirst(urls);
-  return catalogPromise;
+export async function loadCatalogIndexFirst(urls = ['../data/catalog_index.json']){
+  if (!catalogIndexPromise) catalogIndexPromise = loadJsonFirst(urls);
+  return catalogIndexPromise;
+}
+
+export async function loadCalendarFirst(urls = ['../data/calendar.json']){
+  if (!calendarPromise) calendarPromise = loadJsonFirst(urls);
+  return calendarPromise;
+}
+
+export async function loadCatalogDetailFirst(id, urls){
+  const key = String(id ?? '').trim();
+  if (!key) throw new Error('Catalog detail id is required');
+  if (!detailPromises.has(key)){
+    detailPromises.set(key, loadJsonFirst(Array.isArray(urls) && urls.length ? urls : [`../data/catalog_detail/${key}.json`]));
+  }
+  return detailPromises.get(key);
 }
 
 export async function loadInputsFirst(urls = ['../data/inputs.json', '../inputs.json']){
@@ -23,6 +39,8 @@ export async function loadInputsFirst(urls = ['../data/inputs.json', '../inputs.
 }
 
 export function clearDataLoaderCache(){
-  catalogPromise = null;
+  catalogIndexPromise = null;
+  calendarPromise = null;
   inputsPromise = null;
+  detailPromises.clear();
 }

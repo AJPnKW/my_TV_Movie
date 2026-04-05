@@ -42,6 +42,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   const state = {
     cfg: null,
     data: null,
+    calendarData: null,
     inputs: null,
     tab: PAGE,
     lastNonShowHash: `#${PAGE}`,
@@ -506,40 +507,38 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return withBasePath(`/assets/logos/services/${slug}.png`);
   }
 
-  function getWatchProviders(item){
+  function getWatchBlock(item){
     if (!item || typeof item !== "object") return null;
-    const wp = item.watch_providers || item.watchProviders || null;
-    if (!wp) return null;
-    return wp.results || wp;
+    const watch = item.watch;
+    return watch && typeof watch === "object" ? watch : null;
+  }
+
+  function getWatchProviders(item){
+    const watch = getWatchBlock(item);
+    const providers = watch?.providers;
+    return providers && typeof providers === "object" ? providers : null;
   }
 
   function collectProvidersForRegion(wp, region){
     if (!wp || !region || !wp[region]) return [];
-    const r = wp[region] || {};
-    const buckets = ["flatrate", "free", "ads", "rent", "buy"];
+    const arr = Array.isArray(wp[region]) ? wp[region] : [];
     const out = [];
-    for (const b of buckets){
-      const arr = Array.isArray(r[b]) ? r[b] : [];
-      for (const p of arr){
-        if (p && typeof p === "object") out.push(p);
-      }
-    }
-    // unique by provider_id or name
     const seen = new Set();
-    return out.filter(p => {
-      const key = p.provider_id ?? p.provider_name ?? p.name;
+    return arr.filter(p => {
+      const key = p?.provider_id ?? p?.provider_name ?? p?.name;
       if (!key || seen.has(key)) return false;
       seen.add(key);
+      out.push(p);
       return true;
     });
   }
 
   function providerLogoUrl(p){
     const name = safeText(p?.provider_name || p?.name || "").trim();
-    const localFromPath = canonicalServiceLogoFromPath(p?.logo_path || "");
-    const localFromName = name ? guessLocalNetworkLogo(name) : "";
+    const explicitLocal = safeText(p?.logo_local || "").trim();
+    const localFromPath = explicitLocal ? withBasePath(explicitLocal) : "";
     const tmdb = tmdbLogoUrl(p?.logo_path || "");
-    return { name, local: localFromPath || localFromName, tmdb };
+    return { name, local: localFromPath, tmdb };
   }
 
   function providerLogoImgHtml(logo, cssClass="providerlogo"){
@@ -560,13 +559,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function providerGroupHtml(item, kind, limit=4){
     const wp = getWatchProviders(item);
-    const id = item?.tmdb_id ?? item?.id;
+    const id = item?.id ?? item?.tmdb_id;
     if (!wp || !id) return `<div class="provider_group"><div class="muted" style="font-size:11px;">Provider data unavailable</div></div>`;
     const providers = collectProvidersForRegion(wp, "CA").length
       ? collectProvidersForRegion(wp, "CA")
       : (collectProvidersForRegion(wp, "US").length ? collectProvidersForRegion(wp, "US") : collectProvidersForRegion(wp, "AU"));
     if (!providers.length) return `<div class="provider_group"><div class="muted" style="font-size:11px;">No providers</div></div>`;
-    const watchUrl = tmdbWatchUrl(kind, id);
+    const watchUrl = safeText(providers[0]?.deep_link) || tmdbWatchUrl(kind, id);
     return `
       <div class="provider_group">
         <div class="providerchips">
@@ -578,15 +577,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function renderWatchProvidersHtml(item, kind){
     const wp = getWatchProviders(item);
-    const id = item?.tmdb_id ?? item?.id;
+    const id = item?.id ?? item?.tmdb_id;
     if (!wp || !id) return "";
     const regions = ["CA", "US", "GB", "AU"];
     const rows = regions.map(region => {
       const providers = collectProvidersForRegion(wp, region);
-      const watchUrl = tmdbWatchUrl(kind, id);
       const chips = providers.slice(0, 8).map(p => {
         const logo = providerLogoUrl(p);
-        return providerChipHtml(logo, watchUrl);
+        return providerChipHtml(logo, safeText(p?.deep_link) || tmdbWatchUrl(kind, id));
       }).join("");
       const body = chips || `<div class="muted" style="font-size:11px;">No providers</div>`;
       return `
@@ -1160,13 +1158,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         } else if (action === "mark_watched"){
           if (kind === "movie") setMovieWatched(id, true);
           if (kind === "show"){
-            const show = getShowById(id);
+            const show = await getShowDetailById(id);
             if (show) setShowWatched(id, show.seasons || [], true);
           }
         } else if (action === "mark_unwatched"){
           if (kind === "movie") setMovieWatched(id, false);
           if (kind === "show"){
-            const show = getShowById(id);
+            const show = await getShowDetailById(id);
             if (show) setShowWatched(id, show.seasons || [], false);
           }
         } else if (action === "status_set"){
@@ -1179,18 +1177,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         closeAllActionMenus();
         if ($("#modalBack")?.style.display === "flex"){
           if (kind === "movie"){
-            const movie = getMovieById(id);
-            if (movie){
-              $("#modalBody").innerHTML = buildMoviePopupHtml(movie);
-              wireMoviePopup(id);
-            }
+            await openMovieModal(id);
           } else {
             const showId = Number(context.showId || id) || 0;
-            const show = getShowById(showId);
-            if (show){
-              $("#modalBody").innerHTML = buildShowPopupHtml(show);
-              wireShowPopup(showId);
-            }
+            await openShowModal(showId);
           }
         }
         if (state.tab === "calendar") renderCalendar();
@@ -1225,7 +1215,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       setEpisodeWatched(showId, seasonNum, episodeNum, !isEpisodeWatched(showId, seasonNum, episodeNum));
       return;
     }
-    const show = getShowById(id);
+    const show = await getShowDetailById(id);
     if (show) setShowWatched(id, show.seasons || [], !isShowWatched(show));
   }
 
@@ -1616,21 +1606,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function buildMediaLinks(kind, id, links){
     const src = links && typeof links === "object" ? links : {};
-    const streaming = state.cfg && typeof state.cfg === "object" ? state.cfg.streaming : null;
-    const isTv = kind === "show" || kind === "tv" || kind === "season" || kind === "episode";
-    const slug = safeText(id).trim();
-    const vidsrcBase = streaming ? (isTv ? streaming.vidsrc_tv : streaming.vidsrc_movie) : "";
-    const videasyBase = streaming ? (isTv ? streaming.videasy_tv : streaming.videasy_movie) : "";
-    const generatedSources = []
-      .concat(Array.isArray(src.watch_sources) ? src.watch_sources : [])
-      .concat(Array.isArray(src.source_options) ? src.source_options : []);
-    const lookupGenerated = (key) => {
-      const hit = generatedSources.find(entry => safeText(entry?.key || entry?.provider || entry?.source).trim().toLowerCase() === key && safeText(entry?.href || entry?.url || entry?.link).trim());
-      return hit ? safeText(hit.href || hit.url || hit.link).trim() : "";
+    const item = (src && typeof src === "object" && src.watch) ? src : null;
+    const embed = Array.isArray(item?.watch?.embed) ? item.watch.embed : [];
+    const lookupEmbed = (key) => {
+      const hit = embed.find(entry => safeText(entry?.key).trim().toLowerCase() === key && safeText(entry?.href).trim());
+      return hit ? safeText(hit.href).trim() : "";
     };
-    const vidsrc = safeText(src.vidsrc || "").trim() || lookupGenerated("vidsrc_net") || lookupGenerated("vidsrc") || (vidsrcBase && slug ? `${vidsrcBase}${slug}` : "");
-    const videasy = safeText(src.videasy || "").trim() || lookupGenerated("videasy") || (videasyBase && slug ? `${videasyBase}${slug}` : "");
-    const local = safeText(src.local_media || src.local || src.localMedia || "").trim();
+    const vidsrc = lookupEmbed("vidsrc_net") || lookupEmbed("vidsrc");
+    const videasy = lookupEmbed("videasy");
+    const local = lookupEmbed("local");
     return { vidsrc, videasy, local };
   }
 
@@ -1643,26 +1627,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function collectConfiguredWatchSources(item){
-    const links = item?.links && typeof item.links === "object" ? item.links : {};
-    const raw = []
-      .concat(Array.isArray(item?.watch_sources) ? item.watch_sources : [])
-      .concat(Array.isArray(item?.source_options) ? item.source_options : [])
-      .concat(Array.isArray(links.watch_sources) ? links.watch_sources : [])
-      .concat(Array.isArray(links.source_options) ? links.source_options : []);
+    const raw = Array.isArray(item?.watch?.embed) ? item.watch.embed : [];
     const fallbackOrder = Array.isArray(state.cfg?.streaming?.fallback_order) ? state.cfg.streaming.fallback_order.map(v => safeText(v).trim().toLowerCase()) : [];
     return raw.map((entry, idx) => {
-      if (typeof entry === "string"){
-        return { key: "", type: "external", label: `Source ${idx + 1}`, href: entry, priority: idx };
-      }
       if (!entry || typeof entry !== "object") return null;
-      const href = safeText(entry.href || entry.url || entry.link || "").trim();
+      const href = safeText(entry.href).trim();
       if (!href) return null;
-      const key = safeText(entry.key || entry.provider || entry.source || "").trim().toLowerCase();
+      const key = safeText(entry.key).trim().toLowerCase();
       const priority = key ? fallbackOrder.indexOf(key) : -1;
       return {
         key,
-        type: safeText(entry.type || entry.kind || "external").trim().toLowerCase() || "external",
-        label: safeText(entry.label || entry.name || entry.title || `Source ${idx + 1}`),
+        type: safeText(entry.type || "external").trim().toLowerCase() || "external",
+        label: safeText(entry.label || `Source ${idx + 1}`),
         note: safeText(entry.note || entry.description || ""),
         status: safeText(entry.status || ""),
         href,
@@ -1678,19 +1654,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function collectWatchSourceOptions(kind, item, context={}){
     if (!item || typeof item !== "object") return [];
-    const id = item?.tmdb_id ?? item?.id ?? context.showId ?? "";
-    const mediaLinks = buildMediaLinks(kind, id, item?.links || {});
-    const links = item?.links && typeof item.links === "object" ? item.links : {};
     const options = [];
     const push = (type, label, href, note="") => {
       const safeHref = safeText(href).trim();
       if (!safeHref) return;
       options.push({ type, label, href: safeHref, note });
     };
-    push("local", "Local Server / Owned", mediaLinks.local, "Configured local or owned media link");
-    push("embed", "Vidsrc", mediaLinks.vidsrc, "Existing embed source");
-    push("embed", "Videasy", mediaLinks.videasy, "Existing alternate embed source");
-    push("network", "Official Site", links.homepage || links.official || links.network || links.owned_url || links.owned, "Direct network or owned destination");
     collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note || opt.status));
     const seen = new Set();
     return options.filter(opt => {
@@ -1740,17 +1709,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function wireWatchSourceButtons(container){
     if (!container) return;
     $$("[data-watch-source-open]", container).forEach(btn => {
-      btn.addEventListener("click", (e) => {
+      btn.addEventListener("click", async (e) => {
         e.preventDefault();
         e.stopPropagation();
         const kind = safeText(btn.getAttribute("data-watch-source-open"));
         if (kind === "movie"){
-          const movie = getMovieById(Number(btn.getAttribute("data-id") || "0"));
+          const movieId = Number(btn.getAttribute("data-id") || "0");
+          const movie = await getMovieDetailById(movieId);
           if (!movie) return;
           openProviderModal(`${safeText(movie.title || "Movie")} • Watch source`, renderWatchSourceChooserHtml(movie, "movie"));
           return;
         }
-        const show = getShowById(Number(btn.getAttribute("data-show") || btn.getAttribute("data-id") || "0"));
+        const showId = Number(btn.getAttribute("data-show") || btn.getAttribute("data-id") || "0");
+        const show = await getShowDetailById(showId);
         if (!show) return;
         if (kind === "show"){
           openProviderModal(`${safeText(show.title || show.name || "Show")} • Watch source`, renderWatchSourceChooserHtml(show, "show", { show }));
@@ -1769,7 +1740,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           const episode = getEpisodeItem(show, seasonNum, episodeNum);
           if (!episode) return;
           const title = safeText(episode.title || episode.name || `Episode ${episodeNum}`);
-          openProviderModal(`${safeText(show.title || show.name || "Show")} • ${title} • Watch source`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id }));
+          openProviderModal(`${safeText(show.title || show.name || "Show")} • ${title} • Watch source`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id ?? show.id }));
         }
       });
     });
@@ -1965,6 +1936,23 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return $$(FOCUSABLE_SELECTOR, root).filter(el => isVisible(el));
   }
 
+  function wirePopupDpad(root){
+    if (!root || root.dataset.popupDpadBound === "1") return;
+    root.dataset.popupDpadBound = "1";
+    root.addEventListener("keydown", (e) => {
+      if (!isModalOpen()) return;
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+      const focusables = getFocusables(root);
+      if (!focusables.length) return;
+      const active = document.activeElement;
+      const currentIndex = Math.max(0, focusables.indexOf(active));
+      const delta = (e.key === "ArrowLeft" || e.key === "ArrowUp") ? -1 : 1;
+      const nextIndex = (currentIndex + delta + focusables.length) % focusables.length;
+      e.preventDefault();
+      focusables[nextIndex]?.focus();
+    });
+  }
+
   function isTypingField(el){
     if (!el) return false;
     const tag = (el.tagName || "").toLowerCase();
@@ -2139,18 +2127,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       }catch(_){/* noop */}
 
 
-      // AUTHORITATIVE: data.json is loaded once and kept in memory
-            // AUTHORITATIVE: ONLY data/data.json (canonical)
-      state.data = await window.MyTVHubSharedModules.dataLoader.loadCatalogFirst(["../data/data.json"]);
+      state.data = await window.MyTVHubSharedModules.dataLoader.loadCatalogIndexFirst(["../data/catalog_index.json"]);
+      state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/calendar.json"]);
 
-
-      if (!state.data || typeof state.data !== "object") throw new Error("data.json not loaded");
+      if (!state.data || typeof state.data !== "object") throw new Error("catalog_index.json not loaded");
+      if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar.json not loaded");
 
       // Enforce contract shape (graceful defaults)
       state.data.movies = Array.isArray(state.data.movies) ? state.data.movies : [];
       state.data.shows  = Array.isArray(state.data.shows)  ? state.data.shows  : [];
       state.data.errors = Array.isArray(state.data.errors) ? state.data.errors : [];
       state.data.meta   = state.data.meta && typeof state.data.meta === "object" ? state.data.meta : {};
+      state.calendarData.days = state.calendarData.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
       state.inputs = await window.MyTVHubSharedModules.dataLoader.loadInputsFirst(["../data/inputs.json", "../inputs.json"]);
 
       // Detect local inputs editor API (for write-back)
@@ -2282,122 +2270,46 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function getShowById(id){
-    return (state.data?.shows || []).find(s => Number(s?.tmdb_id) === Number(id)) || null;
+    return (state.data?.shows || []).find(s => Number(s?.id ?? s?.tmdb_id) === Number(id)) || null;
   }
 
   function getMovieById(id){
-    return (state.data?.movies || []).find(m => Number(m?.tmdb_id) === Number(id)) || null;
+    return (state.data?.movies || []).find(m => Number(m?.id ?? m?.tmdb_id) === Number(id)) || null;
+  }
+
+  function hasDirectWatchSources(item){
+    if (!item || typeof item !== "object") return false;
+    if (Array.isArray(item?.watch?.embed) && item.watch.embed.length > 0) return true;
+    return Number(item?.watch_embed_count || item?.embed_count || 0) > 0 || !!item?.has_watch_sources;
+  }
+
+  function detailUrlCandidates(id){
+    const safeId = Number(id) || 0;
+    return safeId ? [`../data/catalog_detail/${safeId}.json`] : [];
+  }
+
+  async function getCatalogDetailById(id){
+    const safeId = Number(id) || 0;
+    if (!safeId) return null;
+    return await window.MyTVHubSharedModules.dataLoader.loadCatalogDetailFirst(safeId, detailUrlCandidates(safeId));
+  }
+
+  async function getShowDetailById(id){
+    const detail = await getCatalogDetailById(id);
+    return detail && safeText(detail.type).toLowerCase() === "tv" ? detail : null;
+  }
+
+  async function getMovieDetailById(id){
+    const detail = await getCatalogDetailById(id);
+    return detail && safeText(detail.type).toLowerCase() === "movie" ? detail : null;
   }
 
   function buildCalendarEventsForMonth(monthDate){
-    // v1.2.8: Align event objects to renderCalendar() expectations (kind + specific field names)
-    // Canonical traversal: data.shows[].seasons[].episodes[]
-    const eventsByDate = new Map(); // yyyy-mm-dd -> [items]
-    const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
-    const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
-
-    const mapMoviePoster = (movie) => {
-      const pl = withBasePath(movie?.poster_local);
-      if (pl) return pl;
-      const pp = safeText(movie?.poster_path).trim();
-      if (pp && pp.startsWith("/")) return withBasePath("/assets/posters/movies/" + pp.split("/").pop());
-      return "";
-    };
-
-    const mapEpisodeStill = (ep, season, show) => {
-      const sl = withBasePath(ep?.still_local);
-      if (sl) return sl;
-      const sp = safeText(ep?.still_path).trim();
-      if (sp && sp.startsWith("/")) return withBasePath("/assets/stills/episodes/" + sp.split("/").pop());
-      return pickImage(season, "poster_local", "poster_path")
-        || pickImage(show, "poster_local", "poster_path")
-        || pickImage(show, "backdrop_local", "backdrop_path")
-        || "";
-    };
-
-    for (const show of shows){
-      const showTitle = safeText(show?.title || show?.name).trim() || "Unknown Show";
-      const showId = Number(show?.tmdb_id) || 0;
-
-      const seasons = Array.isArray(show?.seasons) ? show.seasons : [];
-      const networkObj = Array.isArray(show?.networks) && show.networks.length ? show.networks[0] : null;
-      const networkName = safeText(networkObj?.name || "").trim();
-      const networkLocalLogo = networkName ? guessLocalNetworkLogo(networkName) : "";
-      const networkTmdbLogo = tmdbLogoUrl(networkObj?.logo_path || "");
-      for (const season of seasons){
-        const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
-        for (const ep of episodes){
-          const adRaw = pickAirDate(ep).trim();
-          const dateKey = adRaw ? adRaw.slice(0,10) : "";
-          if (!dateKey || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
-
-          const arr = eventsByDate.get(dateKey) || [];
-          arr.push({
-            kind: "episode",
-            show_tmdb_id: showId,
-            show_title: showTitle,
-
-            season_number: Number(ep?.season_number ?? season?.season_number) || 0,
-            episode_number: Number(ep?.episode_number) || 0,
-            episode_name: safeText(ep?.title || ep?.name).trim(),
-
-            runtime: (ep?.runtime == null) ? null : Number(ep?.runtime),
-            thumb: mapEpisodeStill(ep, season, show),
-            still_path: safeText(ep?.still_path).trim(),
-
-            // For future use (routing/buttons)
-            links: ep?.links || {},
-            network_name: networkName,
-            network_logo_local: networkLocalLogo,
-            network_logo_tmdb: networkTmdbLogo,
-            watch_providers: getWatchProviders(show),
-            progress: (() => {
-              const pct = progressPercent(ep);
-              if (pct != null) return pct;
-              const raw = Number(ep?.vote_average ?? ep?.rating ?? ep?.rating_percent ?? ep?.rating_pct ?? 0);
-              return Number.isFinite(raw) && raw > 0 ? Math.round(raw <= 10 ? raw * 10 : raw) : null;
-            })()
-          });
-          eventsByDate.set(dateKey, arr);
-        }
-      }
-    }
-
-    for (const movie of movies){
-      const rdRaw = safeText(movie?.release_date).trim();
-      const dateKey = rdRaw ? rdRaw.slice(0,10) : "";
-      if (!dateKey || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
-
-      const arr = eventsByDate.get(dateKey) || [];
-      arr.push({
-        kind: "movie",
-        tmdb_id: Number(movie?.tmdb_id) || 0,
-        title: safeText(movie?.title).trim() || "Unknown Movie",
-        thumb: mapMoviePoster(movie),
-        links: movie?.links || {},
-        service_logo_local: safeText(movie?.service_logo_local || "").trim(),
-        service_logo_tmdb: safeText(movie?.service_logo_tmdb || "").trim(),
-        watch_providers: getWatchProviders(movie),
-        progress: (() => {
-          const pct = progressPercent(movie);
-          if (pct != null) return pct;
-          const raw = Number(movie?.vote_average ?? movie?.rating ?? movie?.rating_percent ?? movie?.rating_pct ?? 0);
-          return Number.isFinite(raw) && raw > 0 ? Math.round(raw <= 10 ? raw * 10 : raw) : null;
-        })()
-      });
-      eventsByDate.set(dateKey, arr);
-    }
-
-    // Deterministic order: episodes first then movies; stable by title
-    for (const [k, arr] of eventsByDate.entries()){
-      arr.sort((a,b)=>{
-        const pa = a.kind === "episode" ? 0 : 1;
-        const pb = b.kind === "episode" ? 0 : 1;
-        if (pa !== pb) return pa - pb;
-        const ta = a.kind === "episode" ? a.show_title : a.title;
-        const tb = b.kind === "episode" ? b.show_title : b.title;
-        return safeText(ta).localeCompare(safeText(tb));
-      });
+    const days = state.calendarData?.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
+    const eventsByDate = new Map();
+    for (const [dateKey, items] of Object.entries(days)){
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
+      eventsByDate.set(dateKey, Array.isArray(items) ? items : []);
     }
     return eventsByDate;
   }
@@ -2448,16 +2360,30 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const entry = ws.shows[id];
     if (!entry || !entry.seasons || typeof entry.seasons !== "object") return false;
     const seasons = Array.isArray(show?.seasons) ? show.seasons : [];
-    const seasonNums = seasons.map(s => Number(s?.season_number ?? s?.number)).filter(n => Number.isFinite(n));
-    if (!seasonNums.length) return true;
-    for (const season of seasons){
-      const sn = String(season?.season_number ?? season?.number ?? "");
-      const episodeNums = getSeasonEpisodeNumbers(season);
-      if (!episodeNums.length) continue;
+    const seasonCounts = Array.isArray(show?.season_episode_counts) ? show.season_episode_counts : [];
+    const targets = seasons.length
+      ? seasons.map(season => ({
+          seasonNumber: Number(season?.season_number ?? season?.number),
+          episodeCount: getSeasonEpisodeNumbers(season).length,
+          episodeNums: getSeasonEpisodeNumbers(season)
+        }))
+      : seasonCounts.map(season => ({
+          seasonNumber: Number(season?.season_number),
+          episodeCount: Number(season?.episode_count ?? 0),
+          episodeNums: null
+        }));
+    if (!targets.length) return false;
+    for (const target of targets){
+      const sn = String(target.seasonNumber || "");
+      if (!sn) continue;
       const watched = entry.seasons[sn];
       if (!watched || !Array.isArray(watched.episodes)) return false;
-      for (const epn of episodeNums){
-        if (!watched.episodes.includes(Number(epn))) return false;
+      if (Array.isArray(target.episodeNums) && target.episodeNums.length){
+        for (const epn of target.episodeNums){
+          if (!watched.episodes.includes(Number(epn))) return false;
+        }
+      } else if (Number(target.episodeCount) > 0 && watched.episodes.length < Number(target.episodeCount)) {
+        return false;
       }
     }
     return true;
@@ -2606,7 +2532,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const pct = Number.isFinite(item?.progress) ? Math.max(0, Math.min(100, item.progress)) : (Number.isFinite(options.pct) ? options.pct : null);
     const available = isEpisodeAvailable(item);
     const watched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
-    const hasSources = collectWatchSourceOptions("episode", item, { showId }).length > 0;
+    const hasSources = hasDirectWatchSources(item);
     return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
       id: showId,
       image: safeText(options.image || "").trim(),
@@ -2734,12 +2660,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       });
     });
     $$("[data-watch-show]", $("#showsGrid")).forEach(el => {
-      el.addEventListener("change", (e) => {
+      el.addEventListener("change", async (e) => {
         e.stopPropagation();
         const id = parseInt(el.getAttribute("data-watch-show"), 10);
         if (!Number.isFinite(id)) return;
         const on = el.checked;
-        setShowWatched(id, getShowById(id)?.seasons || [], on);
+        const show = await getShowDetailById(id);
+        if (!show) return;
+        setShowWatched(id, show.seasons || [], on);
+        await saveInputs();
         renderShows();
       });
     });
@@ -2750,7 +2679,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         e.stopPropagation();
         const id = parseInt(btn.getAttribute("data-id") || "0", 10);
         if (!Number.isFinite(id)) return;
-        const show = getShowById(id);
+        const show = await getShowDetailById(id);
         if (!show) return;
         const on = !isShowWatched(show);
         setShowWatched(id, show.seasons || [], on);
@@ -3066,30 +2995,34 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     wireWatchSourceButtons(host);
   }
 
-  function openShowModal(showId){
-    const show = getShowById(showId);
-    if (!show){
+  async function openShowModal(showId){
+    const showIndex = getShowById(showId);
+    if (!showIndex){
       openModal("Show", `<div>Show not found: ${escHtml(showId)}</div>`);
       return;
     }
     state.show.tmdb_id = showId;
-    openModal("Show", buildShowPopupHtml(show));
-    wireShowPopup(showId);
+    openModal("Show", `<div class="muted">Loading show details…</div>`);
+    const show = await getShowDetailById(showId);
+    if (!show){
+      $("#modalBody").innerHTML = `<div class="inline-error">Show detail not found: ${escHtml(showId)}</div>`;
+      return;
+    }
+    $("#modalBody").innerHTML = buildShowPopupHtml(show);
+    wireShowPopup(showId, show);
   }
 
-  function wireShowPopup(showId){
+  function wireShowPopup(showId, show){
     const host = $("#modalBody");
-    if (!host) return;
+    if (!host || !show) return;
 
     $$("[data-season-pick]", host).forEach(btn => {
       btn.addEventListener("click", () => {
         const v = Number(btn.getAttribute("data-season-pick") || "0");
         if (!Number.isFinite(v)) return;
         state.show.selectedSeasonNumber = v;
-        const show = getShowById(showId);
-        if (!show) return;
         $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(showId);
+        wireShowPopup(showId, show);
       });
     });
 
@@ -3097,33 +3030,25 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       btn.addEventListener("change", async () => {
         const id = parseInt(btn.getAttribute("data-watch-show") || "0", 10);
         if (!Number.isFinite(id)) return;
-        const show = getShowById(id);
-        if (!show) return;
         setShowWatched(id, show.seasons || [], !!btn.checked);
         await saveInputs();
-        $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(id);
+        await openShowModal(id);
       });
     });
     $$("[data-action='toggle-want'][data-kind='show']", host).forEach(btn => {
       btn.addEventListener("click", async (e) => {
         e.preventDefault();
-        const show = getShowById(showId);
         await toggleWantForKind("show", showId, safeText(show?.title || show?.name || "Show"));
         await saveInputs();
-        $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(showId);
+        await openShowModal(showId);
       });
     });
     $$("[data-action='toggle-watched'][data-kind='show']", host).forEach(btn => {
       btn.addEventListener("click", async (e) => {
         e.preventDefault();
-        const show = getShowById(showId);
-        if (!show) return;
         setShowWatched(showId, show.seasons || [], !isShowWatched(show));
         await saveInputs();
-        $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(showId);
+        await openShowModal(showId);
       });
     });
     $$("[data-watch-season]", host).forEach(btn => {
@@ -3131,14 +3056,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const id = parseInt(btn.getAttribute("data-show") || "0", 10);
         const seasonNum = Number(btn.getAttribute("data-season") || "0");
         if (!Number.isFinite(id) || !Number.isFinite(seasonNum)) return;
-        const show = getShowById(id);
-        if (!show) return;
         const season = (show.seasons || []).find(s => Number(s?.season_number ?? s?.number) === Number(seasonNum)) || null;
         const eps = (season?.episodes || []).map(e => Number(e?.episode_number ?? e?.number)).filter(n => Number.isFinite(n));
         setSeasonWatched(id, seasonNum, eps, !!btn.checked);
         await saveInputs();
-        $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(id);
+        await openShowModal(id);
       });
     });
 
@@ -3149,11 +3071,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const episodeNum = Number(btn.getAttribute("data-watch-episode") || btn.getAttribute("data-episode") || "0");
         if (!Number.isFinite(id) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
         setEpisodeWatched(id, seasonNum, episodeNum, !!btn.checked);
-        const show = getShowById(id);
-        if (!show) return;
         await saveInputs();
-        $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(id);
+        await openShowModal(id);
       });
     });
     $$("[data-action='toggle-watched'][data-kind='episode'][data-watch-episode]", host).forEach(btn => {
@@ -3164,11 +3083,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const episodeNum = Number(btn.getAttribute("data-watch-episode") || btn.getAttribute("data-episode") || "0");
         if (!Number.isFinite(id) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
         setEpisodeWatched(id, seasonNum, episodeNum, !isEpisodeWatched(id, seasonNum, episodeNum));
-        const show = getShowById(id);
-        if (!show) return;
         await saveInputs();
-        $("#modalBody").innerHTML = buildShowPopupHtml(show);
-        wireShowPopup(id);
+        await openShowModal(id);
       });
     });
 
@@ -3220,7 +3136,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const available = isEpisodeAvailable(item);
         const epWatched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
         const pct = Number.isFinite(item.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
-        const hasSources = collectWatchSourceOptions("episode", item, { showId }).length > 0;
+        const hasSources = hasDirectWatchSources(item);
         return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
           image: item.thumb,
           eyebrow: item.show_title || "Show",
@@ -3249,7 +3165,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
       const movieId = Number(item.tmdb_id) || 0;
       const pct = Number.isFinite(item.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
-      const hasSources = collectWatchSourceOptions("movie", item).length > 0;
+      const hasSources = hasDirectWatchSources(item);
       const watched = state.watchState ? isMovieWatched({ tmdb_id: movieId }) : false;
       return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
         kind: "movie",
@@ -3388,7 +3304,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             showWatchedAction: true,
             showStatusAction: true,
             watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
-            popcornAttrs: collectWatchSourceOptions("episode", item, { showId }).length ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
+            popcornAttrs: hasDirectWatchSources(item) ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
             popcornKind: "episode",
             available: isEpisodeAvailable(item),
             statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
@@ -3555,7 +3471,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         showWatchedAction: true,
         showStatusAction: true,
         watchedToggleHtml: watchToggleHtml("movie", { "data-watch-movie": id }, isMovieWatched(movie)),
-        popcornAttrs: collectWatchSourceOptions("movie", movie).length ? { "data-id": id } : null,
+        popcornAttrs: hasDirectWatchSources(movie) ? { "data-id": id } : null,
         popcornKind: "movie",
         available: isMovieAvailable(movie)
       }),
@@ -3623,12 +3539,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     }
   }
 
-  function openMovieModal(tmdbId){
-    const movie = getMovieById(tmdbId);
-    if (!movie){
-      openModal("Movie", `<div>Movie not found: ${escHtml(tmdbId)}</div>`);
-      return;
-    }
+  function buildMoviePopupHtml(movie){
     const title = safeText(movie?.title || "Movie");
     const runtime = Number(movie?.runtime);
     const genres = Array.isArray(movie?.genres) ? movie.genres.map(g => g?.name).filter(Boolean) : [];
@@ -3640,7 +3551,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "",
       genres[0] || ""
     ].filter(Boolean).join(" • ");
-    openModal(title, `
+    return `
       <div class="popup-shell popup-shell--movie"${backdrop ? ` style="--popup-backdrop-image:url('${escHtml(backdrop).replace(/'/g, "%27")}')"` : ""}>
         <div class="popup-hero-header">
           <h2 class="popup-hero__title">${escHtml(title)}</h2>
@@ -3691,7 +3602,22 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </div>
         </div>
       </div>
-    `);
+    `;
+  }
+
+  async function openMovieModal(tmdbId){
+    const movieIndex = getMovieById(tmdbId);
+    if (!movieIndex){
+      openModal("Movie", `<div>Movie not found: ${escHtml(tmdbId)}</div>`);
+      return;
+    }
+    openModal(safeText(movieIndex?.title || "Movie"), `<div class="muted">Loading movie details…</div>`);
+    const movie = await getMovieDetailById(tmdbId);
+    if (!movie){
+      $("#modalBody").innerHTML = `<div class="inline-error">Movie detail not found: ${escHtml(tmdbId)}</div>`;
+      return;
+    }
+    $("#modalBody").innerHTML = buildMoviePopupHtml(movie);
     wireMoviePopup(Number(movie?.tmdb_id) || 0);
   }
 
@@ -3848,7 +3774,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     showWatchedAction: true,
                     showStatusAction: true,
                     watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
-                    popcornAttrs: collectWatchSourceOptions("episode", ep, { showId: show.tmdb_id ?? "" }).length ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
+                    popcornAttrs: hasDirectWatchSources(ep) ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
                     popcornKind: "episode",
                     available: isEpisodeAvailable(ep),
                     statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }

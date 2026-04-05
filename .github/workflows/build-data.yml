@@ -49,16 +49,19 @@ jobs:
         run: python scripts/run_pipeline_tmdb_trakt.py
 
       - name: Validate generated runtime JSON
-        run: python -m json.tool data/data.json > /dev/null
+        run: |
+          python -m json.tool data/data.json > /dev/null
+          python -m json.tool data/catalog_index.json > /dev/null
+          python -m json.tool data/calendar.json > /dev/null
 
       - name: Commit regenerated data artifacts
         run: |
-          if git diff --quiet -- data/data.json assets; then
+          if git diff --quiet -- data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets; then
             echo "No runtime artifact changes to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/data.json assets
+          git add data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets
           git commit -m "build: update data artifacts"
           git push

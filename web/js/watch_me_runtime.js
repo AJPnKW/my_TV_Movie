@@ -12,6 +12,7 @@ const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 const state = {
   config: null,
   data: null,
+  calendar: null,
   filters: {
     search: '',
     type: 'all',
@@ -117,50 +118,59 @@ function buildActionBar(kind, item, context = {}) {
 
 function buildEpisodeEntries() {
   const today = new Date();
+  const startKey = dateKey(today);
   const windowEnd = new Date(today);
   windowEnd.setDate(today.getDate() + Number(state.filters.windowDays || 14));
-  const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+  const endKey = dateKey(windowEnd);
   const entries = [];
-  for (const show of shows) {
-    const showTitle = safeText(show?.title || show?.name);
-    for (const season of show?.seasons || []) {
-      const seasonNumber = Number(season?.season_number ?? season?.number ?? 0);
-      for (const episode of season?.episodes || []) {
-        const airDate = toDate(episode?.air_date || episode?.first_aired);
-        if (!airDate || airDate < today || airDate > windowEnd) continue;
-        const title = safeText(episode?.title || episode?.name || `Episode ${episode?.episode_number}`);
+  const days = state.calendar?.days && typeof state.calendar.days === 'object' ? state.calendar.days : {};
+  for (const [day, items] of Object.entries(days)) {
+    if (day < startKey || day > endKey || !Array.isArray(items)) continue;
+    for (const item of items) {
+      if (safeText(item?.kind) !== 'episode') continue;
+      const airDate = toDate(item?.date || day);
+      if (!airDate) continue;
+      const title = safeText(item?.episode_name || item?.name || `Episode ${item?.episode_number}`);
         entries.push({
           type: 'episode',
-          show,
-          showTitle,
-          seasonNumber,
-          episodeNumber: Number(episode?.episode_number ?? episode?.number ?? 0),
+          show: { tmdb_id: Number(item?.show_id ?? item?.show_tmdb_id ?? 0) },
+          showTitle: safeText(item?.show_title),
+          seasonNumber: Number(item?.season_number ?? 0),
+          episodeNumber: Number(item?.episode_number ?? 0),
           date: airDate,
           key: dateKey(airDate),
           title,
-          episode
+          episode: item
         });
       }
-    }
   }
   return entries;
 }
 
 function buildMovieEntries() {
   const today = new Date();
+  const startKey = dateKey(today);
   const windowEnd = new Date(today);
   windowEnd.setDate(today.getDate() + Number(state.filters.windowDays || 14));
-  const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
-  return movies
-    .map(movie => ({ movie, date: toDate(movie?.release_date) }))
-    .filter(entry => entry.date && entry.date >= today && entry.date <= windowEnd)
-    .map(entry => ({
-      type: 'movie',
-      key: dateKey(entry.date),
-      date: entry.date,
-      title: safeText(entry.movie?.title || entry.movie?.name),
-      movie: entry.movie
-    }));
+  const endKey = dateKey(windowEnd);
+  const days = state.calendar?.days && typeof state.calendar.days === 'object' ? state.calendar.days : {};
+  const out = [];
+  for (const [day, items] of Object.entries(days)) {
+    if (day < startKey || day > endKey || !Array.isArray(items)) continue;
+    for (const item of items) {
+      if (safeText(item?.kind) !== 'movie') continue;
+      const releaseDate = toDate(item?.date || day);
+      if (!releaseDate) continue;
+      out.push({
+        type: 'movie',
+        key: dateKey(releaseDate),
+        date: releaseDate,
+        title: safeText(item?.title || item?.name),
+        movie: item
+      });
+    }
+  }
+  return out;
 }
 
 function matchesSearch(texts) {
@@ -300,10 +310,11 @@ async function init() {
   bind();
   try {
     state.config = await configLoader.loadConfigFirst(['../config.json', './config.json']);
-    state.data = await dataLoader.loadCatalogFirst(['../../data/data.json', '../data/data.json', '/data/data.json']);
+    state.data = await dataLoader.loadCatalogIndexFirst(['../../data/catalog_index.json', '../data/catalog_index.json', '/data/catalog_index.json']);
+    state.calendar = await dataLoader.loadCalendarFirst(['../../data/calendar.json', '../data/calendar.json', '/data/calendar.json']);
     render();
     setStatus(true, 'Watch Me ready');
-    $('#watchMeFooter').textContent = 'Watch Me uses the shared card and action-bar modules against data/data.json.';
+    $('#watchMeFooter').textContent = 'Watch Me uses the shared card and action-bar modules against catalog_index.json and calendar.json.';
   } catch (error) {
     $('#watchMeSections').innerHTML = `<section class="dashblock"><div class="inline-error">${esc(error?.message || String(error))}</div></section>`;
     setStatus(false, 'Load failed');

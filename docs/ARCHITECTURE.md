@@ -1,50 +1,59 @@
 # My TV Hub -- Architecture Contract
 
-## Core Principles
+## Canonical Inputs And Outputs
 
--   Single application system serving multiple views from the same
-    dataset.
--   Trakt is the primary metadata authority.
--   TMDB is supplemental metadata and artwork provider.
--   All assets cached locally under /assets.
+- Editable canonical input: `data/inputs.json`
+- Generated reference artifact: `data/data.json`
+- Active runtime index: `data/catalog_index.json`
+- Active runtime detail: `data/catalog_detail/<tmdb_id>.json`
+- Active calendar feed: `data/calendar.json`
+- Canonical asset root: `assets/`
+
+## Runtime Model
+
+- First-load list, dashboard, shows, movies, and watch-me views must load from `catalog_index.json`.
+- Calendar and weekly dashboard date-grouped views must load from `calendar.json`.
+- Popup and detail views must lazy-load `catalog_detail/<tmdb_id>.json`.
+- `data/data.json` may exist for build/reference/QA purposes but must not be the active first-load runtime dependency.
+
+## Detail Schema Contract
+
+- Movie detail uses one normalized watch block:
+  - `watch.embed[]`
+  - `watch.providers.{CA,US,GB,AU}[]`
+- TV detail uses the same normalized watch block at show level and episode level.
+- TV episode data must exist only under `seasons[].episodes[]`.
+- Active runtime artifacts must not leak competing watch structures such as `watch_sources`, `source_options`, or `watch_providers`.
 
 ## Core Pages
 
--   Dashboard (index.html)
--   Shows (shows.html)
--   Movies (movies.html)
--   Calendar (calendar.html)
--   Watch Me (watch_me/watch_me.html)
--   Discover (discover.html)
--   Config (config.html)
--   Inputs Editor (inputs_editor.html)
+- Dashboard: `web/index.html`
+- Shows: `web/shows.html`
+- Movies: `web/movies.html`
+- Calendar: `web/calendar.html`
+- Watch Me: `web/watch_me/watch_me.html`
+- Config: `web/config.html`
+- Inputs Editor: `web/inputs_editor.html`
 
-## Shared Runtime Modules
+## Layout Rules
 
-web/js/app_runtime.js\
-web/js/card_renderer.js\
-web/js/action_bar.js
+- Calendar is full-width with no left sidebar.
+- Shows and movies keep left-sidebar filters.
+- Dashboard and calendar weekly layouts must stay TV-first:
+  - 7 visible columns
+  - no horizontal scrolling at TV width
+  - clean day/date anchors
+  - no sticky-header overlap with cards
+- Card action icon order is locked:
+  - Movies and episodes: popcorn, watch-status, favorites, bookmark, rating
+  - Shows and seasons: watch-status, favorites, bookmark, rating
 
-## Card Model
+## Pipeline Contract
 
-All media cards must use overlay layout.
-
-Poster Image\
-Overlay Gradient\
-Title\
-Metadata\
-Icon Strip
-
-Icon Strip Standard:
-
-Movies / Episodes 🍿 ⌚ 💕 🔖 ⭐%
-
-Shows / Seasons ⌚ 💕 🔖 ⭐%
-
-## Calendar Layout
-
-Calendar must render as a 7‑column wall calendar grid.
-
-Each day cell contains compact episode cards.
-
-No sidebar should be present on the calendar view.
+- Production build flow is `inputs.json -> TMDB -> OMDB -> Trakt -> availability/status -> split-runtime build -> QA`.
+- No active production dependency may return to:
+  - `tv_list.txt`
+  - `movies_list.txt`
+  - `live_tv_list.txt`
+  - `inputs_parsed.json`
+- Local validation and GitHub Actions must enforce the same runtime artifact and schema rules.
