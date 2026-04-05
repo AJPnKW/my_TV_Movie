@@ -181,3 +181,10 @@ Commit
 - Replaced silent show overwrite behavior with a season-aware editor flow backed by TMDB show-detail lookup, allowing existing shows to add, replace, or remove selected seasons while preserving the single canonical `data/inputs.json` entry.
 - Added a dedicated editor-side GitHub sync path so the local inputs editor can save `data/inputs.json` and push that file through the `github` remote without depending on the unavailable `origin` server on `theboys-hp290:3000`.
 - Implementation commit: `da8deea`
+
+## 2026-04-04 — Canonical pipeline and TV-first watch-source hardening
+- Removed residual active-production drift around legacy txt and `inputs_parsed.json` assumptions by enforcing `data/inputs.json` as the canonical build input and `data/data.json` as the canonical generated runtime output across the TMDB builder, availability library, pipeline integrity QA, and GitHub pipeline QA.
+- Expanded the generated streaming-source contract from the researched provider artifacts so runtime entities now carry normalized `watch_sources[]` blocks for movie, show, season, and episode contexts, with canonical fallback ordering and stricter schema validation shared by local and GitHub-facing QA.
+- Hardened the TV-first dashboard and calendar surfaces so the seven-day week grid stays visible without horizontal overflow, sticky day/date presentation no longer collides with card content, and the runtime watch-source chooser consumes the expanded provider data consistently.
+- Refreshed generated runtime artifacts and newly discovered canonical assets, and preserved the passing pipeline integrity artifact under `reports/_qa_pipeline_integrity_2026-04-05_00-10-21.json`.
+- Implementation commit: `fe58ce0`
