@@ -121,8 +121,14 @@ try {
   Write-Host ""
 
   Write-Host "=== QA 4: LOCAL VS REMOTE HASH (config/workflow) ==="
+  function Normalize-TextForHash([string]$s) {
+    if ($null -eq $s) { return "" }
+    return ($s -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n"
+  }
+
   function Sha256Text([string]$s) {
-    $bytes = [Text.Encoding]::UTF8.GetBytes($s)
+    $normalized = Normalize-TextForHash $s
+    $bytes = [Text.Encoding]::UTF8.GetBytes($normalized)
     $sha = [Security.Cryptography.SHA256]::Create()
     ($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString("x2") }) -join ""
   }
@@ -132,16 +138,22 @@ try {
 
   if (Test-Path $localWorkflowPath) {
     $localWorkflow = Get-Content $localWorkflowPath -Raw
-    Write-Host ("workflow sha256 local : " + (Sha256Text $localWorkflow))
-    Write-Host ("workflow sha256 remote: " + (Sha256Text $remoteWorkflow))
+    $localWorkflowHash = Sha256Text $localWorkflow
+    $remoteWorkflowHash = Sha256Text $remoteWorkflow
+    Write-Host ("workflow sha256 local : " + $localWorkflowHash)
+    Write-Host ("workflow sha256 remote: " + $remoteWorkflowHash)
+    Write-Host ("workflow normalized match: " + ($(if ($localWorkflowHash -eq $remoteWorkflowHash) { "YES" } else { "NO" })))
   } else {
     Write-Host "workflow local file missing: $localWorkflowPath"
   }
 
   if (Test-Path $localConfigPath) {
     $localConfig = Get-Content $localConfigPath -Raw
-    Write-Host ("config sha256 local : " + (Sha256Text $localConfig))
-    Write-Host ("config sha256 remote: " + (Sha256Text $remoteConfig))
+    $localConfigHash = Sha256Text $localConfig
+    $remoteConfigHash = Sha256Text $remoteConfig
+    Write-Host ("config sha256 local : " + $localConfigHash)
+    Write-Host ("config sha256 remote: " + $remoteConfigHash)
+    Write-Host ("config normalized match: " + ($(if ($localConfigHash -eq $remoteConfigHash) { "YES" } else { "NO" })))
   } else {
     Write-Host "config local file missing: $localConfigPath"
   }
