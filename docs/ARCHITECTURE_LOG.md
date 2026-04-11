@@ -210,7 +210,7 @@ Commit
 - Added `hungary/index.html` as a static, self-contained Hungary IPTV guide/player utility outside the canonical catalog runtime.
 - Added curated Hungary channel/source data under `hungary/data/`, using IPTV-org public API/M3U records plus a reachable Hungary XMLTV EPG link.
 - Added browser HLS playback support through native HLS or `hls.js`, stream alternates, favorites, display-name overrides, guide loading, source-link copy, and local diagnostics.
-- Implementation commit: `0f6ede89`
+- Implementation commit: `5b0e2dfe`
 
 ## 2026-04-11 — Reusable watch-party page module
 - Added `web/js/watch_party.js` and `web/css/watch_party.css` as a reusable static-site watch-party module for single-title pages that do not alter the canonical catalog runtime.
