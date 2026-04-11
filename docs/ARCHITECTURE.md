@@ -40,8 +40,9 @@
 - Calendar is full-width with no left sidebar.
 - Shows and movies keep left-sidebar filters.
 - Dashboard and calendar weekly layouts must stay TV-first:
-  - 7 visible columns
-  - no horizontal scrolling at TV width
+  - 7 visible columns at TV/desktop widths where the cards remain readable
+  - responsive day/date frames on tablet and mobile instead of squeezing seven columns into unusable cards
+  - no page-level horizontal scrolling
   - clean day/date anchors
   - no sticky-header overlap with cards
 - Card action icon order is locked:

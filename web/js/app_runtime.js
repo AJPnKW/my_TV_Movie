@@ -1654,6 +1654,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function collectWatchSourceOptions(kind, item, context={}){
     if (!item || typeof item !== "object") return [];
+    if (kind !== "movie" && kind !== "episode") return [];
     const options = [];
     const push = (type, label, href, note="") => {
       const safeHref = safeText(href).trim();
@@ -1723,17 +1724,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const showId = Number(btn.getAttribute("data-show") || btn.getAttribute("data-id") || "0");
         const show = await getShowDetailById(showId);
         if (!show) return;
-        if (kind === "show"){
-          openProviderModal(`${safeText(show.title || show.name || "Show")} • Watch source`, renderWatchSourceChooserHtml(show, "show", { show }));
-          return;
-        }
-        if (kind === "season"){
-          const seasonNum = Number(btn.getAttribute("data-season") || "0");
-          const season = getSeasonItem(show, seasonNum);
-          if (!season) return;
-          openProviderModal(`${safeText(show.title || show.name || "Show")} • Season ${escHtml(seasonNum)} Watch source`, renderWatchSourceChooserHtml(season, "season", { show }));
-          return;
-        }
         if (kind === "episode"){
           const seasonNum = Number(btn.getAttribute("data-season") || "0");
           const episodeNum = Number(btn.getAttribute("data-episode") || "0");
@@ -3700,7 +3690,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               <div class="popup-detail"><span>Created by</span><strong>${escHtml(creators.join(" • ") || "Unavailable")}</strong></div>
             </div>
             <div class="popup-description popup-description--show">${compactOverviewHtml(show?.overview || "", 420)}</div>
-            <div class="popup-watch-surface">${renderWatchSourceChooserHtml(show, "show", { show })}</div>
             <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(show), "Rotten Tomatoes")}</div>
           </div>
         </div>
@@ -3779,7 +3768,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     available: isEpisodeAvailable(ep),
                     statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
                   }),
-                  overlay: true,
+                  overlay: false,
                   articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
                   extraClass: "popup-episode-card"
                 });

@@ -14,7 +14,8 @@ from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_JSON = REPO_ROOT / "data" / "data.json"
-DEFAULT_IMAGE_BASE = "https://image.tmdb.org/t/p/original"
+WEB_CONFIG = REPO_ROOT / "web" / "config.json"
+DEFAULT_IMAGE_BASE = "https://image.tmdb.org/t/p"
 
 
 def now_stamp() -> str:
@@ -28,6 +29,36 @@ def load_json(path: Path) -> Any:
 def write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def load_image_sizes(repo_root: Path) -> dict[str, Any]:
+    config_path = repo_root / "web" / "config.json"
+    if not config_path.exists():
+        return {}
+    cfg = load_json(config_path)
+    return cfg.get("image_sizes", {}) if isinstance(cfg, dict) else {}
+
+
+def snap_tmdb_width(width: int, buckets: list[int]) -> str:
+    target = max(1, int(width or 0))
+    for bucket in buckets:
+        if target <= bucket:
+            return f"w{bucket}"
+    return f"w{buckets[-1]}"
+
+
+def tmdb_size_tag(ref: dict[str, Any], sizes: dict[str, Any]) -> str:
+    entity = str(ref.get("entity") or "").lower()
+    asset_type = str(ref.get("asset_type") or "").lower()
+    if asset_type == "backdrop":
+        return snap_tmdb_width(int(sizes.get("backdrop_w") or 780), [300, 780, 1280])
+    if asset_type == "still":
+        return snap_tmdb_width(int(sizes.get("episode_still_w") or 300), [92, 185, 300, 780])
+    if entity == "season":
+        return snap_tmdb_width(int(sizes.get("season_width") or 342), [92, 154, 185, 342, 500, 780])
+    if entity == "movie":
+        return snap_tmdb_width(int(sizes.get("movie_width") or 342), [92, 154, 185, 342, 500, 780])
+    return snap_tmdb_width(int(sizes.get("show_width") or 342), [92, 154, 185, 342, 500, 780])
 
 
 def normalize_local_path(value: Any) -> str:
@@ -107,13 +138,14 @@ def iter_asset_refs(data: dict[str, Any]) -> list[dict[str, Any]]:
     return list(deduped.values())
 
 
-def download_asset(image_base: str, repo_root: Path, ref: dict[str, Any], timeout: int, retries: int) -> dict[str, Any]:
+def download_asset(image_base: str, repo_root: Path, ref: dict[str, Any], timeout: int, retries: int, image_sizes: dict[str, Any]) -> dict[str, Any]:
     local_path = repo_root / ref["local_path"]
     local_path.parent.mkdir(parents=True, exist_ok=True)
     if local_path.exists():
         return {**ref, "status": "matched", "bytes": local_path.stat().st_size, "sha1": sha1_file(local_path)}
 
-    url = f"{image_base.rstrip('/')}{ref['remote_path']}"
+    size_tag = tmdb_size_tag(ref, image_sizes)
+    url = f"{image_base.rstrip('/')}/{size_tag}{ref['remote_path']}"
     request = urllib.request.Request(url, headers={"User-Agent": "my_TV_Movie-asset-fetch/1.0"})
     context = ssl.create_default_context()
     last_error = ""
@@ -131,6 +163,7 @@ def download_asset(image_base: str, repo_root: Path, ref: dict[str, Any], timeou
                 "bytes": len(content),
                 "sha1": sha1_file(local_path),
                 "source_url": url,
+                "tmdb_size": size_tag,
             }
         except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError, socket.timeout, ssl.SSLError) as exc:  # type: ignore[attr-defined]
             last_error = str(exc)
@@ -154,13 +187,15 @@ def main() -> int:
         return 1
 
     data = load_json(data_json)
+    image_sizes = load_image_sizes(repo_root)
     refs = iter_asset_refs(data)
     print("[START] fetch_tmdb_assets")
     print(f"[INFO] unique referenced assets with remote paths: {len(refs)}")
+    print(f"[INFO] tmdb image base: {args.image_base.rstrip('/')} with configured runtime sizes")
 
     results: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.max_workers)) as pool:
-        futures = [pool.submit(download_asset, args.image_base, repo_root, ref, args.timeout, args.retries) for ref in refs]
+        futures = [pool.submit(download_asset, args.image_base, repo_root, ref, args.timeout, args.retries, image_sizes) for ref in refs]
         for future in concurrent.futures.as_completed(futures):
             results.append(future.result())
 
