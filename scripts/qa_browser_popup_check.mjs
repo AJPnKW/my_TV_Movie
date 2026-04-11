@@ -29,6 +29,7 @@ async function inspectPage(pathname, kind) {
   const selectors = kind === "tv"
     ? ["[data-show-open]", ".media-card--show", "[data-kind='tv'][data-tmdb-id]"]
     : ["[data-movie-open]", ".media-card--movie", "[data-kind='movie'][data-tmdb-id]"];
+  await page.waitForSelector(selectors.join(","), { timeout: 15000 });
   const clicked = await page.evaluate((selectorList) => {
     for (const selector of selectorList) {
       const el = document.querySelector(selector);
