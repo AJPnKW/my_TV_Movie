@@ -207,7 +207,7 @@ function handleMessage(client, message) {
   const isHost = client.room.hostId === client.id;
   if (message.type === "state" && isHost) {
     client.room.state = {
-      videoId: message.videoId || "",
+      sourceId: message.sourceId || message.videoId || "",
       paused: Boolean(message.paused),
       currentTime: Number(message.currentTime) || 0,
       updatedAt: Date.now(),
