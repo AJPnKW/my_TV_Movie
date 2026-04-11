@@ -218,3 +218,10 @@ Commit
 - Added modal overlay content for Report a Problem, Watch Party Info, and How to Watch Together so support/help flows stay on the current page instead of opening a new tab or replacing the show page.
 - Embedded the existing Google Form inside the Report a Problem overlay and kept the watch-party guidance as local in-page HTML content.
 - Implementation commit: `7d088003`
+
+## 2026-04-11 — Watch-party host/join workflow correction
+- Simplified the reusable watch-party module around the tested device workflow: Host Watch Party, Join Watch Party, Open Episode, Copy Invite, and shared timer controls.
+- Removed the misleading embedded Jitsi call path from the primary experience because public Jitsi rooms can require a signed-in moderator before guests can join.
+- Updated the Heated Rivalry help overlay copy to explain the host/moderator step and the Google Drive playback limitation.
+- Updated `docs/ARCHITECTURE.md` so the module is documented as external voice/video room handoff rather than embedded conferencing.
+- Implementation commit: `bae45b9d`
