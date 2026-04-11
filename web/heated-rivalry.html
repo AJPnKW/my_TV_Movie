@@ -1779,13 +1779,13 @@ NOTES:
           <p>The page does not rebroadcast the video. Each person opens the same episode from Google Drive, then uses the shared room and timer to stay aligned.</p>
 
           <h3>Voice and video</h3>
-          <p>The call area starts a private Jitsi room inside this page. Video can stay off or be turned on from inside the room.</p>
+          <p>The call opens in a Jitsi room tab. The host starts the room first and signs in if Jitsi asks for a moderator.</p>
 
           <h3>Episode handoff</h3>
           <p>The selected episode controls the Open Episode button and the invite state. If an episode card's Watch Party button is used, that episode is selected in the room panel.</p>
 
           <div class="info-modal-note">
-            Google Drive permissions still control who can open each recording. Anyone joining the watch party needs access to the episode file.
+            Google Drive permissions still control who can open each recording. The page does not rebroadcast or synchronize Google Drive playback.
           </div>
         `
       },
@@ -1803,9 +1803,9 @@ NOTES:
 
           <h3>Starting together</h3>
           <ol>
-            <li>Everyone opens the invite link.</li>
-            <li>Press Start Call to join voice or video inside the page.</li>
-            <li>Press Open Episode so the selected recording opens in Google Drive.</li>
+            <li>The host presses Host Watch Party and signs in if Jitsi asks for a moderator.</li>
+            <li>Guests press Join Watch Party after the host has started the room.</li>
+            <li>Everyone presses Open Episode so the selected recording opens in Google Drive.</li>
             <li>Pause at the start of the episode, count down in the call, and press play together.</li>
             <li>Use Start Timer as a shared reference if anyone needs to pause and resync.</li>
           </ol>
@@ -1813,7 +1813,7 @@ NOTES:
           <h3>If something goes wrong</h3>
           <ul>
             <li>If the video will not open, check Google Drive sharing access.</li>
-            <li>If the in-page call does not load, use Open Room Tab from the Watch Party panel.</li>
+            <li>If Jitsi says no moderator has arrived, the host must sign in and start the room first.</li>
             <li>If playback drifts, pause together, call out the timer position, and restart from the same timestamp.</li>
           </ul>
         `

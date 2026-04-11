@@ -42,7 +42,7 @@
   - `web/js/watch_party.js`
   - `web/css/watch_party.css`
 - The watch party module is static-site compatible and may be mounted by single-title pages using page-local episode data.
-- The module supports shareable room state, episode handoff, a shared playback timer, and embedded voice/video conferencing through an external meeting provider.
+- The module supports shareable room state, episode handoff, a shared playback timer, and external voice/video room handoff through a meeting provider.
 - The module must not become a parallel catalog runtime, editor, watch-state system, or replacement for the shared card/action system.
 
 ## Layout Rules

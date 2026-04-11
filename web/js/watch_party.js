@@ -44,27 +44,6 @@
       : `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   }
 
-  function loadJitsiScript() {
-    if (window.JitsiMeetExternalAPI) return Promise.resolve();
-
-    return new Promise((resolve, reject) => {
-      const existing = document.querySelector("script[data-watch-party-jitsi]");
-      if (existing) {
-        existing.addEventListener("load", resolve, { once: true });
-        existing.addEventListener("error", reject, { once: true });
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = `https://${DEFAULT_JITSI_DOMAIN}/external_api.js`;
-      script.async = true;
-      script.setAttribute("data-watch-party-jitsi", "true");
-      script.addEventListener("load", resolve, { once: true });
-      script.addEventListener("error", reject, { once: true });
-      document.head.appendChild(script);
-    });
-  }
-
   function createElement(tag, className, text) {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -79,7 +58,6 @@
       this.episodes = Array.isArray(this.options.episodes) ? this.options.episodes : [];
       this.title = this.options.title || document.title || "Watch Party";
       this.storageKey = `${STORAGE_PREFIX}${slugify(this.title)}`;
-      this.jitsiApi = null;
       this.tickTimer = null;
       this.syncStartedAt = null;
       this.syncSeconds = 0;
@@ -205,15 +183,14 @@
       this.syncTime.setAttribute("aria-label", "Sync timer");
 
       const actions = createElement("div", "watch-party-actions");
-      actions.appendChild(this.button("Open Episode", "primary", () => this.openEpisode()));
+      actions.appendChild(this.button("Host Watch Party", "primary", () => this.hostParty()));
+      actions.appendChild(this.button("Join Watch Party", "", () => this.joinParty()));
+      actions.appendChild(this.button("Open Episode", "", () => this.openEpisode()));
       actions.appendChild(this.button("Copy Invite", "", () => this.copyInvite()));
-      actions.appendChild(this.button("Start Call", "", () => this.startConference()));
-      actions.appendChild(this.button("Open Room Tab", "", () => this.openConferenceTab()));
       actions.appendChild(this.syncTime);
       actions.appendChild(this.button("Start Timer", "", () => this.startTimer()));
       actions.appendChild(this.button("Pause", "", () => this.pauseTimer()));
       actions.appendChild(this.button("Reset", "", () => this.resetTimer()));
-      actions.appendChild(this.button("Leave Call", "", () => this.leaveConference()));
 
       const episodeRow = createElement("div", "watch-party-episode-row");
       episodeRow.appendChild(this.now);
@@ -230,16 +207,14 @@
 
     renderConference() {
       const wrap = createElement("div", "watch-party-conference");
-      const conferenceDetails = createElement("details", "watch-party-details watch-party-call-details");
-      conferenceDetails.appendChild(createElement("summary", "watch-party-details-summary", "Voice and video room"));
-      this.conferenceStage = createElement("div", "watch-party-conference-stage");
-      this.conferenceStage.appendChild(
-        createElement("div", "watch-party-conference-placeholder", "Start the room when everyone is ready.")
+      const guidance = createElement(
+        "div",
+        "watch-party-guidance",
+        "Host starts the Jitsi room first and signs in if prompted. Everyone opens the same episode separately, then uses the timer to stay together."
       );
       this.error = createElement("div", "watch-party-error");
-      conferenceDetails.appendChild(this.conferenceStage);
-      conferenceDetails.appendChild(this.error);
-      wrap.appendChild(conferenceDetails);
+      wrap.appendChild(guidance);
+      wrap.appendChild(this.error);
       return wrap;
     }
 
@@ -317,56 +292,27 @@
       return `https://${DEFAULT_JITSI_DOMAIN}/${encodeURIComponent(this.state.room)}`;
     }
 
-    openConferenceTab() {
-      this.state.room = sanitizeRoom(this.roomInput?.value, this.title);
-      this.saveState();
-      window.open(this.roomUrl(), "_blank", "noopener,noreferrer");
-    }
-
-    async startConference() {
-      this.error.textContent = "";
+    persistRoomState() {
       this.state.room = sanitizeRoom(this.roomInput?.value, this.title);
       this.state.displayName = this.nameInput?.value.trim() || "";
       this.saveState();
-
-      try {
-        await loadJitsiScript();
-      } catch (_) {
-        this.error.textContent = "Video room could not load here. Open Room Tab will still launch the meeting.";
-        this.openConferenceTab();
-        return;
-      }
-
-      this.leaveConference();
-      this.conferenceStage.innerHTML = "";
-      this.jitsiApi = new window.JitsiMeetExternalAPI(DEFAULT_JITSI_DOMAIN, {
-        roomName: this.state.room,
-        parentNode: this.conferenceStage,
-        userInfo: {
-          displayName: this.state.displayName || undefined,
-        },
-        configOverwrite: {
-          prejoinPageEnabled: true,
-          startWithAudioMuted: false,
-          startWithVideoMuted: true,
-        },
-        interfaceConfigOverwrite: {
-          SHOW_JITSI_WATERMARK: false,
-          SHOW_WATERMARK_FOR_GUESTS: false,
-        },
-      });
-      this.setStatus("Call active");
     }
 
-    leaveConference() {
-      if (this.jitsiApi && typeof this.jitsiApi.dispose === "function") {
-        this.jitsiApi.dispose();
+    hostParty() {
+      this.persistRoomState();
+      window.open(this.roomUrl(), "_blank", "noopener,noreferrer");
+      this.setStatus("Host room opened");
+      if (this.error) {
+        this.error.textContent = "Host signs in to start the Jitsi room. After the room is live, open the episode and start the timer.";
       }
-      this.jitsiApi = null;
-      if (this.conferenceStage && !this.conferenceStage.childElementCount) {
-        this.conferenceStage.appendChild(
-          createElement("div", "watch-party-conference-placeholder", "Start the room when everyone is ready.")
-        );
+    }
+
+    joinParty() {
+      this.persistRoomState();
+      window.open(this.roomUrl(), "_blank", "noopener,noreferrer");
+      this.setStatus("Join room opened");
+      if (this.error) {
+        this.error.textContent = "If Jitsi says no moderator has arrived, wait for the host to sign in and start the room.";
       }
     }
   }
