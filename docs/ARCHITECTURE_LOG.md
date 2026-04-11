@@ -205,3 +205,10 @@ Commit
 - Changed TMDB asset fetching to request configured right-sized image buckets instead of `original`, then regenerated split runtime artifacts and newly referenced canonical assets from `data/inputs.json`.
 - Added browser QA coverage for popup/source invariants and responsive dashboard/calendar layout across Android phone, Android tablet, and 1080p TV viewports.
 - Implementation commit: `e9ba70c2`
+
+## 2026-04-11 — Reusable watch-party page module
+- Added `web/js/watch_party.js` and `web/css/watch_party.css` as a reusable static-site watch-party module for single-title pages that do not alter the canonical catalog runtime.
+- Wired `web/heated-rivalry.html` to the module with episode selection, shareable room links, Google Drive episode handoff, a shared playback timer, and embedded Jitsi voice/video room support.
+- Corrected Heated Rivalry episode still references to existing canonical assets so the page no longer emits missing-image requests during browser validation.
+- Updated `docs/ARCHITECTURE.md` with the reusable page-module contract and guardrails against creating a parallel catalog/editor/watch-state system.
+- Implementation commit: `d4fabbf2`
