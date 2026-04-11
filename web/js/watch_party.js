@@ -158,9 +158,9 @@
 
     renderControls() {
       const wrap = createElement("div", "watch-party-controls");
-      const fields = createElement("div", "watch-party-fields");
+      const setupWrap = createElement("div", "watch-party-setup-grid");
 
-      const episodeField = createElement("label", "watch-party-field");
+      const episodeField = createElement("label", "watch-party-field watch-party-episode-field");
       episodeField.appendChild(createElement("span", "watch-party-label", "Episode"));
       this.episodeSelect = createElement("select", "watch-party-select");
       this.episodes.forEach((ep) => {
@@ -176,6 +176,7 @@
         this.updateEpisodeSummary();
       });
       episodeField.appendChild(this.episodeSelect);
+      this.now = createElement("div", "watch-party-now");
 
       const roomField = createElement("label", "watch-party-field");
       roomField.appendChild(createElement("span", "watch-party-label", "Room Name"));
@@ -200,52 +201,45 @@
       });
       nameField.appendChild(this.nameInput);
 
-      fields.appendChild(episodeField);
-      fields.appendChild(roomField);
-      fields.appendChild(nameField);
-
-      this.now = createElement("div", "watch-party-now");
       this.syncTime = createElement("span", "watch-party-sync-time", "00:00");
+      this.syncTime.setAttribute("aria-label", "Sync timer");
 
       const actions = createElement("div", "watch-party-actions");
       actions.appendChild(this.button("Open Episode", "primary", () => this.openEpisode()));
       actions.appendChild(this.button("Copy Invite", "", () => this.copyInvite()));
       actions.appendChild(this.button("Start Call", "", () => this.startConference()));
+      actions.appendChild(this.button("Open Room Tab", "", () => this.openConferenceTab()));
+      actions.appendChild(this.syncTime);
+      actions.appendChild(this.button("Start Timer", "", () => this.startTimer()));
+      actions.appendChild(this.button("Pause", "", () => this.pauseTimer()));
+      actions.appendChild(this.button("Reset", "", () => this.resetTimer()));
+      actions.appendChild(this.button("Leave Call", "", () => this.leaveConference()));
 
-      const sync = createElement("div", "watch-party-sync-row");
-      sync.appendChild(this.syncTime);
-      sync.appendChild(this.button("Start Timer", "", () => this.startTimer()));
-      sync.appendChild(this.button("Pause Timer", "", () => this.pauseTimer()));
-      sync.appendChild(this.button("Reset Timer", "", () => this.resetTimer()));
+      const episodeRow = createElement("div", "watch-party-episode-row");
+      episodeRow.appendChild(this.now);
+      episodeRow.appendChild(episodeField);
 
-      const note = createElement(
-        "div",
-        "watch-party-note",
-        "Open the same episode, start the room, then use the shared timer to count down and keep playback aligned."
-      );
+      setupWrap.appendChild(roomField);
+      setupWrap.appendChild(nameField);
 
-      wrap.appendChild(fields);
-      wrap.appendChild(this.now);
+      wrap.appendChild(episodeRow);
+      wrap.appendChild(setupWrap);
       wrap.appendChild(actions);
-      wrap.appendChild(sync);
-      wrap.appendChild(note);
       return wrap;
     }
 
     renderConference() {
       const wrap = createElement("div", "watch-party-conference");
-      wrap.appendChild(createElement("div", "watch-party-small-label", "Voice and Video"));
+      const conferenceDetails = createElement("details", "watch-party-details watch-party-call-details");
+      conferenceDetails.appendChild(createElement("summary", "watch-party-details-summary", "Voice and video room"));
       this.conferenceStage = createElement("div", "watch-party-conference-stage");
       this.conferenceStage.appendChild(
         createElement("div", "watch-party-conference-placeholder", "Start the room when everyone is ready.")
       );
-      const actions = createElement("div", "watch-party-conference-actions");
-      actions.appendChild(this.button("Open Room Tab", "", () => this.openConferenceTab()));
-      actions.appendChild(this.button("Leave Call", "", () => this.leaveConference()));
       this.error = createElement("div", "watch-party-error");
-      wrap.appendChild(this.conferenceStage);
-      wrap.appendChild(actions);
-      wrap.appendChild(this.error);
+      conferenceDetails.appendChild(this.conferenceStage);
+      conferenceDetails.appendChild(this.error);
+      wrap.appendChild(conferenceDetails);
       return wrap;
     }
 
