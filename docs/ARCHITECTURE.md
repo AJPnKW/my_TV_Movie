@@ -34,6 +34,16 @@
 - Watch Me: `web/watch_me/watch_me.html`
 - Config: `web/config.html`
 - Inputs Editor: `web/inputs_editor.html`
+- Single-title feature pages may use reusable page modules when they do not alter the canonical catalog runtime.
+
+## Reusable Page Modules
+
+- Watch party UI is provided by:
+  - `web/js/watch_party.js`
+  - `web/css/watch_party.css`
+- The watch party module is static-site compatible and may be mounted by single-title pages using page-local episode data.
+- The module supports shareable room state, episode handoff, a shared playback timer, and embedded voice/video conferencing through an external meeting provider.
+- The module must not become a parallel catalog runtime, editor, watch-state system, or replacement for the shared card/action system.
 
 ## Layout Rules
 

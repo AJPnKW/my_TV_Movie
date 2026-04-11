@@ -4,10 +4,11 @@
 FILE: heated-rivalry.html
 PROJECT: my_TV_Movie
 PAGE: Heated Rivalry (single title page)
-VERSION: 1.1.1
-UPDATED: 2026-01-18 07:30:18
+VERSION: 1.2.0
+UPDATED: 2026-04-11 00:00:00
 
 CHANGELOG:
+- 1.2.0: Add reusable watch-party experience with episode invite links, shared playback timer, and embedded voice/video room support.
 - 1.1.1: Replace corrupted JS engine with clean, tested season-dropdown renderer; fixes blank season options and missing episodes.
 - 1.1.0: Revert Season selector to dropdown placed on left side of Season section; remove broken radio-list selector wiring.
 - 1.0.9: Fix JS syntax error in version badge parser that prevented season list + episodes from rendering.
@@ -30,6 +31,8 @@ NOTES:
   <meta charset="UTF-8" />
   <title>Heated Rivalry · Season 1 · Crave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230369a1'/%3E%3Cpath d='M8 20h16v4H8zM10 8h12l-2 10h-8z' fill='%23f8fafc'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./css/watch_party.css" />
 
 
   <style>
@@ -1144,14 +1147,14 @@ NOTES:
       <div class="episodes-header">Episodes</div>
       <div class="episodes-strip" id="episodesStrip"></div>
     </section>
+    <div id="watchPartyMount"></div>
     <!-- MODAL PLAYER -->
     <div class="modal-backdrop" id="modalBackdrop">
       <div class="modal-player">
         <button class="modal-close" id="modalClose" aria-label="Close player">✕</button>
         <iframe id="modalIframe"
                 src=""
-                allow="autoplay; fullscreen"
-                allowfullscreen>
+                allow="autoplay; fullscreen">
         </iframe>
       </div>
     </div>
@@ -1168,6 +1171,7 @@ NOTES:
 </div> <!-- end .app-shell -->
 
   
+  <script src="./js/watch_party.js"></script>
   <!-- JAVASCRIPT ENGINE -->
   <script>
     function stripJsonComments(input){
@@ -1257,11 +1261,9 @@ NOTES:
           "Shane Hollander and Ilya Rozanov enter the league with a rivalry already in motion. Their history ignites a series of tense encounters, culminating in a confrontation that sets the stage for a connection neither expected.",
         driveId: "1_bze8hkl9ZT-0hJAGhbKwIOxbLwe25cs",
         images: [
-          "../assets/HR/ep01_rookies.jpg",
-          "../assets/HR/ep01_rozzy.jpg",
           "../assets/HR/ep1_meetup.jpg"
         ],
-        thumbnail: "../assets/HR/ep01_rookies.jpg"
+        thumbnail: "../assets/HR/ep1_meetup.jpg"
       },
       {
         season: 1,
@@ -1273,10 +1275,9 @@ NOTES:
           "Forced together on the world’s biggest stage, Shane and Ilya must navigate Olympic pressure, media scrutiny, and the emotional cost of representing their countries—while their reputations push them to the edge.",
         driveId: "1eNkS4IbB5QyiisNwmiXK0eA0NKGDTedk",
         images: [
-          "../assets/HR/ep02_olympians.jpg",
           "../assets/HR/ep2_sasha.jpg"
         ],
-        thumbnail: "../assets/HR/ep02_olympians.jpg"
+        thumbnail: "../assets/HR/ep2_sasha.jpg"
       },
       {
         season: 1,
@@ -1288,10 +1289,10 @@ NOTES:
           "A chance encounter off the ice forces Shane and Ilya to confront what they truly want. Meanwhile, their feelings grow stronger as their secret relationship grows riskier.",
         driveId: "1l1OZpdmA0KfiHHUE9JDylGrZz9xYE5Fw",
         images: [
-          "../assets/HR/ep03_hunter.jpg",
-          "../assets/HR/eo03_scott.jpg"
+          "../assets/HR/shane-and-ilya-in-heated-rivalry-3.avif",
+          "../assets/HR/n0uuQcRDcyzjLYMYXcfHLfgcZab.webp"
         ],
-        thumbnail: "../assets/HR/ep03_hunter.jpg"
+        thumbnail: "../assets/HR/shane-and-ilya-in-heated-rivalry-3.avif"
       },
       {
         season: 1,
@@ -1303,12 +1304,10 @@ NOTES:
           "A moment of bravery pushes Shane and Ilya into the open, exposing their hearts and voices. As high‑profile romance enters the spotlight, the emotional stakes skyrocket.",
         driveId: "1sr3IfZS94cXaAUy-WMYnUt1kI53gT7mm",
         images: [
-          "../assets/HR/ep04_faceoff.jpg",
-          "../assets/HR/ep04_share+rozzy.jpg",
           "../assets/HR/ep4-rose.jpeg",
           "../assets/HR/ep4_meet-up.jpg"
         ],
-        thumbnail: "../assets/HR/ep04_faceoff.jpg"
+        thumbnail: "../assets/HR/ep4-rose.jpeg"
       },
       {
         season: 1,
@@ -1526,7 +1525,18 @@ NOTES:
         downloadLink.innerHTML = `<span class="btn-pill-icon">⬇</span><span>Download</span>`;
         downloadLink.addEventListener("click", (e) => e.stopPropagation());
 
+        const partyBtn = document.createElement("button");
+        partyBtn.type = "button";
+        partyBtn.className = "btn-ghost";
+        partyBtn.innerHTML = `<span class="btn-pill-icon">☏</span><span>Watch Party</span>`;
+        partyBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectWatchPartyEpisode(ep);
+          document.getElementById("watchPartyMount")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
         actions.appendChild(watchBtn);
+        actions.appendChild(partyBtn);
         actions.appendChild(downloadLink);
 
         body.appendChild(titleRow);
@@ -1575,6 +1585,26 @@ NOTES:
 
     setVersionBadgeFromHeader();
     renderEpisodeCardsForSeason(1);
+
+    let watchPartyService = null;
+
+    function selectWatchPartyEpisode(ep) {
+      if (!watchPartyService || !watchPartyService.episodeSelect) return;
+      const key = watchPartyService.episodeKey(ep);
+      watchPartyService.episodeSelect.value = key;
+      watchPartyService.state.episodeKey = key;
+      watchPartyService.saveState();
+      watchPartyService.updateEpisodeSummary();
+    }
+
+    if (window.MyTvMovieWatchParty) {
+      watchPartyService = window.MyTvMovieWatchParty.init({
+        mountSelector: "#watchPartyMount",
+        title: "Heated Rivalry",
+        episodes: EPISODES,
+        watchUrlBuilder: (ep) => driveWatchUrl(ep.driveId),
+      });
+    }
   </script>
 </body>
 </html>
