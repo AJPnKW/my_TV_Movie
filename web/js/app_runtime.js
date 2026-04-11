@@ -2550,6 +2550,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
+  function imageForCalendarItem(item){
+    const direct = normalizeImageSrc(item?.thumb || item?.still_local || "");
+    if (direct) return direct;
+    if (item?.kind === "episode"){
+      const show = (state.data?.shows || []).find(s => String(s?.tmdb_id ?? "") === String(item?.show_tmdb_id ?? item?.show_id ?? ""));
+      return normalizeImageSrc(
+        pickImage(show || item, "backdrop_local", "backdrop_path", "show_backdrop_local", "poster_local", "poster_path", "show_poster_local")
+      );
+    }
+    const movie = (state.data?.movies || []).find(m => String(m?.tmdb_id ?? "") === String(item?.tmdb_id ?? ""));
+    return normalizeImageSrc(pickImage(movie || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path", "thumb"));
+  }
+
   function buildIconStripHtml(kind, id, pct, titleText){
     const hasTarget = kind && id;
     if (!hasTarget) return "";
@@ -3123,31 +3136,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const showId = Number(item.show_tmdb_id) || 0;
         const seasonNum = Number(item.season_number) || 0;
         const episodeNum = Number(item.episode_number) || 0;
-        const available = isEpisodeAvailable(item);
-        const epWatched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
-        const pct = Number.isFinite(item.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
-        const hasSources = hasDirectWatchSources(item);
-        return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
-          image: item.thumb,
+        return buildSharedEpisodeCard(item, {
+          image: imageForCalendarItem(item),
           eyebrow: item.show_title || "Show",
           title: item.episode_name || "Episode",
-          badgeHtml: availabilityBadgeHtml(item, { compact: true }),
           meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
           submeta: "",
           overlay: true,
-          actionBarHtml: buildActionBarHtml("episode", episodeNum, {
-            title: item.episode_name || "Episode",
-            compact: true,
-            pct,
-            showWatchedAction: true,
-            watchedActive: epWatched,
-            watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
-            showStatusAction: true,
-            statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum },
-            popcornAttrs: hasSources ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
-            popcornKind: "episode",
-            available
-          }),
           articleAttrs: { "data-day": dateKey, "data-kind": "episode", "data-show": showId, tabindex: "0" },
           extraClass: `calendar-item calendar-item--episode${hidden ? " hidden" : ""}`
         });
@@ -3160,7 +3155,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
         kind: "movie",
         id: movieId,
-        image: item.thumb,
+        image: imageForCalendarItem(item),
         title: item.title || "Movie",
         badgeHtml: availabilityBadgeHtml(item, { compact: true }),
         meta: "Movie",

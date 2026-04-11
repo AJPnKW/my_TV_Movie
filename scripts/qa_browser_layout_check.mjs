@@ -5,6 +5,7 @@ const BASE_URL = (process.env.BASE_URL || "http://127.0.0.1:8000").replace(/\/+$
 const VIEWPORTS = [
   { name: "android-phone", width: 390, height: 844 },
   { name: "android-tablet", width: 820, height: 1180 },
+  { name: "android-tv-css", width: 960, height: 540 },
   { name: "tv-1080p", width: 1920, height: 1080 }
 ];
 
@@ -35,9 +36,11 @@ async function inspect(pathname, viewport) {
   const metrics = await page.evaluate(() => {
     const bodyOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 2;
     const firstCard = document.querySelector(".media-card, .calendar-day");
-    const firstImg = document.querySelector(".media-card__poster img, .imgbox img");
+    const firstImg = document.querySelector(".calendar-item .media-card__poster img, .calendar-item .imgbox img, .media-card__poster img, .imgbox img");
     const dashCols = document.querySelector("#dashScheduleCols");
     const calendarGrid = document.querySelector(".calendar-month-grid");
+    const calendarBand = document.querySelector(".calendar-week-band");
+    const visibleCalendarItems = Array.from(document.querySelectorAll(".calendar-item")).filter(el => getComputedStyle(el).display !== "none" && !el.classList.contains("hidden"));
     const firstRect = firstCard?.getBoundingClientRect();
     const imageRect = firstImg?.getBoundingClientRect();
     return {
@@ -47,7 +50,10 @@ async function inspect(pathname, viewport) {
       imageWidth: Math.round(imageRect?.width || 0),
       imageHeight: Math.round(imageRect?.height || 0),
       dashboardColumns: dashCols ? getComputedStyle(dashCols).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
-      calendarColumns: calendarGrid ? getComputedStyle(calendarGrid).gridTemplateColumns.split(" ").filter(Boolean).length : 0
+      calendarColumns: calendarGrid ? getComputedStyle(calendarGrid).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
+      calendarBandColumns: calendarBand ? getComputedStyle(calendarBand).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
+      calendarItems: visibleCalendarItems.length,
+      calendarItemImages: visibleCalendarItems.filter(el => el.querySelector(".media-card__poster img, .imgbox img")).length
     };
   });
   await page.close();
@@ -65,10 +71,17 @@ try {
     if (result.errors.length) failures.push(`${result.viewport} ${result.pathname}: console errors`);
     if (result.missing.length) failures.push(`${result.viewport} ${result.pathname}: 404 responses`);
     if (result.bodyOverflow) failures.push(`${result.viewport} ${result.pathname}: page-level horizontal overflow`);
-    if (result.cardWidth > 0 && result.cardWidth < 140) failures.push(`${result.viewport} ${result.pathname}: card width too narrow (${result.cardWidth}px)`);
+    const minCardWidth = result.viewport === "android-tv-css" && result.pathname === "calendar.html" ? 120 : 140;
+    if (result.cardWidth > 0 && result.cardWidth < minCardWidth) failures.push(`${result.viewport} ${result.pathname}: card width too narrow (${result.cardWidth}px)`);
     if (result.imageWidth > 0 && result.imageWidth < 90) failures.push(`${result.viewport} ${result.pathname}: image width too narrow (${result.imageWidth}px)`);
-    if (result.viewport === "tv-1080p" && result.pathname === "calendar.html" && result.calendarColumns !== 7) {
-      failures.push(`tv-1080p calendar.html: expected 7 readable columns, found ${result.calendarColumns}`);
+    if ((result.viewport === "tv-1080p" || result.viewport === "android-tv-css") && result.pathname === "calendar.html" && result.calendarColumns !== 7) {
+      failures.push(`${result.viewport} calendar.html: expected 7 readable columns, found ${result.calendarColumns}`);
+    }
+    if ((result.viewport === "tv-1080p" || result.viewport === "android-tv-css") && result.pathname === "calendar.html" && result.calendarBandColumns !== 7) {
+      failures.push(`${result.viewport} calendar.html: expected 7 day/date band columns, found ${result.calendarBandColumns}`);
+    }
+    if ((result.viewport === "tv-1080p" || result.viewport === "android-tv-css") && result.pathname === "calendar.html" && result.calendarItems > 0 && result.calendarItemImages < result.calendarItems) {
+      failures.push(`${result.viewport} calendar.html: calendar episode/movie cards missing images (${result.calendarItemImages}/${result.calendarItems})`);
     }
   }
   console.log(JSON.stringify({ results, failures }, null, 2));
