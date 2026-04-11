@@ -218,6 +218,10 @@ function handleMessage(client, message) {
 
 const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url, `http://${req.headers.host || "127.0.0.1"}`);
+  if (requestUrl.pathname === "/api/watch-party/health") {
+    sendJson(res, 200, { ok: true, websocket: "/watch-party-ws" });
+    return;
+  }
   if (requestUrl.pathname === "/api/watch-party/videos") {
     sendJson(res, 200, { videos: listVideos() });
     return;

@@ -51,6 +51,8 @@
       this.timerPaused = true;
       this.timerBase = 0;
       this.timerStartedAt = 0;
+      this.serverReady = false;
+      this.serverChecked = false;
     }
 
     render() {
@@ -81,6 +83,7 @@
       this.bindEvents();
       this.setCurrentItem(this.currentSource?.id || "");
       this.updateStep("setup");
+      this.checkServer();
       window.setInterval(() => this.refreshClock(), 500);
     }
 
@@ -247,6 +250,27 @@
       return Boolean(this.currentSource && safeRoom(this.roomInput.value) && this.nameInput.value.trim());
     }
 
+    async checkServer() {
+      this.serverChecked = false;
+      this.serverReady = false;
+      this.warning.textContent = "Checking watch-party room server...";
+      this.updateButtons();
+      try {
+        const res = await fetch("/api/watch-party/health", { cache: "no-store" });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (!data?.ok) throw new Error("Health check failed");
+        this.serverReady = true;
+        this.warning.textContent = "";
+      } catch (_) {
+        this.serverReady = false;
+        this.warning.textContent = "Watch-party room sync is offline on this page. For local testing, run npm run watch-party and open http://127.0.0.1:8789/web/heated-rivalry.html. GitHub Pages can show the page, but it cannot run the room server.";
+      } finally {
+        this.serverChecked = true;
+        this.updateButtons();
+      }
+    }
+
     sourceIsControllable() {
       return Boolean(this.currentSource?.canControl && this.currentSource?.videoUrl);
     }
@@ -284,14 +308,18 @@
       const isSetup = this.step === "setup";
       const isPlay = this.step === "play";
       const isHost = this.role === "host";
-      this.hostButton.disabled = !isSetup || !ready;
-      this.joinButton.disabled = !isSetup || !ready;
+      this.hostButton.disabled = !isSetup || !ready || !this.serverReady;
+      this.joinButton.disabled = !isSetup || !ready || !this.serverReady;
       this.openButton.disabled = !isPlay || !this.currentSource?.sourceUrl;
       this.playButton.disabled = !isPlay || !isHost;
       this.pauseButton.disabled = !isPlay || !isHost;
       this.syncButton.disabled = !isPlay || !isHost;
       this.video.controls = this.sourceIsControllable() && (isHost || this.step === "setup");
-      this.warning.textContent = this.currentSource ? "" : "Select an episode from the show page before starting the room.";
+      if (!this.currentSource) {
+        this.warning.textContent = "Select an episode from the show page before starting the room.";
+      } else if (this.serverChecked && this.serverReady && this.step === "setup") {
+        this.warning.textContent = "";
+      }
     }
 
     connect(role) {
