@@ -204,4 +204,4 @@ Commit
 - Fixed the show popup episode carousel by rendering readable episode body content and enforcing usable carousel card widths across desktop, tablet, and phone viewports.
 - Changed TMDB asset fetching to request configured right-sized image buckets instead of `original`, then regenerated split runtime artifacts and newly referenced canonical assets from `data/inputs.json`.
 - Added browser QA coverage for popup/source invariants and responsive dashboard/calendar layout across Android phone, Android tablet, and 1080p TV viewports.
-- Implementation commit: `07aff8e0`
+- Implementation commit: `e9ba70c2`
