@@ -196,3 +196,12 @@ Commit
 - Fixed popup drift in the shared runtime by restoring a defined popup D-pad handler and stopping provider-logo 404 churn by honoring only verified local logo assets in split detail output.
 - Added the HP deployment unit `deploy/my-tv-movie-static.service`, synced the built static payload into `/srv/my_tv_movie/app`, and enabled the host-side service-managed static app on port `8011`.
 - Implementation commit: `db11f0e`
+
+## 2026-04-10 — Responsive card, popup, and asset hardening
+- Reworked the shared card CSS baseline so action icons render without mismatched square button fills, image surfaces fit their available card areas, and dashboard/calendar cards avoid page-level horizontal overflow.
+- Updated dashboard and calendar layout rules so TV/desktop widths preserve readable seven-column presentation while tablet/mobile use responsive date/day frames instead of squeezing seven unusable columns onto the screen.
+- Removed direct watch-source panels from show and season contexts in the shared runtime; movie and episode watch panels remain the direct streaming-source surfaces.
+- Fixed the show popup episode carousel by rendering readable episode body content and enforcing usable carousel card widths across desktop, tablet, and phone viewports.
+- Changed TMDB asset fetching to request configured right-sized image buckets instead of `original`, then regenerated split runtime artifacts and newly referenced canonical assets from `data/inputs.json`.
+- Added browser QA coverage for popup/source invariants and responsive dashboard/calendar layout across Android phone, Android tablet, and 1080p TV viewports.
+- Implementation commit: `07aff8e0`
