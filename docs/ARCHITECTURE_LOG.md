@@ -225,3 +225,10 @@ Commit
 - Updated the Heated Rivalry help overlay copy to explain the host/moderator step and the Google Drive playback limitation.
 - Updated `docs/ARCHITECTURE.md` so the module is documented as external voice/video room handoff rather than embedded conferencing.
 - Implementation commit: `bae45b9d`
+
+## 2026-04-11 — Local watch-party player prototype
+- Added `tools/watch_party_player_server.js` as a local-only server that serves the repo, lists local videos from `.videos_local/` or `videos_local/`, streams selected media with byte-range support, and coordinates watch-party rooms over WebSocket.
+- Added `web/js/watch_party_player.js` and `web/css/watch_party_player.css` as the reusable controlled-player watch-party client intended to stabilize on Heated Rivalry before later index/dashboard integration.
+- Rewired `web/heated-rivalry.html` to use the local HTML5 player prototype instead of the Jitsi handoff module for the active watch-party panel.
+- Added `npm run watch-party` as the local launch command.
+- Implementation commit: `c696a061`
