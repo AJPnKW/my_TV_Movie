@@ -63,9 +63,7 @@
       const heading = createElement("div");
       heading.appendChild(createElement("div", "watch-party-player-kicker", "Watch Together"));
       heading.appendChild(createElement("div", "watch-party-player-title", this.title));
-      this.status = createElement("div", "watch-party-player-status", "Setup");
       header.appendChild(heading);
-      header.appendChild(this.status);
 
       this.steps = createElement("div", "watch-party-player-steps");
       this.steps.appendChild(createElement("div", "watch-party-player-step", "1. Pick episode"));
@@ -96,7 +94,18 @@
       this.sourceSummary.appendChild(this.sourceLabel);
       this.sourceSummary.appendChild(this.sourceMeta);
 
-      const fields = createElement("div", "watch-party-player-fields two");
+      const fields = createElement("div", "watch-party-player-fields three");
+      const episodeField = createElement("label", "watch-party-player-field");
+      episodeField.appendChild(createElement("span", "watch-party-player-label", "Season / episode"));
+      this.sourceSelect = createElement("select", "watch-party-player-input");
+      this.sources.forEach((source) => {
+        const option = document.createElement("option");
+        option.value = source.id;
+        option.textContent = source.label;
+        this.sourceSelect.appendChild(option);
+      });
+      episodeField.appendChild(this.sourceSelect);
+
       const roomField = createElement("label", "watch-party-player-field");
       roomField.appendChild(createElement("span", "watch-party-player-label", "Room"));
       this.roomInput = createElement("input", "watch-party-player-input");
@@ -111,6 +120,7 @@
       this.nameInput.autocomplete = "name";
       nameField.appendChild(this.nameInput);
 
+      fields.appendChild(episodeField);
       fields.appendChild(roomField);
       fields.appendChild(nameField);
 
@@ -166,6 +176,7 @@
     }
 
     bindEvents() {
+      this.sourceSelect.addEventListener("change", () => this.setCurrentItem(this.sourceSelect.value));
       this.roomInput.addEventListener("input", () => this.updateButtons());
       this.nameInput.addEventListener("input", () => this.updateButtons());
       this.video.addEventListener("timeupdate", () => {
@@ -191,8 +202,19 @@
         this.updateButtons();
         return;
       }
-      if (!this.sources.some((item) => item.id === source.id)) this.sources.push(source);
+      if (!this.sources.some((item) => item.id === source.id)) {
+        this.sources.push(source);
+        if (this.sourceSelect) {
+          const option = document.createElement("option");
+          option.value = source.id;
+          option.textContent = source.label;
+          this.sourceSelect.appendChild(option);
+        }
+      }
       this.currentSource = source;
+      if (this.sourceSelect && this.sourceSelect.value !== source.id) {
+        this.sourceSelect.value = source.id;
+      }
       this.sourceLabel.textContent = source.label;
       this.sourceMeta.textContent = source.meta || (source.canControl ? "Controlled playback source" : "External playback source");
 
@@ -243,9 +265,8 @@
       this.step = step;
       const labels = ["setup", "connect", "play"];
       [...this.steps.children].forEach((el, idx) => el.classList.toggle("active", labels[idx] === step));
-      this.status.textContent = step === "setup" ? "Setup" : step === "connect" ? "Connected" : this.role === "host" ? "Hosting" : "Joined";
       if (step === "setup") {
-        this.note.textContent = "Use the episode card to choose what to watch, enter room and name, then start or join.";
+        this.note.textContent = "Choose the episode, enter room and name, then start or join.";
       } else if (this.sourceIsControllable()) {
         this.note.textContent = this.role === "host"
           ? "Host controls playback. Guests follow play, pause, seek, and sync."
@@ -288,10 +309,13 @@
         }));
       });
       this.ws.addEventListener("message", (event) => this.handleMessage(event));
+      this.ws.addEventListener("error", () => {
+        this.warning.textContent = "Watch-party server is not reachable. Start it with npm run watch-party and open the local server page, or host the server where every participant can reach it.";
+      });
       this.ws.addEventListener("close", () => {
         this.role = "";
         this.updateStep("setup");
-        this.warning.textContent = "Disconnected from the watch-party server.";
+        this.warning.textContent = "Disconnected from the watch-party server. Use npm run watch-party and open http://127.0.0.1:8789/web/heated-rivalry.html for local testing; GitHub Pages alone cannot run the WebSocket room server.";
       });
     }
 
