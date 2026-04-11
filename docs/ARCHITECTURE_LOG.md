@@ -206,12 +206,6 @@ Commit
 - Added browser QA coverage for popup/source invariants and responsive dashboard/calendar layout across Android phone, Android tablet, and 1080p TV viewports.
 - Implementation commit: `e9ba70c2`
 
-## 2026-04-11 — Hungary IPTV standalone utility
-- Added `hungary/index.html` as a static, self-contained Hungary IPTV guide/player utility outside the canonical catalog runtime.
-- Added curated Hungary channel/source data under `hungary/data/`, using IPTV-org public API/M3U records plus a reachable Hungary XMLTV EPG link.
-- Added browser HLS playback support through native HLS or `hls.js`, stream alternates, favorites, display-name overrides, guide loading, source-link copy, and local diagnostics.
-- Implementation commit: `5b0e2dfe`
-
 ## 2026-04-11 — Reusable watch-party page module
 - Added `web/js/watch_party.js` and `web/css/watch_party.css` as a reusable static-site watch-party module for single-title pages that do not alter the canonical catalog runtime.
 - Wired `web/heated-rivalry.html` to the module with episode selection, shareable room links, Google Drive episode handoff, a shared playback timer, and embedded Jitsi voice/video room support.
