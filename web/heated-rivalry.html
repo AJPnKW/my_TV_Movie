@@ -33,7 +33,7 @@ NOTES:
   <title>Heated Rivalry · Season 1 · Crave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230369a1'/%3E%3Cpath d='M8 20h16v4H8zM10 8h12l-2 10h-8z' fill='%23f8fafc'/%3E%3C/svg%3E" />
-  <link rel="stylesheet" href="./css/watch_party.css" />
+  <link rel="stylesheet" href="./css/watch_party_player.css" />
 
 
   <style>
@@ -1352,7 +1352,7 @@ NOTES:
 </div> <!-- end .app-shell -->
 
   
-  <script src="./js/watch_party.js"></script>
+  <script src="./js/watch_party_player.js"></script>
   <!-- JAVASCRIPT ENGINE -->
   <script>
     function stripJsonComments(input){
@@ -1902,20 +1902,16 @@ NOTES:
     let watchPartyService = null;
 
     function selectWatchPartyEpisode(ep) {
-      if (!watchPartyService || !watchPartyService.episodeSelect) return;
-      const key = watchPartyService.episodeKey(ep);
-      watchPartyService.episodeSelect.value = key;
-      watchPartyService.state.episodeKey = key;
-      watchPartyService.saveState();
-      watchPartyService.updateEpisodeSummary();
+      if (watchPartyService?.roomInput && !watchPartyService.roomInput.value) {
+        watchPartyService.roomInput.value = `heated-rivalry-s${ep.season}-e${ep.number}`;
+        watchPartyService.updateButtons();
+      }
     }
 
-    if (window.MyTvMovieWatchParty) {
-      watchPartyService = window.MyTvMovieWatchParty.init({
+    if (window.MyTvMovieWatchPartyPlayer) {
+      watchPartyService = window.MyTvMovieWatchPartyPlayer.init({
         mountSelector: "#watchPartyMount",
-        title: "Heated Rivalry",
-        episodes: EPISODES,
-        watchUrlBuilder: (ep) => driveWatchUrl(ep.driveId),
+        title: "Heated Rivalry Watch Party",
       });
     }
   </script>
