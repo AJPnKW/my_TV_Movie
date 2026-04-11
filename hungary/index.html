@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0f1411">
+    <title>Hungary TV</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%230f1411'/%3E%3Crect x='10' y='14' width='44' height='30' rx='4' fill='%23126b48'/%3E%3Cpath d='M18 50h28' stroke='%23b98515' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+    <link rel="manifest" href="manifest.webmanifest">
+    <link rel="stylesheet" href="css/app.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/hls.js@1.5.20/dist/hls.min.js"></script>
+    <script defer src="js/app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#channels">Skip to channels</a>
+
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Hungary live TV</p>
+        <h1>Magyar channels, guide, and player</h1>
+      </div>
+      <nav class="topnav" aria-label="Primary">
+        <a href="#channels">Channels</a>
+        <a href="#guide">Guide</a>
+        <a href="#player">TV</a>
+        <a href="#sources">Sources</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="intro-band" aria-label="Overview">
+        <div class="intro-copy">
+          <p>Pick a channel, rename it for display, favorite it, check the lineup, then play the best available stream.</p>
+          <div class="source-pills" id="sourcePills" aria-live="polite"></div>
+        </div>
+        <div class="health-panel" aria-label="Playback notes">
+          <span id="browserBadge">Checking browser...</span>
+          <span id="streamBadge">Streams load when selected</span>
+          <span id="guideBadge">Guide not loaded yet</span>
+        </div>
+      </section>
+
+      <section class="control-band" aria-label="Channel controls">
+        <label>
+          Search
+          <input id="searchInput" type="search" autocomplete="off" placeholder="Channel, category, alternate name">
+        </label>
+        <label>
+          Category
+          <select id="categoryFilter"></select>
+        </label>
+        <label>
+          Sort
+          <select id="sortSelect">
+            <option value="name">Name</option>
+            <option value="category">Category</option>
+            <option value="favorites">Favorites first</option>
+          </select>
+        </label>
+        <button id="favoritesOnly" type="button" aria-pressed="false">Favorites only</button>
+        <button id="loadGuide" type="button">Load guide</button>
+      </section>
+
+      <section class="app-grid">
+        <aside class="channel-pane" id="channels" aria-label="Channels">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow">Curated lineup</p>
+              <h2 id="channelCount">Channels</h2>
+            </div>
+            <button id="exportSettings" type="button">Export settings</button>
+          </div>
+          <div class="channel-list" id="channelList" aria-live="polite"></div>
+        </aside>
+
+        <section class="watch-pane" id="player" aria-label="TV player">
+          <div class="tube-tv">
+            <div class="tube-screen">
+              <video id="videoPlayer" controls playsinline crossorigin="anonymous"></video>
+              <div class="screen-state" id="screenState">Select a channel</div>
+            </div>
+            <div class="tube-controls" aria-label="TV controls">
+              <button id="playPause" type="button">Play</button>
+              <button id="liveEdge" type="button">Live</button>
+              <button id="toggleCaptions" type="button">Captions</button>
+              <button id="pictureInPicture" type="button">PiP</button>
+              <button id="fullscreen" type="button">Full screen</button>
+            </div>
+          </div>
+
+          <div class="now-panel">
+            <div class="selected-head">
+              <img id="selectedLogo" alt="" width="72" height="72">
+              <div>
+                <p class="eyebrow">Now watching</p>
+                <h2 id="selectedName">No channel selected</h2>
+                <p id="selectedMeta">Choose a channel from the lineup.</p>
+              </div>
+            </div>
+
+            <form class="rename-form" id="renameForm">
+              <label>
+                Display name
+                <input id="displayNameInput" type="text" autocomplete="off" placeholder="Custom channel name">
+              </label>
+              <button type="submit">Save name</button>
+              <button id="favoriteSelected" type="button" aria-pressed="false">Favorite</button>
+            </form>
+
+            <div class="link-row" id="infoLinks"></div>
+
+            <div class="stream-tools">
+              <label>
+                Stream
+                <select id="streamSelect"></select>
+              </label>
+              <button id="retryStream" type="button">Retry</button>
+              <button id="copyStream" type="button">Copy stream link</button>
+            </div>
+
+            <div class="status-grid" aria-label="Stream status">
+              <span id="statusState">Idle</span>
+              <span id="bufferState">Buffer: 0s</span>
+              <span id="captionState">Captions: unknown</span>
+              <span id="qualityState">Quality: automatic</span>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="guide-band" id="guide" aria-label="Program guide">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Program schedule</p>
+            <h2>Lineup</h2>
+          </div>
+          <p id="guideStatus">Load the guide to see current and upcoming programs.</p>
+        </div>
+        <div class="program-list" id="programList"></div>
+      </section>
+
+      <section class="sources-band" id="sources" aria-label="Source links">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Curated links</p>
+            <h2>M3U and XMLTV</h2>
+          </div>
+          <button id="copySourceLinks" type="button">Copy links</button>
+        </div>
+        <div class="source-grid" id="sourceGrid"></div>
+      </section>
+
+      <section class="log-band" aria-label="Diagnostics">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Diagnostics</p>
+            <h2>Recent playback events</h2>
+          </div>
+          <button id="clearLog" type="button">Clear log</button>
+        </div>
+        <ol id="eventLog" class="event-log"></ol>
+      </section>
+    </main>
+  </body>
+</html>

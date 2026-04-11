@@ -35,6 +35,7 @@
 - Config: `web/config.html`
 - Inputs Editor: `web/inputs_editor.html`
 - Single-title feature pages may use reusable page modules when they do not alter the canonical catalog runtime.
+- Curated standalone utilities may live outside `web/` when they do not alter the canonical catalog runtime. `hungary/index.html` is a static Hungary IPTV guide/player backed by `hungary/data/channels.json` and `hungary/data/sources.json`.
 
 ## Reusable Page Modules
 
