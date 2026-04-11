@@ -212,3 +212,9 @@ Commit
 - Corrected Heated Rivalry episode still references to existing canonical assets so the page no longer emits missing-image requests during browser validation.
 - Updated `docs/ARCHITECTURE.md` with the reusable page-module contract and guardrails against creating a parallel catalog/editor/watch-state system.
 - Implementation commit: `d4fabbf2`
+
+## 2026-04-11 — Heated Rivalry in-page help overlays
+- Replaced the static top-right report-problem link in `web/heated-rivalry.html` with an in-page Help dropdown.
+- Added modal overlay content for Report a Problem, Watch Party Info, and How to Watch Together so support/help flows stay on the current page instead of opening a new tab or replacing the show page.
+- Embedded the existing Google Form inside the Report a Problem overlay and kept the watch-party guidance as local in-page HTML content.
+- Implementation commit: `7d088003`
