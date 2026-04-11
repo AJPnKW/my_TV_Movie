@@ -238,3 +238,9 @@ Commit
 - Updated `web/heated-rivalry.html` to publish each Heated Rivalry episode as a Google Drive watch source and to switch the watch-party panel from the episode card selection.
 - Updated the WebSocket room state to sync `sourceId` plus timer/playback state, preserving the future controlled-player path while treating Google Drive as external playback.
 - Implementation commit: `1ea7ccba`
+
+## 2026-04-11 — Watch-party episode selection clarity
+- Added an explicit Season / episode selector inside the reusable watch-party player while keeping episode-card Watch Party buttons wired to the same selected source.
+- Removed the low-value status badge from the watch-party header so the setup state is communicated by the active step and enabled buttons instead.
+- Replaced the generic disconnect copy with server-specific guidance that explains the local WebSocket server requirement and the GitHub Pages limitation.
+- Implementation commit: `e11345d1`
