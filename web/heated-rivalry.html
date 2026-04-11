@@ -4,10 +4,11 @@
 FILE: heated-rivalry.html
 PROJECT: my_TV_Movie
 PAGE: Heated Rivalry (single title page)
-VERSION: 1.2.0
+VERSION: 1.2.1
 UPDATED: 2026-04-11 00:00:00
 
 CHANGELOG:
+- 1.2.1: Replace static report link with in-page help menu and modal docs for report problem, watch party info, and watch party how-to.
 - 1.2.0: Add reusable watch-party experience with episode invite links, shared playback timer, and embedded voice/video room support.
 - 1.1.1: Replace corrupted JS engine with clean, tested season-dropdown renderer; fixes blank season options and missing episodes.
 - 1.1.0: Revert Season selector to dropdown placed on left side of Season section; remove broken radio-list selector wiring.
@@ -647,43 +648,203 @@ NOTES:
       z-index: 45;
     }
 
-    /* REPORT PROBLEM BUTTON */
-    .report-problem {
+    /* HELP MENU */
+    .help-menu {
       position: absolute;
       top: 10px;
       right: 14px;
       z-index: 50;
+    }
+
+    .help-menu-button {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 8px 12px;
-      border-radius: 999px;
+      border-radius: 8px;
       border: 1px solid rgba(148,163,184,0.65);
       background: rgba(2, 6, 23, 0.75);
       color: rgba(248,250,252,0.95);
       font-size: 12px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      text-decoration: none;
       backdrop-filter: blur(10px);
+      cursor: pointer;
       transition: transform 150ms ease-out, border-color 150ms ease-out, background 150ms ease-out;
     }
-    .report-problem:hover {
+
+    .help-menu-button:hover {
       transform: translateY(-0.5px);
       border-color: rgba(125, 211, 252, 0.85);
       background: rgba(2, 6, 23, 0.9);
     }
-    .report-problem:focus {
+
+    .help-menu-button:focus {
       outline: 2px solid rgba(56,189,248,0.75);
       outline-offset: 2px;
     }
-    .report-problem .rp-dot {
+
+    .help-menu-dot {
       width: 8px;
       height: 8px;
-      border-radius: 999px;
+      border-radius: 8px;
       background: rgba(248, 113, 113, 0.95);
       box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.18);
       flex: 0 0 auto;
+    }
+
+    .help-menu-caret {
+      font-size: 12px;
+      letter-spacing: 0;
+      opacity: 0.86;
+    }
+
+    .help-menu-list {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      display: none;
+      min-width: 230px;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(148,163,184,0.55);
+      background: rgba(2, 6, 23, 0.96);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.75);
+      backdrop-filter: blur(14px);
+    }
+
+    .help-menu.open .help-menu-list {
+      display: grid;
+      gap: 4px;
+    }
+
+    .help-menu-item {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: rgba(248,250,252,0.95);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      padding: 9px 10px;
+      text-align: left;
+    }
+
+    .help-menu-item:hover,
+    .help-menu-item:focus {
+      background: rgba(8,47,73,0.85);
+      outline: none;
+    }
+
+    .info-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0,0,0,0.74);
+      backdrop-filter: blur(6px);
+    }
+
+    .info-modal-backdrop.visible {
+      display: flex;
+    }
+
+    .info-modal {
+      width: min(920px, 100%);
+      max-height: min(760px, calc(100vh - 36px));
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid rgba(125,211,252,0.42);
+      background: linear-gradient(135deg, rgba(8,47,73,0.98), rgba(2,6,23,0.98));
+      box-shadow: 0 24px 70px rgba(0,0,0,0.86);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .info-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(148,163,184,0.28);
+    }
+
+    .info-modal-kicker {
+      color: rgba(125,211,252,0.95);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .info-modal-title {
+      margin-top: 3px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .info-modal-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(148,163,184,0.55);
+      background: rgba(2,6,23,0.74);
+      color: #f8fafc;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .info-modal-body {
+      overflow: auto;
+      padding: 16px;
+      color: rgba(226,232,240,0.94);
+      line-height: 1.62;
+    }
+
+    .info-modal-body h3 {
+      margin: 18px 0 6px;
+      color: #f8fafc;
+      font-size: 16px;
+    }
+
+    .info-modal-body h3:first-child {
+      margin-top: 0;
+    }
+
+    .info-modal-body p {
+      margin: 0 0 10px;
+    }
+
+    .info-modal-body ol,
+    .info-modal-body ul {
+      margin: 8px 0 14px 20px;
+      padding: 0;
+    }
+
+    .info-modal-body li {
+      margin-bottom: 7px;
+    }
+
+    .info-modal-note {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(125,211,252,0.35);
+      background: rgba(2,6,23,0.48);
+      color: rgba(226,232,240,0.94);
+    }
+
+    .info-modal-frame {
+      width: 100%;
+      min-height: 620px;
+      border: 0;
+      border-radius: 8px;
+      background: #fff;
     }
 
     /* SEASON PICKER (LISTBOX + RADIO) */
@@ -1064,10 +1225,18 @@ NOTES:
     
     
     <div class="version-badge">...</div>
-<a class="report-problem" href="https://docs.google.com/forms/d/e/1FAIpQLSchZTE4DhJHImKfNzoc4_rk8bNZeeFaLGC7UY4CXiIe9P1xNQ/viewform" target="_blank" rel="noopener noreferrer" aria-label="Report a problem (opens Google Form in new tab)">
-      <span class="rp-dot" aria-hidden="true"></span>
-      <span>Report problem</span>
-    </a>
+    <div class="help-menu" id="helpMenu">
+      <button class="help-menu-button" id="helpMenuButton" type="button" aria-haspopup="true" aria-expanded="false">
+        <span class="help-menu-dot" aria-hidden="true"></span>
+        <span>Help</span>
+        <span class="help-menu-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="help-menu-list" id="helpMenuList" role="menu" aria-label="Help menu">
+        <button class="help-menu-item" type="button" role="menuitem" data-info-modal="report">Report a problem</button>
+        <button class="help-menu-item" type="button" role="menuitem" data-info-modal="party-info">Watch party info</button>
+        <button class="help-menu-item" type="button" role="menuitem" data-info-modal="party-how-to">How to watch together</button>
+      </div>
+    </div>
 <div class="backdrop-layer"></div>
     <div class="grain"></div>
 
@@ -1148,6 +1317,18 @@ NOTES:
       <div class="episodes-strip" id="episodesStrip"></div>
     </section>
     <div id="watchPartyMount"></div>
+    <div class="info-modal-backdrop" id="infoModalBackdrop" aria-hidden="true">
+      <section class="info-modal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+        <header class="info-modal-header">
+          <div>
+            <div class="info-modal-kicker" id="infoModalKicker">Help</div>
+            <div class="info-modal-title" id="infoModalTitle">Help</div>
+          </div>
+          <button class="info-modal-close" id="infoModalClose" type="button" aria-label="Close help">✕</button>
+        </header>
+        <div class="info-modal-body" id="infoModalBody"></div>
+      </section>
+    </div>
     <!-- MODAL PLAYER -->
     <div class="modal-backdrop" id="modalBackdrop">
       <div class="modal-player">
@@ -1566,6 +1747,138 @@ NOTES:
         renderEpisodeCardsForSeason(e.target.value);
       });
     }
+
+    const REPORT_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSchZTE4DhJHImKfNzoc4_rk8bNZeeFaLGC7UY4CXiIe9P1xNQ/viewform?embedded=true";
+    const infoModalBackdrop = document.getElementById("infoModalBackdrop");
+    const infoModalKicker = document.getElementById("infoModalKicker");
+    const infoModalTitle = document.getElementById("infoModalTitle");
+    const infoModalBody = document.getElementById("infoModalBody");
+    const infoModalClose = document.getElementById("infoModalClose");
+    const helpMenu = document.getElementById("helpMenu");
+    const helpMenuButton = document.getElementById("helpMenuButton");
+    const helpMenuList = document.getElementById("helpMenuList");
+
+    const INFO_MODAL_CONTENT = {
+      report: {
+        kicker: "Report",
+        title: "Report a Problem",
+        html: `
+          <iframe class="info-modal-frame"
+                  title="Report a problem form"
+                  src="${REPORT_FORM_URL}"
+                  loading="lazy">
+          </iframe>
+        `
+      },
+      "party-info": {
+        kicker: "Watch Party",
+        title: "What This Room Does",
+        html: `
+          <h3>Private shared viewing</h3>
+          <p>This room helps two or more people watch the same personal episode file together from different locations.</p>
+          <p>The page does not rebroadcast the video. Each person opens the same episode from Google Drive, then uses the shared room and timer to stay aligned.</p>
+
+          <h3>Voice and video</h3>
+          <p>The call area starts a private Jitsi room inside this page. Video can stay off or be turned on from inside the room.</p>
+
+          <h3>Episode handoff</h3>
+          <p>The selected episode controls the Open Episode button and the invite state. If an episode card's Watch Party button is used, that episode is selected in the room panel.</p>
+
+          <div class="info-modal-note">
+            Google Drive permissions still control who can open each recording. Anyone joining the watch party needs access to the episode file.
+          </div>
+        `
+      },
+      "party-how-to": {
+        kicker: "How To",
+        title: "How to Watch Together",
+        html: `
+          <h3>Before the party</h3>
+          <ol>
+            <li>Make sure each guest has permission to open the Google Drive episode files.</li>
+            <li>Pick the episode from the Watch Party panel or press Watch Party on an episode card.</li>
+            <li>Enter a simple room name and your display name.</li>
+            <li>Press Copy Invite and send the link to the people joining.</li>
+          </ol>
+
+          <h3>Starting together</h3>
+          <ol>
+            <li>Everyone opens the invite link.</li>
+            <li>Press Start Call to join voice or video inside the page.</li>
+            <li>Press Open Episode so the selected recording opens in Google Drive.</li>
+            <li>Pause at the start of the episode, count down in the call, and press play together.</li>
+            <li>Use Start Timer as a shared reference if anyone needs to pause and resync.</li>
+          </ol>
+
+          <h3>If something goes wrong</h3>
+          <ul>
+            <li>If the video will not open, check Google Drive sharing access.</li>
+            <li>If the in-page call does not load, use Open Room Tab from the Watch Party panel.</li>
+            <li>If playback drifts, pause together, call out the timer position, and restart from the same timestamp.</li>
+          </ul>
+        `
+      }
+    };
+
+    function closeHelpMenu() {
+      if (!helpMenu || !helpMenuButton) return;
+      helpMenu.classList.remove("open");
+      helpMenuButton.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleHelpMenu() {
+      if (!helpMenu || !helpMenuButton) return;
+      const isOpen = helpMenu.classList.toggle("open");
+      helpMenuButton.setAttribute("aria-expanded", String(isOpen));
+    }
+
+    function openInfoModal(key) {
+      const content = INFO_MODAL_CONTENT[key];
+      if (!content || !infoModalBackdrop || !infoModalBody) return;
+      closeHelpMenu();
+      infoModalKicker.textContent = content.kicker;
+      infoModalTitle.textContent = content.title;
+      infoModalBody.innerHTML = content.html;
+      infoModalBackdrop.classList.add("visible");
+      infoModalBackdrop.setAttribute("aria-hidden", "false");
+      infoModalClose?.focus();
+    }
+
+    function closeInfoModal() {
+      if (!infoModalBackdrop || !infoModalBody) return;
+      infoModalBackdrop.classList.remove("visible");
+      infoModalBackdrop.setAttribute("aria-hidden", "true");
+      infoModalBody.innerHTML = "";
+      helpMenuButton?.focus();
+    }
+
+    helpMenuButton?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleHelpMenu();
+    });
+
+    helpMenuList?.addEventListener("click", (e) => {
+      const item = e.target.closest("[data-info-modal]");
+      if (!item) return;
+      openInfoModal(item.getAttribute("data-info-modal"));
+    });
+
+    infoModalClose?.addEventListener("click", closeInfoModal);
+
+    infoModalBackdrop?.addEventListener("click", (e) => {
+      if (e.target === infoModalBackdrop) closeInfoModal();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (helpMenu && !helpMenu.contains(e.target)) closeHelpMenu();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeHelpMenu();
+        closeInfoModal();
+      }
+    });
 
     // ===== VERSION BADGE (AUTO-READ HEADER COMMENT) =====
     async function setVersionBadgeFromHeader() {
