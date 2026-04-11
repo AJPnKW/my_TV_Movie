@@ -244,3 +244,8 @@ Commit
 - Removed the low-value status badge from the watch-party header so the setup state is communicated by the active step and enabled buttons instead.
 - Replaced the generic disconnect copy with server-specific guidance that explains the local WebSocket server requirement and the GitHub Pages limitation.
 - Implementation commit: `e11345d1`
+
+## 2026-04-11 — Watch-party room-server preflight
+- Added `/api/watch-party/health` to the local watch-party server so the client can verify that room sync is available before enabling Start Watch Party or Join Watch Party.
+- Updated the reusable watch-party player to disable room actions when the WebSocket server is unavailable, making static GitHub Pages mode read as offline instead of failing after a click.
+- Implementation commit: `27791050`
