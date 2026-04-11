@@ -232,3 +232,9 @@ Commit
 - Rewired `web/heated-rivalry.html` to use the local HTML5 player prototype instead of the Jitsi handoff module for the active watch-party panel.
 - Added `npm run watch-party` as the local launch command.
 - Implementation commit: `c696a061`
+
+## 2026-04-11 — Watch-party page-owned episode sources
+- Replaced the local-video picker in `web/js/watch_party_player.js` with a page-owned source contract so show pages pass the selected episode/watch URL into the reusable watch-party player.
+- Updated `web/heated-rivalry.html` to publish each Heated Rivalry episode as a Google Drive watch source and to switch the watch-party panel from the episode card selection.
+- Updated the WebSocket room state to sync `sourceId` plus timer/playback state, preserving the future controlled-player path while treating Google Drive as external playback.
+- Implementation commit: `1ea7ccba`
