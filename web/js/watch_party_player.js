@@ -53,6 +53,7 @@
       this.timerStartedAt = 0;
       this.serverReady = false;
       this.serverChecked = false;
+      this.initialParams = new URLSearchParams(window.location.search);
     }
 
     render() {
@@ -81,6 +82,7 @@
       this.root.appendChild(grid);
       this.mount.appendChild(this.root);
       this.bindEvents();
+      this.applyInitialParams();
       this.setCurrentItem(this.currentSource?.id || "");
       this.updateStep("setup");
       this.checkServer();
@@ -132,12 +134,14 @@
       this.hostButton = this.button("Start Watch Party", "primary", () => this.connect("host"));
       this.joinButton = this.button("Join Watch Party", "", () => this.connect("guest"));
       this.openButton = this.button("Open Episode", "primary", () => this.openSource());
+      this.inviteButton = this.button("Copy Invite", "", () => this.copyInvite());
       this.playButton = this.button("Start Timer", "", () => this.hostPlay());
       this.pauseButton = this.button("Pause Timer", "", () => this.hostPause());
       this.syncButton = this.button("Sync Now", "", () => this.broadcastState());
       actions.appendChild(this.hostButton);
       actions.appendChild(this.joinButton);
       actions.appendChild(this.openButton);
+      actions.appendChild(this.inviteButton);
       actions.appendChild(this.clock);
       actions.appendChild(this.playButton);
       actions.appendChild(this.pauseButton);
@@ -195,6 +199,13 @@
       this.video.addEventListener("seeked", () => {
         if (this.role === "host" && !this.isApplyingRemote) this.broadcastState();
       });
+    }
+
+    applyInitialParams() {
+      const sourceId = this.initialParams.get("partySource");
+      const room = this.initialParams.get("partyRoom");
+      if (sourceId && this.sources.some((item) => item.id === sourceId)) this.currentSource = this.sources.find((item) => item.id === sourceId);
+      if (room) this.roomInput.value = safeRoom(room);
     }
 
     setCurrentItem(itemOrId) {
@@ -264,7 +275,7 @@
         this.warning.textContent = "";
       } catch (_) {
         this.serverReady = false;
-        this.warning.textContent = "Watch-party room sync is offline on this page. For local testing, run npm run watch-party and open http://127.0.0.1:8789/web/heated-rivalry.html. GitHub Pages can show the page, but it cannot run the room server.";
+        this.warning.textContent = "Room sync is offline here. Local test: run npm run watch-party, then open http://127.0.0.1:8789/web/heated-rivalry.html. A public party needs this page served by a hosted watch-party server.";
       } finally {
         this.serverChecked = true;
         this.updateButtons();
@@ -290,7 +301,7 @@
       const labels = ["setup", "connect", "play"];
       [...this.steps.children].forEach((el, idx) => el.classList.toggle("active", labels[idx] === step));
       if (step === "setup") {
-        this.note.textContent = "Choose the episode, enter room and name, then start or join.";
+        this.note.textContent = "Choose the episode, enter room and name, then start or join. Open Episode works without room sync.";
       } else if (this.sourceIsControllable()) {
         this.note.textContent = this.role === "host"
           ? "Host controls playback. Guests follow play, pause, seek, and sync."
@@ -310,7 +321,8 @@
       const isHost = this.role === "host";
       this.hostButton.disabled = !isSetup || !ready || !this.serverReady;
       this.joinButton.disabled = !isSetup || !ready || !this.serverReady;
-      this.openButton.disabled = !isPlay || !this.currentSource?.sourceUrl;
+      this.openButton.disabled = !this.currentSource?.sourceUrl;
+      this.inviteButton.disabled = !this.currentSource || !safeRoom(this.roomInput.value) || !this.serverReady;
       this.playButton.disabled = !isPlay || !isHost;
       this.pauseButton.disabled = !isPlay || !isHost;
       this.syncButton.disabled = !isPlay || !isHost;
@@ -343,7 +355,8 @@
       this.ws.addEventListener("close", () => {
         this.role = "";
         this.updateStep("setup");
-        this.warning.textContent = "Disconnected from the watch-party server. Use npm run watch-party and open http://127.0.0.1:8789/web/heated-rivalry.html for local testing; GitHub Pages alone cannot run the WebSocket room server.";
+        this.serverReady = false;
+        this.warning.textContent = "Room sync disconnected. Restart the watch-party server and reload this page.";
       });
     }
 
@@ -383,6 +396,18 @@
     openSource() {
       if (!this.currentSource?.sourceUrl) return;
       window.open(this.currentSource.sourceUrl, "_blank", "noopener,noreferrer");
+    }
+
+    copyInvite() {
+      if (!this.currentSource || !safeRoom(this.roomInput.value)) return;
+      const url = new URL(window.location.href);
+      url.searchParams.set("partySource", this.currentSource.id);
+      url.searchParams.set("partyRoom", safeRoom(this.roomInput.value));
+      navigator.clipboard?.writeText(url.toString()).then(() => {
+        this.warning.textContent = "Invite copied. Send it to your guest, then start the watch party room.";
+      }).catch(() => {
+        this.warning.textContent = url.toString();
+      });
     }
 
     hostPlay() {

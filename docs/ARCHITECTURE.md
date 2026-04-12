@@ -45,7 +45,7 @@
   - `web/css/watch_party_player.css`
   - `tools/watch_party_player_server.js`
 - The watch party module is static-site compatible and may be mounted by single-title pages using page-local episode data.
-- The module supports shareable room state, episode handoff, a shared playback timer, and external voice/video room handoff through a meeting provider.
+- The module supports shareable room state, invite links with selected room/source query parameters, episode handoff, and a shared playback timer.
 - The watch-party player is server-backed for room/timer synchronization, but playback source selection is owned by the host page. Single-title pages pass their selected episode/watch URL into `web/js/watch_party_player.js`; local-only media directories are retained only as development/testing fallbacks and must remain untracked.
 - The local watch-party player is the reusable path intended for later dashboard/index integration after stabilization.
 - The module must not become a parallel catalog runtime, editor, watch-state system, or replacement for the shared card/action system.
