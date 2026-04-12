@@ -261,4 +261,4 @@ Commit
 - Updated `tools/watch_party_player_server.js` with CORS and WebSocket origin controls for hosted room-sync use.
 - Updated `web/js/watch_party_player.js` and `web/heated-rivalry.html` so the GitHub Pages page can connect to an external hosted watch-party server through `serverUrl`.
 - Deployed the stack on the Minisforum under `/srv/my_tv_movie/watch-party` and validated public WSS room state sync through the active Cloudflare tunnel.
-- Implementation commit: `929dddf6`
+- Implementation commits: `929dddf6`, `e303b580`
