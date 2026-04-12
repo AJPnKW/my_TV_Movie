@@ -249,3 +249,9 @@ Commit
 - Added `/api/watch-party/health` to the local watch-party server so the client can verify that room sync is available before enabling Start Watch Party or Join Watch Party.
 - Updated the reusable watch-party player to disable room actions when the WebSocket server is unavailable, making static GitHub Pages mode read as offline instead of failing after a click.
 - Implementation commit: `27791050`
+
+## 2026-04-11 — Watch-party user-flow alignment
+- Updated the reusable watch-party player so Open Episode works independently of room sync, matching the Google Drive playback workflow.
+- Restored a user-facing Copy Invite action that carries selected room and episode source through `partyRoom` and `partySource` query parameters.
+- Corrected Heated Rivalry help overlay copy to remove the retired Jitsi/moderator workflow and explain the room-server requirement in the active product language.
+- Implementation commit: `40e9b8d7`
