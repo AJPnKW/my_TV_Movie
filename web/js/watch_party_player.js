@@ -40,6 +40,7 @@
       this.options = options || {};
       this.mount = document.querySelector(this.options.mountSelector);
       this.title = this.options.title || "Watch Party Player";
+      this.serverUrl = String(this.options.serverUrl || window.MyTvMovieWatchPartyServerUrl || "").replace(/\/+$/, "");
       this.sources = (this.options.items || this.options.sources || []).map(normalizeSource).filter(Boolean);
       this.currentSource = this.sources.find((item) => item.id === this.options.initialItemId) || this.sources[0] || null;
       this.role = "";
@@ -267,15 +268,16 @@
       this.warning.textContent = "Checking watch-party room server...";
       this.updateButtons();
       try {
-        const res = await fetch("/api/watch-party/health", { cache: "no-store" });
+        const res = await fetch(`${this.serverUrl}/api/watch-party/health`, { cache: "no-store" });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!data?.ok) throw new Error("Health check failed");
+        if (data.websocket) this.websocketUrl = data.websocket;
         this.serverReady = true;
         this.warning.textContent = "";
       } catch (_) {
         this.serverReady = false;
-        this.warning.textContent = "Room sync is offline here. Local test: run npm run watch-party, then open http://127.0.0.1:8789/web/heated-rivalry.html. A public party needs this page served by a hosted watch-party server.";
+        this.warning.textContent = "Room sync is offline here. A public party needs the hosted watch-party server to be running.";
       } finally {
         this.serverChecked = true;
         this.updateButtons();
@@ -338,7 +340,10 @@
       if (!this.formReady()) return;
       this.role = role;
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      this.ws = new WebSocket(`${protocol}//${window.location.host}/watch-party-ws`);
+      const fallbackWsUrl = this.serverUrl
+        ? `${this.serverUrl.replace(/^http/i, "ws")}/watch-party-ws`
+        : `${protocol}//${window.location.host}/watch-party-ws`;
+      this.ws = new WebSocket(this.websocketUrl || fallbackWsUrl);
       this.updateStep("connect");
       this.ws.addEventListener("open", () => {
         this.ws.send(JSON.stringify({

@@ -8,6 +8,11 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 const PORT = Number(process.env.WATCH_PARTY_PORT || process.env.PORT || 8789);
+const PUBLIC_BASE_URL = String(process.env.WATCH_PARTY_PUBLIC_BASE_URL || "").replace(/\/+$/, "");
+const ALLOWED_ORIGINS = String(process.env.WATCH_PARTY_ALLOWED_ORIGINS || "https://ajpnkw.github.io,http://127.0.0.1:8789,http://localhost:8789")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 const VIDEO_DIRS = [path.join(ROOT, ".videos_local"), path.join(ROOT, "videos_local")];
 const VIDEO_EXTENSIONS = new Set([".mp4", ".m4v", ".webm", ".ogv", ".mov"]);
 const MIME_TYPES = {
@@ -73,6 +78,21 @@ function sendJson(res, status, body) {
     "Cache-Control": "no-store",
   });
   res.end(data);
+}
+
+function allowedOrigin(origin) {
+  if (!origin) return "";
+  if (ALLOWED_ORIGINS.includes("*")) return origin;
+  return ALLOWED_ORIGINS.includes(origin) ? origin : "";
+}
+
+function applyCors(req, res) {
+  const origin = allowedOrigin(req.headers.origin);
+  if (!origin) return;
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Vary", "Origin");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 }
 
 function serveVideo(req, res, name) {
@@ -218,8 +238,17 @@ function handleMessage(client, message) {
 
 const server = http.createServer((req, res) => {
   const requestUrl = new URL(req.url, `http://${req.headers.host || "127.0.0.1"}`);
+  applyCors(req, res);
+  if (req.method === "OPTIONS") {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
   if (requestUrl.pathname === "/api/watch-party/health") {
-    sendJson(res, 200, { ok: true, websocket: "/watch-party-ws" });
+    sendJson(res, 200, {
+      ok: true,
+      websocket: PUBLIC_BASE_URL ? `${PUBLIC_BASE_URL.replace(/^http/, "ws")}/watch-party-ws` : "/watch-party-ws",
+    });
     return;
   }
   if (requestUrl.pathname === "/api/watch-party/videos") {
@@ -236,6 +265,11 @@ const server = http.createServer((req, res) => {
 server.on("upgrade", (req, socket) => {
   const requestUrl = new URL(req.url, `http://${req.headers.host || "127.0.0.1"}`);
   if (requestUrl.pathname !== "/watch-party-ws") {
+    socket.destroy();
+    return;
+  }
+  const origin = req.headers.origin || "";
+  if (origin && !allowedOrigin(origin)) {
     socket.destroy();
     return;
   }
@@ -273,5 +307,6 @@ server.on("upgrade", (req, socket) => {
 
 server.listen(PORT, () => {
   console.log(`Watch party player server: http://127.0.0.1:${PORT}/web/heated-rivalry.html`);
+  if (PUBLIC_BASE_URL) console.log(`Public watch party endpoint: ${PUBLIC_BASE_URL}`);
   console.log(`Local videos: ${VIDEO_DIRS.join(" | ")}`);
 });
