@@ -255,3 +255,10 @@ Commit
 - Restored a user-facing Copy Invite action that carries selected room and episode source through `partyRoom` and `partySource` query parameters.
 - Corrected Heated Rivalry help overlay copy to remove the retired Jitsi/moderator workflow and explain the room-server requirement in the active product language.
 - Implementation commit: `40e9b8d7`
+
+## 2026-04-11 — Hosted watch-party service container
+- Added `deploy/watch-party/` with a Dockerized watch-party room server and Cloudflare quick tunnel service for public HTTPS/WSS proof-of-concept access from GitHub Pages.
+- Updated `tools/watch_party_player_server.js` with CORS and WebSocket origin controls for hosted room-sync use.
+- Updated `web/js/watch_party_player.js` and `web/heated-rivalry.html` so the GitHub Pages page can connect to an external hosted watch-party server through `serverUrl`.
+- Deployed the stack on the Minisforum under `/srv/my_tv_movie/watch-party` and validated public WSS room state sync through the active Cloudflare tunnel.
+- Implementation commit: `929dddf6`

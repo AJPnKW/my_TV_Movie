@@ -1580,6 +1580,7 @@ NOTES:
     }
 
     const WATCH_PARTY_SOURCES = EPISODES.map(watchPartySource);
+    const WATCH_PARTY_SERVER_URL = "https://matrix-lauderdale-portal-processes.trycloudflare.com";
 
     function clearFadeTimers() {
       Object.values(fadeTimers).forEach((t) => clearInterval(t));
@@ -1932,7 +1933,7 @@ NOTES:
         title: "Heated Rivalry Watch Party",
         items: WATCH_PARTY_SOURCES,
         initialItemId: WATCH_PARTY_SOURCES[0]?.id,
-        serverUrl: window.MyTvMovieWatchPartyServerUrl || "",
+        serverUrl: window.MyTvMovieWatchPartyServerUrl || WATCH_PARTY_SERVER_URL,
       });
     }
   </script>

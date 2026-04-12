@@ -35,6 +35,12 @@
     };
   }
 
+  function toWebSocketUrl(value, baseUrl) {
+    const url = new URL(value, baseUrl || window.location.href);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    return url.toString();
+  }
+
   class WatchPartyPlayer {
     constructor(options) {
       this.options = options || {};
@@ -272,7 +278,7 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (!data?.ok) throw new Error("Health check failed");
-        if (data.websocket) this.websocketUrl = data.websocket;
+        if (data.websocket) this.websocketUrl = toWebSocketUrl(data.websocket, this.serverUrl || window.location.origin);
         this.serverReady = true;
         this.warning.textContent = "";
       } catch (_) {
@@ -341,7 +347,7 @@
       this.role = role;
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
       const fallbackWsUrl = this.serverUrl
-        ? `${this.serverUrl.replace(/^http/i, "ws")}/watch-party-ws`
+        ? toWebSocketUrl("/watch-party-ws", this.serverUrl)
         : `${protocol}//${window.location.host}/watch-party-ws`;
       this.ws = new WebSocket(this.websocketUrl || fallbackWsUrl);
       this.updateStep("connect");
