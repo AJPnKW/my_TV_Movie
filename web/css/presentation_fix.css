@@ -1,0 +1,42 @@
+/*
+FILE: web/css/presentation_fix.css
+PURPOSE: Fix spacing, overlap, layout density, and card consistency.
+*/
+
+/* REMOVE EXCESS FRAMING */
+.panel{background:transparent !important;border:none !important;box-shadow:none !important;padding:8px !important;}
+.dashblock{padding:10px !important;border-radius:12px !important;}
+
+/* USE AVAILABLE SPACE */
+.dashgrid{grid-auto-columns:1fr !important;gap:8px !important;}
+.dashcol{padding:6px !important;min-height:auto !important;}
+
+/* FIX HEADER WASTE */
+#panel-dashboard .dashhead h2{display:none !important;}
+
+/* CARD TIGHTENING */
+.media-card__body{padding:6px !important;gap:4px !important;}
+.media-card__overlay{padding:6px !important;}
+
+/* PREVENT TEXT OVERLAP */
+.media-card__overlay-title{font-size:13px !important;line-height:1.15 !important;}
+.media-card__surface-badge{top:6px !important;right:6px !important;}
+
+/* ICON ROW FIX */
+.actionbar{gap:4px !important;}
+.actionbar-btn{font-size:16px !important;min-width:20px !important;height:20px !important;}
+
+/* CALENDAR DENSITY */
+.calendar-day{padding:6px !important;gap:6px !important;}
+.calendar-day__items{gap:6px !important;}
+
+/* IMAGE FIT */
+.media-card__poster img{object-fit:cover !important;object-position:center center !important;}
+
+/* REMOVE EMPTY GUTTERS */
+.calendar-month-grid{gap:6px !important;}
+
+/* MOBILE / TV CONSISTENCY */
+@media (max-width:900px){
+  .media-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr)) !important;}
+}
