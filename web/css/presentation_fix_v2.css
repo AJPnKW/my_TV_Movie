@@ -1,0 +1,103 @@
+/*
+FILE: web/css/presentation_fix_v2.css
+VERSION: v1.0.0
+UPDATED: 2026-04-18T00:00:00Z
+CHANGE NOTES:
+- Removes extra page framing.
+- Tightens dashboard/calendar spacing.
+- Allows dashboard date columns to fill available width without an empty gutter.
+- Supports injected dashboard episode cards.
+*/
+
+.panel{
+  margin-top:0 !important;
+  padding:0 !important;
+  border:none !important;
+  background:transparent !important;
+  box-shadow:none !important;
+}
+
+.dash{
+  gap:14px !important;
+}
+
+.dashblock{
+  padding:12px !important;
+  border-radius:16px !important;
+}
+
+.dashhead{
+  margin-bottom:8px !important;
+}
+
+#dashLastWeekCols,
+#dashScheduleCols{
+  grid-auto-flow:unset !important;
+  grid-auto-columns:auto !important;
+  overflow-x:visible !important;
+  align-items:start !important;
+}
+
+#dashLastWeekCols .dashcol,
+#dashScheduleCols .dashcol{
+  min-height:0 !important;
+  padding:8px !important;
+}
+
+#dashLastWeekCols .dashcolstack,
+#dashScheduleCols .dashcolstack{
+  gap:8px !important;
+}
+
+.dashcard--injected{
+  min-height:0 !important;
+}
+
+.dashcard--injected .media-card__poster,
+.dashcard--injected .media_block,
+.dashcard--injected img{
+  object-fit:cover !important;
+  object-position:center center !important;
+}
+
+.dashhead__range{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  min-width:0;
+  flex:1 1 auto;
+}
+
+.dashhead__range .muted{
+  white-space:nowrap;
+}
+
+.calendar-month-grid{
+  gap:6px !important;
+}
+
+.calendar-day{
+  padding:8px !important;
+  min-height:0 !important;
+}
+
+.calendar-day__items{
+  gap:6px !important;
+}
+
+.media-card__surface-badge{
+  top:6px !important;
+  right:6px !important;
+}
+
+.media-card__overlay{
+  padding:8px !important;
+}
+
+.media-card__overlay-title{
+  overflow-wrap:anywhere !important;
+}
+
+.app-modal-backdrop[aria-hidden="false"]{
+  overflow:auto !important;
+}
