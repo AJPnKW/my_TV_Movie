@@ -63,11 +63,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 2.0588,
+  "popularity": 2.6914,
   "vote_average": 6.767,
   "vote_count": 105,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-04-18T10:16:41Z",
+  "availability_checked_at": "2026-04-19T10:06:28Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1130022",
@@ -398,6 +398,15 @@
       ],
       "AU": [
         {
+          "provider_id": 119,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/movie/1130022-sovereign/watch?locale=AU"
+        },
+        {
           "provider_id": 2,
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
@@ -449,6 +458,15 @@
           "logo_local": "",
           "availability_type": "buy",
           "display_priority": 30,
+          "deep_link": "https://www.themoviedb.org/movie/1130022-sovereign/watch?locale=AU"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 93,
           "deep_link": "https://www.themoviedb.org/movie/1130022-sovereign/watch?locale=AU"
         }
       ]
