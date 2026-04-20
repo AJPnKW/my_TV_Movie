@@ -1,0 +1,7 @@
+/* live fix */
+async function f(p){try{const r=await fetch(p,{cache:'no-store'});if(!r.ok)return null;return r.json()}catch{return null}}
+function k(t){const m=String(t||'').match(/([A-Z]{3})\s+(\d{1,2}),\s+(\d{4})/i);if(!m)return null;const M={JAN:1,FEB:2,MAR:3,APR:4,MAY:5,JUN:6,JUL:7,AUG:8,SEP:9,OCT:10,NOV:11,DEC:12};return `${m[3]}-${String(M[m[1].toUpperCase()]).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}`}
+function rml(){document.querySelectorAll('.dashhead h2').forEach(h=>/last week/i.test(h.textContent||'')&&h.remove())}
+async function exp(){const cols=document.querySelectorAll('#dashLastWeekCols .dashcol');if(!cols.length)return;const cal=await f('../data/calendar.json');if(!cal||!cal.days)return;for(const c of cols){const h=c.querySelector('.dashcolhead');const s=c.querySelector('.dashcolstack');if(!h||!s)continue;const key=k(h.textContent);if(!key)continue;const items=cal.days[key]||[];const ex=s.querySelectorAll('.media-card').length;if(items.length>ex){for(const it of items.slice(ex)){const d=document.createElement('div');d.className='dashcard dashcard--injected';d.innerHTML=`<div class="media-card"><div class="media-card__poster"><img src="${it.still_local||it.still_path||it.thumb||''}"/></div><div class="media-card__overlay"><div class="media-card__overlay-title">${it.title||''}</div></div></div>`;s.appendChild(d)}}}}
+function run(){rml();exp()}
+window.addEventListener('load',run);
