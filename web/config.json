@@ -1,8 +1,8 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.4.4",
-    "updated_utc": "2026-01-31T00:00:00Z",
+    "version": "v1.5.0",
+    "updated_utc": "2026-04-04T00:00:00Z",
     "notes": [
       "JSONC is required for this file. Documentation uses line comments.",
       "Palette system is a registry: ui_palette.palettes[ui_palette.active] is applied at runtime.",
@@ -12,14 +12,97 @@
       "Icon system is authoritative: all icons must be defined in icons and referenced via config.icons.<key>.icon."
     ]
   },
-
   "streaming": {
     "vidsrc_tv": "https://vidsrc.net/embed/tv/",
     "vidsrc_movie": "https://vidsrc.net/embed/movie/",
     "videasy_tv": "https://player.videasy.net/tv/",
-    "videasy_movie": "https://player.videasy.net/movie/"
+    "videasy_movie": "https://player.videasy.net/movie/",
+    "fallback_order": [
+      "vidsrc_net",
+      "videasy",
+      "superembed",
+      "multiembed",
+      "smashystream",
+      "flixhq",
+      "sflix",
+      "2embed_cc",
+      "2embed_org"
+    ],
+    "embed_providers": [
+      {
+        "key": "vidsrc_net",
+        "name": "VidSrc",
+        "tv_template": "https://vidsrc.net/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.net/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "videasy",
+        "name": "VidEasy",
+        "tv_template": "https://player.videasy.net/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://player.videasy.net/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "superembed",
+        "name": "SuperEmbed",
+        "tv_template": "https://superembed.stream/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://superembed.stream/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "multiembed",
+        "name": "MultiEmbed",
+        "tv_template": "https://multiembed.mov/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://multiembed.mov/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "smashystream",
+        "name": "SmashyStream",
+        "tv_template": "https://smashystream.com/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://smashystream.com/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "flixhq",
+        "name": "FlixHQ",
+        "tv_template": "https://flixhq.to/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://flixhq.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "sflix",
+        "name": "SFlix",
+        "tv_template": "https://sflix.to/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://sflix.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "2embed_cc",
+        "name": "2Embed CC",
+        "tv_template": "https://www.2embed.cc/embedtv/{tmdb_id}&s={season}&e={episode}",
+        "movie_template": "https://www.2embed.cc/embed/{tmdb_id}",
+        "style": "mixed",
+        "status": "warn"
+      },
+      {
+        "key": "2embed_org",
+        "name": "2Embed Org",
+        "tv_template": "https://www.2embed.org/embed/tv?tmdb={tmdb_id}&season={season}&episode={episode}",
+        "movie_template": "https://www.2embed.org/embed/movie?tmdb={tmdb_id}",
+        "style": "query",
+        "status": "warn"
+      }
+    ]
   },
-
   "service_logos": [
     {
       "service_slug": "amazon-prime-video",
@@ -54,403 +137,353 @@
       "logo_url": "https://raw.githubusercontent.com/AJPnKW/my_TV_Movie/main/assets/icons/VidSrc_icon.png"
     }
   ],
-
   "trakt_sync": {
     "enabled": false,
     "endpoint": "/api/trakt/sync"
   },
-
   "icons": {
     "trakt_mark_watched": {
-      "icon": "✔️",
+      "icon": "\u2714\ufe0f",
       "name": "Mark Watched",
       "purpose": "Mark item watched / remove watched",
       "functionType": "popup",
       "target": "trakt:history.add|remove"
     },
-
     "trakt_watch_date": {
-      "icon": "🕒",
+      "icon": "\ud83d\udd52",
       "name": "Watch Date",
       "purpose": "Choose watch date",
       "functionType": "popup",
       "target": "trakt:history.add(date)"
     },
-
     "trakt_add_to_list": {
-      "icon": "➕",
+      "icon": "\u2795",
       "name": "Add to List",
       "purpose": "Add item to list",
       "functionType": "popup",
       "target": "trakt:lists.add"
     },
-
     "trakt_watchlist": {
-      "icon": "🔖",
+      "icon": "\ud83d\udd16",
       "name": "Watchlist",
       "purpose": "Toggle watchlist",
       "functionType": "function",
       "target": "trakt:watchlist.add|remove"
     },
-
     "trakt_rate_like": {
-      "icon": "❤️",
+      "icon": "\u2764\ufe0f",
       "name": "Rate / Like",
       "purpose": "Rate item",
       "functionType": "popup",
       "target": "trakt:ratings"
     },
-
     "trakt_remove_history": {
-      "icon": "🗑️",
+      "icon": "\ud83d\uddd1\ufe0f",
       "name": "Remove from History",
       "purpose": "Remove watch history",
       "functionType": "function",
       "target": "trakt:history.remove"
     },
-
     "trakt_lists": {
-      "icon": "📄",
+      "icon": "\ud83d\udcc4",
       "name": "Lists",
       "purpose": "Open list menu",
       "functionType": "long-press",
       "target": "popup:lists_menu"
     },
-
     "nav_dashboard": {
-      "icon": "📊",
+      "icon": "\ud83d\udcca",
       "name": "Dashboard",
       "purpose": "Go to dashboard",
       "functionType": "link",
       "target": "#dashboard"
     },
-
     "nav_shows": {
-      "icon": "📺",
+      "icon": "\ud83d\udcfa",
       "name": "Shows",
       "purpose": "Go to shows",
       "functionType": "link",
       "target": "#shows"
     },
-
     "nav_movies": {
-      "icon": "🎬",
+      "icon": "\ud83c\udfac",
       "name": "Movies",
       "purpose": "Go to movies",
       "functionType": "link",
       "target": "#movies"
     },
-
     "nav_calendar": {
-      "icon": "📆",
+      "icon": "\ud83d\udcc6",
       "name": "Calendar",
       "purpose": "Go to calendar",
       "functionType": "link",
       "target": "#calendar"
     },
-
     "nav_discover": {
-      "icon": "🧭",
+      "icon": "\ud83e\udded",
       "name": "Discover",
       "purpose": "Go to discover",
       "functionType": "link",
       "target": "#discover"
     },
-
     "nav_prev": {
-      "icon": "⟨",
+      "icon": "\u27e8",
       "name": "Previous",
       "purpose": "Navigate previous",
       "functionType": "single-click",
       "target": "internal:navigate_previous"
     },
-
     "nav_next": {
-      "icon": "⟩",
+      "icon": "\u27e9",
       "name": "Next",
       "purpose": "Navigate next",
       "functionType": "single-click",
       "target": "internal:navigate_next"
     },
-
     "meta_trakt": {
-      "icon": "🟣",
+      "icon": "\ud83d\udfe3",
       "name": "Trakt",
       "purpose": "Trakt provider link",
       "functionType": "link",
       "target": "https://trakt.tv"
     },
-
     "meta_tmdb": {
-      "icon": "🎞️",
+      "icon": "\ud83c\udf9e\ufe0f",
       "name": "TMDB",
       "purpose": "TMDB provider link",
       "functionType": "link",
       "target": "https://www.themoviedb.org"
     },
-
     "meta_imdb": {
-      "icon": "🎯",
+      "icon": "\ud83c\udfaf",
       "name": "IMDB",
       "purpose": "IMDb provider link",
       "functionType": "link",
       "target": "https://www.imdb.com"
     },
-
     "meta_rt_critics": {
-      "icon": "🍅",
+      "icon": "\ud83c\udf45",
       "name": "Rotten Tomatoes Critics",
       "purpose": "Critic ratings link",
       "functionType": "link",
       "target": "https://www.rottentomatoes.com"
     },
-
     "meta_rt_audience": {
-      "icon": "👥",
+      "icon": "\ud83d\udc65",
       "name": "Rotten Tomatoes Audience",
       "purpose": "Audience ratings link",
       "functionType": "link",
       "target": "https://www.rottentomatoes.com"
     },
-
     "meta_rating_summary": {
-      "icon": "⭐",
+      "icon": "\u2b50",
       "name": "Ratings Summary",
       "purpose": "Rating summary",
       "functionType": "function",
       "target": "internal:ratings_summary"
     },
-
     "media_vidrsc": {
-      "icon": "🍿",
-      "name": "Vidrsc",
-      "purpose": "Vidrsc stream link",
+      "icon": "\ud83c\udf7f",
+      "name": "VidSrc",
+      "purpose": "VidSrc stream link",
       "functionType": "link",
       "target": "streaming.vidsrc_* + tmdb_id"
     },
-
     "media_videasy": {
-      "icon": "🌭",
+      "icon": "\u25b6\ufe0f",
       "name": "VidEasy",
       "purpose": "VidEasy stream link",
       "functionType": "link",
       "target": "streaming.videasy_* + tmdb_id"
     },
-
     "media_local_file": {
-      "icon": "💾",
+      "icon": "\ud83d\udcbe",
       "name": "Local File",
       "purpose": "Local media link",
       "functionType": "link",
       "target": "links.local_media"
     },
-
     "media_cloud_file": {
-      "icon": "☁️",
+      "icon": "\u2601\ufe0f",
       "name": "Cloud File",
       "purpose": "Cloud media link",
       "functionType": "link",
       "target": "links.cloud"
     },
-
     "media_iptv": {
-      "icon": "📡",
+      "icon": "\ud83d\udce1",
       "name": "IPTV Stream",
       "purpose": "IPTV stream link",
       "functionType": "link",
       "target": "links.iptv"
     },
-
     "media_dvr": {
-      "icon": "⏺️",
+      "icon": "\u23fa\ufe0f",
       "name": "DVR Recording",
       "purpose": "DVR recording link",
       "functionType": "link",
       "target": "links.dvr"
     },
-
     "media_provider_page": {
-      "icon": "🔗",
+      "icon": "\ud83d\udd17",
       "name": "Provider Page",
       "purpose": "Provider page link",
       "functionType": "link",
       "target": "links.provider_page"
     },
-
     "media_media_folder": {
-      "icon": "🗂️",
+      "icon": "\ud83d\uddc2\ufe0f",
       "name": "Media Folder",
       "purpose": "Media folder link",
       "functionType": "link",
       "target": "links.media_folder"
     },
-
     "action_play": {
-      "icon": "▶️",
+      "icon": "\u25b6\ufe0f",
       "name": "Play",
       "purpose": "Play or watch now",
       "functionType": "single-click",
       "target": "internal:play_or_watch"
     },
-
     "action_info": {
-      "icon": "ℹ️",
+      "icon": "\u2139\ufe0f",
       "name": "Info",
       "purpose": "Open details",
       "functionType": "popup",
       "target": "popup:details"
     },
-
     "action_ratings": {
-      "icon": "🌟",
+      "icon": "\ud83c\udf1f",
       "name": "Ratings",
       "purpose": "Open ratings",
       "functionType": "popup",
       "target": "popup:rate"
     },
-
     "action_lists": {
-      "icon": "☰",
+      "icon": "\u2630",
       "name": "Lists",
       "purpose": "Open lists menu",
       "functionType": "long-press",
       "target": "popup:lists_menu"
     },
-
     "action_watched": {
-      "icon": "👁️",
+      "icon": "\ud83d\udc41\ufe0f",
       "name": "Watched",
       "purpose": "Toggle watched",
       "functionType": "single-click",
       "target": "internal:toggle_watched"
     },
-
     "action_add": {
-      "icon": "✚",
+      "icon": "\u271a",
       "name": "Add",
       "purpose": "Add item",
       "functionType": "single-click",
       "target": "internal:add"
     },
-
     "action_remove": {
-      "icon": "✖️",
+      "icon": "\u2716\ufe0f",
       "name": "Remove",
       "purpose": "Remove item",
       "functionType": "single-click",
       "target": "internal:remove"
     },
-
     "action_external_links": {
-      "icon": "🌐",
+      "icon": "\ud83c\udf10",
       "name": "External Links",
       "purpose": "Open external links",
       "functionType": "popup",
       "target": "popup:external_links"
     },
-
     "sys_view_options": {
-      "icon": "👀",
+      "icon": "\ud83d\udc40",
       "name": "View Options",
       "purpose": "Open view options",
       "functionType": "popup",
       "target": "popup:view_options"
     },
-
     "sys_settings": {
-      "icon": "⚙️",
+      "icon": "\u2699\ufe0f",
       "name": "Settings",
       "purpose": "Open settings",
       "functionType": "popup",
       "target": "popup:settings"
     },
-
     "sys_sync": {
-      "icon": "🔄",
+      "icon": "\ud83d\udd04",
       "name": "Sync",
       "purpose": "Run sync",
       "functionType": "function",
       "target": "internal:sync"
     },
-
     "sys_addon": {
-      "icon": "🧩",
+      "icon": "\ud83e\udde9",
       "name": "Add-on",
       "purpose": "Open add-ons",
       "functionType": "popup",
       "target": "popup:addons"
     },
-
     "sys_navigation": {
-      "icon": "🗺️",
+      "icon": "\ud83d\uddfa\ufe0f",
       "name": "Navigation",
       "purpose": "Navigation control",
       "functionType": "function",
       "target": "internal:navigation"
     },
-
     "sys_collections": {
-      "icon": "📚",
+      "icon": "\ud83d\udcda",
       "name": "Collections",
       "purpose": "Open collections",
       "functionType": "popup",
       "target": "popup:collections"
     },
-
     "sys_attach": {
-      "icon": "📎",
+      "icon": "\ud83d\udcce",
       "name": "Attach",
       "purpose": "Attach asset",
       "functionType": "function",
       "target": "internal:attach"
     },
-
     "sys_network": {
-      "icon": "📶",
+      "icon": "\ud83d\udcf6",
       "name": "Network",
       "purpose": "Network status",
       "functionType": "function",
       "target": "internal:network_status"
     },
-
     "future_experimental_source": {
-      "icon": "🧪",
+      "icon": "\ud83e\uddea",
       "name": "Experimental Source",
       "purpose": "Experimental source",
       "functionType": "function",
       "target": "internal:experimental"
     },
-
     "future_beta_feature": {
-      "icon": "β",
+      "icon": "\u03b2",
       "name": "Beta Feature",
       "purpose": "Beta feature",
       "functionType": "function",
       "target": "internal:beta"
     },
-
     "future_user_choice": {
-      "icon": "❔",
+      "icon": "\u2754",
       "name": "User Choice",
       "purpose": "User selection",
       "functionType": "popup",
       "target": "popup:user_choice"
     },
-
     "future_system_block": {
-      "icon": "⛔",
+      "icon": "\u26d4",
       "name": "System Block",
       "purpose": "System block",
       "functionType": "function",
       "target": "internal:block"
     }
   },
-
   "image_sizes": {
-    "show_width": 150,
-    "movie_width": 150,
-    "season_width": 1100,
-    "episode_still_w": 100,
+    "show_width": 342,
+    "movie_width": 342,
+    "season_width": 342,
+    "episode_still_w": 300,
     "calendar_thumb_w": 125,
     "hero_poster_w": 230,
     "hero_poster_min": 180,
@@ -459,10 +492,8 @@
     "provider_logo_max_w": 20,
     "backdrop_w": 780
   },
-
   "ui_palette": {
     "active": "night_tv",
-
     "docs": {
       "intent": "TV-first palette registry. Tokens define meaning (not components). Components map to tokens for consistent UI across pages.",
       "application_order": [
@@ -471,43 +502,189 @@
         "3) Apply legacy aliases: set --bg/--panel/etc to var(--tokenKey) so existing CSS keeps working."
       ],
       "component_token_map": [
-        { "component": "Page background", "use": ["--g-bg", "--c-bg-1"] },
-        { "component": "Panels/cards", "use": ["--c-surface-1", "--g-card", "--c-border"] },
-        { "component": "Elevated bars/sticky headers", "use": ["--c-surface-2", "--c-border"] },
-        { "component": "Hover/active surface", "use": ["--c-surface-3"] },
-
-        { "component": "Primary text", "use": ["--c-text"] },
-        { "component": "Secondary text", "use": ["--c-text-muted"] },
-        { "component": "Tertiary text/hints", "use": ["--c-text-dim"] },
-
-        { "component": "Borders", "use": ["--c-border"], "selected": ["--c-border-strong"] },
-        { "component": "Dividers/separators", "use": ["--c-divider"] },
-
-        { "component": "Buttons (default)", "use": ["--c-surface-2", "--c-text", "--c-border"], "hover": ["--c-surface-3"], "focus": ["--ring-focus"] },
-        { "component": "Buttons/tabs (primary)", "use": ["--c-accent"], "text": ["#06101A"] },
-        { "component": "Danger actions", "use": ["--c-danger"], "mix_with": ["--c-surface-2"] },
-
-        { "component": "Chips/tags", "use": ["--c-chip-bg", "--c-border", "--c-text-muted"], "selected": ["--c-chip-selected-bg", "--c-border-strong", "--c-chip-selected-glow"] },
-
-        { "component": "Inputs/select/textarea", "use": ["--c-field-bg", "--c-text", "--c-border"], "focus": ["--ring-focus"] },
-        { "component": "Readonly fields", "use": ["--c-field-bg-alt", "--c-text", "--c-border"] },
-        { "component": "Disabled fields", "use": ["--c-disabled-bg", "--c-disabled-text", "--c-border"] },
-
-        { "component": "Checkbox/radio", "use": ["accent-color: var(--c-accent)"] },
-
-        { "component": "Toggle switch", "use": ["track: --c-toggle-track", "thumb: --c-toggle-thumb"], "on": ["--c-success (or status colors)"] },
-
-        { "component": "Slider (range)", "use": ["--c-slider-track", "--c-slider-fill", "--c-slider-thumb"], "focus": ["--ring-focus"] },
-
-        { "component": "Progress bars", "use": ["--g-progress"] },
-
-        { "component": "Modal", "surface": ["--c-surface-2"], "overlay": ["--c-overlay"], "focus": ["--ring-focus"] }
+        {
+          "component": "Page background",
+          "use": [
+            "--g-bg",
+            "--c-bg-1"
+          ]
+        },
+        {
+          "component": "Panels/cards",
+          "use": [
+            "--c-surface-1",
+            "--g-card",
+            "--c-border"
+          ]
+        },
+        {
+          "component": "Elevated bars/sticky headers",
+          "use": [
+            "--c-surface-2",
+            "--c-border"
+          ]
+        },
+        {
+          "component": "Hover/active surface",
+          "use": [
+            "--c-surface-3"
+          ]
+        },
+        {
+          "component": "Primary text",
+          "use": [
+            "--c-text"
+          ]
+        },
+        {
+          "component": "Secondary text",
+          "use": [
+            "--c-text-muted"
+          ]
+        },
+        {
+          "component": "Tertiary text/hints",
+          "use": [
+            "--c-text-dim"
+          ]
+        },
+        {
+          "component": "Borders",
+          "use": [
+            "--c-border"
+          ],
+          "selected": [
+            "--c-border-strong"
+          ]
+        },
+        {
+          "component": "Dividers/separators",
+          "use": [
+            "--c-divider"
+          ]
+        },
+        {
+          "component": "Buttons (default)",
+          "use": [
+            "--c-surface-2",
+            "--c-text",
+            "--c-border"
+          ],
+          "hover": [
+            "--c-surface-3"
+          ],
+          "focus": [
+            "--ring-focus"
+          ]
+        },
+        {
+          "component": "Buttons/tabs (primary)",
+          "use": [
+            "--c-accent"
+          ],
+          "text": [
+            "#06101A"
+          ]
+        },
+        {
+          "component": "Danger actions",
+          "use": [
+            "--c-danger"
+          ],
+          "mix_with": [
+            "--c-surface-2"
+          ]
+        },
+        {
+          "component": "Chips/tags",
+          "use": [
+            "--c-chip-bg",
+            "--c-border",
+            "--c-text-muted"
+          ],
+          "selected": [
+            "--c-chip-selected-bg",
+            "--c-border-strong",
+            "--c-chip-selected-glow"
+          ]
+        },
+        {
+          "component": "Inputs/select/textarea",
+          "use": [
+            "--c-field-bg",
+            "--c-text",
+            "--c-border"
+          ],
+          "focus": [
+            "--ring-focus"
+          ]
+        },
+        {
+          "component": "Readonly fields",
+          "use": [
+            "--c-field-bg-alt",
+            "--c-text",
+            "--c-border"
+          ]
+        },
+        {
+          "component": "Disabled fields",
+          "use": [
+            "--c-disabled-bg",
+            "--c-disabled-text",
+            "--c-border"
+          ]
+        },
+        {
+          "component": "Checkbox/radio",
+          "use": [
+            "accent-color: var(--c-accent)"
+          ]
+        },
+        {
+          "component": "Toggle switch",
+          "use": [
+            "track: --c-toggle-track",
+            "thumb: --c-toggle-thumb"
+          ],
+          "on": [
+            "--c-success (or status colors)"
+          ]
+        },
+        {
+          "component": "Slider (range)",
+          "use": [
+            "--c-slider-track",
+            "--c-slider-fill",
+            "--c-slider-thumb"
+          ],
+          "focus": [
+            "--ring-focus"
+          ]
+        },
+        {
+          "component": "Progress bars",
+          "use": [
+            "--g-progress"
+          ]
+        },
+        {
+          "component": "Modal",
+          "surface": [
+            "--c-surface-2"
+          ],
+          "overlay": [
+            "--c-overlay"
+          ],
+          "focus": [
+            "--ring-focus"
+          ]
+        }
       ],
       "selection_rule": [
         "Selection must be obvious at TV distance: (1) border stronger, (2) tinted fill, (3) subtle glow."
       ]
     },
-
     "alias_to_legacy_vars": {
       "bg": "c-bg-1",
       "panel": "c-surface-1",
@@ -519,51 +696,39 @@
       "good": "c-success",
       "bad": "c-danger"
     },
-
     "palettes": {
       "night_tv": {
         "name": "Night TV Premium",
         "tokens": {
           "c-bg-0": "#070A10",
           "c-bg-1": "#0A0F18",
-
           "c-surface-1": "#0E1624",
           "c-surface-2": "#15213A",
           "c-surface-3": "#1D2F52",
-
           "c-text": "#EAF1FF",
           "c-text-muted": "#B7C6E3",
           "c-text-dim": "#8EA1C6",
-
           "c-border": "rgba(255,255,255,0.14)",
           "c-border-strong": "rgba(255,255,255,0.28)",
           "c-divider": "rgba(255,255,255,0.10)",
-
           "c-accent": "#4C8DFF",
           "c-accent-2": "#25D0C6",
-
           "c-info": "#6AB6FF",
           "c-success": "#2FE08A",
           "c-warning": "#FFD166",
           "c-danger": "#FF5C72",
           "c-brand-magenta": "#F06BE5",
-
           "c-shadow": "rgba(0,0,0,0.55)",
-
           "c-overlay": "rgba(0,0,0,0.65)",
-
           "c-field-bg": "rgba(255,255,255,0.06)",
           "c-field-bg-alt": "rgba(255,255,255,0.04)",
           "c-disabled-bg": "rgba(255,255,255,0.03)",
           "c-disabled-text": "#6F7F9E",
-
           "c-chip-bg": "rgba(255,255,255,0.06)",
           "c-chip-selected-bg": "color-mix(in srgb, var(--c-accent) 14%, var(--c-surface-1))",
           "c-chip-selected-glow": "0 0 0 2px color-mix(in srgb, var(--c-accent) 35%, transparent)",
-
           "c-toggle-track": "rgba(255,255,255,0.16)",
           "c-toggle-thumb": "#FFFFFF",
-
           "c-slider-track": "#1A2844",
           "c-slider-fill": "#4C8DFF",
           "c-slider-thumb": "#EAF1FF"
@@ -575,50 +740,38 @@
           "ring-focus": "0 0 0 2px var(--c-accent), 0 0 0 4px rgba(255,255,255,0.92)"
         }
       },
-
       "day_tv": {
         "name": "Day TV (High separation)",
         "tokens": {
           "c-bg-0": "#E3E9F2",
           "c-bg-1": "#EEF2F7",
-
           "c-surface-1": "#FFFFFF",
           "c-surface-2": "#E0E7F1",
           "c-surface-3": "#CAD5E6",
-
           "c-text": "#0B1324",
           "c-text-muted": "#34425D",
           "c-text-dim": "#5A6A87",
-
           "c-border": "rgba(0,0,0,0.22)",
           "c-border-strong": "rgba(0,0,0,0.38)",
           "c-divider": "rgba(0,0,0,0.18)",
-
           "c-accent": "#4C8DFF",
           "c-accent-2": "#25D0C6",
-
           "c-info": "#2E6BFF",
           "c-success": "#1FBF75",
           "c-warning": "#E6B84C",
           "c-danger": "#E54B5F",
           "c-brand-magenta": "#E056C9",
-
           "c-shadow": "rgba(0,0,0,0.18)",
-
           "c-overlay": "rgba(0,0,0,0.35)",
-
           "c-field-bg": "#FFFFFF",
           "c-field-bg-alt": "#F6F8FC",
           "c-disabled-bg": "#F0F2F6",
           "c-disabled-text": "#8A97B2",
-
           "c-chip-bg": "rgba(0,0,0,0.04)",
           "c-chip-selected-bg": "color-mix(in srgb, var(--c-accent) 12%, var(--c-surface-1))",
           "c-chip-selected-glow": "0 0 0 2px color-mix(in srgb, var(--c-accent) 35%, transparent)",
-
           "c-toggle-track": "rgba(0,0,0,0.14)",
           "c-toggle-thumb": "#0B1324",
-
           "c-slider-track": "#BFCBE0",
           "c-slider-fill": "#4C8DFF",
           "c-slider-thumb": "#0B1324"
@@ -632,7 +785,6 @@
       }
     }
   },
-
   "ui_tuning": {
     "logo_height": 25,
     "provider_logo_height": 25,
@@ -668,9 +820,15 @@
       "day_pill_height_px": 26,
       "day_segment_gap_px": 10,
       "carousel_rows": 2
-    }
+    },
+    "calendar_force_seven_columns": false,
+    "calendar_horizontal_scroll_under_1300px": false,
+    "episode_image_trim_percent_each_side": 10,
+    "show_movie_portrait_aspect_ratio": "2/3",
+    "episode_card_aspect_ratio": "16/9",
+    "icon_strip_no_wrap": true,
+    "icon_strip_layout": "left-center-right"
   },
-
   "image_cache": {
     "enabled": true,
     "download_missing_only": true,
@@ -686,7 +844,3 @@
     }
   }
 }
-
-
-
-

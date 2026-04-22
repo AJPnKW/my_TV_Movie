@@ -1,36 +1,54 @@
-# Python bytecode
 __pycache__/
 *.pyc
-
-# Local virtualenv
 .venv/
-
-# Node
 node_modules/
-
-# Generated outputs
 out/
-reports/
+build/
+dist/
 logs/
-
-# AI / Codex working folders (repo-local)
 .ai_downloads/
 .ai_apply/
 .ai_state/
 .codex.files/
-
-# Notes / local docs not meant for git
 .my_notes/
 .txt_files_4_AI_attachments/
-
-# Backups / scratch
+_local/
+inventory/
 *.bak
 *.bak_*
 *.tmp
-
-# Archived data artifacts (local)
+*_package.zip
+*_patch_input.zip
+*_restart_package.zip
+README_overlay_apply*.txt
 data/archived/
-
-# Tool archives + web archive html (local)
+data/inputs.cleaned.json
 tools/inputs_editor/archive/
 web/.archive/
+tools/fix_inputs.py
+tools/fix_inputs_specific.py
+*files+folders*
+Files+Folders_listing.txt
+Curated-Files+Folders_listing.txt
+AGENTS.md
+web/web_folder.zip
+reports/ui_component_audit/overlay_patch_report_2026-03-21_v13.md
+reports/ui_component_audit/overlay_patch_report_2026-03-21_v11.md
+reports/ui_component_audit/overlay_patch_report_2026-03-21_v12.md
+web (2).zip
+scripts.zip
+reports.zip
+node_modules.zip
+docs.zip
+/reports/availability_status
+test-results/.last-run.json
+docs (2).zip
+codex_prompts/availability_status_full_repo_implementation_prompt.md
+reports/_qa_pipeline_integrity_2026-03-21_19-48-28.json
+README_APPLY.md
+scripts/apply_docs_cleanup_overlay.ps1
+scripts/apply_docs_cleanup_phase2.ps1
+/data/backups
+
+.videos_local/
+videos_local/

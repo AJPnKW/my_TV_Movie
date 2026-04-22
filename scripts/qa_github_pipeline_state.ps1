@@ -30,13 +30,15 @@ try {
   $urlWorkflow = "$baseRaw/.github/workflows/build-data.yml"
   $urlConfig   = "$baseRaw/web/config.json"
   $urlData     = "$baseRaw/data/data.json"
-  $urlDlScript = "$baseRaw/scripts/download_tmdb_assets.py"
+  $urlIndex    = "$baseRaw/data/catalog_index.json"
+  $urlCalendar = "$baseRaw/data/calendar.json"
 
   Write-Host "=== REMOTE URLS ==="
   Write-Host $urlWorkflow
   Write-Host $urlConfig
   Write-Host $urlData
-  Write-Host $urlDlScript
+  Write-Host $urlIndex
+  Write-Host $urlCalendar
   Write-Host ""
 
   function Get-RemoteText([string]$url) {
@@ -47,22 +49,33 @@ try {
   $remoteWorkflow = Get-RemoteText $urlWorkflow
   $remoteConfig   = Get-RemoteText $urlConfig
   $remoteData     = Get-RemoteText $urlData
-  $remoteDlScript = Get-RemoteText $urlDlScript
-  Write-Host "OK: downloaded workflow/config/data/downloader from GitHub raw"
+  $remoteIndex    = Get-RemoteText $urlIndex
+  $remoteCalendar = Get-RemoteText $urlCalendar
+  Write-Host "OK: downloaded workflow/config/runtime artifacts from GitHub raw"
   Write-Host ""
 
   $cfg = $remoteConfig | ConvertFrom-Json
   $data = $remoteData | ConvertFrom-Json
+  $index = $remoteIndex | ConvertFrom-Json
+  $calendar = $remoteCalendar | ConvertFrom-Json
 
-  Write-Host "=== QA 1: WORKFLOW CONTAINS ASSET DOWNLOADER STEP ==="
-  $hasDownloaderStep = ($remoteWorkflow -match "download_tmdb_assets\.py")
-  if ($hasDownloaderStep) {
-    Write-Host "build-data.yml contains download_tmdb_assets.py step: YES"
+  Write-Host "=== QA 1: WORKFLOW USES CANONICAL PIPELINE RUNNER ==="
+  $hasCanonicalRunner = ($remoteWorkflow -match "run:\s+python scripts/run_pipeline_tmdb_trakt\.py")
+  $commitsRuntimeArtifacts = (
+    ($remoteWorkflow -match "git diff --quiet -- data/data\.json data/catalog_index\.json data/calendar\.json data/catalog_detail assets") -and
+    ($remoteWorkflow -match "git add data/data\.json data/catalog_index\.json data/calendar\.json data/catalog_detail assets")
+  )
+  if ($hasCanonicalRunner) {
+    Write-Host "build-data.yml runs scripts/run_pipeline_tmdb_trakt.py: YES"
   } else {
-    Write-Host "build-data.yml contains download_tmdb_assets.py step: NO"
-    Write-Host "FAIL: Add this step after run_pipeline_full.py:"
-    Write-Host "  - name: Download TMDB assets"
-    Write-Host "    run: python scripts/download_tmdb_assets.py"
+    Write-Host "build-data.yml runs scripts/run_pipeline_tmdb_trakt.py: NO"
+    Write-Host "FAIL: build-data.yml must run the canonical production pipeline runner"
+  }
+  if ($commitsRuntimeArtifacts) {
+    Write-Host "build-data.yml commits split runtime artifacts and assets: YES"
+  } else {
+    Write-Host "build-data.yml commits split runtime artifacts and assets: NO"
+    Write-Host "FAIL: build-data.yml must diff/add data/data.json, catalog_index.json, calendar.json, catalog_detail, and assets"
   }
   Write-Host ""
 
@@ -74,11 +87,11 @@ try {
     Write-Host ("config image_cache.folders.{0} = {1}" -f $k, $v)
   }
 
-  $badCfg = (($remoteConfig -match "/assets/images/tmdb") -or ($remoteConfig -match '"folders_legacy"') -or ($remoteConfig -match '"streaming_services"'))
+  $badCfg = (($remoteConfig -match "/assets/images/tmdb") -or ($remoteConfig -match '"folders_legacy"'))
   if ($badCfg) {
-    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy, streaming_services): YES"
+    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy): YES"
   } else {
-    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy, streaming_services): NO"
+    Write-Host "config contains legacy keys/paths (/assets/images/tmdb, folders_legacy): NO"
   }
   Write-Host ""
 
@@ -86,6 +99,8 @@ try {
   Write-Host ("data.meta.generated_utc = " + $data.meta.generated_utc)
   Write-Host ("data.meta.builder.script = " + $data.meta.builder.script)
   Write-Host ("data.meta.builder.version = " + $data.meta.builder.version)
+  Write-Host ("catalog_index.meta.schema = " + $index.meta.schema)
+  Write-Host ("calendar.meta.schema = " + $calendar.meta.schema)
 
   $hasLegacyPaths = ($remoteData -match "/assets/images/tmdb/")
   if ($hasLegacyPaths) {
@@ -100,11 +115,20 @@ try {
   } else {
     Write-Host 'data.json contains canonical "/assets/(posters|backdrops|stills)/": NO'
   }
+  Write-Host ("catalog_index shows = " + (($index.shows | Measure-Object).Count))
+  Write-Host ("catalog_index movies = " + (($index.movies | Measure-Object).Count))
+  Write-Host ("calendar day buckets = " + (($calendar.days.PSObject.Properties | Measure-Object).Count))
   Write-Host ""
 
   Write-Host "=== QA 4: LOCAL VS REMOTE HASH (config/workflow) ==="
+  function Normalize-TextForHash([string]$s) {
+    if ($null -eq $s) { return "" }
+    return ($s -replace "`r`n", "`n" -replace "`r", "`n").TrimEnd("`n") + "`n"
+  }
+
   function Sha256Text([string]$s) {
-    $bytes = [Text.Encoding]::UTF8.GetBytes($s)
+    $normalized = Normalize-TextForHash $s
+    $bytes = [Text.Encoding]::UTF8.GetBytes($normalized)
     $sha = [Security.Cryptography.SHA256]::Create()
     ($sha.ComputeHash($bytes) | ForEach-Object { $_.ToString("x2") }) -join ""
   }
@@ -114,16 +138,22 @@ try {
 
   if (Test-Path $localWorkflowPath) {
     $localWorkflow = Get-Content $localWorkflowPath -Raw
-    Write-Host ("workflow sha256 local : " + (Sha256Text $localWorkflow))
-    Write-Host ("workflow sha256 remote: " + (Sha256Text $remoteWorkflow))
+    $localWorkflowHash = Sha256Text $localWorkflow
+    $remoteWorkflowHash = Sha256Text $remoteWorkflow
+    Write-Host ("workflow sha256 local : " + $localWorkflowHash)
+    Write-Host ("workflow sha256 remote: " + $remoteWorkflowHash)
+    Write-Host ("workflow normalized match: " + ($(if ($localWorkflowHash -eq $remoteWorkflowHash) { "YES" } else { "NO" })))
   } else {
     Write-Host "workflow local file missing: $localWorkflowPath"
   }
 
   if (Test-Path $localConfigPath) {
     $localConfig = Get-Content $localConfigPath -Raw
-    Write-Host ("config sha256 local : " + (Sha256Text $localConfig))
-    Write-Host ("config sha256 remote: " + (Sha256Text $remoteConfig))
+    $localConfigHash = Sha256Text $localConfig
+    $remoteConfigHash = Sha256Text $remoteConfig
+    Write-Host ("config sha256 local : " + $localConfigHash)
+    Write-Host ("config sha256 remote: " + $remoteConfigHash)
+    Write-Host ("config normalized match: " + ($(if ($localConfigHash -eq $remoteConfigHash) { "YES" } else { "NO" })))
   } else {
     Write-Host "config local file missing: $localConfigPath"
   }

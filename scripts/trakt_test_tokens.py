@@ -40,6 +40,15 @@ def mask(s: str | None, keep: int = 6) -> str:
     return f"{s[:keep]}...{s[-keep:]}"
 
 
+def warn_redirect_secret_drift() -> None:
+    canonical = os.getenv("API_TRAKT_REDIRECT_URL")
+    typo = os.getenv("API_TRAKT__REDIRECT_URL")
+    if typo and not canonical:
+        print("WARNING: API_TRAKT__REDIRECT_URL is deprecated. Rename it to API_TRAKT_REDIRECT_URL.")
+    elif typo and canonical and typo.strip() != canonical.strip():
+        print("WARNING: Conflicting Trakt redirect env vars detected. Use only API_TRAKT_REDIRECT_URL.")
+
+
 def http_json(url: str, headers: dict, method: str = "GET", body_obj=None, timeout: int = 30):
     data = None
     if body_obj is not None:
@@ -75,6 +84,7 @@ def refresh_tokens(client_id: str, client_secret: str, refresh_token: str) -> di
 
 
 def main() -> int:
+    warn_redirect_secret_drift()
     client_id = os.getenv("API_TRAKT_ID")
     client_secret = os.getenv("API_TRAKT_KEY")
     redirect_url = os.getenv("API_TRAKT_REDIRECT_URL")

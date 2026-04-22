@@ -17,6 +17,7 @@
 [NOTES]
 - This file is intentionally comprehensive and deterministic.
 - No references to deprecated "image/" folder.
+- Normalized main app shells now consume this shared base stylesheet alongside web/css/main_app.css.
 ========================================================================================= */
 
 /* =========================
@@ -54,6 +55,14 @@
 
   --shadow-1:0 12px 40px rgba(0,0,0,0.50);
   --shadow-2:0 20px 80px rgba(0,0,0,0.60);
+
+  --browse-sidebar-w:260px;
+  --media-card-min:220px;
+  --media-card-radius:18px;
+  --media-card-gap:14px;
+  --media-card-meta:#c8d2e4;
+  --media-card-submeta:#8f9bb2;
+  --icon-strip-gap:12px;
 }
 
 *,
@@ -67,7 +76,6 @@ body{
   font-family:var(--font);
   background:var(--bg);
   color:var(--fg);
-  overflow:hidden; /* SPA controls scrolling inside view roots/popup bodies */
 }
 
 img{ max-width:100%; height:auto; }
@@ -86,126 +94,8 @@ button{ font-family:inherit; }
 }
 
 /* =========================
-   1) App shell structure
+   1) Theme tokens + generic elements
    ========================= */
-
-#global-header{
-  position:sticky;
-  top:0;
-  z-index:30;
-  height:var(--header-h);
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:0 14px;
-  background:linear-gradient(180deg, rgba(18,23,37,0.96), rgba(18,23,37,0.88));
-  border-bottom:1px solid var(--border);
-  backdrop-filter: blur(10px);
-}
-
-#main-nav{
-  height:var(--nav-h);
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:8px 14px;
-  background:rgba(15,20,32,0.92);
-  border-bottom:1px solid var(--border);
-  position:sticky;
-  top:var(--header-h);
-  z-index:25;
-  backdrop-filter: blur(10px);
-}
-
-#app-shell{
-  height:calc(100% - var(--header-h) - var(--nav-h));
-  display:flex;
-  flex-direction:column;
-}
-
-#content-root{
-  flex:1 1 auto;
-  overflow:auto;
-  padding:14px;
-  scroll-behavior:smooth;
-}
-
-/* Optional (if used) */
-#content-root:focus{
-  outline:none;
-}
-
-/* =========================
-   2) Brand + header elements
-   ========================= */
-
-#brand{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:220px;
-}
-
-#brand .logo-chip{
-  width:36px;
-  height:36px;
-  border-radius:10px;
-  background:rgba(255,255,255,0.10);
-  display:grid;
-  place-items:center;
-  border:1px solid rgba(255,255,255,0.10);
-}
-
-#brand .title{
-  display:flex;
-  flex-direction:column;
-  line-height:1.1;
-}
-
-#brand .title .name{
-  font-size:16px;
-  font-weight:650;
-  letter-spacing:0.2px;
-}
-
-#brand .title .sub{
-  font-size:12px;
-  color:var(--muted);
-}
-
-#header-right{
-  margin-left:auto;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:260px;
-  justify-content:flex-end;
-}
-
-#status-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  border:1px solid var(--border);
-  border-radius:999px;
-  padding:7px 10px;
-  background:rgba(255,255,255,0.06);
-  font-size:12px;
-  color:var(--muted);
-  user-select:none;
-}
-
-#status-dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:rgba(255,255,255,0.25);
-  box-shadow:0 0 0 2px rgba(255,255,255,0.06) inset;
-}
-
-#status-pill[data-kind="ok"] #status-dot{ background:var(--ok); }
-#status-pill[data-kind="warn"] #status-dot{ background:var(--warn); }
-#status-pill[data-kind="error"] #status-dot{ background:var(--danger); }
 
 /* =========================
    3) Error surfacing
@@ -251,65 +141,6 @@ button{ font-family:inherit; }
   border-radius:12px;
   padding:10px 12px;
   font-size:13px;
-}
-
-/* =========================
-   4) Nav tabs
-   ========================= */
-
-.nav-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-  height:40px;
-  min-width:118px;
-  padding:0 14px;
-  border-radius:999px;
-  border:1px solid var(--border);
-  background:rgba(255,255,255,0.06);
-  color:var(--fg);
-  font-size:14px;
-  font-weight:600;
-  letter-spacing:0.2px;
-  cursor:pointer;
-  user-select:none;
-}
-
-.nav-btn[aria-selected="true"]{
-  background:rgba(255,255,255,0.14);
-  border-color:rgba(255,255,255,0.22);
-}
-
-/* =========================
-   5) Shared panels + headings
-   ========================= */
-
-.view-panel{
-  background:rgba(18,23,37,0.78);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:14px;
-  min-height:calc(100% - 2px);
-}
-
-.view-title{
-  display:flex;
-  align-items:baseline;
-  gap:10px;
-  margin:0 0 10px 0;
-}
-
-.view-title h1{
-  margin:0;
-  font-size:18px;
-  font-weight:750;
-}
-
-.view-title .meta{
-  color:var(--muted);
-  font-size:12px;
-  font-family:var(--mono);
 }
 
 .hint{
@@ -469,105 +300,6 @@ button{ font-family:inherit; }
 }
 
 /* =========================
-   8) Icon strip
-   ========================= */
-
-.icon-strip{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-}
-
-.icon-strip button{
-  width:28px;
-  height:28px;
-  border-radius:10px;
-  border:1px solid rgba(255,255,255,0.14);
-  background:rgba(255,255,255,0.06);
-  padding:0;
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-}
-
-.icon-strip img{
-  width:18px;
-  height:18px;
-  object-fit:contain;
-  display:block;
-}
-
-/* =========================
-   9) Popup system (global)
-   ========================= */
-
-#popup-overlay{
-  position:fixed;
-  inset:0;
-  z-index:80;
-  display:none;
-  background:rgba(0,0,0,0.72);
-  backdrop-filter:blur(6px);
-}
-
-#popup-container{
-  position:fixed;
-  inset:0;
-  z-index:90;
-  display:none;
-  pointer-events:none;
-}
-
-.popup{
-  pointer-events:auto;
-  position:absolute;
-  inset:6% 6%;
-  background:rgba(18,23,37,0.98);
-  border:1px solid rgba(255,255,255,0.16);
-  border-radius:var(--radius2);
-  box-shadow:var(--shadow-2);
-  display:flex;
-  flex-direction:column;
-  overflow:hidden; /* trapped scroll in .popup-body */
-}
-
-.popup-header{
-  flex:0 0 auto;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:12px 14px;
-  border-bottom:1px solid var(--border);
-  background:rgba(15,20,32,0.96);
-}
-
-.popup-header .title{
-  font-weight:900;
-  font-size:15px;
-}
-
-.popup-header .spacer{ margin-left:auto; }
-
-.popup-header .btn{
-  height:34px;
-  padding:0 10px;
-  border-radius:12px;
-  font-size:12px;
-  font-weight:800;
-}
-
-.popup-body{
-  flex:1 1 auto;
-  overflow:auto;
-  padding:14px;
-}
-
-/* Popup stacked dimming hint (optional) */
-.popup[data-depth="0"]{ opacity:1; }
-.popup[data-depth="1"]{ opacity:0.98; }
-.popup[data-depth="2"]{ opacity:0.96; }
-
-/* =========================
    10) Tables / key-value lists
    ========================= */
 
@@ -623,33 +355,4 @@ button{ font-family:inherit; }
   border:0 !important;
 }
 
-/* =========================
-   13) Responsive
-   ========================= */
-
-@media (max-width: 900px){
-  #brand{ min-width: 0; }
-  #header-right{ min-width: 0; }
-  .nav-btn{ min-width: 96px; }
-}
-
-@media (max-width: 720px){
-  #main-nav{
-    overflow:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  .nav-btn{
-    min-width: 104px;
-    flex: 0 0 auto;
-  }
-  .popup{
-    inset: 4% 4%;
-  }
-}
-
-@media (max-width: 520px){
-  #global-header{ padding:0 10px; }
-  #main-nav{ padding:8px 10px; }
-  #content-root{ padding:10px; }
-  .popup{ inset: 3% 3%; }
-}
+/* theme-only file intentionally avoids app/layout structure */

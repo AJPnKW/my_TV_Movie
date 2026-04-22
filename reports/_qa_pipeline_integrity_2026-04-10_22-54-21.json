@@ -1,0 +1,97 @@
+{
+  "generated_utc": "2026-04-11T02:54:21Z",
+  "repo_root": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie",
+  "inputs_json": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie\\data\\inputs.json",
+  "data_json": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie\\data\\data.json",
+  "catalog_index_json": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie\\data\\catalog_index.json",
+  "calendar_json": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie\\data\\calendar.json",
+  "catalog_detail_dir": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie\\data\\catalog_detail",
+  "counts": {
+    "inputs_tv": 201,
+    "inputs_movies": 102,
+    "data_shows": 201,
+    "data_movies": 101,
+    "index_shows": 201,
+    "index_movies": 101,
+    "detail_files": 302,
+    "calendar_days": 4981
+  },
+  "checks": [
+    {
+      "name": "inputs_json_exists",
+      "passed": true,
+      "detail": "data/inputs.json must exist"
+    },
+    {
+      "name": "catalog_index_exists",
+      "passed": true,
+      "detail": "data/catalog_index.json must exist"
+    },
+    {
+      "name": "calendar_json_exists",
+      "passed": true,
+      "detail": "data/calendar.json must exist"
+    },
+    {
+      "name": "catalog_detail_exists",
+      "passed": true,
+      "detail": "data/catalog_detail must exist"
+    },
+    {
+      "name": "workflow_uses_canonical_runner",
+      "passed": true,
+      "detail": "build-data workflow must run scripts/run_pipeline_tmdb_trakt.py"
+    },
+    {
+      "name": "runner_builds_split_runtime",
+      "passed": true,
+      "detail": "pipeline runner must build split runtime artifacts"
+    },
+    {
+      "name": "runtime_no_first_load_data_json",
+      "passed": true,
+      "detail": "runtime first-load paths must not use data/data.json"
+    },
+    {
+      "name": "runtime_uses_split_index",
+      "passed": true,
+      "detail": "app runtime and watch_me must use catalog_index.json"
+    },
+    {
+      "name": "runtime_uses_calendar_feed",
+      "passed": true,
+      "detail": "app runtime and watch_me must use calendar.json"
+    },
+    {
+      "name": "no_legacy_input_paths",
+      "passed": true,
+      "detail": "active production files must not reference legacy txt/input_parsed paths"
+    },
+    {
+      "name": "shows_present_when_tv_inputs_present",
+      "passed": true,
+      "detail": "catalog_index shows=201 inputs_tv=201"
+    },
+    {
+      "name": "movies_present_when_movie_inputs_present",
+      "passed": true,
+      "detail": "catalog_index movies=101 inputs_movies=102"
+    },
+    {
+      "name": "detail_file_count_matches_index",
+      "passed": true,
+      "detail": "detail_files=302 index_total=302"
+    },
+    {
+      "name": "calendar_has_days",
+      "passed": true,
+      "detail": "calendar day buckets=4981"
+    },
+    {
+      "name": "monolith_reference_still_builds",
+      "passed": true,
+      "detail": "data/data.json remains available as a non-runtime reference artifact"
+    }
+  ],
+  "result": "OK"
+}

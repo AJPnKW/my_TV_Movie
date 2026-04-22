@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-03-22T00:33:26Z",
+  "result": "OK",
+  "issue_count": 0,
+  "issues": [],
+  "checks": [
+    {
+      "url": "http://127.0.0.1:8000/web/index.html",
+      "selector": ".media-card__poster",
+      "badge_top_right": true
+    },
+    {
+      "url": "http://127.0.0.1:8000/web/shows.html",
+      "selector": ".media-card--show .media-card__poster",
+      "badge_top_right": true
+    },
+    {
+      "url": "http://127.0.0.1:8000/web/movies.html",
+      "selector": ".media-card--movie .media-card__poster",
+      "badge_top_right": true
+    },
+    {
+      "url": "http://127.0.0.1:8000/web/calendar.html",
+      "selector": ".calendar-item .media-card__poster",
+      "badge_top_right": true
+    },
+    {
+      "url": "http://127.0.0.1:8000/web/watch_me/watch_me.html",
+      "selector": ".media-card__poster",
+      "badge_top_right": true
+    },
+    {
+      "url": "http://127.0.0.1:8000/web/movies.html",
+      "selector": ".popup-hero__poster",
+      "badge_top_right": true
+    },
+    {
+      "url": "http://127.0.0.1:8000/web/shows.html",
+      "selector": ".popup-hero__poster",
+      "badge_top_right": true
+    }
+  ]
+}

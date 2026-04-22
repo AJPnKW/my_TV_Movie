@@ -1,0 +1,125 @@
+<!--
+FILE: docs/ui_standardization/mockup_show_popup.html
+VERSION: 1.0.0
+UPDATED: 2026-03-13T00:00:00Z
+CHANGE NOTES:
+- Review-only mockup for proposed standard show popup
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mockup - Standard Show Popup</title>
+  <style>
+    :root{
+      --bg:#09111b;
+      --panel:#111b27;
+      --panel-2:#162233;
+      --line:rgba(255,255,255,.12);
+      --text:#f4f7fb;
+      --muted:rgba(244,247,251,.72);
+      --chip:#243449;
+      --accent:#c8f169;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top,#20314a 0,#09111b 58%);color:var(--text);padding:24px}
+    .overlay{max-width:1120px;margin:0 auto;background:linear-gradient(180deg,rgba(17,27,39,.97),rgba(9,17,27,.98));border:1px solid var(--line);border-radius:24px;overflow:hidden;box-shadow:0 28px 90px rgba(0,0,0,.45)}
+    .backdrop{height:210px;background:linear-gradient(180deg,rgba(11,17,27,.1),rgba(11,17,27,.9)),linear-gradient(120deg,#49627f,#142131)}
+    .body{margin-top:-72px;padding:0 24px 24px}
+    .topbar{display:flex;justify-content:space-between;align-items:center;padding:18px 22px}
+    .close{background:#0f1722;border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:999px}
+    .hero{display:grid;grid-template-columns:220px 1fr;gap:22px;align-items:start}
+    .poster{background:#0d1724;border:1px solid var(--line);border-radius:18px;overflow:hidden;aspect-ratio:2/3}
+    .poster::before{content:"Poster Block";display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);background:linear-gradient(160deg,#2d4158,#0f1823)}
+    .labels{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+    .label,.pill{background:var(--chip);border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:12px}
+    .title{font-size:34px;font-weight:800;line-height:1.05}
+    .watchband{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 14px}
+    .watchchip{background:rgba(200,241,105,.12);border:1px solid rgba(200,241,105,.35);color:#effbcf;padding:8px 12px;border-radius:999px;font-size:13px}
+    .facts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+    .overview{color:var(--muted);line-height:1.55;max-width:72ch}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .btn{background:#182638;border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:12px}
+    .main{display:grid;grid-template-columns:300px 1fr;gap:20px;margin-top:22px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px}
+    .panel h2{margin:0 0 12px;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+    .season{display:flex;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--line);border-radius:14px;background:#0f1722;margin-bottom:10px}
+    .season.active{outline:2px solid rgba(200,241,105,.4)}
+    .season small{display:block;color:var(--muted);margin-top:4px}
+    .season-detail{background:linear-gradient(180deg,rgba(22,34,51,.94),rgba(15,23,34,.98));min-height:170px}
+    .episodes{margin-top:18px}
+    .row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .ep{background:#0f1722;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+    .epimg{height:138px;background:linear-gradient(135deg,#445d78,#1a2634);display:flex;align-items:flex-end;padding:12px}
+    .ep .copy{padding:12px}
+    .badge{display:inline-block;background:rgba(200,241,105,.15);border:1px solid rgba(200,241,105,.35);padding:4px 8px;border-radius:999px;font-size:11px;margin-bottom:8px}
+    .meta{font-size:12px;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;margin:8px 0}
+    .ep .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    @media (max-width:900px){
+      .hero,.main,.row{grid-template-columns:1fr}
+      .body{margin-top:-44px}
+      .poster{max-width:240px}
+    }
+  </style>
+</head>
+<body>
+  <div class="overlay" role="dialog" aria-modal="true" aria-label="Standard show popup mockup">
+    <div class="backdrop"></div>
+    <div class="topbar">
+      <div class="label">SECTION PURPOSE: modal shell + close affordance</div>
+      <button class="close" type="button">Close</button>
+    </div>
+    <div class="body">
+      <section class="hero">
+        <div class="poster"></div>
+        <div>
+          <div class="labels">
+            <span class="label">Continuing</span>
+            <span class="label">HBO</span>
+            <span class="label">TMDB 12345</span>
+          </div>
+          <div class="title">Standard Show Popup</div>
+          <div class="watchband">
+            <span class="watchchip">Watching</span>
+            <span class="watchchip">Show Watched Toggle</span>
+          </div>
+          <div class="facts">
+            <span class="pill">Drama</span>
+            <span class="pill">8.6 (4,212)</span>
+            <span class="pill">Premiered Jan 9, 2024</span>
+            <span class="pill">Last Mar 2, 2026</span>
+          </div>
+          <p class="overview">Proposed baseline combines the current hero/backdrop structure from the main app with the richer toggle and watch-status behavior already present in the enhanced fork. Network, ratings, and dates stay in a consistent fact strip instead of drifting between pills and free text.</p>
+          <div class="actions">
+            <button class="btn" type="button">Where To Watch</button>
+            <button class="btn" type="button">Rotten Tomatoes</button>
+          </div>
+        </div>
+      </section>
+      <section class="main">
+        <aside class="panel">
+          <h2>Select Season</h2>
+          <div class="season active"><div>Season 1<small>8 episodes</small></div><div>Watched</div></div>
+          <div class="season"><div>Season 2<small>10 episodes</small></div><div>Toggle</div></div>
+          <div class="season"><div>Season 3<small>Upcoming</small></div><div>Toggle</div></div>
+        </aside>
+        <section class="panel season-detail">
+          <h2>Selected Season</h2>
+          <div class="title" style="font-size:24px">Season 2</div>
+          <div class="meta"><span>Premiered Feb 14, 2026</span><span>10 episodes</span></div>
+          <p class="overview">Season summary stays visually separated from the episode rail so the popup can scan top-down: show facts, season choice, season summary, then episodes.</p>
+        </section>
+      </section>
+      <section class="episodes">
+        <div class="labels"><span class="label">Episodes</span><span class="label">SECTION PURPOSE: standard episode list inside popup</span></div>
+        <div class="row">
+          <article class="ep"><div class="epimg"><span class="badge">S02E01</span></div><div class="copy"><div style="font-weight:700">Episode Title</div><div class="meta"><span>Feb 14, 2026</span><span>54m</span></div><div style="color:var(--muted)">Image, badge, metadata, synopsis, watched toggle, and provider actions stay in one predictable order.</div><div class="bar"><button class="btn" type="button">Watched</button><button class="btn" type="button">Vidsrc</button><button class="btn" type="button">Videasy</button></div></div></article>
+          <article class="ep"><div class="epimg"><span class="badge">S02E02</span></div><div class="copy"><div style="font-weight:700">Second Episode</div><div class="meta"><span>Feb 21, 2026</span><span>49m</span></div><div style="color:var(--muted)">Compact enough for the popup, but still readable enough to replace the current text-light variant.</div><div class="bar"><button class="btn" type="button">Watched</button><button class="btn" type="button">Vidsrc</button></div></div></article>
+          <article class="ep"><div class="epimg"><span class="badge">S02E03</span></div><div class="copy"><div style="font-weight:700">Third Episode</div><div class="meta"><span>Feb 28, 2026</span><span>51m</span></div><div style="color:var(--muted)">Action density can scale up for calendar-specific contexts without changing the core episode block ordering.</div><div class="bar"><button class="btn" type="button">Watched</button><button class="btn" type="button">TMDB</button><button class="btn" type="button">Videasy</button></div></div></article>
+        </div>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

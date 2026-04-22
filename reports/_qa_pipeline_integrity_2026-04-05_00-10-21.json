@@ -1,0 +1,130 @@
+{
+  "generated_utc": "2026-04-05T04:10:21Z",
+  "repo_root": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie",
+  "data_json": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie\\data\\data.json",
+  "inputs_json": "C:\\Users\\andrew\\PROJECTS\\GitHub\\my_TV_Movie\\data\\inputs.json",
+  "counts": {
+    "shows": 186,
+    "movies": 98,
+    "inputs_tv": 186,
+    "inputs_movies": 99,
+    "missing_trakt_id_shows": 0,
+    "missing_trakt_id_movies": 3,
+    "trakt_not_found": 11
+  },
+  "tmdb_id_diffs": {
+    "tv_missing_in_data_json": [],
+    "movies_missing_in_data_json": [
+      1644427
+    ],
+    "expected_missing_show_ids": [],
+    "expected_missing_movie_ids": [
+      1644427
+    ]
+  },
+  "field_errors_sample": [],
+  "asset_drift": {
+    "cache_enabled": true,
+    "missing_local_files": [],
+    "missing_local_fields": [],
+    "null_episode_still_paths": 3967
+  },
+  "availability": {
+    "availability_source_exists": true,
+    "missing_fields_sample": [],
+    "invalid_status_sample": []
+  },
+  "checks": [
+    {
+      "name": "top_level_keys",
+      "passed": true,
+      "detail": "data.json must contain shows[] and movies[] lists"
+    },
+    {
+      "name": "count_tv_matches_inputs",
+      "passed": true,
+      "detail": "shows count mismatch after known upstream misses: data=186 inputs_json=186 missing_expected=0"
+    },
+    {
+      "name": "count_movies_matches_inputs",
+      "passed": true,
+      "detail": "movies count mismatch after known upstream misses: data=98 inputs_json=99 missing_expected=1"
+    },
+    {
+      "name": "builder_canonical_input",
+      "passed": true,
+      "detail": "data.meta.builder.canonical_input must be data/inputs.json"
+    },
+    {
+      "name": "builder_canonical_output",
+      "passed": true,
+      "detail": "data.meta.builder.canonical_output must be data/data.json"
+    },
+    {
+      "name": "workflow_uses_canonical_runner",
+      "passed": true,
+      "detail": "build-data workflow must run scripts/run_pipeline_tmdb_trakt.py"
+    },
+    {
+      "name": "pipeline_runs_integrity_qa",
+      "passed": true,
+      "detail": "run_pipeline_tmdb_trakt.py must run qa_pipeline_integrity.py"
+    },
+    {
+      "name": "legacy_production_refs_removed",
+      "passed": true,
+      "detail": "legacy refs present in active production files: none"
+    },
+    {
+      "name": "missing_trakt_id_shows_bounded",
+      "passed": true,
+      "detail": "shows missing trakt_id=0 must not exceed trakt not_found=11"
+    },
+    {
+      "name": "missing_trakt_id_movies_bounded",
+      "passed": true,
+      "detail": "movies missing trakt_id=3 must not exceed trakt not_found=11"
+    },
+    {
+      "name": "required_fields_present",
+      "passed": true,
+      "detail": "0 items missing required fields (tmdb_id/title)"
+    },
+    {
+      "name": "tmdb_id_set_tv_matches",
+      "passed": true,
+      "detail": "unexpected missing tv tmdb_id(s): []"
+    },
+    {
+      "name": "tmdb_id_set_movies_matches",
+      "passed": true,
+      "detail": "unexpected missing movie tmdb_id(s): []"
+    },
+    {
+      "name": "missing_local_asset_files_zero",
+      "passed": true,
+      "detail": "missing local asset files: 0"
+    },
+    {
+      "name": "missing_local_asset_fields_zero",
+      "passed": true,
+      "detail": "missing *_local fields when *_path present: 0"
+    },
+    {
+      "name": "availability_source_exists",
+      "passed": true,
+      "detail": "data/watch_source_availability.json must exist and parse"
+    },
+    {
+      "name": "availability_fields_present",
+      "passed": true,
+      "detail": "entities missing availability fields: 0"
+    },
+    {
+      "name": "availability_status_enum_valid",
+      "passed": true,
+      "detail": "entities with invalid availability_status: 0"
+    }
+  ],
+  "result": "OK"
+}

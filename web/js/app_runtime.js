@@ -1,0 +1,3952 @@
+/*
+FILE: web/js/app_runtime.js
+VERSION: v1.0.0
+UPDATED: 2026-03-15T04:28:23Z
+CHANGE NOTES:
+- Extracted the shared browser runtime from the corrected dashboard-family implementation.
+- Rebased index, shows, movies, calendar, discover, and config onto one shared runtime entry.
+- Centralized config/data loading through shared runtime modules.
+*/
+
+import * as configLoader from './config_loader.js';
+import * as dataLoader from './data_loader.js';
+import * as availabilityUi from './availability_ui.js';
+import * as cardRenderer from './card_renderer.js';
+import * as popupController from './popup_controller.js';
+import * as actionBar from './action_bar.js';
+import '../config.js';
+
+window.MyTVHubSharedModules = Object.freeze({
+  configLoader,
+  dataLoader,
+  availabilityUi,
+  cardRenderer,
+  popupController,
+  actionBar
+});
+
+cardRenderer.applyRuntimeContract(document);
+actionBar.applyRuntimeContract(document);
+popupController.applyRuntimeContract(document);
+document.documentElement.setAttribute('data-runtime-family', 'normalized_main_app');
+if (document.body) document.body.setAttribute('data-runtime-family', 'normalized_main_app');
+
+(() => {
+  const APP_VERSION = "v1.4.4";
+
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
+  const PAGE = document.body?.dataset?.page || "calendar";
+  const on = (el, evt, fn) => { if (el) el.addEventListener(evt, fn); };
+
+  const state = {
+    cfg: null,
+    data: null,
+    calendarData: null,
+    inputs: null,
+    tab: PAGE,
+    lastNonShowHash: `#${PAGE}`,
+    calendarMonth: null,
+    watchState: null,
+    watchStateSource: null,
+    apiAvailable: false,
+    inputsEditorServerAvailable: false,
+    inputsDirty: false,
+    icons: {},
+    ui: {},
+    search: { shows: "", movies: "" },
+    sort: { shows: "title", movies: "title" },
+    filters: {
+      shows: { genres: [], year: "", scope: "all", watchlist: "all", watch_status: [], availability: "all", watched: "all" },
+      movies: { genres: [], year: "", collection: "", scope: "all", watchlist: "all", watch_status: [], availability: "all", watched: "all" },
+      watchlist: { watch_status: "all", media_kind: "all", search: "" }
+    },
+    view: {
+      shows: { eye: "show_all" },
+      movies: { eye: "show_all" }
+    },
+    dashboard: {
+      lastWeekOffsetWeeks: 0
+    },
+    show: {
+      tmdb_id: null,
+      selectedSeasonNumber: null,
+    }
+  };
+  let lastFocusEl = null;
+
+  function ensureMainAppShell(){
+    const nav = $(".nav");
+    if (nav && !$("[data-tab='inputs-editor']", nav)){
+      nav.insertAdjacentHTML("beforeend", `<a class="tab" data-tab="inputs-editor" href="#inputs-editor" role="tab" aria-selected="false">Inputs Editor</a>`);
+    }
+
+    const main = $(".main");
+    if (!main) return;
+    main.innerHTML = "";
+
+    const appendPanel = (id, html) => {
+      if (!document.getElementById(id)){
+        main.insertAdjacentHTML("beforeend", html);
+      }
+    };
+
+    appendPanel("panel-dashboard", `
+      <div id="panel-dashboard" class="panel hidden">
+        <div class="dash">
+          <section class="dashblock accent-pink">
+            <div class="dashhead">
+              <h2>Last Week</h2>
+              <div class="dashhead__actions">
+                <span class="muted" id="dashLastWeekMeta"></span>
+                <div class="dashnav" aria-label="Last Week navigation">
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="jump-back" aria-label="Jump back four weeks">«</button>
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="back" aria-label="Previous week">‹</button>
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="forward" aria-label="Next week">›</button>
+                  <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="jump-forward" aria-label="Jump forward four weeks">»</button>
+                </div>
+              </div>
+            </div>
+            <div id="dashLastWeekCols" class="dashgrid"></div>
+          </section>
+          <section class="dashblock accent-pink">
+            <div class="dashhead">
+              <h2>Upcoming Schedule</h2>
+              <span class="muted">Tomorrow through next week</span>
+            </div>
+            <div id="dashScheduleCols" class="dashgrid"></div>
+          </section>
+          <section class="dashblock accent-green">
+            <div class="dashhead">
+              <h2>Watchlist</h2>
+              <span class="muted" id="dashWatchMeta"></span>
+            </div>
+            <div id="dashWatchlist" class="dashwatchlist"></div>
+          </section>
+          <section class="dashblock accent-yellow">
+            <div class="dashhead">
+              <h2>Recommendations</h2>
+              <span class="muted">Shows and Movies</span>
+            </div>
+            <div class="dashrecs">
+              <div class="dashreccol">
+                <div class="dashhead dashhead--sub"><h2>Shows</h2></div>
+                <div id="dashShowRecs" class="dashrecgrid"></div>
+              </div>
+              <div class="dashreccol">
+                <div class="dashhead dashhead--sub"><h2>Movies</h2></div>
+                <div id="dashMovieRecs" class="dashrecgrid"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    `);
+
+    appendPanel("panel-show", `
+      <div id="panel-show" class="panel hidden">
+        <div id="showRoot"></div>
+      </div>
+    `);
+
+    appendPanel("panel-calendar", `
+      <div id="panel-calendar" class="panel hidden">
+        <section class="dashblock dashblock--calendar">
+          <div class="dashhead">
+            <div class="calendar-toolbar__controls" aria-label="Calendar controls">
+              <div class="calendar-toolbar__group calendar-toolbar__group--left">
+                <span id="calTodayLabel" class="muted"></span>
+                <button id="calToday" class="calbtn" type="button">Today</button>
+              </div>
+              <div class="calendar-toolbar__group calendar-toolbar__group--right">
+                <button id="calPrev" class="calbtn" type="button" aria-label="Previous month">Prev</button>
+                <div id="calMonth" class="muted">Month</div>
+                <button id="calNext" class="calbtn" type="button" aria-label="Next month">Next</button>
+              </div>
+            </div>
+          </div>
+          <div id="calendar" class="calendar-grid"></div>
+        </section>
+      </div>
+    `);
+
+    appendPanel("panel-shows", `
+      <div id="panel-shows" class="panel hidden">
+        <div class="browse-layout browse-layout--shows">
+          <aside class="browse-sidebar">
+            <div class="browse-sidebar__header">
+              <div class="browse-sidebar__eyebrow">Browse</div>
+              <h2 class="browse-sidebar__title">Library Filters</h2>
+              <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
+            </div>
+            <div class="control-panel">
+              <div class="control-row control-row--primary">
+                <input id="searchShows" class="input control-input" type="search" placeholder="Search shows" tabindex="-1" data-tv-skip="1" />
+                <select id="filterShowsYear" class="input control-select" tabindex="-1" data-tv-skip="1"></select>
+                <select id="sortShows" class="input control-select" tabindex="-1" data-tv-skip="1">
+                  <option value="title">Title A-Z</option>
+                  <option value="title_desc">Title Z-A</option>
+                  <option value="release">Newest first</option>
+                  <option value="popularity">Popularity</option>
+                  <option value="vote">Rating</option>
+                </select>
+              </div>
+              <div id="filterShowsScope" class="control-row control-row--chips">
+                <button class="segbtn active" type="button" data-scope="all">All Shows</button>
+                <button class="segbtn" type="button" data-scope="upcoming">Upcoming</button>
+                <button class="segbtn" type="button" data-scope="returning">Returning</button>
+                <button class="segbtn" type="button" data-scope="ended">Ended</button>
+              </div>
+              <div class="control-row control-row--chips">
+                <div id="filterShowsAvailability" style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="segbtn active" type="button" data-availability="all">All availability</button>
+                  <button class="segbtn" type="button" data-availability="available">Available</button>
+                  <button class="segbtn" type="button" data-availability="unreleased">Unreleased</button>
+                </div>
+                <div id="filterShowsWatched" style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="segbtn active" type="button" data-watched="all">All watched</button>
+                  <button class="segbtn" type="button" data-watched="watched">Watched</button>
+                  <button class="segbtn" type="button" data-watched="unwatched">Unwatched</button>
+                </div>
+                <div id="filterShowsWatchlist" style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="segbtn active" type="button" data-watchlist="all">All watchlist</button>
+                  <button class="segbtn" type="button" data-watchlist="watchlist">Watchlist</button>
+                </div>
+              </div>
+              <div class="control-group">
+                <div class="control-label">Genres</div>
+                <div id="filterShowsGenres" class="control-checks"></div>
+              </div>
+            </div>
+          </aside>
+          <section class="browse-content">
+            <div class="dashblock">
+              <div class="dashhead dashhead--compact"><span id="showsSummary" class="muted">Library</span></div>
+              <div id="showsGrid" class="media-grid media-grid--shows"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    `);
+
+    appendPanel("panel-movies", `
+      <div id="panel-movies" class="panel hidden">
+        <div class="browse-layout browse-layout--movies">
+          <aside class="browse-sidebar">
+            <div class="browse-sidebar__header">
+              <div class="browse-sidebar__eyebrow">Browse</div>
+              <h2 class="browse-sidebar__title">Library Filters</h2>
+              <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
+            </div>
+            <div class="control-panel">
+              <div class="control-row control-row--primary">
+                <input id="searchMovies" class="input control-input" type="search" placeholder="Search movies" tabindex="-1" data-tv-skip="1" />
+                <select id="filterMoviesYear" class="input control-select" tabindex="-1" data-tv-skip="1"></select>
+                <select id="filterMoviesCollection" class="input control-select" tabindex="-1" data-tv-skip="1"></select>
+                <select id="sortMovies" class="input control-select" tabindex="-1" data-tv-skip="1">
+                  <option value="title">Title A-Z</option>
+                  <option value="title_desc">Title Z-A</option>
+                  <option value="release">Newest first</option>
+                  <option value="popularity">Popularity</option>
+                  <option value="vote">Rating</option>
+                </select>
+              </div>
+              <div id="filterMoviesScope" class="control-row control-row--chips">
+                <button class="segbtn active" type="button" data-scope="all">All Movies</button>
+                <button class="segbtn" type="button" data-scope="upcoming">Upcoming</button>
+                <button class="segbtn" type="button" data-scope="released">Released</button>
+              </div>
+              <div class="control-row control-row--chips">
+                <div id="filterMoviesAvailability" style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="segbtn active" type="button" data-availability="all">All availability</button>
+                  <button class="segbtn" type="button" data-availability="available">Available</button>
+                  <button class="segbtn" type="button" data-availability="unreleased">Unreleased</button>
+                </div>
+                <div id="filterMoviesWatched" style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="segbtn active" type="button" data-watched="all">All watched</button>
+                  <button class="segbtn" type="button" data-watched="watched">Watched</button>
+                  <button class="segbtn" type="button" data-watched="unwatched">Unwatched</button>
+                </div>
+                <div id="filterMoviesWatchlist" style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button class="segbtn active" type="button" data-watchlist="all">All watchlist</button>
+                  <button class="segbtn" type="button" data-watchlist="watchlist">Watchlist</button>
+                </div>
+              </div>
+              <div class="control-group">
+                <div class="control-label">Genres</div>
+                <div id="filterMoviesGenres" class="control-checks"></div>
+              </div>
+            </div>
+          </aside>
+          <section class="browse-content">
+            <div class="dashblock">
+              <div class="dashhead dashhead--compact"><span id="moviesSummary" class="muted">Library</span></div>
+              <div id="moviesGrid" class="media-grid media-grid--movies"></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    `);
+
+    appendPanel("panel-discover", `
+      <div id="panel-discover" class="panel hidden">
+        <div class="discover-split">
+          <section class="dashblock accent-green">
+            <div class="dashhead dashhead--compact"><span class="muted">Shows</span></div>
+            <div id="discoverShowsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--show_card_min),1fr));gap:12px;"></div>
+          </section>
+          <section class="dashblock accent-yellow">
+            <div class="dashhead dashhead--compact"><span class="muted">Movies</span></div>
+            <div id="discoverMoviesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--movie_card_min),1fr));gap:12px;"></div>
+          </section>
+        </div>
+      </div>
+    `);
+
+    appendPanel("panel-config", `
+      <div id="panel-config" class="panel hidden">
+        <div class="dash">
+          <section class="dashblock">
+            <div id="configRoot"></div>
+          </section>
+        </div>
+      </div>
+    `);
+
+    appendPanel("panel-inputs-editor", `
+      <div id="panel-inputs-editor" class="panel hidden">
+        <div class="dash">
+          <section class="dashblock accent-pink">
+            <div class="dashhead"><h2>Inputs Editor</h2><span class="muted">Canonical editor for data/inputs.json</span></div>
+            <div id="inputsEditorPanel" style="display:grid;gap:12px;">
+              <div id="inputsEditorPanelMeta" class="muted"></div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <a id="inputsEditorOpen" class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open local Inputs Editor</a>
+              </div>
+              <iframe id="inputsEditorFrame" title="Inputs Editor" style="width:100%;min-height:78vh;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:rgba(0,0,0,0.2);"></iframe>
+            </div>
+          </section>
+        </div>
+      </div>
+    `);
+  }
+
+  function setStatus(ok, msg) {
+    $("#statusText").textContent = msg;
+    $("#statusDot").classList.toggle("bad", !ok);
+  }
+
+  function pad2(n){ return String(n).padStart(2,"0"); }
+  function seTag(s,e){ return `S${pad2(s)}E${pad2(e)}`; }
+
+  function safeText(v){ return (v ?? "").toString(); }
+
+  function stripJsonComments(input){
+    let out = "";
+    let inStr = false;
+    let esc = false;
+    let inLine = false;
+    let inBlock = false;
+    for (let i = 0; i < input.length; i++){
+      const c = input[i];
+      const n = input[i + 1];
+      if (inLine){
+        if (c === "\n"){
+          inLine = false;
+          out += c;
+        }
+        continue;
+      }
+      if (inBlock){
+        if (c === "*" && n === "/"){
+          inBlock = false;
+          i++;
+        }
+        continue;
+      }
+      if (inStr){
+        out += c;
+        if (esc){
+          esc = false;
+        } else if (c === "\\"){
+          esc = true;
+        } else if (c === "\""){
+          inStr = false;
+        }
+        continue;
+      }
+      if (c === "\""){
+        inStr = true;
+        out += c;
+        continue;
+      }
+      if (c === "/" && n === "/"){
+        inLine = true;
+        i++;
+        continue;
+      }
+      if (c === "/" && n === "*"){
+        inBlock = true;
+        i++;
+        continue;
+      }
+      out += c;
+    }
+    return out;
+  }
+
+  function parseJsonc(text){
+    return JSON.parse(stripJsonComments(text));
+  }
+
+  function iconSpec(key){
+    const icons = state?.cfg?.icons;
+    if (!icons || typeof icons !== "object") return null;
+    const spec = icons[key];
+    if (!spec || typeof spec !== "object") return null;
+    return spec;
+  }
+
+  function iconChar(key, fallback=""){
+    const spec = iconSpec(key);
+    return safeText(spec?.icon || fallback);
+  }
+
+  function iconType(key, fallback="single-click"){
+    const spec = iconSpec(key);
+    return safeText(spec?.functionType || fallback);
+  }
+
+  function iconName(key, fallback=""){
+    const spec = iconSpec(key);
+    return safeText(spec?.name || fallback);
+  }
+
+  function iconClassForKey(key){
+    const map = {
+      media_vidrsc: "vidsrc",
+      media_videasy: "videasy",
+      meta_rt_critics: "rt",
+      meta_rt_audience: "rt",
+      meta_rating_summary: "rt"
+    };
+    return map[key] || "";
+  }
+
+  function applyIconText(){
+    const icons = state?.cfg?.icons;
+    if (!icons || typeof icons !== "object") return;
+    $$("[data-icon-key]").forEach(el => {
+      const key = safeText(el.getAttribute("data-icon-key"));
+      if (!key) return;
+      const spec = iconSpec(key);
+      const icon = spec?.icon;
+      if (icon) el.textContent = icon;
+      if (spec?.functionType && !el.getAttribute("data-function-type")){
+        el.setAttribute("data-function-type", spec.functionType);
+      }
+    });
+  }
+  const BASE_PATH = (() => {
+    const p = location.pathname || "";
+    const idx = p.indexOf("/web/");
+    return idx > 0 ? p.slice(0, idx) : "";
+  })();
+  function withBasePath(path){
+    const v = safeText(path).trim();
+    if (!v) return "";
+    if (/^https?:\/\//i.test(v)) return v;
+    if (v.startsWith("/") && BASE_PATH && !v.startsWith(BASE_PATH + "/")) return BASE_PATH + v;
+    return v;
+  }
+
+  function escHtml(s){
+    return safeText(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  function fmtDate(d) {
+    return formatDateShort(d);
+  }
+
+  function toDateKey(dt){
+    return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())}`;
+  }
+
+  function tmdbShowUrl(id){ return `https://www.themoviedb.org/tv/${id}`; }
+  function tmdbMovieUrl(id){ return `https://www.themoviedb.org/movie/${id}`; }
+  function tmdbEpisodeUrl(showId, s, e){ return `https://www.themoviedb.org/tv/${showId}/season/${s}/episode/${e}`; }
+  function canonicalServiceLogoFromPath(path){
+    const p = safeText(path).trim();
+    if (!p) return "";
+    const filename = p.split("/").pop();
+    return filename ? withBasePath(`/assets/logos/services/${filename}`) : "";
+  }
+  function tmdbLogoUrl(path){
+    const p = safeText(path).trim();
+    return p ? `https://image.tmdb.org/t/p/w154${p}` : "";
+  }
+  function tmdbWatchUrl(kind, id){
+    if (!id) return "";
+    return kind === "movie"
+      ? `https://www.themoviedb.org/movie/${id}/watch`
+      : `https://www.themoviedb.org/tv/${id}/watch`;
+  }
+
+  function slugifyName(name){
+    return safeText(name).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  }
+
+  function guessLocalNetworkLogo(name){
+    const slug = slugifyName(name);
+    if (!slug) return "";
+    return withBasePath(`/assets/logos/services/${slug}.png`);
+  }
+
+  function getWatchBlock(item){
+    if (!item || typeof item !== "object") return null;
+    const watch = item.watch;
+    return watch && typeof watch === "object" ? watch : null;
+  }
+
+  function getWatchProviders(item){
+    const watch = getWatchBlock(item);
+    const providers = watch?.providers;
+    return providers && typeof providers === "object" ? providers : null;
+  }
+
+  function collectProvidersForRegion(wp, region){
+    if (!wp || !region || !wp[region]) return [];
+    const arr = Array.isArray(wp[region]) ? wp[region] : [];
+    const out = [];
+    const seen = new Set();
+    return arr.filter(p => {
+      const key = p?.provider_id ?? p?.provider_name ?? p?.name;
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      out.push(p);
+      return true;
+    });
+  }
+
+  function providerLogoUrl(p){
+    const name = safeText(p?.provider_name || p?.name || "").trim();
+    const explicitLocal = safeText(p?.logo_local || "").trim();
+    const localFromPath = explicitLocal ? withBasePath(explicitLocal) : "";
+    const tmdb = tmdbLogoUrl(p?.logo_path || "");
+    return { name, local: localFromPath, tmdb };
+  }
+
+  function providerLogoImgHtml(logo, cssClass="providerlogo"){
+    const src = safeText(logo?.local || logo?.tmdb || "").trim();
+    if (!src) return "";
+    return `<img class="${escHtml(cssClass)}" src="${escHtml(src)}" data-fallback="${escHtml(logo?.tmdb || "")}" alt="${escHtml(logo?.name || "Provider")}" onerror="const fallback=this.dataset.fallback||'';if(fallback&&this.src!==fallback){this.src=fallback;this.dataset.fallback='';return;}this.onerror=null;const chip=this.closest('.providerchip');if(chip){chip.classList.add('fallback-only');}this.remove();" />`;
+  }
+
+  function providerChipHtml(logo, href){
+    const hasLogo = !!safeText(logo?.local || logo?.tmdb || "").trim();
+    const stateClass = hasLogo ? "" : " no-logo";
+    const inner = `${providerLogoImgHtml(logo)}<span class="providertext">${escHtml(logo?.name || "Provider")}</span>`;
+    if (href){
+      return `<a class="providerchip${stateClass}" href="${escHtml(href)}" target="_blank" rel="noopener">${inner}</a>`;
+    }
+    return `<span class="providerchip${stateClass}">${inner}</span>`;
+  }
+
+  function providerGroupHtml(item, kind, limit=4){
+    const wp = getWatchProviders(item);
+    const id = item?.id ?? item?.tmdb_id;
+    if (!wp || !id) return `<div class="provider_group"><div class="muted" style="font-size:11px;">Provider data unavailable</div></div>`;
+    const providers = collectProvidersForRegion(wp, "CA").length
+      ? collectProvidersForRegion(wp, "CA")
+      : (collectProvidersForRegion(wp, "US").length ? collectProvidersForRegion(wp, "US") : collectProvidersForRegion(wp, "AU"));
+    if (!providers.length) return `<div class="provider_group"><div class="muted" style="font-size:11px;">No providers</div></div>`;
+    const watchUrl = safeText(providers[0]?.deep_link) || tmdbWatchUrl(kind, id);
+    return `
+      <div class="provider_group">
+        <div class="providerchips">
+          ${providers.slice(0, limit).map(p => providerChipHtml(providerLogoUrl(p), watchUrl)).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderWatchProvidersHtml(item, kind){
+    const wp = getWatchProviders(item);
+    const id = item?.id ?? item?.tmdb_id;
+    if (!wp || !id) return "";
+    const regions = ["CA", "US", "GB", "AU"];
+    const rows = regions.map(region => {
+      const providers = collectProvidersForRegion(wp, region);
+      const chips = providers.slice(0, 8).map(p => {
+        const logo = providerLogoUrl(p);
+        return providerChipHtml(logo, safeText(p?.deep_link) || tmdbWatchUrl(kind, id));
+      }).join("");
+      const body = chips || `<div class="muted" style="font-size:11px;">No providers</div>`;
+      return `
+        <div class="providerrow">
+          <span class="providerlabel">${region}</span>
+          <div class="providerchips">${body}</div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="providerblock">
+        <div class="providerrows">${rows}</div>
+      </div>`;
+  }
+
+  function progressPercent(obj){
+    if (!obj || typeof obj !== "object") return null;
+    const raw = obj.watch_progress?.percent ?? obj.watch_progress?.pct ?? obj.watch_progress?.progress ??
+      obj.progress?.percent ?? obj.progress?.pct ?? obj.progress?.progress ??
+      obj.watch_progress ?? obj.progress;
+    const num = Number(raw);
+    if (!Number.isFinite(num)) return null;
+    const pct = num <= 1 ? num * 100 : num;
+    if (pct < 0 || pct > 100) return null;
+    return pct;
+  }
+
+  function watchedEpisodePercent(showId, seasonNum, episodeNum){
+    const ws = state.watchState;
+    if (!ws || !ws.shows) return null;
+    const show = ws.shows[String(showId)];
+    if (!show || !show.seasons) return null;
+    const season = show.seasons[String(seasonNum)];
+    if (!season || !Array.isArray(season.episodes)) return null;
+    if (season.episodes.includes(Number(episodeNum))) return 100;
+    return null;
+  }
+
+  function watchedMoviePercent(movieId){
+    const ws = state.watchState;
+    if (!ws || !ws.movies) return null;
+    return ws.movies[String(movieId)] ? 100 : null;
+  }
+
+  function watchFlagHtml(watched){
+    return `<span class="flag ${watched ? "watched" : "unwatched"}">${watched ? "Watched" : "Unwatched"}</span>`;
+  }
+
+  function nowUtcIso(){
+    try { return new Date().toISOString(); } catch { return ""; }
+  }
+
+  function todayKey(){
+    const d = new Date();
+    return toDateKey(d);
+  }
+
+  function isDateAvailable(dateStr){
+    const key = safeText(dateStr).slice(0,10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return false;
+    return key <= todayKey();
+  }
+
+  function availabilityStatusOf(item){
+    const raw = safeText(item?.availability_status).toLowerCase();
+    if (raw === "available" || raw === "unavailable" || raw === "not_yet_released" || raw === "unknown") return raw;
+    const release = pickAirDate(item);
+    if (!release) return "unknown";
+    return isDateAvailable(release) ? "available" : "not_yet_released";
+  }
+
+  function availabilityLabelOf(item){
+    return window.MyTVHubSharedModules.availabilityUi.availabilityLabel(availabilityStatusOf(item));
+  }
+
+  function availabilityBadgeHtml(item, options = {}){
+    return window.MyTVHubSharedModules.availabilityUi.availabilityBadgeHtml(availabilityStatusOf(item), options);
+  }
+
+  function isShowAvailable(show){
+    return availabilityStatusOf(show) === "available";
+  }
+
+  function isSeasonAvailable(season){
+    return availabilityStatusOf(season) === "available";
+  }
+
+  function isEpisodeAvailable(ep){
+    return availabilityStatusOf(ep) === "available";
+  }
+
+  function pickAirDate(obj){
+    return safeText(obj?.air_date || obj?.first_aired || obj?.first_air_date || obj?.release_date || "");
+  }
+
+  function isMovieAvailable(movie){
+    return availabilityStatusOf(movie) === "available";
+  }
+
+  function editorApiUrl(path=""){
+    const clean = safeText(path).startsWith("/") ? safeText(path) : `/${safeText(path)}`;
+    return `http://127.0.0.1:8787${clean}`;
+  }
+
+  async function checkApiAvailable(){
+    try {
+      const r = await fetch(editorApiUrl("/api/health"), { cache: "no-store" });
+      return r.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function checkInputsEditorServerAvailable(){
+    try {
+      const r = await fetch(editorApiUrl("/api/health"), { cache: "no-store" });
+      return r.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function ensureLocalWatchState(){
+    if (!state.inputs) state.inputs = { tv: [], movies: [], watchlist: [] };
+    if (!state.inputs.watch_state || typeof state.inputs.watch_state !== "object") state.inputs.watch_state = {};
+    if (!state.inputs.watch_state.local || typeof state.inputs.watch_state.local !== "object") {
+      state.inputs.watch_state.local = { generated_utc: nowUtcIso(), movies: {}, shows: {} };
+    }
+    const local = state.inputs.watch_state.local;
+    if (!local.movies || typeof local.movies !== "object") local.movies = {};
+    if (!local.shows || typeof local.shows !== "object") local.shows = {};
+    return local;
+  }
+
+  function setWatchStateSource(){
+    if (state.inputs){
+      const local = ensureLocalWatchState();
+      state.watchState = local;
+      state.watchStateSource = "local";
+      return;
+    }
+    const trakt = state.data?.watch_state?.trakt;
+    if (trakt && typeof trakt === "object"){
+      state.watchState = trakt;
+      state.watchStateSource = "trakt";
+      return;
+    }
+    state.watchState = null;
+    state.watchStateSource = null;
+  }
+
+  async function saveInputs(){
+    if (!state.apiAvailable){
+      state.inputsDirty = true;
+      return false;
+    }
+    try{
+      const r = await fetch(editorApiUrl("/api/inputs"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(state.inputs || {})
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      state.inputsDirty = false;
+      return true;
+    }catch{
+      state.inputsDirty = true;
+      return false;
+    }
+  }
+
+  function isEpisodeWatched(showId, seasonNum, episodeNum){
+    const ws = state.watchState;
+    const show = ws?.shows?.[String(showId)];
+    const season = show?.seasons?.[String(seasonNum)];
+    if (!season || !Array.isArray(season.episodes)) return false;
+    return season.episodes.includes(Number(episodeNum));
+  }
+
+  function isSeasonWatched(showId, seasonNum, totalEpisodes){
+    const ws = state.watchState;
+    const show = ws?.shows?.[String(showId)];
+    const season = show?.seasons?.[String(seasonNum)];
+    if (!season || !Array.isArray(season.episodes)) return false;
+    if (!Number.isFinite(totalEpisodes) || totalEpisodes <= 0) return season.episodes.length > 0;
+    return season.episodes.length >= totalEpisodes;
+  }
+
+  function setMovieWatched(movieId, watched){
+    const ws = ensureLocalWatchState();
+    const key = String(movieId);
+    if (watched){
+      ws.movies[key] = ws.movies[key] || { last_watched_at: nowUtcIso(), plays: 1 };
+      ws.movies[key].last_watched_at = nowUtcIso();
+    } else {
+      delete ws.movies[key];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
+  function setEpisodeWatched(showId, seasonNum, episodeNum, watched){
+    const ws = ensureLocalWatchState();
+    const sid = String(showId);
+    const sn = String(seasonNum);
+    const epn = Number(episodeNum);
+    if (!ws.shows[sid]) ws.shows[sid] = { seasons: {} };
+    if (!ws.shows[sid].seasons[sn]) ws.shows[sid].seasons[sn] = { episodes: [] };
+    const arr = ws.shows[sid].seasons[sn].episodes || [];
+    const has = arr.includes(epn);
+    if (watched && !has) arr.push(epn);
+    if (!watched && has) ws.shows[sid].seasons[sn].episodes = arr.filter(n => n !== epn);
+    ws.shows[sid].seasons[sn].episodes = ws.shows[sid].seasons[sn].episodes.sort((a,b)=>a-b);
+    if (!ws.shows[sid].seasons[sn].episodes.length){
+      delete ws.shows[sid].seasons[sn];
+    }
+    if (!Object.keys(ws.shows[sid].seasons || {}).length){
+      delete ws.shows[sid];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
+  function setSeasonWatched(showId, seasonNum, episodeNums, watched){
+    const ws = ensureLocalWatchState();
+    const sid = String(showId);
+    const sn = String(seasonNum);
+    if (!ws.shows[sid]) ws.shows[sid] = { seasons: {} };
+    if (watched){
+      ws.shows[sid].seasons[sn] = { episodes: (episodeNums || []).map(n => Number(n)).filter(n => Number.isFinite(n)).sort((a,b)=>a-b) };
+    } else {
+      delete ws.shows[sid].seasons[sn];
+    }
+    if (!Object.keys(ws.shows[sid].seasons || {}).length){
+      delete ws.shows[sid];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
+  function setShowWatched(showId, seasons, watched){
+    const ws = ensureLocalWatchState();
+    const sid = String(showId);
+    if (watched){
+      ws.shows[sid] = { seasons: {} };
+      for (const se of (seasons || [])){
+        const sn = String(se?.season_number ?? se?.number ?? "");
+        if (!sn) continue;
+        const eps = (se?.episodes || []).map(e => Number(e?.episode_number ?? e?.number)).filter(n => Number.isFinite(n));
+        ws.shows[sid].seasons[sn] = { episodes: eps.sort((a,b)=>a-b) };
+      }
+    } else {
+      delete ws.shows[sid];
+    }
+    ws.generated_utc = nowUtcIso();
+    state.watchState = ws;
+    state.watchStateSource = "local";
+    saveInputs();
+  }
+
+  function tmdbImageBase(){
+    const base = safeText(state.cfg?.image_cache?.tmdb_image_base || "https://image.tmdb.org/t/p").trim();
+    return base.replace(/\/+$/,"");
+  }
+
+  function tmdbSizeTag(kind){
+    const sz = state.cfg?.image_sizes || {};
+    let w = null;
+    if (kind === "show_poster") w = Number(sz.show_width);
+    else if (kind === "movie_poster") w = Number(sz.movie_width);
+    else if (kind === "season_poster") w = Number(sz.season_width);
+    else if (kind === "episode_still") w = Number(sz.episode_still_w);
+    else if (kind === "backdrop") w = Number(sz.backdrop_w);
+    const posterSizes = [92, 154, 185, 342, 500, 780];
+    const stillSizes = [92, 185, 300, 500];
+    const backdropSizes = [300, 780, 1280];
+    const snap = (req, allowed) => {
+      if (!Number.isFinite(req) || req <= 0) return null;
+      for (const a of allowed){
+        if (req <= a) return a;
+      }
+      return allowed[allowed.length - 1] || null;
+    };
+    if (kind === "show_poster" || kind === "movie_poster" || kind === "season_poster"){
+      w = snap(w, posterSizes);
+    } else if (kind === "episode_still") {
+      w = snap(w, stillSizes);
+    } else if (kind === "backdrop") {
+      w = snap(w, backdropSizes);
+    }
+    return w ? `w${Math.round(w)}` : "original";
+  }
+
+  function tmdbImageUrl(kind, tmdbPath){
+    const p = safeText(tmdbPath).trim();
+    if (!p) return "";
+    if (/^https?:\/\//i.test(p)) return p;
+    if (!p.startsWith("/")) return "";
+    return `${tmdbImageBase()}/${tmdbSizeTag(kind)}${p}`;
+  }
+
+  function inferPosterKind(obj){
+    if (obj && Object.prototype.hasOwnProperty.call(obj, "season_number")) return "season_poster";
+    if (obj && Object.prototype.hasOwnProperty.call(obj, "release_date") && !Object.prototype.hasOwnProperty.call(obj, "first_air_date")) return "movie_poster";
+    return "show_poster";
+  }
+
+  function pickImage(obj, localKey, pathKey){
+    if (!obj) return "";
+    const local = withBasePath(obj[localKey]);
+    if (local) return local;
+
+    const rawPath = safeText(obj[pathKey]).trim();
+    if (!rawPath) return "";
+    if (/^https?:\/\//i.test(rawPath)) return rawPath;
+    if (rawPath.startsWith("/assets/")) return withBasePath(rawPath);
+
+    const kind = (pathKey === "still_path")
+      ? "episode_still"
+      : (pathKey === "backdrop_path" ? "backdrop" : inferPosterKind(obj));
+    return tmdbImageUrl(kind, rawPath);
+  }
+
+  function linkOrDisabled(iconKey, href, label){
+    const ok = !!href;
+    const safeHref = ok ? href : "#";
+    const kind = iconClassForKey(iconKey);
+    const icon = iconChar(iconKey, iconChar("action_external_links", ""));
+    const title = label || iconName(iconKey, iconKey);
+    const inner = `<span class="btnicon">${escHtml(icon)}</span>${escHtml(title)}`;
+    return `<a class="btn ${kind}" href="${escHtml(safeHref)}" target="_blank" rel="noopener" aria-disabled="${ok?"false":"true"}" data-function-type="${escHtml(iconType(iconKey, "link"))}">${inner}</a>`;
+  }
+
+  function yearFromDate(d){
+    const y = safeText(d).slice(0,4);
+    return /^\d{4}$/.test(y) ? y : "";
+  }
+
+  function uniqueSorted(arr){
+    return Array.from(new Set(arr.filter(Boolean))).sort((a,b)=>safeText(a).localeCompare(safeText(b)));
+  }
+
+  const WATCHLIST_STATUS_OPTIONS = [
+    { value: "watchlist", label: "Watchlist" },
+    { value: "watching", label: "Watching" },
+    { value: "paused", label: "Paused" },
+    { value: "completed", label: "Completed" },
+    { value: "dropped", label: "Dropped" }
+  ];
+
+  function populateFilters(){
+    const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+    const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
+    const watchlist = Array.isArray(state.inputs?.watchlist) ? state.inputs.watchlist : [];
+    const hasWatchlist = watchlist.length > 0;
+
+    const showGenres = uniqueSorted(shows.flatMap(s => (s.genres || []).map(g => g?.name)));
+    const movieGenres = uniqueSorted(movies.flatMap(m => (m.genres || []).map(g => g?.name)));
+    const showYears = uniqueSorted(shows.map(s => yearFromDate(s.first_air_date)).filter(Boolean)).sort((a,b)=>Number(b)-Number(a));
+    const movieYears = uniqueSorted(movies.map(m => yearFromDate(m.release_date)).filter(Boolean)).sort((a,b)=>Number(b)-Number(a));
+    const movieCollections = uniqueSorted(movies.map(m => m?.collection?.name).filter(Boolean));
+
+    renderChecklist($("#filterShowsGenres"), showGenres, state.filters.shows.genres);
+    renderChecklist($("#filterMoviesGenres"), movieGenres, state.filters.movies.genres);
+
+    const showsYearSel = $("#filterShowsYear");
+    if (showsYearSel){
+      showsYearSel.innerHTML = `<option value="">All years</option>${showYears.map(year => `<option value="${escHtml(year)}">${escHtml(year)}</option>`).join("")}`;
+      showsYearSel.value = state.filters.shows.year || "";
+    }
+    const moviesYearSel = $("#filterMoviesYear");
+    if (moviesYearSel){
+      moviesYearSel.innerHTML = `<option value="">All years</option>${movieYears.map(year => `<option value="${escHtml(year)}">${escHtml(year)}</option>`).join("")}`;
+      moviesYearSel.value = state.filters.movies.year || "";
+    }
+
+    const moviesCollectionInput = $("#filterMoviesCollection");
+    if (moviesCollectionInput){
+      moviesCollectionInput.innerHTML = `<option value="">All collections</option>${movieCollections.map(name => `<option value="${escHtml(name)}">${escHtml(name)}</option>`).join("")}`;
+      moviesCollectionInput.value = state.filters.movies.collection || "";
+    }
+
+    setSegActive($("#filterShowsAvailability"), "availability", state.filters.shows.availability || "all");
+    setSegActive($("#filterMoviesAvailability"), "availability", state.filters.movies.availability || "all");
+
+    setSegActive($("#filterShowsWatched"), "watched", state.filters.shows.watched || "all");
+    setSegActive($("#filterMoviesWatched"), "watched", state.filters.movies.watched || "all");
+
+    setSegActive($("#filterShowsWatchlist"), "watchlist", state.filters.shows.watchlist || "all");
+    setSegActive($("#filterMoviesWatchlist"), "watchlist", state.filters.movies.watchlist || "all");
+    setSegActive($("#filterShowsScope"), "scope", state.filters.shows.scope || "all");
+    setSegActive($("#filterMoviesScope"), "scope", state.filters.movies.scope || "all");
+
+    const sortShows = $("#sortShows");
+    if (sortShows) sortShows.value = state.sort.shows || "title";
+    const sortMovies = $("#sortMovies");
+    if (sortMovies) sortMovies.value = state.sort.movies || "title";
+
+    if (!hasWatchlist){
+      $$("#filterShowsWatchlist .segbtn, #filterMoviesWatchlist .segbtn").forEach(btn => {
+        btn.disabled = true;
+      });
+    }
+
+    const watchlistStatusSel = $("#filterWatchlistStatus");
+    if (watchlistStatusSel){
+      watchlistStatusSel.innerHTML = `<option value="all">All Watch Status</option>${WATCHLIST_STATUS_OPTIONS.map(o => `<option value="${escHtml(o.value)}">${escHtml(o.label)}</option>`).join("")}`;
+    }
+    const watchlistKindSel = $("#filterWatchlistKind");
+    if (watchlistKindSel){
+      watchlistKindSel.innerHTML = `<option value="all">All Types</option><option value="show">Shows</option><option value="movie">Movies</option><option value="unknown">Unknown</option>`;
+    }
+  }
+
+  function getSelectedValues(sel){
+    if (!sel) return [];
+    return Array.from(sel.selectedOptions || []).map(o => o.value).filter(Boolean);
+  }
+
+  function getCheckedValues(container){
+    if (!container) return [];
+    return $$("input[type='checkbox']", container).filter(i => i.checked).map(i => i.value);
+  }
+
+  function renderChecklist(container, options, selectedValues){
+    if (!container) return;
+    const selected = new Set(selectedValues || []);
+    container.innerHTML = options.map(opt => {
+      const value = typeof opt === "string" ? opt : opt.value;
+      const label = typeof opt === "string" ? opt : opt.label;
+      const checked = selected.has(value) ? "checked" : "";
+      return `<label class="checkitem"><input type="checkbox" value="${escHtml(value)}" ${checked} /> <span>${escHtml(label)}</span></label>`;
+    }).join("");
+  }
+
+  function actionMenuHtml(kind, id, title){
+    return `
+      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="want">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
+        <div class="menutitle">Want</div>
+        <button type="button" data-menu-action="want_add" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title)}">Add to want</button>
+        <button type="button" data-menu-action="want_remove" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Remove from want</button>
+      </div>
+      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="watched">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
+        <button type="button" data-menu-action="mark_watched" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Mark watched</button>
+        <button type="button" data-menu-action="mark_unwatched" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}">Mark unwatched</button>
+      </div>
+      <div class="actionmenu" data-action-menu-panel="1" data-menu-type="rate">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
+        <div class="menutitle">Rating</div>
+        <button type="button" disabled>Frontend placeholder</button>
+      </div>
+    `;
+  }
+
+  function statusMenuHtml(kind, id, title, context={}, available=false){
+    const current = getLocalStatusValue(kind, id, context);
+    const contextAttrs = [
+      (context?.showId != null ? ` data-status-show="${escHtml(context.showId)}"` : ""),
+      (context?.seasonNumber != null ? ` data-status-season="${escHtml(context.seasonNumber)}"` : ""),
+      (context?.episodeNumber != null ? ` data-status-episode="${escHtml(context.episodeNumber)}"` : "")
+    ].join("");
+    const options = WATCHLIST_STATUS_OPTIONS.map(opt => {
+      const active = opt.value === current;
+      const color = watchStatusChoiceColor(opt.value, available);
+      const label = watchStatusChoiceTitle(opt.value, available);
+      return `<button type="button"${active ? ` class="active"` : ""} data-menu-action="status_set" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title || "")}" data-status-value="${escHtml(opt.value)}"${contextAttrs} style="--watch-status-color:${escHtml(color)}"><span class="bulletrow"><span class="bulletdot"></span><span>${escHtml(label)}</span></span>${active ? `<span aria-hidden="true">•</span>` : ""}</button>`;
+    }).join("");
+    return `
+      <div class="actionmenu statusmenu" data-action-menu-panel="1" data-menu-type="status">
+        <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
+        <div class="menutitle">Watch status</div>
+        ${options}
+        <div class="divider"></div>
+        <button type="button" data-menu-action="status_clear" data-kind="${escHtml(kind)}" data-id="${escHtml(id)}" data-title="${escHtml(title || "")}"${contextAttrs}>Clear status</button>
+      </div>
+    `;
+  }
+
+  function closeAllActionMenus(){
+    $$("[data-action-menu-panel]").forEach(m => m.classList.remove("open"));
+  }
+
+  function positionActionMenu(menu, btn, host){
+    if (!menu || !btn || !host) return;
+    const wasOpen = menu.classList.contains("open");
+    menu.classList.add("open");
+    menu.style.visibility = "hidden";
+    const hostRect = host.getBoundingClientRect();
+    const btnRect = btn.getBoundingClientRect();
+    const menuRect = menu.getBoundingClientRect();
+    let left = btnRect.left - hostRect.left;
+    let top = btnRect.bottom - hostRect.top + 6;
+    if (left + menuRect.width > hostRect.width - 6){
+      left = Math.max(6, hostRect.width - menuRect.width - 6);
+    }
+    if (left < 6) left = 6;
+    menu.style.left = `${left}px`;
+    menu.style.top = `${top}px`;
+    menu.style.visibility = "";
+    if (!wasOpen){
+      menu.classList.remove("open");
+    }
+  }
+
+  function wireActionMenus(container){
+    if (!container) return;
+    $$("[data-action-menu]", container).forEach(btn => {
+      const host = btn.closest("[data-action-host]") || btn.parentElement;
+      const openMenu = () => {
+        const target = safeText(btn.getAttribute("data-action-menu"));
+        const menu = host ? host.querySelector(`[data-action-menu-panel][data-menu-type="${target}"]`) : null;
+        if (!menu) return;
+        positionActionMenu(menu, btn, host);
+        const open = !menu.classList.contains("open");
+        closeAllActionMenus();
+        menu.classList.toggle("open", open);
+      };
+      const runDefault = () => {
+        const target = safeText(btn.getAttribute("data-action-menu"));
+        const menu = host ? host.querySelector(`[data-action-menu-panel][data-menu-type="${target}"]`) : null;
+        if (!menu) return;
+        const first = menu.querySelector("[data-menu-action]");
+        if (first) first.click();
+      };
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const target = safeText(btn.getAttribute("data-action-menu"));
+        if (target === "status" || target === "rate"){
+          openMenu();
+          return;
+        }
+        if (btn.getAttribute("data-no-default") === "1" || btn.hasAttribute("data-action")) return;
+        runDefault();
+      });
+      btn.addEventListener("dblclick", (e) => {
+        e.stopPropagation();
+        openMenu();
+      });
+    });
+    $$("[data-menu-close]", container).forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        closeAllActionMenus();
+      });
+    });
+    $$("[data-menu-action]", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const action = safeText(btn.getAttribute("data-menu-action"));
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        const title = safeText(btn.getAttribute("data-title"));
+        const context = {
+          showId: btn.getAttribute("data-status-show"),
+          seasonNumber: btn.getAttribute("data-status-season"),
+          episodeNumber: btn.getAttribute("data-status-episode")
+        };
+        if (!action || !Number.isFinite(id)) return;
+        if (action === "want_add"){
+          setWatchlistEntry(id, title, kind, "watchlist");
+        } else if (action === "want_remove"){
+          removeWatchlistItem(id);
+        } else if (action === "mark_watched"){
+          if (kind === "movie") setMovieWatched(id, true);
+          if (kind === "show"){
+            const show = await getShowDetailById(id);
+            if (show) setShowWatched(id, show.seasons || [], true);
+          }
+        } else if (action === "mark_unwatched"){
+          if (kind === "movie") setMovieWatched(id, false);
+          if (kind === "show"){
+            const show = await getShowDetailById(id);
+            if (show) setShowWatched(id, show.seasons || [], false);
+          }
+        } else if (action === "status_set"){
+          const statusValue = safeText(btn.getAttribute("data-status-value")).toLowerCase();
+          setLocalStatusValue(kind, id, context, statusValue, title);
+        } else if (action === "status_clear"){
+          setLocalStatusValue(kind, id, context, "", title);
+        }
+        await saveInputs();
+        closeAllActionMenus();
+        if ($("#modalBack")?.style.display === "flex"){
+          if (kind === "movie"){
+            await openMovieModal(id);
+          } else {
+            const showId = Number(context.showId || id) || 0;
+            await openShowModal(showId);
+          }
+        }
+        if (state.tab === "calendar") renderCalendar();
+        if (state.tab === "shows") renderShows();
+        if (state.tab === "movies") renderMovies();
+        if (state.tab === "dashboard" && typeof renderDashboard === "function") renderDashboard();
+      });
+    });
+  }
+
+  async function toggleWantForKind(kind, id, title){
+    if (!Number.isFinite(id)) return;
+    const wanted = getWatchlistSet().has(String(id));
+    if (wanted){
+      removeWatchlistItem(id);
+    } else {
+      setWatchlistEntry(id, title, kind, "watchlist");
+    }
+  }
+
+  async function toggleWatchedForKind(kind, id, context={}){
+    if (!Number.isFinite(id)) return;
+    if (kind === "movie"){
+      setMovieWatched(id, !isMovieWatched(getMovieById(id) || { tmdb_id: id }));
+      return;
+    }
+    if (kind === "episode"){
+      const showId = Number(context.showId || 0);
+      const seasonNum = Number(context.seasonNumber || 0);
+      const episodeNum = Number(context.episodeNumber || id);
+      if (!Number.isFinite(showId) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
+      setEpisodeWatched(showId, seasonNum, episodeNum, !isEpisodeWatched(showId, seasonNum, episodeNum));
+      return;
+    }
+    const show = await getShowDetailById(id);
+    if (show) setShowWatched(id, show.seasons || [], !isShowWatched(show));
+  }
+
+  function openInfoForKind(kind, id){
+    if (!Number.isFinite(id)) return;
+    if (kind === "movie") return openMovieModal(id);
+    return gotoShow(id);
+  }
+
+  function wireIconStripActions(container, onUpdate){
+    if (!container) return;
+    $$("[data-action='open-info']", container).forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        openInfoForKind(kind, id);
+      });
+    });
+    $$("[data-action='toggle-want']", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        const title = safeText(btn.getAttribute("data-title"));
+        await toggleWantForKind(kind, id, title);
+        await saveInputs();
+        if (typeof onUpdate === "function") onUpdate();
+      });
+    });
+    $$("[data-action='toggle-watched']", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-kind"));
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        const context = {
+          showId: btn.getAttribute("data-show"),
+          seasonNumber: btn.getAttribute("data-season"),
+          episodeNumber: btn.getAttribute("data-watch-episode") || btn.getAttribute("data-episode")
+        };
+        await toggleWatchedForKind(kind, id, context);
+        await saveInputs();
+        if (typeof onUpdate === "function") onUpdate();
+      });
+    });
+  }
+
+  function getEyeMode(kind){
+    return safeText(state.view?.[kind]?.eye || "show_all");
+  }
+
+  function applyEyeFilter(kind, item){
+    const mode = getEyeMode(kind);
+    if (mode === "show_all") return { hide:false, fade:false };
+    const watched = kind === "movies" ? isMovieWatched(item) : isShowWatched(item);
+    const id = String(item?.tmdb_id ?? "");
+    const inWatchlist = !!(id && getWatchlistSet().has(id));
+    const inLibrary = !!(item?.in_library || item?.library || item?.inLibrary);
+    const rated = !!(item?.rating || item?.user_rating || item?.rating_user);
+    const listed = inWatchlist; // nearest proxy for now
+    const map = {
+      watched,
+      unwatched: !watched,
+      watchlist: inWatchlist,
+      not_watchlist: !inWatchlist,
+      library: inLibrary,
+      not_library: !inLibrary,
+      rated,
+      not_rated: !rated,
+      listed,
+      not_listed: !listed
+    };
+    const isFade = mode.startsWith("fade_");
+    const key = mode.replace(/^fade_/, "").replace(/^hide_/, "");
+    const match = !!map[key];
+    if (isFade) return { hide:false, fade:match };
+    return { hide:match, fade:false };
+  }
+
+  function setSegActive(container, attr, value){
+    if (!container) return;
+    $$(`[data-${attr}]`, container).forEach(btn => {
+      const active = btn.getAttribute(`data-${attr}`) === value;
+      btn.classList.toggle("active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function setSelectedValues(sel, values){
+    if (!sel) return;
+    const want = new Set((Array.isArray(values) ? values : []).map(String));
+    Array.from(sel.options || []).forEach(opt => {
+      opt.selected = want.has(String(opt.value));
+    });
+  }
+
+  function initEyeMenu(btnId, menuId, kind){
+    const btn = document.getElementById(btnId);
+    const menu = document.getElementById(menuId);
+    if (!btn || !menu) return;
+    const close = () => {
+      menu.classList.remove("open");
+      menu.setAttribute("aria-hidden", "true");
+    };
+    const toggleDefault = () => {
+      const curr = getEyeMode(kind);
+      const next = curr === "show_all" ? "fade_watched" : "show_all";
+      if (state.view?.[kind]) state.view[kind].eye = next;
+      close();
+      if (kind === "shows") renderShows();
+      if (kind === "movies") renderMovies();
+    };
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleDefault();
+    });
+    btn.addEventListener("dblclick", (e) => {
+      e.stopPropagation();
+      const open = !menu.classList.contains("open");
+      menu.classList.toggle("open", open);
+      menu.setAttribute("aria-hidden", open ? "false" : "true");
+    });
+    menu.addEventListener("click", (e) => {
+      const closeBtn = e.target.closest("[data-menu-close]");
+      if (closeBtn){
+        e.stopPropagation();
+        close();
+        return;
+      }
+      const item = e.target.closest("[data-eye]");
+      if (!item) return;
+      const val = safeText(item.getAttribute("data-eye"));
+      if (!val) return;
+      if (state.view?.[kind]) state.view[kind].eye = val;
+      close();
+      if (kind === "shows") renderShows();
+      if (kind === "movies") renderMovies();
+    });
+    document.addEventListener("click", (e) => {
+      if (menu.classList.contains("open") && !menu.contains(e.target) && e.target !== btn){
+        close();
+      }
+    });
+  }
+
+  function initDrawer(btnId, backId, closeId){
+    const btn = document.getElementById(btnId);
+    const back = document.getElementById(backId);
+    const closeBtn = document.getElementById(closeId);
+    if (!btn || !back) return;
+    const open = () => {
+      back.classList.add("open");
+      back.setAttribute("aria-hidden", "false");
+    };
+    const close = () => {
+      back.classList.remove("open");
+      back.setAttribute("aria-hidden", "true");
+    };
+    btn.addEventListener("click", open);
+    if (closeBtn) closeBtn.addEventListener("click", close);
+    back.addEventListener("click", (e) => {
+      if (e.target === back) close();
+    });
+  }
+
+  function getWatchlistSet(){
+    const list = Array.isArray(state.inputs?.watchlist) ? state.inputs.watchlist : [];
+    const ids = list.map(x => String(x?.tmdb_id ?? "")).filter(Boolean);
+    return new Set(ids);
+  }
+
+  function ensureWatchlist(){
+    if (!state.inputs) state.inputs = { tv: [], movies: [], watchlist: [] };
+    if (!Array.isArray(state.inputs.watchlist)) state.inputs.watchlist = [];
+    return state.inputs.watchlist;
+  }
+
+  function getWatchlistItem(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return null;
+    const list = ensureWatchlist();
+    return list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+  }
+
+  function setWatchlistStatus(tmdbId, title, mediaKind, watchStatus){
+    const id = String(tmdbId ?? "");
+    if (!id) return;
+    const list = ensureWatchlist();
+    let item = list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+    if (!item){
+      item = { tmdb_id: Number(id) || id };
+      list.push(item);
+    }
+    if (title) item.title = title;
+    if (mediaKind) item.media_kind = mediaKind;
+    if (watchStatus) item.watch_status = watchStatus;
+    if (!item.watch_status) item.watch_status = "watchlist";
+    if (!item.added_utc) item.added_utc = nowUtcIso();
+  }
+
+  function removeWatchlistItem(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return;
+    const list = ensureWatchlist();
+    state.inputs.watchlist = list.filter(x => String(x?.tmdb_id ?? "") !== id);
+  }
+
+  function isInWatchlist(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return false;
+    const list = ensureWatchlist();
+    return list.some(x => String(x?.tmdb_id ?? "") === id);
+  }
+
+  function getWatchlistEntry(tmdbId){
+    const id = String(tmdbId ?? "");
+    if (!id) return null;
+    const list = ensureWatchlist();
+    return list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+  }
+
+  function ensureLocalStatusMap(){
+    if (!state.inputs) state.inputs = { tv: [], movies: [], watchlist: [] };
+    if (!state.inputs.local_status_map || typeof state.inputs.local_status_map !== "object") state.inputs.local_status_map = {};
+    return state.inputs.local_status_map;
+  }
+
+  function statusEntityKey(kind, id, context={}){
+    const idStr = String(id ?? "");
+    if (kind === "season") return `season:${context.showId || context.parentId || ""}:${context.seasonNumber || idStr}`;
+    if (kind === "episode") return `episode:${context.showId || context.parentId || ""}:${context.seasonNumber || ""}:${context.episodeNumber || idStr}`;
+    return `${kind}:${idStr}`;
+  }
+
+  function getLocalStatusValue(kind, id, context={}){
+    const key = statusEntityKey(kind, id, context);
+    const localMap = ensureLocalStatusMap();
+    const local = localMap[key];
+    const localValue = safeText(local?.watch_status).toLowerCase();
+    if (localValue) return localValue;
+    if (kind === "show" || kind === "movie"){
+      const legacy = safeText(getWatchlistEntry(id)?.watch_status).toLowerCase();
+      if (legacy) return legacy;
+    }
+    return "";
+  }
+
+  function setLocalStatusValue(kind, id, context, watchStatus, title){
+    const key = statusEntityKey(kind, id, context);
+    const localMap = ensureLocalStatusMap();
+    if (!watchStatus){
+      delete localMap[key];
+      return;
+    }
+    localMap[key] = {
+      key,
+      tmdb_id: id,
+      media_kind: kind,
+      parent_tmdb_id: context.showId ?? context.parentId ?? null,
+      season_number: context.seasonNumber ?? null,
+      episode_number: context.episodeNumber ?? null,
+      title: title || "",
+      watch_status: watchStatus,
+      updated_utc: nowUtcIso()
+    };
+  }
+
+  function setWatchlistEntry(tmdbId, title, mediaKind, watchStatus){
+    const id = String(tmdbId ?? "");
+    if (!id) return;
+    const list = ensureWatchlist();
+    let item = list.find(x => String(x?.tmdb_id ?? "") === id) || null;
+    if (!item){
+      item = { tmdb_id: Number(id) || id };
+      list.push(item);
+    }
+    if (title) item.title = title;
+    if (mediaKind) item.media_kind = mediaKind;
+    if (watchStatus) item.watch_status = watchStatus;
+    if (!item.watch_status) item.watch_status = "watching";
+    if (!item.added_utc) item.added_utc = nowUtcIso();
+  }
+
+  function cycleWatchStatus(curr){
+    const order = ["watching","completed","dropped"];
+    const idx = Math.max(0, order.indexOf(curr));
+    return order[(idx + 1) % order.length];
+  }
+
+  function watchStatusDisplay(entry, available){
+    const raw = safeText(entry?.watch_status || "watching").toLowerCase();
+    if (raw === "watchlist") return { label: "Watchlist", color: (state.ui?.watch_status_colors?.to_be_watched || "#fef9c3") };
+    if (raw === "watching" && !available) return { label: "To Be Watched", color: (state.ui?.watch_status_colors?.to_be_watched || "#fef9c3") };
+    if (raw === "paused") return { label: "Paused", color: (state.ui?.watch_status_colors?.paused || "#fde68a") };
+    if (raw === "completed") return { label: "Completed", color: (state.ui?.watch_status_colors?.completed || "#bfdbfe") };
+    if (raw === "dropped") return { label: "Dropped", color: (state.ui?.watch_status_colors?.dropped || "#fecaca") };
+    return { label: "Watching", color: (state.ui?.watch_status_colors?.watching || "#bbf7d0") };
+  }
+
+  function watchStatusChoiceColor(value, available){
+    const colors = state.ui?.watch_status_colors || {};
+    if (value === "watchlist") return colors.to_be_watched || "#fef9c3";
+    if (value === "watching" && !available) return colors.to_be_watched || "#fef9c3";
+    if (value === "paused") return colors.paused || "#fde68a";
+    if (value === "completed") return colors.completed || "#bfdbfe";
+    if (value === "dropped") return colors.dropped || "#fecaca";
+    return colors.watching || "#bbf7d0";
+  }
+
+  function watchStatusChoiceTitle(value, available){
+    if (value === "watchlist") return "Watchlist";
+    if (value === "watching") return available ? "Watching" : "To Be Watched";
+    if (value === "paused") return "Paused";
+    if (value === "completed") return "Completed";
+    if (value === "dropped") return "Dropped";
+    return "Watching";
+  }
+
+  function watchToggleHtml(kind, attrs, checked){
+    const pairs = Object.entries(attrs || {})
+      .filter(([, value]) => value != null && value !== "")
+      .map(([key, value]) => ` ${escHtml(key)}="${escHtml(value)}"`)
+      .join("");
+    return `
+      <label class="switch ${escHtml(kind)}">
+        <input type="checkbox"${pairs}${checked ? " checked" : ""} />
+        <span class="track">
+          <span class="thumb"></span>
+          <span class="ontext">On</span>
+          <span class="offtext">Off</span>
+        </span>
+      </label>
+    `;
+  }
+
+  function buildActionBarHtml(kind, id, options={}){
+    const title = safeText(options.title || options.titleText || "").trim();
+    const statusContext = options.statusContext || {};
+    return window.MyTVHubSharedModules.actionBar.renderActionBarHtml({
+      compact: !!options.compact,
+      watch: options.popcornAttrs ? { kind: options.popcornKind || kind, attrs: options.popcornAttrs || {} } : null,
+      favourite: { active: !!options.favoriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } },
+      status: options.showStatusAction ? { attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
+      watched: { active: !!options.watchedActive, attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } },
+      rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "--%" },
+      menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
+    });
+  }
+
+  async function migrateWatchlist(){
+    const list = ensureWatchlist();
+    const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+    const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
+    const showIds = new Set(shows.map(s => String(s?.tmdb_id ?? "")).filter(Boolean));
+    const movieIds = new Set(movies.map(m => String(m?.tmdb_id ?? "")).filter(Boolean));
+    let changed = false;
+    for (const item of list){
+      if (!item || typeof item !== "object") continue;
+      const id = String(item.tmdb_id ?? "");
+      if (!id) continue;
+      if (!item.media_kind && item.kind){
+        item.media_kind = String(item.kind);
+        delete item.kind;
+        changed = true;
+      }
+      if (!item.watch_status && item.status){
+        item.watch_status = String(item.status);
+        delete item.status;
+        changed = true;
+      }
+      if (!item.media_kind){
+        if (showIds.has(id)) item.media_kind = "show";
+        else if (movieIds.has(id)) item.media_kind = "movie";
+        else item.media_kind = "unknown";
+        changed = true;
+      }
+      if (!item.watch_status){
+        item.watch_status = "watchlist";
+        changed = true;
+      }
+      if (!item.added_utc){
+        item.added_utc = nowUtcIso();
+        changed = true;
+      }
+    }
+    if (changed) await saveInputs();
+  }
+
+  function buildMediaLinks(kind, id, links){
+    const src = links && typeof links === "object" ? links : {};
+    const item = (src && typeof src === "object" && src.watch) ? src : null;
+    const embed = Array.isArray(item?.watch?.embed) ? item.watch.embed : [];
+    const lookupEmbed = (key) => {
+      const hit = embed.find(entry => safeText(entry?.key).trim().toLowerCase() === key && safeText(entry?.href).trim());
+      return hit ? safeText(hit.href).trim() : "";
+    };
+    const vidsrc = lookupEmbed("vidsrc_net") || lookupEmbed("vidsrc");
+    const videasy = lookupEmbed("videasy");
+    const local = lookupEmbed("local");
+    return { vidsrc, videasy, local };
+  }
+
+  function watchSourceButtonHtml(kind, attrs, label="Watch"){
+    const pairs = Object.entries(attrs || {})
+      .filter(([, value]) => value != null && value !== "")
+      .map(([key, value]) => ` ${escHtml(key)}="${escHtml(value)}"`)
+      .join("");
+    return `<button class="btn watchsourcebtn" type="button" data-watch-source-open="${escHtml(kind)}"${pairs} data-function-type="${escHtml(iconType("action_play", "popup"))}"><span class="btnicon">🍿</span>${escHtml(label)}</button>`;
+  }
+
+  function collectConfiguredWatchSources(item){
+    const raw = Array.isArray(item?.watch?.embed) ? item.watch.embed : [];
+    const fallbackOrder = Array.isArray(state.cfg?.streaming?.fallback_order) ? state.cfg.streaming.fallback_order.map(v => safeText(v).trim().toLowerCase()) : [];
+    return raw.map((entry, idx) => {
+      if (!entry || typeof entry !== "object") return null;
+      const href = safeText(entry.href).trim();
+      if (!href) return null;
+      const key = safeText(entry.key).trim().toLowerCase();
+      const priority = key ? fallbackOrder.indexOf(key) : -1;
+      return {
+        key,
+        type: safeText(entry.type || "external").trim().toLowerCase() || "external",
+        label: safeText(entry.label || `Source ${idx + 1}`),
+        note: safeText(entry.note || entry.description || ""),
+        status: safeText(entry.status || ""),
+        href,
+        priority: priority >= 0 ? priority : 100 + idx
+      };
+    }).filter(Boolean).sort((a, b) => {
+      const pa = Number.isFinite(a.priority) ? a.priority : 999;
+      const pb = Number.isFinite(b.priority) ? b.priority : 999;
+      if (pa !== pb) return pa - pb;
+      return safeText(a.label).localeCompare(safeText(b.label));
+    });
+  }
+
+  function collectWatchSourceOptions(kind, item, context={}){
+    if (!item || typeof item !== "object") return [];
+    if (kind !== "movie" && kind !== "episode") return [];
+    const options = [];
+    const push = (type, label, href, note="") => {
+      const safeHref = safeText(href).trim();
+      if (!safeHref) return;
+      options.push({ type, label, href: safeHref, note });
+    };
+    collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note || opt.status));
+    const seen = new Set();
+    return options.filter(opt => {
+      const key = `${opt.type}|${opt.href}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  function renderWatchSourceChooserHtml(item, kind, context={}){
+    const options = collectWatchSourceOptions(kind, item, context);
+    const providerItem = (kind === "season" || kind === "episode") ? (context.show || item) : item;
+    const providerKind = (kind === "movie") ? "movie" : "tv";
+    const providerHtml = renderWatchProvidersHtml(providerItem, providerKind);
+    const optionHtml = options.length ? options.map(opt => `
+      <a class="watch-option-btn watch-option-btn--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
+        <span class="watch-option-btn__label">${escHtml(opt.label)}</span>
+        ${opt.note ? `<span class="watch-option-btn__note">${escHtml(opt.note)}</span>` : ""}
+        <span class="watch-option-btn__href">${escHtml(opt.href)}</span>
+      </a>
+    `).join("") : `<div class="muted" style="font-size:12px;">No configured direct watch sources for this item yet.</div>`;
+    return `
+      <div class="watch-source-grid">
+        <div class="watch-source-panel watch-source-panel--links">
+          <div class="watch-source-panel__title">Watch now</div>
+          <div class="watch-source-links">${optionHtml}</div>
+        </div>
+        <div class="watch-source-panel watch-source-panel--providers">
+          <div class="watch-source-panel__title">Where to watch</div>
+          ${providerHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  function getSeasonItem(show, seasonNum){
+    if (!show) return null;
+    return (Array.isArray(show.seasons) ? show.seasons : []).find(season => Number(season?.season_number ?? season?.number ?? season?.season) === Number(seasonNum)) || null;
+  }
+
+  function getEpisodeItem(show, seasonNum, episodeNum){
+    const season = getSeasonItem(show, seasonNum);
+    return (Array.isArray(season?.episodes) ? season.episodes : []).find(ep => Number(ep?.episode_number ?? ep?.number ?? ep?.ep) === Number(episodeNum)) || null;
+  }
+
+  function wireWatchSourceButtons(container){
+    if (!container) return;
+    $$("[data-watch-source-open]", container).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const kind = safeText(btn.getAttribute("data-watch-source-open"));
+        if (kind === "movie"){
+          const movieId = Number(btn.getAttribute("data-id") || "0");
+          const movie = await getMovieDetailById(movieId);
+          if (!movie) return;
+          openProviderModal(`${safeText(movie.title || "Movie")} • Watch source`, renderWatchSourceChooserHtml(movie, "movie"));
+          return;
+        }
+        const showId = Number(btn.getAttribute("data-show") || btn.getAttribute("data-id") || "0");
+        const show = await getShowDetailById(showId);
+        if (!show) return;
+        if (kind === "episode"){
+          const seasonNum = Number(btn.getAttribute("data-season") || "0");
+          const episodeNum = Number(btn.getAttribute("data-episode") || "0");
+          const episode = getEpisodeItem(show, seasonNum, episodeNum);
+          if (!episode) return;
+          const title = safeText(episode.title || episode.name || `Episode ${episodeNum}`);
+          openProviderModal(`${safeText(show.title || show.name || "Show")} • ${title} • Watch source`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id ?? show.id }));
+        }
+      });
+    });
+  }
+
+  function getRtLink(obj){
+    if (!obj || typeof obj !== "object") return "";
+    const links = obj?.links && typeof obj.links === "object" ? obj.links : {};
+    return safeText(
+      links.rotten_tomatoes ||
+      links.rottentomatoes ||
+      links.rt ||
+      links.rotten ||
+      obj.rotten_tomatoes ||
+      obj.rt ||
+      ""
+    ).trim();
+  }
+
+  function getCompanyNames(list){
+    if (!Array.isArray(list)) return [];
+    return list.map(c => c?.name).filter(Boolean);
+  }
+
+  function getCreatorNames(list){
+    if (!Array.isArray(list)) return [];
+    return list.map(person => person?.name).filter(Boolean);
+  }
+
+  function formatProviderSummary(item){
+    const wp = getWatchProviders(item);
+    const providers = collectProvidersForRegion(wp, "CA").length
+      ? collectProvidersForRegion(wp, "CA")
+      : (collectProvidersForRegion(wp, "US").length ? collectProvidersForRegion(wp, "US") : collectProvidersForRegion(wp, "AU"));
+    return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
+  }
+
+  function getLastSeasonAirDate(season){
+    const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
+    const today = new Date();
+    const valid = episodes
+      .map(ep => safeText(ep?.air_date || "").trim())
+      .filter(Boolean)
+      .map(value => ({ value, date: new Date(value) }))
+      .filter(entry => !Number.isNaN(entry.date.valueOf()) && entry.date <= today)
+      .sort((a, b) => a.date - b.date);
+    return valid.length ? valid[valid.length - 1].value : "";
+  }
+
+  function episodeMetaLine(seasonNum, episodeNum, runtime){
+    return [seTag(seasonNum, episodeNum), Number.isFinite(Number(runtime)) && Number(runtime) > 0 ? `${Number(runtime)} min` : ""]
+      .filter(Boolean)
+      .join(" • ");
+  }
+
+  function openModal(title, html) {
+    lastFocusEl = document.activeElement;
+    $("#modalTitle").textContent = title;
+    $("#modalBody").innerHTML = html;
+    $("#modalBack").style.display = "flex";
+    $("#modalBack").setAttribute("aria-hidden", "false");
+    const card = $("#modalCard");
+    if (card) {
+      card.scrollTop = 0;
+      $("#modalClose")?.focus();
+    } else {
+      $("#modalClose").focus();
+    }
+  }
+
+  async function copyTextToClipboard(text){
+    const value = safeText(text);
+    try{
+      if (navigator?.clipboard?.writeText){
+        await navigator.clipboard.writeText(value);
+        return true;
+      }
+    }catch(_){/* noop */}
+    try{
+      const area = document.createElement("textarea");
+      area.value = value;
+      area.setAttribute("readonly", "true");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.focus();
+      area.select();
+      const ok = document.execCommand("copy");
+      area.remove();
+      return !!ok;
+    }catch(_){
+      return false;
+    }
+  }
+
+  function openInputsEditorHelp(){
+    openModal("Start Inputs Editor", `
+      <div style="display:grid;gap:14px;">
+        <div>The browser cannot start <code>tools/start_inputs_editor.cmd</code> directly. Local script launch is blocked by browser security.</div>
+        <div>Start the editor on this PC first, then reopen the editor tab.</div>
+        <div style="padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);">
+          <div style="font-weight:700;margin-bottom:8px;">Run from the repo root:</div>
+          <code id="inputsEditorStartCommand" style="display:block;white-space:pre-wrap;word-break:break-word;">tools/start_inputs_editor.cmd</code>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button id="copyInputsEditorCommand" class="calbtn" type="button">Copy Start Command</button>
+          <a class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Editor After Start</a>
+        </div>
+        <div class="muted">Workflow: start <code>tools/start_inputs_editor.cmd</code>, wait for the local server window to open, then use <code>http://127.0.0.1:8787/web/inputs_editor.html</code>.</div>
+      </div>
+    `);
+    const copyBtn = $("#copyInputsEditorCommand");
+    if (copyBtn){
+      copyBtn.addEventListener("click", async () => {
+        const ok = await copyTextToClipboard("tools/start_inputs_editor.cmd");
+        copyBtn.textContent = ok ? "Copied" : "Copy Failed";
+      }, { once: true });
+    }
+  }
+  function closeModal(){
+    $("#modalBack").style.display = "none";
+    $("#modalBack").setAttribute("aria-hidden", "true");
+    $("#modalBody").innerHTML = "";
+    if (lastFocusEl && typeof lastFocusEl.focus === "function") {
+      lastFocusEl.focus();
+    }
+  }
+
+  function openProviderModal(title, html){
+    lastFocusEl = document.activeElement;
+    $("#providerTitle").textContent = title;
+    $("#providerBody").innerHTML = html;
+    $("#providerBack").style.display = "flex";
+    $("#providerBack").setAttribute("aria-hidden", "false");
+    $$("a[data-watch-source-type]", $("#providerBody")).forEach(link => {
+      link.addEventListener("click", () => {
+        setTimeout(() => closeProviderModal(), 0);
+      });
+    });
+    const card = $("#providerCard");
+    if (card){
+      card.scrollTop = 0;
+      $("#providerClose")?.focus();
+    } else {
+      $("#providerClose").focus();
+    }
+  }
+  function closeProviderModal(){
+    $("#providerBack").style.display = "none";
+    $("#providerBack").setAttribute("aria-hidden", "true");
+    $("#providerBody").innerHTML = "";
+    if (lastFocusEl && typeof lastFocusEl.focus === "function") {
+      lastFocusEl.focus();
+    }
+  }
+
+  const FOCUSABLE_SELECTOR = [
+    "button:not([disabled])",
+    "a[href]",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])"
+  ].join(",");
+
+  function isModalOpen(){
+    return $("#providerBack").style.display === "flex" || $("#modalBack").style.display === "flex";
+  }
+
+  function activeModalCard(){
+    if ($("#providerBack").style.display === "flex") return $("#providerCard");
+    if ($("#modalBack").style.display === "flex") return $("#modalCard");
+    return null;
+  }
+
+  function activeRoot(){
+    const modal = activeModalCard();
+    if (modal) return modal;
+    const panel = $(".panel:not(.hidden)") || $("#panel-calendar");
+    return panel || document.body;
+  }
+
+  function isVisible(el){
+    if (!el) return false;
+    const style = getComputedStyle(el);
+    if (style.visibility === "hidden" || style.display === "none") return false;
+    const rects = el.getClientRects();
+    return rects.length > 0;
+  }
+
+  function getFocusables(root){
+    if (!root) return [];
+    return $$(FOCUSABLE_SELECTOR, root).filter(el => isVisible(el));
+  }
+
+  function wirePopupDpad(root){
+    if (!root || root.dataset.popupDpadBound === "1") return;
+    root.dataset.popupDpadBound = "1";
+    root.addEventListener("keydown", (e) => {
+      if (!isModalOpen()) return;
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+      const focusables = getFocusables(root);
+      if (!focusables.length) return;
+      const active = document.activeElement;
+      const currentIndex = Math.max(0, focusables.indexOf(active));
+      const delta = (e.key === "ArrowLeft" || e.key === "ArrowUp") ? -1 : 1;
+      const nextIndex = (currentIndex + delta + focusables.length) % focusables.length;
+      e.preventDefault();
+      focusables[nextIndex]?.focus();
+    });
+  }
+
+  function isTypingField(el){
+    if (!el) return false;
+    const tag = (el.tagName || "").toLowerCase();
+    if (tag === "textarea") return true;
+    if (tag === "input"){
+      const type = (el.getAttribute("type") || "text").toLowerCase();
+      return !["button","submit","checkbox","radio","range","color"].includes(type);
+    }
+    return el.isContentEditable;
+  }
+
+  function moveFocus(dir){
+    if (window.MyTVHubFocus?.moveInRoot){
+      return window.MyTVHubFocus.moveInRoot(activeRoot(), dir, document.activeElement);
+    }
+    const root = activeRoot();
+    const focusables = getFocusables(root);
+    if (!focusables.length) return false;
+    const first = focusables[0];
+    first.focus({ preventScroll: true });
+    first.scrollIntoView({ block: "nearest", inline: "nearest" });
+    return true;
+  }
+
+  function scrollActiveModal(dy){
+    const card = activeModalCard();
+    if (!card) return;
+    card.scrollTop += dy;
+  }
+
+  function trapTabInModal(e){
+    if (!isModalOpen() || e.key !== "Tab") return;
+    const root = activeModalCard();
+    if (!root) return;
+    const focusables = getFocusables(root);
+    if (!focusables.length) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first){
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last){
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  function footerText(){
+    const meta = state.data?.meta || {};
+    const counts = meta.counts || {};
+    const showsN = counts.shows ?? (state.data?.shows?.length ?? 0);
+    const moviesN = counts.movies ?? (state.data?.movies?.length ?? 0);
+    const errorsN = state.data?.errors?.length ?? 0;
+    return `${APP_VERSION} • loaded • errors=${errorsN} • shows=${showsN} • movies=${moviesN}`;
+  }
+
+  async function fetchJsonFirst(urls){
+    for (const u of urls){
+      try {
+        const r = await fetch(u, {cache:"no-store"});
+        if (!r.ok) continue;
+        const text = await r.text();
+        return parseJsonc(text);
+      } catch {
+        // try next
+      }
+    }
+    return null;
+  }
+
+  function applyUiPaletteFromConfig(cfg){
+    try{
+      const ui = cfg && typeof cfg === "object" ? cfg.ui_palette : null;
+      if (!ui || typeof ui !== "object") return;
+      const active = safeText(ui.active || "night_tv");
+      const palettes = ui.palettes && typeof ui.palettes === "object" ? ui.palettes : null;
+      const palette = palettes && palettes[active] ? palettes[active] : null;
+      if (!palette || typeof palette !== "object") return;
+      const tokens = palette.tokens && typeof palette.tokens === "object" ? palette.tokens : null;
+      const derived = palette.derived && typeof palette.derived === "object" ? palette.derived : null;
+      const root = document.documentElement;
+      if (tokens){
+        for (const [k, v] of Object.entries(tokens)){
+          if (k && v != null) root.style.setProperty(`--${k}`, String(v));
+        }
+      }
+      if (derived){
+        for (const [k, v] of Object.entries(derived)){
+          if (k && v != null) root.style.setProperty(`--${k}`, String(v));
+        }
+      }
+      const alias = ui.alias_to_legacy_vars && typeof ui.alias_to_legacy_vars === "object" ? ui.alias_to_legacy_vars : null;
+      if (alias){
+        for (const [legacyVar, tokenKey] of Object.entries(alias)){
+          if (!legacyVar || !tokenKey) continue;
+          root.style.setProperty(`--${legacyVar}`, `var(--${tokenKey})`);
+        }
+      }
+      const legacy = ui.legacy_vars && typeof ui.legacy_vars === "object" ? ui.legacy_vars : null;
+      if (legacy){
+        if (legacy.chip != null) root.style.setProperty("--chip", String(legacy.chip));
+        if (legacy.chip2 != null) root.style.setProperty("--chip2", String(legacy.chip2));
+      }
+    }catch(_){/* fail-safe */}
+  }
+
+  async function loadAll(){
+    setStatus(true, "Loading");
+    try {
+      state.cfg = await window.MyTVHubSharedModules.configLoader.loadConfigFirst(["./config.json", "../web/config.json"]);
+      applyUiPaletteFromConfig(state.cfg);
+      state.icons = (state.cfg && typeof state.cfg === "object" && state.cfg.icons && typeof state.cfg.icons === "object")
+        ? state.cfg.icons
+        : {};
+      applyIconText();
+
+      // Apply config.json image sizing (cards + calendar thumbs)
+      try{
+        const sz = (state.cfg && typeof state.cfg === 'object') ? state.cfg.image_sizes : null;
+        if (sz && typeof sz === 'object'){
+          const sw = Number(sz.show_width);
+          const mw = Number(sz.movie_width);
+          const ew = Number(sz.episode_still_w);
+          const cw = Number(sz.calendar_thumb_w);
+          const hpw = Number(sz.hero_poster_w);
+          const hpm = Number(sz.hero_poster_min);
+          const epw = Number(sz.episode_card_w);
+          const nwm = Number(sz.network_logo_max_w);
+          const pwm = Number(sz.provider_logo_max_w);
+          if (Number.isFinite(sw) && sw > 0) document.documentElement.style.setProperty('--show_card_min', `${sw}px`);
+          if (Number.isFinite(mw) && mw > 0) document.documentElement.style.setProperty('--movie_card_min', `${mw}px`);
+          if (Number.isFinite(ew) && ew > 0) document.documentElement.style.setProperty('--episode_thumb', `${ew}px`);
+          if (Number.isFinite(cw) && cw > 0) document.documentElement.style.setProperty('--cal-thumb-w', `${cw}px`);
+          if (Number.isFinite(hpw) && hpw > 0) document.documentElement.style.setProperty('--hero-poster-w', `${hpw}px`);
+          if (Number.isFinite(hpm) && hpm > 0) document.documentElement.style.setProperty('--hero-poster-min', `${hpm}px`);
+          if (Number.isFinite(epw) && epw > 0) document.documentElement.style.setProperty('--epcard-w', `${epw}px`);
+          if (Number.isFinite(nwm) && nwm > 0) document.documentElement.style.setProperty('--netlogo-max-w', `${nwm}px`);
+          if (Number.isFinite(pwm) && pwm > 0) document.documentElement.style.setProperty('--provider-logo-max-w', `${pwm}px`);
+        }
+      }catch(_){/* noop */}
+
+      // Apply config.json UI tuning (logo sizing)
+      try{
+        const ui = (state.cfg && typeof state.cfg === 'object') ? state.cfg.ui_tuning : null;
+        if (ui && typeof ui === 'object'){
+          const lh = Number(ui.logo_height);
+          if (Number.isFinite(lh) && lh > 0) document.documentElement.style.setProperty('--logo-h', `${lh}px`);
+          const plh = Number(ui.provider_logo_height);
+          if (Number.isFinite(plh) && plh > 0) document.documentElement.style.setProperty('--provider-logo-h', `${plh}px`);
+          const urlScale = Number(ui.url_button_scale);
+          if (Number.isFinite(urlScale) && urlScale > 0) document.documentElement.style.setProperty('--url-btn-scale', `${urlScale}`);
+          const tw = Number(ui.watch_toggle_width);
+          if (Number.isFinite(tw) && tw > 0) document.documentElement.style.setProperty('--toggle-w', `${tw}px`);
+          const tcolors = ui.watch_toggle_colors && typeof ui.watch_toggle_colors === "object" ? ui.watch_toggle_colors : null;
+          if (tcolors){
+            if (tcolors.show) document.documentElement.style.setProperty('--toggle-show', String(tcolors.show));
+            if (tcolors.season) document.documentElement.style.setProperty('--toggle-season', String(tcolors.season));
+            if (tcolors.episode) document.documentElement.style.setProperty('--toggle-episode', String(tcolors.episode));
+            if (tcolors.movie) document.documentElement.style.setProperty('--toggle-movie', String(tcolors.movie));
+            if (tcolors.watchlist) document.documentElement.style.setProperty('--toggle-watchlist', String(tcolors.watchlist));
+          }
+          state.ui = state.ui || {};
+          if (ui.watch_status_colors && typeof ui.watch_status_colors === "object"){
+            state.ui.watch_status_colors = {
+              watching: ui.watch_status_colors.watching || "#bbf7d0",
+              to_be_watched: ui.watch_status_colors.to_be_watched || "#fef9c3",
+              completed: ui.watch_status_colors.completed || "#bfdbfe",
+              dropped: ui.watch_status_colors.dropped || "#fecaca"
+            };
+          }
+        }
+      }catch(_){/* noop */}
+
+
+      state.data = await window.MyTVHubSharedModules.dataLoader.loadCatalogIndexFirst(["../data/catalog_index.json"]);
+      state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/calendar.json"]);
+
+      if (!state.data || typeof state.data !== "object") throw new Error("catalog_index.json not loaded");
+      if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar.json not loaded");
+
+      // Enforce contract shape (graceful defaults)
+      state.data.movies = Array.isArray(state.data.movies) ? state.data.movies : [];
+      state.data.shows  = Array.isArray(state.data.shows)  ? state.data.shows  : [];
+      state.data.errors = Array.isArray(state.data.errors) ? state.data.errors : [];
+      state.data.meta   = state.data.meta && typeof state.data.meta === "object" ? state.data.meta : {};
+      state.calendarData.days = state.calendarData.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
+      state.inputs = await window.MyTVHubSharedModules.dataLoader.loadInputsFirst(["../data/inputs.json", "../inputs.json"]);
+
+      // Detect local inputs editor API (for write-back)
+      state.apiAvailable = await checkApiAvailable();
+      state.inputsEditorServerAvailable = await checkInputsEditorServerAvailable();
+
+      // Prefer local watch_state (inputs/data), fallback to Trakt
+      setWatchStateSource();
+
+      // Normalize watchlist entries (kind + watch_status)
+      await migrateWatchlist();
+
+      populateFilters();
+
+      $("#footer").textContent = footerText();
+      const vb = $("#verBadge");
+      if (vb) vb.textContent = APP_VERSION;
+      setStatus(true, "Ready");
+      initCalendarMonth();
+      routeFromHash();
+    } catch (e){
+      console.error(e);
+      $("#footer").textContent = footerText();
+      setStatus(false, "Failed");
+      const msg = escHtml(e?.message || String(e));
+      const errPanel = $("#panel-dashboard") || $("#panel-calendar") || $(".panel");
+      if (errPanel) errPanel.innerHTML = `
+        <div style="padding:12px 14px;border-radius:16px;border:1px solid rgba(220,38,38,.35);background:rgba(220,38,38,.10);">
+          Failed to fetch data/config. Run a local server from repo root, then open: <code>http://127.0.0.1:8000/web/index.html</code><br/>
+          Details: <code>${msg}</code>
+        </div>
+      `;
+    }
+  }
+
+  function initCalendarMonth(){
+    const today = new Date();
+    state.calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  }
+
+  function getAvailableTabs(){
+    const tabs = new Set();
+    if ($("#panel-dashboard")) tabs.add("dashboard");
+    if ($("#panel-calendar")) tabs.add("calendar");
+    if ($("#panel-shows")) tabs.add("shows");
+    if ($("#panel-movies")) tabs.add("movies");
+    if ($("#panel-show")) tabs.add("show");
+    if ($("#panel-config")) tabs.add("config");
+    if ($("#panel-discover")) tabs.add("discover");
+    if ($("#panel-inputs-editor")) tabs.add("inputs-editor");
+    return tabs;
+  }
+
+  function setTab(tab){
+    const available = getAvailableTabs();
+    if (!available.has(tab)) return;
+    state.tab = tab;
+    for (const b of $$(".tab")){
+      const is = b.dataset.tab === tab;
+      b.classList.toggle("active", is);
+      b.setAttribute("aria-selected", is ? "true" : "false");
+    }
+
+    const panelCalendar = $("#panel-calendar");
+    const panelShows = $("#panel-shows");
+    const panelMovies = $("#panel-movies");
+    const panelShow = $("#panel-show");
+    const panelConfig = $("#panel-config");
+    const panelDashboard = $("#panel-dashboard");
+    const panelDiscover = $("#panel-discover");
+    const panelInputsEditor = $("#panel-inputs-editor");
+    if (panelCalendar) panelCalendar.classList.toggle("hidden", tab !== "calendar");
+    if (panelShows) panelShows.classList.toggle("hidden", tab !== "shows");
+    if (panelMovies) panelMovies.classList.toggle("hidden", tab !== "movies");
+    if (panelShow) panelShow.classList.toggle("hidden", tab !== "show");
+    if (panelConfig) panelConfig.classList.toggle("hidden", tab !== "config");
+    if (panelDashboard) panelDashboard.classList.toggle("hidden", tab !== "dashboard");
+    if (panelDiscover) panelDiscover.classList.toggle("hidden", tab !== "discover");
+    if (panelInputsEditor) panelInputsEditor.classList.toggle("hidden", tab !== "inputs-editor");
+
+    if (tab === "calendar") renderCalendar();
+    if (tab === "shows") renderShows();
+    if (tab === "movies") renderMovies();
+    if (tab === "dashboard") renderDashboard();
+    if (tab === "discover") renderDiscover();
+    if (tab === "config") renderConfig();
+    if (tab === "inputs-editor") renderInputsEditor();
+  }
+
+  function routeFromHash(){
+    const h = safeText(location.hash || "").trim();
+
+    if (h.startsWith("#show/")){
+      const id = parseInt(h.slice("#show/".length), 10);
+      if (!Number.isFinite(id)){
+        location.hash = state.lastNonShowHash || "#calendar";
+        return;
+      }
+      state.show.tmdb_id = id;
+      openShowModal(id);
+      const available = getAvailableTabs();
+      const fallback = state.lastNonShowHash || (available.has("dashboard") ? "#dashboard" : "#calendar");
+      const tab = fallback.startsWith("#") ? fallback.slice(1) : fallback;
+      if (getAvailableTabs().has(tab)){
+        setTab(tab);
+      }
+      return;
+    }
+
+    // non-show routes
+    if (getAvailableTabs().has(h.replace("#",""))){
+      state.lastNonShowHash = h;
+      setTab(h.slice(1));
+      return;
+    }
+
+    // default
+    const available = getAvailableTabs();
+    const fallback = available.has(PAGE) ? PAGE : (available.values().next().value || "calendar");
+    state.lastNonShowHash = `#${fallback}`;
+    setTab(fallback);
+  }
+
+  function gotoShow(tmdbId){
+    if (!Number.isFinite(tmdbId)) return;
+    const current = safeText(location.hash || "");
+    if (!current.startsWith("#show/")) state.lastNonShowHash = current || `#${PAGE}`;
+    openShowModal(tmdbId);
+  }
+
+  function getShowById(id){
+    return (state.data?.shows || []).find(s => Number(s?.id ?? s?.tmdb_id) === Number(id)) || null;
+  }
+
+  function getMovieById(id){
+    return (state.data?.movies || []).find(m => Number(m?.id ?? m?.tmdb_id) === Number(id)) || null;
+  }
+
+  function hasDirectWatchSources(item){
+    if (!item || typeof item !== "object") return false;
+    if (Array.isArray(item?.watch?.embed) && item.watch.embed.length > 0) return true;
+    return Number(item?.watch_embed_count || item?.embed_count || 0) > 0 || !!item?.has_watch_sources;
+  }
+
+  function detailUrlCandidates(id){
+    const safeId = Number(id) || 0;
+    return safeId ? [`../data/catalog_detail/${safeId}.json`] : [];
+  }
+
+  async function getCatalogDetailById(id){
+    const safeId = Number(id) || 0;
+    if (!safeId) return null;
+    return await window.MyTVHubSharedModules.dataLoader.loadCatalogDetailFirst(safeId, detailUrlCandidates(safeId));
+  }
+
+  async function getShowDetailById(id){
+    const detail = await getCatalogDetailById(id);
+    return detail && safeText(detail.type).toLowerCase() === "tv" ? detail : null;
+  }
+
+  async function getMovieDetailById(id){
+    const detail = await getCatalogDetailById(id);
+    return detail && safeText(detail.type).toLowerCase() === "movie" ? detail : null;
+  }
+
+  function buildCalendarEventsForMonth(monthDate){
+    const days = state.calendarData?.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
+    const eventsByDate = new Map();
+    for (const [dateKey, items] of Object.entries(days)){
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
+      eventsByDate.set(dateKey, Array.isArray(items) ? items : []);
+    }
+    return eventsByDate;
+  }
+
+  function updateCalendarStickyVars(){
+    const topBar = $(".top");
+    const calbar = $("#panel-calendar .dashhead");
+    if (topBar) document.documentElement.style.setProperty("--sticky-top", `${topBar.offsetHeight + 8}px`);
+    if (calbar) document.documentElement.style.setProperty("--calbar-h", `${calbar.offsetHeight}px`);
+  }
+
+  function updateTodayLabel(){
+    const el = $("#calTodayLabel");
+    if (!el) return;
+    const today = new Date();
+    el.textContent = today.toLocaleDateString("en-US", { weekday:"long", month:"long", day:"numeric", year:"numeric" });
+  }
+
+  function scrollToDayCell(dateKey){
+    const cell = document.querySelector(`[data-daycell="${CSS.escape(dateKey)}"]`);
+    if (!cell) return false;
+    updateCalendarStickyVars();
+    const rootStyle = getComputedStyle(document.documentElement);
+    const stickyTop = parseFloat(rootStyle.getPropertyValue("--sticky-top")) || 0;
+    const calbarH = parseFloat(rootStyle.getPropertyValue("--calbar-h")) || 0;
+    const offset = stickyTop + calbarH + 8;
+    const top = cell.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top, behavior:"smooth" });
+    cell.classList.add("today-jump");
+    setTimeout(() => cell.classList.remove("today-jump"), 1200);
+    return true;
+  }
+
+  function sortByTitle(a,b,desc=false){
+    const r = safeText(a?.title || a?.name).localeCompare(safeText(b?.title || b?.name));
+    return desc ? -r : r;
+  }
+
+  function getSeasonEpisodeNumbers(season){
+    const eps = Array.isArray(season?.episodes) ? season.episodes : [];
+    return eps.map(e => Number(e?.episode_number ?? e?.number ?? e?.ep)).filter(n => Number.isFinite(n));
+  }
+
+  function isShowWatched(show){
+    const ws = state.watchState;
+    const id = String(show?.tmdb_id ?? "");
+    if (!ws || !ws.shows || !id) return false;
+    const entry = ws.shows[id];
+    if (!entry || !entry.seasons || typeof entry.seasons !== "object") return false;
+    const seasons = Array.isArray(show?.seasons) ? show.seasons : [];
+    const seasonCounts = Array.isArray(show?.season_episode_counts) ? show.season_episode_counts : [];
+    const targets = seasons.length
+      ? seasons.map(season => ({
+          seasonNumber: Number(season?.season_number ?? season?.number),
+          episodeCount: getSeasonEpisodeNumbers(season).length,
+          episodeNums: getSeasonEpisodeNumbers(season)
+        }))
+      : seasonCounts.map(season => ({
+          seasonNumber: Number(season?.season_number),
+          episodeCount: Number(season?.episode_count ?? 0),
+          episodeNums: null
+        }));
+    if (!targets.length) return false;
+    for (const target of targets){
+      const sn = String(target.seasonNumber || "");
+      if (!sn) continue;
+      const watched = entry.seasons[sn];
+      if (!watched || !Array.isArray(watched.episodes)) return false;
+      if (Array.isArray(target.episodeNums) && target.episodeNums.length){
+        for (const epn of target.episodeNums){
+          if (!watched.episodes.includes(Number(epn))) return false;
+        }
+      } else if (Number(target.episodeCount) > 0 && watched.episodes.length < Number(target.episodeCount)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function isMovieWatched(m){
+    const ws = state.watchState;
+    const id = String(m?.tmdb_id ?? "");
+    return !!(ws && ws.movies && id && ws.movies[id]);
+  }
+
+  function collectUpcomingEvents(dayWindow=14, startOffsetDays=0){
+    const out = [];
+    const startBase = new Date();
+    const start = new Date(startBase.getFullYear(), startBase.getMonth(), startBase.getDate() + (Number(startOffsetDays) || 0));
+    const end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + dayWindow - 1);
+    const months = new Map();
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (cursor <= end){
+      const key = `${cursor.getFullYear()}-${pad2(cursor.getMonth()+1)}`;
+      if (!months.has(key)) months.set(key, buildCalendarEventsForMonth(cursor));
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    for (let d = new Date(start.getFullYear(), start.getMonth(), start.getDate()); d <= end; d.setDate(d.getDate()+1)){
+      const key = toDateKey(d);
+      for (const m of months.values()){
+        const list = m.get(key) || [];
+        for (const item of list){
+          out.push({ date: new Date(d), dateKey: key, item });
+        }
+      }
+    }
+    return out.sort((a,b)=>a.date.getTime()-b.date.getTime());
+  }
+
+  function collectPastEvents(dayWindow=7, offsetWeeks=0, includeToday=false){
+    const out = [];
+    const end = new Date();
+    end.setDate(end.getDate() - (includeToday ? 0 : 1) - (Math.max(0, Number(offsetWeeks) || 0) * 7));
+    const start = new Date(end.getFullYear(), end.getMonth(), end.getDate() - (dayWindow - 1));
+    const months = new Map();
+    const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+    while (cursor <= end){
+      const key = `${cursor.getFullYear()}-${pad2(cursor.getMonth()+1)}`;
+      if (!months.has(key)) months.set(key, buildCalendarEventsForMonth(cursor));
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    for (let d = new Date(start.getFullYear(), start.getMonth(), start.getDate()); d <= end; d.setDate(d.getDate()+1)){
+      const key = toDateKey(d);
+      for (const m of months.values()){
+        const list = m.get(key) || [];
+        for (const item of list){
+          out.push({ date: new Date(d), dateKey: key, item });
+        }
+      }
+    }
+    return out.sort((a,b)=>a.date.getTime()-b.date.getTime());
+  }
+
+  function formatDateShort(value){
+    const raw = safeText(value).trim();
+    if (!raw) return "";
+    const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (iso){
+      const y = Number(iso[1]);
+      const m = Number(iso[2]);
+      const d = Number(iso[3]);
+      if (Number.isFinite(y) && Number.isFinite(m) && Number.isFinite(d)){
+        return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:"UTC" });
+      }
+    }
+    const parsed = new Date(raw);
+    if (!Number.isFinite(parsed?.getTime?.())) return "";
+    return new Date(Date.UTC(parsed.getUTCFullYear(), parsed.getUTCMonth(), parsed.getUTCDate()))
+      .toLocaleDateString("en-US", { month:"short", day:"numeric", year:"numeric", timeZone:"UTC" });
+  }
+
+  function normalizeImageSrc(src){
+    const raw = safeText(src).trim();
+    if (!raw) return "";
+    if (raw.startsWith("/")) return withBasePath(raw);
+    if (raw.startsWith("./")) return withBasePath("/" + raw.replace(/^\.\/+/, ""));
+    if (raw.startsWith("assets/") || raw.startsWith("assets\\")) return withBasePath("/" + raw.replace(/^assets[\\/]/, "assets/"));
+    return raw;
+  }
+
+  function truncateText(text, max = 140){
+    const value = safeText(text).trim().replace(/\s+/g, " ");
+    if (!value || value.length <= max) return value;
+    return `${value.slice(0, Math.max(0, max - 1)).trimEnd()}...`;
+  }
+
+  function factChipHtml(text, tone = ""){
+    const value = safeText(text).trim();
+    if (!value) return "";
+    const toneClass = tone ? ` ${tone}` : "";
+    return `<span class="fact-chip${toneClass}">${escHtml(value)}</span>`;
+  }
+
+  function compactOverviewHtml(text, max = 150){
+    const value = truncateText(text, max);
+    return value ? `<div class="media-card__summary">${escHtml(value)}</div>` : "";
+  }
+
+  function buildMediaCardShell(kind, id, options = {}){
+    return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
+      kind,
+      id,
+      title: safeText(options.title || "(Untitled)"),
+      image: safeText(options.image || "").trim(),
+      badgeHtml: safeText(options.badgeHtml || "").trim(),
+      meta: safeText(options.meta || "").trim(),
+      submeta: safeText(options.submeta || "").trim(),
+      actionBarHtml: safeText(options.actionBar || ""),
+      overlay: true,
+      extraClass: options.eyeClass || ""
+    });
+  }
+
+  function buildDashboardCard(kind, id, options = {}){
+    const title = safeText(options.title || "(Untitled)");
+    const subtitle = safeText(options.subtitle || "").trim();
+    const tertiary = safeText(options.tertiary || "").trim();
+    const image = safeText(options.image || "").trim();
+    const pct = options.pct;
+    const actionBar = buildIconStripHtml(kind, id, pct, title);
+    const dataAttr = kind === "movie" ? `data-movie-open="${escHtml(id)}"` : `data-show-open="${escHtml(id)}"`;
+    const facts = Array.isArray(options.facts) ? options.facts.filter(Boolean).slice(0, 2).join("") : "";
+    return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
+      kind,
+      id,
+      title,
+      image,
+      badgeHtml: safeText(options.badgeHtml || "").trim(),
+      meta: tertiary || subtitle,
+      actionBarHtml: actionBar,
+      overlay: true,
+      extraClass: `dashcard dashcard--clean dashcard--poster${options.extraClass ? ` ${options.extraClass}` : ""}`
+    });
+  }
+
+  function buildSharedEpisodeCard(item, options = {}){
+    const showId = Number(item?.show_tmdb_id ?? item?.show_id ?? item?.tmdb_id) || 0;
+    const seasonNum = Number(item?.season_number ?? item?.season ?? 0) || 0;
+    const episodeNum = Number(item?.episode_number ?? item?.episode ?? 0) || 0;
+    const pct = Number.isFinite(item?.progress) ? Math.max(0, Math.min(100, item.progress)) : (Number.isFinite(options.pct) ? options.pct : null);
+    const available = isEpisodeAvailable(item);
+    const watched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
+    const hasSources = hasDirectWatchSources(item);
+    return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+      id: showId,
+      image: safeText(options.image || "").trim(),
+      eyebrow: safeText(options.eyebrow || item?.show_title || "Show"),
+      title: safeText(options.title || item?.episode_name || "Episode"),
+      badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+      meta: options.meta || episodeMetaLine(seasonNum, episodeNum, item?.runtime),
+      submeta: options.submeta || "",
+      overlay: options.overlay !== false,
+      actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+        title: safeText(options.title || item?.episode_name || "Episode"),
+        compact: true,
+        pct,
+        showWatchedAction: true,
+        watchedActive: watched,
+        watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
+        showStatusAction: true,
+        statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum },
+        popcornAttrs: hasSources ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
+        popcornKind: "episode",
+        available
+      }),
+      articleAttrs: options.articleAttrs || { tabindex: "0", "data-kind": "episode", "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum },
+      extraClass: options.extraClass || ""
+    });
+  }
+
+  function imageForCalendarItem(item){
+    const direct = normalizeImageSrc(item?.thumb || item?.still_local || "");
+    if (direct) return direct;
+    if (item?.kind === "episode"){
+      const show = (state.data?.shows || []).find(s => String(s?.tmdb_id ?? "") === String(item?.show_tmdb_id ?? item?.show_id ?? ""));
+      return normalizeImageSrc(
+        pickImage(show || item, "backdrop_local", "backdrop_path", "show_backdrop_local", "poster_local", "poster_path", "show_poster_local")
+      );
+    }
+    const movie = (state.data?.movies || []).find(m => String(m?.tmdb_id ?? "") === String(item?.tmdb_id ?? ""));
+    return normalizeImageSrc(pickImage(movie || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path", "thumb"));
+  }
+
+  function buildIconStripHtml(kind, id, pct, titleText){
+    const hasTarget = kind && id;
+    if (!hasTarget) return "";
+    const idStr = String(id || "");
+    const item = kind === "movie" ? getMovieById(id) : getShowById(id);
+    const watched = kind === "movie"
+      ? isMovieWatched(item || { tmdb_id: id })
+      : isShowWatched(item || { tmdb_id: id });
+    const watchedToggleHtml = kind === "movie"
+      ? watchToggleHtml("movie", { "data-watch-movie": idStr }, watched)
+      : watchToggleHtml("show", { "data-watch-show": idStr }, watched);
+    const popcornAttrs = kind === "movie" ? { "data-id": idStr } : null;
+    return buildActionBarHtml(kind, idStr, {
+      title: titleText || "",
+      pct,
+      favoriteActive: getWatchlistSet().has(idStr),
+      watchedActive: watched,
+      showWatchedAction: true,
+      showStatusAction: true,
+      watchedToggleHtml,
+      popcornAttrs,
+      popcornKind: kind === "movie" ? "movie" : kind,
+      available: kind === "movie" ? isMovieAvailable(item || {}) : isShowAvailable(item || {})
+    });
+  }
+
+  function renderShows(){
+    const q = state.search.shows.trim().toLowerCase();
+    const sort = state.sort.shows;
+    const f = state.filters.shows;
+    const scope = safeText(f.scope || "all");
+    const wantGenres = Array.isArray(f.genres) ? f.genres : [];
+    const wantYear = safeText(f.year);
+    const wantWatched = safeText(f.watched);
+    const wantWatchlist = safeText(f.watchlist);
+    const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
+    const wantAvailability = safeText(f.availability || "all");
+    const watchlistSet = getWatchlistSet();
+
+    const shows = (state.data?.shows || []).filter(s => {
+      const t = safeText(s?.title || s?.name).toLowerCase();
+      if (q && !t.includes(q)) return false;
+      if (wantGenres.length){
+        const g = Array.isArray(s?.genres) ? s.genres.map(x => x?.name).filter(Boolean) : [];
+        if (!wantGenres.some(w => g.includes(w))) return false;
+      }
+      if (wantYear){
+        const y = yearFromDate(s?.first_air_date);
+        if (y !== wantYear) return false;
+      }
+      const id = String(s?.tmdb_id ?? "");
+      if (wantWatchlist === "watchlist"){
+        if (!id || !watchlistSet.has(id)) return false;
+      }
+      if (wantWatchStatus.length){
+        const status = safeText(getLocalStatusValue("show", id)).toLowerCase();
+        if (status){
+          if (!wantWatchStatus.includes(status)) return false;
+        } else if (wantWatchlist === "watchlist"){
+          return false;
+        }
+      }
+      const statusText = safeText(s?.status).toLowerCase();
+      const firstAirRaw = safeText(s?.first_air_date);
+      const firstAirDate = firstAirRaw ? new Date(firstAirRaw) : null;
+      const isUpcoming = firstAirDate instanceof Date && !Number.isNaN(firstAirDate.valueOf()) && firstAirDate > new Date();
+      if (scope === "upcoming" && !isUpcoming) return false;
+      if (scope === "returning" && statusText !== "returning series") return false;
+      if (scope === "ended" && statusText !== "ended") return false;
+      if (wantAvailability !== "all"){
+        const status = availabilityStatusOf(s);
+        if (wantAvailability === "available" && status !== "available") return false;
+        if (wantAvailability === "unreleased" && status !== "not_yet_released") return false;
+      }
+      if (wantWatched === "watched" && !isShowWatched(s)) return false;
+      if (wantWatched === "unwatched" && isShowWatched(s)) return false;
+      const eye = applyEyeFilter("shows", s);
+      if (eye.hide) return false;
+      return true;
+    });
+
+    if (sort === "title") shows.sort((a,b)=>sortByTitle(a,b,false));
+    if (sort === "title_desc") shows.sort((a,b)=>sortByTitle(a,b,true));
+    if (sort === "popularity") shows.sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0));
+    if (sort === "vote") shows.sort((a,b)=>(Number(b?.vote_average)||0)-(Number(a?.vote_average)||0));
+    if (sort === "release") shows.sort((a,b)=>safeText(b?.first_air_date).localeCompare(safeText(a?.first_air_date)));
+
+    $("#showsGrid").innerHTML = shows.map(s => showCardHtml(s, applyEyeFilter("shows", s))).join("");
+    const showsSummary = $("#showsSummary");
+    if (showsSummary) showsSummary.textContent = `${shows.length} results`;
+    wireActionMenus($("#showsGrid"));
+    wireIconStripActions($("#showsGrid"), renderShows);
+
+    $$("[data-show-open]", $("#showsGrid")).forEach(el => {
+      el.addEventListener("click", () => {
+        const id = parseInt(el.getAttribute("data-show-open"), 10);
+        gotoShow(id);
+      });
+    });
+    $$("[data-watch-show]", $("#showsGrid")).forEach(el => {
+      el.addEventListener("change", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-watch-show"), 10);
+        if (!Number.isFinite(id)) return;
+        const on = el.checked;
+        const show = await getShowDetailById(id);
+        if (!show) return;
+        setShowWatched(id, show.seasons || [], on);
+        await saveInputs();
+        renderShows();
+      });
+    });
+    wireActionMenus($("#showsGrid"));
+    wireWatchSourceButtons($("#showsGrid"));
+    $$("[data-action='toggle-watched'][data-kind='show']", $("#showsGrid")).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const show = await getShowDetailById(id);
+        if (!show) return;
+        const on = !isShowWatched(show);
+        setShowWatched(id, show.seasons || [], on);
+        await saveInputs();
+        renderShows();
+      });
+    });
+  }
+
+  function renderMovies(){
+    const q = state.search.movies.trim().toLowerCase();
+    const sort = state.sort.movies;
+    const f = state.filters.movies;
+    const scope = safeText(f.scope || "all");
+    const wantGenres = Array.isArray(f.genres) ? f.genres : [];
+    const wantYear = safeText(f.year);
+    const wantWatched = safeText(f.watched);
+    const wantWatchlist = safeText(f.watchlist);
+    const wantWatchStatus = Array.isArray(f.watch_status) ? f.watch_status : [];
+    const wantAvailability = safeText(f.availability || "all");
+    const wantCollection = safeText(f.collection).toLowerCase();
+    const watchlistSet = getWatchlistSet();
+
+    const movies = (state.data?.movies || []).filter(m => {
+      const t = safeText(m?.title).toLowerCase();
+      if (q && !t.includes(q)) return false;
+      if (wantGenres.length){
+        const g = Array.isArray(m?.genres) ? m.genres.map(x => x?.name).filter(Boolean) : [];
+        if (!wantGenres.some(w => g.includes(w))) return false;
+      }
+      if (wantYear){
+        const y = yearFromDate(m?.release_date);
+        if (y !== wantYear) return false;
+      }
+      if (wantCollection){
+        const cn = safeText(m?.collection?.name).toLowerCase();
+        if (!cn.includes(wantCollection)) return false;
+      }
+      const id = String(m?.tmdb_id ?? "");
+      if (wantWatchlist === "watchlist"){
+        if (!id || !watchlistSet.has(id)) return false;
+      }
+      if (wantWatchStatus.length){
+        const status = safeText(getLocalStatusValue("movie", id)).toLowerCase();
+        if (status){
+          if (!wantWatchStatus.includes(status)) return false;
+        } else if (wantWatchlist === "watchlist"){
+          return false;
+        }
+      }
+      const releaseRaw = safeText(m?.release_date);
+      const releaseDate = releaseRaw ? new Date(releaseRaw) : null;
+      const isUpcoming = releaseDate instanceof Date && !Number.isNaN(releaseDate.valueOf()) && releaseDate > new Date();
+      if (scope === "upcoming" && !isUpcoming) return false;
+      if (scope === "released" && isUpcoming) return false;
+      if (wantAvailability !== "all"){
+        const status = availabilityStatusOf(m);
+        if (wantAvailability === "available" && status !== "available") return false;
+        if (wantAvailability === "unreleased" && status !== "not_yet_released") return false;
+      }
+    if (wantWatched === "watched" && !isMovieWatched(m)) return false;
+    if (wantWatched === "unwatched" && isMovieWatched(m)) return false;
+    const eye = applyEyeFilter("movies", m);
+    if (eye.hide) return false;
+      return true;
+    });
+
+    if (sort === "title") movies.sort((a,b)=>safeText(a?.title).localeCompare(safeText(b?.title)));
+    if (sort === "title_desc") movies.sort((a,b)=>safeText(b?.title).localeCompare(safeText(a?.title)));
+    if (sort === "popularity") movies.sort((a,b)=>(Number(b?.popularity)||0)-(Number(a?.popularity)||0));
+    if (sort === "vote") movies.sort((a,b)=>(Number(b?.vote_average)||0)-(Number(a?.vote_average)||0));
+    if (sort === "release") movies.sort((a,b)=>safeText(b?.release_date).localeCompare(safeText(a?.release_date)));
+
+    $("#moviesGrid").innerHTML = movies.map(m => movieCardHtml(m, applyEyeFilter("movies", m))).join("");
+    const moviesSummary = $("#moviesSummary");
+    if (moviesSummary) moviesSummary.textContent = `${movies.length} results`;
+    wireActionMenus($("#moviesGrid"));
+    wireIconStripActions($("#moviesGrid"), renderMovies);
+
+    $$("[data-movie-open]", $("#moviesGrid")).forEach(el => {
+      el.addEventListener("click", () => {
+        const id = parseInt(el.getAttribute("data-movie-open"), 10);
+        openMovieModal(id);
+      });
+    });
+    $$("[data-watch-movie]", $("#moviesGrid")).forEach(el => {
+      el.addEventListener("click", (e) => e.stopPropagation());
+      el.addEventListener("mousedown", (e) => e.stopPropagation());
+      el.addEventListener("touchstart", (e) => e.stopPropagation(), { passive: true });
+      el.addEventListener("change", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(el.getAttribute("data-watch-movie"), 10);
+        if (!Number.isFinite(id)) return;
+        setMovieWatched(id, el.checked);
+        await saveInputs();
+        renderMovies();
+      });
+    });
+    wireActionMenus($("#moviesGrid"));
+    wireWatchSourceButtons($("#moviesGrid"));
+    $$("[data-action='toggle-watched'][data-kind='movie']", $("#moviesGrid")).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const on = !isMovieWatched(getMovieById(id));
+        setMovieWatched(id, on);
+        await saveInputs();
+        renderMovies();
+      });
+    });
+  }
+
+  function renderWatchlist(){
+    const list = ensureWatchlist();
+    const q = state.filters.watchlist.search.trim().toLowerCase();
+    const statusFilter = safeText(state.filters.watchlist.watch_status);
+    const kindFilter = safeText(state.filters.watchlist.media_kind);
+    const shows = Array.isArray(state.data?.shows) ? state.data.shows : [];
+    const movies = Array.isArray(state.data?.movies) ? state.data.movies : [];
+    const showMap = new Map(shows.map(s => [String(s?.tmdb_id ?? ""), s]));
+    const movieMap = new Map(movies.map(m => [String(m?.tmdb_id ?? ""), m]));
+
+    const items = list.map(item => {
+      const id = String(item?.tmdb_id ?? "");
+      const show = id ? showMap.get(id) : null;
+      const movie = id ? movieMap.get(id) : null;
+      const kind = safeText(item?.media_kind || (show ? "show" : (movie ? "movie" : "unknown"))).toLowerCase() || "unknown";
+      const title = safeText(item?.title || show?.title || show?.name || movie?.title || "Untitled");
+      const status = safeText(item?.watch_status || "watchlist").toLowerCase();
+      return { item, id, show, movie, kind, title, status };
+    }).filter(entry => {
+      if (q && !entry.title.toLowerCase().includes(q)) return false;
+      if (statusFilter && statusFilter !== "all" && entry.status !== statusFilter) return false;
+      if (kindFilter && kindFilter !== "all" && entry.kind !== kindFilter) return false;
+      return true;
+    });
+
+    const html = items.map(entry => {
+      const poster = entry.show ? pickImage(entry.show, "poster_local", "poster_path")
+        : (entry.movie ? pickImage(entry.movie, "poster_local", "poster_path") : "");
+      const watched = entry.show ? isShowWatched(entry.show) : (entry.movie ? isMovieWatched(entry.movie) : false);
+      const flag = state.watchState ? watchFlagHtml(watched) : "";
+      const statusOptions = WATCHLIST_STATUS_OPTIONS.map(o => {
+        const sel = o.value === entry.status ? "selected" : "";
+        return `<option value="${escHtml(o.value)}" ${sel}>${escHtml(o.label)}</option>`;
+      }).join("");
+      const openBtn = entry.kind === "show"
+        ? `<button class="btn" type="button" data-watchlist-open="show" data-id="${escHtml(entry.id)}">Open</button>`
+        : (entry.kind === "movie"
+          ? `<button class="btn" type="button" data-watchlist-open="movie" data-id="${escHtml(entry.id)}">Open</button>`
+          : "");
+      return `
+        <div class="watchlistcard" data-watchlist-id="${escHtml(entry.id)}">
+          <div class="watchlistthumb">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ""}
+          </div>
+          <div class="watchlistbody">
+            <div class="watchlisttitle">${escHtml(entry.title)}</div>
+            <div class="watchlistmeta">${escHtml(entry.kind || "unknown")}</div>
+            ${flag}
+            <select class="input" data-watchlist-status="${escHtml(entry.id)}">
+              ${statusOptions}
+            </select>
+            <div class="watchlistactions">
+              ${openBtn}
+              <button class="btn" type="button" data-watchlist-remove="${escHtml(entry.id)}">Remove</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    $("#watchlistGrid").innerHTML = html || `<div class="muted" style="padding:10px;">No watchlist items match your filters.</div>`;
+
+    $$("[data-watchlist-status]", $("#watchlistGrid")).forEach(sel => {
+      sel.addEventListener("change", async () => {
+        const id = sel.getAttribute("data-watchlist-status");
+        const card = sel.closest("[data-watchlist-id]");
+        const title = card ? safeText($(".watchlisttitle", card)?.textContent || "") : "";
+        const kind = card ? safeText($(".watchlistmeta", card)?.textContent || "") : "";
+        setWatchlistStatus(id, title, kind, sel.value || "watchlist");
+        await saveInputs();
+        renderWatchlist();
+      });
+    });
+
+    $$("[data-watchlist-remove]", $("#watchlistGrid")).forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const id = btn.getAttribute("data-watchlist-remove");
+        removeWatchlistItem(id);
+        await saveInputs();
+        renderWatchlist();
+      });
+    });
+
+    $$("[data-watchlist-open]", $("#watchlistGrid")).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = parseInt(btn.getAttribute("data-id") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        const kind = btn.getAttribute("data-watchlist-open");
+        if (kind === "show") gotoShow(id);
+        if (kind === "movie") openMovieModal(id);
+      });
+    });
+  }
+
+  async function renderConfig(){
+    const root = $("#configRoot");
+    if (!root) return;
+    try{
+      if (window.MyTVHubConfig?.render_config_view){
+        await window.MyTVHubConfig.load_config_once();
+        window.MyTVHubConfig.render_config_view(root, state.cfg || window.MyTVHubConfig.get_config(), {});
+        return;
+      }
+    }catch(error){
+      root.innerHTML = `<div class="inline-error">Failed to render config view: ${escHtml(error?.message || String(error))}</div>`;
+      return;
+    }
+
+    const cfg = state.cfg || {};
+    root.innerHTML = `
+      <div class="muted" style="margin-bottom:10px;">Shared config renderer unavailable. Showing raw config summary.</div>
+      <pre style="white-space:pre-wrap;overflow:auto;border:1px solid rgba(255,255,255,0.10);border-radius:12px;padding:12px;background:rgba(0,0,0,0.18);">${escHtml(JSON.stringify(cfg, null, 2))}</pre>
+    `;
+  }
+
+  function renderInputsEditor(){
+    const frame = $("#inputsEditorFrame");
+    const meta = $("#inputsEditorPanelMeta");
+    const openBtn = $("#inputsEditorOpen");
+    const localServerUrl = `http://127.0.0.1:8787/web/inputs_editor.html`;
+    if (!frame || !meta || !openBtn) return;
+
+    const frameDoc = `
+      <!doctype html>
+      <html lang="en">
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style>
+          body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#0b0f14;color:#e8eef7;font:16px/1.5 "Segoe UI",sans-serif}
+          .card{max-width:760px;padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
+          h3{margin:0 0 12px;font-size:28px;line-height:1.1}
+          p{margin:0 0 12px;color:#c3cddd}
+          code{padding:2px 6px;border-radius:8px;background:rgba(255,255,255,.08)}
+        </style>
+      </head>
+      <body>
+        <div class="card">
+          <h3>Local editor server not running</h3>
+          <p>The Inputs Editor only works on your own PC through the dedicated local server at <code>127.0.0.1:8787</code>.</p>
+          <p>Start it with <code>tools\\start_inputs_editor.cmd</code>, then reopen this panel or use the button above.</p>
+        </div>
+      </body>
+      </html>
+    `;
+
+    if (state.inputsEditorServerAvailable){
+      frame.removeAttribute("srcdoc");
+      frame.src = localServerUrl;
+      openBtn.href = localServerUrl;
+      openBtn.textContent = "Open local Inputs Editor";
+      openBtn.title = "Open the local Inputs Editor in a new tab";
+      openBtn.tabIndex = 0;
+      openBtn.removeAttribute("aria-disabled");
+      openBtn.classList.remove("disabled");
+      openBtn.onclick = null;
+      meta.textContent = "Inputs Editor server is running on this PC. The live editor is embedded below.";
+      return;
+    }
+
+    frame.removeAttribute("src");
+    frame.srcdoc = frameDoc;
+    openBtn.removeAttribute("href");
+    openBtn.textContent = "How To Start Editor";
+    openBtn.title = "Start tools/start_inputs_editor.cmd from the repo first";
+    openBtn.tabIndex = 0;
+    openBtn.setAttribute("aria-disabled", "false");
+    openBtn.classList.remove("disabled");
+    openBtn.onclick = (event) => {
+      event.preventDefault();
+      openInputsEditorHelp();
+    };
+    meta.textContent = "Inputs Editor is local-only. Start tools/start_inputs_editor.cmd first, then open http://127.0.0.1:8787/web/inputs_editor.html.";
+  }
+
+  function wireMoviePopup(movieId){
+    const host = $("#modalBody");
+    if (!host) return;
+    wirePopupDpad(host);
+    const watchedBtn = $("[data-action='toggle-watched'][data-kind='movie']", host);
+    if (watchedBtn){
+      watchedBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        setMovieWatched(movieId, !isMovieWatched(getMovieById(movieId)));
+        await saveInputs();
+        openMovieModal(movieId);
+      });
+    }
+    const favBtn = $("[data-action='toggle-want'][data-kind='movie']", host);
+    if (favBtn){
+      favBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const movie = getMovieById(movieId);
+        await toggleWantForKind("movie", movieId, safeText(movie?.title || "Movie"));
+        await saveInputs();
+        openMovieModal(movieId);
+      });
+    }
+    wireActionMenus(host);
+    wireWatchSourceButtons(host);
+  }
+
+  async function openShowModal(showId){
+    const showIndex = getShowById(showId);
+    if (!showIndex){
+      openModal("Show", `<div>Show not found: ${escHtml(showId)}</div>`);
+      return;
+    }
+    state.show.tmdb_id = showId;
+    openModal("Show", `<div class="muted">Loading show details…</div>`);
+    const show = await getShowDetailById(showId);
+    if (!show){
+      $("#modalBody").innerHTML = `<div class="inline-error">Show detail not found: ${escHtml(showId)}</div>`;
+      return;
+    }
+    $("#modalBody").innerHTML = buildShowPopupHtml(show);
+    wireShowPopup(showId, show);
+  }
+
+  function wireShowPopup(showId, show){
+    const host = $("#modalBody");
+    if (!host || !show) return;
+
+    $$("[data-season-pick]", host).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const v = Number(btn.getAttribute("data-season-pick") || "0");
+        if (!Number.isFinite(v)) return;
+        state.show.selectedSeasonNumber = v;
+        $("#modalBody").innerHTML = buildShowPopupHtml(show);
+        wireShowPopup(showId, show);
+      });
+    });
+
+    $$("[data-watch-show]", host).forEach(btn => {
+      btn.addEventListener("change", async () => {
+        const id = parseInt(btn.getAttribute("data-watch-show") || "0", 10);
+        if (!Number.isFinite(id)) return;
+        setShowWatched(id, show.seasons || [], !!btn.checked);
+        await saveInputs();
+        await openShowModal(id);
+      });
+    });
+    $$("[data-action='toggle-want'][data-kind='show']", host).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        await toggleWantForKind("show", showId, safeText(show?.title || show?.name || "Show"));
+        await saveInputs();
+        await openShowModal(showId);
+      });
+    });
+    $$("[data-action='toggle-watched'][data-kind='show']", host).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        setShowWatched(showId, show.seasons || [], !isShowWatched(show));
+        await saveInputs();
+        await openShowModal(showId);
+      });
+    });
+    $$("[data-watch-season]", host).forEach(btn => {
+      btn.addEventListener("change", async () => {
+        const id = parseInt(btn.getAttribute("data-show") || "0", 10);
+        const seasonNum = Number(btn.getAttribute("data-season") || "0");
+        if (!Number.isFinite(id) || !Number.isFinite(seasonNum)) return;
+        const season = (show.seasons || []).find(s => Number(s?.season_number ?? s?.number) === Number(seasonNum)) || null;
+        const eps = (season?.episodes || []).map(e => Number(e?.episode_number ?? e?.number)).filter(n => Number.isFinite(n));
+        setSeasonWatched(id, seasonNum, eps, !!btn.checked);
+        await saveInputs();
+        await openShowModal(id);
+      });
+    });
+
+    $$("[data-watch-episode]", host).forEach(btn => {
+      btn.addEventListener("change", async () => {
+        const id = parseInt(btn.getAttribute("data-show") || "0", 10);
+        const seasonNum = Number(btn.getAttribute("data-season") || "0");
+        const episodeNum = Number(btn.getAttribute("data-watch-episode") || btn.getAttribute("data-episode") || "0");
+        if (!Number.isFinite(id) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
+        setEpisodeWatched(id, seasonNum, episodeNum, !!btn.checked);
+        await saveInputs();
+        await openShowModal(id);
+      });
+    });
+    $$("[data-action='toggle-watched'][data-kind='episode'][data-watch-episode]", host).forEach(btn => {
+      btn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const id = parseInt(btn.getAttribute("data-show") || "0", 10);
+        const seasonNum = Number(btn.getAttribute("data-season") || "0");
+        const episodeNum = Number(btn.getAttribute("data-watch-episode") || btn.getAttribute("data-episode") || "0");
+        if (!Number.isFinite(id) || !Number.isFinite(seasonNum) || !Number.isFinite(episodeNum)) return;
+        setEpisodeWatched(id, seasonNum, episodeNum, !isEpisodeWatched(id, seasonNum, episodeNum));
+        await saveInputs();
+        await openShowModal(id);
+      });
+    });
+
+    wireActionMenus(host);
+    wireWatchSourceButtons(host);
+
+    const bindCarousel = (trackSelector, attrName) => {
+      const track = $(trackSelector, host);
+      const buttons = $$(`[${attrName}]`, host);
+      if (!track || !buttons.length) return;
+      const scrollBy = (multiplier = 1) => Math.max(220, Math.floor(track.clientWidth * 0.72 * multiplier));
+      buttons.forEach(btn => {
+        btn.addEventListener("click", () => {
+          const action = safeText(btn.getAttribute(attrName));
+          if (action === "prev") track.scrollBy({ left: -scrollBy(1), behavior: "smooth" });
+          if (action === "next") track.scrollBy({ left: scrollBy(1), behavior: "smooth" });
+          if (action === "jump-prev") track.scrollBy({ left: -scrollBy(2), behavior: "smooth" });
+          if (action === "jump-next") track.scrollBy({ left: scrollBy(2), behavior: "smooth" });
+        });
+      });
+    };
+
+    bindCarousel("[data-season-track]", "data-season-nav");
+    bindCarousel(".carousel", "data-ep-nav");
+  }
+
+  function renderCalendar(){
+    const month = state.calendarMonth;
+    $("#calMonth").textContent = month.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    updateTodayLabel();
+
+    const today = toDateKey(new Date());
+    const firstDow = new Date(month.getFullYear(), month.getMonth(), 1).getDay();
+    const startOffset = (firstDow + 6) % 7;
+    const gridStart = new Date(month.getFullYear(), month.getMonth(), 1 - startOffset);
+    const eventsByDate = buildCalendarEventsForMonth(month);
+    const days = [];
+    for (let i = 0; i < 42; i++){
+      const dt = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
+      days.push({ dt, key: toDateKey(dt), inMonth: dt.getMonth() === month.getMonth(), num: dt.getDate() });
+    }
+    const weeks = Array.from({ length: 6 }, (_, idx) => days.slice(idx * 7, idx * 7 + 7));
+
+    const renderItem = (item, dateKey, hidden = false) => {
+      if (item.kind === "episode"){
+        const showId = Number(item.show_tmdb_id) || 0;
+        const seasonNum = Number(item.season_number) || 0;
+        const episodeNum = Number(item.episode_number) || 0;
+        return buildSharedEpisodeCard(item, {
+          image: imageForCalendarItem(item),
+          eyebrow: item.show_title || "Show",
+          title: item.episode_name || "Episode",
+          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
+          submeta: "",
+          overlay: true,
+          articleAttrs: { "data-day": dateKey, "data-kind": "episode", "data-show": showId, tabindex: "0" },
+          extraClass: `calendar-item calendar-item--episode${hidden ? " hidden" : ""}`
+        });
+      }
+
+      const movieId = Number(item.tmdb_id) || 0;
+      const pct = Number.isFinite(item.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
+      const hasSources = hasDirectWatchSources(item);
+      const watched = state.watchState ? isMovieWatched({ tmdb_id: movieId }) : false;
+      return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
+        kind: "movie",
+        id: movieId,
+        image: imageForCalendarItem(item),
+        title: item.title || "Movie",
+        badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+        meta: "Movie",
+        submeta: "Release day",
+        overlay: true,
+        actionBarHtml: buildActionBarHtml("movie", movieId, {
+          title: item.title || "Movie",
+          compact: true,
+          pct,
+          favoriteActive: getWatchlistSet().has(String(movieId)),
+          showWatchedAction: true,
+          watchedActive: watched,
+          showStatusAction: true,
+          popcornAttrs: hasSources ? { "data-id": movieId } : null,
+          popcornKind: "movie",
+          available: isDateAvailable(item.release_date || dateKey)
+        }),
+        articleAttrs: { "data-day": dateKey, "data-kind": "movie", "data-movie": movieId, tabindex: "0" },
+        extraClass: `calendar-item calendar-item--movie${hidden ? " hidden" : ""}`
+      });
+    };
+
+    const renderBandDay = ({ dt, key, inMonth }) => `
+      <div class="calendar-week-band__day${inMonth ? "" : " is-other-month"}${key === today ? " is-today" : ""}">
+        <span class="calendar-week-band__weekday">${escHtml(dt.toLocaleDateString(undefined, { weekday: "short" }))}</span>
+        <span class="calendar-week-band__date">${escHtml(dt.toLocaleDateString(undefined, { month: "short", day: "numeric" }))}</span>
+      </div>
+    `;
+    const renderDayCell = ({ dt, key, inMonth, num }) => {
+      const items = eventsByDate.get(key) || [];
+      const visible = items.slice(0, 4).map(item => renderItem(item, key)).join("");
+      const hidden = items.slice(4).map(item => renderItem(item, key, true)).join("");
+      return `
+        <section class="calendar-day${inMonth ? "" : " calendar-day--other-month"}${key === today ? " calendar-day--today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-day--weekend" : ""}" data-daycell="${key}">
+          <div class="calendar-day__head">
+            <div class="calendar-day__date">${num}</div>
+          </div>
+          <div class="calendar-day__items">
+            ${visible || `<div class="calendar-day__empty">${inMonth ? "No releases" : ""}</div>`}
+            ${hidden}
+            ${items.length > 4 ? `<button class="calendar-item__more" type="button" data-calendar-more="${key}" data-count="${items.length - 4}" data-open="0">+${items.length - 4} more</button>` : ""}
+          </div>
+        </section>
+      `;
+    };
+    $("#calendar").innerHTML = `
+      <div class="calendar-month-grid">
+        ${weeks.map((week, weekIndex) => `
+          <div class="calendar-week-band" data-calendar-week="${weekIndex}">
+            ${week.map(renderBandDay).join("")}
+          </div>
+          ${week.map(renderDayCell).join("")}
+        `).join("")}
+      </div>
+    `;
+    requestAnimationFrame(() => updateCalendarStickyVars());
+    $$(".calendar-item[data-kind='episode']").forEach(card => card.addEventListener("click", (e) => {
+      if (e.target.closest(".actionbar")) return;
+      gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
+    }));
+    $$(".calendar-item[data-kind='movie']").forEach(card => card.addEventListener("click", (e) => {
+      if (e.target.closest(".actionbar")) return;
+      openMovieModal(parseInt(card.getAttribute("data-movie") || "0", 10));
+    }));
+    $$("[data-calendar-more]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = safeText(btn.getAttribute("data-calendar-more"));
+        const open = btn.getAttribute("data-open") === "1";
+        $$(`.calendar-item.hidden[data-day='${key}']`).forEach(el => el.classList.toggle("hidden", open));
+        btn.setAttribute("data-open", open ? "0" : "1");
+        btn.textContent = open ? `+${safeText(btn.getAttribute("data-count"))} more` : "Show less";
+      });
+    });
+    wireActionMenus($("#calendar"));
+    wireIconStripActions($("#calendar"), renderCalendar);
+    wireWatchSourceButtons($("#calendar"));
+  }
+
+  function renderDashboard(){
+    const scheduleCols = $("#dashScheduleCols");
+    const lastWeekCols = $("#dashLastWeekCols");
+    const watchlistEl = $("#dashWatchlist");
+    const showRecs = $("#dashShowRecs");
+    const movieRecs = $("#dashMovieRecs");
+    if (!scheduleCols || !lastWeekCols || !watchlistEl || !showRecs || !movieRecs) return;
+
+    const showMap = new Map((state.data?.shows || []).map(s => [String(s?.tmdb_id ?? ""), s]));
+    const movieMap = new Map((state.data?.movies || []).map(m => [String(m?.tmdb_id ?? ""), m]));
+    const events = collectUpcomingEvents(7, 1);
+    const lastWeekOffset = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
+    const pastEvents = collectPastEvents(7, lastWeekOffset, true);
+
+    const percentForItem = (item) => {
+      let pct = progressPercent(item);
+      if (pct == null){
+        const raw = Number(item?.vote_average ?? item?.rating ?? 0);
+        if (Number.isFinite(raw) && raw > 0) pct = Math.round(raw * 10);
+      }
+      return pct;
+    };
+    const infoTarget = (item) => item?.kind === "movie"
+      ? { kind: "movie", id: item?.tmdb_id }
+      : { kind: "show", id: item?.show_tmdb_id || item?.tmdb_id };
+    const imageForItem = (item) => {
+      if (item?.thumb) return normalizeImageSrc(item.thumb);
+      if (item?.kind === "episode"){
+        const show = showMap.get(String(item?.show_tmdb_id ?? ""));
+        return normalizeImageSrc(pickImage(show, "backdrop_local", "backdrop_path", "poster_local", "poster_path"));
+      }
+      const media = item?.kind === "movie" ? movieMap.get(String(item?.tmdb_id ?? "")) : showMap.get(String(item?.tmdb_id ?? ""));
+      return normalizeImageSrc(pickImage(media || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path"));
+    };
+    const eventCard = (item, tertiary = "") => {
+      if (item.kind === "episode"){
+        const showId = Number(item.show_tmdb_id) || 0;
+        const seasonNum = Number(item.season_number) || 0;
+        const episodeNum = Number(item.episode_number) || 0;
+        return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+          image: imageForItem(item),
+          eyebrow: safeText(item.show_title || "Show"),
+          title: safeText(item.episode_name || "Episode"),
+          badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
+          submeta: tertiary,
+          overlay: true,
+          actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+            title: safeText(item.episode_name || "Episode"),
+            compact: true,
+            pct: percentForItem(item),
+            watchedActive: state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false,
+            showWatchedAction: true,
+            showStatusAction: true,
+            watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
+            popcornAttrs: hasDirectWatchSources(item) ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
+            popcornKind: "episode",
+            available: isEpisodeAvailable(item),
+            statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
+          }),
+          articleAttrs: { "data-show": showId, tabindex: "0" },
+          extraClass: "dashcard dashcard--clean"
+        });
+      }
+      const target = infoTarget(item);
+      return buildDashboardCard(target.kind, target.id, {
+        title: safeText(item.title || "Movie"),
+        subtitle: "Movie release",
+        tertiary,
+        image: imageForItem(item),
+        pct: percentForItem(item),
+        facts: [
+          factChipHtml("Movie"),
+          item.network_name ? factChipHtml(item.network_name) : ""
+        ]
+      });
+    };
+
+    const buildDateColumns = (entries, { descending = false } = {}) => {
+      const dateKeys = Array.from(new Set(entries.map(e => e.dateKey)));
+      const ordered = descending ? dateKeys.sort((a, b) => b.localeCompare(a)) : dateKeys.sort((a, b) => a.localeCompare(b));
+      return ordered.slice(0, 7).map(dateKey => `
+        <div class="dashcol dashcol--clean">
+          <div class="dashcolhead">${escHtml(formatDateShort(dateKey))}</div>
+          <div class="dashcolstack">
+            ${entries.filter(e => e.dateKey === dateKey).slice(0, 3).map(({ item }) => eventCard(item)).join("") || `<div class="muted">No items</div>`}
+          </div>
+        </div>
+      `).join("");
+    };
+    scheduleCols.innerHTML = buildDateColumns(events) || `<div class="muted">No upcoming schedule.</div>`;
+    const lastWeekMeta = $("#dashLastWeekMeta");
+    if (lastWeekMeta) {
+      if (pastEvents.length) {
+        const sortedPast = pastEvents.slice().sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+        const first = sortedPast[0]?.dateKey ? formatDateShort(sortedPast[0].dateKey) : "";
+        const last = sortedPast[sortedPast.length - 1]?.dateKey ? formatDateShort(sortedPast[sortedPast.length - 1].dateKey) : "";
+        lastWeekMeta.textContent = first && last ? `${first} - ${last}` : "Recently released";
+      } else {
+        lastWeekMeta.textContent = "No recent items";
+      }
+    }
+    lastWeekCols.innerHTML = buildDateColumns(pastEvents, { descending: true }) || `<div class="muted">No recent schedule.</div>`;
+
+    const watchlist = ensureWatchlist().slice(0, 8);
+    const watchMeta = $("#dashWatchMeta");
+    if (watchMeta) watchMeta.textContent = watchlist.length ? `${watchlist.length} tracked items` : "No items";
+    watchlistEl.innerHTML = watchlist.length ? watchlist.map(entry => {
+      const id = String(entry?.tmdb_id ?? "");
+      const show = showMap.get(id);
+      const movie = movieMap.get(id);
+      const media = show || movie || entry;
+      return buildDashboardCard(show ? "show" : "movie", media?.tmdb_id, {
+        title: safeText(entry?.title || show?.title || show?.name || movie?.title || "Untitled"),
+        subtitle: safeText(entry?.watch_status || "watchlist"),
+        image: normalizeImageSrc(pickImage(media, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+        badgeHtml: availabilityBadgeHtml(media, { compact: true }),
+        pct: percentForItem(media),
+        facts: [factChipHtml(show ? "Show" : "Movie"), factChipHtml("Watchlist", "tone-accent")]
+      });
+    }).join("") : `<div class="muted">No watchlist items.</div>`;
+
+    const shows = (state.data?.shows || []).slice().sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0)).slice(0, 8);
+    showRecs.innerHTML = shows.length ? shows.map(show => buildDashboardCard("show", show?.tmdb_id, {
+      title: safeText(show?.title || show?.name || "Show"),
+      subtitle: truncateText(show?.overview || "", 84),
+      tertiary: show?.first_air_date ? formatDateShort(show.first_air_date) : "",
+      image: normalizeImageSrc(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+      badgeHtml: availabilityBadgeHtml(show, { compact: true }),
+      pct: percentForItem(show),
+      facts: [factChipHtml("Discover"), (show?.genres || []).length ? factChipHtml(show.genres[0]?.name || "") : ""]
+    })).join("") : `<div class="muted">No recommendations.</div>`;
+
+    const movies = (state.data?.movies || []).slice().sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0)).slice(0, 8);
+    movieRecs.innerHTML = movies.length ? movies.map(movie => buildDashboardCard("movie", movie?.tmdb_id, {
+      title: safeText(movie?.title || "Movie"),
+      subtitle: truncateText(movie?.overview || "", 84),
+      tertiary: movie?.release_date ? formatDateShort(movie.release_date) : "",
+      image: normalizeImageSrc(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
+      badgeHtml: availabilityBadgeHtml(movie, { compact: true }),
+      pct: percentForItem(movie),
+      facts: [factChipHtml("Movie"), (movie?.genres || []).length ? factChipHtml(movie.genres[0]?.name || "") : ""]
+    })).join("") : `<div class="muted">No recommendations.</div>`;
+
+    [scheduleCols, lastWeekCols, watchlistEl, showRecs, movieRecs].forEach(root => {
+      wireActionMenus(root);
+      wireIconStripActions(root, renderDashboard);
+      wireWatchSourceButtons(root);
+      $$(".episode-row[data-show]", root).forEach(card => card.addEventListener("click", (e) => {
+        if (e.target.closest(".actionbar")) return;
+        gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
+      }));
+    });
+    $$("[data-dash-lastweek-nav]").forEach(btn => btn.addEventListener("click", () => {
+      const action = btn.getAttribute("data-dash-lastweek-nav") || "";
+      const current = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
+      if (action === "back") state.dashboard.lastWeekOffsetWeeks = current + 1;
+      if (action === "jump-back") state.dashboard.lastWeekOffsetWeeks = current + 4;
+      if (action === "forward") state.dashboard.lastWeekOffsetWeeks = Math.max(0, current - 1);
+      if (action === "jump-forward") state.dashboard.lastWeekOffsetWeeks = Math.max(0, current - 4);
+      renderDashboard();
+    }));
+    $$("[data-dash-lastweek-nav='forward'], [data-dash-lastweek-nav='jump-forward']").forEach(btn => {
+      btn.disabled = lastWeekOffset === 0;
+    });
+  }
+
+  function showCardHtml(show, eye){
+    const id = Number(show?.tmdb_id) || 0;
+    const title = safeText(show?.title || show?.name || "(Untitled)");
+    return buildMediaCardShell("show", id, {
+      title,
+      image: pickImage(show, "poster_local", "poster_path"),
+      badgeHtml: availabilityBadgeHtml(show, { compact: true }),
+      actionBar: buildActionBarHtml("show", id, {
+        title,
+        compact: true,
+        pct: (() => {
+          let v = progressPercent(show);
+          if (v == null){
+            const raw = Number(show?.vote_average ?? show?.rating ?? 0);
+            if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
+          }
+          return v;
+        })(),
+        favoriteActive: getWatchlistSet().has(String(id)),
+        watchedActive: isShowWatched(show),
+        showWatchedAction: true,
+        showStatusAction: true,
+        watchedToggleHtml: watchToggleHtml("show", { "data-watch-show": id }, isShowWatched(show)),
+        available: isShowAvailable(show)
+      }),
+      meta: yearFromDate(show?.first_air_date),
+      eyeClass: eye?.fade ? " faded" : ""
+    });
+  }
+
+  function movieCardHtml(movie, eye){
+    const id = Number(movie?.tmdb_id) || 0;
+    const title = safeText(movie?.title || "(Untitled)");
+    const releaseDate = safeText(movie?.release_date || "").trim();
+    const runtime = Number(movie?.runtime);
+    return buildMediaCardShell("movie", id, {
+      title,
+      image: pickImage(movie, "poster_local", "poster_path"),
+      badgeHtml: availabilityBadgeHtml(movie, { compact: true }),
+      actionBar: buildActionBarHtml("movie", id, {
+        title,
+        compact: true,
+        pct: (() => {
+          let v = progressPercent(movie);
+          if (v == null){
+            const raw = Number(movie?.vote_average ?? movie?.rating ?? 0);
+            if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
+          }
+          return v;
+        })(),
+        favoriteActive: getWatchlistSet().has(String(id)),
+        watchedActive: isMovieWatched(movie),
+        showWatchedAction: true,
+        showStatusAction: true,
+        watchedToggleHtml: watchToggleHtml("movie", { "data-watch-movie": id }, isMovieWatched(movie)),
+        popcornAttrs: hasDirectWatchSources(movie) ? { "data-id": id } : null,
+        popcornKind: "movie",
+        available: isMovieAvailable(movie)
+      }),
+      meta: releaseDate ? formatDateShort(releaseDate) : yearFromDate(movie?.release_date),
+      submeta: Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "",
+      eyeClass: eye?.fade ? " faded" : ""
+    });
+  }
+
+  function renderDiscover(){
+    const showsRoot = $("#discoverShowsGrid");
+    const moviesRoot = $("#discoverMoviesGrid");
+    const panel = $("#panel-discover");
+    if (!showsRoot || !moviesRoot || !panel) return;
+
+    const shows = (state.data?.shows || []).filter(isShowAvailable).sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
+    const movies = (state.data?.movies || []).filter(isMovieAvailable).sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
+
+    showsRoot.innerHTML = shows.slice(0, 12).map(show => showCardHtml(show, { fade: false })).join("") || `<div class="muted">No discoverable shows available.</div>`;
+    moviesRoot.innerHTML = movies.slice(0, 12).map(movie => movieCardHtml(movie, { fade: false })).join("") || `<div class="muted">No discoverable movies available.</div>`;
+
+    [showsRoot, moviesRoot].forEach(root => {
+      if (!root) return;
+      wireActionMenus(root);
+      wireIconStripActions(root, renderDiscover);
+      wireWatchSourceButtons(root);
+      $$("[data-show-open]", root).forEach(el => el.addEventListener("click", () => gotoShow(parseInt(el.getAttribute("data-show-open") || "0", 10))));
+      $$("[data-movie-open]", root).forEach(el => el.addEventListener("click", () => openMovieModal(parseInt(el.getAttribute("data-movie-open") || "0", 10))));
+    });
+  }
+
+  async function renderConfig(){
+    const root = $("#configRoot");
+    if (!root) return;
+    const cfg = state.cfg || {};
+    root.innerHTML = `
+      <section class="config-hero">
+        <div>
+          <div class="discover-hero__eyebrow">System</div>
+          <h2>Runtime configuration at a glance</h2>
+          <p>Validation and raw config are still available below, but the important runtime facts are visible first.</p>
+        </div>
+        <div class="config-stats">
+          <div class="config-stat"><strong>${Object.keys(cfg?.icons || {}).length}</strong><span>icon contracts</span></div>
+          <div class="config-stat"><strong>${Object.values(cfg?.streaming || {}).filter(v => safeText(v).trim()).length}</strong><span>streaming targets</span></div>
+          <div class="config-stat"><strong>${Object.keys(cfg?.image_cache?.folders || {}).length}</strong><span>asset folders</span></div>
+        </div>
+      </section>
+      <section class="config-quicklinks">
+        <a class="btn" href="./index.html#inputs-editor">Open Inputs Editor</a>
+        <a class="btn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Local Editor</a>
+      </section>
+      <div id="configRuntimeSurface"></div>
+    `;
+    const runtimeRoot = $("#configRuntimeSurface", root);
+    try{
+      if (window.MyTVHubConfig?.render_config_view){
+        await window.MyTVHubConfig.load_config_once();
+        window.MyTVHubConfig.render_config_view(runtimeRoot, cfg || window.MyTVHubConfig.get_config(), {});
+      } else {
+        runtimeRoot.innerHTML = `<div class="inline-error">Config renderer unavailable.</div>`;
+      }
+    } catch (error){
+      runtimeRoot.innerHTML = `<div class="inline-error">Failed to render config view: ${escHtml(error?.message || String(error))}</div>`;
+    }
+  }
+
+  function buildMoviePopupHtml(movie){
+    const title = safeText(movie?.title || "Movie");
+    const runtime = Number(movie?.runtime);
+    const genres = Array.isArray(movie?.genres) ? movie.genres.map(g => g?.name).filter(Boolean) : [];
+    const studios = getCompanyNames(movie?.production_companies).slice(0, 3).join(" • ") || "Unavailable";
+    const backdrop = pickImage(movie, "backdrop_local", "backdrop_path");
+    const poster = pickImage(movie, "poster_local", "poster_path");
+    const heroSummary = [
+      movie?.release_date ? String(movie.release_date).slice(0, 4) : "",
+      Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "",
+      genres[0] || ""
+    ].filter(Boolean).join(" • ");
+    return `
+      <div class="popup-shell popup-shell--movie"${backdrop ? ` style="--popup-backdrop-image:url('${escHtml(backdrop).replace(/'/g, "%27")}')"` : ""}>
+        <div class="popup-hero-header">
+          <h2 class="popup-hero__title">${escHtml(title)}</h2>
+          ${heroSummary ? `<div class="popup-hero__summary">${escHtml(heroSummary)}</div>` : ""}
+          ${buildActionBarHtml("movie", movie?.tmdb_id ?? "", {
+            title,
+            pct: (() => {
+              let v = progressPercent(movie);
+              if (v == null){
+                const raw = Number(movie?.vote_average ?? movie?.rating ?? 0);
+                if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
+              }
+              return v;
+            })(),
+            favoriteActive: getWatchlistSet().has(String(movie?.tmdb_id ?? "")),
+            watchedToggleHtml: watchToggleHtml("movie", { "data-watch-movie-popup": movie?.tmdb_id ?? "" }, isMovieWatched(movie)),
+            watchedActive: isMovieWatched(movie),
+            showWatchedAction: true,
+            showStatusAction: true,
+            popcornAttrs: { "data-id": movie?.tmdb_id ?? "" },
+            popcornKind: "movie",
+            available: isMovieAvailable(movie)
+          })}
+        </div>
+        <div class="popup-hero popup-hero--dense">
+          <div class="popup-hero__poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+            <div class="popup-surface-badge">${availabilityBadgeHtml(movie, { compact: true })}</div>
+          </div>
+          <div class="popup-hero__body">
+            <div class="popup-detail-grid popup-detail-grid--compact">
+              <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(movie))}</strong></div>
+              <div class="popup-detail"><span>Providers</span><strong>${escHtml((() => {
+                const wp = getWatchProviders(movie);
+                const providers = collectProvidersForRegion(wp, "CA").length
+                  ? collectProvidersForRegion(wp, "CA")
+                  : (collectProvidersForRegion(wp, "US").length ? collectProvidersForRegion(wp, "US") : collectProvidersForRegion(wp, "AU"));
+                return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
+              })())}</strong></div>
+              <div class="popup-detail"><span>Genres</span><strong>${escHtml(genres.join(" • ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Runtime</span><strong>${escHtml(Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Studios</span><strong>${escHtml(studios)}</strong></div>
+              <div class="popup-detail"><span>TMDB</span><strong>${escHtml(String(movie?.tmdb_id ?? ""))}</strong></div>
+            </div>
+            <div class="popup-description">${compactOverviewHtml(movie?.overview || "", 320)}</div>
+            <div class="popup-watch-surface">${renderWatchSourceChooserHtml(movie, "movie")}</div>
+            <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(movie), "Rotten Tomatoes")}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function openMovieModal(tmdbId){
+    const movieIndex = getMovieById(tmdbId);
+    if (!movieIndex){
+      openModal("Movie", `<div>Movie not found: ${escHtml(tmdbId)}</div>`);
+      return;
+    }
+    openModal(safeText(movieIndex?.title || "Movie"), `<div class="muted">Loading movie details…</div>`);
+    const movie = await getMovieDetailById(tmdbId);
+    if (!movie){
+      $("#modalBody").innerHTML = `<div class="inline-error">Movie detail not found: ${escHtml(tmdbId)}</div>`;
+      return;
+    }
+    $("#modalBody").innerHTML = buildMoviePopupHtml(movie);
+    wireMoviePopup(Number(movie?.tmdb_id) || 0);
+  }
+
+  function buildShowPopupHtml(show){
+    const title = safeText(show.title || show.name || "(Untitled)");
+    const seasons = Array.isArray(show.seasons) ? show.seasons : [];
+    const seasonItems = seasons.map((season, idx) => ({ n: Number(season?.season_number ?? season?.season ?? season?.number ?? (idx + 1)), s: season }));
+    let selected = seasonItems.find(it => Number(it.n) === Number(state.show.selectedSeasonNumber)) || seasonItems.find(it => Array.isArray(it.s?.episodes) && it.s.episodes.length) || seasonItems[0] || null;
+    if (selected) state.show.selectedSeasonNumber = selected.n;
+    const season = selected?.s || null;
+    const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
+    const networks = Array.isArray(show.networks) ? show.networks.map(n => n?.name).filter(Boolean) : [];
+    const genres = Array.isArray(show?.genres) ? show.genres.map(g => g?.name).filter(Boolean) : [];
+    const creators = getCreatorNames(show.created_by);
+    const totalEpisodes = Number(show?.number_of_episodes ?? episodes.length) || episodes.length;
+    const premiered = pickAirDate(show);
+    const lastAir = safeText(show?.last_air_date || "").trim();
+    const seasonPremiered = pickAirDate(season);
+    const seasonLastAir = getLastSeasonAirDate(season);
+    const seasonEpisodeCount = episodes.length;
+    const showRuntime = Number(Array.isArray(show?.episode_run_time) ? show.episode_run_time[0] : (show?.runtime ?? 0));
+    const seasonWatched = season ? isSeasonWatched(show.tmdb_id, selected?.n, seasonEpisodeCount) : false;
+    const seasonToggle = season ? watchToggleHtml("season", { "data-watch-season": selected?.n, "data-show": show.tmdb_id ?? "", "data-season": selected?.n }, seasonWatched) : "";
+    const seasonLabel = safeText(season?.name || (selected ? `Season ${selected.n}` : "Season"));
+    const seasonSummary = [
+      Number.isFinite(seasonEpisodeCount) && seasonEpisodeCount > 0 ? `${seasonEpisodeCount} episodes` : "",
+      seasonPremiered ? `Premiered ${fmtDate(seasonPremiered)}` : "",
+      seasonLastAir ? `Last available ${fmtDate(seasonLastAir)}` : ""
+    ].filter(Boolean).join(" • ");
+    const heroSummary = [
+      creators.length ? `Created by ${creators.slice(0, 2).join(" • ")}` : "",
+      premiered ? new Date(premiered).getFullYear() : "",
+      Number.isFinite(totalEpisodes) && totalEpisodes > 0 ? `${totalEpisodes} eps.` : "",
+      showRuntime > 0 ? `${showRuntime} min` : "",
+      genres[0] || ""
+    ].filter(Boolean).join(" • ");
+    const backdrop = pickImage(show, "backdrop_local", "backdrop_path");
+    const poster = pickImage(show, "poster_local", "poster_path");
+    return `
+      <div class="popup-shell popup-shell--show"${backdrop ? ` style="--popup-backdrop-image:url('${escHtml(backdrop).replace(/'/g, "%27")}')"` : ""}>
+        <div class="popup-hero-header">
+          <h2 class="popup-hero__title">${escHtml(title)}</h2>
+          ${heroSummary ? `<div class="popup-hero__summary">${escHtml(heroSummary)}</div>` : ""}
+          ${buildActionBarHtml("show", show.tmdb_id ?? "", {
+            title,
+            pct: (() => {
+              let v = progressPercent(show);
+              if (v == null){
+                const raw = Number(show?.vote_average ?? show?.rating ?? 0);
+                if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
+              }
+              return v;
+            })(),
+            favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
+            watchedToggleHtml: watchToggleHtml("show", { "data-watch-show": show.tmdb_id ?? "" }, isShowWatched(show)),
+            watchedActive: isShowWatched(show),
+            showWatchedAction: true,
+            showStatusAction: true,
+            available: isShowAvailable(show)
+          })}
+        </div>
+        <div class="popup-hero popup-hero--dense">
+          <div class="popup-hero__poster">
+            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+            <div class="popup-surface-badge">${availabilityBadgeHtml(show, { compact: true })}</div>
+          </div>
+          <div class="popup-hero__body">
+            <div class="popup-detail-grid popup-detail-grid--compact popup-detail-grid--plain">
+              <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(show))}</strong></div>
+              <div class="popup-detail"><span>Where to watch</span><strong>${escHtml(formatProviderSummary(show))}</strong></div>
+              <div class="popup-detail"><span>Status</span><strong>${escHtml(safeText(show?.status || "Unavailable"))}</strong></div>
+              <div class="popup-detail"><span>Network</span><strong>${escHtml(networks.join(" • ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Seasons</span><strong>${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Episodes</span><strong>${escHtml(totalEpisodes ? `${totalEpisodes}` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Runtime</span><strong>${escHtml(showRuntime > 0 ? `${showRuntime} min` : "Series")}</strong></div>
+              <div class="popup-detail"><span>TMDB Score</span><strong>${escHtml(show?.vote_average != null ? `${show.vote_average}${show?.vote_count != null ? ` (${show.vote_count})` : ""}` : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Premiered</span><strong>${escHtml(premiered ? fmtDate(premiered) : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Last aired</span><strong>${escHtml(lastAir ? fmtDate(lastAir) : "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Genres</span><strong>${escHtml(genres.join(" • ") || "Unavailable")}</strong></div>
+              <div class="popup-detail"><span>Created by</span><strong>${escHtml(creators.join(" • ") || "Unavailable")}</strong></div>
+            </div>
+            <div class="popup-description popup-description--show">${compactOverviewHtml(show?.overview || "", 420)}</div>
+            <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(show), "Rotten Tomatoes")}</div>
+          </div>
+        </div>
+        <div class="section section-card">
+          <div class="seasonrail">
+            <div class="carousel-controls">
+              <button class="epnavbtn" type="button" data-season-nav="jump-prev" aria-label="Jump back seasons">«</button>
+              <button class="epnavbtn" type="button" data-season-nav="prev" aria-label="Previous seasons">‹</button>
+              <button class="epnavbtn" type="button" data-season-nav="next" aria-label="Next seasons">›</button>
+              <button class="epnavbtn" type="button" data-season-nav="jump-next" aria-label="Jump forward seasons">»</button>
+            </div>
+            <div class="seasonlist seasonlist--carousel" data-season-track>
+              ${seasonItems.map(it => `
+                <button class="seasonopt${Number(it.n) === Number(selected?.n) ? " is-active" : ""}" type="button" data-season-pick="${escHtml(it.n)}">
+                  <span class="labelrow">
+                    <span class="label">${escHtml(it.s?.name || `Season ${it.n}`)}</span>
+                    <span class="seasonopt__meta">${escHtml([Array.isArray(it.s?.episodes) ? `${it.s.episodes.length} eps` : "", pickAirDate(it.s) ? fmtDate(pickAirDate(it.s)) : ""].filter(Boolean).join(" • "))}</span>
+                  </span>
+                  <span class="seasonopt__availability">${availabilityBadgeHtml(it.s, { compact: true })}</span>
+                </button>
+              `).join("") || `<div class="muted">No seasons available.</div>`}
+            </div>
+          </div>
+          <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path"))}');"` : ""}>
+            <div class="popup-surface-badge">${availabilityBadgeHtml(season, { compact: true })}</div>
+            <div class="seasonmeta">
+              <div class="seasonname">${escHtml(seasonLabel)}</div>
+              ${seasonSummary ? `<div class="seasonair">${escHtml(seasonSummary)}</div>` : `<div class="seasonair">Season details unavailable</div>`}
+              <div class="seasonstatusrow">
+                ${seasonToggle}
+              </div>
+              ${season?.overview ? `<div class="seasonov">${escHtml(season.overview)}</div>` : `<div class="seasonov seasonov--muted">No season description available.</div>`}
+            </div>
+          </div>
+        </div>
+        <div class="section section-card">
+          <div class="section-card__head">
+            <div class="section-card__meta">${escHtml(seasonEpisodeCount ? `${seasonEpisodeCount} episodes` : "No episodes")}</div>
+          </div>
+          <div class="epnav">
+            <div class="carousel-controls">
+              <button class="epnavbtn" type="button" data-ep-nav="jump-prev" aria-label="Jump back episodes">«</button>
+              <button class="epnavbtn" type="button" data-ep-nav="prev" aria-label="Previous episodes">‹</button>
+            </div>
+            <div class="carousel" role="list">
+              ${episodes.map(ep => {
+                const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
+                const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
+                const epPct = (() => {
+                  let v = progressPercent(ep);
+                  if (v == null){
+                    const raw = Number(ep?.vote_average ?? ep?.rating ?? ep?.rating_percent ?? ep?.rating_pct ?? 0);
+                    if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
+                  }
+                  return v;
+                })();
+                const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, seasonNum, episodeNum) : false;
+                return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+                  image: pickImage(ep, "still_local", "still_path"),
+                  eyebrow: title,
+                  title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
+                  badgeHtml: availabilityBadgeHtml(ep, { compact: true }),
+                  meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime),
+                  submeta: safeText(pickAirDate(ep) ? fmtDate(pickAirDate(ep)) : ""),
+                  description: safeText(ep?.overview || ""),
+                  actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+                    title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
+                    compact: true,
+                    pct: epPct,
+                    watchedActive: epWatched,
+                    showWatchedAction: true,
+                    showStatusAction: true,
+                    watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
+                    popcornAttrs: hasDirectWatchSources(ep) ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
+                    popcornKind: "episode",
+                    available: isEpisodeAvailable(ep),
+                    statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
+                  }),
+                  overlay: false,
+                  articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
+                  extraClass: "popup-episode-card"
+                });
+              }).join("") || `<div class="muted">No episodes available for this season.</div>`}
+            </div>
+            <div class="carousel-controls">
+              <button class="epnavbtn" type="button" data-ep-nav="next" aria-label="Next episodes">›</button>
+              <button class="epnavbtn" type="button" data-ep-nav="jump-next" aria-label="Jump forward episodes">»</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  ensureMainAppShell();
+  if ($("#modalClose")) $("#modalClose").textContent = "Exit";
+  if ($("#providerClose")) $("#providerClose").textContent = "Exit";
+
+  // NAV
+  $$(".tab").forEach(btn => {
+    on(btn, "click", (e) => {
+      const t = btn.dataset.tab;
+      if (!t || btn.disabled) return;
+      if (getAvailableTabs().has(t)){
+        e.preventDefault();
+        location.hash = `#${t}`;
+      }
+    });
+  });
+  initDrawer("showsFilterBtn", "showsFilterBack", "showsFilterClose");
+  initDrawer("moviesFilterBtn", "moviesFilterBack", "moviesFilterClose");
+
+  on($("#calPrev"), "click", () => {
+    const m = state.calendarMonth;
+    state.calendarMonth = new Date(m.getFullYear(), m.getMonth()-1, 1);
+    renderCalendar();
+  });
+  on($("#calNext"), "click", () => {
+    const m = state.calendarMonth;
+    state.calendarMonth = new Date(m.getFullYear(), m.getMonth()+1, 1);
+    renderCalendar();
+  });
+  on($("#calToday"), "click", () => {
+    initCalendarMonth();
+    renderCalendar();
+    requestAnimationFrame(() => scrollToDayCell(toDateKey(new Date())));
+  });
+  on(window, "resize", () => updateCalendarStickyVars());
+
+  on($("#searchShows"), "input", (e) => {
+    state.search.shows = e.target.value || "";
+    renderShows();
+  });
+  on($("#filterShowsGenres"), "change", () => {
+    state.filters.shows.genres = getCheckedValues($("#filterShowsGenres"));
+    renderShows();
+  });
+  on($("#filterShowsYear"), "change", (e) => {
+    state.filters.shows.year = e.target.value || "";
+    renderShows();
+  });
+  on($("#filterShowsScope"), "click", (e) => {
+    const btn = e.target.closest("[data-scope]");
+    if (!btn) return;
+    state.filters.shows.scope = btn.getAttribute("data-scope") || "all";
+    setSegActive($("#filterShowsScope"), "scope", state.filters.shows.scope);
+    renderShows();
+  });
+  on($("#filterShowsAvailability"), "click", (e) => {
+    const btn = e.target.closest("[data-availability]");
+    if (!btn) return;
+    state.filters.shows.availability = btn.getAttribute("data-availability") || "all";
+    setSegActive($("#filterShowsAvailability"), "availability", state.filters.shows.availability);
+    renderShows();
+  });
+  on($("#filterShowsWatched"), "click", (e) => {
+    const btn = e.target.closest("[data-watched]");
+    if (!btn) return;
+    state.filters.shows.watched = btn.getAttribute("data-watched") || "all";
+    setSegActive($("#filterShowsWatched"), "watched", state.filters.shows.watched);
+    renderShows();
+  });
+  on($("#filterShowsWatchlist"), "click", (e) => {
+    const btn = e.target.closest("[data-watchlist]");
+    if (!btn || btn.disabled) return;
+    state.filters.shows.watchlist = btn.getAttribute("data-watchlist") || "all";
+    setSegActive($("#filterShowsWatchlist"), "watchlist", state.filters.shows.watchlist);
+    renderShows();
+  });
+  on($("#sortShows"), "change", (e) => {
+    state.sort.shows = e.target.value || "title";
+    renderShows();
+  });
+
+  on($("#searchMovies"), "input", (e) => {
+    state.search.movies = e.target.value || "";
+    renderMovies();
+  });
+  on($("#filterMoviesGenres"), "change", () => {
+    state.filters.movies.genres = getCheckedValues($("#filterMoviesGenres"));
+    renderMovies();
+  });
+  on($("#filterMoviesYear"), "change", (e) => {
+    state.filters.movies.year = e.target.value || "";
+    renderMovies();
+  });
+  on($("#filterMoviesCollection"), "change", (e) => {
+    state.filters.movies.collection = e.target.value || "";
+    renderMovies();
+  });
+  on($("#filterMoviesScope"), "click", (e) => {
+    const btn = e.target.closest("[data-scope]");
+    if (!btn) return;
+    state.filters.movies.scope = btn.getAttribute("data-scope") || "all";
+    setSegActive($("#filterMoviesScope"), "scope", state.filters.movies.scope);
+    renderMovies();
+  });
+  on($("#filterMoviesAvailability"), "click", (e) => {
+    const btn = e.target.closest("[data-availability]");
+    if (!btn) return;
+    state.filters.movies.availability = btn.getAttribute("data-availability") || "all";
+    setSegActive($("#filterMoviesAvailability"), "availability", state.filters.movies.availability);
+    renderMovies();
+  });
+  on($("#filterMoviesWatched"), "click", (e) => {
+    const btn = e.target.closest("[data-watched]");
+    if (!btn) return;
+    state.filters.movies.watched = btn.getAttribute("data-watched") || "all";
+    setSegActive($("#filterMoviesWatched"), "watched", state.filters.movies.watched);
+    renderMovies();
+  });
+  on($("#filterMoviesWatchlist"), "click", (e) => {
+    const btn = e.target.closest("[data-watchlist]");
+    if (!btn || btn.disabled) return;
+    state.filters.movies.watchlist = btn.getAttribute("data-watchlist") || "all";
+    setSegActive($("#filterMoviesWatchlist"), "watchlist", state.filters.movies.watchlist);
+    renderMovies();
+  });
+  on($("#sortMovies"), "change", (e) => {
+    state.sort.movies = e.target.value || "title";
+    renderMovies();
+  });
+
+
+  // Modal close
+  on($("#modalClose"), "click", closeModal);
+  on($("#modalBack"), "click", (e) => { if (e.target === $("#modalBack")) closeModal(); });
+  on($("#providerClose"), "click", closeProviderModal);
+  on($("#providerBack"), "click", (e) => { if (e.target === $("#providerBack")) closeProviderModal(); });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape"){
+      closeAllActionMenus();
+      if ($("#providerBack").style.display === "flex") return closeProviderModal();
+      if ($("#modalBack").style.display === "flex") return closeModal();
+      return;
+    }
+    if (e.key === "Tab"){
+      return trapTabInModal(e);
+    }
+    if (e.key === "Enter" || e.key === " "){
+      const active = document.activeElement;
+      const fnType = safeText(active?.getAttribute?.("data-function-type"));
+      if (fnType){
+        e.preventDefault();
+        if (fnType === "link"){
+          const href = active?.getAttribute?.("href") || active?.getAttribute?.("data-href") || "";
+          if (href){
+            window.open(href, "_blank", "noopener");
+          } else if (active?.click){
+            active.click();
+          }
+        } else if (active?.click){
+          active.click();
+        }
+        return;
+      }
+    }
+  });
+
+  document.addEventListener("click", () => closeAllActionMenus());
+
+  window.addEventListener("hashchange", routeFromHash);
+
+  loadAll();
+})();

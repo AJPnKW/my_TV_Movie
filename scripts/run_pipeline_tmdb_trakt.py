@@ -3,9 +3,9 @@
 # [FILE]    scripts/run_pipeline_tmdb_trakt.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    One-command local runner: TMDB build -> Trakt enrich
-# [VERSION] v1.3.0
-# [UPDATED] 2026-01-19_00-00-00
-# [BUILD]   14.01.08
+# [VERSION] v1.5.0
+# [UPDATED] 2026-03-29_00-00-00
+# [BUILD]   15.00.00
 # ==============================================================================
 from __future__ import annotations
 
@@ -21,6 +21,17 @@ LOGS_DIR = REPO_ROOT / "logs"
 FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
 FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
+FETCH_TMDB_ASSETS = SCRIPTS_DIR / "fetch_tmdb_assets.py"
+SELF_HEAL_ASSET_METADATA = SCRIPTS_DIR / "self_heal_asset_metadata.py"
+VALIDATE_AVAILABILITY = SCRIPTS_DIR / "validate_availability_overlay.py"
+ENRICH_AVAILABILITY = SCRIPTS_DIR / "enrich_data_with_availability.py"
+BUILD_SPLIT_RUNTIME = SCRIPTS_DIR / "build_split_runtime.py"
+QA_AVAILABILITY = SCRIPTS_DIR / "qa_availability_status.py"
+QA_AVAILABILITY_PHASE2 = SCRIPTS_DIR / "qa_availability_phase2.py"
+VALIDATE_SECRET_DRIFT = SCRIPTS_DIR / "validate_secret_name_drift.py"
+VALIDATE_RUNTIME_ASSETS = SCRIPTS_DIR / "validate_runtime_assets.py"
+VALIDATE_RUNTIME_CATALOG = SCRIPTS_DIR / "validate_runtime_catalog_integrity.py"
+QA_PIPELINE_INTEGRITY = SCRIPTS_DIR / "qa_pipeline_integrity.py"
 
 
 def _ts() -> str:
@@ -43,13 +54,13 @@ def _latest_log(glob_pat: str) -> Path | None:
         return None
 
 
-def _run_one(label: str, script_path: Path) -> int:
+def _run_one(label: str, script_path: Path, *extra_args: str) -> int:
     py = Path(sys.executable)
     print(f"\n[{label}] RUN {script_path}")
     if not script_path.exists():
         print(f"[{label}] ERROR missing: {script_path}")
         return 2
-    p = subprocess.run([str(py), str(script_path)], cwd=str(REPO_ROOT))
+    p = subprocess.run([str(py), str(script_path), *extra_args], cwd=str(REPO_ROOT))
     print(f"[{label}] exit_code={p.returncode}")
     return int(p.returncode)
 
@@ -79,6 +90,87 @@ def main() -> int:
         return rc
 
     rc = _run_one("TRAKT", FETCH_TRAKT)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("TMDB_ASSETS", FETCH_TMDB_ASSETS)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("SECRET_DRIFT_VALIDATE", VALIDATE_SECRET_DRIFT)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("ASSET_METADATA_SELF_HEAL", SELF_HEAL_ASSET_METADATA, "--fetch-missing")
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_VALIDATE", VALIDATE_AVAILABILITY)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_ENRICH", ENRICH_AVAILABILITY)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("SPLIT_RUNTIME_BUILD", BUILD_SPLIT_RUNTIME)
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_QA", QA_AVAILABILITY)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("AVAILABILITY_PHASE2_QA", QA_AVAILABILITY_PHASE2)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("RUNTIME_ASSETS_VALIDATE", VALIDATE_RUNTIME_ASSETS)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("RUNTIME_CATALOG_VALIDATE", VALIDATE_RUNTIME_CATALOG)
+    if rc != 0:
+        finished = _ts()
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {finished}")
+        return rc
+
+    rc = _run_one("PIPELINE_INTEGRITY_QA", QA_PIPELINE_INTEGRITY)
     finished = _ts()
 
     tmdb_log = _latest_log("fetch_tmdb.*.log.txt")

@@ -1,60 +1,70 @@
 name: build-data
+
 on:
   workflow_dispatch:
   schedule:
-    - cron: "17 4 * * *"  # daily
+    - cron: "23 9 * * *"
   push:
+    branches: ["main"]
     paths:
+      - "data/inputs.json"
+      - "data/watch_source_availability.json"
+      - "web/config.json"
       - "scripts/**"
-      - "web/**"
-      - "data/**"
       - ".github/workflows/build-data.yml"
-      - "requirements.txt"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-data-main
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
-  build:
+  build-data:
+    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Install deps
+      - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+          pip install -r requirements.txt
 
-      - name: Build data artifacts (inputs.json -> TMDB -> Trakt -> QA)
-        run: |
-          python scripts/fetch_tmdb.py
-          python scripts/fetch_trakt.py
-          python scripts/migrate_watchlist_fields.py
-          python scripts/trakt_sync_watch_state.py
-          python scripts/download_tmdb_assets.py
-          python scripts/export_service_logos_sources.py
-          python scripts/download_service_logos.py --input data/service_logos_sources.json
-          python scripts/sync_local_watch_state.py
-          python scripts/qa_pipeline_integrity.py
+      - name: Run full data pipeline
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}
+          API_OMDB_KEY: ${{ secrets.API_OMDB_KEY }}
           API_TRAKT_ID: ${{ secrets.API_TRAKT_ID }}
           API_TRAKT_KEY: ${{ secrets.API_TRAKT_KEY }}
-          API_TRAKT_ACCESS_TOKEN: ${{ secrets.API_TRAKT_ACCESS_TOKEN }}
-          API_TRAKT_REFRESH_TOKEN: ${{ secrets.API_TRAKT_REFRESH_TOKEN }}
           API_TRAKT_REDIRECT_URL: ${{ secrets.API_TRAKT_REDIRECT_URL }}
-          API_TVMAZE_KEY: ${{ secrets.API_TVMAZE_KEY }}
+        run: python scripts/run_pipeline_tmdb_trakt.py
 
-      - name: Commit changes (if any)
+      - name: Validate generated runtime JSON
         run: |
+          python -m json.tool data/data.json > /dev/null
+          python -m json.tool data/catalog_index.json > /dev/null
+          python -m json.tool data/calendar.json > /dev/null
+
+      - name: Commit regenerated data artifacts
+        run: |
+          if git diff --quiet -- data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets; then
+            echo "No runtime artifact changes to commit."
+            exit 0
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git diff --cached --quiet || git commit -m "build: update data artifacts"
+          git add data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets
+          git commit -m "build: update data artifacts"
           git push

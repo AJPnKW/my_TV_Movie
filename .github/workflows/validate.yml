@@ -1,0 +1,43 @@
+name: validate
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Python compile
+        run: python -m compileall scripts tools/inputs_editor
+      - name: Availability validation
+        run: |
+          python scripts/validate_secret_name_drift.py
+          python scripts/self_heal_asset_metadata.py
+          python scripts/validate_availability_overlay.py
+          python scripts/enrich_data_with_availability.py
+          python scripts/qa_availability_status.py
+          python scripts/qa_availability_phase2.py
+          python scripts/validate_runtime_assets.py
+          python scripts/validate_runtime_catalog_integrity.py
+      - name: JavaScript syntax
+        run: |
+          node --check web/js/app_runtime.js
+          node --check web/js/card_renderer.js
+          node --check web/js/action_bar.js
+          node --check web/js/availability_ui.js
+          node --check web/js/config_loader.js
+          node --check web/js/data_loader.js
+          node --check web/js/popup_controller.js
+          node --check web/js/watch_me_runtime.js

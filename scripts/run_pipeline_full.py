@@ -1,179 +1,57 @@
-#!/usr/bin/env python3
-# ==============================================================================
-# [FILE]    scripts/run_pipeline_full.py
-# [PROJECT] my_TV_Movie
-# [ROLE]    Orchestrate: data/inputs.json -> TMDB -> Trakt -> QA
-# [VERSION] v1.5.0
-# [UPDATED] 2026-02-15_00-00-00
-# [BUILD]   14.01.08
-# ==============================================================================
 
 from __future__ import annotations
 
-import datetime as _dt
-import os
+import argparse
+import json
 import subprocess
 import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = REPO_ROOT / "data"
 
 
-REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-LOG_DIR = os.path.join(REPO_ROOT, "logs")
-
-
-def _ts() -> str:
-    return _dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-
-def _write_line(fp: str, msg: str) -> None:
-    with open(fp, "a", encoding="utf-8", errors="replace", newline="\n") as f:
-        f.write(msg + "\n")
-
-
-def _run(label: str, args: list[str], logfp: str) -> int:
-    _write_line(logfp, f"\n[{label}] RUN {' '.join(args)}")
-    p = subprocess.run(args, cwd=REPO_ROOT)
-    _write_line(logfp, f"[{label}] exit_code={p.returncode}")
-    return int(p.returncode)
+def run_step(label: str, command: list[str]) -> dict:
+    completed = subprocess.run(
+        command,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return {
+        "label": label,
+        "command": command,
+        "returncode": completed.returncode,
+        "stdout": completed.stdout[-12000:],
+        "stderr": completed.stderr[-12000:],
+    }
 
 
 def main() -> int:
-    os.makedirs(LOG_DIR, exist_ok=True)
-    logfp = os.path.join(LOG_DIR, f"run_pipeline_full_{_ts()}.log.txt")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--editor-refresh", action="store_true")
+    args = parser.parse_args()
 
-    py = sys.executable
-    started = _dt.datetime.now()
+    steps = [
+        ("fetch_tmdb", [sys.executable, "scripts/fetch_tmdb.py"]),
+        ("fetch_tmdb_assets", [sys.executable, "scripts/fetch_tmdb_assets.py"]),
+        ("refresh_missing_assets", [sys.executable, "scripts/refresh_missing_assets_from_data.py", "--no-pause"]),
+        ("qa_assets", [sys.executable, "scripts/qa_assets_against_data_json.py", "--no-pause"]),
+    ]
 
-    _write_line(logfp, "--- SUMMARY ---")
-    _write_line(logfp, f"repo_root : {REPO_ROOT}")
-    _write_line(logfp, f"python    : {py}")
-    _write_line(logfp, f"log       : {logfp}")
+    results = [run_step(label, command) for label, command in steps]
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    summary_path = DATA_DIR / "asset_refresh_summary.json"
+    summary_path.write_text(json.dumps({"editor_refresh": args.editor_refresh, "steps": results}, indent=2), encoding="utf-8")
 
-    use_trakt_primary = (os.getenv("TRAKT_PRIMARY") or "").strip().lower() in ("1", "true", "yes")
-    _write_line(logfp, f"trakt_primary : {use_trakt_primary}")
-
-    # Required scope file (canonical)
-    inputs_json = os.path.join(REPO_ROOT, 'data', 'inputs.json')
-    if not os.path.isfile(inputs_json):
-        _write_line(logfp, f"RESULT    : FAIL (missing scope file: {inputs_json})")
-        return 2
-
-    if use_trakt_primary:
-        # 1) Trakt catalog + user state (from inputs.json)
-        rc_trakt_primary = _run("TRAKT_PRIMARY", [py, os.path.join("scripts", "fetch_trakt_primary.py")], logfp)
-        if rc_trakt_primary != 0:
-            _write_line(logfp, f"RESULT    : FAIL (trakt_primary exit_code={rc_trakt_primary})")
-            return rc_trakt_primary
-
-        # 2) TMDB asset augment (images only)
-        rc_tmdb_assets = _run("TMDB_ASSETS", [py, os.path.join("scripts", "fetch_tmdb_assets.py")], logfp)
-        if rc_tmdb_assets != 0:
-            _write_line(logfp, f"RESULT    : FAIL (tmdb_assets exit_code={rc_tmdb_assets})")
-            return rc_tmdb_assets
-
-        # 3) Migrate watchlist fields (inputs.json)
-        rc_watchlist = _run("WATCHLIST_MIGRATE", [py, os.path.join("scripts", "migrate_watchlist_fields.py")], logfp)
-        if rc_watchlist != 0:
-            _write_line(logfp, f"RESULT    : FAIL (migrate_watchlist_fields exit_code={rc_watchlist})")
-            return rc_watchlist
-
-        # 4) Trakt watch-state sync (OAuth; optional)
-        rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
-        if rc_watch != 0:
-            _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
-            return rc_watch
-
-        # 5) Local watch-state sync (inputs.json -> data.json)
-        rc_local = _run("LOCAL_WATCH_STATE", [py, os.path.join("scripts", "sync_local_watch_state.py")], logfp)
-        if rc_local != 0:
-            _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
-            return rc_local
-
-        # 6) Export service logo sources from config
-        rc_logo_export = _run("SERVICE_LOGO_EXPORT", [py, os.path.join("scripts", "export_service_logos_sources.py")], logfp)
-        if rc_logo_export != 0:
-            _write_line(logfp, f"RESULT    : FAIL (export_service_logos_sources exit_code={rc_logo_export})")
-            return rc_logo_export
-
-        # 7) Download service logos from explicit source file
-        rc_logo_download = _run(
-            "SERVICE_LOGO_DOWNLOAD",
-            [py, os.path.join("scripts", "download_service_logos.py"), "--input", os.path.join("data", "service_logos_sources.json")],
-            logfp,
-        )
-        if rc_logo_download != 0:
-            _write_line(logfp, f"RESULT    : FAIL (download_service_logos exit_code={rc_logo_download})")
-            return rc_logo_download
-    else:
-        # 1) TMDB fetch
-        rc_tmdb = _run("TMDB", [py, os.path.join("scripts", "fetch_tmdb.py")], logfp)
-        if rc_tmdb != 0:
-            _write_line(logfp, f"RESULT    : FAIL (tmdb exit_code={rc_tmdb})")
-            return rc_tmdb
-
-        # 2) OMDb enrichment (optional; requires API_OMDB_KEY)
-        rc_omdb = _run("OMDB", [py, os.path.join("scripts", "fetch_omdb.py")], logfp)
-        if rc_omdb != 0:
-            _write_line(logfp, f"RESULT    : FAIL (omdb exit_code={rc_omdb})")
-            return rc_omdb
-
-        # 3) Trakt enrichment (public)
-        rc_trakt = _run("TRAKT", [py, os.path.join("scripts", "fetch_trakt.py")], logfp)
-        if rc_trakt != 0:
-            _write_line(logfp, f"RESULT    : FAIL (trakt exit_code={rc_trakt})")
-            return rc_trakt
-
-        # 3a) Migrate watchlist fields (inputs.json)
-        rc_watchlist = _run("WATCHLIST_MIGRATE", [py, os.path.join("scripts", "migrate_watchlist_fields.py")], logfp)
-        if rc_watchlist != 0:
-            _write_line(logfp, f"RESULT    : FAIL (migrate_watchlist_fields exit_code={rc_watchlist})")
-            return rc_watchlist
-
-        # 3b) Trakt watch-state sync (OAuth; optional)
-        rc_watch = _run("TRAKT_WATCH_STATE", [py, os.path.join("scripts", "trakt_sync_watch_state.py")], logfp)
-        if rc_watch != 0:
-            _write_line(logfp, f"RESULT    : FAIL (trakt_sync_watch_state exit_code={rc_watch})")
-            return rc_watch
-
-        # 3c) Local watch-state sync (inputs.json -> data.json)
-        rc_local = _run("LOCAL_WATCH_STATE", [py, os.path.join("scripts", "sync_local_watch_state.py")], logfp)
-        if rc_local != 0:
-            _write_line(logfp, f"RESULT    : FAIL (sync_local_watch_state exit_code={rc_local})")
-            return rc_local
-
-        # 3d) Export service logo sources from config
-        rc_logo_export = _run("SERVICE_LOGO_EXPORT", [py, os.path.join("scripts", "export_service_logos_sources.py")], logfp)
-        if rc_logo_export != 0:
-            _write_line(logfp, f"RESULT    : FAIL (export_service_logos_sources exit_code={rc_logo_export})")
-            return rc_logo_export
-
-        # 3e) Download service logos from explicit source file
-        rc_logo_download = _run(
-            "SERVICE_LOGO_DOWNLOAD",
-            [py, os.path.join("scripts", "download_service_logos.py"), "--input", os.path.join("data", "service_logos_sources.json")],
-            logfp,
-        )
-        if rc_logo_download != 0:
-            _write_line(logfp, f"RESULT    : FAIL (download_service_logos exit_code={rc_logo_download})")
-            return rc_logo_download
-
-    # 4) QA missing trakt ids
-    rc_qa1 = _run("QA_MISSING_TRAKT", [py, os.path.join("scripts", "qa_missing_trakt_ids.py")], logfp)
-    if rc_qa1 != 0:
-        _write_line(logfp, f"RESULT    : FAIL (qa_missing_trakt_ids exit_code={rc_qa1})")
-        return rc_qa1
-
-    # 5) QA integrity / consistency
-    rc_qa2 = _run("QA_INTEGRITY", [py, os.path.join("scripts", "qa_pipeline_integrity.py")], logfp)
-    if rc_qa2 != 0:
-        _write_line(logfp, f"RESULT    : FAIL (qa_pipeline_integrity exit_code={rc_qa2})")
-        return rc_qa2
-
-    finished = _dt.datetime.now()
-    _write_line(logfp, "")
-    _write_line(logfp, f"started   : {started.strftime('%Y-%m-%d %H:%M:%S')}")
-    _write_line(logfp, f"finished  : {finished.strftime('%Y-%m-%d %H:%M:%S')}")
-    _write_line(logfp, "RESULT    : OK (exit_code=0)")
-    return 0
+    failed = [step for step in results if step["returncode"] != 0]
+    print("[START] run_pipeline_full")
+    for step in results:
+        print(f"[STEP] {step['label']} -> rc={step['returncode']}")
+    print(f"[SUMMARY] {summary_path}")
+    print("[DONE] run_pipeline_full")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

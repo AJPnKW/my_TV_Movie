@@ -4,10 +4,12 @@
 FILE: heated-rivalry.html
 PROJECT: my_TV_Movie
 PAGE: Heated Rivalry (single title page)
-VERSION: 1.1.1
-UPDATED: 2026-01-18 07:30:18
+VERSION: 1.2.1
+UPDATED: 2026-04-11 00:00:00
 
 CHANGELOG:
+- 1.2.1: Replace static report link with in-page help menu and modal docs for report problem, watch party info, and watch party how-to.
+- 1.2.0: Add reusable watch-party experience with episode invite links, shared playback timer, and embedded voice/video room support.
 - 1.1.1: Replace corrupted JS engine with clean, tested season-dropdown renderer; fixes blank season options and missing episodes.
 - 1.1.0: Revert Season selector to dropdown placed on left side of Season section; remove broken radio-list selector wiring.
 - 1.0.9: Fix JS syntax error in version badge parser that prevented season list + episodes from rendering.
@@ -30,6 +32,8 @@ NOTES:
   <meta charset="UTF-8" />
   <title>Heated Rivalry · Season 1 · Crave</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230369a1'/%3E%3Cpath d='M8 20h16v4H8zM10 8h12l-2 10h-8z' fill='%23f8fafc'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="./css/watch_party_player.css" />
 
 
   <style>
@@ -644,43 +648,203 @@ NOTES:
       z-index: 45;
     }
 
-    /* REPORT PROBLEM BUTTON */
-    .report-problem {
+    /* HELP MENU */
+    .help-menu {
       position: absolute;
       top: 10px;
       right: 14px;
       z-index: 50;
+    }
+
+    .help-menu-button {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       padding: 8px 12px;
-      border-radius: 999px;
+      border-radius: 8px;
       border: 1px solid rgba(148,163,184,0.65);
       background: rgba(2, 6, 23, 0.75);
       color: rgba(248,250,252,0.95);
       font-size: 12px;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      text-decoration: none;
       backdrop-filter: blur(10px);
+      cursor: pointer;
       transition: transform 150ms ease-out, border-color 150ms ease-out, background 150ms ease-out;
     }
-    .report-problem:hover {
+
+    .help-menu-button:hover {
       transform: translateY(-0.5px);
       border-color: rgba(125, 211, 252, 0.85);
       background: rgba(2, 6, 23, 0.9);
     }
-    .report-problem:focus {
+
+    .help-menu-button:focus {
       outline: 2px solid rgba(56,189,248,0.75);
       outline-offset: 2px;
     }
-    .report-problem .rp-dot {
+
+    .help-menu-dot {
       width: 8px;
       height: 8px;
-      border-radius: 999px;
+      border-radius: 8px;
       background: rgba(248, 113, 113, 0.95);
       box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.18);
       flex: 0 0 auto;
+    }
+
+    .help-menu-caret {
+      font-size: 12px;
+      letter-spacing: 0;
+      opacity: 0.86;
+    }
+
+    .help-menu-list {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      display: none;
+      min-width: 230px;
+      padding: 6px;
+      border-radius: 8px;
+      border: 1px solid rgba(148,163,184,0.55);
+      background: rgba(2, 6, 23, 0.96);
+      box-shadow: 0 18px 44px rgba(0,0,0,0.75);
+      backdrop-filter: blur(14px);
+    }
+
+    .help-menu.open .help-menu-list {
+      display: grid;
+      gap: 4px;
+    }
+
+    .help-menu-item {
+      width: 100%;
+      border: 0;
+      border-radius: 8px;
+      background: transparent;
+      color: rgba(248,250,252,0.95);
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      padding: 9px 10px;
+      text-align: left;
+    }
+
+    .help-menu-item:hover,
+    .help-menu-item:focus {
+      background: rgba(8,47,73,0.85);
+      outline: none;
+    }
+
+    .info-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 1200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0,0,0,0.74);
+      backdrop-filter: blur(6px);
+    }
+
+    .info-modal-backdrop.visible {
+      display: flex;
+    }
+
+    .info-modal {
+      width: min(920px, 100%);
+      max-height: min(760px, calc(100vh - 36px));
+      overflow: hidden;
+      border-radius: 8px;
+      border: 1px solid rgba(125,211,252,0.42);
+      background: linear-gradient(135deg, rgba(8,47,73,0.98), rgba(2,6,23,0.98));
+      box-shadow: 0 24px 70px rgba(0,0,0,0.86);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+    }
+
+    .info-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(148,163,184,0.28);
+    }
+
+    .info-modal-kicker {
+      color: rgba(125,211,252,0.95);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .info-modal-title {
+      margin-top: 3px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #f8fafc;
+    }
+
+    .info-modal-close {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: 1px solid rgba(148,163,184,0.55);
+      background: rgba(2,6,23,0.74);
+      color: #f8fafc;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .info-modal-body {
+      overflow: auto;
+      padding: 16px;
+      color: rgba(226,232,240,0.94);
+      line-height: 1.62;
+    }
+
+    .info-modal-body h3 {
+      margin: 18px 0 6px;
+      color: #f8fafc;
+      font-size: 16px;
+    }
+
+    .info-modal-body h3:first-child {
+      margin-top: 0;
+    }
+
+    .info-modal-body p {
+      margin: 0 0 10px;
+    }
+
+    .info-modal-body ol,
+    .info-modal-body ul {
+      margin: 8px 0 14px 20px;
+      padding: 0;
+    }
+
+    .info-modal-body li {
+      margin-bottom: 7px;
+    }
+
+    .info-modal-note {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid rgba(125,211,252,0.35);
+      background: rgba(2,6,23,0.48);
+      color: rgba(226,232,240,0.94);
+    }
+
+    .info-modal-frame {
+      width: 100%;
+      min-height: 620px;
+      border: 0;
+      border-radius: 8px;
+      background: #fff;
     }
 
     /* SEASON PICKER (LISTBOX + RADIO) */
@@ -1061,10 +1225,18 @@ NOTES:
     
     
     <div class="version-badge">...</div>
-<a class="report-problem" href="https://docs.google.com/forms/d/e/1FAIpQLSchZTE4DhJHImKfNzoc4_rk8bNZeeFaLGC7UY4CXiIe9P1xNQ/viewform" target="_blank" rel="noopener noreferrer" aria-label="Report a problem (opens Google Form in new tab)">
-      <span class="rp-dot" aria-hidden="true"></span>
-      <span>Report problem</span>
-    </a>
+    <div class="help-menu" id="helpMenu">
+      <button class="help-menu-button" id="helpMenuButton" type="button" aria-haspopup="true" aria-expanded="false">
+        <span class="help-menu-dot" aria-hidden="true"></span>
+        <span>Help</span>
+        <span class="help-menu-caret" aria-hidden="true">▾</span>
+      </button>
+      <div class="help-menu-list" id="helpMenuList" role="menu" aria-label="Help menu">
+        <button class="help-menu-item" type="button" role="menuitem" data-info-modal="report">Report a problem</button>
+        <button class="help-menu-item" type="button" role="menuitem" data-info-modal="party-info">Watch party info</button>
+        <button class="help-menu-item" type="button" role="menuitem" data-info-modal="party-how-to">How to watch together</button>
+      </div>
+    </div>
 <div class="backdrop-layer"></div>
     <div class="grain"></div>
 
@@ -1144,14 +1316,26 @@ NOTES:
       <div class="episodes-header">Episodes</div>
       <div class="episodes-strip" id="episodesStrip"></div>
     </section>
+    <div id="watchPartyMount"></div>
+    <div class="info-modal-backdrop" id="infoModalBackdrop" aria-hidden="true">
+      <section class="info-modal" role="dialog" aria-modal="true" aria-labelledby="infoModalTitle">
+        <header class="info-modal-header">
+          <div>
+            <div class="info-modal-kicker" id="infoModalKicker">Help</div>
+            <div class="info-modal-title" id="infoModalTitle">Help</div>
+          </div>
+          <button class="info-modal-close" id="infoModalClose" type="button" aria-label="Close help">✕</button>
+        </header>
+        <div class="info-modal-body" id="infoModalBody"></div>
+      </section>
+    </div>
     <!-- MODAL PLAYER -->
     <div class="modal-backdrop" id="modalBackdrop">
       <div class="modal-player">
         <button class="modal-close" id="modalClose" aria-label="Close player">✕</button>
         <iframe id="modalIframe"
                 src=""
-                allow="autoplay; fullscreen"
-                allowfullscreen>
+                allow="autoplay; fullscreen">
         </iframe>
       </div>
     </div>
@@ -1168,6 +1352,7 @@ NOTES:
 </div> <!-- end .app-shell -->
 
   
+  <script src="./js/watch_party_player.js"></script>
   <!-- JAVASCRIPT ENGINE -->
   <script>
     function stripJsonComments(input){
@@ -1257,11 +1442,9 @@ NOTES:
           "Shane Hollander and Ilya Rozanov enter the league with a rivalry already in motion. Their history ignites a series of tense encounters, culminating in a confrontation that sets the stage for a connection neither expected.",
         driveId: "1_bze8hkl9ZT-0hJAGhbKwIOxbLwe25cs",
         images: [
-          "../assets/HR/ep01_rookies.jpg",
-          "../assets/HR/ep01_rozzy.jpg",
           "../assets/HR/ep1_meetup.jpg"
         ],
-        thumbnail: "../assets/HR/ep01_rookies.jpg"
+        thumbnail: "../assets/HR/ep1_meetup.jpg"
       },
       {
         season: 1,
@@ -1273,10 +1456,9 @@ NOTES:
           "Forced together on the world’s biggest stage, Shane and Ilya must navigate Olympic pressure, media scrutiny, and the emotional cost of representing their countries—while their reputations push them to the edge.",
         driveId: "1eNkS4IbB5QyiisNwmiXK0eA0NKGDTedk",
         images: [
-          "../assets/HR/ep02_olympians.jpg",
           "../assets/HR/ep2_sasha.jpg"
         ],
-        thumbnail: "../assets/HR/ep02_olympians.jpg"
+        thumbnail: "../assets/HR/ep2_sasha.jpg"
       },
       {
         season: 1,
@@ -1288,10 +1470,10 @@ NOTES:
           "A chance encounter off the ice forces Shane and Ilya to confront what they truly want. Meanwhile, their feelings grow stronger as their secret relationship grows riskier.",
         driveId: "1l1OZpdmA0KfiHHUE9JDylGrZz9xYE5Fw",
         images: [
-          "../assets/HR/ep03_hunter.jpg",
-          "../assets/HR/eo03_scott.jpg"
+          "../assets/HR/shane-and-ilya-in-heated-rivalry-3.avif",
+          "../assets/HR/n0uuQcRDcyzjLYMYXcfHLfgcZab.webp"
         ],
-        thumbnail: "../assets/HR/ep03_hunter.jpg"
+        thumbnail: "../assets/HR/shane-and-ilya-in-heated-rivalry-3.avif"
       },
       {
         season: 1,
@@ -1303,12 +1485,10 @@ NOTES:
           "A moment of bravery pushes Shane and Ilya into the open, exposing their hearts and voices. As high‑profile romance enters the spotlight, the emotional stakes skyrocket.",
         driveId: "1sr3IfZS94cXaAUy-WMYnUt1kI53gT7mm",
         images: [
-          "../assets/HR/ep04_faceoff.jpg",
-          "../assets/HR/ep04_share+rozzy.jpg",
           "../assets/HR/ep4-rose.jpeg",
           "../assets/HR/ep4_meet-up.jpg"
         ],
-        thumbnail: "../assets/HR/ep04_faceoff.jpg"
+        thumbnail: "../assets/HR/ep4-rose.jpeg"
       },
       {
         season: 1,
@@ -1383,6 +1563,24 @@ NOTES:
     function driveDownloadUrl(id) {
       return `https://drive.google.com/uc?export=download&id=${id}`;
     }
+
+    function watchPartySourceId(ep) {
+      return `heated-rivalry-s${ep.season}-e${ep.number}`;
+    }
+
+    function watchPartySource(ep) {
+      return {
+        id: watchPartySourceId(ep),
+        label: `S${ep.season} E${ep.number} - ${ep.title}`,
+        meta: `${ep.runtime} min | ${ep.airdate} | Google Drive episode source`,
+        sourceType: "google_drive",
+        sourceUrl: driveWatchUrl(ep.driveId),
+        canControl: false,
+      };
+    }
+
+    const WATCH_PARTY_SOURCES = EPISODES.map(watchPartySource);
+    const WATCH_PARTY_SERVER_URL = "https://matrix-lauderdale-portal-processes.trycloudflare.com";
 
     function clearFadeTimers() {
       Object.values(fadeTimers).forEach((t) => clearInterval(t));
@@ -1526,7 +1724,18 @@ NOTES:
         downloadLink.innerHTML = `<span class="btn-pill-icon">⬇</span><span>Download</span>`;
         downloadLink.addEventListener("click", (e) => e.stopPropagation());
 
+        const partyBtn = document.createElement("button");
+        partyBtn.type = "button";
+        partyBtn.className = "btn-ghost";
+        partyBtn.innerHTML = `<span class="btn-pill-icon">☏</span><span>Watch Party</span>`;
+        partyBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          selectWatchPartyEpisode(ep);
+          document.getElementById("watchPartyMount")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
         actions.appendChild(watchBtn);
+        actions.appendChild(partyBtn);
         actions.appendChild(downloadLink);
 
         body.appendChild(titleRow);
@@ -1557,6 +1766,138 @@ NOTES:
       });
     }
 
+    const REPORT_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSchZTE4DhJHImKfNzoc4_rk8bNZeeFaLGC7UY4CXiIe9P1xNQ/viewform?embedded=true";
+    const infoModalBackdrop = document.getElementById("infoModalBackdrop");
+    const infoModalKicker = document.getElementById("infoModalKicker");
+    const infoModalTitle = document.getElementById("infoModalTitle");
+    const infoModalBody = document.getElementById("infoModalBody");
+    const infoModalClose = document.getElementById("infoModalClose");
+    const helpMenu = document.getElementById("helpMenu");
+    const helpMenuButton = document.getElementById("helpMenuButton");
+    const helpMenuList = document.getElementById("helpMenuList");
+
+    const INFO_MODAL_CONTENT = {
+      report: {
+        kicker: "Report",
+        title: "Report a Problem",
+        html: `
+          <iframe class="info-modal-frame"
+                  title="Report a problem form"
+                  src="${REPORT_FORM_URL}"
+                  loading="lazy">
+          </iframe>
+        `
+      },
+      "party-info": {
+        kicker: "Watch Party",
+        title: "What This Room Does",
+        html: `
+          <h3>Private shared viewing</h3>
+          <p>This room helps two or more people watch the same personal episode file together from different locations.</p>
+          <p>The page does not rebroadcast the video. Each person opens the same episode from Google Drive, then uses the shared room and timer to stay aligned.</p>
+
+          <h3>Room sync</h3>
+          <p>The watch-party room needs the watch-party server. GitHub Pages can show this page, but it cannot run the live room sync by itself.</p>
+
+          <h3>Episode handoff</h3>
+          <p>The selected episode controls the Open Episode button and the invite state. If an episode card's Watch Party button is used, that episode is selected in the room panel.</p>
+
+          <div class="info-modal-note">
+            Google Drive permissions still control who can open each recording. The page does not rebroadcast Google Drive playback.
+          </div>
+        `
+      },
+      "party-how-to": {
+        kicker: "How To",
+        title: "How to Watch Together",
+        html: `
+          <h3>Before the party</h3>
+          <ol>
+            <li>Make sure each guest has permission to open the Google Drive episode files.</li>
+            <li>Pick the episode from the Watch Party panel or press Watch Party on an episode card.</li>
+            <li>Enter a simple room name and your display name.</li>
+            <li>If room sync is online, press Copy Invite and send the link to the people joining.</li>
+          </ol>
+
+          <h3>Starting together</h3>
+          <ol>
+            <li>The host presses Start Watch Party.</li>
+            <li>Guests press Join Watch Party after the host has started the room.</li>
+            <li>Everyone presses Open Episode so the selected recording opens in Google Drive.</li>
+            <li>Pause at the start of the episode, count down in the call, and press play together.</li>
+            <li>Use Start Timer as a shared reference if anyone needs to pause and resync.</li>
+          </ol>
+
+          <h3>If something goes wrong</h3>
+          <ul>
+            <li>If the video will not open, check Google Drive sharing access.</li>
+            <li>If Start Watch Party and Join Watch Party are disabled, the room server is offline for this page.</li>
+            <li>If playback drifts, pause together, call out the timer position, and restart from the same timestamp.</li>
+          </ul>
+        `
+      }
+    };
+
+    function closeHelpMenu() {
+      if (!helpMenu || !helpMenuButton) return;
+      helpMenu.classList.remove("open");
+      helpMenuButton.setAttribute("aria-expanded", "false");
+    }
+
+    function toggleHelpMenu() {
+      if (!helpMenu || !helpMenuButton) return;
+      const isOpen = helpMenu.classList.toggle("open");
+      helpMenuButton.setAttribute("aria-expanded", String(isOpen));
+    }
+
+    function openInfoModal(key) {
+      const content = INFO_MODAL_CONTENT[key];
+      if (!content || !infoModalBackdrop || !infoModalBody) return;
+      closeHelpMenu();
+      infoModalKicker.textContent = content.kicker;
+      infoModalTitle.textContent = content.title;
+      infoModalBody.innerHTML = content.html;
+      infoModalBackdrop.classList.add("visible");
+      infoModalBackdrop.setAttribute("aria-hidden", "false");
+      infoModalClose?.focus();
+    }
+
+    function closeInfoModal() {
+      if (!infoModalBackdrop || !infoModalBody) return;
+      infoModalBackdrop.classList.remove("visible");
+      infoModalBackdrop.setAttribute("aria-hidden", "true");
+      infoModalBody.innerHTML = "";
+      helpMenuButton?.focus();
+    }
+
+    helpMenuButton?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleHelpMenu();
+    });
+
+    helpMenuList?.addEventListener("click", (e) => {
+      const item = e.target.closest("[data-info-modal]");
+      if (!item) return;
+      openInfoModal(item.getAttribute("data-info-modal"));
+    });
+
+    infoModalClose?.addEventListener("click", closeInfoModal);
+
+    infoModalBackdrop?.addEventListener("click", (e) => {
+      if (e.target === infoModalBackdrop) closeInfoModal();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (helpMenu && !helpMenu.contains(e.target)) closeHelpMenu();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeHelpMenu();
+        closeInfoModal();
+      }
+    });
+
     // ===== VERSION BADGE (AUTO-READ HEADER COMMENT) =====
     async function setVersionBadgeFromHeader() {
       const badge = document.querySelector(".version-badge");
@@ -1575,6 +1916,26 @@ NOTES:
 
     setVersionBadgeFromHeader();
     renderEpisodeCardsForSeason(1);
+
+    let watchPartyService = null;
+
+    function selectWatchPartyEpisode(ep) {
+      watchPartyService?.setCurrentItem?.(watchPartySourceId(ep));
+      if (watchPartyService?.roomInput && !watchPartyService.roomInput.value) {
+        watchPartyService.roomInput.value = `heated-rivalry-s${ep.season}-e${ep.number}`;
+        watchPartyService.updateButtons();
+      }
+    }
+
+    if (window.MyTvMovieWatchPartyPlayer) {
+      watchPartyService = window.MyTvMovieWatchPartyPlayer.init({
+        mountSelector: "#watchPartyMount",
+        title: "Heated Rivalry Watch Party",
+        items: WATCH_PARTY_SOURCES,
+        initialItemId: WATCH_PARTY_SOURCES[0]?.id,
+        serverUrl: window.MyTvMovieWatchPartyServerUrl || WATCH_PARTY_SERVER_URL,
+      });
+    }
   </script>
 </body>
 </html>

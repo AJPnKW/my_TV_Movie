@@ -1,0 +1,47 @@
+{
+  "version": "1.2.0",
+  "generated_at": "2026-03-21T00:00:00Z",
+  "defaults": {
+    "validation_mode": "provider_structural",
+    "network": {
+      "enabled": false,
+      "timeout_seconds": 5,
+      "retry_count": 1,
+      "cache_ttl_hours": 24,
+      "cache_file": "logs/availability_status_network_cache.json"
+    },
+    "entities": {
+      "movie": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc",
+          "local"
+        ]
+      },
+      "show": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc"
+        ]
+      },
+      "season": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc"
+        ]
+      },
+      "episode": {
+        "requires_url": true,
+        "preferred_sources": [
+          "videasy",
+          "vidsrc",
+          "local"
+        ]
+      }
+    }
+  },
+  "records": []
+}
