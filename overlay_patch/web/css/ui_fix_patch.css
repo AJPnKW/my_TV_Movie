@@ -1,0 +1,22 @@
+/* UI overlay patch: readability, density, carousel usability, dashboard spacing */
+.panel{border:none!important;box-shadow:none!important;padding:8px!important;background:transparent!important}
+.dash,.dashblock,.calendar-day,.calendar-item,.media-card,.epcard{box-sizing:border-box}
+.dashblock{padding:10px!important;border-radius:14px!important}
+.dashhead{margin-bottom:8px!important}
+#dashLastWeekCols,#dashScheduleCols{overflow-x:visible!important;grid-auto-flow:unset!important;grid-auto-columns:auto!important}
+#dashLastWeekCols .dashcol,#dashScheduleCols .dashcol{min-height:0!important;padding:8px!important}
+#dashLastWeekCols .dashcolstack,#dashScheduleCols .dashcolstack{gap:8px!important}
+.media-card img,.epcard img,.calendar-item img,.chip img{object-fit:cover!important;object-position:center center!important}
+.media-card__overlay{background:linear-gradient(180deg,rgba(0,0,0,0.05),rgba(0,0,0,0.82))!important;padding:8px!important}
+.media-card__overlay-title,.eptitle,.chip .t{font-size:14px!important;line-height:1.18!important;overflow-wrap:anywhere!important}
+.media-card__overlay-meta,.chip .s,.epmeta{font-size:11px!important;line-height:1.2!important}
+.media-card__surface-badge,.availability-badge{top:6px!important;right:6px!important;max-width:calc(100% - 12px)!important}
+.actionbar,.iconstrip,.chip .iconrow{gap:4px!important;flex-wrap:nowrap!important;overflow-x:auto!important}
+.actionbar-btn,.iconstrip-btn,.chip .actionicon{min-width:20px!important;height:20px!important;padding:0 2px!important}
+.carousel{display:flex!important;overflow-x:auto!important;overflow-y:hidden!important;gap:12px!important;scroll-snap-type:x proximity!important}
+.carousel .epcard,.carousel .media-card,.popup-episode-card{min-width:220px!important;max-width:320px!important;scroll-snap-align:start!important}
+.epimg,.media-card--episode .media-card__poster,.calendar-item .media-card__poster{min-height:124px!important;aspect-ratio:16/9!important}
+.calendar-month-grid{gap:6px!important}
+.calendar-day{padding:8px!important;min-height:0!important}
+.calendar-day__items{gap:6px!important}
+@media (max-width:900px){.carousel .epcard,.carousel .media-card,.popup-episode-card{min-width:180px!important;max-width:260px!important}}
