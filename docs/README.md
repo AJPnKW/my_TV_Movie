@@ -48,3 +48,14 @@ These are already in the correct functional folders and should stay there:
 
 ## Rule
 Do not add new docs at root unless they are repo-wide index, governance, status, or cross-cutting contracts.
+
+## Repo sync preflight
+Use `scripts/repo_sync_pre_codex_v2.ps1` before multi-tab Codex work that depends on trusted repo state.
+
+The script:
+- validates both configured repo roots and `.git` presence
+- fetches and prunes remotes without piping native git output into `Add-Content`
+- records branch, head, remote URLs, working tree state, and ahead/behind status versus `origin/main` and `github/main` when present
+- only runs `git pull --ff-only origin main` when the repo is on `main`, clean, and only behind `origin/main`
+- writes per-repo logs under each repo's `logs\`
+- writes a shared summary and zip bundle under `C:\Users\andrew\PROJECTS\GitHub\.ai_uploads`
