@@ -2,8 +2,8 @@
 # ==============================================================================
 # [FILE]    scripts/qa_availability_ui.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    Browser-level QA for availability badge visibility and upper-right
-#           placement on shared image surfaces.
+# [ROLE]    Browser-level QA for shared availability status rendering across
+#           badges and popcorn-icon rings.
 # [VERSION] v1.0.0
 # [UPDATED] 2026-03-21
 # [BUILD]   21.03.02
@@ -67,7 +67,11 @@ def _wait_for_badge(driver: webdriver.Edge, badge_selector: str, timeout: int = 
     WebDriverWait(driver, timeout).until(lambda d: d.execute_script(f"return document.readyState === 'complete' && document.querySelectorAll({json.dumps(badge_selector)}).length > 0;"))
 
 
-def _check_page(driver: webdriver.Edge, url: str, surface_selector: str, badge_selector: str, results: List[Dict[str, Any]], issues: List[str]) -> None:
+def _wait_for_selector(driver: webdriver.Edge, selector: str, timeout: int = 30) -> None:
+    WebDriverWait(driver, timeout).until(lambda d: d.execute_script(f"return document.readyState === 'complete' && document.querySelectorAll({json.dumps(selector)}).length > 0;"))
+
+
+def _check_badge_page(driver: webdriver.Edge, url: str, surface_selector: str, badge_selector: str, results: List[Dict[str, Any]], issues: List[str]) -> None:
     driver.get(url)
     _wait_for_badge(driver, badge_selector)
     surfaces = driver.find_elements(By.CSS_SELECTOR, surface_selector)
@@ -80,20 +84,59 @@ def _check_page(driver: webdriver.Edge, url: str, surface_selector: str, badge_s
     ok = _badge_in_top_right(driver, surface, badge)
     if not ok:
         issues.append(f"{url} first card badge not in upper-right image corner")
-    results.append({"url": url, "selector": surface_selector, "badge_top_right": ok})
+    results.append({"url": url, "selector": surface_selector, "mode": "badge", "badge_top_right": ok})
+
+
+def _check_watch_ring_page(
+    driver: webdriver.Edge,
+    url: str,
+    ring_selector: str,
+    forbidden_badge_selector: str,
+    results: List[Dict[str, Any]],
+    issues: List[str],
+) -> None:
+    driver.get(url)
+    _wait_for_selector(driver, ring_selector)
+    rings = driver.find_elements(By.CSS_SELECTOR, ring_selector)
+    if not rings:
+        issues.append(f"{url} missing popcorn availability ring")
+        return
+    ring = rings[0]
+    status = (ring.get_attribute("data-watch-availability") or "").strip().lower()
+    has_badge = bool(driver.find_elements(By.CSS_SELECTOR, forbidden_badge_selector))
+    valid_status = status in {"available", "unavailable", "not_yet_released"}
+    if not valid_status:
+        issues.append(f"{url} popcorn availability ring missing normalized status")
+    if has_badge:
+        issues.append(f"{url} still renders a movie/episode surface badge")
+    results.append({
+        "url": url,
+        "selector": ring_selector,
+        "mode": "watch_ring",
+        "status": status,
+        "valid_status": valid_status,
+        "surface_badge_removed": not has_badge,
+    })
 
 
 def _check_popups(driver: webdriver.Edge, base_url: str, results: List[Dict[str, Any]], issues: List[str]) -> None:
     driver.get(f"{base_url}/movies.html")
     WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "[data-movie-open]")))
     driver.find_elements(By.CSS_SELECTOR, "[data-movie-open]")[0].click()
-    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".popup-hero__poster .popup-surface-badge .availability-badge")))
-    movie_surface = driver.find_element(By.CSS_SELECTOR, ".popup-hero__poster")
-    movie_badge = driver.find_element(By.CSS_SELECTOR, ".popup-hero__poster .popup-surface-badge .availability-badge")
-    movie_ok = _badge_in_top_right(driver, movie_surface, movie_badge)
+    WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, ".popup-hero-header .actionbar-btn.popcorn")))
+    movie_ring = driver.find_element(By.CSS_SELECTOR, ".popup-hero-header .actionbar-btn.popcorn")
+    movie_status = (movie_ring.get_attribute("data-watch-availability") or "").strip().lower()
+    movie_has_badge = bool(driver.find_elements(By.CSS_SELECTOR, ".popup-hero__poster .popup-surface-badge .availability-badge"))
+    movie_ok = movie_status in {"available", "unavailable", "not_yet_released"} and not movie_has_badge
     if not movie_ok:
-        issues.append("movie popup badge not in upper-right image corner")
-    results.append({"url": f"{base_url}/movies.html", "selector": ".popup-hero__poster", "badge_top_right": movie_ok})
+        issues.append("movie popup must use the popcorn availability ring and not a poster badge")
+    results.append({
+        "url": f"{base_url}/movies.html",
+        "selector": ".popup-hero-header .actionbar-btn.popcorn",
+        "mode": "watch_ring",
+        "status": movie_status,
+        "surface_badge_removed": not movie_has_badge,
+    })
 
     driver.get(f"{base_url}/shows.html")
     WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.CSS_SELECTOR, "[data-show-open]")))
@@ -104,7 +147,7 @@ def _check_popups(driver: webdriver.Edge, base_url: str, results: List[Dict[str,
     show_ok = _badge_in_top_right(driver, show_surface, show_badge)
     if not show_ok:
         issues.append("show popup badge not in upper-right image corner")
-    results.append({"url": f"{base_url}/shows.html", "selector": ".popup-hero__poster", "badge_top_right": show_ok})
+    results.append({"url": f"{base_url}/shows.html", "selector": ".popup-hero__poster", "mode": "badge", "badge_top_right": show_ok})
 
 
 def main() -> int:
@@ -118,11 +161,11 @@ def main() -> int:
     issues: List[str] = []
     driver = _make_driver()
     try:
-        _check_page(driver, f"{args.base_url}/index.html", ".media-card__poster", ".media-card__surface-badge .availability-badge", results, issues)
-        _check_page(driver, f"{args.base_url}/shows.html", ".media-card--show .media-card__poster", ".media-card--show .media-card__surface-badge .availability-badge", results, issues)
-        _check_page(driver, f"{args.base_url}/movies.html", ".media-card--movie .media-card__poster", ".media-card--movie .media-card__surface-badge .availability-badge", results, issues)
-        _check_page(driver, f"{args.base_url}/calendar.html", ".calendar-item .media-card__poster", ".calendar-item .media-card__surface-badge .availability-badge", results, issues)
-        _check_page(driver, f"{args.base_url}/watch_me/watch_me.html", ".media-card__poster", ".media-card__surface-badge .availability-badge", results, issues)
+        _check_badge_page(driver, f"{args.base_url}/shows.html", ".media-card--show .media-card__poster", ".media-card--show .media-card__surface-badge .availability-badge", results, issues)
+        _check_watch_ring_page(driver, f"{args.base_url}/movies.html", ".media-card--movie .actionbar-btn.popcorn[data-watch-availability]", ".media-card--movie .media-card__surface-badge .availability-badge", results, issues)
+        _check_watch_ring_page(driver, f"{args.base_url}/index.html", ".episode-row .actionbar-btn.popcorn[data-watch-availability], .media-card--movie .actionbar-btn.popcorn[data-watch-availability]", ".episode-row .media-card__surface-badge .availability-badge, .media-card--movie .media-card__surface-badge .availability-badge", results, issues)
+        _check_watch_ring_page(driver, f"{args.base_url}/calendar.html", ".calendar-item .actionbar-btn.popcorn[data-watch-availability]", ".calendar-item .media-card__surface-badge .availability-badge", results, issues)
+        _check_watch_ring_page(driver, f"{args.base_url}/watch_me/watch_me.html", ".watchme-day-group .actionbar-btn.popcorn[data-watch-availability]", ".watchme-day-group .media-card__surface-badge .availability-badge", results, issues)
         _check_popups(driver, args.base_url, results, issues)
     except TimeoutException as exc:
         issues.append(f"ui qa timeout: {exc}")

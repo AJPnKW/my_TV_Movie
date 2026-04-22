@@ -47,6 +47,7 @@ function safeCardImage(image, kind, title){
 }
 export function renderCompactCardHtml(options = {}){
   const kind = options.kind || 'show';
+  const showSurfaceBadge = kind !== 'movie' && kind !== 'episode';
   const idAttr = kind === 'movie'
     ? ` data-movie-open="${esc(options.id)}"`
     : (kind === 'season' ? '' : ` data-show-open="${esc(options.id)}"`);
@@ -58,7 +59,7 @@ export function renderCompactCardHtml(options = {}){
     <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${attrString(articleAttrs)}>
       <button type="button" class="imgbox media-card__poster media-card__poster--${esc(kind)} media_block"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;color:inherit;cursor:pointer;">
         ${safeCardImage(options.image, kind, options.title)}
-        ${options.badgeHtml ? `<div class="media-card__surface-badge">${options.badgeHtml}</div>` : ''}
+        ${showSurfaceBadge && options.badgeHtml ? `<div class="media-card__surface-badge">${options.badgeHtml}</div>` : ''}
         ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy">${options.eyebrow ? `<span class="media-card__overlay-eyebrow">${esc(options.eyebrow)}</span>` : ''}<span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
       </button>
       <div class="cardbody media-card__body media-card__body--${esc(kind)}">

@@ -1556,7 +1556,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const statusContext = options.statusContext || {};
     return window.MyTVHubSharedModules.actionBar.renderActionBarHtml({
       compact: !!options.compact,
-      watch: options.popcornAttrs ? { kind: options.popcornKind || kind, attrs: options.popcornAttrs || {} } : null,
+      watch: options.popcornAttrs ? {
+        kind: options.popcornKind || kind,
+        attrs: options.popcornAttrs || {},
+        availabilityStatus: safeText(options.availabilityStatus || "").trim()
+      } : null,
       favourite: { active: !!options.favoriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } },
       status: options.showStatusAction ? { attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
       watched: { active: !!options.watchedActive, attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } },
@@ -2543,6 +2547,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum },
         popcornAttrs: hasSources ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
         popcornKind: "episode",
+        availabilityStatus: availabilityStatusOf(item),
         available
       }),
       articleAttrs: options.articleAttrs || { tabindex: "0", "data-kind": "episode", "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum },
@@ -2585,6 +2590,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       watchedToggleHtml,
       popcornAttrs,
       popcornKind: kind === "movie" ? "movie" : kind,
+      availabilityStatus: kind === "movie" ? availabilityStatusOf(item || {}) : "",
       available: kind === "movie" ? isMovieAvailable(item || {}) : isShowAvailable(item || {})
     });
   }
@@ -3171,6 +3177,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           showStatusAction: true,
           popcornAttrs: hasSources ? { "data-id": movieId } : null,
           popcornKind: "movie",
+          availabilityStatus: availabilityStatusOf(item),
           available: isDateAvailable(item.release_date || dateKey)
         }),
         articleAttrs: { "data-day": dateKey, "data-kind": "movie", "data-movie": movieId, tabindex: "0" },
@@ -3291,6 +3298,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
             popcornAttrs: hasDirectWatchSources(item) ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
             popcornKind: "episode",
+            availabilityStatus: availabilityStatusOf(item),
             available: isEpisodeAvailable(item),
             statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
           }),
@@ -3458,6 +3466,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         watchedToggleHtml: watchToggleHtml("movie", { "data-watch-movie": id }, isMovieWatched(movie)),
         popcornAttrs: hasDirectWatchSources(movie) ? { "data-id": id } : null,
         popcornKind: "movie",
+        availabilityStatus: availabilityStatusOf(movie),
         available: isMovieAvailable(movie)
       }),
       meta: releaseDate ? formatDateShort(releaseDate) : yearFromDate(movie?.release_date),
@@ -3558,13 +3567,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             showStatusAction: true,
             popcornAttrs: { "data-id": movie?.tmdb_id ?? "" },
             popcornKind: "movie",
+            availabilityStatus: availabilityStatusOf(movie),
             available: isMovieAvailable(movie)
           })}
         </div>
         <div class="popup-hero popup-hero--dense">
           <div class="popup-hero__poster">
             ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
-            <div class="popup-surface-badge">${availabilityBadgeHtml(movie, { compact: true })}</div>
           </div>
           <div class="popup-hero__body">
             <div class="popup-detail-grid popup-detail-grid--compact">
@@ -3760,6 +3769,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
                     popcornAttrs: hasDirectWatchSources(ep) ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
                     popcornKind: "episode",
+                    availabilityStatus: availabilityStatusOf(ep),
                     available: isEpisodeAvailable(ep),
                     statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
                   }),

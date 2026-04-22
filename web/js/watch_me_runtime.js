@@ -108,7 +108,11 @@ function buildActionBar(kind, item, context = {}) {
   return actionBar.renderActionBarHtml({
     kind,
     compact: true,
-    watch: (kind === 'movie' || kind === 'episode') ? { kind, attrs: { href: watchHref } } : null,
+    watch: (kind === 'movie' || kind === 'episode') ? {
+      kind,
+      attrs: { href: watchHref },
+      availabilityStatus: safeText(item?.availability_status)
+    } : null,
     status: { attrs: { href: '#', 'data-no-default': '1', 'data-kind': kind, 'data-id': id } },
     favourite: { attrs: { href: '#', 'data-kind': kind, 'data-id': id } },
     watched: { attrs: { href: '#', 'data-kind': kind, 'data-id': id } },

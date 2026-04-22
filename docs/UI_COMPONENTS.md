@@ -27,6 +27,11 @@ Rules
 -   icons only
 -   no text buttons
 -   consistent order
+-   movie and episode availability state is shown on the popcorn icon with a clipped outline ring:
+-   green = available
+-   yellow = not yet released
+-   red = unavailable
+-   movie and episode cards do not place availability badges over poster or still copy; shows and seasons keep the shared badge treatment
 
 ## Episode Card
 

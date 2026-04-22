@@ -60,8 +60,18 @@ function splitAttrs(attrs = {}){
   return { href, attrs: next };
 }
 
-function renderAnchor(cls, href, label, title, icon, attrs = {}){
-  return `<a class="actionbar-btn ${cls}" href="${escAttr(href)}" aria-label="${escAttr(label)}" title="${escAttr(title)}"${attrString(attrs)}><span aria-hidden="true">${icon}</span></a>`;
+function normalizeWatchAvailabilityStatus(value){
+  const text = String(value || '').trim().toLowerCase();
+  return text === 'available' || text === 'unavailable' || text === 'not_yet_released' ? text : '';
+}
+
+function renderAnchor(cls, href, label, title, icon, attrs = {}, options = {}){
+  const availabilityStatus = cls === 'popcorn' ? normalizeWatchAvailabilityStatus(options.availabilityStatus) : '';
+  const availabilityAttr = availabilityStatus ? ` data-watch-availability="${escAttr(availabilityStatus)}"` : '';
+  const iconHtml = cls === 'popcorn'
+    ? `<span class="actionbar-btn__glyph actionbar-btn__glyph--watch${availabilityStatus ? ` actionbar-btn__glyph--${availabilityStatus}` : ''}" aria-hidden="true"><span class="actionbar-btn__icon">${icon}</span></span>`
+    : `<span aria-hidden="true">${icon}</span>`;
+  return `<a class="actionbar-btn ${cls}" href="${escAttr(href)}" aria-label="${escAttr(label)}" title="${escAttr(title)}"${availabilityAttr}${attrString(attrs)}>${iconHtml}</a>`;
 }
 
 export function renderActionBarHtml(options = {}){
@@ -74,6 +84,8 @@ export function renderActionBarHtml(options = {}){
     left.push(renderAnchor('popcorn', watchLink.href, 'Watch source', 'Watch source', CONTRACT_ICONS.watch, {
       'data-watch-source-open': options.watch.kind || 'movie',
       ...watchLink.attrs
+    }, {
+      availabilityStatus: options.watch.availabilityStatus
     }));
   }
   if (options.status){

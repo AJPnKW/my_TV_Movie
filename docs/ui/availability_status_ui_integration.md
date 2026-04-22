@@ -14,14 +14,14 @@ Every applicable movie/show/season/episode display surface should be able to ren
 | popups/details | Yes |
 
 ## Rendering rule
-Pages must read `availability_status` from `data.json` and render one shared status badge/icon pattern.
+Pages must read `availability_status` from `data.json` and render one shared status pattern.
 
 Live implementation path:
 - shared badge helper: `web/js/availability_ui.js`
 - shared card renderer support: `web/js/card_renderer.js`
 - main app integration: `web/js/app_runtime.js`
 - watch_me integration: `web/js/watch_me_runtime.js`
-- badge styling: `web/css/main_app.css`
+- badge and ring styling: `web/css/main_app.css`
 
 ## Shared mapping
 | `availability_status` | UI label |
@@ -45,7 +45,8 @@ Codex must inspect the current component/helper/page architecture and integrate 
 - season detail block inside show popup
 - episode cards inside show popup
 
-## Phase 2 placement rule
-- Shared card badges render on the image surface in the upper-right corner via `media-card__surface-badge`.
-- Popup hero posters and popup visual surfaces render the same contract via `popup-surface-badge`.
-- Copy-only placement is no longer the primary availability surface for cards.
+## Placement rule
+- Show and season surfaces keep the shared availability badge treatment.
+- Movie and episode surfaces use the popcorn watch icon as the primary availability indicator with a clipped outline ring.
+- `available` = green ring, `not_yet_released` = yellow ring, `unavailable` = red ring.
+- Movie and episode cards do not place availability badges over poster or still copy.

@@ -4188,3 +4188,57 @@ body,
     flex-basis:min(88vw,360px) !important;
   }
 }
+
+.actionbar-btn.popcorn{
+  overflow:visible !important;
+}
+
+.actionbar-btn.popcorn .actionbar-btn__glyph--watch{
+  position:relative;
+  display:inline-grid !important;
+  place-items:center;
+  width:1em;
+  height:1em;
+  line-height:1;
+  overflow:hidden;
+  isolation:isolate;
+}
+
+.actionbar-btn.popcorn .actionbar-btn__glyph--watch::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:0.98em;
+  height:1.2em;
+  transform:translate(-50%, -50%);
+  border:0.12em solid transparent;
+  border-radius:999px;
+  opacity:0;
+  z-index:0;
+}
+
+.actionbar-btn.popcorn .actionbar-btn__icon{
+  position:relative;
+  z-index:1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
+}
+
+.actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--available::before{
+  border-color:#2dd4bf;
+  opacity:1;
+}
+
+.actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--unavailable::before{
+  border-color:#f87171;
+  opacity:1;
+}
+
+.actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--not_yet_released::before{
+  border-color:#facc15;
+  opacity:1;
+}
