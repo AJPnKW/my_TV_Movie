@@ -262,3 +262,10 @@ Commit
 - Updated `web/js/watch_party_player.js` and `web/heated-rivalry.html` so the GitHub Pages page can connect to an external hosted watch-party server through `serverUrl`.
 - Deployed the stack on the Minisforum under `/srv/my_tv_movie/watch-party` and validated public WSS room state sync through the active Cloudflare tunnel.
 - Implementation commits: `929dddf6`, `e303b580`
+
+## 2026-04-22 — Watch-me shell normalization and calendar list mode
+- Moved the canonical Watch Me shell to `web/watch_me.html`, converted `web/watch_me/watch_me.html` into a redirect-only compatibility path, and kept `web/watch.me.html` as the legacy redirect shell.
+- Folded Watch Me into the shared `web/js/app_runtime.js` page family, deleting the separate `web/js/watch_me_runtime.js` path so dashboard, watch-me, calendar, shows, and movies share one runtime entry.
+- Added a month list/tree calendar mode and repointed retired `web/tv_shows_listing.html` traffic to that canonical list view instead of the shows library.
+- Added visible hide/show toggles for browse-style filter rails, tightened shows/movies grid density, and fixed the version badge/footer to read canonical config metadata instead of a hard-coded runtime string.
+- Implementation commit: `ab465134`
