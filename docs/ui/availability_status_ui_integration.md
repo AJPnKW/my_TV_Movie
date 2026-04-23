@@ -47,6 +47,6 @@ Codex must inspect the current component/helper/page architecture and integrate 
 
 ## Placement rule
 - Show and season surfaces keep the shared availability badge treatment.
-- Movie and episode surfaces use the popcorn watch icon as the primary availability indicator with a clipped outline ring.
-- `available` = green ring, `not_yet_released` = yellow ring, `unavailable` = red ring.
+- Movie and episode surfaces use the popcorn watch icon as the primary availability indicator with a tight square outline.
+- `available` = green outline, `unavailable` = orange outline, `not_yet_released` = red outline.
 - Movie and episode cards do not place availability badges over poster or still copy.

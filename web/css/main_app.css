@@ -4209,11 +4209,11 @@ body,
   position:absolute;
   left:50%;
   top:50%;
-  width:0.98em;
-  height:1.2em;
+  width:1em;
+  height:1em;
   transform:translate(-50%, -50%);
   border:0.12em solid transparent;
-  border-radius:999px;
+  border-radius:0;
   opacity:0;
   z-index:0;
 }
@@ -4229,16 +4229,16 @@ body,
 }
 
 .actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--available::before{
-  border-color:#2dd4bf;
+  border-color:#22c55e;
   opacity:1;
 }
 
 .actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--unavailable::before{
-  border-color:#f87171;
+  border-color:#f97316;
   opacity:1;
 }
 
 .actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--not_yet_released::before{
-  border-color:#facc15;
+  border-color:#ef4444;
   opacity:1;
 }
