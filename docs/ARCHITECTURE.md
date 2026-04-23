@@ -31,9 +31,13 @@
 - Shows: `web/shows.html`
 - Movies: `web/movies.html`
 - Calendar: `web/calendar.html`
-- Watch Me: `web/watch_me/watch_me.html`
+- Watch Me: `web/watch_me.html`
 - Config: `web/config.html`
 - Inputs Editor: `web/inputs_editor.html`
+- Legacy redirects:
+  - `web/watch_me/watch_me.html`
+  - `web/watch.me.html`
+  - `web/tv_shows_listing.html`
 - Single-title feature pages may use reusable page modules when they do not alter the canonical catalog runtime.
 
 ## Reusable Page Modules
@@ -54,7 +58,12 @@
 ## Layout Rules
 
 - Calendar is full-width with no left sidebar.
+- Calendar supports two month-level views from the same shared runtime:
+  - wall calendar grid
+  - month list/tree view
 - Shows and movies keep left-sidebar filters.
+- Browse-style filter rails must expose a visible hide/show toggle instead of being permanently pinned open.
+- Watch Me keeps its own page but uses the shared root shell/runtime, shared cards/actions, and the same collapsible filter-rail pattern.
 - Dashboard and calendar weekly layouts must stay TV-first:
   - 7 visible columns at TV/desktop widths where the cards remain readable
   - responsive day/date frames on tablet and mobile instead of squeezing seven columns into unusable cards
@@ -74,3 +83,8 @@
   - `live_tv_list.txt`
   - `inputs_parsed.json`
 - Local validation and GitHub Actions must enforce the same runtime artifact and schema rules.
+
+## Version Contract
+
+- The visible app version badge/footer must derive from canonical runtime/config metadata, not from hard-coded version strings inside page runtimes.
+- `web/config.json > _meta.version` is the current UI-facing version source unless a newer documented shared metadata source replaces it.

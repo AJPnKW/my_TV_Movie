@@ -32,6 +32,17 @@ Rules
 -   orange = unavailable
 -   red = not yet released
 -   movie and episode cards do not place availability badges over poster or still copy; shows and seasons keep the shared badge treatment
+-   app version badges must read shared metadata, not hard-coded per-page strings
+
+## Filter Rails
+
+-   browse/filter rails must provide a visible hide/show toggle
+-   shows, movies, and watch-me use the same collapsible filter-rail pattern
+
+## Calendar Modes
+
+-   calendar keeps the wall-grid month view
+-   calendar also exposes a month list/tree view for release browsing from the same shared runtime
 
 ## Episode Card
 

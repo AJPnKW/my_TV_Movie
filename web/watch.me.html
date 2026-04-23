@@ -5,7 +5,7 @@ VERSION: 1.0.0
 UPDATED: 2026-04-03T00:00:00Z
 CHANGE NOTES:
 - Retired the legacy watch.me shell.
-- Redirects all legacy watch links to the canonical watch_me/watch_me.html page.
+- Redirects all legacy watch links to the canonical watch_me.html page.
 -->
 <html lang="en">
 <head>
@@ -62,16 +62,16 @@ CHANGE NOTES:
   <main class="retired-card">
     <h1>Legacy Watch Page Retired</h1>
     <p>The old <code>watch.me.html</code> path is no longer an active page shell.</p>
-    <p>The canonical watch page is <strong><code>web/watch_me/watch_me.html</code></strong>.</p>
+    <p>The canonical watch page is <strong><code>web/watch_me.html</code></strong>.</p>
     <p>You are being redirected automatically.</p>
     <div class="actions">
-      <a id="watchRedirectLink" class="btn primary" href="./watch_me/watch_me.html">Open Watch Me</a>
+      <a id="watchRedirectLink" class="btn primary" href="./watch_me.html">Open Watch Me</a>
       <a class="btn" href="./index.html">Back To Dashboard</a>
     </div>
   </main>
   <script>
     (function () {
-      var target = "./watch_me/watch_me.html" + (window.location.search || "") + (window.location.hash || "");
+      var target = "./watch_me.html" + (window.location.search || "") + (window.location.hash || "");
       var link = document.getElementById("watchRedirectLink");
       if (link) link.href = target;
       window.location.replace(target);

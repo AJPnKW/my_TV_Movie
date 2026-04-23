@@ -32,11 +32,9 @@ document.documentElement.setAttribute('data-runtime-family', 'normalized_main_ap
 if (document.body) document.body.setAttribute('data-runtime-family', 'normalized_main_app');
 
 (() => {
-  const APP_VERSION = "v1.4.4";
-
   const $ = (sel, el=document) => el.querySelector(sel);
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
-  const PAGE = document.body?.dataset?.page || "calendar";
+  const PAGE = document.body?.dataset?.page || "dashboard";
   const on = (el, evt, fn) => { if (el) el.addEventListener(evt, fn); };
 
   const state = {
@@ -47,6 +45,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     tab: PAGE,
     lastNonShowHash: `#${PAGE}`,
     calendarMonth: null,
+    calendarView: new URLSearchParams(location.search).get("view") === "list" ? "list" : "grid",
     watchState: null,
     watchStateSource: null,
     apiAvailable: false,
@@ -61,9 +60,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       movies: { genres: [], year: "", collection: "", scope: "all", watchlist: "all", watch_status: [], availability: "all", watched: "all" },
       watchlist: { watch_status: "all", media_kind: "all", search: "" }
     },
+    watchMe: {
+      search: "",
+      type: "all",
+      windowDays: 14
+    },
     view: {
       shows: { eye: "show_all" },
       movies: { eye: "show_all" }
+    },
+    layout: {
+      showsSidebarCollapsed: false,
+      moviesSidebarCollapsed: false,
+      watchMeSidebarCollapsed: false
     },
     dashboard: {
       lastWeekOffsetWeeks: 0
@@ -96,10 +105,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="dash">
           <section class="dashblock accent-pink">
             <div class="dashhead">
-              <h2>Last Week</h2>
-              <div class="dashhead__actions">
-                <span class="muted" id="dashLastWeekMeta"></span>
-                <div class="dashnav" aria-label="Last Week navigation">
+              <div class="dashhead__actions dashhead__actions--solo">
+                <span class="muted dashrange-meta" id="dashLastWeekMeta"></span>
+                <div class="dashnav" aria-label="Recent releases navigation">
                   <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="jump-back" aria-label="Jump back four weeks">«</button>
                   <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="back" aria-label="Previous week">‹</button>
                   <button class="calbtn dashnav__btn" type="button" data-dash-lastweek-nav="forward" aria-label="Next week">›</button>
@@ -143,6 +151,55 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       </div>
     `);
 
+    appendPanel("panel-watch-me", `
+      <div id="panel-watch-me" class="panel hidden">
+        <div class="browse-layout browse-layout--watch-me" data-sidebar-layout="watch-me">
+          <aside class="browse-sidebar browse-sidebar--watch-me" id="watchMeSidebar" aria-label="Watch Me filters">
+            <div class="browse-sidebar__header">
+              <div class="browse-sidebar__eyebrow">Watch Me</div>
+              <h2 class="browse-sidebar__title">Release Filters</h2>
+              <p class="browse-sidebar__copy">Shared runtime, shared cards, one upcoming release stream.</p>
+              <button class="calbtn browse-sidebar__toggle" type="button" data-sidebar-toggle="watch-me" aria-expanded="true">Hide Filters</button>
+            </div>
+            <div class="control-panel">
+              <div class="control-row control-row--primary">
+                <input id="watchMeSearch" class="input control-input" type="search" placeholder="Search releases" tabindex="-1" data-tv-skip="1" />
+                <select id="watchMeType" class="input control-select" tabindex="-1" data-tv-skip="1">
+                  <option value="all">Episodes and Movies</option>
+                  <option value="episodes">Episodes only</option>
+                  <option value="movies">Movies only</option>
+                </select>
+                <select id="watchMeWindow" class="input control-select" tabindex="-1" data-tv-skip="1">
+                  <option value="7">Next 7 days</option>
+                  <option value="14" selected>Next 14 days</option>
+                  <option value="30">Next 30 days</option>
+                  <option value="60">Next 60 days</option>
+                </select>
+              </div>
+              <div class="control-row control-row--actions">
+                <button id="watchMeToday" class="calbtn" type="button">Jump To Today</button>
+                <a class="calbtn" href="#calendar" data-tab-jump="calendar">Open Calendar</a>
+                <button id="watchMeReset" class="calbtn" type="button">Reset Filters</button>
+              </div>
+            </div>
+          </aside>
+          <section class="browse-content browse-content--watch-me">
+            <section class="dashblock watchme-hero">
+              <div class="dashhead">
+                <h2>Watch Me</h2>
+                <div class="browse-content__toolbar">
+                  <button class="calbtn browse-content__toggle" type="button" data-sidebar-toggle="watch-me" aria-expanded="true">Hide Filters</button>
+                  <span id="watchMeSummary" class="muted">Preparing view</span>
+                </div>
+              </div>
+              <p class="watchme-hero__copy">Upcoming episodes and movie releases in one shared release view.</p>
+            </section>
+            <div id="watchMeSections" class="watchme-sections"></div>
+          </section>
+        </div>
+      </div>
+    `);
+
     appendPanel("panel-show", `
       <div id="panel-show" class="panel hidden">
         <div id="showRoot"></div>
@@ -159,6 +216,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                 <button id="calToday" class="calbtn" type="button">Today</button>
               </div>
               <div class="calendar-toolbar__group calendar-toolbar__group--right">
+                <div class="calendar-view-toggle" id="calendarViewToggle" aria-label="Calendar view mode">
+                  <button class="segbtn active" type="button" data-calendar-view="grid">Grid</button>
+                  <button class="segbtn" type="button" data-calendar-view="list">Month List</button>
+                </div>
                 <button id="calPrev" class="calbtn" type="button" aria-label="Previous month">Prev</button>
                 <div id="calMonth" class="muted">Month</div>
                 <button id="calNext" class="calbtn" type="button" aria-label="Next month">Next</button>
@@ -172,13 +233,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-shows", `
       <div id="panel-shows" class="panel hidden">
-        <div class="browse-layout browse-layout--shows">
-          <aside class="browse-sidebar">
-            <div class="browse-sidebar__header">
-              <div class="browse-sidebar__eyebrow">Browse</div>
-              <h2 class="browse-sidebar__title">Library Filters</h2>
-              <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
-            </div>
+        <div class="browse-layout browse-layout--shows" data-sidebar-layout="shows">
+            <aside class="browse-sidebar">
+              <div class="browse-sidebar__header">
+                <div class="browse-sidebar__eyebrow">Browse</div>
+                <h2 class="browse-sidebar__title">Library Filters</h2>
+                <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
+                <button class="calbtn browse-sidebar__toggle" type="button" data-sidebar-toggle="shows" aria-expanded="true">Hide Filters</button>
+              </div>
             <div class="control-panel">
               <div class="control-row control-row--primary">
                 <input id="searchShows" class="input control-input" type="search" placeholder="Search shows" tabindex="-1" data-tv-skip="1" />
@@ -221,7 +283,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </aside>
           <section class="browse-content">
             <div class="dashblock">
-              <div class="dashhead dashhead--compact"><span id="showsSummary" class="muted">Library</span></div>
+              <div class="dashhead dashhead--compact">
+                <button class="calbtn browse-content__toggle" type="button" data-sidebar-toggle="shows" aria-expanded="true">Hide Filters</button>
+                <span id="showsSummary" class="muted">Library</span>
+              </div>
               <div id="showsGrid" class="media-grid media-grid--shows"></div>
             </div>
           </section>
@@ -231,13 +296,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     appendPanel("panel-movies", `
       <div id="panel-movies" class="panel hidden">
-        <div class="browse-layout browse-layout--movies">
-          <aside class="browse-sidebar">
-            <div class="browse-sidebar__header">
-              <div class="browse-sidebar__eyebrow">Browse</div>
-              <h2 class="browse-sidebar__title">Library Filters</h2>
-              <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
-            </div>
+        <div class="browse-layout browse-layout--movies" data-sidebar-layout="movies">
+            <aside class="browse-sidebar">
+              <div class="browse-sidebar__header">
+                <div class="browse-sidebar__eyebrow">Browse</div>
+                <h2 class="browse-sidebar__title">Library Filters</h2>
+                <p class="browse-sidebar__copy">Shared cards, shared actions, one left filter rail.</p>
+                <button class="calbtn browse-sidebar__toggle" type="button" data-sidebar-toggle="movies" aria-expanded="true">Hide Filters</button>
+              </div>
             <div class="control-panel">
               <div class="control-row control-row--primary">
                 <input id="searchMovies" class="input control-input" type="search" placeholder="Search movies" tabindex="-1" data-tv-skip="1" />
@@ -280,7 +346,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </aside>
           <section class="browse-content">
             <div class="dashblock">
-              <div class="dashhead dashhead--compact"><span id="moviesSummary" class="muted">Library</span></div>
+              <div class="dashhead dashhead--compact">
+                <button class="calbtn browse-content__toggle" type="button" data-sidebar-toggle="movies" aria-expanded="true">Hide Filters</button>
+                <span id="moviesSummary" class="muted">Library</span>
+              </div>
               <div id="moviesGrid" class="media-grid media-grid--movies"></div>
             </div>
           </section>
@@ -334,6 +403,81 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function setStatus(ok, msg) {
     $("#statusText").textContent = msg;
     $("#statusDot").classList.toggle("bad", !ok);
+  }
+
+  function appVersionText(){
+    const globalCfg = window.MyTVHubConfig?.get_config?.() || null;
+    return safeText(
+      state.cfg?._meta?.version ||
+      state.cfg?.version ||
+      globalCfg?._meta?.version ||
+      globalCfg?.version ||
+      state.data?.meta?.version ||
+      "v?"
+    );
+  }
+
+  function setCalendarView(view){
+    state.calendarView = view === "list" ? "list" : "grid";
+    setSegActive($("#calendarViewToggle"), "calendar-view", state.calendarView);
+    try {
+      const url = new URL(window.location.href);
+      if (state.calendarView === "list") url.searchParams.set("view", "list");
+      else url.searchParams.delete("view");
+      history.replaceState(null, "", url.toString());
+    } catch (_) { /* noop */ }
+  }
+
+  function sidebarStateKey(kind){
+    return kind === "shows"
+      ? "showsSidebarCollapsed"
+      : kind === "movies"
+        ? "moviesSidebarCollapsed"
+        : "watchMeSidebarCollapsed";
+  }
+
+  function applySidebarState(kind){
+    const layout = document.querySelector(`[data-sidebar-layout="${kind}"]`);
+    if (!layout) return;
+    const collapsed = !!state.layout?.[sidebarStateKey(kind)];
+    layout.classList.toggle("browse-layout--sidebar-hidden", collapsed);
+    $$(`[data-sidebar-toggle="${kind}"]`).forEach(btn => {
+      btn.textContent = collapsed ? "Show Filters" : "Hide Filters";
+      btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    });
+  }
+
+  function setSidebarCollapsed(kind, collapsed){
+    if (!state.layout) state.layout = {};
+    state.layout[sidebarStateKey(kind)] = !!collapsed;
+    applySidebarState(kind);
+  }
+
+  function canonicalPageForTab(tab){
+    return {
+      dashboard: "index.html",
+      "watch-me": "watch_me.html",
+      shows: "shows.html",
+      movies: "movies.html",
+      calendar: "calendar.html",
+      discover: "discover.html",
+      config: "config.html"
+    }[tab] || "";
+  }
+
+  function syncCanonicalTabUrl(tab){
+    const page = canonicalPageForTab(tab);
+    if (!page) return;
+    try {
+      const url = new URL(window.location.href);
+      const basePath = url.pathname.replace(/[^/]*$/, "");
+      url.pathname = `${basePath}${page}`;
+      if (!url.searchParams.get("view")) url.search = "";
+      if (tab !== "calendar" || state.calendarView !== "list") url.searchParams.delete("view");
+      if (tab === "calendar" && state.calendarView === "list") url.searchParams.set("view", "list");
+      url.hash = "";
+      history.replaceState(null, "", url.toString());
+    } catch (_) { /* noop */ }
   }
 
   function pad2(n){ return String(n).padStart(2,"0"); }
@@ -1796,6 +1940,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#modalBody").innerHTML = html;
     $("#modalBack").style.display = "flex";
     $("#modalBack").setAttribute("aria-hidden", "false");
+    setModalState();
     const card = $("#modalCard");
     if (card) {
       card.scrollTop = 0;
@@ -1858,6 +2003,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#modalBack").style.display = "none";
     $("#modalBack").setAttribute("aria-hidden", "true");
     $("#modalBody").innerHTML = "";
+    setModalState();
     if (lastFocusEl && typeof lastFocusEl.focus === "function") {
       lastFocusEl.focus();
     }
@@ -1869,6 +2015,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#providerBody").innerHTML = html;
     $("#providerBack").style.display = "flex";
     $("#providerBack").setAttribute("aria-hidden", "false");
+    setModalState();
     $$("a[data-watch-source-type]", $("#providerBody")).forEach(link => {
       link.addEventListener("click", () => {
         setTimeout(() => closeProviderModal(), 0);
@@ -1886,6 +2033,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $("#providerBack").style.display = "none";
     $("#providerBack").setAttribute("aria-hidden", "true");
     $("#providerBody").innerHTML = "";
+    setModalState();
     if (lastFocusEl && typeof lastFocusEl.focus === "function") {
       lastFocusEl.focus();
     }
@@ -1908,6 +2056,20 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if ($("#providerBack").style.display === "flex") return $("#providerCard");
     if ($("#modalBack").style.display === "flex") return $("#modalCard");
     return null;
+  }
+
+  function setModalState(){
+    const modalOpen = isModalOpen();
+    document.body.classList.toggle("app-modal-open", modalOpen);
+    const appRoot = document.querySelector(".app");
+    if (!appRoot) return;
+    if (modalOpen){
+      appRoot.setAttribute("inert", "");
+      appRoot.setAttribute("aria-hidden", "true");
+      return;
+    }
+    appRoot.removeAttribute("inert");
+    appRoot.removeAttribute("aria-hidden");
   }
 
   function activeRoot(){
@@ -2000,7 +2162,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const showsN = counts.shows ?? (state.data?.shows?.length ?? 0);
     const moviesN = counts.movies ?? (state.data?.movies?.length ?? 0);
     const errorsN = state.data?.errors?.length ?? 0;
-    return `${APP_VERSION} • loaded • errors=${errorsN} • shows=${showsN} • movies=${moviesN}`;
+    const generatedAt = safeText(meta.generated_utc || "");
+    return `${appVersionText()} • loaded • errors=${errorsN} • shows=${showsN} • movies=${moviesN}${generatedAt ? ` • generated=${generatedAt}` : ""}`;
   }
 
   async function fetchJsonFirst(urls){
@@ -2078,6 +2241,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           const pwm = Number(sz.provider_logo_max_w);
           if (Number.isFinite(sw) && sw > 0) document.documentElement.style.setProperty('--show_card_min', `${sw}px`);
           if (Number.isFinite(mw) && mw > 0) document.documentElement.style.setProperty('--movie_card_min', `${mw}px`);
+          if (Number.isFinite(sw) && sw > 0) document.documentElement.style.setProperty('--browse_show_card_min', `${Math.max(200, Math.min(sw, sw - 78))}px`);
+          if (Number.isFinite(mw) && mw > 0) document.documentElement.style.setProperty('--browse_movie_card_min', `${Math.max(200, Math.min(mw, mw - 78))}px`);
           if (Number.isFinite(ew) && ew > 0) document.documentElement.style.setProperty('--episode_thumb', `${ew}px`);
           if (Number.isFinite(cw) && cw > 0) document.documentElement.style.setProperty('--cal-thumb-w', `${cw}px`);
           if (Number.isFinite(hpw) && hpw > 0) document.documentElement.style.setProperty('--hero-poster-w', `${hpw}px`);
@@ -2149,7 +2314,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
       $("#footer").textContent = footerText();
       const vb = $("#verBadge");
-      if (vb) vb.textContent = APP_VERSION;
+      if (vb) vb.textContent = appVersionText();
       setStatus(true, "Ready");
       initCalendarMonth();
       routeFromHash();
@@ -2176,6 +2341,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function getAvailableTabs(){
     const tabs = new Set();
     if ($("#panel-dashboard")) tabs.add("dashboard");
+    if ($("#panel-watch-me")) tabs.add("watch-me");
     if ($("#panel-calendar")) tabs.add("calendar");
     if ($("#panel-shows")) tabs.add("shows");
     if ($("#panel-movies")) tabs.add("movies");
@@ -2190,6 +2356,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const available = getAvailableTabs();
     if (!available.has(tab)) return;
     state.tab = tab;
+    syncCanonicalTabUrl(tab);
     for (const b of $$(".tab")){
       const is = b.dataset.tab === tab;
       b.classList.toggle("active", is);
@@ -2197,6 +2364,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     }
 
     const panelCalendar = $("#panel-calendar");
+    const panelWatchMe = $("#panel-watch-me");
     const panelShows = $("#panel-shows");
     const panelMovies = $("#panel-movies");
     const panelShow = $("#panel-show");
@@ -2204,6 +2372,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const panelDashboard = $("#panel-dashboard");
     const panelDiscover = $("#panel-discover");
     const panelInputsEditor = $("#panel-inputs-editor");
+    if (panelWatchMe) panelWatchMe.classList.toggle("hidden", tab !== "watch-me");
     if (panelCalendar) panelCalendar.classList.toggle("hidden", tab !== "calendar");
     if (panelShows) panelShows.classList.toggle("hidden", tab !== "shows");
     if (panelMovies) panelMovies.classList.toggle("hidden", tab !== "movies");
@@ -2213,6 +2382,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (panelDiscover) panelDiscover.classList.toggle("hidden", tab !== "discover");
     if (panelInputsEditor) panelInputsEditor.classList.toggle("hidden", tab !== "inputs-editor");
 
+    if (tab === "watch-me") renderWatchMe();
     if (tab === "calendar") renderCalendar();
     if (tab === "shows") renderShows();
     if (tab === "movies") renderMovies();
@@ -2568,6 +2738,30 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return normalizeImageSrc(pickImage(movie || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path", "thumb"));
   }
 
+  function bindCalendarItemActions(root){
+    if (!root) return;
+    $$(".calendar-item[data-kind='episode']", root).forEach(card => card.addEventListener("click", (e) => {
+      if (e.target.closest(".actionbar")) return;
+      gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
+    }));
+    $$(".calendar-item[data-kind='movie']", root).forEach(card => card.addEventListener("click", (e) => {
+      if (e.target.closest(".actionbar")) return;
+      openMovieModal(parseInt(card.getAttribute("data-movie") || "0", 10));
+    }));
+    $$("[data-calendar-more]", root).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = safeText(btn.getAttribute("data-calendar-more"));
+        const open = btn.getAttribute("data-open") === "1";
+        $$(`.calendar-item.hidden[data-day='${key}']`, root).forEach(el => el.classList.toggle("hidden", open));
+        btn.setAttribute("data-open", open ? "0" : "1");
+        btn.textContent = open ? "Show less" : `+${safeText(btn.getAttribute("data-count"))} more`;
+      });
+    });
+    wireActionMenus(root);
+    wireIconStripActions(root, renderCalendar);
+    wireWatchSourceButtons(root);
+  }
+
   function buildIconStripHtml(kind, id, pct, titleText){
     const hasTarget = kind && id;
     if (!hasTarget) return "";
@@ -2593,6 +2787,125 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       availabilityStatus: kind === "movie" ? availabilityStatusOf(item || {}) : "",
       available: kind === "movie" ? isMovieAvailable(item || {}) : isShowAvailable(item || {})
     });
+  }
+
+  function buildWatchMeEntries(){
+    return collectUpcomingEvents(Number(state.watchMe?.windowDays) || 14, 0);
+  }
+
+  function watchMeMatches(entry){
+    const query = safeText(state.watchMe?.search || "").trim().toLowerCase();
+    if (!query) return true;
+    const item = entry?.item || {};
+    const values = [
+      item?.show_title,
+      item?.episode_name,
+      item?.title,
+      item?.name,
+      item?.overview
+    ].map(v => safeText(v).toLowerCase());
+    return values.some(v => v.includes(query));
+  }
+
+  function renderWatchMeMovieCard(entry){
+    const item = entry?.item || {};
+    const movieId = Number(item?.tmdb_id ?? 0) || 0;
+    const pct = Number.isFinite(item?.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
+    const watched = state.watchState ? isMovieWatched({ tmdb_id: movieId }) : false;
+    return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
+      kind: "movie",
+      id: movieId,
+      image: imageForCalendarItem(item),
+      title: safeText(item?.title || "Movie"),
+      badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+      meta: watchMeDateLabel(entry?.dateKey),
+      submeta: safeText(item?.runtime) ? `${item.runtime} min` : "",
+      overlay: true,
+      actionBarHtml: buildActionBarHtml("movie", movieId, {
+        title: safeText(item?.title || "Movie"),
+        compact: true,
+        pct,
+        favoriteActive: getWatchlistSet().has(String(movieId)),
+        watchedActive: watched,
+        showWatchedAction: true,
+        showStatusAction: true,
+        popcornAttrs: hasDirectWatchSources(item) ? { "data-id": movieId } : null,
+        popcornKind: "movie",
+        availabilityStatus: availabilityStatusOf(item),
+        available: isMovieAvailable(item)
+      }),
+      articleAttrs: { "data-kind": "movie", "data-movie": movieId, tabindex: "0" },
+      extraClass: "watchme-movie-card"
+    });
+  }
+
+  function watchMeDateLabel(dateKey){
+    return dateKey ? formatDateShort(dateKey) : "";
+  }
+
+  function renderWatchMeGroup(title, entries){
+    if (!entries.length){
+      return `<section class="dashblock"><div class="dashhead"><h2>${escHtml(title)}</h2><span class="muted">No matches</span></div></section>`;
+    }
+    const grouped = new Map();
+    entries.forEach(entry => {
+      const key = safeText(entry?.dateKey || "");
+      if (!key) return;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(entry);
+    });
+    return `
+      <section class="dashblock">
+        <div class="dashhead">
+          <h2>${escHtml(title)}</h2>
+          <span class="muted">${entries.length} ${entries.length === 1 ? "item" : "items"}</span>
+        </div>
+        ${Array.from(grouped.entries()).sort((a, b) => a[0].localeCompare(b[0])).map(([dateKey, groupItems]) => `
+          <div class="watchme-day-group" data-date-key="${escHtml(dateKey)}">
+            <div class="watchme-day-group__head">
+              <div class="watchme-day-group__title">${escHtml(watchMeDateLabel(dateKey))}</div>
+              <div class="watchme-day-group__meta">${escHtml(groupItems.length === 1 ? "1 title" : `${groupItems.length} titles`)}</div>
+            </div>
+            <div class="watchme-row">
+              ${groupItems.map(entry => entry.item?.kind === "episode" ? buildSharedEpisodeCard(entry.item, {
+                image: imageForCalendarItem(entry.item),
+                eyebrow: safeText(entry.item?.show_title || "Show"),
+                title: safeText(entry.item?.episode_name || "Episode"),
+                meta: episodeMetaLine(Number(entry.item?.season_number || 0), Number(entry.item?.episode_number || 0), entry.item?.runtime),
+                submeta: watchMeDateLabel(entry.dateKey),
+                extraClass: "watchme-episode-card"
+              }) : renderWatchMeMovieCard(entry)).join("")}
+            </div>
+          </div>
+        `).join("")}
+      </section>
+    `;
+  }
+
+  function renderWatchMe(){
+    const root = $("#watchMeSections");
+    if (!root) return;
+    const entries = buildWatchMeEntries().filter(watchMeMatches);
+    const type = safeText(state.watchMe?.type || "all");
+    const episodes = entries.filter(entry => safeText(entry?.item?.kind) === "episode");
+    const movies = entries.filter(entry => safeText(entry?.item?.kind) === "movie");
+    const sections = [];
+    if (type === "all" || type === "episodes") sections.push(renderWatchMeGroup("Upcoming Episodes", episodes));
+    if (type === "all" || type === "movies") sections.push(renderWatchMeGroup("Upcoming Movies", movies));
+    root.innerHTML = sections.join("") || `<section class="dashblock"><div class="muted">No items match the current filters.</div></section>`;
+    const summary = $("#watchMeSummary");
+    if (summary) summary.textContent = `${episodes.length} episodes • ${movies.length} movies • next ${Number(state.watchMe?.windowDays) || 14} days`;
+    wireActionMenus(root);
+    wireIconStripActions(root, renderWatchMe);
+    wireWatchSourceButtons(root);
+    $$(".watchme-episode-card[data-show]", root).forEach(card => card.addEventListener("click", (e) => {
+      if (e.target.closest(".actionbar")) return;
+      gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
+    }));
+    $$(".watchme-movie-card[data-movie]", root).forEach(card => card.addEventListener("click", (e) => {
+      if (e.target.closest(".actionbar")) return;
+      openMovieModal(parseInt(card.getAttribute("data-movie") || "0", 10));
+    }));
   }
 
   function renderShows(){
@@ -3208,37 +3521,41 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </section>
       `;
     };
-    $("#calendar").innerHTML = `
-      <div class="calendar-month-grid">
-        ${weeks.map((week, weekIndex) => `
-          <div class="calendar-week-band" data-calendar-week="${weekIndex}">
-            ${week.map(renderBandDay).join("")}
+    const renderTreeDay = ({ dt, key, num }) => {
+      const items = eventsByDate.get(key) || [];
+      return `
+        <details class="calendar-tree-day${key === today ? " is-today" : ""}" data-daycell="${key}"${key === today ? " open" : ""}>
+          <summary class="calendar-tree-day__summary">
+            <span class="calendar-tree-day__date">
+              <span class="calendar-tree-day__weekday">${escHtml(dt.toLocaleDateString(undefined, { weekday: "short" }))}</span>
+              <span class="calendar-tree-day__label">${escHtml(dt.toLocaleDateString(undefined, { month: "short" }))} ${num}</span>
+            </span>
+            <span class="calendar-tree-day__count">${escHtml(items.length === 0 ? "No releases" : items.length === 1 ? "1 release" : `${items.length} releases`)}</span>
+          </summary>
+          <div class="calendar-tree-day__items">
+            ${items.length ? items.map(item => renderItem(item, key)).join("") : `<div class="calendar-day__empty">No releases</div>`}
           </div>
-          ${week.map(renderDayCell).join("")}
-        `).join("")}
-      </div>
-    `;
+        </details>
+      `;
+    };
+    $("#calendar").innerHTML = state.calendarView === "list"
+      ? `
+        <div class="calendar-tree-list">
+          ${days.filter(day => day.inMonth).map(renderTreeDay).join("")}
+        </div>
+      `
+      : `
+        <div class="calendar-month-grid">
+          ${weeks.map((week, weekIndex) => `
+            <div class="calendar-week-band" data-calendar-week="${weekIndex}">
+              ${week.map(renderBandDay).join("")}
+            </div>
+            ${week.map(renderDayCell).join("")}
+          `).join("")}
+        </div>
+      `;
     requestAnimationFrame(() => updateCalendarStickyVars());
-    $$(".calendar-item[data-kind='episode']").forEach(card => card.addEventListener("click", (e) => {
-      if (e.target.closest(".actionbar")) return;
-      gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
-    }));
-    $$(".calendar-item[data-kind='movie']").forEach(card => card.addEventListener("click", (e) => {
-      if (e.target.closest(".actionbar")) return;
-      openMovieModal(parseInt(card.getAttribute("data-movie") || "0", 10));
-    }));
-    $$("[data-calendar-more]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const key = safeText(btn.getAttribute("data-calendar-more"));
-        const open = btn.getAttribute("data-open") === "1";
-        $$(`.calendar-item.hidden[data-day='${key}']`).forEach(el => el.classList.toggle("hidden", open));
-        btn.setAttribute("data-open", open ? "0" : "1");
-        btn.textContent = open ? `+${safeText(btn.getAttribute("data-count"))} more` : "Show less";
-      });
-    });
-    wireActionMenus($("#calendar"));
-    wireIconStripActions($("#calendar"), renderCalendar);
-    wireWatchSourceButtons($("#calendar"));
+    bindCalendarItemActions($("#calendar"));
   }
 
   function renderDashboard(){
@@ -3267,6 +3584,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       ? { kind: "movie", id: item?.tmdb_id }
       : { kind: "show", id: item?.show_tmdb_id || item?.tmdb_id };
     const imageForItem = (item) => {
+      if (item?.kind === "episode") return imageForCalendarItem(item);
       if (item?.thumb) return normalizeImageSrc(item.thumb);
       if (item?.kind === "episode"){
         const show = showMap.get(String(item?.show_tmdb_id ?? ""));
@@ -3327,7 +3645,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="dashcol dashcol--clean">
           <div class="dashcolhead">${escHtml(formatDateShort(dateKey))}</div>
           <div class="dashcolstack">
-            ${entries.filter(e => e.dateKey === dateKey).slice(0, 3).map(({ item }) => eventCard(item)).join("") || `<div class="muted">No items</div>`}
+            ${entries.filter(e => e.dateKey === dateKey).map(({ item }) => eventCard(item)).join("") || `<div class="muted">No items</div>`}
           </div>
         </div>
       `).join("");
@@ -3790,6 +4108,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   ensureMainAppShell();
+  setCalendarView(state.calendarView);
+  applySidebarState("shows");
+  applySidebarState("movies");
+  applySidebarState("watch-me");
   if ($("#modalClose")) $("#modalClose").textContent = "Exit";
   if ($("#providerClose")) $("#providerClose").textContent = "Exit";
 
@@ -3821,6 +4143,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     initCalendarMonth();
     renderCalendar();
     requestAnimationFrame(() => scrollToDayCell(toDateKey(new Date())));
+  });
+  on($("#calendarViewToggle"), "click", (e) => {
+    const btn = e.target.closest("[data-calendar-view]");
+    if (!btn) return;
+    setCalendarView(btn.getAttribute("data-calendar-view") || "grid");
+    renderCalendar();
   });
   on(window, "resize", () => updateCalendarStickyVars());
 
@@ -3918,6 +4246,52 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     renderMovies();
   });
 
+  on($("#watchMeSearch"), "input", (e) => {
+    state.watchMe.search = e.target.value || "";
+    renderWatchMe();
+  });
+  on($("#watchMeType"), "change", (e) => {
+    state.watchMe.type = e.target.value || "all";
+    renderWatchMe();
+  });
+  on($("#watchMeWindow"), "change", (e) => {
+    state.watchMe.windowDays = Number(e.target.value || 14);
+    renderWatchMe();
+  });
+  on($("#watchMeReset"), "click", () => {
+    state.watchMe = { search: "", type: "all", windowDays: 14 };
+    if ($("#watchMeSearch")) $("#watchMeSearch").value = "";
+    if ($("#watchMeType")) $("#watchMeType").value = "all";
+    if ($("#watchMeWindow")) $("#watchMeWindow").value = "14";
+    renderWatchMe();
+  });
+  on($("#watchMeToday"), "click", () => {
+    const today = toDateKey(new Date());
+    const group = document.querySelector(`.watchme-day-group[data-date-key="${CSS.escape(today)}"]`);
+    if (!group) return;
+    group.scrollIntoView({ block: "start", inline: "nearest", behavior: "smooth" });
+    const firstCard = group.querySelector("[data-show], [data-movie]");
+    if (firstCard instanceof HTMLElement) firstCard.focus({ preventScroll: true });
+  });
+
+  $$("[data-sidebar-toggle]").forEach(btn => {
+    on(btn, "click", () => {
+      const kind = safeText(btn.getAttribute("data-sidebar-toggle"));
+      if (!kind) return;
+      const key = sidebarStateKey(kind);
+      setSidebarCollapsed(kind, !state.layout[key]);
+    });
+  });
+
+  $$("[data-tab-jump]").forEach(link => {
+    on(link, "click", (e) => {
+      const target = safeText(link.getAttribute("data-tab-jump"));
+      if (!target || !getAvailableTabs().has(target)) return;
+      e.preventDefault();
+      location.hash = `#${target}`;
+    });
+  });
+
 
   // Modal close
   on($("#modalClose"), "click", closeModal);
@@ -3955,6 +4329,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   });
 
   document.addEventListener("click", () => closeAllActionMenus());
+  document.addEventListener("focusin", (e) => {
+    if (!isModalOpen()) return;
+    const root = activeModalCard();
+    if (!root || root.contains(e.target)) return;
+    e.stopPropagation();
+    const first = getFocusables(root)[0];
+    if (first && typeof first.focus === "function") first.focus({ preventScroll: true });
+  }, true);
 
   window.addEventListener("hashchange", routeFromHash);
 

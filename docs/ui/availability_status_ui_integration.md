@@ -20,7 +20,6 @@ Live implementation path:
 - shared badge helper: `web/js/availability_ui.js`
 - shared card renderer support: `web/js/card_renderer.js`
 - main app integration: `web/js/app_runtime.js`
-- watch_me integration: `web/js/watch_me_runtime.js`
 - badge and ring styling: `web/css/main_app.css`
 
 ## Shared mapping
@@ -39,7 +38,7 @@ Codex must inspect the current component/helper/page architecture and integrate 
 - shows cards
 - movies cards
 - calendar cards
-- watch_me cards
+- watch_me cards through the shared main runtime
 - show popup detail grid
 - movie popup detail grid
 - season detail block inside show popup

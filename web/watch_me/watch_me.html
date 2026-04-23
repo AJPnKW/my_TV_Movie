@@ -2,82 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="color-scheme" content="dark" />
-  <title>My TV Hub - Watch Me</title>
-  <link rel="icon" href="data:," />
-  <link rel="stylesheet" href="../css/my_tv_hub.css" />
-  <link rel="stylesheet" href="../css/main_app.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="refresh" content="0; url=../watch_me.html" />
+  <title>Watch Me Redirect</title>
+  <script>
+    window.location.replace("../watch_me.html" + (window.location.search || "") + (window.location.hash || ""));
+  </script>
 </head>
-<body data-app-family="watch-me" data-page="watch-me">
-  <div class="app">
-    <div class="top">
-      <div class="brand">
-        <div class="logo" aria-label="MY TV HUB"><div class="logo_txt"><div>MY TV</div><div>HUB</div></div></div>
-      </div>
-      <div class="nav" role="tablist" aria-label="Primary">
-        <a class="tab" href="../index.html">Dashboard</a>
-        <a class="tab" href="../shows.html">Shows</a>
-        <a class="tab" href="../movies.html">Movies</a>
-        <a class="tab active" href="./watch_me.html" aria-current="page">Watch Me</a>
-        <a class="tab" href="../calendar.html">Calendar</a>
-        <a class="tab" href="../discover.html">Discover</a>
-        <a class="tab" href="../config.html">Config</a>
-        <a class="tab" href="../index.html#inputs-editor">Inputs Editor</a>
-      </div>
-      <div class="status" aria-live="polite">
-        <div id="watchMeStatusDot" class="dot"></div>
-        <span id="watchMeStatusText">Loading</span>
-      </div>
-    </div>
-
-    <div class="shell shell--watchme">
-      <aside class="watchme-sidebar" aria-label="Watch Me filters">
-        <div class="watchme-side-group">
-          <div class="watchme-side-title">View</div>
-          <button id="watchMeToday" class="calbtn" type="button">Jump To Today</button>
-          <a class="calbtn" href="../calendar.html">Open Calendar</a>
-        </div>
-        <div class="watchme-side-group">
-          <div class="watchme-side-title">Search</div>
-          <input id="watchMeSearch" class="input" type="search" placeholder="Search titles" />
-        </div>
-        <div class="watchme-side-group">
-          <div class="watchme-side-title">Type</div>
-          <select id="watchMeType" class="input">
-            <option value="all">Episodes and Movies</option>
-            <option value="episodes">Episodes only</option>
-            <option value="movies">Movies only</option>
-          </select>
-        </div>
-        <div class="watchme-side-group">
-          <div class="watchme-side-title">Window</div>
-          <select id="watchMeWindow" class="input">
-            <option value="7">Next 7 days</option>
-            <option value="14" selected>Next 14 days</option>
-            <option value="30">Next 30 days</option>
-            <option value="60">Next 60 days</option>
-          </select>
-        </div>
-        <button id="watchMeReset" class="calbtn" type="button">Reset Filters</button>
-      </aside>
-
-      <main class="main watchme-main">
-        <section class="dashblock watchme-hero">
-          <div class="dashhead">
-            <h2>Watch Me</h2>
-            <span id="watchMeSummary" class="muted">Preparing view</span>
-          </div>
-          <p class="watchme-hero__copy">Upcoming episodes and movie releases using the shared card, action, and focus contract.</p>
-        </section>
-        <div id="watchMeSections" class="watchme-sections"></div>
-      </main>
-    </div>
-
-    <div class="footer" id="watchMeFooter"></div>
-  </div>
-
-  <script src="../js/chrometv_focus.js"></script>
-  <script type="module" src="../js/watch_me_runtime.js"></script>
+<body>
+  <p>The canonical Watch Me page is <strong><code>web/watch_me.html</code></strong>. Redirecting now.</p>
 </body>
 </html>
