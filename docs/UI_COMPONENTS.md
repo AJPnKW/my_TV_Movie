@@ -27,7 +27,7 @@ Rules
 -   icons only
 -   no text buttons
 -   consistent order
--   movie and episode availability state is shown on the popcorn icon with a tight square outline:
+-   movie and episode availability state is shown on the popcorn icon with a tight solid square:
 -   green = available
 -   orange = unavailable
 -   red = not yet released

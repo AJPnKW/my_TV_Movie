@@ -4304,7 +4304,7 @@ body,
   width:1em;
   height:1em;
   transform:translate(-50%, -50%);
-  border:0.12em solid transparent;
+  background:transparent;
   border-radius:0;
   opacity:0;
   z-index:0;
@@ -4321,17 +4321,17 @@ body,
 }
 
 .actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--available::before{
-  border-color:#22c55e;
+  background:#22c55e;
   opacity:1;
 }
 
 .actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--unavailable::before{
-  border-color:#f97316;
+  background:#f97316;
   opacity:1;
 }
 
 .actionbar-btn.popcorn .actionbar-btn__glyph--watch.actionbar-btn__glyph--not_yet_released::before{
-  border-color:#ef4444;
+  background:#ef4444;
   opacity:1;
 }
 
