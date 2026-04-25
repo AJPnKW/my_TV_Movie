@@ -1,25 +1,22 @@
 /*
 FILE: web/js/trailer_watch_popup_fix.js
-VERSION: v1.0.0
+VERSION: v1.1.0
 UPDATED: 2026-04-24
 CHANGE NOTES:
 - Opens the Watch/Popcorn provider popup immediately on weak networks and Chromecast devices.
-- Prevents the user from seeing no response while detail JSON or external provider data loads.
-- Uses short fetch timeouts and cache fallback behavior where the browser permits it.
+- Uses data/watch_sources_index.json first so the popup does not need full detail JSON for normal use.
+- Falls back to catalog_detail JSON only when the small index is missing or incomplete.
+- Clarifies that the fallback button opens the TMDB provider page, not a local watch page.
 */
 (function(){
   'use strict';
 
   const FETCH_TIMEOUT_MS = 4500;
+  const WATCH_INDEX_URL = '/data/watch_sources_index.json';
+  let watchIndexPromise = null;
 
-  function $(selector, root){
-    return (root || document).querySelector(selector);
-  }
-
-  function text(value){
-    return (value == null ? '' : String(value)).trim();
-  }
-
+  function $(selector, root){ return (root || document).querySelector(selector); }
+  function text(value){ return (value == null ? '' : String(value)).trim(); }
   function escapeHtml(value){
     return text(value)
       .replaceAll('&', '&amp;')
@@ -28,13 +25,11 @@ CHANGE NOTES:
       .replaceAll('"', '&quot;')
       .replaceAll("'", '&#39;');
   }
-
   function appBasePath(){
     const path = location.pathname || '';
     const idx = path.indexOf('/web/');
     return idx > 0 ? path.slice(0, idx) : '';
   }
-
   function withBase(path){
     const value = text(path);
     if (!value) return '';
@@ -42,7 +37,6 @@ CHANGE NOTES:
     if (value.startsWith('/')) return appBasePath() + value;
     return value;
   }
-
   function providerElements(){
     return {
       back: $('#providerBack'),
@@ -52,7 +46,6 @@ CHANGE NOTES:
       close: $('#providerClose')
     };
   }
-
   function openProvider(title, html){
     const el = providerElements();
     if (!el.back || !el.body) return false;
@@ -66,7 +59,6 @@ CHANGE NOTES:
     }
     return true;
   }
-
   function closeProvider(){
     const el = providerElements();
     if (!el.back) return;
@@ -74,7 +66,6 @@ CHANGE NOTES:
     el.back.setAttribute('aria-hidden', 'true');
     if (el.body) el.body.innerHTML = '';
   }
-
   function loadingHtml(label){
     return '<div class="trailer-watch-panel">' +
       '<div class="trailer-watch-title">Opening watch options…</div>' +
@@ -82,16 +73,15 @@ CHANGE NOTES:
       '<div class="trailer-watch-spinner" aria-hidden="true"></div>' +
       '</div>';
   }
-
   function errorHtml(label, fallbackUrl){
-    const link = fallbackUrl ? '<a class="calbtn trailer-watch-link" href="' + escapeHtml(fallbackUrl) + '" target="_blank" rel="noopener">Open TMDB watch page</a>' : '';
+    const link = fallbackUrl ? '<a class="calbtn trailer-watch-link" href="' + escapeHtml(fallbackUrl) + '" target="_blank" rel="noopener">Open TMDB providers page</a>' : '';
     return '<div class="trailer-watch-panel trailer-watch-panel--warn">' +
-      '<div class="trailer-watch-title">Watch options are slow right now</div>' +
-      '<div class="trailer-watch-note">' + escapeHtml(label || 'The popup opened, but detailed sources did not load fast enough on this network.') + '</div>' +
+      '<div class="trailer-watch-title">Local watch-source details are slow right now</div>' +
+      '<div class="trailer-watch-note">' + escapeHtml(label || 'The popup opened, but this network did not load the local watch-source details fast enough.') + '</div>' +
+      '<div class="trailer-watch-note">TMDB providers page is an external fallback reference. It can show where a title may be available, but it is not your local watch link.</div>' +
       link +
       '</div>';
   }
-
   function sourceButton(source){
     const href = text(source && source.href);
     if (!href) return '';
@@ -102,11 +92,12 @@ CHANGE NOTES:
       (note ? '<span class="trailer-watch-source__note">' + escapeHtml(note) + '</span>' : '') +
       '</a>';
   }
-
   function providersFromWatch(item){
-    const watch = item && typeof item === 'object' ? item.watch : null;
-    const providers = watch && typeof watch === 'object' ? watch.providers : null;
-    if (!providers || typeof providers !== 'object') return [];
+    if (!item || typeof item !== 'object') return [];
+    if (Array.isArray(item.providers_flat)) return item.providers_flat;
+    const watch = item.watch && typeof item.watch === 'object' ? item.watch : null;
+    const providers = watch && typeof watch.providers === 'object' ? watch.providers : null;
+    if (!providers) return [];
     const region = providers.CA || providers.US || providers.GB || providers.AU || [];
     if (!Array.isArray(region)) return [];
     return region.slice(0, 10).map(function(provider){
@@ -116,18 +107,18 @@ CHANGE NOTES:
       return { name: name, logo: logo || tmdbLogo };
     });
   }
-
   function providerChipsHtml(item){
     const providers = providersFromWatch(item);
     if (!providers.length) return '<div class="trailer-watch-note">No provider logos available in local data.</div>';
     return '<div class="trailer-provider-chips">' + providers.map(function(provider){
-      const img = provider.logo ? '<img src="' + escapeHtml(provider.logo) + '" alt="" loading="lazy" onerror="this.remove()" />' : '';
-      return '<span class="trailer-provider-chip">' + img + '<span>' + escapeHtml(provider.name) + '</span></span>';
+      const img = provider.logo ? '<img src="' + escapeHtml(withBase(provider.logo)) + '" alt="" loading="lazy" decoding="async" onerror="this.remove()" />' : '';
+      return '<span class="trailer-provider-chip">' + img + '<span>' + escapeHtml(provider.name || 'Provider') + '</span></span>';
     }).join('') + '</div>';
   }
-
   function collectSources(item){
-    const watch = item && typeof item === 'object' ? item.watch : null;
+    if (!item || typeof item !== 'object') return [];
+    if (Array.isArray(item.sources)) return item.sources.filter(function(source){ return !!text(source && source.href); });
+    const watch = item.watch && typeof item.watch === 'object' ? item.watch : null;
     const embeds = watch && Array.isArray(watch.embed) ? watch.embed : [];
     return embeds.map(function(entry, index){
       return {
@@ -139,7 +130,6 @@ CHANGE NOTES:
       };
     }).filter(function(entry){ return !!entry.href; });
   }
-
   function tmdbWatchUrl(kind, id){
     const clean = text(id);
     if (!clean) return '';
@@ -147,25 +137,24 @@ CHANGE NOTES:
       ? 'https://www.themoviedb.org/movie/' + encodeURIComponent(clean) + '/watch'
       : 'https://www.themoviedb.org/tv/' + encodeURIComponent(clean) + '/watch';
   }
-
   function renderSources(title, item, kind, id){
     const sources = collectSources(item);
-    const fallback = tmdbWatchUrl(kind === 'movie' ? 'movie' : 'tv', id);
+    const fallback = text(item && item.tmdb_provider_url) || tmdbWatchUrl(kind === 'movie' ? 'movie' : 'tv', id);
     const buttons = sources.length
       ? sources.map(sourceButton).join('')
       : '<div class="trailer-watch-note">No direct local watch links are configured for this item yet.</div>';
-    const fallbackLink = fallback ? '<a class="calbtn trailer-watch-link" href="' + escapeHtml(fallback) + '" target="_blank" rel="noopener">Open TMDB watch page</a>' : '';
+    const fallbackLink = fallback ? '<a class="calbtn trailer-watch-link" href="' + escapeHtml(fallback) + '" target="_blank" rel="noopener">Open TMDB providers page</a>' : '';
     return '<div class="trailer-watch-panel">' +
       '<div class="trailer-watch-title">' + escapeHtml(title || 'Watch options') + '</div>' +
       '<div class="trailer-watch-grid">' + buttons + '</div>' +
       providerChipsHtml(item) +
+      '<div class="trailer-watch-note">TMDB providers page is only a fallback reference if local watch links are missing or slow.</div>' +
       fallbackLink +
       '</div>';
   }
-
-  async function fetchJsonWithTimeout(url){
+  async function fetchJsonWithTimeout(url, timeoutMs){
     const controller = new AbortController();
-    const timeout = setTimeout(function(){ controller.abort(); }, FETCH_TIMEOUT_MS);
+    const timeout = setTimeout(function(){ controller.abort(); }, timeoutMs || FETCH_TIMEOUT_MS);
     try {
       const response = await fetch(url, { cache: 'force-cache', signal: controller.signal });
       if (!response.ok) throw new Error('HTTP ' + response.status);
@@ -174,24 +163,38 @@ CHANGE NOTES:
       clearTimeout(timeout);
     }
   }
-
+  async function loadWatchIndex(){
+    if (!watchIndexPromise) {
+      watchIndexPromise = fetchJsonWithTimeout(withBase(WATCH_INDEX_URL), 2200).catch(function(){ return null; });
+    }
+    return watchIndexPromise;
+  }
+  function watchIndexKeys(ctx){
+    if (ctx.kind === 'movie') return ['movie:' + ctx.id];
+    return [
+      'episode:' + ctx.showId + ':' + ctx.season + ':' + ctx.episode,
+      'tv:' + ctx.showId
+    ];
+  }
+  function lookupWatchIndex(index, ctx){
+    if (!index || typeof index !== 'object' || !index.items || typeof index.items !== 'object') return null;
+    const keys = watchIndexKeys(ctx);
+    for (const key of keys){
+      if (index.items[key]) return index.items[key];
+    }
+    return null;
+  }
   async function loadDetail(id){
     const clean = text(id);
     if (!clean) return null;
-    return fetchJsonWithTimeout(withBase('/data/catalog_detail/' + encodeURIComponent(clean) + '.json'));
+    return fetchJsonWithTimeout(withBase('/data/catalog_detail/' + encodeURIComponent(clean) + '.json'), FETCH_TIMEOUT_MS);
   }
-
   function findEpisode(show, seasonNumber, episodeNumber){
     const seasons = Array.isArray(show && show.seasons) ? show.seasons : [];
-    const season = seasons.find(function(item){
-      return Number(item.season_number || item.number || item.season) === Number(seasonNumber);
-    });
+    const season = seasons.find(function(item){ return Number(item.season_number || item.number || item.season) === Number(seasonNumber); });
     const episodes = Array.isArray(season && season.episodes) ? season.episodes : [];
-    return episodes.find(function(item){
-      return Number(item.episode_number || item.number || item.ep) === Number(episodeNumber);
-    }) || null;
+    return episodes.find(function(item){ return Number(item.episode_number || item.number || item.ep) === Number(episodeNumber); }) || null;
   }
-
   function contextFromButton(button){
     const kind = text(button.getAttribute('data-watch-source-open'));
     return {
@@ -202,11 +205,9 @@ CHANGE NOTES:
       episode: text(button.getAttribute('data-episode'))
     };
   }
-
   async function handleWatchClick(event){
     const button = event.target && event.target.closest ? event.target.closest('[data-watch-source-open]') : null;
     if (!button) return;
-
     event.preventDefault();
     event.stopPropagation();
     event.stopImmediatePropagation();
@@ -216,7 +217,16 @@ CHANGE NOTES:
     const detailId = isMovie ? ctx.id : ctx.showId;
     const fallback = tmdbWatchUrl(isMovie ? 'movie' : 'tv', detailId);
 
-    openProvider('Where to watch', loadingHtml('Loading watch choices. The popup is open, so the click worked.'));
+    openProvider('Where to watch', loadingHtml('Opening local watch choices. The popup is open, so the click worked.'));
+
+    try {
+      const index = await loadWatchIndex();
+      const indexed = lookupWatchIndex(index, ctx);
+      if (indexed) {
+        openProvider(text(indexed.title || 'Watch options'), renderSources(indexed.title || 'Watch options', indexed, indexed.kind || ctx.kind, detailId));
+        return;
+      }
+    } catch (_) { /* fall back to detail JSON */ }
 
     try {
       const detail = await loadDetail(detailId);
@@ -233,10 +243,9 @@ CHANGE NOTES:
       const title = (detail.title || detail.name || 'Show') + ' • ' + (episode.title || episode.name || ('Episode ' + ctx.episode));
       openProvider(title, renderSources(title, episode, 'episode', detailId));
     } catch (error) {
-      openProvider('Where to watch', errorHtml('Trailer network timed out while loading detailed sources. Try again, or use the fallback page.', fallback));
+      openProvider('Where to watch', errorHtml('Trailer internet timed out while loading local watch-source details. Try again after the page finishes loading, or open the TMDB providers page below.', fallback));
     }
   }
-
   function installStyles(){
     if (document.getElementById('trailerWatchPopupFixStyles')) return;
     const style = document.createElement('style');
@@ -258,9 +267,9 @@ CHANGE NOTES:
       '@keyframes trailer-watch-spin{to{transform:rotate(360deg)}}';
     document.head.appendChild(style);
   }
-
   function boot(){
     installStyles();
+    loadWatchIndex();
     const close = $('#providerClose');
     const back = $('#providerBack');
     if (close && !close.dataset.trailerFixCloseBound) {
@@ -269,16 +278,10 @@ CHANGE NOTES:
     }
     if (back && !back.dataset.trailerFixBackBound) {
       back.dataset.trailerFixBackBound = '1';
-      back.addEventListener('click', function(event){
-        if (event.target === back) closeProvider();
-      }, true);
+      back.addEventListener('click', function(event){ if (event.target === back) closeProvider(); }, true);
     }
     document.addEventListener('click', handleWatchClick, true);
   }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, { once: true });
-  } else {
-    boot();
-  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+  else boot();
 })();
