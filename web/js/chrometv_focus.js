@@ -20,6 +20,7 @@
 
   loadCss('./css/runtime_layout_fix.css');
   loadScript('./js/watch_state_manager.js');
+  loadScript('./js/runtime_render_fix.js');
   loadScript('./js/trailer_watch_popup_fix.js');
 
   function activeRoot(){
