@@ -1,4 +1,27 @@
 (function(){
+  if (window.__myTvHubFocusBootLoaded) return;
+  window.__myTvHubFocusBootLoaded = true;
+
+  function loadCss(href){
+    if (!href || document.querySelector('link[href="' + href + '"]')) return;
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  function loadScript(src){
+    if (!src || document.querySelector('script[src="' + src + '"]')) return;
+    var script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    document.head.appendChild(script);
+  }
+
+  loadCss('./css/runtime_layout_fix.css');
+  loadScript('./js/watch_state_manager.js');
+  loadScript('./js/trailer_watch_popup_fix.js');
+
   function activeRoot(){
     var providerBack = document.getElementById('providerBack');
     if (providerBack && getComputedStyle(providerBack).display !== 'none' && providerBack.getAttribute('aria-hidden') !== 'true'){
@@ -79,12 +102,8 @@
       if (dir === 'ArrowRight' && dx <= 1) return;
       if (dir === 'ArrowUp' && dy >= -1) return;
       if (dir === 'ArrowDown' && dy <= 1) return;
-      var score = Math.abs(dx) * ((dir === 'ArrowLeft' || dir === 'ArrowRight') ? 1 : 1.4) +
-        Math.abs(dy) * ((dir === 'ArrowUp' || dir === 'ArrowDown') ? 1 : 1.4);
-      if (score < bestScore){
-        best = el;
-        bestScore = score;
-      }
+      var score = Math.abs(dx) * ((dir === 'ArrowLeft' || dir === 'ArrowRight') ? 1 : 1.4) + Math.abs(dy) * ((dir === 'ArrowUp' || dir === 'ArrowDown') ? 1 : 1.4);
+      if (score < bestScore){ best = el; bestScore = score; }
     });
     if (!best) return false;
     best.focus({ preventScroll: true });
