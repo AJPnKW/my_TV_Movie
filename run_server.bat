@@ -9,4 +9,4 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-call "%~dp0tools\run_local_servers.bat" %*
+call "%~dp0run_local_servers.bat" %*

@@ -47,8 +47,12 @@ $requiredFiles = @(
     'web/js/ui_contract_fix.js',
     'web/css/runtime_layout_fix.css',
     'web/css/ui_contract_fix.css',
+    'run_local_servers.bat',
     'run_server.bat',
+    'run_schema.bat',
+    'scripts/generate_schema.py',
     'tools/run_local_servers.bat',
+    'tools/start_inputs_editor.cmd',
     'tools/run_smoke_test.ps1',
     'tools/inputs_editor/inputs_editor_server.py',
     'reports/ui_stabilization/asset_optimization.json',
@@ -78,17 +82,31 @@ foreach ($page in $pageFiles) {
 
 Write-Host '== Local launcher contract =='
 $rootLauncher = Get-Content -Raw -LiteralPath 'run_server.bat'
-$localLauncher = Get-Content -Raw -LiteralPath 'tools/run_local_servers.bat'
+$canonicalLauncher = Get-Content -Raw -LiteralPath 'run_local_servers.bat'
+$toolsLauncher = Get-Content -Raw -LiteralPath 'tools/run_local_servers.bat'
+$editorLauncher = Get-Content -Raw -LiteralPath 'tools/start_inputs_editor.cmd'
 $smokeLauncher = Get-Content -Raw -LiteralPath 'tools/run_smoke_test.ps1'
-if ($rootLauncher -notlike '*tools\run_local_servers.bat*') {
-    Add-CheckError 'run_server.bat must delegate to tools/run_local_servers.bat.'
+if ($canonicalLauncher -notlike '*tools\run_smoke_test.ps1*') {
+    Add-CheckError 'run_local_servers.bat must call tools/run_smoke_test.ps1.'
+}
+if ($rootLauncher -notlike '*run_local_servers.bat*') {
+    Add-CheckError 'run_server.bat must delegate to run_local_servers.bat.'
 }
 if ($rootLauncher -match 'app\.py|8811|fetch_tmdb\.py|pip install') {
     Add-CheckError 'run_server.bat still contains obsolete app.py/bootstrap launch logic.'
 }
-if ($localLauncher -notlike '*tools\run_smoke_test.ps1*') {
-    Add-CheckError 'tools/run_local_servers.bat must call tools/run_smoke_test.ps1.'
+if ($toolsLauncher -notlike '*run_local_servers.bat*') {
+    Add-CheckError 'tools/run_local_servers.bat must delegate to root run_local_servers.bat.'
 }
+if ($editorLauncher -notlike '*run_local_servers.bat*') {
+    Add-CheckError 'tools/start_inputs_editor.cmd must delegate to root run_local_servers.bat.'
+}
+if (Test-Path -LiteralPath 'tools/start_inputs_editor.ps1') {
+    Add-CheckError 'tools/start_inputs_editor.ps1 should not return as a separate editor-only launcher.'
+}
+if (Test-Path -LiteralPath 'docs.zip') { Add-CheckError 'Root docs.zip should not be tracked or restored.' }
+if (Test-Path -LiteralPath 'docs (2).zip') { Add-CheckError 'Root docs (2).zip should not be tracked or restored.' }
+if (Test-Path -LiteralPath 'reports.zip') { Add-CheckError 'Root reports.zip should not be tracked or restored.' }
 foreach ($needle in @(
     '$staticPort = 8000',
     '$inputsPort = 8787',
@@ -99,6 +117,11 @@ foreach ($needle in @(
     'web/inputs_editor.html'
 )) {
     if ($smokeLauncher -notlike "*$needle*") { Add-CheckError "Local launcher missing contract: $needle" }
+}
+
+$schemaLauncher = Get-Content -Raw -LiteralPath 'run_schema.bat'
+if ($schemaLauncher -notlike '*scripts\generate_schema.py*' -or $schemaLauncher -notlike '*--no-pause*') {
+    Add-CheckError 'run_schema.bat must run scripts/generate_schema.py and support --no-pause validation.'
 }
 
 Write-Host '== JS syntax =='
@@ -115,7 +138,7 @@ Write-Host '== Python syntax =='
 if (-not (Test-CommandAvailable python)) {
     Add-CheckError 'python is not available for Python syntax checks'
 } else {
-    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py
+    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py
     if ($LASTEXITCODE -ne 0) { Add-CheckError 'Python syntax failed' }
 }
 

@@ -70,5 +70,5 @@ The script:
 - Current action icon order is popcorn, watch, ticket, double-heart, compact numeric rating.
 - Historical docs may mention old bookmark, single-heart, star, play, ruler, or percent-rating treatments; current docs must use `docs/UI_COMPONENTS.md` and `docs/DOCUMENTATION_STANDARD.md`.
 - Removed drift artifacts include root overlay apply docs, `overlay/`, `overlay_patch/`, old apply scripts, overlay validation, and abandoned overlay reports.
-- Canonical local launcher: `tools/run_local_servers.bat`. It starts/reuses the static app server on `8000` and the Inputs Editor API server on `8787`; root `run_server.bat` delegates to it for compatibility.
+- Canonical local launcher: root `run_local_servers.bat`. It starts/reuses the static app server on `8000` and the Inputs Editor API server on `8787`; `run_server.bat`, `tools/run_local_servers.bat`, and `tools/start_inputs_editor.cmd` delegate to it for compatibility.
 - Standard validation command: `powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1`.

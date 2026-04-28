@@ -1,2 +1,6 @@
 @echo off
-powershell -ExecutionPolicy Bypass -File "%~dp0start_inputs_editor.ps1"
+setlocal
+cd /d "%~dp0.."
+
+REM Compatibility wrapper. The canonical launcher starts both required servers.
+call "%~dp0..\run_local_servers.bat" %*

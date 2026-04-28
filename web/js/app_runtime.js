@@ -1981,23 +1981,23 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function openInputsEditorHelp(){
     openModal("Start Inputs Editor", `
       <div style="display:grid;gap:14px;">
-        <div>The browser cannot start <code>tools/run_local_servers.bat</code> directly. Local script launch is blocked by browser security.</div>
+        <div>The browser cannot start <code>run_local_servers.bat</code> directly. Local script launch is blocked by browser security.</div>
         <div>Start the editor on this PC first, then reopen the editor tab.</div>
         <div style="padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);">
           <div style="font-weight:700;margin-bottom:8px;">Run from the repo root:</div>
-          <code id="inputsEditorStartCommand" style="display:block;white-space:pre-wrap;word-break:break-word;">tools/run_local_servers.bat</code>
+          <code id="inputsEditorStartCommand" style="display:block;white-space:pre-wrap;word-break:break-word;">run_local_servers.bat</code>
         </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button id="copyInputsEditorCommand" class="calbtn" type="button">Copy Start Command</button>
           <a class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Editor After Start</a>
         </div>
-        <div class="muted">Workflow: start <code>tools/run_local_servers.bat</code>, wait for the local server windows to open, then use <code>http://127.0.0.1:8787/web/inputs_editor.html</code>.</div>
+        <div class="muted">Workflow: start <code>run_local_servers.bat</code>, wait for the local server windows to open, then use <code>http://127.0.0.1:8787/web/inputs_editor.html</code>.</div>
       </div>
     `);
     const copyBtn = $("#copyInputsEditorCommand");
     if (copyBtn){
       copyBtn.addEventListener("click", async () => {
-        const ok = await copyTextToClipboard("tools/run_local_servers.bat");
+        const ok = await copyTextToClipboard("run_local_servers.bat");
         copyBtn.textContent = ok ? "Copied" : "Copy Failed";
       }, { once: true });
     }
@@ -3231,7 +3231,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="card">
           <h3>Local editor server not running</h3>
           <p>The Inputs Editor only works on your own PC through the dedicated local server at <code>127.0.0.1:8787</code>.</p>
-          <p>Start it with <code>tools\\run_local_servers.bat</code>, then reopen this panel or use the button above.</p>
+          <p>Start it with <code>run_local_servers.bat</code>, then reopen this panel or use the button above.</p>
         </div>
       </body>
       </html>
@@ -3258,7 +3258,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     frame.srcdoc = frameDoc;
     openBtn.removeAttribute("href");
     openBtn.textContent = "How To Start Editor";
-    openBtn.title = "Start tools/run_local_servers.bat from the repo first";
+    openBtn.title = "Start run_local_servers.bat from the repo first";
     openBtn.tabIndex = 0;
     openBtn.setAttribute("aria-disabled", "false");
     openBtn.classList.remove("disabled");
@@ -3266,7 +3266,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       event.preventDefault();
       openInputsEditorHelp();
     };
-    meta.textContent = "Inputs Editor is local-only. Start tools/run_local_servers.bat first, then open http://127.0.0.1:8787/web/inputs_editor.html.";
+    meta.textContent = "Inputs Editor is local-only. Start run_local_servers.bat first, then open http://127.0.0.1:8787/web/inputs_editor.html.";
   }
 
   function wireMoviePopup(movieId){
