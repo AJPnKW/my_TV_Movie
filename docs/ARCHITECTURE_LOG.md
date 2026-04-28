@@ -296,3 +296,12 @@ Commit
 - Updated in-app Inputs Editor guidance to point to `tools/run_local_servers.bat` instead of the editor-only launcher.
 - Added launcher contract checks to `scripts/validate_runtime.ps1`.
 - Implementation commit: `81c26ee4`
+
+## 2026-04-28 — Root launcher ownership and root artifact cleanup
+- Promoted root `run_local_servers.bat` to the canonical double-click launcher for both the static app server and the local Inputs Editor API server.
+- Kept `run_server.bat`, `tools/run_local_servers.bat`, and `tools/start_inputs_editor.cmd` as compatibility delegators only; removed the separate editor-only PowerShell launcher.
+- Fixed `run_schema.bat` so it runs from the repo root and supports `--no-pause` validation.
+- Reworked `scripts/generate_schema.py` to use only the standard library, removing the undeclared `genson` dependency and interactive pause from automated runs.
+- Removed tracked root archive zips: `docs.zip`, `docs (2).zip`, and `reports.zip`.
+- Added validation checks for launcher ownership, schema helper syntax, removed root archive artifacts, and editor-only launcher drift.
+- Implementation commit: `2f476cce`
