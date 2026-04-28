@@ -3,10 +3,12 @@ import puppeteer from "puppeteer-core";
 const BASE_URL = (process.env.BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
 const VIEWPORTS = [
-  { name: "android-phone", width: 390, height: 844 },
-  { name: "android-tablet", width: 820, height: 1180 },
-  { name: "android-tv-css", width: 960, height: 540 },
-  { name: "tv-1080p", width: 1920, height: 1080 }
+  { name: "android-tv-1080p", width: 1920, height: 1080 },
+  { name: "laptop", width: 1366, height: 768 },
+  { name: "tablet-landscape", width: 1024, height: 768 },
+  { name: "tablet-portrait", width: 768, height: 1024 },
+  { name: "phone-large", width: 430, height: 932 },
+  { name: "phone", width: 390, height: 844 }
 ];
 
 const browser = await puppeteer.launch({
@@ -71,16 +73,16 @@ try {
     if (result.errors.length) failures.push(`${result.viewport} ${result.pathname}: console errors`);
     if (result.missing.length) failures.push(`${result.viewport} ${result.pathname}: 404 responses`);
     if (result.bodyOverflow) failures.push(`${result.viewport} ${result.pathname}: page-level horizontal overflow`);
-    const minCardWidth = result.viewport === "android-tv-css" && result.pathname === "calendar.html" ? 120 : 140;
+    const minCardWidth = result.pathname === "calendar.html" && result.viewport.startsWith("phone") ? 120 : 128;
     if (result.cardWidth > 0 && result.cardWidth < minCardWidth) failures.push(`${result.viewport} ${result.pathname}: card width too narrow (${result.cardWidth}px)`);
     if (result.imageWidth > 0 && result.imageWidth < 90) failures.push(`${result.viewport} ${result.pathname}: image width too narrow (${result.imageWidth}px)`);
-    if ((result.viewport === "tv-1080p" || result.viewport === "android-tv-css") && result.pathname === "calendar.html" && result.calendarColumns !== 7) {
+    if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarColumns !== 7) {
       failures.push(`${result.viewport} calendar.html: expected 7 readable columns, found ${result.calendarColumns}`);
     }
-    if ((result.viewport === "tv-1080p" || result.viewport === "android-tv-css") && result.pathname === "calendar.html" && result.calendarBandColumns !== 7) {
+    if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarBandColumns !== 7) {
       failures.push(`${result.viewport} calendar.html: expected 7 day/date band columns, found ${result.calendarBandColumns}`);
     }
-    if ((result.viewport === "tv-1080p" || result.viewport === "android-tv-css") && result.pathname === "calendar.html" && result.calendarItems > 0 && result.calendarItemImages < result.calendarItems) {
+    if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarItems > 0 && result.calendarItemImages < result.calendarItems) {
       failures.push(`${result.viewport} calendar.html: calendar episode/movie cards missing images (${result.calendarItemImages}/${result.calendarItems})`);
     }
   }

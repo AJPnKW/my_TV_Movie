@@ -85,8 +85,10 @@
   - clean day/date anchors
   - no sticky-header overlap with cards
 - Card action icon order is locked:
-  - Movies and episodes: popcorn, watch-status, favorites, bookmark, rating
-  - Shows and seasons: watch-status, favorites, bookmark, rating
+  - Movies and episodes: popcorn, watched_status, watch_list, favourite, compact rating
+  - Shows and seasons: watched_status, watch_list, favourite, compact rating
+  - Current rendered icons are `🍿`, `⌚`, `🎫`, `💕`, and a compact number such as `76`.
+  - Legacy play, bookmark, single-heart, ruler, star, and percent-rating treatments are deprecated outside historical docs.
 
 ## Pipeline Contract
 

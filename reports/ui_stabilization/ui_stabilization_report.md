@@ -8,11 +8,13 @@
 | Patch/apply scripts | implemented | Removed old tracked UI/docs apply scripts and overlay validation script. |
 | Action/icon logic | implemented | `web/js/action_bar.js` owns popcorn, watch, ticket, double-heart, compact numeric rating. |
 | Watch state | implemented | `web/js/watch_state_manager.js` owns local-first `watched_status`, `watch_list`, and `favourite`. |
+| Watch state scope | implemented | State keys now include kind/show/season/episode context so toggling one card cannot toggle another card with the same local id. |
 | Popup handler | implemented | `web/js/trailer_watch_popup_fix.js` is the active non-blocking watch-source popup; app runtime handler is fallback-only. |
 | Calendar completeness | implemented | Calendar day cells render all items directly and no longer hide releases behind a more/less expander. |
 | Trakt scaffold | implemented | Config documents local-first mapping: watched history, watchlist, favourite local-only, `tmdb_id` matching. |
-| Asset pipeline | deferred | Interrupted asset optimization was reverted; `scripts/optimize_runtime_assets.py` and `asset_optimization.json` establish the deterministic baseline and command path. |
+| Asset pipeline | implemented | `assets/original_downloads/` remains immutable; runtime folders are optimized/reportable through `scripts/optimize_runtime_assets.py` and `asset_optimization.json`. |
 | Validation | implemented | `scripts/validate_runtime.ps1` is the single repo-standard runtime validation entry point. |
+| Documentation standard | implemented | `docs/DOCUMENTATION_STANDARD.md` now defines source-of-truth docs, historical docs, report/changelog handling, and the matrix of canonical owners. |
 
 ## Canonical Owners
 
@@ -21,6 +23,7 @@
 - Data/calendar loading: `web/js/data_loader.js`
 - Watch-source popup: `web/js/trailer_watch_popup_fix.js`
 - Layout/card spacing: `web/css/main_app.css`
+- Documentation process: `docs/DOCUMENTATION_STANDARD.md`
 
 ## Compatibility Shims
 
@@ -41,5 +44,11 @@ powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1
 
 - `scripts/validate_runtime.ps1`: passed
 - HTTP shell smoke on port 8000: `/web/index.html`, `/web/calendar.html`, `/web/shows.html`, `/web/movies.html`, `/web/watch_me.html`, `/web/discover.html`, `/web/config.html` all returned 200
-- `scripts/qa_browser_layout_check.mjs`: passed across Android phone, Android tablet, Android/TV CSS, and 1080p TV viewports
+- `scripts/qa_browser_layout_check.mjs`: passed at 1920x1080 Android/Chromecast TV, 1366x768 laptop, 1024x768 tablet landscape, 768x1024 tablet portrait, 430x932 phone, and 390x844 phone
 - `scripts/qa_browser_popup_check.mjs`: passed show and movie popup checks
+- D-pad smoke: passed with active focus onscreen and no runtime errors
+- Watch-state scope smoke: passed; one clicked action updated only its scoped state key
+
+## Remaining Issues
+
+- Validation reports 2,139 oversized runtime assets, mostly `assets/posters/movies/*.jpg` wider than the 420px reporting threshold. Originals remain untouched; runtime optimization should be run in a separate intentional asset pass.

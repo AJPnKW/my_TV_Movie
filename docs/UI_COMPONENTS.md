@@ -16,17 +16,20 @@ Structure
 
 ## Icon Strip
 
+Canonical owner: `web/js/action_bar.js`.
+
 🍿 Watch Source\
 ⌚ Watched Status\
 🎫 Watch List\
 💕 Favourite\
-Numeric Rating
+Compact Numeric Rating
 
 Rules
 
 -   icons only
 -   no text buttons
 -   consistent order: popcorn, watched status, watch list, favourite, rating
+-   rating is a compact number such as `76`, without a symbol or percent sign
 -   movie and episode availability state is shown on the popcorn icon with a tight solid square:
 -   green = available
 -   orange = not yet released
@@ -35,7 +38,7 @@ Rules
 -   no play icon for watched status
 -   no ruler icon for watch list
 -   no single yellow heart for favourite
--   ratings are compact numeric text; no star is required
+-   legacy bookmark, single-heart, play, ruler, star, and percent-rating treatments are deprecated outside historical docs
 -   movie and episode cards do not place availability badges over poster or still copy; shows and seasons keep the shared badge treatment
 -   app version badges must read shared metadata, not hard-coded per-page strings
 

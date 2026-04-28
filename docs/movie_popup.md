@@ -61,7 +61,7 @@ Canonical detailed popup for a movie, using the same structural language as the 
 Movie popup action strip uses the same movie contract as movie cards:
 
 - left: popcorn
-- middle: watch-status, favourites, bookmark
+- middle: watched status, watch list, favourite
 - right: gold star + rating percent
 
 ## Alignment Rules

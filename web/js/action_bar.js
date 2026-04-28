@@ -5,7 +5,7 @@ UPDATED: 2026-04-27T00:00:00Z
 CHANGE NOTES:
 - Standardized action order: popcorn, watched_status, watch_list, favourite, rating.
 - Uses Unicode text icons so buttons resize with card density and TV/browser font scaling.
-- Renamed ambiguous bookmark/status concepts to watch_list and watched_status in data attributes.
+- Uses explicit watch_list and watched_status data attributes.
 - Removes percent sign from rating text to save horizontal card space.
 - Locks current icon contract: popcorn, watch, ticket, double-heart, compact numeric rating.
 */

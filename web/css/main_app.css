@@ -842,12 +842,13 @@ CHANGE NOTES:
       text-decoration:none;
     }
     .actionbar-btn.popcorn{ min-width:30px; }
-    .actionbar-btn.favorite.active{
-      background:rgba(251,191,36,0.18);
-      border-color:rgba(251,191,36,0.45);
+    .actionbar-btn.favourite.active{
+      background:rgba(22,163,74,0.22);
+      border-color:rgba(134,239,172,0.45);
     }
-    .actionbar-btn.status{ min-width:30px; }
-    .actionbar-btn.rate{
+    .actionbar-btn.watched-status,
+    .actionbar-btn.watch-list{ min-width:30px; }
+    .actionbar-rating{
       width:auto;
       min-width:30px;
       padding:0 8px;
@@ -2289,15 +2290,18 @@ CHANGE NOTES:
       background:rgba(245,158,11,0.16);
       border-color:rgba(245,158,11,0.26);
     }
-    .actionbar-btn.favorite{
+    .actionbar-btn.favourite{
       background:rgba(148,163,184,0.12);
     }
-    .actionbar-btn.favorite.active{
-      background:rgba(250,204,21,0.22);
-      color:#fff7cc;
+    .actionbar-btn.favourite.active,
+    .actionbar-btn.watch-list.active,
+    .actionbar-btn.watched-status.active{
+      background:rgba(22,163,74,0.22);
+      color:#ecfdf5;
     }
-    .actionbar-btn.status{ min-width:30px; max-width:none; }
-    .actionbar-btn.rate{
+    .actionbar-btn.watched-status,
+    .actionbar-btn.watch-list{ min-width:30px; max-width:none; }
+    .actionbar-rating{
       width:auto;
       min-width:30px;
       padding:0 8px;
@@ -3340,15 +3344,16 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
   font-size:18px;
   line-height:1;
 }
-.actionbar-btn.status > span[aria-hidden="true"],
+.actionbar-btn.watched-status > span[aria-hidden="true"],
 .actionbar-btn.popcorn > span[aria-hidden="true"],
-.actionbar-btn.favorite > span[aria-hidden="true"],
-.actionbar-btn.bookmark > span[aria-hidden="true"]{
+.actionbar-btn.favourite > span[aria-hidden="true"],
+.actionbar-btn.watch-list > span[aria-hidden="true"]{
   font-size:18px;
 }
-.actionbar-btn.favorite.active,
-.actionbar-btn.bookmark.active{
-  color:#facc15;
+.actionbar-btn.favourite.active,
+.actionbar-btn.watch-list.active,
+.actionbar-btn.watched-status.active{
+  color:#86efac;
 }
 .actionbar-rating{
   display:inline-flex;
@@ -3937,12 +3942,11 @@ body,
 .actionbar-btn,
 .actionbar-btn.compact,
 .actionbar-btn.popcorn,
-.actionbar-btn.status,
-.actionbar-btn.favorite,
-.actionbar-btn.favorite.active,
-.actionbar-btn.bookmark,
-.actionbar-btn.bookmark.active,
-.actionbar-btn.rate,
+.actionbar-btn.watched-status,
+.actionbar-btn.favourite,
+.actionbar-btn.favourite.active,
+.actionbar-btn.watch-list,
+.actionbar-btn.watch-list.active,
 .media-card .actionbar-btn,
 .episode-row .actionbar-btn{
   appearance:none !important;

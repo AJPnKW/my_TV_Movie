@@ -27,9 +27,10 @@ This `docs` tree holds the current design, architecture, implementation, UI, wor
 | `docs/ARCHITECTURE.md` | current architecture contract |
 | `docs/ARCHITECTURE_LOG.md` | architecture change/history log |
 | `docs/UI_COMPONENTS.md` | UI component contract |
+| `docs/DOCUMENTATION_STANDARD.md` | documentation ownership and source-of-truth matrix |
 | `docs/UI_GAP_ANALYSIS.md` | UI gaps and required fixes |
-| `docs/PROJECT_STATUS_2026-03-16.md` | project snapshot |
-| `docs/THREAD_RESTART_HANDOFF_2026-03-16.md` | thread restart context |
+| `docs/PROJECT_STATUS_2026-03-16.md` | historical project snapshot |
+| `docs/THREAD_RESTART_HANDOFF_2026-03-16.md` | historical thread restart context |
 | `docs/spec/README.md` | authoritative spec index |
 | `docs/DOCS_INFORMATION_ARCHITECTURE.md` | docs structure baseline |
 | `docs/DOCS_REVIEW_2026-03-21.md` | review and disposition report |
@@ -66,5 +67,7 @@ The script:
 - `web/css/main_app.css` is the live styling surface for the repaired calendar month/list layouts, card overlay spacing, and modal readability changes.
 - Canonical UI/runtime owners are `web/js/action_bar.js`, `web/js/watch_state_manager.js`, `web/js/data_loader.js`, `web/js/trailer_watch_popup_fix.js`, and `web/css/main_app.css`.
 - Compatibility shims still loaded by the focus bootstrap are `web/js/runtime_render_fix.js`, `web/js/ui_contract_fix.js`, `web/css/runtime_layout_fix.css`, and `web/css/ui_contract_fix.css`.
+- Current action icon order is popcorn, watch, ticket, double-heart, compact numeric rating.
+- Historical docs may mention old bookmark, single-heart, star, play, ruler, or percent-rating treatments; current docs must use `docs/UI_COMPONENTS.md` and `docs/DOCUMENTATION_STANDARD.md`.
 - Removed drift artifacts include root overlay apply docs, `overlay/`, `overlay_patch/`, old apply scripts, overlay validation, and abandoned overlay reports.
 - Standard validation command: `powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1`.

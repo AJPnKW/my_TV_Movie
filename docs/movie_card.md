@@ -5,4 +5,4 @@
 - Overlay hierarchy:
   1. title
   2. release date + runtime
-- Icon strip: `🍿   ⌚ 💕 🔖   ★76%`
+- Icon strip: `🍿 ⌚ 🎫 💕 76`

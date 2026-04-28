@@ -1,7 +1,7 @@
 /*
 FILE: web/css/ui_contract_fix.css
-VERSION: v1.0.0
-UPDATED: 2026-04-27
+VERSION: v1.1.0
+UPDATED: 2026-04-28
 PURPOSE:
 Presentation contract stabilizer:
 - restore icons: popcorn, watch, ticket, double-heart, compact rating
@@ -16,11 +16,12 @@ Presentation contract stabilizer:
   --ui_gap_xs: 4px;
   --ui_gap_sm: 6px;
   --ui_gap_md: 8px;
-  --ui_card_radius: 14px;
-  --ui_panel_radius: 18px;
-  --ui_card_min: 142px;
-  --ui_card_max: 190px;
-  --ui_rec_card_h: clamp(220px, 28vw, 340px);
+  --ui_card_radius: 10px;
+  --ui_panel_radius: 12px;
+  --ui_card_min: 134px;
+  --ui_card_max: 168px;
+  --ui_rec_card_h: clamp(190px, 22vw, 270px);
+  --ui_action_box: clamp(24px, 2.5vw, 30px);
 }
 
 /* remove frame-within-frame effect */
@@ -34,8 +35,13 @@ Presentation contract stabilizer:
 .browse-layout,
 .browse-content,
 .discover-split,
-.watchme-sections {
-  border-color: transparent !important;
+.watchme-sections,
+.config-hero,
+.config-quicklinks,
+.dashboard-section,
+.section,
+.section-panel {
+  border: 0 !important;
   box-shadow: none !important;
 }
 
@@ -45,8 +51,8 @@ Presentation contract stabilizer:
 .dash,
 .dashblock,
 .browse-content {
-  padding: var(--ui_gap_md) !important;
-  margin: var(--ui_gap_md) 0 !important;
+  padding: var(--ui_gap_sm) !important;
+  margin: var(--ui_gap_sm) 0 !important;
 }
 
 .top {
@@ -78,7 +84,7 @@ Presentation contract stabilizer:
 .show-card,
 .movie-card,
 .episode-card {
-  min-width: 142px !important;
+  min-width: min(134px, 100%) !important;
 }
 
 .dashgrid,
@@ -172,7 +178,7 @@ img,
 .show-card img,
 .movie-card img,
 .episode-card img {
-  max-height: 230px !important;
+  max-height: 205px !important;
 }
 
 /* action bar contract */
@@ -187,7 +193,8 @@ img,
   justify-content: flex-start !important;
   gap: 5px !important;
   min-width: 0 !important;
-  overflow: hidden !important;
+  overflow: clip !important;
+  flex-wrap: nowrap !important;
 }
 
 .actionbar-left,
@@ -199,6 +206,16 @@ img,
   min-width: 0 !important;
 }
 
+.actionbar-center {
+  flex: 0 1 auto !important;
+  overflow: clip !important;
+}
+
+.actionbar-left,
+.actionbar-right {
+  flex: 0 0 auto !important;
+}
+
 .actionbar-btn,
 .iconbtn,
 .iconstrip a,
@@ -207,10 +224,13 @@ img,
 .card-actions button,
 .media-actions a,
 .media-actions button {
-  width: clamp(24px, 3.1vw, 32px) !important;
-  height: clamp(24px, 3.1vw, 32px) !important;
-  min-width: clamp(24px, 3.1vw, 32px) !important;
-  min-height: clamp(24px, 3.1vw, 32px) !important;
+  width: var(--ui_action_box) !important;
+  height: var(--ui_action_box) !important;
+  min-width: var(--ui_action_box) !important;
+  min-height: var(--ui_action_box) !important;
+  max-width: var(--ui_action_box) !important;
+  max-height: var(--ui_action_box) !important;
+  aspect-ratio: 1 / 1 !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -222,12 +242,18 @@ img,
   background: rgba(71,85,105,.90) !important;
   border: 1px solid rgba(148,163,184,.35) !important;
   box-sizing: border-box !important;
+  overflow: hidden !important;
 }
 
 .actionbar-btn__icon,
 .ui-contract-icon {
   line-height: 1 !important;
   font-size: inherit !important;
+  width: 1em !important;
+  height: 1em !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
 .actionbar-btn.popcorn[data-watch-availability="available"],
@@ -268,10 +294,14 @@ img,
 .actionbar-rating {
   display: inline-flex !important;
   align-items: center !important;
-  min-width: 28px !important;
-  height: clamp(24px, 3.1vw, 32px) !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  min-width: 24px !important;
+  max-width: 34px !important;
+  height: var(--ui_action_box) !important;
   padding: 0 3px !important;
   font-weight: 800 !important;
+  overflow: hidden !important;
 }
 
 .actionbar-rating__star,
@@ -299,9 +329,10 @@ img,
 
 @media (max-width: 900px) {
   :root {
-    --ui_card_min: 132px;
-    --ui_card_max: 170px;
-    --ui_rec_card_h: 260px;
+    --ui_card_min: 128px;
+    --ui_card_max: 160px;
+    --ui_rec_card_h: 235px;
+    --ui_action_box: 28px;
   }
 
   .app {
@@ -338,6 +369,11 @@ img,
     grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
   }
 
+  body[data-page="calendar"] .calendar-month-grid,
+  body[data-page="calendar"] .calendar-week-band {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
   .media-grid,
   .dashrecgrid,
   #showsGrid,
@@ -348,8 +384,9 @@ img,
 
 @media (max-width: 520px) {
   :root {
-    --ui_card_min: 122px;
-    --ui_card_max: 155px;
+    --ui_card_min: 120px;
+    --ui_card_max: 148px;
+    --ui_action_box: 26px;
   }
 
   .status {
@@ -363,6 +400,11 @@ img,
   #dashLastWeekCols,
   #dashScheduleCols {
     grid-template-columns: repeat(2, minmax(170px, 1fr)) !important;
+  }
+
+  body[data-page="calendar"] .calendar-month-grid,
+  body[data-page="calendar"] .calendar-week-band {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
 

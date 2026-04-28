@@ -5,4 +5,4 @@
 - Overlay hierarchy:
   1. title
   2. primary date/year line
-- Icon strip: `⌚ 💕 🔖   ★76%`
+- Icon strip: `⌚ 🎫 💕 76`

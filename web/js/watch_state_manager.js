@@ -1,11 +1,12 @@
 /*
 FILE: web/js/watch_state_manager.js
-VERSION: v1.2.0
-UPDATED: 2026-04-27
+VERSION: v1.3.0
+UPDATED: 2026-04-28
 CHANGE NOTES:
 - Stores watched_status, watch_list, and favourite locally for offline/trailer use.
 - Updates visible active states immediately after click.
 - Does not require Trakt/network to respond before the UI changes.
+- Keys state by item context so one card cannot toggle another item with the same local id.
 */
 (function(){
   'use strict';
@@ -48,6 +49,38 @@ CHANGE NOTES:
   }
   function toggle(id,type){ return set(id,type,!get(id,type)); }
 
+  function contextKeyFromButton(btn,type){
+    const cleanType = normalizeType(type);
+    if (!btn || !cleanType) return '';
+    const kind = String(btn.getAttribute('data-kind') || '').trim().toLowerCase();
+    const id = String(btn.getAttribute('data-id') || '').trim();
+    const showId = String(btn.getAttribute('data-show') || btn.getAttribute('data-status-show') || '').trim();
+    const season = String(btn.getAttribute('data-season') || btn.getAttribute('data-status-season') || '').trim();
+    const episode = String(btn.getAttribute('data-watch-episode') || btn.getAttribute('data-episode') || btn.getAttribute('data-status-episode') || '').trim();
+    if (showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
+    if (showId && season) return `${cleanType}:season:${showId}:${season}`;
+    if (kind && id) return `${cleanType}:${kind}:${id}`;
+    if (id) return keyFor(id,cleanType);
+    return '';
+  }
+
+  function getByKey(key){
+    return key ? !!load()[key] : false;
+  }
+
+  function setByKey(key,value){
+    if (!key) return false;
+    const data = load();
+    if (value) data[key] = true;
+    else delete data[key];
+    save(data);
+    return !!value;
+  }
+
+  function toggleByKey(key){
+    return setByKey(key,!getByKey(key));
+  }
+
   function applyButtonState(btn){
     if (!btn) return;
     const id = btn.getAttribute('data-id');
@@ -55,11 +88,14 @@ CHANGE NOTES:
     if (!id || !action) return;
     const type = typeFromAction(action);
     if (!type) return;
-    const active = get(id,type);
+    const key = contextKeyFromButton(btn,type);
+    if (!key) return;
+    const active = getByKey(key);
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     btn.setAttribute('data-watch-state-active', active ? '1' : '0');
     btn.setAttribute('data-watch-state-type', type);
+    btn.setAttribute('data-watch-state-key', key);
   }
 
   function refresh(root){
@@ -74,14 +110,17 @@ CHANGE NOTES:
     if (!id) return;
     const type = typeFromAction(action);
     if (!type) return;
-    event.preventDefault();
-    event.stopPropagation();
-    toggle(id,type);
+    const key = contextKeyFromButton(btn,type);
+    if (!key) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    toggleByKey(key);
     applyButtonState(btn);
   }, true);
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ refresh(document); });
   else refresh(document);
 
-  window.MyTVHubWatchState = Object.assign(window.MyTVHubWatchState || {}, { load, save, get, set, toggle, refresh });
+  window.MyTVHubWatchState = Object.assign(window.MyTVHubWatchState || {}, { load, save, get, set, toggle, getByKey, setByKey, toggleByKey, refresh });
 })();
