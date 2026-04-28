@@ -278,3 +278,12 @@ Commit
 - Added `scripts/validate_runtime.ps1` as the single runtime validation entry point and documented canonical owners, compatibility shims, and the validation command.
 - Added deterministic asset pipeline tooling/reporting via `scripts/optimize_runtime_assets.py` and `reports/ui_stabilization/asset_optimization.json`.
 - Implementation commit: `d1f2746c`
+
+## 2026-04-28 — Documentation consolidation, UI contract QA, and validation hardening
+- Added `docs/DOCUMENTATION_STANDARD.md` with current source-of-truth rules, historical-only doc paths, changelog/report handling, and the canonical owner matrix.
+- Aligned active architecture and component docs to the current action contract: popcorn, watch, ticket, double-heart, and compact numeric rating.
+- Scoped local watch state keys by item context so watched status, watch list, and favourite toggles do not affect unrelated cards.
+- Tightened action button sizing, reduced nested frame treatment, lowered recommendation/card density, and kept mobile/tablet calendar layouts denser without horizontal overflow.
+- Expanded `scripts/validate_runtime.ps1` to check doc consistency, icon ownership, duplicate handler drift, required reports, forbidden markers, and runtime asset-size reporting.
+- Browser QA passed across the requested TV, laptop, tablet, and phone viewports.
+- Implementation commit: `ec0248b8`
