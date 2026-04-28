@@ -269,3 +269,12 @@ Commit
 - Added a month list/tree calendar mode and repointed retired `web/tv_shows_listing.html` traffic to that canonical list view instead of the shows library.
 - Added visible hide/show toggles for browse-style filter rails, tightened shows/movies grid density, and fixed the version badge/footer to read canonical config metadata instead of a hard-coded runtime string.
 - Implementation commit: `ab465134`
+
+## 2026-04-28 — UI contract, drift cleanup, and runtime validation
+- Re-centered icon/action ownership on `web/js/action_bar.js` and local-first watch-state ownership on `web/js/watch_state_manager.js`.
+- Kept runtime compatibility shims loaded from `web/js/chrometv_focus.js` while removing direct duplicate page-shell script loads.
+- Made the non-blocking watch-source popup path canonical through `web/js/trailer_watch_popup_fix.js`, with the older app-runtime popup handler reduced to fallback-only.
+- Removed tracked overlay folders, patch apply docs, old apply scripts, overlay validation, and abandoned overlay reports from active repo paths.
+- Added `scripts/validate_runtime.ps1` as the single runtime validation entry point and documented canonical owners, compatibility shims, and the validation command.
+- Added deterministic asset pipeline tooling/reporting via `scripts/optimize_runtime_assets.py` and `reports/ui_stabilization/asset_optimization.json`.
+- Implementation commit: `d1f2746c`
