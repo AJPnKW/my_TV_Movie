@@ -287,3 +287,12 @@ Commit
 - Expanded `scripts/validate_runtime.ps1` to check doc consistency, icon ownership, duplicate handler drift, required reports, forbidden markers, and runtime asset-size reporting.
 - Browser QA passed across the requested TV, laptop, tablet, and phone viewports.
 - Implementation commit: `ec0248b8`
+
+## 2026-04-28 — Local server launcher consolidation
+- Made `tools/run_local_servers.bat` the canonical local launcher for both app pages and the local Inputs Editor API server.
+- Converted root `run_server.bat` into a compatibility delegator so it no longer runs obsolete `app.py`, dependency bootstrap, or port `8811` logic.
+- Updated the launcher to start/reuse `127.0.0.1:8000` for static app pages and `127.0.0.1:8787` for `tools/inputs_editor/inputs_editor_server.py`.
+- Corrected launcher health checks so 404 responses no longer count as an available server.
+- Updated in-app Inputs Editor guidance to point to `tools/run_local_servers.bat` instead of the editor-only launcher.
+- Added launcher contract checks to `scripts/validate_runtime.ps1`.
+- Implementation commit: `81c26ee4`
