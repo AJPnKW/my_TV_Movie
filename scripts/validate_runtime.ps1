@@ -47,6 +47,10 @@ $requiredFiles = @(
     'web/js/ui_contract_fix.js',
     'web/css/runtime_layout_fix.css',
     'web/css/ui_contract_fix.css',
+    'run_server.bat',
+    'tools/run_local_servers.bat',
+    'tools/run_smoke_test.ps1',
+    'tools/inputs_editor/inputs_editor_server.py',
     'reports/ui_stabilization/asset_optimization.json',
     'reports/ui_stabilization/repo_cleanup_decisions.md',
     'reports/ui_stabilization/ui_stabilization_report.md',
@@ -70,6 +74,31 @@ foreach ($page in $pageFiles) {
             Add-CheckError "$page missing shell reference: $needle"
         }
     }
+}
+
+Write-Host '== Local launcher contract =='
+$rootLauncher = Get-Content -Raw -LiteralPath 'run_server.bat'
+$localLauncher = Get-Content -Raw -LiteralPath 'tools/run_local_servers.bat'
+$smokeLauncher = Get-Content -Raw -LiteralPath 'tools/run_smoke_test.ps1'
+if ($rootLauncher -notlike '*tools\run_local_servers.bat*') {
+    Add-CheckError 'run_server.bat must delegate to tools/run_local_servers.bat.'
+}
+if ($rootLauncher -match 'app\.py|8811|fetch_tmdb\.py|pip install') {
+    Add-CheckError 'run_server.bat still contains obsolete app.py/bootstrap launch logic.'
+}
+if ($localLauncher -notlike '*tools\run_smoke_test.ps1*') {
+    Add-CheckError 'tools/run_local_servers.bat must call tools/run_smoke_test.ps1.'
+}
+foreach ($needle in @(
+    '$staticPort = 8000',
+    '$inputsPort = 8787',
+    'tools\inputs_editor\inputs_editor_server.py',
+    '/api/health',
+    'web/watch_me.html',
+    'web/discover.html',
+    'web/inputs_editor.html'
+)) {
+    if ($smokeLauncher -notlike "*$needle*") { Add-CheckError "Local launcher missing contract: $needle" }
 }
 
 Write-Host '== JS syntax =='

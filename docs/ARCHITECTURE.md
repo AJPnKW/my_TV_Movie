@@ -48,6 +48,7 @@
 - Watch Me: `web/watch_me.html`
 - Config: `web/config.html`
 - Inputs Editor: `web/inputs_editor.html`
+- Local launcher: `tools/run_local_servers.bat` starts/reuses the static app server on `127.0.0.1:8000` and the Inputs Editor API server on `127.0.0.1:8787`; root `run_server.bat` is only a compatibility delegator.
 - Legacy redirects:
   - `web/watch_me/watch_me.html`
   - `web/watch.me.html`

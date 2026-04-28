@@ -1,17 +1,19 @@
 <#
 FILE: tools/run_smoke_test.ps1
 VERSION: 1.0.3
-UPDATED: 2026-03-14T00:00:00Z
+UPDATED: 2026-04-28T00:00:00Z
 CHANGE NOTES:
 - Start the static site server for the repo on port 8000 when needed.
 - Start the inputs editor server on port 8787 when needed.
-- Open the requested smoke-test pages in Chrome, with Firefox as the only backup browser.
+- Open the current app pages in Chrome, with Firefox as the only backup browser.
 - Move the script param block before executable statements so PowerShell can parse it correctly.
+- Treat 404 responses as unavailable so the editor API server is not skipped.
 #>
 
 param(
     [ValidateSet("chrome", "firefox")]
-    [string]$Browser = "chrome"
+    [string]$Browser = "chrome",
+    [switch]$NoBrowser
 )
 
 Set-StrictMode -Version Latest
@@ -26,8 +28,10 @@ $staticUrls = @(
     "http://127.0.0.1:$staticPort/web/calendar.html",
     "http://127.0.0.1:$staticPort/web/shows.html",
     "http://127.0.0.1:$staticPort/web/movies.html",
+    "http://127.0.0.1:$staticPort/web/watch_me.html",
+    "http://127.0.0.1:$staticPort/web/discover.html",
     "http://127.0.0.1:$staticPort/web/config.html",
-    "http://127.0.0.1:$staticPort/web/watch_me/watch_me.html"
+    "http://127.0.0.1:$staticPort/web/inputs_editor.html"
 )
 
 $inputsUrl = "http://127.0.0.1:$inputsPort/web/inputs_editor.html"
@@ -40,7 +44,7 @@ function Test-HttpOk {
 
     try {
         $response = Invoke-WebRequest -Uri $Url -UseBasicParsing -TimeoutSec 2
-        return ($response.StatusCode -ge 200 -and $response.StatusCode -lt 500)
+        return ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400)
     } catch {
         return $false
     }
@@ -57,7 +61,7 @@ function Start-ServerWindow {
     )
 
     $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($Command))
-    Start-Process -FilePath "powershell.exe" -WorkingDirectory $WorkingDirectory -ArgumentList @(
+    Start-Process -FilePath "powershell.exe" -WorkingDirectory $WorkingDirectory -WindowStyle Hidden -ArgumentList @(
         "-NoExit",
         "-EncodedCommand",
         $encoded
@@ -125,10 +129,16 @@ python '$inputsServerPath' --port $inputsPort
     Start-ServerWindow -Title "my_TV_Movie Inputs Editor Server" -Command $inputsCommand -WorkingDirectory $repoRoot
 }
 
-$browserPath = Resolve-BrowserPath -Name $Browser
 $urls = $staticUrls + $inputsUrl
-Start-Process -FilePath $browserPath -ArgumentList $urls | Out-Null
+if (-not $NoBrowser) {
+    $browserPath = Resolve-BrowserPath -Name $Browser
+    Start-Process -FilePath $browserPath -ArgumentList $urls | Out-Null
+}
 
-Write-Host "Opened smoke-test pages in $Browser."
+if ($NoBrowser) {
+    Write-Host "Servers are ready. Browser launch skipped."
+} else {
+    Write-Host "Opened smoke-test pages in $Browser."
+}
 Write-Host "Static pages: $staticHealthUrl"
 Write-Host "Inputs editor: $inputsUrl"

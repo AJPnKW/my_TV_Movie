@@ -686,7 +686,7 @@ async function pushInputsToGitHub(){
     document.getElementById("serverStatus").textContent="Server: not running";
     showBanner([
       "You opened this from the wrong server (ex: :8000). Save cannot work here.",
-      "Run:  tools/start_inputs_editor.cmd",
+      "Run:  tools/run_local_servers.bat",
       "Open: http://127.0.0.1:8787/web/inputs_editor.html"
     ]);
     return;
