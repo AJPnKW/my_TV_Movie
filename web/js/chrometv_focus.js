@@ -19,9 +19,11 @@
   }
 
   loadCss('./css/runtime_layout_fix.css');
+  loadCss('./css/ui_contract_fix.css');
   loadScript('./js/watch_state_manager.js');
   loadScript('./js/runtime_render_fix.js');
   loadScript('./js/trailer_watch_popup_fix.js');
+  loadScript('./js/ui_contract_fix.js');
 
   function activeRoot(){
     var providerBack = document.getElementById('providerBack');
@@ -146,3 +148,4 @@
     redirectSkippedFocus(event.target);
   }, true);
 })();
+

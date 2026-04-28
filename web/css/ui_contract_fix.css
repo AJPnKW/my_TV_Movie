@@ -1,0 +1,338 @@
+/*
+FILE: web/css/ui_contract_fix.css
+VERSION: v1.0.0
+UPDATED: 2026-04-27
+PURPOSE:
+Presentation contract stabilizer:
+- restore icons: popcorn, watch, ticket, double-heart, compact rating
+- use solid icon boxes
+- remove unnecessary nested frames
+- reduce spacing
+- cap oversized recommendation cards
+- normalize mobile/TV card density
+*/
+
+:root {
+  --ui_gap_xs: 4px;
+  --ui_gap_sm: 6px;
+  --ui_gap_md: 8px;
+  --ui_card_radius: 14px;
+  --ui_panel_radius: 18px;
+  --ui_card_min: 142px;
+  --ui_card_max: 190px;
+  --ui_rec_card_h: clamp(220px, 28vw, 340px);
+}
+
+/* remove frame-within-frame effect */
+.app,
+.shell,
+.shell--app,
+.main,
+.panel,
+.dash,
+.dashblock,
+.browse-layout,
+.browse-content,
+.discover-split,
+.watchme-sections {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.shell,
+.shell--app,
+.panel,
+.dash,
+.dashblock,
+.browse-content {
+  padding: var(--ui_gap_md) !important;
+  margin: var(--ui_gap_md) 0 !important;
+}
+
+.top {
+  margin: 8px 10px !important;
+  padding: 10px 14px !important;
+  border-radius: var(--ui_panel_radius) !important;
+}
+
+/* keep borders only around meaningful objects */
+.daycol,
+.calendar-day,
+.calendar-cell,
+.dashday,
+.release-day,
+.media-card,
+.card,
+.show-card,
+.movie-card,
+.episode-card,
+.poster-card,
+.rec-card {
+  border: 1px solid rgba(148,163,184,.20) !important;
+  border-radius: var(--ui_card_radius) !important;
+  overflow: hidden !important;
+}
+
+.dashgrid,
+.media-grid,
+.calendar-grid,
+.dashrecgrid,
+.dashrecs,
+.discover-split {
+  gap: var(--ui_gap_md) !important;
+}
+
+.dashhead,
+.calendar-toolbar,
+.calendar-toolbar__controls {
+  margin: 0 0 var(--ui_gap_sm) 0 !important;
+  padding: var(--ui_gap_sm) !important;
+}
+
+/* normalized grids */
+.media-grid,
+.media-grid--shows,
+.media-grid--movies,
+.dashrecgrid,
+#showsGrid,
+#moviesGrid,
+#discoverShowsGrid,
+#discoverMoviesGrid {
+  grid-template-columns: repeat(auto-fill, minmax(var(--ui_card_min), var(--ui_card_max))) !important;
+  justify-content: start !important;
+  align-items: start !important;
+}
+
+.calendar-grid,
+.dashgrid,
+#calendar,
+#dashLastWeekCols,
+#dashScheduleCols {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
+}
+
+/* cap recommendation images/cards */
+.dashrecs .media-card,
+.dashrecs .card,
+.dashrecs .show-card,
+.dashrecs .movie-card,
+.dashrecgrid .media-card,
+.dashrecgrid .card,
+.dashrecgrid .show-card,
+.dashrecgrid .movie-card,
+#dashShowRecs .media-card,
+#dashMovieRecs .media-card,
+#dashShowRecs .card,
+#dashMovieRecs .card {
+  max-width: 220px !important;
+  height: var(--ui_rec_card_h) !important;
+}
+
+img,
+.card img,
+.media-card img,
+.show-card img,
+.movie-card img,
+.episode-card img {
+  max-width: 100% !important;
+  object-fit: cover !important;
+}
+
+.card img,
+.media-card img,
+.show-card img,
+.movie-card img,
+.episode-card img {
+  max-height: 230px !important;
+}
+
+/* action bar contract */
+.actionbar,
+.action_bar,
+.iconstrip,
+.card-actions,
+.actions,
+.media-actions {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+.actionbar-left,
+.actionbar-center,
+.actionbar-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+.actionbar-btn,
+.iconbtn,
+.iconstrip a,
+.iconstrip button,
+.card-actions a,
+.card-actions button,
+.media-actions a,
+.media-actions button {
+  width: clamp(24px, 3.1vw, 32px) !important;
+  height: clamp(24px, 3.1vw, 32px) !important;
+  min-width: clamp(24px, 3.1vw, 32px) !important;
+  min-height: clamp(24px, 3.1vw, 32px) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  border-radius: 9px !important;
+  line-height: 1 !important;
+  font-size: clamp(15px, 2.2vw, 21px) !important;
+  text-decoration: none !important;
+  background: rgba(71,85,105,.90) !important;
+  border: 1px solid rgba(148,163,184,.35) !important;
+  box-sizing: border-box !important;
+}
+
+.actionbar-btn__icon,
+.ui-contract-icon {
+  line-height: 1 !important;
+  font-size: inherit !important;
+}
+
+.actionbar-btn.popcorn[data-watch-availability="available"],
+.ui-popcorn[data-watch-availability="available"] {
+  background: rgba(22,163,74,.95) !important;
+  border-color: rgba(134,239,172,.95) !important;
+}
+
+.actionbar-btn.popcorn[data-watch-availability="not_yet_released"],
+.ui-popcorn[data-watch-availability="not_yet_released"] {
+  background: rgba(234,88,12,.95) !important;
+  border-color: rgba(253,186,116,.95) !important;
+}
+
+.actionbar-btn.popcorn[data-watch-availability="unavailable"],
+.ui-popcorn[data-watch-availability="unavailable"] {
+  background: rgba(185,28,28,.95) !important;
+  border-color: rgba(252,165,165,.95) !important;
+}
+
+.actionbar-btn.watched-status,
+.actionbar-btn.watch-list,
+.ui-watch-toggle,
+.ui-ticket-toggle {
+  background: rgba(71,85,105,.90) !important;
+  border-color: rgba(148,163,184,.35) !important;
+}
+
+.actionbar-btn.watched-status.active,
+.actionbar-btn.watch-list.active,
+.actionbar-btn[data-watch-state-active="1"],
+.ui-watch-toggle[data-watch-state-active="1"],
+.ui-ticket-toggle[data-watch-state-active="1"] {
+  background: rgba(22,163,74,.95) !important;
+  border-color: rgba(134,239,172,.95) !important;
+}
+
+.actionbar-rating {
+  display: inline-flex !important;
+  align-items: center !important;
+  min-width: 28px !important;
+  height: clamp(24px, 3.1vw, 32px) !important;
+  padding: 0 3px !important;
+  font-weight: 800 !important;
+}
+
+.actionbar-rating__star,
+.iconstrip-star {
+  display: none !important;
+}
+
+.actionbar-rating__text,
+.iconstrip-pct {
+  font-size: clamp(12px, 1.7vw, 16px) !important;
+  white-space: nowrap !important;
+}
+
+.card-title,
+.media-title,
+.show-title,
+.movie-title,
+.episode-title,
+.card h3,
+.media-card h3 {
+  line-height: 1.12 !important;
+  overflow-wrap: anywhere !important;
+  text-wrap: balance;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --ui_card_min: 132px;
+    --ui_card_max: 170px;
+    --ui_rec_card_h: 260px;
+  }
+
+  .app {
+    padding: 4px !important;
+  }
+
+  .top {
+    gap: 8px !important;
+    flex-wrap: wrap !important;
+  }
+
+  .nav {
+    gap: 6px !important;
+  }
+
+  .tab {
+    padding: 8px 12px !important;
+  }
+
+  .shell,
+  .shell--app,
+  .panel,
+  .dash,
+  .dashblock {
+    padding: 6px !important;
+    margin: 6px 0 !important;
+  }
+
+  .calendar-grid,
+  .dashgrid,
+  #calendar,
+  #dashLastWeekCols,
+  #dashScheduleCols {
+    grid-template-columns: repeat(auto-fit, minmax(136px, 1fr)) !important;
+  }
+
+  .media-grid,
+  .dashrecgrid,
+  #showsGrid,
+  #moviesGrid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 170px)) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  :root {
+    --ui_card_min: 122px;
+    --ui_card_max: 155px;
+  }
+
+  .status {
+    transform: scale(.92);
+    transform-origin: right center;
+  }
+
+  .calendar-grid,
+  .dashgrid,
+  #calendar,
+  #dashLastWeekCols,
+  #dashScheduleCols {
+    grid-template-columns: repeat(2, minmax(122px, 1fr)) !important;
+  }
+}
