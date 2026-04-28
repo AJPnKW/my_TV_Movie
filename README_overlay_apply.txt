@@ -1,1 +1,0 @@
-Copy the contents of this overlay into your repo root, preserving folders. Replace existing files when prompted. Then test locally with python -m http.server 8000 and open /web/index.html and /web/calendar.html.

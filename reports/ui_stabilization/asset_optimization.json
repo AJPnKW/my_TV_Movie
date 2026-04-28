@@ -1,0 +1,28 @@
+{
+  "generated_utc": "2026-04-28T04:14:55Z",
+  "source_root": "assets/original_downloads",
+  "runtime_roots": [
+    "assets/posters",
+    "assets/stills",
+    "assets/backdrops",
+    "assets/logos",
+    "assets/icons"
+  ],
+  "status": "measured",
+  "note": "Interrupted optimization run was reverted; this report records current original-vs-runtime size baseline for validate_runtime.ps1.",
+  "targets": {
+    "posters": "~342px wide",
+    "stills": "~780px wide",
+    "backdrops": "~780px wide",
+    "originals": "immutable"
+  },
+  "counts": {
+    "original_files": 10169,
+    "runtime_files": 10140
+  },
+  "bytes": {
+    "original_total": 933532314,
+    "runtime_total": 928607629,
+    "delta_runtime_minus_original": -4924685
+  }
+}

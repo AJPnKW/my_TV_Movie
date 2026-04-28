@@ -54,8 +54,17 @@ Use `scripts/repo_sync_pre_codex_v2.ps1` before multi-tab Codex work that depend
 
 The script:
 - validates both configured repo roots and `.git` presence
-- fetches and prunes remotes without piping native git output into `Add-Content`
-- records branch, head, remote URLs, working tree state, and ahead/behind status versus `origin/main` and `github/main` when present
+- verifies `git` is available, then fetches and prunes remotes without piping native git output into `Add-Content`
+- records branch, head, remote fetch/push URLs, working tree state, fetch result, and ahead/behind status versus `origin/main` and `github/main` when present
 - only runs `git pull --ff-only origin main` when the repo is on `main`, clean, and only behind `origin/main`
+- preserves dirty or diverged repos as-is and writes an explicit recommendation instead of failing early
 - writes per-repo logs under each repo's `logs\`
 - writes a shared summary and zip bundle under `C:\Users\andrew\PROJECTS\GitHub\.ai_uploads`
+
+## Current UI/runtime note
+- `web/js/app_runtime.js` keeps the Inputs Editor route visible, removes dashboard silent per-day truncation, keeps dashboard/calendar episode completeness aligned, and locks focus to the active popup.
+- `web/css/main_app.css` is the live styling surface for the repaired calendar month/list layouts, card overlay spacing, and modal readability changes.
+- Canonical UI/runtime owners are `web/js/action_bar.js`, `web/js/watch_state_manager.js`, `web/js/data_loader.js`, `web/js/trailer_watch_popup_fix.js`, and `web/css/main_app.css`.
+- Compatibility shims still loaded by the focus bootstrap are `web/js/runtime_render_fix.js`, `web/js/ui_contract_fix.js`, `web/css/runtime_layout_fix.css`, and `web/css/ui_contract_fix.css`.
+- Removed drift artifacts include root overlay apply docs, `overlay/`, `overlay_patch/`, old apply scripts, overlay validation, and abandoned overlay reports.
+- Standard validation command: `powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1`.

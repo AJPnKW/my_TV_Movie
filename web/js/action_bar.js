@@ -1,12 +1,13 @@
 /*
 FILE: web/js/action_bar.js
-VERSION: v1.2.0
-UPDATED: 2026-04-24T00:00:00Z
+VERSION: v1.3.0
+UPDATED: 2026-04-27T00:00:00Z
 CHANGE NOTES:
 - Standardized action order: popcorn, watched_status, watch_list, favourite, rating.
 - Uses Unicode text icons so buttons resize with card density and TV/browser font scaling.
 - Renamed ambiguous bookmark/status concepts to watch_list and watched_status in data attributes.
 - Removes percent sign from rating text to save horizontal card space.
+- Locks current icon contract: popcorn, watch, ticket, double-heart, compact numeric rating.
 */
 
 export const ACTION_BAR_ORDER = Object.freeze([
@@ -19,10 +20,10 @@ export const ACTION_BAR_ORDER = Object.freeze([
 
 const CONTRACT_ICONS = Object.freeze({
   watch_source: '🍿',
-  watched_status: '▶',
-  watch_list: '🎟',
-  favourite: '💛',
-  rating: '★'
+  watched_status: '⌚',
+  watch_list: '🎫',
+  favourite: '💕',
+  rating: ''
 });
 
 export const WATCHED_STATUS_VALUES = Object.freeze([
@@ -98,7 +99,7 @@ export function renderActionBarHtml(options = {}){
 
   if (options.status){
     const statusLink = splitAttrs(options.status.attrs || {});
-    center.push(renderAnchor('watched-status', statusLink.href, 'Toggle watched status', 'Watched status', CONTRACT_ICONS.watched_status, {
+    center.push(renderAnchor(`watched-status${options.status.active ? ' active' : ''}`, statusLink.href, 'Toggle watched status', 'Watched status', CONTRACT_ICONS.watched_status, {
       'data-watch-state-action': 'toggle-watched-status',
       'data-action-menu': 'watched_status',
       'data-no-default': '1',
@@ -117,14 +118,16 @@ export function renderActionBarHtml(options = {}){
 
   if (options.favourite){
     const favouriteLink = splitAttrs(options.favourite.attrs || {});
-    center.push(renderAnchor(`favorite${options.favourite.active ? ' active' : ''}`, favouriteLink.href, 'Favourite', 'Favourite', CONTRACT_ICONS.favourite, {
+    center.push(renderAnchor(`favourite favorite${options.favourite.active ? ' active' : ''}`, favouriteLink.href, 'Favourite', 'Favourite', CONTRACT_ICONS.favourite, {
+      'data-watch-state-action': 'toggle-favourite',
       'data-action': 'toggle-favourite',
+      'data-no-default': '1',
       ...favouriteLink.attrs
     }));
   }
 
   const ratingText = normalizeRatingText(options.rating && options.rating.text ? options.rating.text : (options.rating && options.rating.icon ? options.rating.icon : '--'));
-  right.push(`<span class="actionbar-rating" aria-label="Rating" title="Rating"><span class="actionbar-rating__star" aria-hidden="true">${CONTRACT_ICONS.rating}</span><span class="actionbar-rating__text">${ratingText}</span></span>`);
+  right.push(`<span class="actionbar-rating" aria-label="Rating" title="Rating"><span class="actionbar-rating__text">${ratingText}</span></span>`);
 
   return `<div class="actionbar action_bar${options.compact ? ' actionbar--minimal' : ''}" data-action-host="1" data-action-order="${ACTION_BAR_ORDER.join(',')}">
     <div class="actionbar-left">${left.join('')}</div>

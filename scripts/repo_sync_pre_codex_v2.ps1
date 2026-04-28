@@ -2,31 +2,35 @@
 <#
 FILE: repo_sync_pre_codex_v2.ps1
 PURPOSE:
-- Validate sync state for two repos before Codex work.
-- Avoid fragile native command piping.
-- Write per-repo logs and one shared summary bundle.
-- Never modify remotes or reset local work.
-- Only fast-forward pull origin/main when safe:
-  * branch = main
-  * working tree clean
-  * local is behind origin/main only
+- Validate sync state for both project repos before multi-tab Codex work.
+- Avoid fragile native-command pipelines and empty-string parameter failures.
+- Write per-repo logs plus one shared summary bundle.
+- Never reset dirty work or alter remotes.
+- Only run git pull --ff-only origin main when the repo is on main, clean,
+  and only behind origin/main.
 #>
+
+[CmdletBinding()]
+param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$repos = @(
+$script:RepoPaths = @(
     'C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie',
     'C:\Users\andrew\PROJECTS\GitHub\iptv_control_plane'
 )
 
-$bundleRoot = 'C:\Users\andrew\PROJECTS\GitHub\.ai_uploads'
-$timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
-$bundleDir = Join-Path $bundleRoot ("repo_sync_pre_codex_{0}" -f $timestamp)
-$zipPath = "{0}.zip" -f $bundleDir
+$script:BundleRoot = 'C:\Users\andrew\PROJECTS\GitHub\.ai_uploads'
+$script:RunTimestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
+$script:BundleDir = Join-Path $script:BundleRoot ("repo_sync_pre_codex_{0}" -f $script:RunTimestamp)
+$script:ZipPath = '{0}.zip' -f $script:BundleDir
 
 function Ensure-Directory {
-    param([Parameter(Mandatory)][string]$Path)
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
 
     if (-not (Test-Path -LiteralPath $Path)) {
         New-Item -ItemType Directory -Path $Path -Force | Out-Null
@@ -35,8 +39,11 @@ function Ensure-Directory {
 
 function Write-Log {
     param(
-        [Parameter(Mandatory)][string]$LogPath,
-        [AllowEmptyString()][string]$Message = ''
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath,
+
+        [AllowEmptyString()]
+        [string]$Message = ''
     )
 
     Add-Content -LiteralPath $LogPath -Value $Message -Encoding UTF8
@@ -44,8 +51,11 @@ function Write-Log {
 
 function Write-Section {
     param(
-        [Parameter(Mandatory)][string]$LogPath,
-        [Parameter(Mandatory)][string]$Title
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath,
+
+        [AllowEmptyString()]
+        [string]$Title = ''
     )
 
     Write-Log -LogPath $LogPath -Message ''
@@ -54,65 +64,77 @@ function Write-Section {
     Write-Log -LogPath $LogPath -Message ('=' * 80)
 }
 
-function Invoke-GitCapture {
+function New-RepoResult {
     param(
-        [Parameter(Mandatory)][string]$RepoPath,
-        [Parameter(Mandatory)][string[]]$Arguments,
-        [Parameter(Mandatory)][string]$LogPath,
-        [switch]$AllowFailure
+        [Parameter(Mandatory = $true)]
+        [string]$RepoName,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RepoPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath
     )
 
-    $cmdText = 'git ' + ($Arguments -join ' ')
-    $stdoutPath = Join-Path $env:TEMP ("git_stdout_{0}.txt" -f ([guid]::NewGuid().ToString('N')))
-    $stderrPath = Join-Path $env:TEMP ("git_stderr_{0}.txt" -f ([guid]::NewGuid().ToString('N')))
+    return [ordered]@{
+        repo                  = $RepoName
+        path                  = $RepoPath
+        branch                = ''
+        head                  = ''
+        working_tree          = 'unknown'
+        remotes               = 'none'
+        origin_main_status    = 'missing'
+        origin_main_ahead     = ''
+        origin_main_behind    = ''
+        github_main_status    = 'missing'
+        github_main_ahead     = ''
+        github_main_behind    = ''
+        fetch_state           = 'not_run'
+        action_taken          = 'none'
+        blocker               = ''
+        recommendation        = ''
+        log                   = $LogPath
+    }
+}
 
-    Write-Log -LogPath $LogPath -Message ("> {0}" -f $cmdText)
+function Invoke-ProcessCapture {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
 
-    Push-Location -LiteralPath $RepoPath
+        [Parameter(Mandatory = $true)]
+        [string[]]$ArgumentList,
+
+        [Parameter(Mandatory = $true)]
+        [string]$WorkingDirectory
+    )
+
+    $stdoutPath = Join-Path $env:TEMP ("repo_sync_stdout_{0}.txt" -f ([guid]::NewGuid().ToString('N')))
+    $stderrPath = Join-Path $env:TEMP ("repo_sync_stderr_{0}.txt" -f ([guid]::NewGuid().ToString('N')))
+
+    Push-Location -LiteralPath $WorkingDirectory
     try {
-        try {
-            & git @Arguments 1> $stdoutPath 2> $stderrPath
-            $exitCode = $LASTEXITCODE
-        }
-        catch {
-            $exitCode = if ($LASTEXITCODE) { $LASTEXITCODE } else { 1 }
-            Write-Log -LogPath $LogPath -Message ("COMMAND ERROR: {0}" -f $_.Exception.Message)
-            if (-not $AllowFailure) {
-                throw
-            }
-        }
+        & $FilePath @ArgumentList 1> $stdoutPath 2> $stderrPath
+        $exitCode = $LASTEXITCODE
 
-        $stdoutText = if (Test-Path -LiteralPath $stdoutPath) {
+        $stdout = if (Test-Path -LiteralPath $stdoutPath) {
             Get-Content -LiteralPath $stdoutPath -Raw -Encoding UTF8
         }
         else {
             ''
         }
 
-        $stderrText = if (Test-Path -LiteralPath $stderrPath) {
+        $stderr = if (Test-Path -LiteralPath $stderrPath) {
             Get-Content -LiteralPath $stderrPath -Raw -Encoding UTF8
         }
         else {
             ''
         }
 
-        if (-not [string]::IsNullOrWhiteSpace($stdoutText)) {
-            Write-Log -LogPath $LogPath -Message $stdoutText.TrimEnd()
-        }
-
-        if (-not [string]::IsNullOrWhiteSpace($stderrText)) {
-            Write-Log -LogPath $LogPath -Message $stderrText.TrimEnd()
-        }
-
-        if (($exitCode -ne 0) -and (-not $AllowFailure)) {
-            throw ("Git command failed ({0}): {1}" -f $exitCode, $cmdText)
-        }
-
         return [pscustomobject]@{
             ExitCode = $exitCode
-            StdOut   = $stdoutText
-            StdErr   = $stderrText
-            Output   = (($stdoutText, $stderrText) -join [Environment]::NewLine).Trim()
+            StdOut   = $stdout
+            StdErr   = $stderr
         }
     }
     finally {
@@ -126,81 +148,181 @@ function Invoke-GitCapture {
     }
 }
 
-function Get-GitSingleLine {
+function Invoke-GitCapture {
     param(
-        [Parameter(Mandatory)][string]$RepoPath,
-        [Parameter(Mandatory)][string[]]$Arguments,
-        [Parameter(Mandatory)][string]$LogPath,
+        [Parameter(Mandatory = $true)]
+        [string]$RepoPath,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath,
+
+        [switch]$AllowFailure
+    )
+
+    $commandText = 'git ' + ($Arguments -join ' ')
+    Write-Log -LogPath $LogPath -Message ("> {0}" -f $commandText)
+
+    try {
+        $result = Invoke-ProcessCapture -FilePath 'git' -ArgumentList $Arguments -WorkingDirectory $RepoPath
+    }
+    catch {
+        Write-Log -LogPath $LogPath -Message ("PROCESS ERROR: {0}" -f $_.Exception.Message)
+        if (-not $AllowFailure) {
+            throw
+        }
+
+        return [pscustomobject]@{
+            ExitCode = 1
+            StdOut   = ''
+            StdErr   = $_.Exception.Message
+            Output   = $_.Exception.Message
+        }
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($result.StdOut)) {
+        Write-Log -LogPath $LogPath -Message $result.StdOut.TrimEnd()
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($result.StdErr)) {
+        Write-Log -LogPath $LogPath -Message $result.StdErr.TrimEnd()
+    }
+
+    if (($result.ExitCode -ne 0) -and (-not $AllowFailure)) {
+        throw ("Git command failed ({0}): {1}" -f $result.ExitCode, $commandText)
+    }
+
+    return [pscustomobject]@{
+        ExitCode = $result.ExitCode
+        StdOut   = $result.StdOut
+        StdErr   = $result.StdErr
+        Output   = (($result.StdOut, $result.StdErr) -join [Environment]::NewLine).Trim()
+    }
+}
+
+function Get-GitFirstLine {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RepoPath,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath,
+
         [switch]$AllowFailure
     )
 
     $result = Invoke-GitCapture -RepoPath $RepoPath -Arguments $Arguments -LogPath $LogPath -AllowFailure:$AllowFailure
     $line = ''
 
-    if (-not [string]::IsNullOrWhiteSpace($result.StdOut)) {
-        $line = (($result.StdOut -split "`r?`n") | Where-Object { $_.Trim().Length -gt 0 } | Select-Object -First 1)
-    }
-    elseif (-not [string]::IsNullOrWhiteSpace($result.StdErr)) {
-        $line = (($result.StdErr -split "`r?`n") | Where-Object { $_.Trim().Length -gt 0 } | Select-Object -First 1)
+    foreach ($candidate in @($result.StdOut, $result.StdErr)) {
+        if ([string]::IsNullOrWhiteSpace($candidate)) {
+            continue
+        }
+
+        $line = ($candidate -split "`r?`n" | Where-Object { $_.Trim().Length -gt 0 } | Select-Object -First 1)
+        if (-not [string]::IsNullOrWhiteSpace($line)) {
+            break
+        }
     }
 
     return [pscustomobject]@{
         ExitCode = $result.ExitCode
-        Text     = if ($null -ne $line) { $line.Trim() } else { '' }
+        Text     = if ($line) { $line.Trim() } else { '' }
     }
 }
 
-function Get-RemoteMap {
+function Get-RemoteInfo {
     param(
-        [Parameter(Mandatory)][string]$RepoPath,
-        [Parameter(Mandatory)][string]$LogPath
+        [Parameter(Mandatory = $true)]
+        [string]$RepoPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath
     )
 
-    $remoteResult = Invoke-GitCapture -RepoPath $RepoPath -Arguments @('remote', '-v') -LogPath $LogPath -AllowFailure
+    $result = Invoke-GitCapture -RepoPath $RepoPath -Arguments @('remote', '-v') -LogPath $LogPath -AllowFailure
     $map = [ordered]@{}
 
-    foreach ($line in ($remoteResult.StdOut -split "`r?`n")) {
+    foreach ($line in ($result.StdOut -split "`r?`n")) {
         if ([string]::IsNullOrWhiteSpace($line)) {
             continue
         }
 
-        $parts = $line -split '\s+'
-        if ($parts.Count -lt 2) {
-            continue
-        }
+        if ($line -match '^(?<name>\S+)\s+(?<url>\S+)\s+\((?<kind>fetch|push)\)$') {
+            $name = $Matches.name
+            $kind = $Matches.kind
+            $url = $Matches.url
 
-        $name = $parts[0]
-        $url = $parts[1]
+            if (-not $map.Contains($name)) {
+                $map[$name] = [ordered]@{
+                    fetch = ''
+                    push  = ''
+                }
+            }
 
-        if (-not $map.Contains($name)) {
-            $map[$name] = $url
+            $map[$name][$kind] = $url
         }
     }
 
     return $map
 }
 
-function Test-RemoteRefExists {
+function Format-RemoteSummary {
     param(
-        [Parameter(Mandatory)][string]$RepoPath,
-        [Parameter(Mandatory)][string]$RemoteRef,
-        [Parameter(Mandatory)][string]$LogPath
+        $RemoteInfo
     )
 
-    $refPath = "refs/remotes/{0}" -f $RemoteRef
-    $result = Invoke-GitCapture -RepoPath $RepoPath -Arguments @('show-ref', '--verify', '--quiet', $refPath) -LogPath $LogPath -AllowFailure
+    if ($null -eq $RemoteInfo -or $RemoteInfo.Count -eq 0) {
+        return 'none'
+    }
+
+    $parts = foreach ($remoteName in $RemoteInfo.Keys) {
+        $fetchUrl = $RemoteInfo[$remoteName].fetch
+        $pushUrl = $RemoteInfo[$remoteName].push
+        '{0}[fetch={1}; push={2}]' -f $remoteName, $fetchUrl, $pushUrl
+    }
+
+    return ($parts -join ' | ')
+}
+
+function Test-RemoteRefExists {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RepoPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RemoteRef,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath
+    )
+
+    $verifyRef = 'refs/remotes/{0}' -f $RemoteRef
+    $result = Invoke-GitCapture -RepoPath $RepoPath -Arguments @('show-ref', '--verify', '--quiet', $verifyRef) -LogPath $LogPath -AllowFailure
     return ($result.ExitCode -eq 0)
 }
 
 function Get-AheadBehindStatus {
     param(
-        [Parameter(Mandatory)][string]$RepoPath,
-        [Parameter(Mandatory)][string]$LocalRef,
-        [Parameter(Mandatory)][string]$RemoteRef,
-        [Parameter(Mandatory)][string]$LogPath
+        [Parameter(Mandatory = $true)]
+        [string]$RepoPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LocalRef,
+
+        [Parameter(Mandatory = $true)]
+        [string]$RemoteRef,
+
+        [Parameter(Mandatory = $true)]
+        [string]$LogPath
     )
 
-    $status = [ordered]@{
+    $result = [ordered]@{
         local_ref  = $LocalRef
         remote_ref = $RemoteRef
         ahead      = ''
@@ -209,255 +331,273 @@ function Get-AheadBehindStatus {
     }
 
     if (-not (Test-RemoteRefExists -RepoPath $RepoPath -RemoteRef $RemoteRef -LogPath $LogPath)) {
-        return [pscustomobject]$status
+        return [pscustomobject]$result
     }
 
-    $localSha = (Get-GitSingleLine -RepoPath $RepoPath -Arguments @('rev-parse', $LocalRef) -LogPath $LogPath -AllowFailure).Text
-    $remoteSha = (Get-GitSingleLine -RepoPath $RepoPath -Arguments @('rev-parse', $RemoteRef) -LogPath $LogPath -AllowFailure).Text
-
-    if ([string]::IsNullOrWhiteSpace($localSha) -or [string]::IsNullOrWhiteSpace($remoteSha)) {
-        return [pscustomobject]$status
+    $counts = Get-GitFirstLine -RepoPath $RepoPath -Arguments @('rev-list', '--left-right', '--count', ('{0}...{1}' -f $LocalRef, $RemoteRef)) -LogPath $LogPath -AllowFailure
+    if ($counts.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($counts.Text)) {
+        $result.status = 'error'
+        return [pscustomobject]$result
     }
 
-    $countsResult = Get-GitSingleLine -RepoPath $RepoPath -Arguments @('rev-list', '--left-right', '--count', ('{0}...{1}' -f $LocalRef, $RemoteRef)) -LogPath $LogPath -AllowFailure
-    if ($countsResult.ExitCode -ne 0 -or [string]::IsNullOrWhiteSpace($countsResult.Text)) {
-        $status.status = 'error'
-        return [pscustomobject]$status
-    }
-
-    $parts = $countsResult.Text -split '\s+'
+    $parts = $counts.Text -split '\s+'
     if ($parts.Count -lt 2) {
-        $status.status = 'error'
-        return [pscustomobject]$status
+        $result.status = 'error'
+        return [pscustomobject]$result
     }
 
-    $status.ahead = $parts[0]
-    $status.behind = $parts[1]
+    $result.ahead = $parts[0]
+    $result.behind = $parts[1]
 
     if ($parts[0] -eq '0' -and $parts[1] -eq '0') {
-        $status.status = 'synced'
+        $result.status = 'synced'
     }
-    elseif ([int]$parts[0] -gt 0 -and $parts[1] -eq '0') {
-        $status.status = 'ahead'
+    elseif ([int]$parts[0] -eq 0 -and [int]$parts[1] -gt 0) {
+        $result.status = 'behind'
     }
-    elseif ($parts[0] -eq '0' -and [int]$parts[1] -gt 0) {
-        $status.status = 'behind'
+    elseif ([int]$parts[0] -gt 0 -and [int]$parts[1] -eq 0) {
+        $result.status = 'ahead'
     }
     else {
-        $status.status = 'diverged'
+        $result.status = 'diverged'
     }
 
-    return [pscustomobject]$status
+    return [pscustomobject]$result
 }
 
-function Format-RemoteSummary {
-    param($RemoteMap)
+function Get-Recommendation {
+    param(
+        [Parameter(Mandatory = $true)]
+        [hashtable]$RepoResult
+    )
 
-    if ($null -eq $RemoteMap -or $RemoteMap.Count -eq 0) {
-        return 'none'
+    if ($RepoResult.blocker -eq 'repo_path_missing') {
+        return 'fix missing repo path before any downstream work'
     }
 
-    return (($RemoteMap.GetEnumerator() | ForEach-Object { '{0}={1}' -f $_.Key, $_.Value }) -join '; ')
+    if ($RepoResult.blocker -eq 'not_git_repo') {
+        return 'fix repo checkout before downstream work'
+    }
+
+    if ($RepoResult.fetch_state -eq 'fetch_failed') {
+        return 'manual remote/fetch review required before downstream work'
+    }
+
+    if ($RepoResult.working_tree -eq 'dirty') {
+        return 'do not pull or rebase here; preserve local changes and work from current checkout'
+    }
+
+    if ($RepoResult.origin_main_status -eq 'diverged' -or $RepoResult.github_main_status -eq 'diverged') {
+        return 'manual branch reconciliation required before sync actions'
+    }
+
+    if ($RepoResult.origin_main_status -eq 'behind' -and $RepoResult.action_taken -ne 'pulled_ff_only_origin_main') {
+        return 'repo is behind origin/main; update only after workspace is clean'
+    }
+
+    if ($RepoResult.origin_main_status -eq 'ahead') {
+        return 'local commits exist; do not overwrite them'
+    }
+
+    if ($RepoResult.origin_main_status -eq 'synced' -or $RepoResult.github_main_status -eq 'synced') {
+        return 'safe for downstream work on current checkout'
+    }
+
+    return 'review repo log for remote/ref specifics'
 }
 
-Ensure-Directory -Path $bundleRoot
-Ensure-Directory -Path $bundleDir
+function Process-Repo {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RepoPath
+    )
 
-$summaryRows = New-Object System.Collections.Generic.List[object]
+    $repoName = Split-Path -Path $RepoPath -Leaf
+    $logsDir = Join-Path $RepoPath 'logs'
+    Ensure-Directory -Path $logsDir
 
-foreach ($repo in $repos) {
-    $repoName = Split-Path -Path $repo -Leaf
-    $logsDir = Join-Path $repo 'logs'
-    $logPath = Join-Path $logsDir ("repo_sync_pre_codex_{0}.log.txt" -f $timestamp)
+    $logPath = Join-Path $logsDir ("repo_sync_pre_codex_v2_{0}.log.txt" -f $script:RunTimestamp)
+    Set-Content -LiteralPath $logPath -Value ("START {0}" -f (Get-Date -Format 's')) -Encoding UTF8
+
+    $repoResult = New-RepoResult -RepoName $repoName -RepoPath $RepoPath -LogPath $logPath
 
     try {
-        Ensure-Directory -Path $logsDir
-        Set-Content -LiteralPath $logPath -Value ("START {0}" -f (Get-Date -Format 's')) -Encoding UTF8
+        Write-Section -LogPath $logPath -Title 'REPO VALIDATION'
 
-        if (-not (Test-Path -LiteralPath $repo)) {
-            Write-Log -LogPath $logPath -Message ("ERROR: repo path missing: {0}" -f $repo)
-            $summaryRows.Add([pscustomobject]@{
-                repo                 = $repoName
-                path                 = $repo
-                branch               = ''
-                head                 = ''
-                working_tree         = 'missing_repo'
-                remotes              = 'none'
-                origin_main_status   = 'missing'
-                origin_main_ahead    = ''
-                origin_main_behind   = ''
-                github_main_status   = 'missing'
-                github_main_ahead    = ''
-                github_main_behind   = ''
-                action_taken         = 'none'
-                blocker              = 'repo_path_missing'
-                log                  = $logPath
-            })
-            continue
+        if (-not (Test-Path -LiteralPath $RepoPath)) {
+            $repoResult.working_tree = 'missing'
+            $repoResult.blocker = 'repo_path_missing'
+            Write-Log -LogPath $logPath -Message ("ERROR: repo path missing: {0}" -f $RepoPath)
+            return [pscustomobject]$repoResult
         }
 
-        if (-not (Test-Path -LiteralPath (Join-Path $repo '.git'))) {
-            Write-Log -LogPath $logPath -Message ("ERROR: not a git repo: {0}" -f $repo)
-            $summaryRows.Add([pscustomobject]@{
-                repo                 = $repoName
-                path                 = $repo
-                branch               = ''
-                head                 = ''
-                working_tree         = 'not_git_repo'
-                remotes              = 'none'
-                origin_main_status   = 'missing'
-                origin_main_ahead    = ''
-                origin_main_behind   = ''
-                github_main_status   = 'missing'
-                github_main_ahead    = ''
-                github_main_behind   = ''
-                action_taken         = 'none'
-                blocker              = 'not_git_repo'
-                log                  = $logPath
-            })
-            continue
+        if (-not (Test-Path -LiteralPath (Join-Path $RepoPath '.git'))) {
+            $repoResult.working_tree = 'not_git_repo'
+            $repoResult.blocker = 'not_git_repo'
+            Write-Log -LogPath $logPath -Message ("ERROR: .git missing: {0}" -f $RepoPath)
+            return [pscustomobject]$repoResult
         }
 
-        Write-Section -LogPath $logPath -Title 'REMOTE URLS BEFORE'
-        $remoteMap = Get-RemoteMap -RepoPath $repo -LogPath $logPath
+        Write-Log -LogPath $logPath -Message ("repo_ok={0}" -f $RepoPath)
 
-        Write-Section -LogPath $logPath -Title 'FETCH ALL'
-        $fetchResult = Invoke-GitCapture -RepoPath $repo -Arguments @('fetch', '--all', '--prune') -LogPath $logPath -AllowFailure
-        $fetchState = if ($fetchResult.ExitCode -eq 0) { 'ok' } else { 'fetch_failed' }
+        Write-Section -LogPath $logPath -Title 'REMOTE URLS BEFORE FETCH'
+        $remoteInfo = Get-RemoteInfo -RepoPath $RepoPath -LogPath $logPath
+        $repoResult.remotes = Format-RemoteSummary -RemoteInfo $remoteInfo
 
-        $branch = (Get-GitSingleLine -RepoPath $repo -Arguments @('branch', '--show-current') -LogPath $logPath -AllowFailure).Text
-        if ([string]::IsNullOrWhiteSpace($branch)) {
-            $branch = 'DETACHED'
+        Write-Section -LogPath $logPath -Title 'FETCH ALL REMOTES'
+        $fetchResult = Invoke-GitCapture -RepoPath $RepoPath -Arguments @('fetch', '--all', '--prune') -LogPath $logPath -AllowFailure
+        $repoResult.fetch_state = if ($fetchResult.ExitCode -eq 0) { 'ok' } else { 'fetch_failed' }
+
+        Write-Section -LogPath $logPath -Title 'POST-FETCH STATE'
+        $branchLine = Get-GitFirstLine -RepoPath $RepoPath -Arguments @('branch', '--show-current') -LogPath $logPath -AllowFailure
+        $repoResult.branch = if ([string]::IsNullOrWhiteSpace($branchLine.Text)) { 'DETACHED' } else { $branchLine.Text }
+
+        $headLine = Get-GitFirstLine -RepoPath $RepoPath -Arguments @('rev-parse', 'HEAD') -LogPath $logPath -AllowFailure
+        $repoResult.head = $headLine.Text
+
+        $statusResult = Invoke-GitCapture -RepoPath $RepoPath -Arguments @('status', '--porcelain') -LogPath $logPath -AllowFailure
+        $repoResult.working_tree = if ([string]::IsNullOrWhiteSpace($statusResult.StdOut)) { 'clean' } else { 'dirty' }
+
+        Write-Log -LogPath $logPath -Message ("branch={0}" -f $repoResult.branch)
+        Write-Log -LogPath $logPath -Message ("head={0}" -f $repoResult.head)
+        Write-Log -LogPath $logPath -Message ("working_tree={0}" -f $repoResult.working_tree)
+        Write-Log -LogPath $logPath -Message ("fetch_state={0}" -f $repoResult.fetch_state)
+
+        Write-Section -LogPath $logPath -Title 'AHEAD BEHIND STATUS'
+        $originStatus = Get-AheadBehindStatus -RepoPath $RepoPath -LocalRef 'HEAD' -RemoteRef 'origin/main' -LogPath $logPath
+        $githubStatus = Get-AheadBehindStatus -RepoPath $RepoPath -LocalRef 'HEAD' -RemoteRef 'github/main' -LogPath $logPath
+
+        $repoResult.origin_main_status = $originStatus.status
+        $repoResult.origin_main_ahead = $originStatus.ahead
+        $repoResult.origin_main_behind = $originStatus.behind
+        $repoResult.github_main_status = $githubStatus.status
+        $repoResult.github_main_ahead = $githubStatus.ahead
+        $repoResult.github_main_behind = $githubStatus.behind
+
+        Write-Log -LogPath $logPath -Message ("remotes={0}" -f $repoResult.remotes)
+        Write-Log -LogPath $logPath -Message ("origin/main={0}; ahead={1}; behind={2}" -f $repoResult.origin_main_status, $repoResult.origin_main_ahead, $repoResult.origin_main_behind)
+        Write-Log -LogPath $logPath -Message ("github/main={0}; ahead={1}; behind={2}" -f $repoResult.github_main_status, $repoResult.github_main_ahead, $repoResult.github_main_behind)
+
+        if ($repoResult.fetch_state -eq 'fetch_failed') {
+            $repoResult.blocker = 'fetch_failed'
         }
 
-        $head = (Get-GitSingleLine -RepoPath $repo -Arguments @('rev-parse', 'HEAD') -LogPath $logPath -AllowFailure).Text
-        $statusResult = Invoke-GitCapture -RepoPath $repo -Arguments @('status', '--short') -LogPath $logPath -AllowFailure
-        $workingTree = if ([string]::IsNullOrWhiteSpace($statusResult.StdOut)) { 'clean' } else { 'dirty' }
+        $canPullOriginMain = (
+            $repoResult.fetch_state -eq 'ok' -and
+            $repoResult.branch -eq 'main' -and
+            $repoResult.working_tree -eq 'clean' -and
+            $repoResult.origin_main_status -eq 'behind' -and
+            $repoResult.origin_main_ahead -eq '0'
+        )
 
-        Write-Section -LogPath $logPath -Title 'POST-FETCH STATUS'
-        Write-Log -LogPath $logPath -Message ("branch={0}" -f $branch)
-        Write-Log -LogPath $logPath -Message ("head={0}" -f $head)
-        Write-Log -LogPath $logPath -Message ("working_tree={0}" -f $workingTree)
-        Write-Log -LogPath $logPath -Message ("fetch_state={0}" -f $fetchState)
-
-        $originStatus = Get-AheadBehindStatus -RepoPath $repo -LocalRef 'HEAD' -RemoteRef 'origin/main' -LogPath $logPath
-        $githubStatus = Get-AheadBehindStatus -RepoPath $repo -LocalRef 'HEAD' -RemoteRef 'github/main' -LogPath $logPath
-
-        Write-Section -LogPath $logPath -Title 'SYNC STATUS'
-        Write-Log -LogPath $logPath -Message ("remotes={0}" -f (Format-RemoteSummary -RemoteMap $remoteMap))
-        Write-Log -LogPath $logPath -Message ("origin/main={0}; ahead={1}; behind={2}" -f $originStatus.status, $originStatus.ahead, $originStatus.behind)
-        Write-Log -LogPath $logPath -Message ("github/main={0}; ahead={1}; behind={2}" -f $githubStatus.status, $githubStatus.ahead, $githubStatus.behind)
-
-        $actionTaken = 'none'
-        $blocker = if ($fetchState -eq 'fetch_failed') { 'fetch_failed' } else { '' }
-
-        if (
-            $fetchState -eq 'ok' -and
-            $branch -eq 'main' -and
-            $workingTree -eq 'clean' -and
-            $originStatus.status -eq 'behind'
-        ) {
-            Write-Section -LogPath $logPath -Title 'AUTO FAST-FORWARD PULL origin/main'
-            $pullResult = Invoke-GitCapture -RepoPath $repo -Arguments @('pull', '--ff-only', 'origin', 'main') -LogPath $logPath -AllowFailure
+        if ($canPullOriginMain) {
+            Write-Section -LogPath $logPath -Title 'AUTO FAST FORWARD PULL ORIGIN MAIN'
+            $pullResult = Invoke-GitCapture -RepoPath $RepoPath -Arguments @('pull', '--ff-only', 'origin', 'main') -LogPath $logPath -AllowFailure
 
             if ($pullResult.ExitCode -eq 0) {
-                $actionTaken = 'pulled_ff_only_origin_main'
-                $originStatus = Get-AheadBehindStatus -RepoPath $repo -LocalRef 'HEAD' -RemoteRef 'origin/main' -LogPath $logPath
-                $githubStatus = Get-AheadBehindStatus -RepoPath $repo -LocalRef 'HEAD' -RemoteRef 'github/main' -LogPath $logPath
+                $repoResult.action_taken = 'pulled_ff_only_origin_main'
+
+                $repoResult.head = (Get-GitFirstLine -RepoPath $RepoPath -Arguments @('rev-parse', 'HEAD') -LogPath $logPath -AllowFailure).Text
+                $originStatus = Get-AheadBehindStatus -RepoPath $RepoPath -LocalRef 'HEAD' -RemoteRef 'origin/main' -LogPath $logPath
+                $githubStatus = Get-AheadBehindStatus -RepoPath $RepoPath -LocalRef 'HEAD' -RemoteRef 'github/main' -LogPath $logPath
+
+                $repoResult.origin_main_status = $originStatus.status
+                $repoResult.origin_main_ahead = $originStatus.ahead
+                $repoResult.origin_main_behind = $originStatus.behind
+                $repoResult.github_main_status = $githubStatus.status
+                $repoResult.github_main_ahead = $githubStatus.ahead
+                $repoResult.github_main_behind = $githubStatus.behind
             }
             else {
-                $actionTaken = 'pull_attempt_failed'
-                $blocker = 'ff_pull_failed'
+                $repoResult.action_taken = 'pull_attempt_failed'
+                $repoResult.blocker = 'ff_pull_failed'
             }
         }
 
         Write-Section -LogPath $logPath -Title 'FINAL REMOTE URLS'
-        $finalRemoteMap = Get-RemoteMap -RepoPath $repo -LogPath $logPath
+        $finalRemoteInfo = Get-RemoteInfo -RepoPath $RepoPath -LogPath $logPath
+        $repoResult.remotes = Format-RemoteSummary -RemoteInfo $finalRemoteInfo
+        $repoResult.recommendation = Get-Recommendation -RepoResult $repoResult
+        Write-Log -LogPath $logPath -Message ("recommendation={0}" -f $repoResult.recommendation)
         Write-Log -LogPath $logPath -Message ("DONE {0}" -f (Get-Date -Format 's'))
 
-        $summaryRows.Add([pscustomobject]@{
-            repo                 = $repoName
-            path                 = $repo
-            branch               = $branch
-            head                 = $head
-            working_tree         = $workingTree
-            remotes              = (Format-RemoteSummary -RemoteMap $finalRemoteMap)
-            origin_main_status   = $originStatus.status
-            origin_main_ahead    = $originStatus.ahead
-            origin_main_behind   = $originStatus.behind
-            github_main_status   = $githubStatus.status
-            github_main_ahead    = $githubStatus.ahead
-            github_main_behind   = $githubStatus.behind
-            action_taken         = $actionTaken
-            blocker              = $blocker
-            log                  = $logPath
-        })
+        return [pscustomobject]$repoResult
     }
     catch {
-        if (-not (Test-Path -LiteralPath $logPath)) {
-            Ensure-Directory -Path $logsDir
-            Set-Content -LiteralPath $logPath -Value ("START {0}" -f (Get-Date -Format 's')) -Encoding UTF8
-        }
-
         Write-Section -LogPath $logPath -Title 'UNHANDLED ERROR'
         Write-Log -LogPath $logPath -Message $_.Exception.ToString()
-
-        $summaryRows.Add([pscustomobject]@{
-            repo                 = $repoName
-            path                 = $repo
-            branch               = ''
-            head                 = ''
-            working_tree         = 'error'
-            remotes              = 'unknown'
-            origin_main_status   = 'error'
-            origin_main_ahead    = ''
-            origin_main_behind   = ''
-            github_main_status   = 'error'
-            github_main_ahead    = ''
-            github_main_behind   = ''
-            action_taken         = 'none'
-            blocker              = $_.Exception.Message
-            log                  = $logPath
-        })
+        $repoResult.working_tree = 'error'
+        $repoResult.blocker = if ($_.Exception.Message) { $_.Exception.Message } else { 'unhandled_error' }
+        $repoResult.recommendation = 'manual script/log review required'
+        return [pscustomobject]$repoResult
     }
     finally {
-        if (Test-Path -LiteralPath $logPath) {
-            Copy-Item -LiteralPath $logPath -Destination (Join-Path $bundleDir ([IO.Path]::GetFileName($logPath))) -Force
-        }
+        Write-Log -LogPath $logPath -Message ''
     }
 }
 
-$summaryPath = Join-Path $bundleDir 'repo_sync_summary.txt'
-$summaryLines = New-Object System.Collections.Generic.List[string]
-$summaryLines.Add(("repo_sync_pre_codex_v2 run: {0}" -f (Get-Date -Format 's')))
-$summaryLines.Add(("bundle_dir: {0}" -f $bundleDir))
-$summaryLines.Add(("zip_path: {0}" -f $zipPath))
-$summaryLines.Add('')
+function Write-SummaryBundle {
+    param(
+        [Parameter(Mandatory = $true)]
+        [object[]]$Rows
+    )
 
-foreach ($row in $summaryRows) {
-    $summaryLines.Add(('[' + $row.repo + ']'))
-    $summaryLines.Add(("path={0}" -f $row.path))
-    $summaryLines.Add(("branch={0}" -f $row.branch))
-    $summaryLines.Add(("head={0}" -f $row.head))
-    $summaryLines.Add(("working_tree={0}" -f $row.working_tree))
-    $summaryLines.Add(("remotes={0}" -f $row.remotes))
-    $summaryLines.Add(("origin/main status={0}; ahead={1}; behind={2}" -f $row.origin_main_status, $row.origin_main_ahead, $row.origin_main_behind))
-    $summaryLines.Add(("github/main status={0}; ahead={1}; behind={2}" -f $row.github_main_status, $row.github_main_ahead, $row.github_main_behind))
-    $summaryLines.Add(("action_taken={0}" -f $row.action_taken))
-    $summaryLines.Add(("blocker={0}" -f $row.blocker))
-    $summaryLines.Add(("log={0}" -f $row.log))
-    $summaryLines.Add('')
+    Ensure-Directory -Path $script:BundleRoot
+    Ensure-Directory -Path $script:BundleDir
+
+    foreach ($row in $Rows) {
+        if (Test-Path -LiteralPath $row.log) {
+            $bundleLogName = '{0}_{1}' -f $row.repo, [IO.Path]::GetFileName($row.log)
+            Copy-Item -LiteralPath $row.log -Destination (Join-Path $script:BundleDir $bundleLogName) -Force
+        }
+    }
+
+    $summaryPath = Join-Path $script:BundleDir 'repo_sync_summary.txt'
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add(("repo_sync_pre_codex_v2 run: {0}" -f (Get-Date -Format 's')))
+    $lines.Add(("bundle_dir={0}" -f $script:BundleDir))
+    $lines.Add(("zip_path={0}" -f $script:ZipPath))
+    $lines.Add('')
+
+    foreach ($row in $Rows) {
+        $lines.Add(('[{0}]' -f $row.repo))
+        $lines.Add(("path={0}" -f $row.path))
+        $lines.Add(("branch={0}" -f $row.branch))
+        $lines.Add(("head={0}" -f $row.head))
+        $lines.Add(("working_tree={0}" -f $row.working_tree))
+        $lines.Add(("remotes={0}" -f $row.remotes))
+        $lines.Add(("fetch_state={0}" -f $row.fetch_state))
+        $lines.Add(("origin/main status={0}; ahead={1}; behind={2}" -f $row.origin_main_status, $row.origin_main_ahead, $row.origin_main_behind))
+        $lines.Add(("github/main status={0}; ahead={1}; behind={2}" -f $row.github_main_status, $row.github_main_ahead, $row.github_main_behind))
+        $lines.Add(("action_taken={0}" -f $row.action_taken))
+        $lines.Add(("blocker={0}" -f $row.blocker))
+        $lines.Add(("recommendation={0}" -f $row.recommendation))
+        $lines.Add(("log={0}" -f $row.log))
+        $lines.Add('')
+    }
+
+    Set-Content -LiteralPath $summaryPath -Value $lines -Encoding UTF8
+
+    if (Test-Path -LiteralPath $script:ZipPath) {
+        Remove-Item -LiteralPath $script:ZipPath -Force
+    }
+
+    Compress-Archive -Path (Join-Path $script:BundleDir '*') -DestinationPath $script:ZipPath -Force
+
+    return $summaryPath
 }
 
-$summaryLines | Set-Content -LiteralPath $summaryPath -Encoding UTF8
-
-if (Test-Path -LiteralPath $zipPath) {
-    Remove-Item -LiteralPath $zipPath -Force
+if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+    throw 'git is not available on PATH'
 }
 
-Compress-Archive -Path (Join-Path $bundleDir '*') -DestinationPath $zipPath -Force
+$results = foreach ($repoPath in $script:RepoPaths) {
+    Process-Repo -RepoPath $repoPath
+}
+
+$summaryFile = Write-SummaryBundle -Rows $results
 
 Write-Host ''
 Write-Host 'DONE'
-Write-Host ("SUMMARY: {0}" -f $summaryPath)
-Write-Host ("ZIP: {0}" -f $zipPath)
+Write-Host ("SUMMARY: {0}" -f $summaryFile)
+Write-Host ("ZIP: {0}" -f $script:ZipPath)

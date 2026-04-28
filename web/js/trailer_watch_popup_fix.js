@@ -10,6 +10,8 @@ CHANGE NOTES:
 */
 (function(){
   'use strict';
+  if (window.__myTvHubTrailerWatchPopupFixLoaded) return;
+  window.__myTvHubTrailerWatchPopupFixLoaded = true;
 
   const WATCH_INDEX_TIMEOUT_MS = 1800;
   const DETAIL_TIMEOUT_MS = 1800;

@@ -17,20 +17,25 @@ Structure
 ## Icon Strip
 
 🍿 Watch Source\
-⌚ Watch Status\
-💕 Favorites\
-🔖 Bookmark\
-⭐ Rating
+⌚ Watched Status\
+🎫 Watch List\
+💕 Favourite\
+Numeric Rating
 
 Rules
 
 -   icons only
 -   no text buttons
--   consistent order
+-   consistent order: popcorn, watched status, watch list, favourite, rating
 -   movie and episode availability state is shown on the popcorn icon with a tight solid square:
 -   green = available
--   orange = unavailable
--   red = not yet released
+-   orange = not yet released
+-   red = unavailable
+-   watched-status and watch-list icons use green when active and grey when inactive
+-   no play icon for watched status
+-   no ruler icon for watch list
+-   no single yellow heart for favourite
+-   ratings are compact numeric text; no star is required
 -   movie and episode cards do not place availability badges over poster or still copy; shows and seasons keep the shared badge treatment
 -   app version badges must read shared metadata, not hard-coded per-page strings
 

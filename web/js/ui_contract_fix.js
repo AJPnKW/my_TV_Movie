@@ -1,12 +1,11 @@
 /*
 FILE: web/js/ui_contract_fix.js
-VERSION: v1.0.0
+VERSION: v1.1.0
 UPDATED: 2026-04-27
 PURPOSE:
-- Enforce icon contract after repeated drift.
-- Correct order/icon meanings: popcorn, watch, ticket, double-heart, compact rating.
-- Remove rating star icon.
-- Improve D-pad/back behavior without changing app runtime.
+- Compatibility shim for legacy rendered nodes after repeated drift.
+- Canonical icon/action rendering is owned by action_bar.js.
+- This only repairs stale nodes and lazy image sizing after render.
 */
 (function(){
   'use strict';
@@ -77,7 +76,7 @@ PURPOSE:
     });
 
     Array.from(scope.querySelectorAll('.actionbar-rating__text,.iconstrip-pct')).forEach(function(el){
-      el.textContent = text(el.textContent).replace(/%/g,'').replace(/^★/,'').trim();
+      el.textContent = text(el.textContent).replace(/%/g,'').replace(/^\u2605/,'').trim();
     });
   }
 
@@ -101,106 +100,11 @@ PURPOSE:
     }
   }
 
-  function activeOverlay(){
-    const provider = document.getElementById('providerBack');
-    if (provider && provider.getAttribute('aria-hidden') !== 'true' && getComputedStyle(provider).display !== 'none') {
-      return document.getElementById('providerCard') || provider;
-    }
-    const modal = document.getElementById('modalBack');
-    if (modal && modal.getAttribute('aria-hidden') !== 'true' && getComputedStyle(modal).display !== 'none') {
-      return document.getElementById('modalCard') || modal;
-    }
-    return null;
-  }
-
-  function closeTopOverlay(){
-    const overlay = activeOverlay();
-    if (!overlay) return false;
-    const close = overlay.querySelector('button[id$="Close"], .calbtn, button');
-    if (close) close.click();
-    else {
-      const back = overlay.closest('.app-modal-backdrop') || overlay;
-      back.style.display = 'none';
-      back.setAttribute('aria-hidden','true');
-    }
-    return true;
-  }
-
-  function focusables(root){
-    return Array.from((root || document).querySelectorAll('a,button,input,select,textarea,[tabindex]'))
-      .filter(function(el){
-        if (el.disabled) return false;
-        if (el.getAttribute('data-tv-skip') === '1') return false;
-        const style = getComputedStyle(el);
-        return style.display !== 'none' && style.visibility !== 'hidden' && el.getClientRects().length;
-      });
-  }
-
-  function moveFocus(dir){
-    const root = activeOverlay() || document.querySelector('.panel:not(.hidden)') || document.querySelector('main') || document.body;
-    const items = focusables(root);
-    if (!items.length) return false;
-    const active = document.activeElement;
-    if (!items.includes(active)) {
-      items[0].focus({preventScroll:true});
-      items[0].scrollIntoView({block:'nearest', inline:'nearest'});
-      return true;
-    }
-
-    const ar = active.getBoundingClientRect();
-    const ax = ar.left + ar.width / 2;
-    const ay = ar.top + ar.height / 2;
-    let best = null;
-    let bestScore = Infinity;
-
-    for (const el of items) {
-      if (el === active) continue;
-      const r = el.getBoundingClientRect();
-      const x = r.left + r.width / 2;
-      const y = r.top + r.height / 2;
-      const dx = x - ax;
-      const dy = y - ay;
-      if (dir === 'ArrowLeft' && dx >= -2) continue;
-      if (dir === 'ArrowRight' && dx <= 2) continue;
-      if (dir === 'ArrowUp' && dy >= -2) continue;
-      if (dir === 'ArrowDown' && dy <= 2) continue;
-      const score = Math.abs(dx) + Math.abs(dy) * 1.25;
-      if (score < bestScore) {
-        best = el;
-        bestScore = score;
-      }
-    }
-
-    if (!best) return false;
-    best.focus({preventScroll:true});
-    best.scrollIntoView({block:'nearest', inline:'nearest'});
-    return true;
-  }
-
   function run(root){
     normalizeActionBars(root || document);
     normalizeImages(root || document);
     refreshWatchState(root || document);
   }
-
-  document.addEventListener('keydown', function(event){
-    if (event.key === 'Escape' || event.key === 'Backspace' || event.key === 'BrowserBack') {
-      if (closeTopOverlay()) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-      return;
-    }
-
-    if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key)) {
-      const tag = (event.target && event.target.tagName || '').toLowerCase();
-      if (tag === 'input' || tag === 'textarea' || (event.target && event.target.isContentEditable)) return;
-      if (moveFocus(event.key)) {
-        event.preventDefault();
-        event.stopPropagation();
-      }
-    }
-  }, true);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function(){ run(document); });

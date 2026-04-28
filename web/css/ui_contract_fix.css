@@ -73,6 +73,14 @@ Presentation contract stabilizer:
   overflow: hidden !important;
 }
 
+.media-card,
+.card,
+.show-card,
+.movie-card,
+.episode-card {
+  min-width: 142px !important;
+}
+
 .dashgrid,
 .media-grid,
 .calendar-grid,
@@ -106,6 +114,27 @@ Presentation contract stabilizer:
 .calendar-grid,
 .dashgrid,
 #calendar,
+#dashLastWeekCols,
+#dashScheduleCols {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
+}
+
+body[data-page="calendar"] .shell,
+body[data-page="calendar"] .panel,
+body[data-page="calendar"] .dashblock--calendar {
+  padding-left: 4px !important;
+  padding-right: 4px !important;
+}
+
+body[data-page="calendar"] .calendar-month-grid,
+body[data-page="calendar"] .calendar-week-band {
+  gap: 4px !important;
+}
+
+body[data-page="calendar"] .calendar-day {
+  padding: 4px !important;
+}
+
 #dashLastWeekCols,
 #dashScheduleCols {
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important;
@@ -306,7 +335,7 @@ img,
   #calendar,
   #dashLastWeekCols,
   #dashScheduleCols {
-    grid-template-columns: repeat(auto-fit, minmax(136px, 1fr)) !important;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)) !important;
   }
 
   .media-grid,
@@ -333,6 +362,13 @@ img,
   #calendar,
   #dashLastWeekCols,
   #dashScheduleCols {
-    grid-template-columns: repeat(2, minmax(122px, 1fr)) !important;
+    grid-template-columns: repeat(2, minmax(170px, 1fr)) !important;
+  }
+}
+
+@media (min-width: 900px) {
+  .calendar-month-grid,
+  .calendar-week-band {
+    grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
   }
 }

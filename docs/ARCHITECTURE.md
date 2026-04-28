@@ -15,6 +15,20 @@
 - Calendar and weekly dashboard date-grouped views must load from `calendar.json`.
 - Popup and detail views must lazy-load `catalog_detail/<tmdb_id>.json`.
 - `data/data.json` may exist for build/reference/QA purposes but must not be the active first-load runtime dependency.
+- `data/watch_sources_index.json` is the first lookup path for the popcorn/watch-source popup; detail JSON is an optional fallback only.
+
+## UI And Watch State Contract
+
+- `web/js/action_bar.js` owns action icon order and rendering.
+- `web/js/watch_state_manager.js` owns local-first `watched_status`, `watch_list`, and `favourite` toggles through `localStorage`.
+- `web/js/trailer_watch_popup_fix.js` owns the non-blocking popcorn/watch-source popup runtime.
+- `web/js/data_loader.js` owns catalog and calendar loading, including `calendar.json` fallback derivation from `data/data.json`.
+- `web/js/ui_contract_fix.js` and `web/css/ui_contract_fix.css` remain compatibility shims only; canonical rendering belongs to `action_bar.js`, `watch_state_manager.js`, `data_loader.js`, `trailer_watch_popup_fix.js`, and `web/css/main_app.css`.
+- `watched_status` maps to Trakt watched/history when sync is enabled.
+- `watch_list` maps to Trakt watchlist when sync is enabled.
+- `favourite` remains local-only.
+- Trakt matching must use `tmdb_id`; no title/fuzzy matching is allowed for sync.
+- Offline UI state changes must be instant and must not depend on network/API availability.
 
 ## Detail Schema Contract
 
@@ -77,6 +91,10 @@
 ## Pipeline Contract
 
 - Production build flow is `inputs.json -> TMDB -> OMDB -> Trakt -> availability/status -> split-runtime build -> QA`.
+- Runtime images are generated from immutable originals under `assets/original_downloads/` into canonical runtime folders under `assets/posters`, `assets/stills`, `assets/backdrops`, `assets/logos`, and `assets/icons`.
+- Runtime poster targets are about 342px wide; runtime still/backdrop targets are about 780px wide. Runtime folders must not retain 4K/original-sized images.
+- Repo-standard validation is `scripts/validate_runtime.ps1`.
+- Removed overlay/patch-bundle folders and apply scripts must not return as active repo files.
 - No active production dependency may return to:
   - `tv_list.txt`
   - `movies_list.txt`

@@ -401,8 +401,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function setStatus(ok, msg) {
-    $("#statusText").textContent = msg;
-    $("#statusDot").classList.toggle("bad", !ok);
+    const textEl = $("#statusText");
+    const dotEl = $("#statusDot");
+    if (textEl) textEl.textContent = msg;
+    if (dotEl) dotEl.classList.toggle("bad", !ok);
   }
 
   function appVersionText(){
@@ -1186,7 +1188,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       <div class="actionmenu" data-action-menu-panel="1" data-menu-type="rate">
         <button type="button" class="menu-close" data-menu-close="1" aria-label="Close">✕</button>
         <div class="menutitle">Rating</div>
-        <button type="button" disabled>Frontend placeholder</button>
+        <button type="button" disabled>Rating not set</button>
       </div>
     `;
   }
@@ -1705,10 +1707,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         attrs: options.popcornAttrs || {},
         availabilityStatus: safeText(options.availabilityStatus || "").trim()
       } : null,
-      favourite: { active: !!options.favoriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } },
-      status: options.showStatusAction ? { attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
-      watched: { active: !!options.watchedActive, attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } },
-      rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}%` : "--%" },
+      favourite: { active: !!options.favouriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } },
+      status: options.showStatusAction ? { active: !!options.watchedActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
+      watched: { active: !!options.watchListActive || !!options.favoriteActive, attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } },
+      rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}` : "--" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
   }
@@ -1856,6 +1858,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function wireWatchSourceButtons(container){
+    if (window.__myTvHubTrailerWatchPopupFixLoaded) return;
     if (!container) return;
     $$("[data-watch-source-open]", container).forEach(btn => {
       btn.addEventListener("click", async (e) => {
@@ -2300,9 +2303,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       state.calendarData.days = state.calendarData.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
       state.inputs = await window.MyTVHubSharedModules.dataLoader.loadInputsFirst(["../data/inputs.json", "../inputs.json"]);
 
-      // Detect local inputs editor API (for write-back)
-      state.apiAvailable = await checkApiAvailable();
-      state.inputsEditorServerAvailable = await checkInputsEditorServerAvailable();
+      // Local editor probes are deferred to the editor view to avoid noisy failed
+      // localhost requests during normal static browsing.
+      state.apiAvailable = false;
+      state.inputsEditorServerAvailable = false;
 
       // Prefer local watch_state (inputs/data), fallback to Trakt
       setWatchStateSource();
@@ -2312,7 +2316,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
       populateFilters();
 
-      $("#footer").textContent = footerText();
+      const footer = $("#footer");
+      if (footer) footer.textContent = footerText();
       const vb = $("#verBadge");
       if (vb) vb.textContent = appVersionText();
       setStatus(true, "Ready");
@@ -2320,7 +2325,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       routeFromHash();
     } catch (e){
       console.error(e);
-      $("#footer").textContent = footerText();
+      const footer = $("#footer");
+      if (footer) footer.textContent = footerText();
       setStatus(false, "Failed");
       const msg = escHtml(e?.message || String(e));
       const errPanel = $("#panel-dashboard") || $("#panel-calendar") || $(".panel");
@@ -2748,15 +2754,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (e.target.closest(".actionbar")) return;
       openMovieModal(parseInt(card.getAttribute("data-movie") || "0", 10));
     }));
-    $$("[data-calendar-more]", root).forEach(btn => {
-      btn.addEventListener("click", () => {
-        const key = safeText(btn.getAttribute("data-calendar-more"));
-        const open = btn.getAttribute("data-open") === "1";
-        $$(`.calendar-item.hidden[data-day='${key}']`, root).forEach(el => el.classList.toggle("hidden", open));
-        btn.setAttribute("data-open", open ? "0" : "1");
-        btn.textContent = open ? "Show less" : `+${safeText(btn.getAttribute("data-count"))} more`;
-      });
-    });
     wireActionMenus(root);
     wireIconStripActions(root, renderCalendar);
     wireWatchSourceButtons(root);
@@ -3209,28 +3206,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
-  async function renderConfig(){
-    const root = $("#configRoot");
-    if (!root) return;
-    try{
-      if (window.MyTVHubConfig?.render_config_view){
-        await window.MyTVHubConfig.load_config_once();
-        window.MyTVHubConfig.render_config_view(root, state.cfg || window.MyTVHubConfig.get_config(), {});
-        return;
-      }
-    }catch(error){
-      root.innerHTML = `<div class="inline-error">Failed to render config view: ${escHtml(error?.message || String(error))}</div>`;
-      return;
-    }
-
-    const cfg = state.cfg || {};
-    root.innerHTML = `
-      <div class="muted" style="margin-bottom:10px;">Shared config renderer unavailable. Showing raw config summary.</div>
-      <pre style="white-space:pre-wrap;overflow:auto;border:1px solid rgba(255,255,255,0.10);border-radius:12px;padding:12px;background:rgba(0,0,0,0.18);">${escHtml(JSON.stringify(cfg, null, 2))}</pre>
-    `;
-  }
-
-  function renderInputsEditor(){
+  async function renderInputsEditor(){
     const frame = $("#inputsEditorFrame");
     const meta = $("#inputsEditorPanelMeta");
     const openBtn = $("#inputsEditorOpen");
@@ -3260,6 +3236,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       </body>
       </html>
     `;
+
+    state.inputsEditorServerAvailable = await checkInputsEditorServerAvailable();
+    state.apiAvailable = state.inputsEditorServerAvailable;
 
     if (state.inputsEditorServerAvailable){
       frame.removeAttribute("srcdoc");
@@ -3435,7 +3414,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function renderCalendar(){
     const month = state.calendarMonth;
-    $("#calMonth").textContent = month.toLocaleDateString(undefined, { month: "long", year: "numeric" });
+    const calMonth = $("#calMonth");
+    if (calMonth) calMonth.textContent = month.toLocaleDateString(undefined, { month: "long", year: "numeric" });
     updateTodayLabel();
 
     const today = toDateKey(new Date());
@@ -3506,8 +3486,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     `;
     const renderDayCell = ({ dt, key, inMonth, num }) => {
       const items = eventsByDate.get(key) || [];
-      const visible = items.slice(0, 4).map(item => renderItem(item, key)).join("");
-      const hidden = items.slice(4).map(item => renderItem(item, key, true)).join("");
+      const visible = items.map(item => renderItem(item, key)).join("");
       return `
         <section class="calendar-day${inMonth ? "" : " calendar-day--other-month"}${key === today ? " calendar-day--today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-day--weekend" : ""}" data-daycell="${key}">
           <div class="calendar-day__head">
@@ -3515,8 +3494,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </div>
           <div class="calendar-day__items">
             ${visible || `<div class="calendar-day__empty">${inMonth ? "No releases" : ""}</div>`}
-            ${hidden}
-            ${items.length > 4 ? `<button class="calendar-item__more" type="button" data-calendar-more="${key}" data-count="${items.length - 4}" data-open="0">+${items.length - 4} more</button>` : ""}
           </div>
         </section>
       `;
@@ -3655,9 +3632,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (lastWeekMeta) {
       if (pastEvents.length) {
         const sortedPast = pastEvents.slice().sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-        const first = sortedPast[0]?.dateKey ? formatDateShort(sortedPast[0].dateKey) : "";
-        const last = sortedPast[sortedPast.length - 1]?.dateKey ? formatDateShort(sortedPast[sortedPast.length - 1].dateKey) : "";
-        lastWeekMeta.textContent = first && last ? `${first} - ${last}` : "Recently released";
+        const newest = sortedPast[0]?.dateKey ? formatDateShort(sortedPast[0].dateKey) : "";
+        const oldest = sortedPast[sortedPast.length - 1]?.dateKey ? formatDateShort(sortedPast[sortedPast.length - 1].dateKey) : "";
+        lastWeekMeta.textContent = oldest && newest ? `${oldest} - ${newest}` : "Recently released";
       } else {
         lastWeekMeta.textContent = "No recent items";
       }
@@ -3830,11 +3807,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <div class="config-stat"><strong>${Object.keys(cfg?.icons || {}).length}</strong><span>icon contracts</span></div>
           <div class="config-stat"><strong>${Object.values(cfg?.streaming || {}).filter(v => safeText(v).trim()).length}</strong><span>streaming targets</span></div>
           <div class="config-stat"><strong>${Object.keys(cfg?.image_cache?.folders || {}).length}</strong><span>asset folders</span></div>
+          <div class="config-stat"><strong>${cfg?.trakt_sync?.enabled ? "on" : "off"}</strong><span>Trakt sync</span></div>
         </div>
       </section>
       <section class="config-quicklinks">
         <a class="btn" href="./index.html#inputs-editor">Open Inputs Editor</a>
         <a class="btn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Local Editor</a>
+      </section>
+      <section class="config-quicklinks" aria-label="Trakt mapping">
+        <span class="pill">watched_status -> Trakt history</span>
+        <span class="pill">watch_list -> Trakt watchlist</span>
+        <span class="pill">favourite -> local only</span>
+        <span class="pill">match -> tmdb_id</span>
       </section>
       <div id="configRuntimeSurface"></div>
     `;
@@ -3855,7 +3839,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const title = safeText(movie?.title || "Movie");
     const runtime = Number(movie?.runtime);
     const genres = Array.isArray(movie?.genres) ? movie.genres.map(g => g?.name).filter(Boolean) : [];
-    const studios = getCompanyNames(movie?.production_companies).slice(0, 3).join(" • ") || "Unavailable";
+    const studioNames = getCompanyNames(movie?.production_companies);
+    const studios = studioNames.filter((_, index) => index < 3).join(" • ") || "Unavailable";
     const backdrop = pickImage(movie, "backdrop_local", "backdrop_path");
     const poster = pickImage(movie, "poster_local", "poster_path");
     const heroSummary = [

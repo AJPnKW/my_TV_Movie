@@ -1,7 +1,7 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.5.0",
+    "version": "v1.5.1",
     "updated_utc": "2026-04-04T00:00:00Z",
     "notes": [
       "JSONC is required for this file. Documentation uses line comments.",
@@ -139,7 +139,22 @@
   ],
   "trakt_sync": {
     "enabled": false,
-    "endpoint": "/api/trakt/sync"
+    "endpoint": "/api/trakt/sync",
+    "mode": "local_first_scaffold",
+    "match_key": "tmdb_id",
+    "offline_queue": "data/watch_queue.json",
+    "mapping": {
+      "watched_status": "trakt:sync/history",
+      "watch_list": "trakt:sync/watchlist",
+      "favourite": "localStorage:favourite"
+    },
+    "auth_required": [
+      "API_TRAKT_ID",
+      "API_TRAKT_SECRET",
+      "OAuth access_token",
+      "OAuth refresh_token"
+    ],
+    "notes": "Scaffold only: UI remains local-first/offline-capable; future sync must push watched_status and watch_list by tmdb_id and leave favourite local."
   },
   "icons": {
     "trakt_mark_watched": {
