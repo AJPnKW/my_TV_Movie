@@ -1,0 +1,20 @@
+You are working in C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie.
+
+Read first:
+docs/00_master_contract.html
+
+Hard rule:
+docs/00_master_contract.html is the only active documentation source of truth.
+All other docs are archived/historical unless the master contract explicitly references a recovered concept.
+
+Task:
+Implement the next code alignment batch against the master contract:
+1. validate the active docs model;
+2. separate Manage Watch State from Config;
+3. build Manage Watch State as a lean table/tree matrix with compact toggles;
+4. rationalize watch_me.html vs watchlist.html;
+5. run asset dimension/file-size QA;
+6. audit Trakt scripts and report actual integration status;
+7. update validation and reports only.
+
+Do not create new active documentation. Do not create shims or overlays. Do not reintroduce archived specs as active contracts.
