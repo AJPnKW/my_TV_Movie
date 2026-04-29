@@ -5086,3 +5086,71 @@ img,
   }
 }
 
+/* Post-doc compliance override: keep the finalized action boxes above older specific media-card rules. */
+.media-card .actionbar-btn,
+.episode-row .actionbar-btn,
+.calendar-item .actionbar-btn,
+.watchme-episode-card .actionbar-btn,
+.watchme-movie-card .actionbar-btn,
+.popup-episode-card .actionbar-btn {
+  width: var(--ui_action_box) !important;
+  height: var(--ui_action_box) !important;
+  min-width: var(--ui_action_box) !important;
+  min-height: var(--ui_action_box) !important;
+  max-width: var(--ui_action_box) !important;
+  max-height: var(--ui_action_box) !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+  border-radius: 9px !important;
+  background: rgba(71,85,105,.90) !important;
+  border: 1px solid rgba(148,163,184,.35) !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.media-card .actionbar-btn.popcorn[data-watch-availability="available"],
+.episode-row .actionbar-btn.popcorn[data-watch-availability="available"],
+.calendar-item .actionbar-btn.popcorn[data-watch-availability="available"],
+.watchme-episode-card .actionbar-btn.popcorn[data-watch-availability="available"],
+.watchme-movie-card .actionbar-btn.popcorn[data-watch-availability="available"],
+.popup-episode-card .actionbar-btn.popcorn[data-watch-availability="available"] {
+  background: rgba(22,163,74,.95) !important;
+  border-color: rgba(134,239,172,.95) !important;
+}
+
+.media-card .actionbar-btn.popcorn[data-watch-availability="not_yet_released"],
+.episode-row .actionbar-btn.popcorn[data-watch-availability="not_yet_released"],
+.calendar-item .actionbar-btn.popcorn[data-watch-availability="not_yet_released"],
+.watchme-episode-card .actionbar-btn.popcorn[data-watch-availability="not_yet_released"],
+.watchme-movie-card .actionbar-btn.popcorn[data-watch-availability="not_yet_released"],
+.popup-episode-card .actionbar-btn.popcorn[data-watch-availability="not_yet_released"] {
+  background: rgba(234,88,12,.95) !important;
+  border-color: rgba(253,186,116,.95) !important;
+}
+
+.media-card .actionbar-btn.popcorn[data-watch-availability="unavailable"],
+.episode-row .actionbar-btn.popcorn[data-watch-availability="unavailable"],
+.calendar-item .actionbar-btn.popcorn[data-watch-availability="unavailable"],
+.watchme-episode-card .actionbar-btn.popcorn[data-watch-availability="unavailable"],
+.watchme-movie-card .actionbar-btn.popcorn[data-watch-availability="unavailable"],
+.popup-episode-card .actionbar-btn.popcorn[data-watch-availability="unavailable"] {
+  background: rgba(185,28,28,.95) !important;
+  border-color: rgba(252,165,165,.95) !important;
+}
+
+.media-card .actionbar-btn.active,
+.media-card .actionbar-btn[data-watch-state-active="1"],
+.episode-row .actionbar-btn.active,
+.episode-row .actionbar-btn[data-watch-state-active="1"],
+.calendar-item .actionbar-btn.active,
+.calendar-item .actionbar-btn[data-watch-state-active="1"],
+.watchme-episode-card .actionbar-btn.active,
+.watchme-episode-card .actionbar-btn[data-watch-state-active="1"],
+.watchme-movie-card .actionbar-btn.active,
+.watchme-movie-card .actionbar-btn[data-watch-state-active="1"],
+.popup-episode-card .actionbar-btn.active,
+.popup-episode-card .actionbar-btn[data-watch-state-active="1"] {
+  background: rgba(22,163,74,.95) !important;
+  border-color: rgba(134,239,172,.95) !important;
+}
+
