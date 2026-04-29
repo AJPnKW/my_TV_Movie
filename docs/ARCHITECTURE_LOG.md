@@ -321,3 +321,10 @@ Commit
 - Hardened `scripts/validate_runtime.ps1` for active-code drift: removed compatibility layers, text nav, duplicate action systems, missing manage state, and legacy action shapes now fail validation.
 - Rendered QA passed on local Chromium for dashboard, shows, movies, calendar, config, manage-watch-state, watch-me, and discover at TV, laptop, tablet, and mobile viewports.
 - Implementation commit: `d0f6c5a0`
+
+## 2026-04-29 — Manage Watch State standalone split
+- Split Manage Watch State out of Config so `web/manage_watch_state.html` is the standalone state-management route and Config remains app settings only.
+- Moved the placeholder Trakt config page from `web/config_trakt.html` to `docs/_archive/web_pages/config_trakt.html`.
+- Restored Watch Me at `web/watch_me.html` to a compact release-list presentation while keeping shared runtime loading, action bars, watch-source handling, and route compatibility.
+- Added rendered validation to `scripts/validate_runtime.ps1` so nav icon framing, logo aspect/overflow, Config/manage separation, and Watch Me list rendering fail in live Chromium checks.
+- Implementation commit: `e8cb6729`
