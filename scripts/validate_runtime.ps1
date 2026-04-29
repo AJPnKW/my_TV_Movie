@@ -39,6 +39,7 @@ $requiredFiles = @(
     'web/discover.html',
     'web/config.html',
     'web/inputs_editor.html',
+    'assets/custom/the_boys_hub_logo2.png',
     'web/js/action_bar.js',
     'web/js/watch_state_manager.js',
     'web/js/data_loader.js',
@@ -77,6 +78,9 @@ foreach ($page in $pageFiles) {
         if ($text -notlike "*$needle*") {
             Add-CheckError "$page missing shell reference: $needle"
         }
+    }
+    if ($text -notlike '*../assets/custom/the_boys_hub_logo2.png*') {
+        Add-CheckError "$page missing compact logo shell reference"
     }
 }
 
@@ -181,7 +185,6 @@ $forbidden = @(
     '🔖',
     '💛',
     '⭐',
-    '76%',
     '.slice(0,3)',
     '<<<<<<<',
     '>>>>>>>',
@@ -235,9 +238,53 @@ foreach ($needle in @(
 if ($actionText -match "rating:\s*'[^']+'") {
     Add-CheckError 'Rating icon must stay empty; rating renders as compact text.'
 }
+foreach ($needle in @(
+    'compact percent',
+    'normalizeRatingText'
+)) {
+    if ($actionText -notlike "*$needle*") { Add-CheckError "Action rating percent contract missing: $needle" }
+}
+if ($actionText -notmatch '\$\{numeric\}%') {
+    Add-CheckError 'Action rating formatter must append a percent sign to compact ratings.'
+}
+
+Write-Host '== Card/action layout contract =='
+$cardRendererText = Get-Content -Raw -LiteralPath 'web/js/card_renderer.js'
+$appRuntimeText = Get-Content -Raw -LiteralPath 'web/js/app_runtime.js'
+$uiCssText = Get-Content -Raw -LiteralPath 'web/css/ui_contract_fix.css'
+$mainCssText = Get-Content -Raw -LiteralPath 'web/css/main_app.css'
+$runtimeText = Get-Content -Raw -LiteralPath 'web/js/runtime_render_fix.js'
+$uiShimText = Get-Content -Raw -LiteralPath 'web/js/ui_contract_fix.js'
+if ($cardRendererText -match 'media-card__surface-badge') {
+    Add-CheckError 'card_renderer.js must not render media-card__surface-badge overlays.'
+}
+if ($appRuntimeText -match 'badgeHtml:\s*availabilityBadgeHtml') {
+    Add-CheckError 'app_runtime card render paths must not pass availability badges into cards.'
+}
+if (($uiCssText + $mainCssText) -match 'overflow\s*:\s*clip') {
+    Add-CheckError 'Action/card CSS must not use overflow: clip.'
+}
+if ($uiCssText -notmatch '--ui_action_box:\s*clamp') {
+    Add-CheckError 'ui_contract_fix.css must define adaptive action box sizing.'
+}
+if ($runtimeText -match 'replace\(/%/g' -or $uiShimText -match 'replace\(/%/g') {
+    Add-CheckError 'Runtime shims must not strip percent signs from compact ratings.'
+}
+
+Write-Host '== Watch-state key contract =='
+$watchStateText = Get-Content -Raw -LiteralPath 'web/js/watch_state_manager.js'
+foreach ($needle in @(
+    '${cleanType}:episode:${showId}:${season}:${episode}',
+    '${cleanType}:movie:${id}',
+    '${cleanType}:show:${id}'
+)) {
+    if ($watchStateText -notlike "*$needle*") { Add-CheckError "Watch-state key pattern missing: $needle" }
+}
+if ($watchStateText -match 'return keyFor\(cleanType,id\)') {
+    Add-CheckError 'watch_state_manager.js must not fall back to generic type:id keys.'
+}
 
 Write-Host '== Duplicate action/popup handlers =='
-$appRuntimeText = Get-Content -Raw -LiteralPath 'web/js/app_runtime.js'
 $popupShimText = Get-Content -Raw -LiteralPath 'web/js/trailer_watch_popup_fix.js'
 if ($popupShimText -notlike '*__myTvHubTrailerWatchPopupFixLoaded*') {
     Add-CheckError 'Popup shim does not expose loaded guard.'
@@ -262,14 +309,14 @@ foreach ($needle in @(
     'web/js/data_loader.js',
     'web/css/main_app.css',
     'scripts/validate_runtime.ps1',
-    'popcorn, watch, ticket, double-heart, compact numeric rating'
+    'popcorn, watch, ticket, double-heart, compact percent rating'
 )) {
     if ($docStandard -notlike "*$needle*") { Add-CheckError "Documentation standard missing source-of-truth entry: $needle" }
 }
 $currentDocs = @('docs/ARCHITECTURE.md','docs/UI_COMPONENTS.md','docs/DOCUMENTATION_STANDARD.md','docs/README.md')
 foreach ($doc in $currentDocs) {
     $text = Get-Content -Raw -LiteralPath $doc
-    if ($text -match '🔖|💛|⭐|▶|76%') {
+    if ($text -match '🔖|💛|⭐|▶') {
         Add-CheckError "Current source-of-truth doc contains deprecated icon marker: $doc"
     }
 }
@@ -285,9 +332,9 @@ except Exception:
     print("PIL unavailable; skipping dimension report")
     raise SystemExit(0)
 targets = {
-    "assets/posters": 420,
-    "assets/stills": 900,
-    "assets/backdrops": 900,
+    "assets/posters": 171,
+    "assets/stills": 256,
+    "assets/backdrops": 780,
 }
 oversized = []
 for folder, max_width in targets.items():
@@ -309,6 +356,12 @@ print(json.dumps({"oversized_runtime_assets": oversized[:25], "count": len(overs
     $assetOutput = $assetCheck | & python
     Write-Host $assetOutput
     if ($LASTEXITCODE -ne 0) { Add-CheckError 'Runtime asset size report failed' }
+    try {
+        $assetJson = $assetOutput | ConvertFrom-Json
+        if ($assetJson.count -gt 0) { Add-CheckError "Oversized runtime assets remain: $($assetJson.count)" }
+    } catch {
+        Add-CheckError 'Runtime asset size report did not return JSON.'
+    }
 }
 
 Write-Host '== Loader contract =='

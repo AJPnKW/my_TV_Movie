@@ -20,7 +20,7 @@ Validated through repo runtime checks after starting `python -m http.server 8000
 | Area | Finding | Fix |
 |---|---|---|
 | Action overlap | Fixed action boxes could exceed the available card width and overlap. | `web/css/ui_contract_fix.css` now uses adaptive square action boxes and visible overflow on action groups. |
-| Popcorn clipping | Action containers could clip the rounded popcorn box. | Removed action-row `overflow: clip` behavior and normalized square box sizing. |
+| Popcorn clipping | Action containers could clip the rounded popcorn box. | Removed action-row clipping behavior and normalized square box sizing. |
 | Image/action overlap | Some card paths could visually place card controls over the media area. | `web/js/card_renderer.js` keeps the action row below media and preserves a visible text row outside the image. |
 | Availability badge overlay | Availability badges sat over posters/stills and hid content. | Card render paths no longer pass availability badges; availability is represented by popcorn state only. |
 | State bleed | Cards with shared local ids could toggle together. | `web/js/watch_state_manager.js` now keys state by item context, including episode show/season/episode identity. |

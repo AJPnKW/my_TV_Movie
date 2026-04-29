@@ -4,8 +4,8 @@ Optimize runtime images from immutable originals.
 
 Source: assets/original_downloads
 Targets:
-- assets/posters: max width 342px
-- assets/stills: max width 780px
+- assets/posters: 171x257
+- assets/stills: 256x180 after 10% side crop
 - assets/backdrops: max width 780px
 - assets/logos/assets/icons: max width 256px, lossless-friendly
 
@@ -28,12 +28,12 @@ ORIGINALS = ASSETS / "original_downloads"
 REPORT_DIR = REPO_ROOT / "reports" / "ui_stabilization"
 REPORT_PATH = REPORT_DIR / "asset_optimization.json"
 
-TARGET_WIDTHS = {
-    "posters": 342,
-    "stills": 780,
-    "backdrops": 780,
-    "logos": 256,
-    "icons": 256,
+TARGETS = {
+    "posters": {"size": (171, 257), "fit": "cover"},
+    "stills": {"size": (256, 180), "fit": "still_crop"},
+    "backdrops": {"max_width": 780},
+    "logos": {"max_width": 256},
+    "icons": {"max_width": 256},
 }
 
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
@@ -43,7 +43,7 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def target_for(src: Path) -> tuple[Path, int] | None:
+def target_for(src: Path) -> tuple[Path, dict[str, Any]] | None:
     try:
         rel = src.relative_to(ORIGINALS)
     except ValueError:
@@ -51,10 +51,10 @@ def target_for(src: Path) -> tuple[Path, int] | None:
     if not rel.parts:
         return None
     family = rel.parts[0].lower()
-    max_width = TARGET_WIDTHS.get(family)
-    if not max_width:
+    target = TARGETS.get(family)
+    if not target:
         return None
-    return ASSETS / rel, max_width
+    return ASSETS / rel, target
 
 
 def save_image(img: Image.Image, path: Path) -> None:
@@ -74,11 +74,30 @@ def save_image(img: Image.Image, path: Path) -> None:
         img.save(path)
 
 
+def prepare_runtime_image(img: Image.Image, target: dict[str, Any]) -> Image.Image:
+    fit = target.get("fit")
+    size = target.get("size")
+    if fit == "still_crop" and size:
+        width, height = img.size
+        crop_x = max(0, round(width * 0.10))
+        if crop_x and width - (crop_x * 2) > 1:
+            img = img.crop((crop_x, 0, width - crop_x, height))
+        return ImageOps.fit(img, tuple(size), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+    if fit == "cover" and size:
+        return ImageOps.fit(img, tuple(size), method=Image.Resampling.LANCZOS, centering=(0.5, 0.5))
+    max_width = int(target.get("max_width") or 0)
+    if max_width > 0 and img.width > max_width:
+        ratio = max_width / float(img.width)
+        next_size = (max_width, max(1, round(img.height * ratio)))
+        return img.resize(next_size, Image.Resampling.LANCZOS)
+    return img
+
+
 def optimize_one(src: Path, dry_run: bool = False) -> dict[str, Any] | None:
     mapped = target_for(src)
     if not mapped:
         return None
-    dest, max_width = mapped
+    dest, target = mapped
     before = src.stat().st_size
     existing = dest.stat().st_size if dest.exists() else 0
 
@@ -86,10 +105,7 @@ def optimize_one(src: Path, dry_run: bool = False) -> dict[str, Any] | None:
         with Image.open(src) as raw:
             img = ImageOps.exif_transpose(raw)
             original_size = img.size
-            if img.width > max_width:
-                ratio = max_width / float(img.width)
-                next_size = (max_width, max(1, round(img.height * ratio)))
-                img = img.resize(next_size, Image.Resampling.LANCZOS)
+            img = prepare_runtime_image(img, target)
             optimized_size = img.size
             if not dry_run:
                 save_image(img, dest)
@@ -113,7 +129,7 @@ def optimize_one(src: Path, dry_run: bool = False) -> dict[str, Any] | None:
         "bytes_saved_vs_previous": existing - after if existing else 0,
         "original_size": list(original_size),
         "runtime_size": list(optimized_size),
-        "max_width": max_width,
+        "target_spec": target,
     }
 
 
@@ -137,7 +153,7 @@ def main() -> int:
         "script": "scripts/optimize_runtime_assets.py",
         "dry_run": bool(args.dry_run),
         "source_root": "assets/original_downloads",
-        "target_widths": TARGET_WIDTHS,
+        "targets": TARGETS,
         "counts": {
             "source_files": len(files),
             "processed": len(rows),

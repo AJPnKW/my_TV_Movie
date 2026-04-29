@@ -76,7 +76,9 @@ PURPOSE:
     });
 
     Array.from(scope.querySelectorAll('.actionbar-rating__text,.iconstrip-pct')).forEach(function(el){
-      el.textContent = text(el.textContent).replace(/%/g,'').replace(/^\u2605/,'').trim();
+      let raw = text(el.textContent).replace(/^\u2605/,'').trim();
+      if (raw && raw !== '--' && !raw.includes('%')) raw = raw + '%';
+      el.textContent = raw;
     });
   }
 

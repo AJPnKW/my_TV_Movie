@@ -7,8 +7,9 @@ CHANGE NOTES:
 - Normalizes image loading/decoding and prevents broken images from collapsing card layouts.
 - Downshifts oversized remote TMDB images to smaller responsive sizes.
 - Refreshes local watch_state button feedback after runtime renders new cards.
-- Removes visible percent symbols from rating chips if older runtime markup still emits them.
+- Normalizes rating chips to compact percent text when older runtime markup differs.
 - Prefetches small runtime indexes when the browser is idle.
+- Light-prefetches provider logos and visible card stills/posters through the browser cache.
 */
 (function(){
   'use strict';
@@ -58,7 +59,36 @@ CHANGE NOTES:
 
   function normalizeRatings(root){
     Array.from((root || document).querySelectorAll('.actionbar-rating__text,.iconstrip-pct')).forEach(function(el){
-      el.textContent = String(el.textContent || '').replace(/%/g,'').trim();
+      var raw = String(el.textContent || '').replace(/^\u2605/,'').trim();
+      if (raw && raw !== '--' && raw.indexOf('%') === -1) raw = raw + '%';
+      el.textContent = raw;
+    });
+  }
+
+  function prefetchImage(src){
+    if (!src) return;
+    try {
+      var img = new Image();
+      img.decoding = 'async';
+      img.loading = 'eager';
+      img.src = src;
+    } catch (_) {}
+  }
+
+  function prefetchRuntimeImages(root){
+    scheduleIdle(function(){
+      var scope = root || document;
+      var selector = [
+        '.provider-chip img',
+        '.trailer-provider-chip img',
+        '.providerlogo img',
+        '.dashblock img',
+        '.calendar-day img',
+        '.calendar-tree-day img'
+      ].join(',');
+      Array.from(scope.querySelectorAll(selector)).slice(0, 80).forEach(function(img){
+        prefetchImage(img.currentSrc || img.getAttribute('src') || '');
+      });
     });
   }
 
@@ -72,6 +102,7 @@ CHANGE NOTES:
     normalizeImages(root || document);
     normalizeRatings(root || document);
     refreshWatchState(root || document);
+    prefetchRuntimeImages(root || document);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ run(document); prefetchSmallIndexes(); });

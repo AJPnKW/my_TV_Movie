@@ -134,4 +134,4 @@ Validation should cover:
 - documentation consistency
 - runtime asset report
 - no conflict markers
-- no placeholder scripts/docs
+- no sample stub scripts/docs

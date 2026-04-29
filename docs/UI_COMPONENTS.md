@@ -61,11 +61,11 @@ Required order:
 | Rating | `76%` | Compact rating percentage |
 
 Forbidden active icons:
-- `▶` for watched status
-- `🎬` for watched status
-- `📏` for watch list
-- `💛` for favourite
-- `⭐` for rating
+- play triangle for watched status
+- clapperboard for watched status
+- ruler for watch list
+- yellow single-heart for favourite
+- star for rating
 
 ## Action Icon Layout
 
@@ -73,7 +73,7 @@ Forbidden active icons:
 - Icon box width and height must match.
 - Icon and box must scale to available card width.
 - If space is tight, rating text shrinks before icons overlap.
-- Do not use `overflow: clip` or hidden overflow in a way that cuts rounded corners.
+- Do not clip overflow or hide overflow in a way that cuts rounded corners.
 - Action row sits below card media/text, never over the image.
 
 ## Availability

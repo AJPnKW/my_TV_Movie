@@ -89,6 +89,16 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (nav && !$("[data-tab='inputs-editor']", nav)){
       nav.insertAdjacentHTML("beforeend", `<a class="tab" data-tab="inputs-editor" href="#inputs-editor" role="tab" aria-selected="false">Inputs Editor</a>`);
     }
+    if (nav){
+      $$(".tab", nav).forEach(tab => {
+        const label = safeText(tab.textContent).trim();
+        if (label){
+          tab.setAttribute("title", label);
+          tab.setAttribute("aria-label", label);
+          tab.setAttribute("data-label", label);
+        }
+      });
+    }
 
     const main = $(".main");
     if (!main) return;
@@ -1707,7 +1717,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         attrs: options.popcornAttrs || {},
         availabilityStatus: safeText(options.availabilityStatus || "").trim()
       } : null,
-      favourite: { active: !!options.favouriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1" } },
+      favourite: { active: !!options.favouriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } },
       status: options.showStatusAction ? { active: !!options.watchedActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
       watched: { active: !!options.watchListActive || !!options.favoriteActive, attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } },
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}` : "--" },
@@ -2708,7 +2718,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       image: safeText(options.image || "").trim(),
       eyebrow: safeText(options.eyebrow || item?.show_title || "Show"),
       title: safeText(options.title || item?.episode_name || "Episode"),
-      badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+      badgeHtml: "",
       meta: options.meta || episodeMetaLine(seasonNum, episodeNum, item?.runtime),
       submeta: options.submeta || "",
       overlay: options.overlay !== false,
@@ -2728,6 +2738,30 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       }),
       articleAttrs: options.articleAttrs || { tabindex: "0", "data-kind": "episode", "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum },
       extraClass: options.extraClass || ""
+    });
+  }
+
+  function renderMoreButton(hiddenCount, targetId){
+    return hiddenCount > 0
+      ? `<button class="more-toggle" type="button" data-more-target="${escHtml(targetId)}">+${hiddenCount} more</button>`
+      : "";
+  }
+
+  function expandableClass(hidden){
+    return hidden ? " is-overflow-hidden" : "";
+  }
+
+  function bindMoreToggles(root){
+    if (!root) return;
+    $$("[data-more-target]", root).forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = root.querySelector(`[data-more-id="${CSS.escape(btn.getAttribute("data-more-target") || "")}"]`);
+        if (!target) return;
+        target.classList.add("is-expanded");
+        target.setAttribute("data-expanded", "1");
+      });
     });
   }
 
@@ -2757,6 +2791,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     wireActionMenus(root);
     wireIconStripActions(root, renderCalendar);
     wireWatchSourceButtons(root);
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+      window.MyTVHubWatchState.refresh(root);
+    }
   }
 
   function buildIconStripHtml(kind, id, pct, titleText){
@@ -2814,7 +2851,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       id: movieId,
       image: imageForCalendarItem(item),
       title: safeText(item?.title || "Movie"),
-      badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+      badgeHtml: "",
       meta: watchMeDateLabel(entry?.dateKey),
       submeta: safeText(item?.runtime) ? `${item.runtime} min` : "",
       overlay: true,
@@ -3443,7 +3480,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           submeta: "",
           overlay: true,
           articleAttrs: { "data-day": dateKey, "data-kind": "episode", "data-show": showId, tabindex: "0" },
-          extraClass: `calendar-item calendar-item--episode${hidden ? " hidden" : ""}`
+          extraClass: `calendar-item calendar-item--episode${expandableClass(hidden)}`
         });
       }
 
@@ -3456,7 +3493,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         id: movieId,
         image: imageForCalendarItem(item),
         title: item.title || "Movie",
-        badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+        badgeHtml: "",
         meta: "Movie",
         submeta: "Release day",
         overlay: true,
@@ -3474,7 +3511,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           available: isDateAvailable(item.release_date || dateKey)
         }),
         articleAttrs: { "data-day": dateKey, "data-kind": "movie", "data-movie": movieId, tabindex: "0" },
-        extraClass: `calendar-item calendar-item--movie${hidden ? " hidden" : ""}`
+        extraClass: `calendar-item calendar-item--movie${expandableClass(hidden)}`
       });
     };
 
@@ -3486,14 +3523,17 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     `;
     const renderDayCell = ({ dt, key, inMonth, num }) => {
       const items = eventsByDate.get(key) || [];
-      const visible = items.map(item => renderItem(item, key)).join("");
+      const visibleLimit = state.calendarView === "list" ? items.length : 4;
+      const visible = items.map((item, index) => renderItem(item, key, index >= visibleLimit)).join("");
+      const more = renderMoreButton(Math.max(0, items.length - visibleLimit), `calendar-${key}`);
       return `
         <section class="calendar-day${inMonth ? "" : " calendar-day--other-month"}${key === today ? " calendar-day--today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-day--weekend" : ""}" data-daycell="${key}">
           <div class="calendar-day__head">
             <div class="calendar-day__date">${num}</div>
           </div>
-          <div class="calendar-day__items">
+          <div class="calendar-day__items" data-more-id="calendar-${escHtml(key)}">
             ${visible || `<div class="calendar-day__empty">${inMonth ? "No releases" : ""}</div>`}
+            ${more}
           </div>
         </section>
       `;
@@ -3533,6 +3573,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       `;
     requestAnimationFrame(() => updateCalendarStickyVars());
     bindCalendarItemActions($("#calendar"));
+    bindMoreToggles($("#calendar"));
   }
 
   function renderDashboard(){
@@ -3570,7 +3611,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const media = item?.kind === "movie" ? movieMap.get(String(item?.tmdb_id ?? "")) : showMap.get(String(item?.tmdb_id ?? ""));
       return normalizeImageSrc(pickImage(media || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path"));
     };
-    const eventCard = (item, tertiary = "") => {
+    const eventCard = (item, tertiary = "", hidden = false) => {
       if (item.kind === "episode"){
         const showId = Number(item.show_tmdb_id) || 0;
         const seasonNum = Number(item.season_number) || 0;
@@ -3579,7 +3620,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           image: imageForItem(item),
           eyebrow: safeText(item.show_title || "Show"),
           title: safeText(item.episode_name || "Episode"),
-          badgeHtml: availabilityBadgeHtml(item, { compact: true }),
+          badgeHtml: "",
           meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
           submeta: tertiary,
           overlay: true,
@@ -3598,7 +3639,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
           }),
           articleAttrs: { "data-show": showId, tabindex: "0" },
-          extraClass: "dashcard dashcard--clean"
+          extraClass: `dashcard dashcard--clean${expandableClass(hidden)}`
         });
       }
       const target = infoTarget(item);
@@ -3608,6 +3649,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         tertiary,
         image: imageForItem(item),
         pct: percentForItem(item),
+        extraClass: expandableClass(hidden),
         facts: [
           factChipHtml("Movie"),
           item.network_name ? factChipHtml(item.network_name) : ""
@@ -3618,14 +3660,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const buildDateColumns = (entries, { descending = false } = {}) => {
       const dateKeys = Array.from(new Set(entries.map(e => e.dateKey)));
       const ordered = descending ? dateKeys.sort((a, b) => b.localeCompare(a)) : dateKeys.sort((a, b) => a.localeCompare(b));
-      return ordered.slice(0, 7).map(dateKey => `
+      return ordered.slice(0, 7).map(dateKey => {
+        const dayEntries = entries.filter(e => e.dateKey === dateKey);
+        const visibleLimit = 4;
+        return `
         <div class="dashcol dashcol--clean">
           <div class="dashcolhead">${escHtml(formatDateShort(dateKey))}</div>
-          <div class="dashcolstack">
-            ${entries.filter(e => e.dateKey === dateKey).map(({ item }) => eventCard(item)).join("") || `<div class="muted">No items</div>`}
+          <div class="dashcolstack" data-more-id="dashboard-${escHtml(dateKey)}">
+            ${dayEntries.map(({ item }, index) => eventCard(item, "", index >= visibleLimit)).join("") || `<div class="muted">No items</div>`}
+            ${renderMoreButton(Math.max(0, dayEntries.length - visibleLimit), `dashboard-${dateKey}`)}
           </div>
         </div>
-      `).join("");
+      `; }).join("");
     };
     scheduleCols.innerHTML = buildDateColumns(events) || `<div class="muted">No upcoming schedule.</div>`;
     const lastWeekMeta = $("#dashLastWeekMeta");
@@ -3653,7 +3699,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         title: safeText(entry?.title || show?.title || show?.name || movie?.title || "Untitled"),
         subtitle: safeText(entry?.watch_status || "watchlist"),
         image: normalizeImageSrc(pickImage(media, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
-        badgeHtml: availabilityBadgeHtml(media, { compact: true }),
+        badgeHtml: "",
         pct: percentForItem(media),
         facts: [factChipHtml(show ? "Show" : "Movie"), factChipHtml("Watchlist", "tone-accent")]
       });
@@ -3665,7 +3711,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       subtitle: truncateText(show?.overview || "", 84),
       tertiary: show?.first_air_date ? formatDateShort(show.first_air_date) : "",
       image: normalizeImageSrc(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
-      badgeHtml: availabilityBadgeHtml(show, { compact: true }),
+      badgeHtml: "",
       pct: percentForItem(show),
       facts: [factChipHtml("Discover"), (show?.genres || []).length ? factChipHtml(show.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
@@ -3676,7 +3722,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       subtitle: truncateText(movie?.overview || "", 84),
       tertiary: movie?.release_date ? formatDateShort(movie.release_date) : "",
       image: normalizeImageSrc(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
-      badgeHtml: availabilityBadgeHtml(movie, { compact: true }),
+      badgeHtml: "",
       pct: percentForItem(movie),
       facts: [factChipHtml("Movie"), (movie?.genres || []).length ? factChipHtml(movie.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
@@ -3685,6 +3731,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       wireActionMenus(root);
       wireIconStripActions(root, renderDashboard);
       wireWatchSourceButtons(root);
+      if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+        window.MyTVHubWatchState.refresh(root);
+      }
+      bindMoreToggles(root);
       $$(".episode-row[data-show]", root).forEach(card => card.addEventListener("click", (e) => {
         if (e.target.closest(".actionbar")) return;
         gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
@@ -3710,7 +3760,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return buildMediaCardShell("show", id, {
       title,
       image: pickImage(show, "poster_local", "poster_path"),
-      badgeHtml: availabilityBadgeHtml(show, { compact: true }),
+      badgeHtml: "",
       actionBar: buildActionBarHtml("show", id, {
         title,
         compact: true,
@@ -3742,7 +3792,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return buildMediaCardShell("movie", id, {
       title,
       image: pickImage(movie, "poster_local", "poster_path"),
-      badgeHtml: availabilityBadgeHtml(movie, { compact: true }),
+      badgeHtml: "",
       actionBar: buildActionBarHtml("movie", id, {
         title,
         compact: true,
@@ -3979,7 +4029,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="popup-hero popup-hero--dense">
           <div class="popup-hero__poster">
             ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
-            <div class="popup-surface-badge">${availabilityBadgeHtml(show, { compact: true })}</div>
           </div>
           <div class="popup-hero__body">
             <div class="popup-detail-grid popup-detail-grid--compact popup-detail-grid--plain">
@@ -4021,7 +4070,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             </div>
           </div>
           <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path"))}');"` : ""}>
-            <div class="popup-surface-badge">${availabilityBadgeHtml(season, { compact: true })}</div>
             <div class="seasonmeta">
               <div class="seasonname">${escHtml(seasonLabel)}</div>
               ${seasonSummary ? `<div class="seasonair">${escHtml(seasonSummary)}</div>` : `<div class="seasonair">Season details unavailable</div>`}
@@ -4058,7 +4106,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   image: pickImage(ep, "still_local", "still_path"),
                   eyebrow: title,
                   title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                  badgeHtml: availabilityBadgeHtml(ep, { compact: true }),
+                  badgeHtml: "",
                   meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime),
                   submeta: safeText(pickAirDate(ep) ? fmtDate(pickAirDate(ep)) : ""),
                   description: safeText(ep?.overview || ""),

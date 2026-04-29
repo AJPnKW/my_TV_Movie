@@ -28,7 +28,7 @@ Date: 2026-04-28
 | Overlay folders | Removed as active files; validation fails if `overlay/`, `overlay_patch/`, or `overlay_ui_contract/` return. |
 | Root apply docs | Removed as active files; validation fails if root overlay apply docs return. |
 | Old apply/overlay scripts | Removed as active files; validation fails if old UI patch or image-fix script names return. |
-| Placeholder files | Forbidden as active tracked filenames; real form `placeholder` attributes remain allowed where they are actual UI input hints. |
+| Stub files | Forbidden as active tracked filenames; real form input hint attributes remain allowed where they are actual UI input hints. |
 | Root archive zips | Removed tracked `docs.zip`, `docs (2).zip`, and `reports.zip`; these are generated archive artifacts, not source files. |
 | Editor-only launcher script | Removed `tools/start_inputs_editor.ps1`; `tools/start_inputs_editor.cmd` now delegates to the canonical root launcher. |
 

@@ -18,7 +18,7 @@ This file defines how documentation is maintained for `my_TV_Movie` so ChatGPT, 
 - Current architecture rules duplicated in reports.
 - Patch reports treated as source of truth.
 - New docs created for the same concept without linking to the canonical owner.
-- Placeholder docs or scripts.
+- Stub docs or scripts.
 
 ## Required Change Flow
 
@@ -58,14 +58,22 @@ This file defines how documentation is maintained for `my_TV_Movie` so ChatGPT, 
 The active repo must not use these as current behavior:
 
 ```text
-▶
-🎬
-📏
-💛
-⭐ rating icon
-.slice(0,3)
-placeholder
-Apply overlay
+play triangle watched-status icon
+clapperboard watched-status icon
+ruler watch-list icon
+yellow single-heart favourite icon
+star rating icon
+fixed three-item truncation
+sample stub files
+overlay apply bundles
 ```
 
 Historical/archive references are allowed only when clearly historical.
+
+## Current Icon Contract
+
+The current action icon order is popcorn, watch, ticket, double-heart, compact percent rating.
+
+Movies and episodes render popcorn, watch, ticket, double-heart, and compact percent text such as `76%`.
+
+Shows and seasons render watch, ticket, double-heart, and compact percent text.

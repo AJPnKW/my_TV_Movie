@@ -1,13 +1,13 @@
 /*
 FILE: web/js/action_bar.js
-VERSION: v1.3.0
-UPDATED: 2026-04-27T00:00:00Z
+VERSION: v1.4.0
+UPDATED: 2026-04-29T00:00:00Z
 CHANGE NOTES:
 - Standardized action order: popcorn, watched_status, watch_list, favourite, rating.
 - Uses Unicode text icons so buttons resize with card density and TV/browser font scaling.
 - Uses explicit watch_list and watched_status data attributes.
-- Removes percent sign from rating text to save horizontal card space.
-- Locks current icon contract: popcorn, watch, ticket, double-heart, compact numeric rating.
+- Renders rating as compact percent text.
+- Locks current icon contract: popcorn, watch, ticket, double-heart, compact percent rating.
 */
 
 export const ACTION_BAR_ORDER = Object.freeze([
@@ -73,7 +73,9 @@ function normalizeWatchAvailabilityStatus(value){
 
 function normalizeRatingText(value){
   const raw = String(value == null || value === '' ? '--' : value).trim();
-  return raw.replace(/%/g, '');
+  if (raw === '--') return raw;
+  const numeric = raw.replace(/%/g, '').trim();
+  return numeric ? `${numeric}%` : '--';
 }
 
 function renderAnchor(cls, href, label, title, icon, attrs = {}, options = {}){

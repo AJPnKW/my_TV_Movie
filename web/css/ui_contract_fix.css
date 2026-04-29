@@ -21,7 +21,7 @@ Presentation contract stabilizer:
   --ui_card_min: 134px;
   --ui_card_max: 168px;
   --ui_rec_card_h: clamp(190px, 22vw, 270px);
-  --ui_action_box: clamp(24px, 2.5vw, 30px);
+  --ui_action_box: clamp(19px, 16%, 28px);
 }
 
 /* remove frame-within-frame effect */
@@ -193,7 +193,7 @@ img,
   justify-content: flex-start !important;
   gap: 5px !important;
   min-width: 0 !important;
-  overflow: clip !important;
+  overflow: visible !important;
   flex-wrap: nowrap !important;
 }
 
@@ -208,7 +208,7 @@ img,
 
 .actionbar-center {
   flex: 0 1 auto !important;
-  overflow: clip !important;
+  overflow: visible !important;
 }
 
 .actionbar-left,
@@ -242,7 +242,7 @@ img,
   background: rgba(71,85,105,.90) !important;
   border: 1px solid rgba(148,163,184,.35) !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .actionbar-btn__icon,
@@ -301,7 +301,7 @@ img,
   height: var(--ui_action_box) !important;
   padding: 0 3px !important;
   font-weight: 800 !important;
-  overflow: hidden !important;
+  overflow: visible !important;
 }
 
 .actionbar-rating__star,
@@ -332,7 +332,7 @@ img,
     --ui_card_min: 128px;
     --ui_card_max: 160px;
     --ui_rec_card_h: 235px;
-    --ui_action_box: 28px;
+    --ui_action_box: clamp(18px, 16%, 27px);
   }
 
   .app {
@@ -386,7 +386,7 @@ img,
   :root {
     --ui_card_min: 120px;
     --ui_card_max: 148px;
-    --ui_action_box: 26px;
+    --ui_action_box: clamp(17px, 16%, 25px);
   }
 
   .status {
@@ -406,6 +406,178 @@ img,
   body[data-page="calendar"] .calendar-week-band {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
+}
+
+/* final card/action contract */
+.top {
+  min-height: 42px !important;
+}
+
+.logo {
+  width: auto !important;
+  height: 34px !important;
+  min-width: 84px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.logo img {
+  display: block !important;
+  height: 100% !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+.logo_txt {
+  display: none !important;
+}
+
+.tab {
+  position: relative !important;
+  min-width: 34px !important;
+  min-height: 32px !important;
+  padding: 5px 8px !important;
+  font-size: 0 !important;
+  border-radius: 9px !important;
+}
+
+.tab::before {
+  font-size: 17px !important;
+  line-height: 1 !important;
+}
+
+.tab:hover::after,
+.tab:focus-visible::after {
+  content: attr(data-label);
+  position: absolute;
+  top: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 80;
+  padding: 4px 7px;
+  border-radius: 7px;
+  background: rgba(8, 12, 20, .96);
+  border: 1px solid rgba(148,163,184,.28);
+  color: #e5eefb;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tab[data-tab="dashboard"]::before { content: "⌂"; }
+.tab[data-tab="shows"]::before { content: "▤"; }
+.tab[data-tab="movies"]::before { content: "▣"; }
+.tab[data-tab="watch-me"]::before { content: "⌚"; }
+.tab[data-tab="calendar"]::before { content: "□"; }
+.tab[data-tab="discover"]::before { content: "⌕"; }
+.tab[data-tab="config"]::before { content: "⚙"; }
+.tab[data-tab="inputs-editor"]::before { content: "✎"; }
+
+.media-card__surface-badge,
+.media-card .availability-badge,
+.calendar-item .availability-badge,
+.dashcard .availability-badge,
+.watchme-episode-card .availability-badge,
+.watchme-movie-card .availability-badge {
+  display: none !important;
+}
+
+.media-card {
+  display: grid !important;
+  grid-template-rows: auto minmax(0, auto) !important;
+}
+
+.media-card__poster {
+  overflow: hidden !important;
+}
+
+.media-card__body {
+  min-width: 0 !important;
+  background: rgba(8, 12, 20, .96) !important;
+}
+
+.media-card__copy {
+  display: grid !important;
+}
+
+.media-card__copy--hidden {
+  display: grid !important;
+}
+
+.actionbar {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.actionbar-left,
+.actionbar-center,
+.actionbar-right {
+  flex: 0 1 auto !important;
+  gap: clamp(2px, .9vw, 5px) !important;
+}
+
+.actionbar-center {
+  margin-inline: auto !important;
+}
+
+.actionbar-btn {
+  flex: 0 1 var(--ui_action_box) !important;
+  width: var(--ui_action_box) !important;
+  height: var(--ui_action_box) !important;
+  min-width: 17px !important;
+  min-height: 17px !important;
+  border-radius: max(5px, calc(var(--ui_action_box) * .28)) !important;
+}
+
+.actionbar-rating {
+  flex: 0 2 auto !important;
+  min-width: 21px !important;
+  max-width: 40px !important;
+  font-size: clamp(10px, 1.4vw, 14px) !important;
+}
+
+.dashblock > .dashhead,
+.watchme-day-group__head,
+.calendar-tree-day__summary {
+  position: sticky !important;
+  top: calc(var(--sticky-top, 50px) + 2px) !important;
+  z-index: 25 !important;
+  background: rgba(8, 12, 20, .96) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+.more-toggle {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: 30px !important;
+  border: 1px solid rgba(148,163,184,.28) !important;
+  border-radius: 8px !important;
+  background: rgba(15,23,42,.88) !important;
+  color: #dbeafe !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+}
+
+.is-overflow-hidden {
+  display: none !important;
+}
+
+.is-expanded > .is-overflow-hidden,
+.calendar-day__items.is-expanded > .is-overflow-hidden,
+.dashcolstack.is-expanded > .is-overflow-hidden {
+  display: grid !important;
+}
+
+.is-expanded > .more-toggle,
+.calendar-day__items.is-expanded > .more-toggle,
+.dashcolstack.is-expanded > .more-toggle {
+  display: none !important;
 }
 
 @media (min-width: 900px) {

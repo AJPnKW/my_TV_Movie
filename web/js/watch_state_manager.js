@@ -1,7 +1,7 @@
 /*
 FILE: web/js/watch_state_manager.js
-VERSION: v1.3.0
-UPDATED: 2026-04-28
+VERSION: v1.4.0
+UPDATED: 2026-04-29
 CHANGE NOTES:
 - Stores watched_status, watch_list, and favourite locally for offline/trailer use.
 - Updates visible active states immediately after click.
@@ -59,8 +59,10 @@ CHANGE NOTES:
     const episode = String(btn.getAttribute('data-watch-episode') || btn.getAttribute('data-episode') || btn.getAttribute('data-status-episode') || '').trim();
     if (showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
     if (showId && season) return `${cleanType}:season:${showId}:${season}`;
+    if (kind === 'episode' || kind === 'season') return '';
+    if (kind === 'movie' && id) return `${cleanType}:movie:${id}`;
+    if (kind === 'show' && id) return `${cleanType}:show:${id}`;
     if (kind && id) return `${cleanType}:${kind}:${id}`;
-    if (id) return keyFor(id,cleanType);
     return '';
   }
 
@@ -83,9 +85,8 @@ CHANGE NOTES:
 
   function applyButtonState(btn){
     if (!btn) return;
-    const id = btn.getAttribute('data-id');
     const action = btn.getAttribute('data-watch-state-action');
-    if (!id || !action) return;
+    if (!action) return;
     const type = typeFromAction(action);
     if (!type) return;
     const key = contextKeyFromButton(btn,type);
@@ -107,7 +108,6 @@ CHANGE NOTES:
     if (!btn) return;
     const id = btn.getAttribute('data-id');
     const action = btn.getAttribute('data-watch-state-action');
-    if (!id) return;
     const type = typeFromAction(action);
     if (!type) return;
     const key = contextKeyFromButton(btn,type);
