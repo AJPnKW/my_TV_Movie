@@ -8,7 +8,6 @@
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="./css/my_tv_hub.css" />
   <link rel="stylesheet" href="./css/main_app.css" />
-  <link rel="stylesheet" href="./css/runtime_layout_fix.css" />
 </head>
 <body data-app-family="main" data-page="movies" data-focus-global="off">
   <div class="app">
@@ -17,14 +16,12 @@
         <a class="logo" href="./index.html" aria-label="The Boys Hub"><img src="../assets/custom/the_boys_hub_logo2.png" alt="The Boys Hub" /></a>
       </div>
       <div class="nav" role="tablist" aria-label="Primary">
-        <a class="tab" data-tab="dashboard" href="./index.html" role="tab" aria-selected="false">Dashboard</a>
-        <a class="tab" data-tab="shows" href="./shows.html" role="tab" aria-selected="false">Shows</a>
-        <a class="tab" data-tab="movies" href="./movies.html" role="tab" aria-selected="false">Movies</a>
-        <a class="tab" data-tab="watch-me" href="./watch_me.html" role="tab" aria-selected="false">Watch Me</a>
-        <a class="tab" data-tab="calendar" href="./calendar.html" role="tab" aria-selected="false">Calendar</a>
-        <a class="tab" data-tab="discover" href="./discover.html" role="tab" aria-selected="false">Discover</a>
-        <a class="tab" data-tab="config" href="./config.html" role="tab" aria-selected="false">Config</a>
-        <a class="tab" data-tab="inputs-editor" href="#inputs-editor" role="tab" aria-selected="false">Inputs Editor</a>
+        <a class="tab" data-tab="dashboard" href="./index.html" role="tab" aria-label="Dashboard" title="Dashboard" data-label="Dashboard">⌂</a>
+        <a class="tab" data-tab="shows" href="./shows.html" role="tab" aria-label="Shows" title="Shows" data-label="Shows">▤</a>
+        <a class="tab" data-tab="movies" href="./movies.html" role="tab" aria-label="Movies" title="Movies" data-label="Movies">▣</a>
+        <a class="tab" data-tab="calendar" href="./calendar.html" role="tab" aria-label="Calendar" title="Calendar" data-label="Calendar">□</a>
+        <a class="tab" data-tab="config" href="./config.html" role="tab" aria-label="Config" title="Config" data-label="Config">⚙</a>
+        <a class="tab" data-tab="inputs-editor" href="./index.html#inputs-editor" role="tab" aria-label="Inputs Editor" title="Inputs Editor" data-label="Inputs Editor">✎</a>
       </div>
       <div class="status" aria-live="polite">
         <div id="statusDot" class="dot"></div>

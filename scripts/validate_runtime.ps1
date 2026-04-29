@@ -45,9 +45,6 @@ $requiredFiles = @(
     'web/js/data_loader.js',
     'web/js/trailer_watch_popup_fix.js',
     'web/js/runtime_render_fix.js',
-    'web/js/ui_contract_fix.js',
-    'web/css/runtime_layout_fix.css',
-    'web/css/ui_contract_fix.css',
     'run_local_servers.bat',
     'run_server.bat',
     'run_schema.bat',
@@ -77,6 +74,24 @@ foreach ($page in $pageFiles) {
     foreach ($needle in @('./js/chrometv_focus.js','./js/app_runtime.js','./css/main_app.css')) {
         if ($text -notlike "*$needle*") {
             Add-CheckError "$page missing shell reference: $needle"
+        }
+    }
+    foreach ($legacy in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js')) {
+        if ($text -like "*$legacy*") { Add-CheckError "$page still references removed compatibility layer: $legacy" }
+    }
+    $navMatch = [regex]::Match($text, '(?s)<div class="nav" role="tablist" aria-label="Primary">(?<nav>.*?)</div>')
+    if (-not $navMatch.Success) {
+        Add-CheckError "$page missing primary nav shell"
+    } else {
+        $navText = $navMatch.Groups['nav'].Value
+        if ($navText -match 'data-tab="watch-me"|data-tab="discover"') {
+            Add-CheckError "$page primary nav must not expose Watch Me or Discover"
+        }
+        if ($navText -match '>Dashboard<|>Shows<|>Movies<|>Calendar<|>Watch Me<|>Discover<|>Config<|>Inputs Editor<') {
+            Add-CheckError "$page primary nav must be icon-only visible text"
+        }
+        if ($navText -notmatch 'aria-label="Dashboard"' -or $navText -notmatch 'aria-label="Inputs Editor"') {
+            Add-CheckError "$page icon-only nav missing required accessible labels"
         }
     }
     if ($text -notlike '*../assets/custom/the_boys_hub_logo2.png*') {
@@ -165,11 +180,8 @@ $scanFiles = @(
     'web/js/data_loader.js',
     'web/js/runtime_render_fix.js',
     'web/js/trailer_watch_popup_fix.js',
-    'web/js/ui_contract_fix.js',
     'web/js/watch_state_manager.js',
     'web/css/main_app.css',
-    'web/css/runtime_layout_fix.css',
-    'web/css/ui_contract_fix.css',
     'docs/ARCHITECTURE.md',
     'docs/UI_COMPONENTS.md',
     'docs/DOCUMENTATION_STANDARD.md',
@@ -251,30 +263,49 @@ if ($actionText -notmatch '\$\{numeric\}%') {
 Write-Host '== Card/action layout contract =='
 $cardRendererText = Get-Content -Raw -LiteralPath 'web/js/card_renderer.js'
 $appRuntimeText = Get-Content -Raw -LiteralPath 'web/js/app_runtime.js'
-$uiCssText = Get-Content -Raw -LiteralPath 'web/css/ui_contract_fix.css'
 $mainCssText = Get-Content -Raw -LiteralPath 'web/css/main_app.css'
 $runtimeText = Get-Content -Raw -LiteralPath 'web/js/runtime_render_fix.js'
-$uiShimText = Get-Content -Raw -LiteralPath 'web/js/ui_contract_fix.js'
+foreach ($legacy in @('web/css/runtime_layout_fix.css','web/css/ui_contract_fix.css','web/js/ui_contract_fix.js')) {
+    if (Test-Path -LiteralPath $legacy) { Add-CheckError "Removed compatibility layer returned to active repo: $legacy" }
+}
 if ($cardRendererText -match 'media-card__surface-badge') {
     Add-CheckError 'card_renderer.js must not render media-card__surface-badge overlays.'
 }
 if ($appRuntimeText -match 'badgeHtml:\s*availabilityBadgeHtml') {
     Add-CheckError 'app_runtime card render paths must not pass availability badges into cards.'
 }
-if (($uiCssText + $mainCssText) -match 'overflow\s*:\s*clip') {
+if ($mainCssText -match 'overflow\s*:\s*clip') {
     Add-CheckError 'Action/card CSS must not use overflow: clip.'
 }
 if ($mainCssText -notmatch '--ui_action_box:\s*clamp') {
     Add-CheckError 'main_app.css must define adaptive action box sizing.'
 }
-if ($mainCssText -notlike '*Consolidated documentation-contract card/action/header rules from ui_contract_fix.css*') {
+if ($mainCssText -notlike '*Consolidated documentation-contract shell, card, action, and watch-state management rules*') {
     Add-CheckError 'main_app.css must own the finalized card/action/header contract rules.'
 }
-if ($uiCssText -match '(?m)^\s*(?:\:root|\.|#|\@media)') {
-    Add-CheckError 'ui_contract_fix.css must remain compatibility-only; active selectors belong in main_app.css.'
+if ($mainCssText -match '\.logo_txt') {
+    Add-CheckError 'main_app.css must not keep the retired .logo_txt implementation.'
 }
-if ($runtimeText -match 'replace\(/%/g' -or $uiShimText -match 'replace\(/%/g') {
+if ($mainCssText -match '(?s)\.actionbar-btn\s*\{[^}]*border-radius\s*:\s*999px') {
+    Add-CheckError 'Action buttons must not use legacy circle/pill border radius.'
+}
+if ($mainCssText -match '(?s)\.actionbar\s*\{[^}]*border\s*:\s*1px') {
+    Add-CheckError 'Action row must not render a framed container.'
+}
+if (($mainCssText | Select-String -Pattern '(?m)^\s*\.actionbar\s*\{' -AllMatches).Matches.Count -ne 1) {
+    Add-CheckError 'main_app.css must expose one canonical .actionbar rule.'
+}
+if (($mainCssText | Select-String -Pattern '(?m)^\s*\.actionbar-btn\s*\{' -AllMatches).Matches.Count -ne 1) {
+    Add-CheckError 'main_app.css must expose one canonical .actionbar-btn rule.'
+}
+if ($mainCssText -match '(?s)\.tab\s*\{[^}]*border\s*:\s*1px') {
+    Add-CheckError 'Primary nav tabs must not keep button borders.'
+}
+if ($runtimeText -match 'replace\(/%/g') {
     Add-CheckError 'Runtime shims must not strip percent signs from compact ratings.'
+}
+if ($appRuntimeText -notlike '*id="manageWatchState"*' -or $appRuntimeText -notlike '*data-manage-watch-key*') {
+    Add-CheckError 'Config must expose a reachable manage-watch-state view with local toggles.'
 }
 
 Write-Host '== Watch-state key contract =='
@@ -373,14 +404,14 @@ print(json.dumps({"oversized_runtime_assets": oversized[:25], "count": len(overs
 Write-Host '== Loader contract =='
 $focusText = Get-Content -Raw -LiteralPath 'web/js/chrometv_focus.js'
 foreach ($needle in @(
-    "loadCss('./css/runtime_layout_fix.css');",
-    "loadCss('./css/ui_contract_fix.css');",
     "loadScript('./js/watch_state_manager.js');",
     "loadScript('./js/runtime_render_fix.js');",
-    "loadScript('./js/trailer_watch_popup_fix.js');",
-    "loadScript('./js/ui_contract_fix.js');"
+    "loadScript('./js/trailer_watch_popup_fix.js');"
 )) {
     if ($focusText -notlike "*$needle*") { Add-CheckError "Missing focus bootstrap loader: $needle" }
+}
+foreach ($needle in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js')) {
+    if ($focusText -like "*$needle*") { Add-CheckError "Focus bootstrap still loads removed compatibility layer: $needle" }
 }
 
 if ($errors.Count -gt 0) {

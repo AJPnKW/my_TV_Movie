@@ -2,33 +2,39 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Manage Watch State</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="color-scheme" content="dark" />
+  <title>My TV Hub - Manage Watch State</title>
+  <link rel="icon" href="data:," />
+  <link rel="stylesheet" href="./css/my_tv_hub.css" />
   <link rel="stylesheet" href="./css/main_app.css" />
 </head>
-<body data-page="manage-watch-state">
+<body data-app-family="main" data-page="config" data-focus-global="off" data-route-alias="manage-watch-state">
   <div class="app">
     <div class="top">
       <div class="brand">
-        <a class="logo" href="./index.html"><img src="../assets/custom/the_boys_hub_logo2.png" alt="logo"/></a>
+        <a class="logo" href="./index.html" aria-label="The Boys Hub"><img src="../assets/custom/the_boys_hub_logo2.png" alt="The Boys Hub" /></a>
       </div>
-      <div class="nav"></div>
+      <div class="nav" role="tablist" aria-label="Primary">
+        <a class="tab" data-tab="dashboard" href="./index.html" role="tab" aria-label="Dashboard" title="Dashboard" data-label="Dashboard">⌂</a>
+        <a class="tab" data-tab="shows" href="./shows.html" role="tab" aria-label="Shows" title="Shows" data-label="Shows">▤</a>
+        <a class="tab" data-tab="movies" href="./movies.html" role="tab" aria-label="Movies" title="Movies" data-label="Movies">▣</a>
+        <a class="tab" data-tab="calendar" href="./calendar.html" role="tab" aria-label="Calendar" title="Calendar" data-label="Calendar">□</a>
+        <a class="tab" data-tab="config" href="./config.html" role="tab" aria-label="Config" title="Config" data-label="Config">⚙</a>
+        <a class="tab" data-tab="inputs-editor" href="./index.html#inputs-editor" role="tab" aria-label="Inputs Editor" title="Inputs Editor" data-label="Inputs Editor">✎</a>
+      </div>
+      <div class="status" aria-live="polite">
+        <div id="statusDot" class="dot"></div>
+        <span id="statusText">Loading</span>
+        <button id="verBadge" class="calbtn" type="button" aria-label="Version">ver</button>
+      </div>
     </div>
-
-    <main style="padding:16px;">
-      <h2>Manage Watch State</h2>
-      <p>Local-first state editor (placeholder scaffold).</p>
-
-      <div>
-        <button onclick="alert('toggle watched_status (placeholder)')">Toggle Watched</button>
-        <button onclick="alert('toggle watch_list (placeholder)')">Toggle Watch List</button>
-        <button onclick="alert('toggle favourite (placeholder)')">Toggle Favourite</button>
-      </div>
-
-      <p style="margin-top:16px;color:#94a3b8;">Trakt sync pipeline not yet wired.</p>
-    </main>
+    <div class="shell shell--app">
+      <main class="main" id="appMain"></main>
+    </div>
+    <div class="footer" id="footer"></div>
   </div>
-
   <script src="./js/chrometv_focus.js"></script>
+  <script type="module" src="./js/app_runtime.js"></script>
 </body>
 </html>

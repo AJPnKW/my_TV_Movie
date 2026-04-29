@@ -87,11 +87,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function ensureMainAppShell(){
     const nav = $(".nav");
     if (nav && !$("[data-tab='inputs-editor']", nav)){
-      nav.insertAdjacentHTML("beforeend", `<a class="tab" data-tab="inputs-editor" href="#inputs-editor" role="tab" aria-selected="false">Inputs Editor</a>`);
+      nav.insertAdjacentHTML("beforeend", `<a class="tab" data-tab="inputs-editor" href="#inputs-editor" role="tab" aria-selected="false" aria-label="Inputs Editor" title="Inputs Editor" data-label="Inputs Editor">✎</a>`);
     }
     if (nav){
       $$(".tab", nav).forEach(tab => {
-        const label = safeText(tab.textContent).trim();
+        const label = safeText(tab.getAttribute("data-label") || tab.getAttribute("aria-label") || tab.getAttribute("title") || tab.textContent).trim();
         if (label){
           tab.setAttribute("title", label);
           tab.setAttribute("aria-label", label);
@@ -3842,6 +3842,101 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
+  function readLocalWatchState(){
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.load === "function") {
+      return window.MyTVHubWatchState.load();
+    }
+    try { return JSON.parse(localStorage.getItem("mytv_watch_state_v1") || "{}") || {}; }
+    catch (_) { return {}; }
+  }
+
+  function syncQueueCount(){
+    try {
+      const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+      return Array.isArray(queue) ? queue.length : 0;
+    } catch (_) { return 0; }
+  }
+
+  function watchStateKey(type, kind, item){
+    const id = safeText(item?.tmdb_id ?? item?.id ?? "");
+    if (!id) return "";
+    return `${type}:${kind}:${id}`;
+  }
+
+  function watchStateButtonHtml(type, label, kind, item, localState){
+    const key = watchStateKey(type, kind, item);
+    if (!key) return "";
+    const active = !!localState[key];
+    return `<button type="button" data-manage-watch-key="${escHtml(key)}" aria-pressed="${active ? "true" : "false"}">${escHtml(label)}</button>`;
+  }
+
+  function renderWatchStateManagerHtml(){
+    const localState = readLocalWatchState();
+    const keys = Object.keys(localState);
+    const typeCounts = {
+      watched_status: keys.filter(key => key.startsWith("watched_status:")).length,
+      watch_list: keys.filter(key => key.startsWith("watch_list:")).length,
+      favourite: keys.filter(key => key.startsWith("favourite:")).length
+    };
+    const shows = (Array.isArray(state.data?.shows) ? state.data.shows : []).filter(item => item?.tmdb_id).slice(0, 6);
+    const movies = (Array.isArray(state.data?.movies) ? state.data.movies : []).filter(item => item?.tmdb_id).slice(0, 6);
+    const rows = [
+      ...shows.map(item => ({ kind:"show", item, title:safeText(item?.title || item?.name || "Show") })),
+      ...movies.map(item => ({ kind:"movie", item, title:safeText(item?.title || "Movie") }))
+    ];
+    const unmatched = keys.filter(key => !/^(watched_status|watch_list|favourite):(movie|show|episode):/.test(key)).length;
+    const cards = rows.map(({ kind, item, title }) => `
+      <article class="watch-state-manager__item">
+        <div class="watch-state-manager__title">${escHtml(title)}</div>
+        <div class="watch-state-manager__meta">${escHtml(kind)} ${escHtml(item?.tmdb_id ?? "")}</div>
+        <div class="watch-state-manager__actions">
+          ${watchStateButtonHtml("watched_status", "Watched", kind, item, localState)}
+          ${watchStateButtonHtml("watch_list", "Watchlist", kind, item, localState)}
+          ${watchStateButtonHtml("favourite", "Favourite", kind, item, localState)}
+        </div>
+      </article>
+    `).join("");
+    return `
+      <section class="dashblock watch-state-manager" id="manageWatchState" aria-label="Manage watch state">
+        <div class="dashhead">
+          <h2>Manage Watch State</h2>
+          <span class="muted">Local first, Trakt ready</span>
+        </div>
+        <div class="config-quicklinks" aria-label="Watch state status">
+          <span class="pill">watched_status ${typeCounts.watched_status}</span>
+          <span class="pill">watch_list ${typeCounts.watch_list}</span>
+          <span class="pill">favourite ${typeCounts.favourite}</span>
+          <span class="pill">Trakt mapping scaffolded</span>
+          <span class="pill">unmatched IDs ${unmatched}</span>
+          <span class="pill">sync queue ${syncQueueCount()}</span>
+        </div>
+        <div class="watch-state-manager__grid">${cards || `<div class="inline-empty">No catalog items available for local watch-state management.</div>`}</div>
+      </section>
+    `;
+  }
+
+  function bindWatchStateManager(root){
+    if (!root) return;
+    $$("[data-manage-watch-key]", root).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = safeText(btn.getAttribute("data-manage-watch-key"));
+        const next = btn.getAttribute("aria-pressed") !== "true";
+        if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.setByKey === "function") {
+          window.MyTVHubWatchState.setByKey(key, next);
+        } else {
+          const data = readLocalWatchState();
+          if (next) data[key] = true;
+          else delete data[key];
+          localStorage.setItem("mytv_watch_state_v1", JSON.stringify(data));
+        }
+        renderConfig();
+        if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+          window.MyTVHubWatchState.refresh(document);
+        }
+      });
+    });
+  }
+
   async function renderConfig(){
     const root = $("#configRoot");
     if (!root) return;
@@ -3870,8 +3965,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <span class="pill">favourite -> local only</span>
         <span class="pill">match -> tmdb_id</span>
       </section>
+      ${renderWatchStateManagerHtml()}
+      <section class="config-quicklinks" aria-label="Compatibility routes">
+        <a class="btn" href="./watch_me.html">Watch Me compatibility route</a>
+        <a class="btn" href="./discover.html">Discover compatibility route</a>
+      </section>
       <div id="configRuntimeSurface"></div>
     `;
+    bindWatchStateManager(root);
     const runtimeRoot = $("#configRuntimeSurface", root);
     try{
       if (window.MyTVHubConfig?.render_config_view){
