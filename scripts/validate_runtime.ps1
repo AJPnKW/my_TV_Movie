@@ -264,8 +264,14 @@ if ($appRuntimeText -match 'badgeHtml:\s*availabilityBadgeHtml') {
 if (($uiCssText + $mainCssText) -match 'overflow\s*:\s*clip') {
     Add-CheckError 'Action/card CSS must not use overflow: clip.'
 }
-if ($uiCssText -notmatch '--ui_action_box:\s*clamp') {
-    Add-CheckError 'ui_contract_fix.css must define adaptive action box sizing.'
+if ($mainCssText -notmatch '--ui_action_box:\s*clamp') {
+    Add-CheckError 'main_app.css must define adaptive action box sizing.'
+}
+if ($mainCssText -notlike '*Consolidated documentation-contract card/action/header rules from ui_contract_fix.css*') {
+    Add-CheckError 'main_app.css must own the finalized card/action/header contract rules.'
+}
+if ($uiCssText -match '(?m)^\s*(?:\:root|\.|#|\@media)') {
+    Add-CheckError 'ui_contract_fix.css must remain compatibility-only; active selectors belong in main_app.css.'
 }
 if ($runtimeText -match 'replace\(/%/g' -or $uiShimText -match 'replace\(/%/g') {
     Add-CheckError 'Runtime shims must not strip percent signs from compact ratings.'
