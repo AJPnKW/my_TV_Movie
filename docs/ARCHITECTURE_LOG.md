@@ -313,3 +313,11 @@ Commit
 - Enforced runtime asset targets through `scripts/optimize_runtime_assets.py`: posters `171x257`, stills `256x180` after side crop, and backdrops no wider than `780px`.
 - Expanded `scripts/validate_runtime.ps1` and reports to cover the current UI contract, asset report, local launcher, and rendered watch-state key audit.
 - Implementation commit: `35943062`
+
+## 2026-04-29 — Documented UI runtime consolidation
+- Removed active compatibility contract layers `web/css/runtime_layout_fix.css`, `web/css/ui_contract_fix.css`, and `web/js/ui_contract_fix.js` so `web/css/main_app.css`, `web/js/action_bar.js`, and `web/js/watch_state_manager.js` are the single active owners.
+- Converted primary navigation across the main shell pages to icon-only accessible tabs, with Watch Me and Discover preserved as compatibility routes outside primary nav.
+- Added the Config-owned manage watch-state surface and converted `web/manage_watch_state.html` from placeholder scaffold into the shared Config runtime route.
+- Hardened `scripts/validate_runtime.ps1` for active-code drift: removed compatibility layers, text nav, duplicate action systems, missing manage state, and legacy action shapes now fail validation.
+- Rendered QA passed on local Chromium for dashboard, shows, movies, calendar, config, manage-watch-state, watch-me, and discover at TV, laptop, tablet, and mobile viewports.
+- Implementation commit: `d0f6c5a0`
