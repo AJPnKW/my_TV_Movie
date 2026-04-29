@@ -305,3 +305,11 @@ Commit
 - Removed tracked root archive zips: `docs.zip`, `docs (2).zip`, and `reports.zip`.
 - Added validation checks for launcher ownership, schema helper syntax, removed root archive artifacts, and editor-only launcher drift.
 - Implementation commit: `2f476cce`
+
+## 2026-04-29 — Card system, watch-state, and asset runtime stabilization
+- Unified shared card/action behavior so action rows sit below media, card availability badges are suppressed, compact percent ratings render through `web/js/action_bar.js`, and page shells use the compact logo header.
+- Tightened local-first watch-state identity so episode, movie, and show actions receive context-specific keys and visible buttons refresh after dynamic dashboard/calendar renders.
+- Updated dashboard/calendar overflow to the shared `+X more` expansion pattern and kept modal keyboard focus inside the active modal.
+- Enforced runtime asset targets through `scripts/optimize_runtime_assets.py`: posters `171x257`, stills `256x180` after side crop, and backdrops no wider than `780px`.
+- Expanded `scripts/validate_runtime.ps1` and reports to cover the current UI contract, asset report, local launcher, and rendered watch-state key audit.
+- Implementation commit: `35943062`
