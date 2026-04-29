@@ -168,7 +168,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             <div class="browse-sidebar__header">
               <div class="browse-sidebar__eyebrow">Watch Me</div>
               <h2 class="browse-sidebar__title">Release Filters</h2>
-              <p class="browse-sidebar__copy">Shared runtime, shared cards, one upcoming release stream.</p>
+              <p class="browse-sidebar__copy">Simple release list with shared actions and local state.</p>
               <button class="calbtn browse-sidebar__toggle" type="button" data-sidebar-toggle="watch-me" aria-expanded="true">Hide Filters</button>
             </div>
             <div class="control-panel">
@@ -202,11 +202,17 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   <span id="watchMeSummary" class="muted">Preparing view</span>
                 </div>
               </div>
-              <p class="watchme-hero__copy">Upcoming episodes and movie releases in one shared release view.</p>
+              <p class="watchme-hero__copy">Upcoming episodes and movie releases in a compact list view.</p>
             </section>
             <div id="watchMeSections" class="watchme-sections"></div>
           </section>
         </div>
+      </div>
+    `);
+
+    appendPanel("panel-manage-watch-state", `
+      <div id="panel-manage-watch-state" class="panel hidden">
+        <div id="manageWatchStateRoot"></div>
       </div>
     `);
 
@@ -2363,6 +2369,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if ($("#panel-movies")) tabs.add("movies");
     if ($("#panel-show")) tabs.add("show");
     if ($("#panel-config")) tabs.add("config");
+    if ($("#panel-manage-watch-state")) tabs.add("manage-watch-state");
     if ($("#panel-discover")) tabs.add("discover");
     if ($("#panel-inputs-editor")) tabs.add("inputs-editor");
     return tabs;
@@ -2385,6 +2392,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const panelMovies = $("#panel-movies");
     const panelShow = $("#panel-show");
     const panelConfig = $("#panel-config");
+    const panelManageWatchState = $("#panel-manage-watch-state");
     const panelDashboard = $("#panel-dashboard");
     const panelDiscover = $("#panel-discover");
     const panelInputsEditor = $("#panel-inputs-editor");
@@ -2394,6 +2402,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (panelMovies) panelMovies.classList.toggle("hidden", tab !== "movies");
     if (panelShow) panelShow.classList.toggle("hidden", tab !== "show");
     if (panelConfig) panelConfig.classList.toggle("hidden", tab !== "config");
+    if (panelManageWatchState) panelManageWatchState.classList.toggle("hidden", tab !== "manage-watch-state");
     if (panelDashboard) panelDashboard.classList.toggle("hidden", tab !== "dashboard");
     if (panelDiscover) panelDiscover.classList.toggle("hidden", tab !== "discover");
     if (panelInputsEditor) panelInputsEditor.classList.toggle("hidden", tab !== "inputs-editor");
@@ -2405,6 +2414,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (tab === "dashboard") renderDashboard();
     if (tab === "discover") renderDiscover();
     if (tab === "config") renderConfig();
+    if (tab === "manage-watch-state") renderManageWatchState();
     if (tab === "inputs-editor") renderInputsEditor();
   }
 
@@ -2841,36 +2851,76 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return values.some(v => v.includes(query));
   }
 
-  function renderWatchMeMovieCard(entry){
+  function renderWatchMeMovieRow(entry){
     const item = entry?.item || {};
     const movieId = Number(item?.tmdb_id ?? 0) || 0;
     const pct = Number.isFinite(item?.progress) ? Math.max(0, Math.min(100, item.progress)) : null;
     const watched = state.watchState ? isMovieWatched({ tmdb_id: movieId }) : false;
-    return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
-      kind: "movie",
-      id: movieId,
-      image: imageForCalendarItem(item),
-      title: safeText(item?.title || "Movie"),
-      badgeHtml: "",
-      meta: watchMeDateLabel(entry?.dateKey),
-      submeta: safeText(item?.runtime) ? `${item.runtime} min` : "",
-      overlay: true,
-      actionBarHtml: buildActionBarHtml("movie", movieId, {
-        title: safeText(item?.title || "Movie"),
+    const title = safeText(item?.title || "Movie");
+    return `
+      <article class="watchme-list-item watchme-movie-card" data-kind="movie" data-movie="${escHtml(movieId)}" tabindex="0">
+        <button type="button" class="watchme-list-item__media" data-movie-open="${escHtml(movieId)}" aria-label="${escHtml(title)}">
+          ${imageForCalendarItem(item) ? `<img src="${escHtml(imageForCalendarItem(item))}" alt="" loading="lazy" decoding="async" />` : `<span class="posterFallback__label">No Poster</span>`}
+        </button>
+        <div class="watchme-list-item__copy">
+          <div class="watchme-list-item__eyebrow">Movie</div>
+          <button type="button" class="watchme-list-item__title" data-movie-open="${escHtml(movieId)}">${escHtml(title)}</button>
+          <div class="watchme-list-item__meta">${escHtml([watchMeDateLabel(entry?.dateKey), safeText(item?.runtime) ? `${item.runtime} min` : ""].filter(Boolean).join(" • "))}</div>
+        </div>
+        <div class="watchme-list-item__actions">
+          ${buildActionBarHtml("movie", movieId, {
+            title,
+            compact: true,
+            pct,
+            favoriteActive: getWatchlistSet().has(String(movieId)),
+            watchedActive: watched,
+            showWatchedAction: true,
+            showStatusAction: true,
+            popcornAttrs: hasDirectWatchSources(item) ? { "data-id": movieId } : null,
+            popcornKind: "movie",
+            availabilityStatus: availabilityStatusOf(item),
+            available: isMovieAvailable(item)
+          })}
+        </div>
+      </article>
+    `;
+  }
+
+  function renderWatchMeEpisodeRow(entry){
+    const item = entry?.item || {};
+    const showId = Number(item?.show_tmdb_id ?? item?.tmdb_id ?? 0) || 0;
+    const seasonNum = Number(item?.season_number || 0);
+    const episodeNum = Number(item?.episode_number || 0);
+    const title = safeText(item?.episode_name || "Episode");
+    const showTitle = safeText(item?.show_title || "Show");
+    return `
+      <article class="watchme-list-item watchme-episode-card" data-kind="episode" data-show="${escHtml(showId)}" tabindex="0">
+        <button type="button" class="watchme-list-item__media watchme-list-item__media--episode" data-show-open="${escHtml(showId)}" aria-label="${escHtml(`${showTitle}: ${title}`)}">
+          ${imageForCalendarItem(item) ? `<img src="${escHtml(imageForCalendarItem(item))}" alt="" loading="lazy" decoding="async" />` : `<span class="posterFallback__label">No Still</span>`}
+        </button>
+        <div class="watchme-list-item__copy">
+          <div class="watchme-list-item__eyebrow">${escHtml(showTitle)}</div>
+          <button type="button" class="watchme-list-item__title" data-show-open="${escHtml(showId)}">${escHtml(title)}</button>
+          <div class="watchme-list-item__meta">${escHtml([episodeMetaLine(seasonNum, episodeNum, item?.runtime), watchMeDateLabel(entry?.dateKey)].filter(Boolean).join(" • "))}</div>
+        </div>
+        <div class="watchme-list-item__actions">
+          ${buildActionBarHtml("episode", episodeNum, {
+        title,
         compact: true,
-        pct,
-        favoriteActive: getWatchlistSet().has(String(movieId)),
-        watchedActive: watched,
+        pct: progressPercent(item),
+        watchedActive: state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false,
         showWatchedAction: true,
         showStatusAction: true,
-        popcornAttrs: hasDirectWatchSources(item) ? { "data-id": movieId } : null,
-        popcornKind: "movie",
+        watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
+        popcornAttrs: hasDirectWatchSources(item) ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
+        popcornKind: "episode",
         availabilityStatus: availabilityStatusOf(item),
-        available: isMovieAvailable(item)
-      }),
-      articleAttrs: { "data-kind": "movie", "data-movie": movieId, tabindex: "0" },
-      extraClass: "watchme-movie-card"
-    });
+        available: isEpisodeAvailable(item),
+        statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
+      })}
+        </div>
+      </article>
+    `;
   }
 
   function watchMeDateLabel(dateKey){
@@ -2900,15 +2950,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               <div class="watchme-day-group__title">${escHtml(watchMeDateLabel(dateKey))}</div>
               <div class="watchme-day-group__meta">${escHtml(groupItems.length === 1 ? "1 title" : `${groupItems.length} titles`)}</div>
             </div>
-            <div class="watchme-row">
-              ${groupItems.map(entry => entry.item?.kind === "episode" ? buildSharedEpisodeCard(entry.item, {
-                image: imageForCalendarItem(entry.item),
-                eyebrow: safeText(entry.item?.show_title || "Show"),
-                title: safeText(entry.item?.episode_name || "Episode"),
-                meta: episodeMetaLine(Number(entry.item?.season_number || 0), Number(entry.item?.episode_number || 0), entry.item?.runtime),
-                submeta: watchMeDateLabel(entry.dateKey),
-                extraClass: "watchme-episode-card"
-              }) : renderWatchMeMovieCard(entry)).join("")}
+            <div class="watchme-list">
+              ${groupItems.map(entry => entry.item?.kind === "episode" ? renderWatchMeEpisodeRow(entry) : renderWatchMeMovieRow(entry)).join("")}
             </div>
           </div>
         `).join("")}
@@ -2934,10 +2977,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     wireWatchSourceButtons(root);
     $$(".watchme-episode-card[data-show]", root).forEach(card => card.addEventListener("click", (e) => {
       if (e.target.closest(".actionbar")) return;
+      if (e.target.closest("button[data-show-open]")) return;
       gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
     }));
     $$(".watchme-movie-card[data-movie]", root).forEach(card => card.addEventListener("click", (e) => {
       if (e.target.closest(".actionbar")) return;
+      if (e.target.closest("button[data-movie-open]")) return;
       openMovieModal(parseInt(card.getAttribute("data-movie") || "0", 10));
     }));
   }
@@ -3929,12 +3974,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           else delete data[key];
           localStorage.setItem("mytv_watch_state_v1", JSON.stringify(data));
         }
-        renderConfig();
+        renderManageWatchState();
         if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
           window.MyTVHubWatchState.refresh(document);
         }
       });
     });
+  }
+
+  function renderManageWatchState(){
+    const root = $("#manageWatchStateRoot");
+    if (!root) return;
+    root.innerHTML = renderWatchStateManagerHtml();
+    bindWatchStateManager(root);
   }
 
   async function renderConfig(){
@@ -3959,20 +4011,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <a class="btn" href="./index.html#inputs-editor">Open Inputs Editor</a>
         <a class="btn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Local Editor</a>
       </section>
-      <section class="config-quicklinks" aria-label="Trakt mapping">
-        <span class="pill">watched_status -> Trakt history</span>
-        <span class="pill">watch_list -> Trakt watchlist</span>
-        <span class="pill">favourite -> local only</span>
-        <span class="pill">match -> tmdb_id</span>
-      </section>
-      ${renderWatchStateManagerHtml()}
-      <section class="config-quicklinks" aria-label="Compatibility routes">
-        <a class="btn" href="./watch_me.html">Watch Me compatibility route</a>
-        <a class="btn" href="./discover.html">Discover compatibility route</a>
-      </section>
       <div id="configRuntimeSurface"></div>
     `;
-    bindWatchStateManager(root);
     const runtimeRoot = $("#configRuntimeSurface", root);
     try{
       if (window.MyTVHubConfig?.render_config_view){

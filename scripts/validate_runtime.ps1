@@ -36,6 +36,7 @@ $requiredFiles = @(
     'web/shows.html',
     'web/movies.html',
     'web/watch_me.html',
+    'web/manage_watch_state.html',
     'web/discover.html',
     'web/config.html',
     'web/inputs_editor.html',
@@ -67,7 +68,7 @@ foreach ($path in $requiredFiles) {
 }
 
 Write-Host '== Page shell references =='
-$pageFiles = @('web/index.html','web/calendar.html','web/shows.html','web/movies.html','web/watch_me.html','web/discover.html','web/config.html')
+$pageFiles = @('web/index.html','web/calendar.html','web/shows.html','web/movies.html','web/watch_me.html','web/discover.html','web/config.html','web/manage_watch_state.html')
 foreach ($page in $pageFiles) {
     if (-not (Test-Path -LiteralPath $page)) { continue }
     $text = Get-Content -Raw -LiteralPath $page
@@ -97,6 +98,9 @@ foreach ($page in $pageFiles) {
     if ($text -notlike '*../assets/custom/the_boys_hub_logo2.png*') {
         Add-CheckError "$page missing compact logo shell reference"
     }
+}
+if (Test-Path -LiteralPath 'web/config_trakt.html') {
+    Add-CheckError 'web/config_trakt.html must remain archived; Config and Manage Watch State own active config/watch-state surfaces.'
 }
 
 Write-Host '== Local launcher contract =='
@@ -304,8 +308,12 @@ if ($mainCssText -match '(?s)\.tab\s*\{[^}]*border\s*:\s*1px') {
 if ($runtimeText -match 'replace\(/%/g') {
     Add-CheckError 'Runtime shims must not strip percent signs from compact ratings.'
 }
-if ($appRuntimeText -notlike '*id="manageWatchState"*' -or $appRuntimeText -notlike '*data-manage-watch-key*') {
-    Add-CheckError 'Config must expose a reachable manage-watch-state view with local toggles.'
+if ($appRuntimeText -notlike '*panel-manage-watch-state*' -or $appRuntimeText -notlike '*id="manageWatchState"*' -or $appRuntimeText -notlike '*data-manage-watch-key*') {
+    Add-CheckError 'Manage Watch State must be a standalone reachable view with local toggles.'
+}
+$configRenderMatch = [regex]::Match($appRuntimeText, '(?s)async function renderConfig\(\).*?function buildMoviePopupHtml')
+if ($configRenderMatch.Success -and $configRenderMatch.Value -match 'manageWatchState|data-manage-watch-key|Trakt mapping') {
+    Add-CheckError 'Config must remain app-settings only and must not render Manage Watch State content.'
 }
 
 Write-Host '== Watch-state key contract =='
@@ -412,6 +420,118 @@ foreach ($needle in @(
 }
 foreach ($needle in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js')) {
     if ($focusText -like "*$needle*") { Add-CheckError "Focus bootstrap still loads removed compatibility layer: $needle" }
+}
+
+Write-Host '== Rendered nav/logo/watch-state contract =='
+if ((Test-CommandAvailable node) -and (Test-CommandAvailable python)) {
+    $chromeCandidates = @(
+        'C:\Program Files\Google\Chrome\Application\chrome.exe',
+        'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
+        'C:\Program Files\Microsoft\Edge\Application\msedge.exe',
+        'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+    )
+    $chromePath = $chromeCandidates | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+    if (-not $chromePath) {
+        Add-CheckError 'Rendered validation requires Chrome or Edge.'
+    } elseif (-not (Test-Path -LiteralPath 'node_modules/puppeteer-core')) {
+        Add-CheckError 'Rendered validation requires node_modules/puppeteer-core.'
+    } else {
+        $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Parse('127.0.0.1'), 0)
+        $listener.Start()
+        $port = $listener.LocalEndpoint.Port
+        $listener.Stop()
+        $server = Start-Process -FilePath python -ArgumentList @('-m','http.server',"$port",'--bind','127.0.0.1') -WorkingDirectory $RepoRoot.Path -WindowStyle Hidden -PassThru
+        try {
+            Start-Sleep -Milliseconds 900
+            $chromePathJson = $chromePath | ConvertTo-Json
+            $renderScript = @"
+const puppeteer = require('puppeteer-core');
+const executablePath = $chromePathJson;
+const base = 'http://127.0.0.1:$port/web/';
+const pages = ['index.html','shows.html','movies.html','calendar.html','config.html','manage_watch_state.html','watch_me.html'];
+const viewports = [{name:'tv', width:1920, height:1080}, {name:'laptop', width:1366, height:768}, {name:'mobile', width:390, height:844}];
+const failures = [];
+function ignoreConsole(message){
+  return /favicon|ERR_ABORTED|File not found|Config warning\(s\):/.test(message);
+}
+(async () => {
+  const browser = await puppeteer.launch({ executablePath, headless:'new', args:['--no-sandbox','--disable-gpu'] });
+  for (const viewport of viewports){
+    for (const pageName of pages){
+      const page = await browser.newPage();
+      await page.setViewport({ width: viewport.width, height: viewport.height, deviceScaleFactor: 1 });
+      const errors = [];
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('console', message => { if (['error','warning'].includes(message.type())) errors.push(message.text()); });
+      await page.goto(base + pageName, { waitUntil:'domcontentloaded', timeout:15000 });
+      await page.waitForSelector('.top .nav .tab', { timeout:10000 });
+      await new Promise(resolve => setTimeout(resolve, 900));
+      const result = await page.evaluate(() => {
+        const rect = el => { const r = el.getBoundingClientRect(); return { top:r.top, bottom:r.bottom, left:r.left, right:r.right, width:r.width, height:r.height }; };
+        const tabs = Array.from(document.querySelectorAll('.top .nav .tab')).map(tab => {
+          const style = getComputedStyle(tab);
+          return {
+            id: tab.getAttribute('data-tab') || '',
+            text: (tab.textContent || '').trim(),
+            label: tab.getAttribute('aria-label') || '',
+            borderTopWidth: parseFloat(style.borderTopWidth) || 0,
+            borderLeftWidth: parseFloat(style.borderLeftWidth) || 0,
+            borderRadius: parseFloat(style.borderTopLeftRadius) || 0
+          };
+        });
+        const logo = document.querySelector('.logo img');
+        const header = document.querySelector('.top');
+        const logoRect = logo ? rect(logo) : null;
+        const headerRect = header ? rect(header) : null;
+        const manage = document.querySelector('#manageWatchState');
+        return {
+          tabs,
+          logoRect,
+          headerRect,
+          logoNatural: logo ? { width:logo.naturalWidth, height:logo.naturalHeight } : null,
+          hasManage: !!manage,
+          manageButtonCount: manage ? manage.querySelectorAll('[data-manage-watch-key]').length : 0,
+          watchListCount: document.querySelectorAll('.watchme-list-item').length
+        };
+      });
+      const visibleTextLabels = new Set(['Dashboard','Shows','Movies','Calendar','Watch Me','Discover','Config','Inputs Editor','Manage Watch State']);
+      const badText = result.tabs.filter(tab => visibleTextLabels.has(tab.text));
+      const framedTabs = result.tabs.filter(tab => tab.borderTopWidth > 0 || tab.borderLeftWidth > 0 || tab.borderRadius > 2);
+      const missingLabels = result.tabs.filter(tab => !tab.label);
+      const logoRatio = result.logoRect && result.logoRect.height ? result.logoRect.width / result.logoRect.height : 99;
+      const logoBad = !result.logoRect || !result.logoNatural || result.logoNatural.width !== result.logoNatural.height || logoRatio > 1.25 || result.logoRect.width > 44 || result.logoRect.height > 44 || !result.headerRect || result.logoRect.top < result.headerRect.top - 1 || result.logoRect.bottom > result.headerRect.bottom + 1 || result.headerRect.height > 70;
+      const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || result.manageButtonCount < 1));
+      const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
+      const pageErrors = errors.filter(error => !ignoreConsole(error));
+      if (badText.length || framedTabs.length || missingLabels.length || logoBad || manageBad || watchBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, watchListCount: result.watchListCount, errors: pageErrors });
+      }
+      await page.close();
+    }
+  }
+  await browser.close();
+  if (failures.length){
+    console.log(JSON.stringify({ failures }, null, 2));
+    process.exit(1);
+  }
+  console.log(JSON.stringify({ rendered_contract: 'passed', pages, viewports: viewports.map(v => v.name) }));
+})().catch(error => { console.error(error); process.exit(1); });
+"@
+            $renderScriptPath = Join-Path $RepoRoot.Path '.tmp-rendered-contract-check.cjs'
+            Set-Content -LiteralPath $renderScriptPath -Value $renderScript -NoNewline
+            $renderOutput = & node $renderScriptPath 2>&1
+            $renderExit = $LASTEXITCODE
+            Remove-Item -LiteralPath $renderScriptPath -Force -ErrorAction SilentlyContinue
+            Write-Host $renderOutput
+            if ($renderExit -ne 0) {
+                Add-CheckError "Rendered nav/logo/watch-state contract failed: $renderOutput"
+            }
+        } finally {
+            if ($server -and -not $server.HasExited) { Stop-Process -Id $server.Id -Force -ErrorAction SilentlyContinue }
+        }
+    }
+} else {
+    Add-CheckError 'Rendered validation requires node and python.'
 }
 
 if ($errors.Count -gt 0) {

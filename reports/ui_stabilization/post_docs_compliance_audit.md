@@ -12,6 +12,21 @@ Date: 2026-04-29
 - `docs/UI_GAP_ANALYSIS.md`
 - `docs/ARCHITECTURE_LOG.md`
 
+## Removed / Archived
+
+- Active compatibility layers remain removed: `web/css/runtime_layout_fix.css`, `web/css/ui_contract_fix.css`, and `web/js/ui_contract_fix.js`.
+- Archived duplicate placeholder Trakt config page from `web/config_trakt.html` to `docs/_archive/web_pages/config_trakt.html`.
+- Reviewed obsolete Watch Me variants: `web/watch.me.html` and `web/watch_me/watch_me.html` remain active only as redirect compatibility shells, not duplicate implementations.
+
+## Consolidated / Fixed
+
+- `web/manage_watch_state.html` is now a standalone runtime view with `data-page="manage-watch-state"`.
+- Config no longer renders Manage Watch State content; it remains the app settings surface only.
+- Manage Watch State owns local toggles for `watched_status`, `watch_list`, and `favourite`, plus Trakt mapping, unmatched ID, and sync queue status.
+- Watch Me at `web/watch_me.html` now renders a compact older-style release list instead of the card-grid Watch Me surface, while preserving route compatibility and the shared action/watch-source handlers.
+- Top nav remains icon-only with no default button/pill frame; `aria-label`, `title`, and D-pad focusability remain intact.
+- Header logo uses `assets/custom/the_boys_hub_logo2.png`. Source inspection: PNG is `500x500` RGBA; non-transparent alpha bounds are `(9, 0, 489, 500)`, so the source is suitable as the compact runtime mark. No regenerated logo asset was required.
+
 ## Files Checked
 
 - `web/js/action_bar.js`
@@ -26,63 +41,24 @@ Date: 2026-04-29
 - `scripts/optimize_runtime_assets.py`
 - primary shell pages: `index`, `shows`, `movies`, `calendar`, `config`, `watch_me`, `discover`, `manage_watch_state`
 
-## Removed Legacy Systems
-
-- Removed active `web/css/runtime_layout_fix.css`.
-- Removed active `web/css/ui_contract_fix.css`.
-- Removed active `web/js/ui_contract_fix.js`.
-- Removed those compatibility loads from `web/js/chrometv_focus.js`.
-- Removed Watch Me and Discover from primary nav while preserving their routes.
-- Replaced the placeholder manage-watch-state scaffold with the shared Config/runtime manage view.
-
-## Consolidated/Fixes Applied
-
-- Primary nav is now icon-only on all main shells with `aria-label`, `title`, and `data-label` accessibility metadata.
-- `web/css/main_app.css` owns the single canonical logo, nav, sticky section, card availability suppression, action row, and watch-state manager CSS contract.
-- Action buttons render as equal rounded-square boxes below media, with no row frame and no overlap at TV, laptop, tablet, or mobile widths.
-- Header logo uses `assets/custom/the_boys_hub_logo2.png` as a height-bound square transparent mark with `width:auto`/`object-fit:contain`.
-- Config now exposes `#manageWatchState` with local toggles for `watched_status`, `watch_list`, and `favourite`, plus Trakt mapping, unmatched ID, and sync queue status.
-- `web/manage_watch_state.html` now routes through the shared Config runtime instead of placeholder alerts.
-- `scripts/validate_runtime.ps1` now fails if removed compatibility layers return, if primary nav text/buttons return, if action/icon CSS duplicates return, or if the manage-watch-state view is missing.
-
 ## Validation Results
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_runtime.ps1`: passed.
 - Runtime asset size report: `oversized_runtime_assets` count `0`.
-- Local static server: `http://127.0.0.1:8000` returned HTTP 200 for `web/index.html`.
-- Rendered QA used local headless Chromium via `puppeteer-core`.
-
-Rendered QA passed for:
-
-- `http://127.0.0.1:8000/web/index.html`
-- `http://127.0.0.1:8000/web/shows.html`
-- `http://127.0.0.1:8000/web/movies.html`
-- `http://127.0.0.1:8000/web/calendar.html`
-- `http://127.0.0.1:8000/web/config.html`
-- `http://127.0.0.1:8000/web/manage_watch_state.html`
-- `http://127.0.0.1:8000/web/watch_me.html`
-- `http://127.0.0.1:8000/web/discover.html`
-
-Rendered viewport proof:
-
-- TV `1920x1080`: all pages passed; header height 52-70px; 20 sampled action rows where present; Config/manage exposed 36 watch-state toggle buttons.
-- Laptop `1366x768`: all pages passed; action rows had no icon overlap after adaptive box sizing; Config/manage exposed 36 watch-state toggle buttons.
-- Tablet `768x1024`: all pages passed; sticky headers remained sticky; no card availability overlays visible.
-- Mobile `390x844`: all pages passed; header height held at 50px with icon-only nav; action rows stayed below media.
+- Rendered validation is now part of `scripts/validate_runtime.ps1` and passed for `index`, `shows`, `movies`, `calendar`, `config`, `manage_watch_state`, and `watch_me` at TV `1920x1080`, laptop `1366x768`, and mobile `390x844`.
 
 Rendered assertions covered:
 
-- icon-only primary nav with no Watch Me/Discover primary entries
-- square logo natural ratio and compact rendered size
-- no header height growth on mobile
-- action row below poster/still media
-- rounded-square action boxes with 7-9px radius
-- no action icon overlap
-- no visible card availability overlays
-- sticky dashboard/calendar section headers
-- Config/manage watch-state toggles present and local-state keyed
+- nav icons are not inside visible framed buttons
+- nav text labels are exposed through `aria-label`/`title`, not visible button text
+- logo rendered ratio remains square/near-square and does not overflow the header
+- header height remains bounded
+- Config does not render Manage Watch State
+- Manage Watch State renders standalone with local toggle controls
+- Watch Me renders list items on `web/watch_me.html`
+- action rows remain below media with rounded-square buttons and no visible card availability overlays
 
 ## Remaining Risks
 
-- Config still reports existing config warnings from the config-renderer diagnostic surface about legacy `image_cache.folders` path formatting. These warnings are pre-existing data/config diagnostics and did not block the documented UI consolidation pass.
-- Emoji glyph appearance can vary by platform, but Chromium geometry validation now proves the icon boxes are square, rounded, unclipped, and non-overlapping.
+- Config still surfaces pre-existing config diagnostics about legacy `image_cache.folders` path formatting inside the config renderer. These are data/config warnings, not UI contract failures.
+- `web/watch.me.html` and `web/watch_me/watch_me.html` are intentionally retained as redirect shells for route compatibility.
