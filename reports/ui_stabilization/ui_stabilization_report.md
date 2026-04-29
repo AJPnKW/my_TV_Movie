@@ -1,54 +1,51 @@
 # UI Stabilization Report
 
+Date: 2026-04-29
+
 ## Drift Checklist
 
 | Area | Status | Result |
 |---|---|---|
-| Overlay folders | implemented | Removed tracked `overlay/`, `overlay_patch/`, root apply docs, and the untracked `overlay_ui_contract/` bundle. |
-| Patch/apply scripts | implemented | Removed old tracked UI/docs apply scripts and overlay validation script. |
-| Action/icon logic | implemented | `web/js/action_bar.js` owns popcorn, watch, ticket, double-heart, compact numeric rating. |
+| Action/icon logic | implemented | `web/js/action_bar.js` owns popcorn, watch, ticket, double-heart, compact percent rating. |
+| Card shell | implemented | `web/js/card_renderer.js` keeps media, text, and actions in a stable non-overlapping layout. |
 | Watch state | implemented | `web/js/watch_state_manager.js` owns local-first `watched_status`, `watch_list`, and `favourite`. |
-| Watch state scope | implemented | State keys now include kind/show/season/episode context so toggling one card cannot toggle another card with the same local id. |
-| Popup handler | implemented | `web/js/trailer_watch_popup_fix.js` is the active non-blocking watch-source popup; app runtime handler is fallback-only. |
-| Calendar completeness | implemented | Calendar day cells render all items directly and no longer hide releases behind a more/less expander. |
-| Trakt scaffold | implemented | Config documents local-first mapping: watched history, watchlist, favourite local-only, `tmdb_id` matching. |
-| Asset pipeline | implemented | `assets/original_downloads/` remains immutable; runtime folders are optimized/reportable through `scripts/optimize_runtime_assets.py` and `asset_optimization.json`. |
+| Watch state scope | implemented | State keys now include item context so one card toggle cannot update unrelated cards. |
+| Popup handler | implemented | `web/js/trailer_watch_popup_fix.js` remains the non-blocking watch-source popup owner; app runtime remains fallback-only. |
+| Header | implemented | Page shells use the compact logo asset and sticky header styling. |
+| Dashboard/calendar overflow | implemented | Shared `+X more` expansion replaces fixed three-item truncation. |
+| Asset pipeline | implemented | `assets/original_downloads/` remains immutable; runtime folders were optimized by `scripts/optimize_runtime_assets.py`. |
 | Validation | implemented | `scripts/validate_runtime.ps1` is the single repo-standard runtime validation entry point. |
-| Documentation standard | implemented | `docs/DOCUMENTATION_STANDARD.md` now defines source-of-truth docs, historical docs, report/changelog handling, and the matrix of canonical owners. |
 
 ## Canonical Owners
 
 - Icons/actions: `web/js/action_bar.js`
+- Shared card shell: `web/js/card_renderer.js`
 - Local watch state: `web/js/watch_state_manager.js`
 - Data/calendar loading: `web/js/data_loader.js`
 - Watch-source popup: `web/js/trailer_watch_popup_fix.js`
 - Layout/card spacing: `web/css/main_app.css`
-- Documentation process: `docs/DOCUMENTATION_STANDARD.md`
+- Compatibility stabilization: `web/css/ui_contract_fix.css`, `web/js/ui_contract_fix.js`, `web/js/runtime_render_fix.js`
 
-## Compatibility Shims
+## Asset Optimization
 
-- `web/js/runtime_render_fix.js`
-- `web/js/ui_contract_fix.js`
-- `web/css/runtime_layout_fix.css`
-- `web/css/ui_contract_fix.css`
-
-These remain loaded by `web/js/chrometv_focus.js` for compatibility only.
-
-## Validation Command
-
-```powershell
-powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1
-```
+- Source files scanned: `10,095`
+- Runtime files processed: `10,069`
+- Errors: `0`
+- Original/runtime-before total: `928,544,464` bytes
+- Runtime-after total: `128,752,073` bytes
+- Savings: `799,792,391` bytes
+- Runtime targets: posters `171x257`, stills `256x180` after side crop, backdrops max width `780`
 
 ## Validation Results
 
-- `scripts/validate_runtime.ps1`: passed
-- HTTP shell smoke on port 8000: `/web/index.html`, `/web/calendar.html`, `/web/shows.html`, `/web/movies.html`, `/web/watch_me.html`, `/web/discover.html`, `/web/config.html` all returned 200
-- `scripts/qa_browser_layout_check.mjs`: passed at 1920x1080 Android/Chromecast TV, 1366x768 laptop, 1024x768 tablet landscape, 768x1024 tablet portrait, 430x932 phone, and 390x844 phone
-- `scripts/qa_browser_popup_check.mjs`: passed show and movie popup checks
-- D-pad smoke: passed with active focus onscreen and no runtime errors
-- Watch-state scope smoke: passed; one clicked action updated only its scoped state key
+- `powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1`: passed
+- Static page smoke on `http://127.0.0.1:8000`: passed for index, calendar, shows, movies, watch_me, discover, config, and inputs_editor
+- Inputs Editor API smoke on `http://127.0.0.1:8787/api/health`: passed
+- `scripts/qa_browser_layout_check.mjs`: passed at the requested TV, laptop, tablet, and phone viewports
+- `scripts/qa_browser_popup_check.mjs`: passed for show and movie popup paths
+- Rendered DOM audit: passed for logo load, visible action geometry, rating format, visible watch-state keys, card badge removal, modal focus, and horizontal overflow
 
 ## Remaining Issues
 
-- Validation reports 2,139 oversized runtime assets, mostly `assets/posters/movies/*.jpg` wider than the 420px reporting threshold. Originals remain untouched; runtime optimization should be run in a separate intentional asset pass.
+- No intentional runtime asset originals were modified; `assets/original_downloads/` remains the source of truth.
+- Android TV emoji rendering may differ by device font, but the source icon contract is locked in `web/js/action_bar.js`.

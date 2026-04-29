@@ -1,28 +1,1217 @@
 {
-  "generated_utc": "2026-04-28T04:14:55Z",
+  "generated_utc": "2026-04-29T02:56:52Z",
+  "script": "scripts/optimize_runtime_assets.py",
+  "dry_run": false,
   "source_root": "assets/original_downloads",
-  "runtime_roots": [
-    "assets/posters",
-    "assets/stills",
-    "assets/backdrops",
-    "assets/logos",
-    "assets/icons"
-  ],
-  "status": "measured",
-  "note": "Interrupted optimization run was reverted; this report records current original-vs-runtime size baseline for validate_runtime.ps1.",
   "targets": {
-    "posters": "~342px wide",
-    "stills": "~780px wide",
-    "backdrops": "~780px wide",
-    "originals": "immutable"
+    "posters": {
+      "size": [
+        171,
+        257
+      ],
+      "fit": "cover"
+    },
+    "stills": {
+      "size": [
+        256,
+        180
+      ],
+      "fit": "still_crop"
+    },
+    "backdrops": {
+      "max_width": 780
+    },
+    "logos": {
+      "max_width": 256
+    },
+    "icons": {
+      "max_width": 256
+    }
   },
   "counts": {
-    "original_files": 10169,
-    "runtime_files": 10140
+    "source_files": 10095,
+    "processed": 10069,
+    "errors": 0
   },
   "bytes": {
-    "original_total": 933532314,
-    "runtime_total": 928607629,
-    "delta_runtime_minus_original": -4924685
-  }
+    "original_total": 928544464,
+    "previous_runtime_total": 928544464,
+    "runtime_total": 128752073,
+    "saved_vs_original": 799792391,
+    "saved_vs_previous": 799792391
+  },
+  "samples_largest_savings": [
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\65xctJ5DuAtEh4NS28bIUx3M1hE.jpg",
+      "target": "assets\\stills\\episodes\\65xctJ5DuAtEh4NS28bIUx3M1hE.jpg",
+      "source_bytes": 3239044,
+      "previous_runtime_bytes": 3239044,
+      "runtime_bytes": 11473,
+      "bytes_saved_vs_source": 3227571,
+      "bytes_saved_vs_previous": 3227571,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\uxD5Ts8dIwen4jJSbCaJaM6eSic.jpg",
+      "target": "assets\\stills\\episodes\\uxD5Ts8dIwen4jJSbCaJaM6eSic.jpg",
+      "source_bytes": 3218198,
+      "previous_runtime_bytes": 3218198,
+      "runtime_bytes": 9422,
+      "bytes_saved_vs_source": 3208776,
+      "bytes_saved_vs_previous": 3208776,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\7uZSykS9EHJwgGCVMdVFk9kxBtV.jpg",
+      "target": "assets\\stills\\episodes\\7uZSykS9EHJwgGCVMdVFk9kxBtV.jpg",
+      "source_bytes": 2911140,
+      "previous_runtime_bytes": 2911140,
+      "runtime_bytes": 10532,
+      "bytes_saved_vs_source": 2900608,
+      "bytes_saved_vs_previous": 2900608,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\backdrops\\shows\\sYmwgUz4MpvH3h28hoLlSI3oeYH.jpg",
+      "target": "assets\\backdrops\\shows\\sYmwgUz4MpvH3h28hoLlSI3oeYH.jpg",
+      "source_bytes": 2966095,
+      "previous_runtime_bytes": 2966095,
+      "runtime_bytes": 91857,
+      "bytes_saved_vs_source": 2874238,
+      "bytes_saved_vs_previous": 2874238,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        780,
+        439
+      ],
+      "target_spec": {
+        "max_width": 780
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\xHZ259gOELaGly5iT5EaOFERq63.jpg",
+      "target": "assets\\stills\\episodes\\xHZ259gOELaGly5iT5EaOFERq63.jpg",
+      "source_bytes": 2783550,
+      "previous_runtime_bytes": 2783550,
+      "runtime_bytes": 14271,
+      "bytes_saved_vs_source": 2769279,
+      "bytes_saved_vs_previous": 2769279,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\8mcAB06OxqbOabiDWGXQ8sqJnxn.jpg",
+      "target": "assets\\stills\\episodes\\8mcAB06OxqbOabiDWGXQ8sqJnxn.jpg",
+      "source_bytes": 2637562,
+      "previous_runtime_bytes": 2637562,
+      "runtime_bytes": 8840,
+      "bytes_saved_vs_source": 2628722,
+      "bytes_saved_vs_previous": 2628722,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\mfie3TJrKd6ml3VxojIpnt3jrQF.jpg",
+      "target": "assets\\stills\\episodes\\mfie3TJrKd6ml3VxojIpnt3jrQF.jpg",
+      "source_bytes": 2635539,
+      "previous_runtime_bytes": 2635539,
+      "runtime_bytes": 8912,
+      "bytes_saved_vs_source": 2626627,
+      "bytes_saved_vs_previous": 2626627,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\1mexi58iWo8AkuDTWd1VebWnpI1.jpg",
+      "target": "assets\\stills\\episodes\\1mexi58iWo8AkuDTWd1VebWnpI1.jpg",
+      "source_bytes": 2614930,
+      "previous_runtime_bytes": 2614930,
+      "runtime_bytes": 10218,
+      "bytes_saved_vs_source": 2604712,
+      "bytes_saved_vs_previous": 2604712,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\backdrops\\shows\\jFEd0OnACZRXVQOSf9klgIpOJdp.jpg",
+      "target": "assets\\backdrops\\shows\\jFEd0OnACZRXVQOSf9klgIpOJdp.jpg",
+      "source_bytes": 2492076,
+      "previous_runtime_bytes": 2492076,
+      "runtime_bytes": 71895,
+      "bytes_saved_vs_source": 2420181,
+      "bytes_saved_vs_previous": 2420181,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        780,
+        439
+      ],
+      "target_spec": {
+        "max_width": 780
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\p1dsw0X3jfb2pPBM0YcOK49bwMp.jpg",
+      "target": "assets\\stills\\episodes\\p1dsw0X3jfb2pPBM0YcOK49bwMp.jpg",
+      "source_bytes": 2385801,
+      "previous_runtime_bytes": 2385801,
+      "runtime_bytes": 10956,
+      "bytes_saved_vs_source": 2374845,
+      "bytes_saved_vs_previous": 2374845,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\posters\\shows\\45CJTHKGzotT7DIYvJCAWXMqxCA.jpg",
+      "target": "assets\\posters\\shows\\45CJTHKGzotT7DIYvJCAWXMqxCA.jpg",
+      "source_bytes": 2302460,
+      "previous_runtime_bytes": 2302460,
+      "runtime_bytes": 10431,
+      "bytes_saved_vs_source": 2292029,
+      "bytes_saved_vs_previous": 2292029,
+      "original_size": [
+        2000,
+        3000
+      ],
+      "runtime_size": [
+        171,
+        257
+      ],
+      "target_spec": {
+        "size": [
+          171,
+          257
+        ],
+        "fit": "cover"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\l7QmcUeYl7Y1Jf5QcN5Eiw9Yq2T.jpg",
+      "target": "assets\\stills\\episodes\\l7QmcUeYl7Y1Jf5QcN5Eiw9Yq2T.jpg",
+      "source_bytes": 2275685,
+      "previous_runtime_bytes": 2275685,
+      "runtime_bytes": 14610,
+      "bytes_saved_vs_source": 2261075,
+      "bytes_saved_vs_previous": 2261075,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\3SD1KpN2zqFdkAJOlUyxPW3rcf.jpg",
+      "target": "assets\\stills\\episodes\\3SD1KpN2zqFdkAJOlUyxPW3rcf.jpg",
+      "source_bytes": 2166076,
+      "previous_runtime_bytes": 2166076,
+      "runtime_bytes": 9141,
+      "bytes_saved_vs_source": 2156935,
+      "bytes_saved_vs_previous": 2156935,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\pQtM7GBofDuwIEYGq5c2FsqVDZZ.jpg",
+      "target": "assets\\stills\\episodes\\pQtM7GBofDuwIEYGq5c2FsqVDZZ.jpg",
+      "source_bytes": 2078425,
+      "previous_runtime_bytes": 2078425,
+      "runtime_bytes": 7856,
+      "bytes_saved_vs_source": 2070569,
+      "bytes_saved_vs_previous": 2070569,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\1jMg0Tuhh10KxZjNq4TM9PDCaah.jpg",
+      "target": "assets\\stills\\episodes\\1jMg0Tuhh10KxZjNq4TM9PDCaah.jpg",
+      "source_bytes": 2041878,
+      "previous_runtime_bytes": 2041878,
+      "runtime_bytes": 10838,
+      "bytes_saved_vs_source": 2031040,
+      "bytes_saved_vs_previous": 2031040,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\mpdVbze9Mzg4VJhgxCL5CxT2IgQ.jpg",
+      "target": "assets\\stills\\episodes\\mpdVbze9Mzg4VJhgxCL5CxT2IgQ.jpg",
+      "source_bytes": 2016768,
+      "previous_runtime_bytes": 2016768,
+      "runtime_bytes": 7869,
+      "bytes_saved_vs_source": 2008899,
+      "bytes_saved_vs_previous": 2008899,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\zyrUbVAMBKPv3WS0FVmXLhBXDKq.jpg",
+      "target": "assets\\stills\\episodes\\zyrUbVAMBKPv3WS0FVmXLhBXDKq.jpg",
+      "source_bytes": 1999352,
+      "previous_runtime_bytes": 1999352,
+      "runtime_bytes": 10148,
+      "bytes_saved_vs_source": 1989204,
+      "bytes_saved_vs_previous": 1989204,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\7USTx4km0zTgHAu8tEO0anZuQsg.jpg",
+      "target": "assets\\stills\\episodes\\7USTx4km0zTgHAu8tEO0anZuQsg.jpg",
+      "source_bytes": 1967613,
+      "previous_runtime_bytes": 1967613,
+      "runtime_bytes": 7118,
+      "bytes_saved_vs_source": 1960495,
+      "bytes_saved_vs_previous": 1960495,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\19WoNtZscYsijWmuM1YTXco4Aj0.jpg",
+      "target": "assets\\stills\\episodes\\19WoNtZscYsijWmuM1YTXco4Aj0.jpg",
+      "source_bytes": 1939856,
+      "previous_runtime_bytes": 1939856,
+      "runtime_bytes": 14639,
+      "bytes_saved_vs_source": 1925217,
+      "bytes_saved_vs_previous": 1925217,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\5ahRbP3WdhTvel8G310qxwfcmU4.jpg",
+      "target": "assets\\stills\\episodes\\5ahRbP3WdhTvel8G310qxwfcmU4.jpg",
+      "source_bytes": 1939110,
+      "previous_runtime_bytes": 1939110,
+      "runtime_bytes": 16043,
+      "bytes_saved_vs_source": 1923067,
+      "bytes_saved_vs_previous": 1923067,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\posters\\seasons\\2LVXrQVsEzLlekzNmxZqKa06CV3.jpg",
+      "target": "assets\\posters\\seasons\\2LVXrQVsEzLlekzNmxZqKa06CV3.jpg",
+      "source_bytes": 1883406,
+      "previous_runtime_bytes": 1883406,
+      "runtime_bytes": 12884,
+      "bytes_saved_vs_source": 1870522,
+      "bytes_saved_vs_previous": 1870522,
+      "original_size": [
+        2000,
+        3000
+      ],
+      "runtime_size": [
+        171,
+        257
+      ],
+      "target_spec": {
+        "size": [
+          171,
+          257
+        ],
+        "fit": "cover"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\o2BanVHlicNHsccXT9SW0zNrCLd.jpg",
+      "target": "assets\\stills\\episodes\\o2BanVHlicNHsccXT9SW0zNrCLd.jpg",
+      "source_bytes": 1881405,
+      "previous_runtime_bytes": 1881405,
+      "runtime_bytes": 13183,
+      "bytes_saved_vs_source": 1868222,
+      "bytes_saved_vs_previous": 1868222,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\backdrops\\movies\\lgotja3xMoJZbynwHfcQcJAEMWH.jpg",
+      "target": "assets\\backdrops\\movies\\lgotja3xMoJZbynwHfcQcJAEMWH.jpg",
+      "source_bytes": 1897357,
+      "previous_runtime_bytes": 1897357,
+      "runtime_bytes": 83229,
+      "bytes_saved_vs_source": 1814128,
+      "bytes_saved_vs_previous": 1814128,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        780,
+        439
+      ],
+      "target_spec": {
+        "max_width": 780
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\1OPE9Cx6ZX2bAYBkuX6m7xz7JOv.jpg",
+      "target": "assets\\stills\\episodes\\1OPE9Cx6ZX2bAYBkuX6m7xz7JOv.jpg",
+      "source_bytes": 1796352,
+      "previous_runtime_bytes": 1796352,
+      "runtime_bytes": 11455,
+      "bytes_saved_vs_source": 1784897,
+      "bytes_saved_vs_previous": 1784897,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\kIu4vbVZTSJBwhHoz5z5RESP9hk.jpg",
+      "target": "assets\\stills\\episodes\\kIu4vbVZTSJBwhHoz5z5RESP9hk.jpg",
+      "source_bytes": 1768818,
+      "previous_runtime_bytes": 1768818,
+      "runtime_bytes": 9465,
+      "bytes_saved_vs_source": 1759353,
+      "bytes_saved_vs_previous": 1759353,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\posters\\shows\\7mQslLUNjiZx3UwCgnC2s2VRsAX.jpg",
+      "target": "assets\\posters\\shows\\7mQslLUNjiZx3UwCgnC2s2VRsAX.jpg",
+      "source_bytes": 1762214,
+      "previous_runtime_bytes": 1762214,
+      "runtime_bytes": 10627,
+      "bytes_saved_vs_source": 1751587,
+      "bytes_saved_vs_previous": 1751587,
+      "original_size": [
+        2000,
+        3000
+      ],
+      "runtime_size": [
+        171,
+        257
+      ],
+      "target_spec": {
+        "size": [
+          171,
+          257
+        ],
+        "fit": "cover"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\9zdtqxzJrETPeHrJaRp5BhuultY.jpg",
+      "target": "assets\\stills\\episodes\\9zdtqxzJrETPeHrJaRp5BhuultY.jpg",
+      "source_bytes": 1746072,
+      "previous_runtime_bytes": 1746072,
+      "runtime_bytes": 13361,
+      "bytes_saved_vs_source": 1732711,
+      "bytes_saved_vs_previous": 1732711,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\96JFtctOnS7Li73MNH6dyqC1xLM.jpg",
+      "target": "assets\\stills\\episodes\\96JFtctOnS7Li73MNH6dyqC1xLM.jpg",
+      "source_bytes": 1730656,
+      "previous_runtime_bytes": 1730656,
+      "runtime_bytes": 12633,
+      "bytes_saved_vs_source": 1718023,
+      "bytes_saved_vs_previous": 1718023,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\3hP2yvCoZM9Is0tk3l4YceslqD.jpg",
+      "target": "assets\\stills\\episodes\\3hP2yvCoZM9Is0tk3l4YceslqD.jpg",
+      "source_bytes": 1723016,
+      "previous_runtime_bytes": 1723016,
+      "runtime_bytes": 6200,
+      "bytes_saved_vs_source": 1716816,
+      "bytes_saved_vs_previous": 1716816,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\backdrops\\movies\\gCmfeKmEAZBP5gcXpiqb0gii9rS.jpg",
+      "target": "assets\\backdrops\\movies\\gCmfeKmEAZBP5gcXpiqb0gii9rS.jpg",
+      "source_bytes": 1770865,
+      "previous_runtime_bytes": 1770865,
+      "runtime_bytes": 61069,
+      "bytes_saved_vs_source": 1709796,
+      "bytes_saved_vs_previous": 1709796,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        780,
+        439
+      ],
+      "target_spec": {
+        "max_width": 780
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\logos\\services\\.archive\\Copilot_20251205_144240.png",
+      "target": "assets\\logos\\services\\.archive\\Copilot_20251205_144240.png",
+      "source_bytes": 1772103,
+      "previous_runtime_bytes": 1772103,
+      "runtime_bytes": 63855,
+      "bytes_saved_vs_source": 1708248,
+      "bytes_saved_vs_previous": 1708248,
+      "original_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        256,
+        256
+      ],
+      "target_spec": {
+        "max_width": 256
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\lJW5n7z9E4ppOOju0zKVd0PN0v.jpg",
+      "target": "assets\\stills\\episodes\\lJW5n7z9E4ppOOju0zKVd0PN0v.jpg",
+      "source_bytes": 1709015,
+      "previous_runtime_bytes": 1709015,
+      "runtime_bytes": 14157,
+      "bytes_saved_vs_source": 1694858,
+      "bytes_saved_vs_previous": 1694858,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\82ZydY3WTpSsntCyWfCkBqoKRQB.jpg",
+      "target": "assets\\stills\\episodes\\82ZydY3WTpSsntCyWfCkBqoKRQB.jpg",
+      "source_bytes": 1704806,
+      "previous_runtime_bytes": 1704806,
+      "runtime_bytes": 12418,
+      "bytes_saved_vs_source": 1692388,
+      "bytes_saved_vs_previous": 1692388,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\4Vca9EQhYLJsl3AIKY6r0KlndQz.jpg",
+      "target": "assets\\stills\\episodes\\4Vca9EQhYLJsl3AIKY6r0KlndQz.jpg",
+      "source_bytes": 1691873,
+      "previous_runtime_bytes": 1691873,
+      "runtime_bytes": 17295,
+      "bytes_saved_vs_source": 1674578,
+      "bytes_saved_vs_previous": 1674578,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\pNgbfTtvLIti10XFtBfXowEg1UF.jpg",
+      "target": "assets\\stills\\episodes\\pNgbfTtvLIti10XFtBfXowEg1UF.jpg",
+      "source_bytes": 1683848,
+      "previous_runtime_bytes": 1683848,
+      "runtime_bytes": 9639,
+      "bytes_saved_vs_source": 1674209,
+      "bytes_saved_vs_previous": 1674209,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\cmfIUmbTO6T6h21fDtkdleKqh8Z.jpg",
+      "target": "assets\\stills\\episodes\\cmfIUmbTO6T6h21fDtkdleKqh8Z.jpg",
+      "source_bytes": 1684730,
+      "previous_runtime_bytes": 1684730,
+      "runtime_bytes": 12794,
+      "bytes_saved_vs_source": 1671936,
+      "bytes_saved_vs_previous": 1671936,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\posters\\seasons\\fTfLd3s9yBNOzbFHD2aXvwEs93H.jpg",
+      "target": "assets\\posters\\seasons\\fTfLd3s9yBNOzbFHD2aXvwEs93H.jpg",
+      "source_bytes": 1680172,
+      "previous_runtime_bytes": 1680172,
+      "runtime_bytes": 14941,
+      "bytes_saved_vs_source": 1665231,
+      "bytes_saved_vs_previous": 1665231,
+      "original_size": [
+        2000,
+        3000
+      ],
+      "runtime_size": [
+        171,
+        257
+      ],
+      "target_spec": {
+        "size": [
+          171,
+          257
+        ],
+        "fit": "cover"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\posters\\shows\\fTfLd3s9yBNOzbFHD2aXvwEs93H.jpg",
+      "target": "assets\\posters\\shows\\fTfLd3s9yBNOzbFHD2aXvwEs93H.jpg",
+      "source_bytes": 1680172,
+      "previous_runtime_bytes": 1680172,
+      "runtime_bytes": 14941,
+      "bytes_saved_vs_source": 1665231,
+      "bytes_saved_vs_previous": 1665231,
+      "original_size": [
+        2000,
+        3000
+      ],
+      "runtime_size": [
+        171,
+        257
+      ],
+      "target_spec": {
+        "size": [
+          171,
+          257
+        ],
+        "fit": "cover"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\4y6uwyinUYsMfHaO70af2gVDUlu.jpg",
+      "target": "assets\\stills\\episodes\\4y6uwyinUYsMfHaO70af2gVDUlu.jpg",
+      "source_bytes": 1650345,
+      "previous_runtime_bytes": 1650345,
+      "runtime_bytes": 12993,
+      "bytes_saved_vs_source": 1637352,
+      "bytes_saved_vs_previous": 1637352,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\backdrops\\shows\\dAXej68c1I68bQahHameQZyKwyS.jpg",
+      "target": "assets\\backdrops\\shows\\dAXej68c1I68bQahHameQZyKwyS.jpg",
+      "source_bytes": 1699359,
+      "previous_runtime_bytes": 1699359,
+      "runtime_bytes": 73373,
+      "bytes_saved_vs_source": 1625986,
+      "bytes_saved_vs_previous": 1625986,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        780,
+        439
+      ],
+      "target_spec": {
+        "max_width": 780
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\AazgypaiNsI5Ew5tlUwYX2UWi0v.jpg",
+      "target": "assets\\stills\\episodes\\AazgypaiNsI5Ew5tlUwYX2UWi0v.jpg",
+      "source_bytes": 1638275,
+      "previous_runtime_bytes": 1638275,
+      "runtime_bytes": 13139,
+      "bytes_saved_vs_source": 1625136,
+      "bytes_saved_vs_previous": 1625136,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\hxZQi3iq4IC8K7EBd4ez2W0OQPO.jpg",
+      "target": "assets\\stills\\episodes\\hxZQi3iq4IC8K7EBd4ez2W0OQPO.jpg",
+      "source_bytes": 1624904,
+      "previous_runtime_bytes": 1624904,
+      "runtime_bytes": 5404,
+      "bytes_saved_vs_source": 1619500,
+      "bytes_saved_vs_previous": 1619500,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\q7XgP6ZOH3SMZnsuSduqd7m4VDB.jpg",
+      "target": "assets\\stills\\episodes\\q7XgP6ZOH3SMZnsuSduqd7m4VDB.jpg",
+      "source_bytes": 1625719,
+      "previous_runtime_bytes": 1625719,
+      "runtime_bytes": 12003,
+      "bytes_saved_vs_source": 1613716,
+      "bytes_saved_vs_previous": 1613716,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\y36yZD358SHzEBF2HeVSikCU5Nx.jpg",
+      "target": "assets\\stills\\episodes\\y36yZD358SHzEBF2HeVSikCU5Nx.jpg",
+      "source_bytes": 1606860,
+      "previous_runtime_bytes": 1606860,
+      "runtime_bytes": 10629,
+      "bytes_saved_vs_source": 1596231,
+      "bytes_saved_vs_previous": 1596231,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\logos\\services\\.archive\\Copilot_20251205_143424.png",
+      "target": "assets\\logos\\services\\.archive\\Copilot_20251205_143424.png",
+      "source_bytes": 1657058,
+      "previous_runtime_bytes": 1657058,
+      "runtime_bytes": 65396,
+      "bytes_saved_vs_source": 1591662,
+      "bytes_saved_vs_previous": 1591662,
+      "original_size": [
+        1024,
+        1024
+      ],
+      "runtime_size": [
+        256,
+        256
+      ],
+      "target_spec": {
+        "max_width": 256
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\xpksVkdxhxw8mjQ1AQcspxqqHbM.jpg",
+      "target": "assets\\stills\\episodes\\xpksVkdxhxw8mjQ1AQcspxqqHbM.jpg",
+      "source_bytes": 1602202,
+      "previous_runtime_bytes": 1602202,
+      "runtime_bytes": 10551,
+      "bytes_saved_vs_source": 1591651,
+      "bytes_saved_vs_previous": 1591651,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\uLy0JkD7Toasu1Jsb4cB0ALDTFr.jpg",
+      "target": "assets\\stills\\episodes\\uLy0JkD7Toasu1Jsb4cB0ALDTFr.jpg",
+      "source_bytes": 1587002,
+      "previous_runtime_bytes": 1587002,
+      "runtime_bytes": 11363,
+      "bytes_saved_vs_source": 1575639,
+      "bytes_saved_vs_previous": 1575639,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\4dIh5DJyWLtL8Xt2RXIeIYWHVAB.jpg",
+      "target": "assets\\stills\\episodes\\4dIh5DJyWLtL8Xt2RXIeIYWHVAB.jpg",
+      "source_bytes": 1588083,
+      "previous_runtime_bytes": 1588083,
+      "runtime_bytes": 12545,
+      "bytes_saved_vs_source": 1575538,
+      "bytes_saved_vs_previous": 1575538,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\AckrdkuwGQSLfFSpUYGUSzIFksW.jpg",
+      "target": "assets\\stills\\episodes\\AckrdkuwGQSLfFSpUYGUSzIFksW.jpg",
+      "source_bytes": 1583056,
+      "previous_runtime_bytes": 1583056,
+      "runtime_bytes": 8737,
+      "bytes_saved_vs_source": 1574319,
+      "bytes_saved_vs_previous": 1574319,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    },
+    {
+      "source": "assets\\original_downloads\\stills\\episodes\\vdlYtcgS1x3JURs39cxDD8MtT65.jpg",
+      "target": "assets\\stills\\episodes\\vdlYtcgS1x3JURs39cxDD8MtT65.jpg",
+      "source_bytes": 1574246,
+      "previous_runtime_bytes": 1574246,
+      "runtime_bytes": 5396,
+      "bytes_saved_vs_source": 1568850,
+      "bytes_saved_vs_previous": 1568850,
+      "original_size": [
+        3840,
+        2160
+      ],
+      "runtime_size": [
+        256,
+        180
+      ],
+      "target_spec": {
+        "size": [
+          256,
+          180
+        ],
+        "fit": "still_crop"
+      }
+    }
+  ]
 }

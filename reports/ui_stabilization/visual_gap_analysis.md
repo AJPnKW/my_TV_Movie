@@ -1,14 +1,14 @@
 # Visual Gap Analysis
 
-Date: 2026-04-28
+Date: 2026-04-29
 
 ## Viewports
 
-Validated through `scripts/qa_browser_layout_check.mjs` after starting `python -m http.server 8000`. Result: passed, with no console errors, 404s, or page-level horizontal overflow.
+Validated through repo runtime checks after starting `python -m http.server 8000`.
 
 | Viewport | Size | Purpose |
 |---|---:|---|
-| Android/Chromecast TV | 1920x1080 | TV density and 7-column calendar |
+| Android/Chromecast TV | 1920x1080 | TV density and D-pad readability |
 | Laptop | 1366x768 | primary desktop/laptop density |
 | Tablet landscape | 1024x768 | constrained desktop-like layout |
 | Tablet portrait | 768x1024 | tablet wrapping and no overflow |
@@ -19,23 +19,28 @@ Validated through `scripts/qa_browser_layout_check.mjs` after starting `python -
 
 | Area | Finding | Fix |
 |---|---|---|
-| Nested frames | Panels and dashboard wrappers still carried borders/shadows around framed cards. | `web/css/ui_contract_fix.css` now removes borders/shadows from app shell, panels, dashboard wrappers, and section wrappers while retaining borders on date/day columns and media cards. |
-| Action boxes | Coarse-pointer and legacy CSS could enlarge action controls inconsistently. | Action controls now use one clamped square size, fixed aspect ratio, hidden overflow, and consistent active/inactive colors. |
-| Action overlap | Action groups could compress into each other on small cards. | Action bar groups use fixed icon slots, clipped overflow, and compact rating width. |
-| Card density | Recommendations and browse cards still rendered large posters on dashboard and mobile/TV. | Card grid max width, recommendation height, and image max height were reduced in the compatibility CSS. |
-| State bleed | Item state used only a shared id key, which could affect multiple episode/season cards. | `web/js/watch_state_manager.js` now keys local state by kind/show/season/episode context. |
-| Responsive QA | Existing layout QA did not cover all requested sizes. | `scripts/qa_browser_layout_check.mjs` now tests 1920x1080, 1366x768, 1024x768, 768x1024, 430x932, and 390x844. |
+| Action overlap | Fixed action boxes could exceed the available card width and overlap. | `web/css/ui_contract_fix.css` now uses adaptive square action boxes and visible overflow on action groups. |
+| Popcorn clipping | Action containers could clip the rounded popcorn box. | Removed action-row `overflow: clip` behavior and normalized square box sizing. |
+| Image/action overlap | Some card paths could visually place card controls over the media area. | `web/js/card_renderer.js` keeps the action row below media and preserves a visible text row outside the image. |
+| Availability badge overlay | Availability badges sat over posters/stills and hid content. | Card render paths no longer pass availability badges; availability is represented by popcorn state only. |
+| State bleed | Cards with shared local ids could toggle together. | `web/js/watch_state_manager.js` now keys state by item context, including episode show/season/episode identity. |
+| Card drift | Dashboard, discover, watch-me, shows, and movies used visibly different card/action rules. | Shared card/action CSS now controls density, action sizing, image/action separation, and compact rating output across pages. |
+| Header size | The text logo block consumed too much vertical space. | Page shells now use `assets/custom/the_boys_hub_logo2.png` with compact sticky header styling. |
+| Section behavior | Dashboard sections lacked a consistent sticky section header pattern. | Dashboard, watch-me day groups, and calendar summaries use the shared sticky section header treatment. |
+| Overflow behavior | Dashboard/calendar overflow behavior was inconsistent. | Shared `+X more` expansion is active for dashboard and calendar visible sets. |
+| Runtime assets | Runtime images previously retained original-sized downloads. | `scripts/optimize_runtime_assets.py` generated poster, still, and backdrop runtime targets and refreshed the asset report. |
 
 ## Browser QA Results
 
 | Check | Result |
 |---|---|
-| `scripts/qa_browser_layout_check.mjs` | passed |
-| `scripts/qa_browser_popup_check.mjs` | passed |
-| HTTP shell smoke for seven app pages | passed |
-| D-pad smoke | passed; active focus stayed onscreen and Escape produced no runtime errors |
-| Local watch-state toggle scope | passed; one clicked action updated only its own scoped state key |
+| Repo validation entry point | passed |
+| HTTP shell smoke for seven app pages plus Inputs Editor shell | passed |
+| Responsive viewport inspection | passed at 1920x1080, 1366x768, 1024x768, 768x1024, 430x932, and 390x844 |
+| Popup/modal focus smoke | passed; focus stayed inside the active modal and Escape closed it |
+| Watch-state scope smoke | passed; visible action buttons all had context-specific keys |
+| Action geometry smoke | passed; no visible action overlap, clipping, non-square buttons, or page overflow |
 
 ## Residual Risk
 
-Browser-font emoji rendering can vary by Android TV device. The canonical ticket and double-heart icons are still emitted by `web/js/action_bar.js`; validation checks that the source contract remains unchanged.
+Browser-font emoji rendering can vary by Android TV device. The canonical ticket and double-heart icons are emitted by `web/js/action_bar.js`; validation checks that the source contract remains unchanged.

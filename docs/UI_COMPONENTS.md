@@ -1,60 +1,170 @@
 # UI Component Contract
 
-## Media Card
+## Purpose
+This document is the active UI source of truth for cards, action icons, image sizing, section headers, modal focus, responsive behavior, and layout rules.
 
-Structure
+## Universal Card Layout
 
-::: media-card
-`<img class="poster">`{=html}
+All media cards use this structure:
 
-::: overlay
-    <div class="title"></div>
-    <div class="meta"></div>
-    <div class="actions"></div>
-:::
-:::
+```text
+[ image ]
+[ title + metadata ]
+[ action row ]
+```
 
-## Icon Strip
+Never allowed:
+- action icons on top of the image
+- media text hidden behind icons
+- availability badges covering poster/still artwork
+- different show-card layout on Dashboard vs Shows page
+- different movie-card layout on Dashboard vs Movies page
 
-Canonical owner: `web/js/action_bar.js`.
+## Card Types
 
-🍿 Watch Source\
-⌚ Watched Status\
-🎫 Watch List\
-💕 Favourite\
-Compact Numeric Rating
+| Type | Image | Runtime/Display Target |
+|---|---|---|
+| Show | poster | `poster_card_171x257` |
+| Movie | poster | `poster_card_171x257` |
+| Episode | cropped still | `episode_still_narrow_256x180` |
 
-Rules
+## Episode Still Rule
 
--   icons only
--   no text buttons
--   consistent order: popcorn, watched status, watch list, favourite, rating
--   rating is a compact number such as `76`, without a symbol or percent sign
--   movie and episode availability state is shown on the popcorn icon with a tight solid square:
--   green = available
--   orange = not yet released
--   red = unavailable
--   watched-status and watch-list icons use green when active and grey when inactive
--   no play icon for watched status
--   no ruler icon for watch list
--   no single yellow heart for favourite
--   legacy bookmark, single-heart, play, ruler, star, and percent-rating treatments are deprecated outside historical docs
--   movie and episode cards do not place availability badges over poster or still copy; shows and seasons keep the shared badge treatment
--   app version badges must read shared metadata, not hard-coded per-page strings
+Start from:
 
-## Filter Rails
+```text
+episode_still_source_320x180
+```
 
--   browse/filter rails must provide a visible hide/show toggle
--   shows, movies, and watch-me use the same collapsible filter-rail pattern
+Crop 10% from left and 10% from right:
 
-## Calendar Modes
+```text
+320x180 -> 256x180
+```
 
--   calendar keeps the wall-grid month view
--   calendar also exposes a month list/tree view for release browsing from the same shared runtime
+Do not distort by non-proportional scaling.
 
-## Episode Card
+## Action Row
 
--   One shared episode-card family is active across dashboard schedule/history, calendar, watch_me, and the show popup rail.
--   Calendar is the visual layout baseline for the still image, overlay copy, badge placement, and image ratio.
--   Dashboard last-week is the action-row baseline for icon spacing and ordering.
--   `Up Next` is no longer a separate dashboard episode-card system.
+Required order:
+
+```text
+🍿 ⌚ 🎫 💕 76%
+```
+
+| Function | Icon | Meaning |
+|---|---:|---|
+| Watch sources | 🍿 | Open watch-source popup |
+| Watched status | ⌚ | Toggle watched/unwatched |
+| Watch list | 🎫 | Toggle queued to watch later |
+| Favourite | 💕 | Toggle favourite/recommendation signal |
+| Rating | `76%` | Compact rating percentage |
+
+Forbidden active icons:
+- `▶` for watched status
+- `🎬` for watched status
+- `📏` for watch list
+- `💛` for favourite
+- `⭐` for rating
+
+## Action Icon Layout
+
+- Popcorn/watch/ticket must use solid rounded-square boxes.
+- Icon box width and height must match.
+- Icon and box must scale to available card width.
+- If space is tight, rating text shrinks before icons overlap.
+- Do not use `overflow: clip` or hidden overflow in a way that cuts rounded corners.
+- Action row sits below card media/text, never over the image.
+
+## Availability
+
+Availability must be represented primarily through popcorn color.
+
+| State | Popcorn Color |
+|---|---|
+| available | green |
+| not_yet_released | orange |
+| unavailable | red |
+
+Remove overlay availability badges from cards when they cover image artwork.
+
+## Watch-State Identity
+
+State keys must be kind-specific:
+
+```text
+watched_status:episode:<show_id>:<season_number>:<episode_number>
+watched_status:movie:<tmdb_id>
+watched_status:show:<tmdb_id>
+watch_list:episode:<show_id>:<season_number>:<episode_number>
+watch_list:movie:<tmdb_id>
+watch_list:show:<tmdb_id>
+favourite:episode:<show_id>:<season_number>:<episode_number>
+favourite:movie:<tmdb_id>
+favourite:show:<tmdb_id>
+```
+
+Toggling one item may update duplicate representations of the same item, but must not update unrelated cards.
+
+## Header / Navigation
+
+- Use `assets/custom/the_boys_hub_logo2.png` as the upper-left logo.
+- Replace the old `MY TV HUB` text block.
+- Header must be sticky.
+- Navigation should be compact, icon-first, accessible, and D-pad friendly.
+- Each nav item must expose hover/title/aria label text.
+- Inputs Editor must remain reachable.
+
+## Dashboard Section Headers
+
+Dashboard sections:
+1. current week
+2. watchlist
+3. upcoming schedule
+4. recommendations
+
+Each section uses the same sticky-section-header behavior:
+- active section header remains visible while the section is in view
+- next section header replaces it
+- sticky header must not cover cards
+
+## Calendar / Dashboard More Behavior
+
+No silent truncation.
+
+If a day has more items than visible space:
+- show first visible items cleanly
+- show `+X more`
+- click/Enter expands or opens a day detail view
+- Dashboard and Calendar must share this behavior
+
+## Modal / Popup Focus
+
+When a modal or provider popup is open:
+- arrow keys/D-pad navigate only inside the popup
+- Escape/Back closes the popup
+- background page does not scroll or receive focus
+- focus returns to launching control where practical
+
+## Frame Rules
+
+Keep visible frames only around:
+- date/day column
+- show card
+- movie card
+- episode card
+
+Avoid visible frames around:
+- app shell
+- page panel wrappers
+- redundant nested dashboard sections
+- action row
+
+## Discover and Watch Me Decisions
+
+Discover and Watch Me must not duplicate Dashboard behavior without a documented reason.
+
+Required future decision:
+- keep as distinct surfaces,
+- merge into Dashboard,
+- or preserve route as compatibility/redirect.
