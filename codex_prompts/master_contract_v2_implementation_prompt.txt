@@ -1,0 +1,112 @@
+You are working in:
+
+C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie
+
+Run with:
+codex -m gpt-5.5 --dangerously-bypass-approvals-and-sandbox
+
+TASK:
+Implement the next code/documentation-alignment batch against the v2 master contract.
+
+READ FIRST:
+docs/00_master_contract.html
+
+HARD RULE:
+docs/00_master_contract.html is the only active source of truth. Do not reactivate archived specs. Do not create new active docs. Use reports only as evidence.
+
+SCOPE:
+1. Enforce page route contract:
+   - Keep web/watch_me.html as active simple trailer-friendly list view.
+   - Keep web/discover.html as active discovery for suggestions not already in JSON.
+   - Deprecate/ignore web/watchlist.html because it is absent and historical only.
+   - Archive/redirect web/watch.me.html if present.
+   - Keep web/config.html app-settings only.
+   - Keep web/manage_watch_state.html standalone.
+
+2. Navigation:
+   - Add/verify primary nav icon for Manage Watch State: ✅.
+   - Use nav icons:
+     Dashboard 🏠, Shows 📺, Movies 🎬, Calendar 📅, Discover 🔍, Tracking ✅, Config ⚙️, Inputs 🖥️.
+   - Do not box primary nav icons as buttons.
+   - Keep accessibility labels and D-pad/keyboard focus.
+
+3. Action strip:
+   - Change watch_list card icon to 🎟️ Ticket (U+1F3AB), not 🎫.
+   - Final action row: 🍿 ⌚ 🎟️ 💕 76%.
+   - 🎬 is allowed as Movies nav icon but not as watched_status action icon.
+
+4. Manage Watch State:
+   - Build as lean matrix/table/tree, not media cards.
+   - Tree: Shows → Seasons → Episodes; Movies as single rows.
+   - Controls:
+     watch_list two-state switch
+     favourite two-state switch
+     watched_status three-state segmented switch: unwatched / partial / watched
+   - Include filters and sorting from the master contract.
+   - Do not embed Manage Watch State in Config.
+
+5. UI/filter rail:
+   - Apply common filter rail hide/show icon pattern.
+   - Hide/show handle is on rail edge.
+   - Remove decorative text:
+     Browse
+     Shared cards, shared actions, one left filter rail.
+   - Remove "Library Filters" where redundant/decorative.
+
+6. Assets:
+   - Do per-file dimension/file-size QA.
+   - Verify assets/original_downloads is source-only.
+   - Verify runtime images are target-sized:
+     posters 171x257
+     episode narrow stills 256x180
+     backdrops <= 780px unless justified
+   - Do not rely on folder properties.
+   - Report originals/runtime mismatch.
+
+7. Data/schema:
+   - Audit inputs.json, data.json, catalog_index.json, calendar.json, watch_sources_index.json, catalog_detail.
+   - Report actual schema/field status and missing validation.
+   - Do not infer that valid outputs prove valid inputs.
+
+8. Trakt:
+   - Audit existing scripts:
+     scripts/trakt_http.py
+     scripts/fetch_trakt.py
+     scripts/sync_trakt.py
+     scripts/trakt_device_auth.py
+     scripts/trakt_sync_watch_state.py
+     scripts/trakt_push_watch_queue.py
+     scripts/run_pipeline_tmdb_trakt.py
+   - Mark each as integrated / code exists not integrated / deprecated / missing validation.
+   - Do not fake live sync.
+   - Partial watched_status is local-only unless Trakt support is verified.
+
+9. Validation:
+   - Update scripts/validate_runtime.ps1 to enforce v2.
+   - Warnings should print in a noticeable nonstandard color.
+   - Validation must fail if active docs other than docs/00_master_contract.html define behavior.
+   - Validation must include rendered checks plus asset dimension checks.
+
+REPORT:
+Update/create:
+reports/documentation_consolidation/master_contract_v2_implementation_report.html
+
+Include:
+- files changed
+- route/page decisions applied
+- asset QA summary
+- data/schema QA summary
+- Trakt script audit table
+- remaining gaps
+- user decision list
+
+FINAL OUTPUT:
+1. git status
+2. commit hash
+3. files changed
+4. route/nav changes
+5. Manage Watch State status
+6. asset QA result
+7. data/schema QA result
+8. Trakt audit result
+9. remaining gaps
