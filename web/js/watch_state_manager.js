@@ -70,6 +70,12 @@ CHANGE NOTES:
     return key ? !!load()[key] : false;
   }
 
+  function getValueByKey(key){
+    if (!key) return '';
+    const data = load();
+    return Object.prototype.hasOwnProperty.call(data, key) ? data[key] : '';
+  }
+
   function setByKey(key,value){
     if (!key) return false;
     const data = load();
@@ -77,6 +83,15 @@ CHANGE NOTES:
     else delete data[key];
     save(data);
     return !!value;
+  }
+
+  function setValueByKey(key,value){
+    if (!key) return false;
+    const data = load();
+    if (value === false || value == null || value === '' || value === 'unwatched') delete data[key];
+    else data[key] = value;
+    save(data);
+    return !!data[key];
   }
 
   function toggleByKey(key){
@@ -122,5 +137,5 @@ CHANGE NOTES:
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ refresh(document); });
   else refresh(document);
 
-  window.MyTVHubWatchState = Object.assign(window.MyTVHubWatchState || {}, { load, save, get, set, toggle, getByKey, setByKey, toggleByKey, refresh });
+  window.MyTVHubWatchState = Object.assign(window.MyTVHubWatchState || {}, { load, save, get, set, toggle, getByKey, getValueByKey, setByKey, setValueByKey, toggleByKey, refresh });
 })();

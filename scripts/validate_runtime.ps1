@@ -20,12 +20,8 @@ Write-Host '== Git state =='
 git status --short --branch
 
 $requiredFiles = @(
-    'docs/ARCHITECTURE.md',
-    'docs/AI_AGENT_RULES.md',
-    'docs/UI_COMPONENTS.md',
-    'docs/DOCUMENTATION_STANDARD.md',
-    'docs/UI_GAP_ANALYSIS.md',
-    'docs/ARCHITECTURE_LOG.md',
+    'docs/00_master_contract.html',
+    'docs/index.html',
     'data/inputs.json',
     'data/data.json',
     'data/catalog_index.json',
@@ -77,6 +73,9 @@ foreach ($page in $pageFiles) {
             Add-CheckError "$page missing shell reference: $needle"
         }
     }
+    if ($text -like '*./css/my_tv_hub.css*') {
+        Add-CheckError "$page must not load legacy my_tv_hub.css; main_app.css is the sole active UI authority."
+    }
     foreach ($legacy in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js')) {
         if ($text -like "*$legacy*") { Add-CheckError "$page still references removed compatibility layer: $legacy" }
     }
@@ -85,13 +84,23 @@ foreach ($page in $pageFiles) {
         Add-CheckError "$page missing primary nav shell"
     } else {
         $navText = $navMatch.Groups['nav'].Value
-        if ($navText -match 'data-tab="watch-me"|data-tab="discover"') {
-            Add-CheckError "$page primary nav must not expose Watch Me or Discover"
+        if ($navText -match 'data-tab="watch-me"') {
+            Add-CheckError "$page primary nav must not expose Watch Me"
         }
         if ($navText -match '>Dashboard<|>Shows<|>Movies<|>Calendar<|>Watch Me<|>Discover<|>Config<|>Inputs Editor<') {
             Add-CheckError "$page primary nav must be icon-only visible text"
         }
-        if ($navText -notmatch 'aria-label="Dashboard"' -or $navText -notmatch 'aria-label="Inputs Editor"') {
+        foreach ($requiredNav in @('Dashboard','Shows','Movies','Calendar','Discover','Tracking','Config','Inputs Editor')) {
+            if ($navText -notmatch "aria-label=`"$requiredNav`"") {
+                Add-CheckError "$page icon-only nav missing required accessible label: $requiredNav"
+            }
+        }
+        foreach ($requiredTab in @('data-tab="dashboard"','data-tab="shows"','data-tab="movies"','data-tab="calendar"','data-tab="discover"','data-tab="manage-watch-state"','data-tab="config"','data-tab="inputs-editor"')) {
+            if ($navText -notlike "*$requiredTab*") {
+                Add-CheckError "$page icon-only nav missing required primary tab: $requiredTab"
+            }
+        }
+        if ($navText -notmatch '🏠' -or $navText -notmatch '📺' -or $navText -notmatch '🎬' -or $navText -notmatch '📅' -or $navText -notmatch '🔍' -or $navText -notmatch '✅') {
             Add-CheckError "$page icon-only nav missing required accessible labels"
         }
     }
@@ -185,15 +194,7 @@ $scanFiles = @(
     'web/js/runtime_render_fix.js',
     'web/js/trailer_watch_popup_fix.js',
     'web/js/watch_state_manager.js',
-    'web/css/main_app.css',
-    'docs/ARCHITECTURE.md',
-    'docs/UI_COMPONENTS.md',
-    'docs/DOCUMENTATION_STANDARD.md',
-    'docs/README.md',
-    'docs/movie_card.md',
-    'docs/episode_card.md',
-    'docs/show_card.md',
-    'docs/movie_popup.md'
+    'web/css/main_app.css'
 )
 $forbidden = @(
     '▶',
@@ -245,7 +246,7 @@ $actionText = Get-Content -Raw -LiteralPath 'web/js/action_bar.js'
 foreach ($needle in @(
     "watch_source: '🍿'",
     "watched_status: '⌚'",
-    "watch_list: '🎫'",
+    "watch_list: '🎟️'",
     "favourite: '💕'",
     "ACTION_BAR_ORDER = Object.freeze"
 )) {
@@ -253,6 +254,9 @@ foreach ($needle in @(
 }
 if ($actionText -match "rating:\s*'[^']+'") {
     Add-CheckError 'Rating icon must stay empty; rating renders as compact text.'
+}
+if ($actionText -like "*watch_list: '🎫'*") {
+    Add-CheckError 'Action bar must use Ticket U+1F3AB for watch_list, not admission ticket.'
 }
 foreach ($needle in @(
     'compact percent',
@@ -278,7 +282,7 @@ if ($cardRendererText -match 'media-card__surface-badge') {
 if ($appRuntimeText -match 'badgeHtml:\s*availabilityBadgeHtml') {
     Add-CheckError 'app_runtime card render paths must not pass availability badges into cards.'
 }
-if ($mainCssText -match 'overflow\s*:\s*clip') {
+if ($mainCssText -match 'overflow(?:-[xy])?\s*:\s*clip') {
     Add-CheckError 'Action/card CSS must not use overflow: clip.'
 }
 if ($mainCssText -notmatch '--ui_action_box:\s*clamp') {
@@ -308,8 +312,11 @@ if ($mainCssText -match '(?s)\.tab\s*\{[^}]*border\s*:\s*1px') {
 if ($runtimeText -match 'replace\(/%/g') {
     Add-CheckError 'Runtime shims must not strip percent signs from compact ratings.'
 }
-if ($appRuntimeText -notlike '*panel-manage-watch-state*' -or $appRuntimeText -notlike '*id="manageWatchState"*' -or $appRuntimeText -notlike '*data-manage-watch-key*') {
+if ($appRuntimeText -notlike '*panel-manage-watch-state*' -or $appRuntimeText -notlike '*id="manageWatchState"*' -or $appRuntimeText -notlike '*watch-state-matrix*' -or $appRuntimeText -notlike '*data-manage-watch-key*' -or $appRuntimeText -notlike '*data-manage-watch-value*') {
     Add-CheckError 'Manage Watch State must be a standalone reachable view with local toggles.'
+}
+if ($appRuntimeText -match 'watch-state-manager__item|watch-state-manager__grid') {
+    Add-CheckError 'Manage Watch State must render a matrix/tree, not card/grid UI.'
 }
 $configRenderMatch = [regex]::Match($appRuntimeText, '(?s)async function renderConfig\(\).*?function buildMoviePopupHtml')
 if ($configRenderMatch.Success -and $configRenderMatch.Value -match 'manageWatchState|data-manage-watch-key|Trakt mapping') {
@@ -346,24 +353,25 @@ foreach ($jsFile in Get-ChildItem -LiteralPath 'web/js' -Filter '*.js' -File) {
 }
 
 Write-Host '== Documentation source-of-truth consistency =='
-$docStandard = Get-Content -Raw -LiteralPath 'docs/DOCUMENTATION_STANDARD.md'
+$masterContract = Get-Content -Raw -LiteralPath 'docs/00_master_contract.html'
 foreach ($needle in @(
-    'web/js/action_bar.js',
-    'web/js/watch_state_manager.js',
-    'web/js/trailer_watch_popup_fix.js',
-    'web/js/data_loader.js',
-    'web/css/main_app.css',
-    'scripts/validate_runtime.ps1',
-    'popcorn, watch, ticket, double-heart, compact percent rating'
+    'docs/00_master_contract.html',
+    'web/manage_watch_state.html',
+    'web/discover.html',
+    'web/watch_me.html',
+    'assets/custom/the_boys_hub_logo2.png',
+    '🍿 ⌚ 🎟️ 💕 76%',
+    'Primary view icons are standalone colourful Unicode/web icons',
+    'Standalone page: <code>web/manage_watch_state.html</code>'
 )) {
-    if ($docStandard -notlike "*$needle*") { Add-CheckError "Documentation standard missing source-of-truth entry: $needle" }
+    if ($masterContract -notlike "*$needle*") { Add-CheckError "Master contract missing source-of-truth entry: $needle" }
 }
-$currentDocs = @('docs/ARCHITECTURE.md','docs/UI_COMPONENTS.md','docs/DOCUMENTATION_STANDARD.md','docs/README.md')
-foreach ($doc in $currentDocs) {
-    $text = Get-Content -Raw -LiteralPath $doc
-    if ($text -match '🔖|💛|⭐|▶') {
-        Add-CheckError "Current source-of-truth doc contains deprecated icon marker: $doc"
-    }
+$docIndex = Get-Content -Raw -LiteralPath 'docs/index.html'
+if ($docIndex -notlike '*00_master_contract.html*') {
+    Add-CheckError 'docs/index.html must point to docs/00_master_contract.html.'
+}
+if ($masterContract -notlike '*Forbidden as card action icons*') {
+    Add-CheckError 'Master contract must document forbidden card action icons.'
 }
 
 Write-Host '== Runtime asset size report =='
@@ -448,8 +456,8 @@ if ((Test-CommandAvailable node) -and (Test-CommandAvailable python)) {
 const puppeteer = require('puppeteer-core');
 const executablePath = $chromePathJson;
 const base = 'http://127.0.0.1:$port/web/';
-const pages = ['index.html','shows.html','movies.html','calendar.html','config.html','manage_watch_state.html','watch_me.html'];
-const viewports = [{name:'tv', width:1920, height:1080}, {name:'laptop', width:1366, height:768}, {name:'mobile', width:390, height:844}];
+  const pages = ['index.html','shows.html','movies.html','calendar.html','discover.html','config.html','manage_watch_state.html','watch_me.html'];
+  const viewports = [{name:'android_tv', width:1920, height:1080}, {name:'desktop', width:1366, height:768}, {name:'tablet', width:768, height:1024}, {name:'mobile', width:390, height:844}];
 const failures = [];
 function ignoreConsole(message){
   return /favicon|ERR_ABORTED|File not found|Config warning\(s\):/.test(message);
@@ -484,6 +492,32 @@ function ignoreConsole(message){
         const logoRect = logo ? rect(logo) : null;
         const headerRect = header ? rect(header) : null;
         const manage = document.querySelector('#manageWatchState');
+        const manageTable = manage ? manage.querySelector('.watch-state-matrix') : null;
+        const calendarGrid = document.querySelector('.calendar-month-grid');
+        const calendarWeek = document.querySelector('.calendar-week-band');
+        const calendarHost = document.querySelector('#calendar');
+        const splitColumns = value => String(value || '').split(' ').filter(Boolean).length;
+        const actionButtons = Array.from(document.querySelectorAll('.media-card .actionbar-btn')).slice(0, 12).map(btn => {
+          const style = getComputedStyle(btn);
+          const btnRect = rect(btn);
+          const card = btn.closest('.media-card');
+          const img = card ? card.querySelector('img') : null;
+          const imgRect = img ? rect(img) : null;
+          const icon = (btn.textContent || '').trim();
+          return {
+            icon,
+            width: btnRect.width,
+            height: btnRect.height,
+            radius: parseFloat(style.borderTopLeftRadius) || 0,
+            overflow: style.overflow,
+            belowImage: !imgRect || btnRect.top >= imgRect.bottom - 2
+          };
+        });
+        const dashHeads = Array.from(document.querySelectorAll('#panel-dashboard > .dash > .dashblock > .dashhead')).map(head => ({ text:(head.textContent || '').trim(), position:getComputedStyle(head).position }));
+        const discoverCards = Array.from(document.querySelectorAll('#panel-discover .media-card')).map(card => ({
+          kind: card.getAttribute('data-kind') || '',
+          id: card.getAttribute('data-id') || card.getAttribute('data-show-open') || card.getAttribute('data-movie-open') || ''
+        }));
         return {
           tabs,
           logoRect,
@@ -491,20 +525,40 @@ function ignoreConsole(message){
           logoNatural: logo ? { width:logo.naturalWidth, height:logo.naturalHeight } : null,
           hasManage: !!manage,
           manageButtonCount: manage ? manage.querySelectorAll('[data-manage-watch-key]').length : 0,
-          watchListCount: document.querySelectorAll('.watchme-list-item').length
+          manageHasTable: !!manageTable,
+          manageCardCount: manage ? manage.querySelectorAll('.watch-state-manager__item, .media-card').length : 0,
+          manageColumnCount: manageTable ? manageTable.querySelectorAll('thead th').length : 0,
+          manageRowCount: manageTable ? manageTable.querySelectorAll('tbody tr').length : 0,
+          watchListCount: document.querySelectorAll('.watchme-list-item').length,
+          calendar: calendarGrid ? {
+            gridColumns: splitColumns(getComputedStyle(calendarGrid).gridTemplateColumns),
+            weekColumns: calendarWeek ? splitColumns(getComputedStyle(calendarWeek).gridTemplateColumns) : 0,
+            weekDisplay: calendarWeek ? getComputedStyle(calendarWeek).display : '',
+            hostClientWidth: calendarHost ? calendarHost.clientWidth : 0,
+            hostScrollWidth: calendarHost ? calendarHost.scrollWidth : 0
+          } : null,
+          actionButtons,
+          dashHeads,
+          discoverCards
         };
       });
       const visibleTextLabels = new Set(['Dashboard','Shows','Movies','Calendar','Watch Me','Discover','Config','Inputs Editor','Manage Watch State']);
       const badText = result.tabs.filter(tab => visibleTextLabels.has(tab.text));
       const framedTabs = result.tabs.filter(tab => tab.borderTopWidth > 0 || tab.borderLeftWidth > 0 || tab.borderRadius > 2);
       const missingLabels = result.tabs.filter(tab => !tab.label);
+      const requiredTabs = ['dashboard','shows','movies','calendar','discover','manage-watch-state','config','inputs-editor'];
+      const missingRequiredTabs = requiredTabs.filter(id => !result.tabs.some(tab => tab.id === id));
       const logoRatio = result.logoRect && result.logoRect.height ? result.logoRect.width / result.logoRect.height : 99;
       const logoBad = !result.logoRect || !result.logoNatural || result.logoNatural.width !== result.logoNatural.height || logoRatio > 1.25 || result.logoRect.width > 44 || result.logoRect.height > 44 || !result.headerRect || result.logoRect.top < result.headerRect.top - 1 || result.logoRect.bottom > result.headerRect.bottom + 1 || result.headerRect.height > 70;
-      const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || result.manageButtonCount < 1));
+      const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || !result.manageHasTable || result.manageCardCount > 0 || result.manageButtonCount < 1 || result.manageColumnCount < 10 || result.manageRowCount < 1));
       const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
+      const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.hostScrollWidth <= result.calendar.hostClientWidth));
+      const actionBad = result.actionButtons.some(btn => btn.icon === '🎫' || btn.icon === '▶' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
+      const stickyBad = pageName === 'index.html' && (!result.dashHeads.some(h => /Current \/ Recent/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Watchlist/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Upcoming/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Recommendations/.test(h.text) && h.position === 'sticky'));
+      const discoverBad = pageName === 'discover.html' && result.discoverCards.length > 0;
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || logoBad || manageBad || watchBad || pageErrors.length){
-        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, watchListCount: result.watchListCount, errors: pageErrors });
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || discoverBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, discoverCards: result.discoverCards, errors: pageErrors });
       }
       await page.close();
     }

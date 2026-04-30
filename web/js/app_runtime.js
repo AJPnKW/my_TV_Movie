@@ -115,6 +115,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="dash">
           <section class="dashblock accent-pink">
             <div class="dashhead">
+              <h2>Current / Recent</h2>
               <div class="dashhead__actions dashhead__actions--solo">
                 <span class="muted dashrange-meta" id="dashLastWeekMeta"></span>
                 <div class="dashnav" aria-label="Recent releases navigation">
@@ -3871,11 +3872,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const panel = $("#panel-discover");
     if (!showsRoot || !moviesRoot || !panel) return;
 
-    const shows = (state.data?.shows || []).filter(isShowAvailable).sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
-    const movies = (state.data?.movies || []).filter(isMovieAvailable).sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
+    const localShowIds = new Set((state.data?.shows || []).map(show => safeText(show?.tmdb_id ?? show?.id ?? "")).filter(Boolean));
+    const localMovieIds = new Set((state.data?.movies || []).map(movie => safeText(movie?.tmdb_id ?? movie?.id ?? "")).filter(Boolean));
+    const discoverData = state.data?.discover && typeof state.data.discover === "object" ? state.data.discover : {};
+    const shows = (Array.isArray(discoverData.shows) ? discoverData.shows : [])
+      .filter(show => !localShowIds.has(safeText(show?.tmdb_id ?? show?.id ?? "")))
+      .sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
+    const movies = (Array.isArray(discoverData.movies) ? discoverData.movies : [])
+      .filter(movie => !localMovieIds.has(safeText(movie?.tmdb_id ?? movie?.id ?? "")))
+      .sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
 
-    showsRoot.innerHTML = shows.slice(0, 12).map(show => showCardHtml(show, { fade: false })).join("") || `<div class="muted">No discoverable shows available.</div>`;
-    moviesRoot.innerHTML = movies.slice(0, 12).map(movie => movieCardHtml(movie, { fade: false })).join("") || `<div class="muted">No discoverable movies available.</div>`;
+    showsRoot.innerHTML = shows.slice(0, 12).map(show => showCardHtml(show, { fade: false })).join("") || `<div class="muted">No external non-local show suggestions are configured.</div>`;
+    moviesRoot.innerHTML = movies.slice(0, 12).map(movie => movieCardHtml(movie, { fade: false })).join("") || `<div class="muted">No external non-local movie suggestions are configured.</div>`;
 
     [showsRoot, moviesRoot].forEach(root => {
       if (!root) return;
@@ -3902,19 +3910,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     } catch (_) { return 0; }
   }
 
-  function watchStateKey(type, kind, item){
-    const id = safeText(item?.tmdb_id ?? item?.id ?? "");
-    if (!id) return "";
-    return `${type}:${kind}:${id}`;
-  }
-
-  function watchStateButtonHtml(type, label, kind, item, localState){
-    const key = watchStateKey(type, kind, item);
-    if (!key) return "";
-    const active = !!localState[key];
-    return `<button type="button" data-manage-watch-key="${escHtml(key)}" aria-pressed="${active ? "true" : "false"}">${escHtml(label)}</button>`;
-  }
-
   function renderWatchStateManagerHtml(){
     const localState = readLocalWatchState();
     const keys = Object.keys(localState);
@@ -3923,26 +3918,134 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       watch_list: keys.filter(key => key.startsWith("watch_list:")).length,
       favourite: keys.filter(key => key.startsWith("favourite:")).length
     };
-    const shows = (Array.isArray(state.data?.shows) ? state.data.shows : []).filter(item => item?.tmdb_id).slice(0, 6);
-    const movies = (Array.isArray(state.data?.movies) ? state.data.movies : []).filter(item => item?.tmdb_id).slice(0, 6);
-    const rows = [
-      ...shows.map(item => ({ kind:"show", item, title:safeText(item?.title || item?.name || "Show") })),
-      ...movies.map(item => ({ kind:"movie", item, title:safeText(item?.title || "Movie") }))
-    ];
-    const unmatched = keys.filter(key => !/^(watched_status|watch_list|favourite):(movie|show|episode):/.test(key)).length;
-    const cards = rows.map(({ kind, item, title }) => `
-      <article class="watch-state-manager__item">
-        <div class="watch-state-manager__title">${escHtml(title)}</div>
-        <div class="watch-state-manager__meta">${escHtml(kind)} ${escHtml(item?.tmdb_id ?? "")}</div>
-        <div class="watch-state-manager__actions">
-          ${watchStateButtonHtml("watched_status", "Watched", kind, item, localState)}
-          ${watchStateButtonHtml("watch_list", "Watchlist", kind, item, localState)}
-          ${watchStateButtonHtml("favourite", "Favourite", kind, item, localState)}
+    const stateKey = (type, row) => {
+      if (!row || !row.kind) return "";
+      if (row.kind === "episode") return `${type}:episode:${row.showId}:${row.seasonNumber}:${row.episodeNumber}`;
+      if (row.kind === "season") return `${type}:season:${row.showId}:${row.seasonNumber}`;
+      return `${type}:${row.kind}:${row.tmdbId}`;
+    };
+    const releaseStatus = (dateText, fallback = "") => {
+      const raw = safeText(dateText || "");
+      if (!raw) return safeText(fallback || "unknown");
+      const releaseDate = new Date(raw);
+      if (Number.isNaN(releaseDate.getTime())) return safeText(fallback || raw);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      releaseDate.setHours(0, 0, 0, 0);
+      return releaseDate > today ? "unreleased" : "released";
+    };
+    const traktStatus = item => safeText(item?.trakt_id || item?.trakt || "") ? "mapped" : "missing";
+    const rowIssue = row => {
+      if (!row.tmdbId && row.kind !== "season" && row.kind !== "episode") return "missing tmdb_id";
+      if (row.kind === "episode" && (!row.showId || !row.seasonNumber || !row.episodeNumber)) return "missing episode key";
+      return "";
+    };
+    const queuedKeys = (() => {
+      try {
+        const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+        return new Set(Array.isArray(queue) ? queue.map(item => safeText(item?.key || item?.state_key || item?.id || item)).filter(Boolean) : []);
+      } catch (_) {
+        return new Set();
+      }
+    })();
+    const shows = (Array.isArray(state.data?.shows) ? state.data.shows : []).filter(item => item?.tmdb_id);
+    const movies = (Array.isArray(state.data?.movies) ? state.data.movies : []).filter(item => item?.tmdb_id);
+    const rows = [];
+    shows.forEach(show => {
+      const showId = safeText(show?.tmdb_id ?? show?.id ?? "");
+      rows.push({
+        kind:"show",
+        level:0,
+        title:safeText(show?.title || show?.name || "Show"),
+        release: releaseStatus(show?.first_air_date, show?.status),
+        ids:`tmdb:${showId}${show?.trakt_id ? ` / trakt:${safeText(show.trakt_id)}` : ""}`,
+        tmdbId:showId,
+        showId,
+        item:show
+      });
+      (Array.isArray(show?.seasons) ? show.seasons : []).forEach(season => {
+        const seasonNumber = Number(season?.season_number);
+        if (!Number.isFinite(seasonNumber)) return;
+        rows.push({
+          kind:"season",
+          level:1,
+          title:safeText(season?.name || `Season ${seasonNumber}`),
+          release: releaseStatus(season?.air_date, ""),
+          ids:`show:${showId} / S${seasonNumber}`,
+          tmdbId:showId,
+          showId,
+          seasonNumber,
+          item:season
+        });
+        (Array.isArray(season?.episodes) ? season.episodes : []).forEach(episode => {
+          const episodeNumber = Number(episode?.episode_number);
+          if (!Number.isFinite(episodeNumber)) return;
+          rows.push({
+            kind:"episode",
+            level:2,
+            title:safeText(episode?.name || `Episode ${episodeNumber}`),
+            release: releaseStatus(episode?.air_date, ""),
+            ids:`show:${showId} / S${seasonNumber}E${episodeNumber}${episode?.id ? ` / tmdb:${safeText(episode.id)}` : ""}`,
+            tmdbId:safeText(episode?.id || ""),
+            showId,
+            seasonNumber,
+            episodeNumber,
+            item:episode
+          });
+        });
+      });
+    });
+    movies.forEach(movie => {
+      const movieId = safeText(movie?.tmdb_id ?? movie?.id ?? "");
+      rows.push({
+        kind:"movie",
+        level:0,
+        title:safeText(movie?.title || "Movie"),
+        release: releaseStatus(movie?.release_date, movie?.status),
+        ids:`tmdb:${movieId}${movie?.trakt_id ? ` / trakt:${safeText(movie.trakt_id)}` : ""}`,
+        tmdbId:movieId,
+        item:movie
+      });
+    });
+    const unmatched = keys.filter(key => !/^(watched_status|watch_list|favourite):(movie|show|season|episode):/.test(key)).length;
+    const toggleCell = (type, row, label) => {
+      const key = stateKey(type, row);
+      const active = !!localState[key];
+      return `<button class="watch-state-toggle" type="button" data-manage-watch-key="${escHtml(key)}" aria-label="${escHtml(label)}" title="${escHtml(label)}" aria-pressed="${active ? "true" : "false"}">${active ? "✓" : ""}</button>`;
+    };
+    const watchedCell = row => {
+      const key = stateKey("watched_status", row);
+      const raw = localState[key];
+      const value = raw === true ? "watched" : raw === "partial" ? "partial" : "unwatched";
+      return `
+        <div class="watch-state-tristate" role="group" aria-label="watched_status">
+          ${["unwatched","partial","watched"].map(option => `<button class="watch-state-tristate__option" type="button" data-manage-watch-key="${escHtml(key)}" data-manage-watch-value="${option}" aria-pressed="${value === option ? "true" : "false"}" title="${option}">${option === "unwatched" ? "0" : option === "partial" ? "½" : "✓"}</button>`).join("")}
         </div>
-      </article>
-    `).join("");
+      `;
+    };
+    const rowHtml = rows.map(row => {
+      const watchKey = stateKey("watch_list", row);
+      const favKey = stateKey("favourite", row);
+      const watchedKey = stateKey("watched_status", row);
+      const queueHit = queuedKeys.has(watchKey) || queuedKeys.has(favKey) || queuedKeys.has(watchedKey);
+      const issue = rowIssue(row);
+      return `
+        <tr class="watch-state-matrix__row" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}">
+          <th scope="row" class="watch-state-matrix__title watch-state-matrix__title--level-${escHtml(row.level)}"><span>${escHtml(row.title)}</span><small>${escHtml(row.kind)}</small></th>
+          <td>${escHtml(row.release)}</td>
+          <td><code>${escHtml(row.ids)}</code></td>
+          <td>${toggleCell("watch_list", row, "Toggle watch_list")}</td>
+          <td>${watchedCell(row)}</td>
+          <td>${toggleCell("favourite", row, "Toggle favourite")}</td>
+          <td>${escHtml(traktStatus(row.item))}</td>
+          <td>${traktStatus(row.item) === "missing" ? "missing ID" : "ok"}</td>
+          <td>${queueHit ? "queued" : ""}</td>
+          <td>${issue ? escHtml(issue) : ""}</td>
+        </tr>
+      `;
+    }).join("");
     return `
-      <section class="dashblock watch-state-manager" id="manageWatchState" aria-label="Manage watch state">
+      <section class="watch-state-manager" id="manageWatchState" aria-label="Manage watch state">
         <div class="dashhead">
           <h2>Manage Watch State</h2>
           <span class="muted">Local first, Trakt ready</span>
@@ -3955,7 +4058,25 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <span class="pill">unmatched IDs ${unmatched}</span>
           <span class="pill">sync queue ${syncQueueCount()}</span>
         </div>
-        <div class="watch-state-manager__grid">${cards || `<div class="inline-empty">No catalog items available for local watch-state management.</div>`}</div>
+        <div class="watch-state-matrix-wrap">
+          <table class="watch-state-matrix">
+            <thead>
+              <tr>
+                <th scope="col">Title / hierarchy</th>
+                <th scope="col">Release status</th>
+                <th scope="col">IDs</th>
+                <th scope="col">watch_list</th>
+                <th scope="col">watched_status</th>
+                <th scope="col">favourite</th>
+                <th scope="col">Trakt status</th>
+                <th scope="col">Mismatch</th>
+                <th scope="col">Queued</th>
+                <th scope="col">Validation issue</th>
+              </tr>
+            </thead>
+            <tbody>${rowHtml || `<tr><td colspan="10" class="inline-empty">No catalog items available for local watch-state management.</td></tr>`}</tbody>
+          </table>
+        </div>
       </section>
     `;
   }
@@ -3965,12 +4086,17 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $$("[data-manage-watch-key]", root).forEach(btn => {
       btn.addEventListener("click", () => {
         const key = safeText(btn.getAttribute("data-manage-watch-key"));
-        const next = btn.getAttribute("aria-pressed") !== "true";
-        if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.setByKey === "function") {
+        const value = btn.getAttribute("data-manage-watch-value");
+        const next = value ? value : btn.getAttribute("aria-pressed") !== "true";
+        if (value && window.MyTVHubWatchState && typeof window.MyTVHubWatchState.setValueByKey === "function") {
+          window.MyTVHubWatchState.setValueByKey(key, next);
+        } else if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.setByKey === "function") {
           window.MyTVHubWatchState.setByKey(key, next);
         } else {
           const data = readLocalWatchState();
-          if (next) data[key] = true;
+          if (value && next !== "unwatched") data[key] = next;
+          else if (value) delete data[key];
+          else if (next) data[key] = true;
           else delete data[key];
           localStorage.setItem("mytv_watch_state_v1", JSON.stringify(data));
         }

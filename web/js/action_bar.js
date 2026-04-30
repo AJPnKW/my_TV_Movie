@@ -21,7 +21,7 @@ export const ACTION_BAR_ORDER = Object.freeze([
 const CONTRACT_ICONS = Object.freeze({
   watch_source: '🍿',
   watched_status: '⌚',
-  watch_list: '🎫',
+  watch_list: '🎟️',
   favourite: '💕',
   rating: ''
 });
