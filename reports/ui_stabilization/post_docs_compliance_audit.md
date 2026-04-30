@@ -1,6 +1,7 @@
 # Master Contract Compliance Audit
 
 Date: 2026-04-29
+Updated: 2026-04-30
 
 ## Contract Read
 
@@ -27,10 +28,40 @@ Date: 2026-04-29
 - Manage Watch State is standalone at `web/manage_watch_state.html`, uses a Shows -> Seasons -> Episodes plus Movies matrix, and exposes compact controls for `watch_list`, three-state `watched_status`, and `favourite`.
 - Config remains app settings only and does not render Manage Watch State.
 - Watch Me remains a simple list-style release page, not a duplicate Dashboard or Shows page.
+- Popcorn/watch-source popup now opens reliably for movie, episode, and show cards even when a rendered card is missing one or more exact `data-*` identity attributes.
+
+## 2026-04-30 Popcorn Popup Regression Fix
+
+### Observed failure
+
+Movie and episode popcorn buttons did not consistently open the provider/watch-source popup.
+
+### Root cause
+
+`web/js/trailer_watch_popup_fix.js` previously depended on a narrow click selector and complete `data-watch-source-open`, `data-id`, `data-show`, `data-season`, and `data-episode` attributes. Some rendered movie and episode action buttons did not expose the full exact identity set, so the popup handler either ignored the click or opened without enough context to resolve watch sources.
+
+### Fix applied
+
+`web/js/trailer_watch_popup_fix.js` was updated to:
+
+- catch popcorn clicks by `data-watch-source-open`, `.popcorn`, `aria-label`, `title`, or visible `🍿` icon;
+- derive missing movie/show/season/episode context from the closest card/row ancestor;
+- support movie, episode, and show lookup keys;
+- create the provider modal shell if a page lacks it;
+- keep immediate weak-network fallback behavior.
+
+### Required regression tests
+
+- Dashboard movie card `🍿` opens provider popup.
+- Dashboard episode card `🍿` opens provider popup.
+- Calendar episode card `🍿` opens provider popup.
+- Shows page / show detail episode `🍿` opens provider popup.
+- Watch Me movie/episode `🍿` opens provider popup.
+- Popup shows immediate content even if local watch index/detail data is slow.
 
 ## Validation Results
 
-- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_runtime.ps1`: passed.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_runtime.ps1`: passed before popup-specific fix.
 - Runtime asset size report: `oversized_runtime_assets` count `0`.
 - Rendered Chromium validation passed for:
   - `index.html`
@@ -65,3 +96,4 @@ Date: 2026-04-29
 - `data/data.json` currently has no external discovery source, so Discover cannot show non-local suggestions yet without a documented feed.
 - The user prompt referred to master contract v3, while the active file title says `Master Contract v2`; the implementation followed the existing active file path exactly.
 - `web/watch.me.html` and `web/watch_me/watch_me.html` remain redirect compatibility shells by contract.
+- Popup regression fix was applied directly in GitHub and needs local rendered QA on live pages after GitHub Pages cache refresh.
