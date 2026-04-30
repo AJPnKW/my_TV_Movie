@@ -1,0 +1,1057 @@
+path,line,heading
+docs/AI_AGENT_RULES.md,1,# AI Agent Operational Rules
+docs/ARCHITECTURE.md,1,# My TV Hub -- Architecture Contract
+docs/ARCHITECTURE.md,3,## Canonical Inputs And Outputs
+docs/ARCHITECTURE.md,12,## Runtime Model
+docs/ARCHITECTURE.md,20,## UI And Watch State Contract
+docs/ARCHITECTURE.md,33,## Detail Schema Contract
+docs/ARCHITECTURE.md,42,## Core Pages
+docs/ARCHITECTURE.md,58,## Reusable Page Modules
+docs/ARCHITECTURE.md,73,## Layout Rules
+docs/ARCHITECTURE.md,94,## Pipeline Contract
+docs/ARCHITECTURE.md,108,## Version Contract
+docs/ARCHITECTURE_LOG.md,1,# Architecture Change Log
+docs/ARCHITECTURE_LOG.md,9,## 2026-03-16 --- UI Stabilization Baseline
+docs/ARCHITECTURE_LOG.md,28,## 2026-03-17 --- UI Contract Baseline V2
+docs/ARCHITECTURE_LOG.md,65,## 2026-03-20 — Overlay v8 stabilization
+docs/ARCHITECTURE_LOG.md,71,## 2026-03-20 — Shell/editor/watch-me stabilization
+docs/ARCHITECTURE_LOG.md,79,## 2026-03-21 — Shared card/action/focus cleanup
+docs/ARCHITECTURE_LOG.md,87,## 2026-03-21 — Availability status end-to-end
+docs/ARCHITECTURE_LOG.md,95,## 2026-03-21 — Availability status phase 2 hardening
+docs/ARCHITECTURE_LOG.md,102,## 2026-03-21 — Availability metadata hardening and secret drift cleanup
+docs/ARCHITECTURE_LOG.md,108,"## 2026-03-22 — Popup, calendar, and shared card cleanup"
+docs/ARCHITECTURE_LOG.md,116,## 2026-03-22 — Discover/sidebar/calendar follow-up cleanup
+docs/ARCHITECTURE_LOG.md,122,## 2026-04-03 — Calendar/popup/push flow follow-up
+docs/ARCHITECTURE_LOG.md,129,## 2026-04-03 — Runtime QA drift cleanup
+docs/ARCHITECTURE_LOG.md,135,## 2026-04-03 — Final retirement cleanup
+docs/ARCHITECTURE_LOG.md,140,## 2026-04-03 — Dead runtime path cleanup
+docs/ARCHITECTURE_LOG.md,147,## 2026-03-22 — Calendar/header/dashboard episode-card normalization
+docs/ARCHITECTURE_LOG.md,156,## 2026-03-23 — TV focus and shared card hardening
+docs/ARCHITECTURE_LOG.md,165,## 2026-03-29 — Restored production data-build workflow
+docs/ARCHITECTURE_LOG.md,173,## 2026-04-03 — Inputs editor local launch clarification
+docs/ARCHITECTURE_LOG.md,179,"## 2026-04-03 — Inputs editor duplicate, season, and GitHub sync restoration"
+docs/ARCHITECTURE_LOG.md,185,## 2026-04-04 — Canonical pipeline and TV-first watch-source hardening
+docs/ARCHITECTURE_LOG.md,192,## 2026-04-05 — Split runtime activation and HP static deployment
+docs/ARCHITECTURE_LOG.md,200,"## 2026-04-10 — Responsive card, popup, and asset hardening"
+docs/ARCHITECTURE_LOG.md,209,## 2026-04-11 — Reusable watch-party page module
+docs/ARCHITECTURE_LOG.md,216,## 2026-04-11 — Heated Rivalry in-page help overlays
+docs/ARCHITECTURE_LOG.md,222,## 2026-04-11 — Watch-party host/join workflow correction
+docs/ARCHITECTURE_LOG.md,229,## 2026-04-11 — Local watch-party player prototype
+docs/ARCHITECTURE_LOG.md,236,## 2026-04-11 — Watch-party page-owned episode sources
+docs/ARCHITECTURE_LOG.md,242,## 2026-04-11 — Watch-party episode selection clarity
+docs/ARCHITECTURE_LOG.md,248,## 2026-04-11 — Watch-party room-server preflight
+docs/DOCS_CLEANUP_PHASE2_PLAN_2026-03-21.md,1,# Docs Cleanup Phase 2 Plan — 2026-03-21
+docs/DOCS_CLEANUP_PHASE2_PLAN_2026-03-21.md,3,## Scope
+docs/DOCS_CLEANUP_PHASE2_PLAN_2026-03-21.md,6,## Actions
+docs/DOCS_CLEANUP_PHASE2_PLAN_2026-03-21.md,17,## Non-goals
+docs/DOCS_CLEANUP_PLAN_2026-03-21.md,1,# Docs Cleanup Plan — 2026-03-21
+docs/DOCS_CLEANUP_PLAN_2026-03-21.md,3,## Execution model
+docs/DOCS_CLEANUP_PLAN_2026-03-21.md,14,## This cleanup intentionally does not do
+docs/DOCS_CLEANUP_PLAN_2026-03-21.md,22,## Script scope
+docs/DOCS_INFORMATION_ARCHITECTURE.md,1,# Docs Information Architecture
+docs/DOCS_INFORMATION_ARCHITECTURE.md,3,## Outcome
+docs/DOCS_INFORMATION_ARCHITECTURE.md,6,## Target structure
+docs/DOCS_INFORMATION_ARCHITECTURE.md,26,## Root doc rules
+docs/DOCS_INFORMATION_ARCHITECTURE.md,34,## Naming rules
+docs/DOCS_REVIEW_2026-03-21.md,1,# Docs Review — 2026-03-21
+docs/DOCS_REVIEW_2026-03-21.md,3,## Scope reviewed
+docs/DOCS_REVIEW_2026-03-21.md,6,## Bottom line
+docs/DOCS_REVIEW_2026-03-21.md,15,## Keep as-is
+docs/DOCS_REVIEW_2026-03-21.md,30,## Keep but index better
+docs/DOCS_REVIEW_2026-03-21.md,36,## Move to archive
+docs/DOCS_REVIEW_2026-03-21.md,44,## Rename / normalize
+docs/DOCS_REVIEW_2026-03-21.md,63,"## Review later, do not auto-delete"
+docs/DOCS_REVIEW_PHASE2_2026-03-21.md,1,# Docs Review Phase 2 — Live Repo Based
+docs/DOCS_REVIEW_PHASE2_2026-03-21.md,3,## Bottom line
+docs/DOCS_REVIEW_PHASE2_2026-03-21.md,6,## Live repo findings
+docs/DOCS_REVIEW_PHASE2_2026-03-21.md,16,## Keep
+docs/DOCS_REVIEW_PHASE2_2026-03-21.md,31,## Move to archive now
+docs/DOCS_REVIEW_PHASE2_2026-03-21.md,36,## Normalize now
+docs/DOCS_REVIEW_PHASE2_2026-03-21.md,68,"## Review later, do not auto-move"
+docs/DOCUMENTATION_STANDARD.md,1,# Documentation Standard
+docs/DOCUMENTATION_STANDARD.md,3,## Purpose
+docs/DOCUMENTATION_STANDARD.md,7,## Source Of Truth
+docs/DOCUMENTATION_STANDARD.md,16,## Historical Only
+docs/DOCUMENTATION_STANDARD.md,22,## Change Recording
+docs/DOCUMENTATION_STANDARD.md,28,## Source-Of-Truth Matrix
+docs/DOCUMENTATION_STANDARD.md,48,## Current Icon Contract
+docs/PROJECT_STATUS_2026-03-16.md,1,# Project Status - 2026-03-16
+docs/PROJECT_STATUS_2026-03-16.md,3,## Current Runtime Truth
+docs/PROJECT_STATUS_2026-03-16.md,21,## Current UI Architecture State
+docs/PROJECT_STATUS_2026-03-16.md,37,## Locked UI Contracts
+docs/PROJECT_STATUS_2026-03-16.md,45,## Latest Canonical Implementation Point
+docs/PROJECT_STATUS_2026-03-16.md,59,## Validation Snapshot
+docs/PROJECT_STATUS_2026-03-16.md,83,## Known Non-Blocking Notes
+docs/README.md,1,# my_TV_Movie — Documentation Index
+docs/README.md,3,## Purpose
+docs/README.md,6,## Current top-level doc groups
+docs/README.md,24,## Current high-value docs
+docs/README.md,39,## Availability-status docs already present
+docs/README.md,50,## Rule
+docs/README.md,53,## Repo sync preflight
+docs/README.md,65,## Current UI/runtime note
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,1,# Thread Restart Handoff - 2026-03-16
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,3,## Resume Point
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,13,## What Was Just Completed
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,24,## What To Trust As Current Truth
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,41,## Important Caution Before Resuming
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,51,## Recommended Next Work Areas
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,63,## Restart Prompt Seed
+docs/THREAD_RESTART_HANDOFF_2026-03-16.md,122,## Companion Documents
+docs/UI_COMPONENTS.md,1,# UI Component Contract
+docs/UI_COMPONENTS.md,3,## Media Card
+docs/UI_COMPONENTS.md,17,## Icon Strip
+docs/UI_COMPONENTS.md,45,## Filter Rails
+docs/UI_COMPONENTS.md,50,## Calendar Modes
+docs/UI_COMPONENTS.md,55,## Episode Card
+docs/UI_GAP_ANALYSIS.md,1,# UI Gap Analysis
+docs/UI_GAP_ANALYSIS.md,3,## Calendar Page
+docs/UI_GAP_ANALYSIS.md,14,## Card Rendering
+docs/VIEW_NAVIGATION_TREE.md,1,# View Navigation Tree
+docs/VIEW_NAVIGATION_TREE.md,3,## Primary Navigation
+docs/VIEW_NAVIGATION_TREE.md,54,## Shared Modal Layers
+docs/VIEW_NAVIGATION_TREE.md,65,## Shared Card Families
+docs/VIEW_NAVIGATION_TREE.md,72,## Shared Interaction Rules
+docs/Web Icon Image Inventory (usable formats & variants).txt,4,## Web Icon Image Inventory (usable formats & variants)
+docs/Web Icon Image Inventory (usable formats & variants).txt,6,### 1) Raster image formats
+docs/Web Icon Image Inventory (usable formats & variants).txt,18,### 2) Vector formats
+docs/Web Icon Image Inventory (usable formats & variants).txt,28,### 3) Icon container formats (favicons / app icons)
+docs/Web Icon Image Inventory (usable formats & variants).txt,38,### 4) SVG icon delivery variants
+docs/Web Icon Image Inventory (usable formats & variants).txt,50,### 5) Styling & color variants
+docs/Web Icon Image Inventory (usable formats & variants).txt,65,### 6) Resolution & density variants
+docs/Web Icon Image Inventory (usable formats & variants).txt,75,### 7) Animation-capable icon formats
+docs/Web Icon Image Inventory (usable formats & variants).txt,86,### 8) Common web icon size inventory
+docs/Web Icon Image Inventory (usable formats & variants).txt,99,### 9) Icon font alternative (non-image)
+docs/Web Icon Image Inventory (usable formats & variants).txt,108,### 10) Recommended baseline set (practical)
+docs/_archive/20260321_191334/spec_working_noise/..NOTES for the FULL authoritative spec+plan.md,235,4.5.6 List File Editors
+docs/_patch_notes/20260223_202038_qa_data_json_audit.md,1,# QA Data JSON Audit + Dedup Fix
+docs/_patch_notes/20260223_202038_qa_data_json_audit.md,6,## Evidence
+docs/_patch_notes/20260223_202038_qa_data_json_audit.md,11,## Changes
+docs/_patch_notes/20260223_202038_qa_data_json_audit.md,23,## Rule Validation (After)
+docs/_patch_notes/20260223_202038_qa_data_json_audit.md,28,## Artifacts
+docs/ai/README.md,1,# Codex Support Files
+docs/ai/README.md,8,## Files and Purpose
+docs/ai/README.md,21,## Which file to use when
+docs/ai/README.md,30,## Minimum recommended prompt references
+docs/ai/README.md,37,## Validation Rule
+docs/ai/codex_operating_rules.md,1,# Codex Operating Rules
+docs/ai/codex_operating_rules.md,6,## 1. Windows Write Constraint
+docs/ai/codex_operating_rules.md,21,## 2. Required Write Strategy
+docs/ai/codex_operating_rules.md,39,## 3. Repo Preservation Rules
+docs/ai/codex_operating_rules.md,52,## 4. Artifact Preferences
+docs/ai/codex_operating_rules.md,60,## 5. Validation Rules
+docs/ai/codex_operating_rules.md,70,## 6. Recovery Rule
+docs/ai/codex_operating_rules.md,81,## 7. UI Standardization Specific Rules
+docs/ai/codex_prompt_blocks/ui_audit_continuation_guardrail.md,1,# Prompt Block - UI Audit Continuation Guardrail
+docs/ai/codex_prompt_blocks/ui_audit_continuation_guardrail.md,5,## Windows Write Constraint
+docs/ai/codex_prompt_blocks/ui_audit_continuation_guardrail.md,15,## Continuation Rules
+docs/ai/codex_prompt_blocks/ui_audit_continuation_guardrail.md,25,## Required Output Discipline
+docs/ai/codex_prompt_blocks/ui_audit_continuation_guardrail.md,32,## Recovery Rule
+docs/ai/codex_prompt_blocks/ui_refactor_phase_guardrail.md,1,# Prompt Block - UI Refactor Phase Guardrail
+docs/ai/codex_prompt_blocks/ui_refactor_phase_guardrail.md,5,## Windows Write Constraint
+docs/ai/codex_prompt_blocks/ui_refactor_phase_guardrail.md,15,## Implementation Rules
+docs/ai/codex_prompt_blocks/ui_refactor_phase_guardrail.md,26,## Preferred Implementation Order
+docs/ai/codex_prompt_blocks/ui_refactor_phase_guardrail.md,35,## Recovery Rule
+docs/ai/codex_prompt_blocks/windows_large_write_guardrail.md,1,# Prompt Block - Windows Large Write Guardrail
+docs/ai/codex_prompt_blocks/windows_large_write_guardrail.md,5,## Windows Write Constraint
+docs/ai/codex_prompt_blocks/windows_large_write_guardrail.md,15,## Required Write Method
+docs/ai/codex_prompt_blocks/windows_large_write_guardrail.md,24,## Do Not
+docs/ai/codex_prompt_blocks/windows_large_write_guardrail.md,30,## Recovery Rule
+docs/ai/templates/codex_task_launch_template.md,1,# Codex Task Launch Template
+docs/ai/templates/codex_task_launch_template.md,8,## Core Instructions
+docs/ai/templates/codex_task_launch_template.md,19,## Required Guardrail Block
+docs/ai/templates/codex_task_launch_template.md,21,### Windows Write Constraint
+docs/ai/templates/codex_task_launch_template.md,44,## Task Framing Checklist
+docs/ai/templates/codex_ui_continuation_master_prompt.md,1,# Codex UI Continuation Master Prompt
+docs/ai/templates/codex_ui_continuation_master_prompt.md,11,## Prompt Frame
+docs/ai/templates/codex_ui_implementation_master_prompt.md,1,# Codex UI Implementation Master Prompt
+docs/ai/templates/codex_ui_implementation_master_prompt.md,11,## Prompt Frame
+docs/architecture/availability_status_baseline_architecture.md,1,# Availability Status Baseline Architecture
+docs/architecture/availability_status_baseline_architecture.md,3,## Current-state-safe target
+docs/architecture/availability_status_baseline_architecture.md,25,## Architectural boundary decisions
+docs/architecture/availability_status_baseline_architecture.md,34,## Source-of-truth file
+docs/architecture/availability_status_baseline_architecture.md,52,## Why a separate post-build layer
+docs/architecture/availability_status_baseline_architecture.md,60,## Phase 2 hardening
+docs/calendar_view.md,1,# Calendar View UI Contract
+docs/calendar_view.md,3,## Purpose
+docs/calendar_view.md,7,## Page Layout
+docs/calendar_view.md,15,## Page-Level Rules
+docs/calendar_view.md,23,## Day Cell Contract
+docs/calendar_view.md,32,## Card Contract Inside Calendar
+docs/calendar_view.md,39,## Data Mapping
+docs/calendar_view.md,51,## Sticky Rules
+docs/calendar_view.md,58,## Responsive Behavior
+docs/calendar_view.md,65,## Must Never Appear
+docs/config/config.md,8,# ui_tuning.watch_me
+docs/config/config.md,21,## `sidebar_width_px`
+docs/config/config.md,34,## `card_width_px`
+docs/config/config.md,47,## `card_height_px`
+docs/config/config.md,60,## `card_gap_px`
+docs/config/config.md,73,## `section_gap_px`
+docs/config/config.md,86,## `carousel_btn_size_px`
+docs/data/availability_status_data_contract.md,1,# Availability Status Data Contract
+docs/data/availability_status_data_contract.md,3,## Source file
+docs/data/availability_status_data_contract.md,7,## Source file structure
+docs/data/availability_status_data_contract.md,36,## Required source fields
+docs/data/availability_status_data_contract.md,48,## Required target fields in `data.json`
+docs/data/availability_status_data_contract.md,57,## Matching rules Codex must verify against the real repo
+docs/data/availability_status_data_contract.md,65,## Composite key baseline
+docs/data/availability_status_data_contract.md,71,## Live repo key note
+docs/data/availability_status_data_contract.md,78,## Phase 2 source-file additions
+docs/design/availability_status_solution_design.md,1,# Availability Status Solution Design
+docs/design/availability_status_solution_design.md,3,## Outcome
+docs/design/availability_status_solution_design.md,6,## Primary decision
+docs/design/availability_status_solution_design.md,9,## Live repo implementation note
+docs/design/availability_status_solution_design.md,17,## Final status enum
+docs/design/availability_status_solution_design.md,25,## Design rules
+docs/design/availability_status_solution_design.md,35,## Why this design
+docs/design/availability_status_solution_design.md,42,## Mandatory write fields into `data.json`
+docs/design/availability_status_solution_design.md,51,## Resolution logic
+docs/design/availability_status_solution_design.md,60,## Non-goals
+docs/design/availability_status_solution_design.md,67,## Phase 2 design notes
+docs/episode_card.md,1,# Episode Card Contract
+docs/focus_navigation_tv.md,1,# Focus And Navigation TV Contract
+docs/focus_navigation_tv.md,3,## Purpose
+docs/focus_navigation_tv.md,7,## Global Rules
+docs/focus_navigation_tv.md,14,## D-Pad Navigation
+docs/focus_navigation_tv.md,23,## Popup Focus Trap
+docs/focus_navigation_tv.md,31,## Scroll Lock
+docs/focus_navigation_tv.md,37,## Active Layer Rules
+docs/focus_navigation_tv.md,44,## Browse Surface Rules
+docs/focus_navigation_tv.md,53,## Android TV Specific Implications
+docs/focus_navigation_tv.md,59,## Must Never Happen
+docs/impact/availability_status_system_impact_matrix.md,1,# Availability Status System Impact Matrix
+docs/impact/availability_status_system_impact_matrix.md,3,## System-wide impact
+docs/impact/availability_status_system_impact_matrix.md,18,## Existing repo risks Codex must assess against live repo
+docs/impact/availability_status_system_impact_matrix.md,27,## Phase 2 impact additions
+docs/implementation/availability_status_end_to_end_delivery_plan.md,1,# Availability Status End-to-End Delivery Plan
+docs/implementation/availability_status_end_to_end_delivery_plan.md,3,## Delivery goal
+docs/implementation/availability_status_end_to_end_delivery_plan.md,6,## Required grouped delivery phases
+docs/implementation/availability_status_end_to_end_delivery_plan.md,17,## Live implementation mapping
+docs/implementation/availability_status_end_to_end_delivery_plan.md,27,## Hard implementation rules
+docs/implementation/availability_status_end_to_end_delivery_plan.md,39,## Phase 2 completion additions
+docs/implementation/availability_status_end_to_end_delivery_plan.md,47,## Metadata hardening additions
+docs/movie_card.md,1,# Movie Card Contract
+docs/movie_popup.md,1,# Movie Popup UI Contract
+docs/movie_popup.md,3,## Purpose
+docs/movie_popup.md,7,## Popup Structure
+docs/movie_popup.md,16,## Required Fields
+docs/movie_popup.md,27,## Optional Fields
+docs/movie_popup.md,40,## Data Mapping
+docs/movie_popup.md,59,## Icon Strip Contract
+docs/movie_popup.md,67,## Alignment Rules
+docs/movie_popup.md,74,## Spacing Rules
+docs/movie_popup.md,79,## Responsive Behavior
+docs/movie_popup.md,85,## Must Never Appear
+docs/movie_popup.md,92,## Patch focus
+docs/movie_popup.md,96,### Current enforcement
+docs/show_card.md,1,# Show Card Contract
+docs/show_popup.md,1,# Show Popup Contract
+docs/spec/README.md,1,# Authoritative Spec Index
+docs/spec/README.md,3,## Purpose
+docs/spec/README.md,6,## Active spec body
+docs/spec/README.md,24,## Working notes
+docs/spec/README.md,30,## Archive location
+docs/spec/Section 0 - Index.md,10,# Section 0 — Index
+docs/spec/Section 0 - Index.md,17,## 1.0 — Global Rules
+docs/spec/Section 0 - Index.md,20,## 2.0 — Architecture
+docs/spec/Section 0 - Index.md,23,## 3.0 — Data Model
+docs/spec/Section 0 - Index.md,26,## 4.0 — UI (Each View Separately)
+docs/spec/Section 0 - Index.md,29,### 4.1 — Calendar View
+docs/spec/Section 0 - Index.md,30,### 4.2 — Shows View
+docs/spec/Section 0 - Index.md,31,### 4.3 — Movies View
+docs/spec/Section 0 - Index.md,32,### 4.4 — Live TV View
+docs/spec/Section 0 - Index.md,33,### 4.5 — Config View
+docs/spec/Section 0 - Index.md,34,### 4.6 — Explore View (future phase)
+docs/spec/Section 0 - Index.md,35,### 4.7 — Profiles View (future phase)
+docs/spec/Section 0 - Index.md,36,### 4.8 — Watchlist — Watched Filters (future phase)
+docs/spec/Section 0 - Index.md,37,### 4.9 — Watchlist (Standalone Page)
+docs/spec/Section 0 - Index.md,41,## 5.0 — Popups
+docs/spec/Section 0 - Index.md,44,## 6.0 — UX
+docs/spec/Section 0 - Index.md,47,## 7.0 — Assets
+docs/spec/Section 0 - Index.md,50,## 8.0 — Scripts
+docs/spec/Section 0 - Index.md,53,## 9.0 — Workflow
+docs/spec/Section 0 - Index.md,56,## 10.0 — Versioning
+docs/spec/Section 0 - Index.md,59,## 11.0 — Errors
+docs/spec/Section 0 - Index.md,62,## 12.0 — Future‑Phase
+docs/spec/Section 0 - Index.md,65,## 13.0 — Invariants
+docs/spec/Section 0 - Index.md,70,# End of Section 0 — Index
+docs/spec/Section 1 - Global Rules.md,1,# **SECTION 1 — GLOBAL RULES**
+docs/spec/Section 1 - Global Rules.md,6,# **1.1 Purpose of This Section**
+docs/spec/Section 1 - Global Rules.md,11,# **1.2 System‑Wide Non‑Negotiable Constraints**
+docs/spec/Section 1 - Global Rules.md,13,### **1.2.1 No Feature Drops**
+docs/spec/Section 1 - Global Rules.md,15,### **1.2.2 No Architectural Invention**
+docs/spec/Section 1 - Global Rules.md,17,### **1.2.3 No Renaming**
+docs/spec/Section 1 - Global Rules.md,19,### **1.2.4 No Partial Files**
+docs/spec/Section 1 - Global Rules.md,22,### **1.2.5 No Destructive Writes**
+docs/spec/Section 1 - Global Rules.md,25,### **1.2.6 No Cross‑Contamination**
+docs/spec/Section 1 - Global Rules.md,28,### **1.2.7 No Simplification**
+docs/spec/Section 1 - Global Rules.md,31,### **1.2.8 No Missing Fields**
+docs/spec/Section 1 - Global Rules.md,33,### **1.2.9 No Missing UI Elements**
+docs/spec/Section 1 - Global Rules.md,35,### **1.2.10 No Missing Popups**
+docs/spec/Section 1 - Global Rules.md,37,### **1.2.11 No Missing Filters**
+docs/spec/Section 1 - Global Rules.md,39,### **1.2.12 No Missing Icon Strips**
+docs/spec/Section 1 - Global Rules.md,41,### **1.2.13 No Missing Sizing Rules**
+docs/spec/Section 1 - Global Rules.md,43,### **1.2.14 No Missing Metadata**
+docs/spec/Section 1 - Global Rules.md,45,### **1.2.15 No Missing Workflow Guardrails**
+docs/spec/Section 1 - Global Rules.md,47,### **1.2.16 No Missing Script Validation**
+docs/spec/Section 1 - Global Rules.md,49,### **1.2.17 No Missing Local Image Paths**
+docs/spec/Section 1 - Global Rules.md,51,### **1.2.18 No Missing Streaming Link Rules**
+docs/spec/Section 1 - Global Rules.md,54,# **1.3 Rendering Pipeline Rules**
+docs/spec/Section 1 - Global Rules.md,59,### **1.3.1 No Runtime Fetching**
+docs/spec/Section 1 - Global Rules.md,62,### **1.3.2 No Dynamic Schema**
+docs/spec/Section 1 - Global Rules.md,64,### **1.3.3 No Missing Data Guards**
+docs/spec/Section 1 - Global Rules.md,67,### **1.3.4 No Silent Failures**
+docs/spec/Section 1 - Global Rules.md,70,# **1.4 Popup Chain Rules**
+docs/spec/Section 1 - Global Rules.md,75,### **1.4.1 Mandatory Existence**
+docs/spec/Section 1 - Global Rules.md,77,### **1.4.2 Mandatory Navigation**
+docs/spec/Section 1 - Global Rules.md,79,### **1.4.3 Mandatory Scroll Trapping**
+docs/spec/Section 10 - Versioning.md,1,# **SECTION 10 — VERSIONING & METADATA**
+docs/spec/Section 10 - Versioning.md,8,# **10.1 Purpose of This Section**
+docs/spec/Section 10 - Versioning.md,21,# **10.2 Versioning Model**
+docs/spec/Section 10 - Versioning.md,39,# **10.3 Schema Version**
+docs/spec/Section 10 - Versioning.md,51,### **Rules:**
+docs/spec/Section 10 - Versioning.md,58,# **10.4 Metadata Version**
+docs/spec/Section 10 - Versioning.md,68,### **Rules:**
+docs/spec/Section 10 - Versioning.md,75,# **10.5 Asset Version**
+docs/spec/Section 10 - Versioning.md,85,### **Rules:**
+docs/spec/Section 10 - Versioning.md,92,# **10.6 Workflow Version**
+docs/spec/Section 10 - Versioning.md,100,### **Rules:**
+docs/spec/Section 10 - Versioning.md,106,# **10.7 System Version**
+docs/spec/Section 10 - Versioning.md,109,### **Rules:**
+docs/spec/Section 10 - Versioning.md,116,# **10.8 Metadata Structure Requirements**
+docs/spec/Section 10 - Versioning.md,140,# **10.9 Metadata Integrity Requirements**
+docs/spec/Section 10 - Versioning.md,152,# **10.10 Versioning Invariants**
+docs/spec/Section 10 - Versioning.md,166,# **10.11 End of Section 10 — Versioning & Metadata**
+docs/spec/Section 11 - Errors.md,1,# **SECTION 11 — ERROR HANDLING & DIAGNOSTICS**
+docs/spec/Section 11 - Errors.md,8,# **11.1 Purpose of This Section**
+docs/spec/Section 11 - Errors.md,23,# **11.2 Error Categories**
+docs/spec/Section 11 - Errors.md,38,# **11.3 Metadata Error Handling**
+docs/spec/Section 11 - Errors.md,47,### **Rules:**
+docs/spec/Section 11 - Errors.md,57,# **11.4 Asset Error Handling**
+docs/spec/Section 11 - Errors.md,66,### **Rules:**
+docs/spec/Section 11 - Errors.md,75,# **11.5 Network Error Handling**
+docs/spec/Section 11 - Errors.md,83,### **Rules:**
+docs/spec/Section 11 - Errors.md,92,# **11.6 Schema Error Handling**
+docs/spec/Section 11 - Errors.md,100,### **Rules:**
+docs/spec/Section 11 - Errors.md,108,# **11.7 Version Error Handling**
+docs/spec/Section 11 - Errors.md,116,### **Rules:**
+docs/spec/Section 11 - Errors.md,124,# **11.8 Workflow Error Handling**
+docs/spec/Section 11 - Errors.md,132,### **Rules:**
+docs/spec/Section 11 - Errors.md,141,# **11.9 User‑Facing Error Handling**
+docs/spec/Section 11 - Errors.md,149,### **Rules:**
+docs/spec/Section 11 - Errors.md,157,# **11.10 Diagnostics Requirements**
+docs/spec/Section 11 - Errors.md,175,# **11.11 Error Handling Invariants**
+docs/spec/Section 11 - Errors.md,189,# **11.12 End of Section 11 — Error Handling & Diagnostics**
+docs/spec/Section 12 - Future-Phase.md,1,# **12.1 Purpose of This Section**
+docs/spec/Section 12 - Future-Phase.md,15,# **12.2 Future‑Phase Categories**
+docs/spec/Section 12 - Future-Phase.md,31,# **12.3 User Profiles & Personalization**
+docs/spec/Section 12 - Future-Phase.md,34,### **Responsibilities:**
+docs/spec/Section 12 - Future-Phase.md,41,### **Profile‑Aware Features:**
+docs/spec/Section 12 - Future-Phase.md,48,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,55,# **12.4 Advanced Metadata & Discovery**
+docs/spec/Section 12 - Future-Phase.md,58,### **Planned Enhancements:**
+docs/spec/Section 12 - Future-Phase.md,67,### **Discovery Features:**
+docs/spec/Section 12 - Future-Phase.md,73,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,80,# **12.5 Cross‑Service Synchronization**
+docs/spec/Section 12 - Future-Phase.md,89,### **Responsibilities:**
+docs/spec/Section 12 - Future-Phase.md,95,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,98,# **12.6 Enhanced UX & Accessibility**
+docs/spec/Section 12 - Future-Phase.md,101,### **Planned Enhancements:**
+docs/spec/Section 12 - Future-Phase.md,110,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,117,# **12.7 Offline Mode & Local Bundles**
+docs/spec/Section 12 - Future-Phase.md,120,### **Responsibilities:**
+docs/spec/Section 12 - Future-Phase.md,127,### **Offline Bundles Include:**
+docs/spec/Section 12 - Future-Phase.md,133,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,140,# **12.8 AI‑Assisted Features**
+docs/spec/Section 12 - Future-Phase.md,143,### **Planned Enhancements:**
+docs/spec/Section 12 - Future-Phase.md,150,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,157,# **12.9 EPG & Live TV Expansion**
+docs/spec/Section 12 - Future-Phase.md,167,### **Responsibilities:**
+docs/spec/Section 12 - Future-Phase.md,173,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,180,# **12.10 Multi‑Device Ecosystem**
+docs/spec/Section 12 - Future-Phase.md,190,### **Responsibilities:**
+docs/spec/Section 12 - Future-Phase.md,195,### **Invariants:**
+docs/spec/Section 12 - Future-Phase.md,202,# **12.11 Future‑Phase Invariants**
+docs/spec/Section 13 - Invariants.md,1,# **SECTION 13 — INVARIANTS (MUST NEVER CHANGE)**
+docs/spec/Section 13 - Invariants.md,8,# **13.1 Purpose of This Section**
+docs/spec/Section 13 - Invariants.md,23,# **13.2 Metadata Invariants**
+docs/spec/Section 13 - Invariants.md,35,# **13.3 Asset Invariants**
+docs/spec/Section 13 - Invariants.md,46,# **13.4 Workflow Invariants**
+docs/spec/Section 13 - Invariants.md,55,# **13.5 Script Invariants**
+docs/spec/Section 13 - Invariants.md,64,# **13.6 UI Invariants**
+docs/spec/Section 13 - Invariants.md,74,# **13.7 Error Handling Invariants**
+docs/spec/Section 13 - Invariants.md,83,# **13.8 System‑Wide Invariants**
+docs/spec/Section 13 - Invariants.md,96,# **13.9 End of Section 13 — Invariants (Must Never Change)**
+docs/spec/Section 2 - Architecture.md,1,# **SECTION 2 — ARCHITECTURE**
+docs/spec/Section 2 - Architecture.md,8,# **2.1 Purpose of This Section**
+docs/spec/Section 2 - Architecture.md,25,# **2.2 High‑Level System Architecture**
+docs/spec/Section 2 - Architecture.md,28,### **2.2.1 Core Architectural Layers**
+docs/spec/Section 2 - Architecture.md,84,# **2.3 SPA Structure**
+docs/spec/Section 2 - Architecture.md,93,### **2.3.1 Immutable Routing Model**
+docs/spec/Section 2 - Architecture.md,117,# **2.4 Rendering Pipeline Architecture**
+docs/spec/Section 2 - Architecture.md,124,### **2.4.1 Pipeline Stages**
+docs/spec/Section 2 - Architecture.md,155,# **2.5 View Architecture**
+docs/spec/Section 2 - Architecture.md,167,### **2.5.1 Calendar View Architecture**
+docs/spec/Section 2 - Architecture.md,177,### **2.5.2 Shows View Architecture**
+docs/spec/Section 2 - Architecture.md,187,### **2.5.3 Movies View Architecture**
+docs/spec/Section 2 - Architecture.md,197,### **2.5.4 Live TV View Architecture**
+docs/spec/Section 2 - Architecture.md,206,### **2.5.5 Config View Architecture**
+docs/spec/Section 2 - Architecture.md,214,### **2.5.6 Explore View Architecture (Future‑Phase)**
+docs/spec/Section 2 - Architecture.md,222,### **2.5.7 Profiles View Architecture (Future‑Phase)**
+docs/spec/Section 2 - Architecture.md,229,### **2.5.8 Watchlist / Watched Filters Architecture (Future‑Phase)**
+docs/spec/Section 2 - Architecture.md,237,# **2.6 Popup Architecture**
+docs/spec/Section 2 - Architecture.md,249,### **2.6.1 Popup Types**
+docs/spec/Section 2 - Architecture.md,257,### **2.6.2 Popup Stack Rules**
+docs/spec/Section 2 - Architecture.md,266,# **2.7 Component Architecture**
+docs/spec/Section 2 - Architecture.md,269,### **2.7.1 Card Components**
+docs/spec/Section 2 - Architecture.md,277,### **2.7.2 Filter Components**
+docs/spec/Section 2 - Architecture.md,286,### **2.7.3 Icon Strip Component**
+docs/spec/Section 2 - Architecture.md,292,### **2.7.4 Logo Chip Component**
+docs/spec/Section 2 - Architecture.md,297,### **2.7.5 Metadata Components**
+docs/spec/Section 2 - Architecture.md,306,# **2.8 Script Architecture**
+docs/spec/Section 2 - Architecture.md,309,### **2.8.1 TMDB Script**
+docs/spec/Section 2 - Architecture.md,315,### **2.8.2 Trakt Script**
+docs/spec/Section 2 - Architecture.md,319,### **2.8.3 Image Caching Script**
+docs/spec/Section 3 - Data Model.md,6,# **SECTION 3 — DATA MODEL**
+docs/spec/Section 3 - Data Model.md,13,# **3.1 Purpose of This Section**
+docs/spec/Section 3 - Data Model.md,27,# **3.2 Global Data Model Rules**
+docs/spec/Section 3 - Data Model.md,30,### **3.2.1 Single Source of Truth**
+docs/spec/Section 3 - Data Model.md,33,### **3.2.2 Mandatory Fields**
+docs/spec/Section 3 - Data Model.md,36,### **3.2.3 No Empty Arrays**
+docs/spec/Section 3 - Data Model.md,39,### **3.2.4 Local Image Paths Only**
+docs/spec/Section 3 - Data Model.md,42,### **3.2.5 Normalized Streaming Links**
+docs/spec/Section 3 - Data Model.md,45,### **3.2.6 Deterministic Ordering**
+docs/spec/Section 3 - Data Model.md,54,### **3.2.7 Metadata Block Required**
+docs/spec/Section 3 - Data Model.md,62,### **3.2.8 No Dynamic Schema**
+docs/spec/Section 3 - Data Model.md,65,### **3.2.9 Future‑Phase Fields Are Binding**
+docs/spec/Section 3 - Data Model.md,70,# **3.3 Top‑Level Structure of `data.json`**
+docs/spec/Section 3 - Data Model.md,91,# **3.4 Shows Schema**
+docs/spec/Section 3 - Data Model.md,124,### **3.4.1 Season Reference Schema**
+docs/spec/Section 3 - Data Model.md,137,### **3.4.2 Episode Schema**
+docs/spec/Section 3 - Data Model.md,158,# **3.5 Movies Schema**
+docs/spec/Section 3 - Data Model.md,186,# **3.6 Live TV Schema**
+docs/spec/Section 3 - Data Model.md,203,### **3.6.1 EPG Entry Schema (Future‑Phase)**
+docs/spec/Section 3 - Data Model.md,218,# **3.7 Collections Schema**
+docs/spec/Section 3 - Data Model.md,236,# **3.8 People Schema (Future‑Phase)**
+docs/spec/Section 3 - Data Model.md,255,# **3.9 Profiles Schema (Future‑Phase)**
+docs/spec/Section 3 - Data Model.md,280,# **3.10 Watchlist Schema (Global Watchlist)**
+docs/spec/Section 3 - Data Model.md,289,# **3.11 Streaming Link Schema**
+docs/spec/Section 3 - Data Model.md,302,# **3.12 Icon Schema**
+docs/spec/Section 3 - Data Model.md,313,# **3.13 Metadata Schema**
+docs/spec/Section 3 - Data Model.md,338,# **3.14 Error Schema**
+docs/spec/Section 3 - Data Model.md,349,# **3.15 Data Model Invariants**
+docs/spec/Section 3 - Data Model.md,367,# **3.16 End of Section 3 — Data Model**
+docs/spec/Section 4 - UI (each view separately).md,23,# Section 4.0 — UI (Each View Separately)
+docs/spec/Section 4 - UI (each view separately).md,25,## Purpose
+docs/spec/Section 4 - UI (each view separately).md,39,## Global UI Principles (SPA Views Only)
+docs/spec/Section 4 - UI (each view separately).md,41,### 1. Local‑Only Rendering
+docs/spec/Section 4 - UI (each view separately).md,45,### 2. Deterministic Layout
+docs/spec/Section 4 - UI (each view separately).md,49,### 3. Consistent Navigation Model
+docs/spec/Section 4 - UI (each view separately).md,56,### 4. Shared Styling and Components
+docs/spec/Section 4 - UI (each view separately).md,63,### 5. Popup Compatibility
+docs/spec/Section 4 - UI (each view separately).md,72,### 6. Error Visibility
+docs/spec/Section 4 - UI (each view separately).md,76,### 7. Accessibility and Appearance Controls
+docs/spec/Section 4 - UI (each view separately).md,82,## View Subsections
+docs/spec/Section 4 - UI (each view separately).md,84,### SPA Views (inside index.html)
+docs/spec/Section 4 - UI (each view separately).md,94,### Standalone (non‑SPA) View
+docs/spec/Section 4 - UI (each view separately).md,108,## Implementation Notes
+docs/spec/Section 4 - UI (each view separately).md,110,### SPA Views
+docs/spec/Section 4 - UI (each view separately).md,116,### Standalone Exception — Section 4.9
+docs/spec/Section 4 - UI (each view separately).md,127,## Deprecated legacy view: show.html
+docs/spec/Section 4 - UI (each view separately).md,129,### Status
+docs/spec/Section 4 - UI (each view separately).md,132,### Replacement
+docs/spec/Section 4 - UI (each view separately).md,136,### Requirements
+docs/spec/Section 4 - UI (each view separately).md,142,### Redirect behavior
+docs/spec/Section 4.1 - Calendar View.md,1,### **Section 4.1 — Calendar View**
+docs/spec/Section 4.1 - Calendar View.md,33,# **SECTION 4.1 — CALENDAR VIEW**
+docs/spec/Section 4.1 - Calendar View.md,40,# **4.1.1 Purpose of This View**
+docs/spec/Section 4.1 - Calendar View.md,57,# **4.1.2 Structural Layout Requirements**
+docs/spec/Section 4.1 - Calendar View.md,60,### **4.1.2.1 Grid Structure**
+docs/spec/Section 4.1 - Calendar View.md,66,### **4.1.2.2 Sticky Month Header**
+docs/spec/Section 4.1 - Calendar View.md,76,### **4.1.2.3 Day Cell Structure**
+docs/spec/Section 4.1 - Calendar View.md,85,### **4.1.2.4 Content Item Structure**
+docs/spec/Section 4.1 - Calendar View.md,99,# **4.1.3 Data Requirements**
+docs/spec/Section 4.1 - Calendar View.md,102,### **4.1.3.1 Required Data Sources**
+docs/spec/Section 4.1 - Calendar View.md,109,### **4.1.3.2 Required Fields Per Item**
+docs/spec/Section 4.1 - Calendar View.md,124,### **4.1.3.3 Sorting Rules**
+docs/spec/Section 4.1 - Calendar View.md,136,# **4.1.4 Interaction Requirements**
+docs/spec/Section 4.1 - Calendar View.md,137,### **4.1.4.1 DPAD Navigation**
+docs/spec/Section 4.1 - Calendar View.md,147,### **4.1.4.2 Mouse/Touch Interaction**
+docs/spec/Section 4.1 - Calendar View.md,152,### **4.1.4.3 Keyboard Interaction**
+docs/spec/Section 4.1 - Calendar View.md,159,# **4.1.5 Popup Routing Requirements**
+docs/spec/Section 4.1 - Calendar View.md,172,# **4.1.6 Icon Strip Requirements**
+docs/spec/Section 4.1 - Calendar View.md,189,# **4.1.7 Logo Requirements**
+docs/spec/Section 4.1 - Calendar View.md,204,# **4.1.8 Visual Design Requirements**
+docs/spec/Section 4.1 - Calendar View.md,205,### **4.1.8.1 Poster Sizing**
+docs/spec/Section 4.1 - Calendar View.md,208,### **4.1.8.2 Spacing**
+docs/spec/Section 4.1 - Calendar View.md,213,### **4.1.8.3 Colors & Contrast**
+docs/spec/Section 4.1 - Calendar View.md,218,### **4.1.8.4 Overflow Handling**
+docs/spec/Section 4.1 - Calendar View.md,227,# **4.1.9 Error Handling Requirements**
+docs/spec/Section 4.1 - Calendar View.md,228,### **4.1.9.1 Missing Data**
+docs/spec/Section 4.1 - Calendar View.md,236,### **4.1.9.2 Invalid Dates**
+docs/spec/Section 4.1 - Calendar View.md,243,### **4.1.9.3 Missing Images**
+docs/spec/Section 4.1 - Calendar View.md,248,# **4.1.10 Future‑Phase Requirements**
+docs/spec/Section 4.1 - Calendar View.md,251,### **4.1.10.1 Full EPG Integration**
+docs/spec/Section 4.2 - Shows View.md,1,# **SECTION 4.2 — SHOWS VIEW**
+docs/spec/Section 4.2 - Shows View.md,8,# **4.2.1 Purpose of This View**
+docs/spec/Section 4.2 - Shows View.md,26,# **4.2.2 Structural Layout Requirements**
+docs/spec/Section 4.2 - Shows View.md,29,### **4.2.2.1 Root Structure**
+docs/spec/Section 4.2 - Shows View.md,38,### **4.2.2.2 Filter Bar**
+docs/spec/Section 4.2 - Shows View.md,55,### **4.2.2.3 Sort Bar**
+docs/spec/Section 4.2 - Shows View.md,68,### **4.2.2.4 Card Grid**
+docs/spec/Section 4.2 - Shows View.md,80,# **4.2.3 Show Card Requirements**
+docs/spec/Section 4.2 - Shows View.md,83,### **4.2.3.1 Required Visual Elements**
+docs/spec/Section 4.2 - Shows View.md,94,### **4.2.3.2 Required Metadata Elements**
+docs/spec/Section 4.2 - Shows View.md,102,### **4.2.3.3 Future‑Phase Metadata**
+docs/spec/Section 4.2 - Shows View.md,107,### **4.2.3.4 Interaction Behavior**
+docs/spec/Section 4.2 - Shows View.md,114,# **4.2.4 Data Requirements**
+docs/spec/Section 4.2 - Shows View.md,117,### **4.2.4.1 Required Data Fields**
+docs/spec/Section 4.2 - Shows View.md,145,### **4.2.4.2 Season Data Requirements**
+docs/spec/Section 4.2 - Shows View.md,153,### **4.2.4.3 Filtering Data Requirements**
+docs/spec/Section 4.2 - Shows View.md,165,# **4.2.5 Interaction Requirements**
+docs/spec/Section 4.2 - Shows View.md,166,### **4.2.5.1 DPAD Navigation**
+docs/spec/Section 4.2 - Shows View.md,176,### **4.2.5.2 Mouse/Touch Interaction**
+docs/spec/Section 4.2 - Shows View.md,181,### **4.2.5.3 Keyboard Interaction**
+docs/spec/Section 4.2 - Shows View.md,188,# **4.2.6 Popup Routing Requirements**
+docs/spec/Section 4.2 - Shows View.md,199,# **4.2.7 Icon Strip Requirements**
+docs/spec/Section 4.2 - Shows View.md,216,# **4.2.8 Logo Requirements**
+docs/spec/Section 4.2 - Shows View.md,228,# **4.2.9 Visual Design Requirements**
+docs/spec/Section 4.2 - Shows View.md,229,### **4.2.9.1 Poster Sizing**
+docs/spec/Section 4.2 - Shows View.md,232,### **4.2.9.2 Spacing**
+docs/spec/Section 4.2 - Shows View.md,237,### **4.2.9.3 Colors & Contrast**
+docs/spec/Section 4.2 - Shows View.md,242,### **4.2.9.4 Status Badges**
+docs/spec/Section 4.2 - Shows View.md,251,# **4.2.10 Filtering Requirements**
+docs/spec/Section 4.2 - Shows View.md,260,### **4.2.10.1 Genre Filter**
+docs/spec/Section 4.3 - Movies View.md,1,# **SECTION 4.3 — MOVIES VIEW**
+docs/spec/Section 4.3 - Movies View.md,8,# **4.3.1 Purpose of This View**
+docs/spec/Section 4.3 - Movies View.md,27,# **4.3.2 Structural Layout Requirements**
+docs/spec/Section 4.3 - Movies View.md,30,### **4.3.2.1 Root Structure**
+docs/spec/Section 4.3 - Movies View.md,39,### **4.3.2.2 Filter Bar**
+docs/spec/Section 4.3 - Movies View.md,57,### **4.3.2.3 Sort Bar**
+docs/spec/Section 4.3 - Movies View.md,70,### **4.3.2.4 Card Grid**
+docs/spec/Section 4.3 - Movies View.md,82,# **4.3.3 Movie Card Requirements**
+docs/spec/Section 4.3 - Movies View.md,85,### **4.3.3.1 Required Visual Elements**
+docs/spec/Section 4.3 - Movies View.md,95,### **4.3.3.2 Required Metadata Elements**
+docs/spec/Section 4.3 - Movies View.md,103,### **4.3.3.3 Future‑Phase Metadata**
+docs/spec/Section 4.3 - Movies View.md,108,### **4.3.3.4 Interaction Behavior**
+docs/spec/Section 4.3 - Movies View.md,115,# **4.3.4 Data Requirements**
+docs/spec/Section 4.3 - Movies View.md,118,### **4.3.4.1 Required Data Fields**
+docs/spec/Section 4.3 - Movies View.md,140,### **4.3.4.2 Collection Data Requirements**
+docs/spec/Section 4.3 - Movies View.md,149,### **4.3.4.3 Filtering Data Requirements**
+docs/spec/Section 4.3 - Movies View.md,162,# **4.3.5 Interaction Requirements**
+docs/spec/Section 4.3 - Movies View.md,163,### **4.3.5.1 DPAD Navigation**
+docs/spec/Section 4.3 - Movies View.md,173,### **4.3.5.2 Mouse/Touch Interaction**
+docs/spec/Section 4.3 - Movies View.md,178,### **4.3.5.3 Keyboard Interaction**
+docs/spec/Section 4.3 - Movies View.md,185,# **4.3.6 Popup Routing Requirements**
+docs/spec/Section 4.3 - Movies View.md,196,# **4.3.7 Icon Strip Requirements**
+docs/spec/Section 4.3 - Movies View.md,213,# **4.3.8 Logo Requirements**
+docs/spec/Section 4.3 - Movies View.md,225,# **4.3.9 Visual Design Requirements**
+docs/spec/Section 4.3 - Movies View.md,226,### **4.3.9.1 Poster Sizing**
+docs/spec/Section 4.3 - Movies View.md,229,### **4.3.9.2 Spacing**
+docs/spec/Section 4.3 - Movies View.md,234,### **4.3.9.3 Colors & Contrast**
+docs/spec/Section 4.3 - Movies View.md,239,### **4.3.9.4 Collection Badges**
+docs/spec/Section 4.3 - Movies View.md,248,# **4.3.10 Filtering Requirements**
+docs/spec/Section 4.3 - Movies View.md,257,### **4.3.10.1 Genre Filter**
+docs/spec/Section 4.4 - Live TV View.md,1,# **SECTION 4.4 — LIVE TV VIEW**
+docs/spec/Section 4.4 - Live TV View.md,8,# **4.4.1 Purpose of This View**
+docs/spec/Section 4.4 - Live TV View.md,27,# **4.4.2 Structural Layout Requirements**
+docs/spec/Section 4.4 - Live TV View.md,30,### **4.4.2.1 Root Structure**
+docs/spec/Section 4.4 - Live TV View.md,39,### **4.4.2.2 Filter Bar**
+docs/spec/Section 4.4 - Live TV View.md,55,### **4.4.2.3 Sort Bar**
+docs/spec/Section 4.4 - Live TV View.md,66,### **4.4.2.4 Channel Card Grid**
+docs/spec/Section 4.4 - Live TV View.md,78,# **4.4.3 Channel Card Requirements**
+docs/spec/Section 4.4 - Live TV View.md,81,### **4.4.3.1 Required Visual Elements**
+docs/spec/Section 4.4 - Live TV View.md,89,### **4.4.3.2 Required Metadata Elements**
+docs/spec/Section 4.4 - Live TV View.md,97,### **4.4.3.3 Future‑Phase Metadata**
+docs/spec/Section 4.4 - Live TV View.md,103,### **4.4.3.4 Interaction Behavior**
+docs/spec/Section 4.4 - Live TV View.md,110,# **4.4.4 Data Requirements**
+docs/spec/Section 4.4 - Live TV View.md,113,### **4.4.4.1 Required Data Fields**
+docs/spec/Section 4.4 - Live TV View.md,126,### **4.4.4.2 EPG Data Requirements (Future‑Phase)**
+docs/spec/Section 4.4 - Live TV View.md,137,### **4.4.4.3 Filtering Data Requirements**
+docs/spec/Section 4.4 - Live TV View.md,148,# **4.4.5 Interaction Requirements**
+docs/spec/Section 4.4 - Live TV View.md,149,### **4.4.5.1 DPAD Navigation**
+docs/spec/Section 4.4 - Live TV View.md,159,### **4.4.5.2 Mouse/Touch Interaction**
+docs/spec/Section 4.4 - Live TV View.md,164,### **4.4.5.3 Keyboard Interaction**
+docs/spec/Section 4.4 - Live TV View.md,171,# **4.4.6 Popup Routing Requirements**
+docs/spec/Section 4.4 - Live TV View.md,183,# **4.4.7 Logo Requirements**
+docs/spec/Section 4.4 - Live TV View.md,196,# **4.4.8 Visual Design Requirements**
+docs/spec/Section 4.4 - Live TV View.md,197,### **4.4.8.1 Logo Sizing**
+docs/spec/Section 4.4 - Live TV View.md,200,### **4.4.8.2 Spacing**
+docs/spec/Section 4.4 - Live TV View.md,205,### **4.4.8.3 Colors & Contrast**
+docs/spec/Section 4.4 - Live TV View.md,210,### **4.4.8.4 EPG Preview (Future‑Phase)**
+docs/spec/Section 4.4 - Live TV View.md,219,# **4.4.9 Filtering Requirements**
+docs/spec/Section 4.4 - Live TV View.md,228,### **4.4.9.1 Country Filter**
+docs/spec/Section 4.4 - Live TV View.md,231,### **4.4.9.2 Group Filter**
+docs/spec/Section 4.5 - Config View.md,6,# **SECTION 4.5 — CONFIG VIEW**
+docs/spec/Section 4.5 - Config View.md,13,# **4.5.1 Purpose of This View**
+docs/spec/Section 4.5 - Config View.md,33,# **4.5.2 Structural Layout Requirements**
+docs/spec/Section 4.5 - Config View.md,36,### **4.5.2.1 Root Structure**
+docs/spec/Section 4.5 - Config View.md,43,### **4.5.2.2 Section Layout**
+docs/spec/Section 4.5 - Config View.md,60,# **4.5.3 Appearance Settings**
+docs/spec/Section 4.5 - Config View.md,63,### **4.5.3.1 Theme Selector**
+docs/spec/Section 4.5 - Config View.md,71,### **4.5.3.2 Font Scale Slider**
+docs/spec/Section 4.5 - Config View.md,80,### **4.5.3.3 Poster Size Preset (Future‑Phase)**
+docs/spec/Section 4.5 - Config View.md,87,### **4.5.3.4 Interaction Requirements**
+docs/spec/Section 4.5 - Config View.md,94,# **4.5.4 Accessibility Settings**
+docs/spec/Section 4.5 - Config View.md,97,### **4.5.4.1 Required Controls**
+docs/spec/Section 4.5 - Config View.md,104,### **4.5.4.2 Behavior Requirements**
+docs/spec/Section 4.5 - Config View.md,109,### **4.5.4.3 DPAD Requirements**
+docs/spec/Section 4.5 - Config View.md,116,# **4.5.5 Maintenance Tools**
+docs/spec/Section 4.5 - Config View.md,119,### **4.5.5.1 Required Tools**
+docs/spec/Section 4.5 - Config View.md,127,### **4.5.5.2 Behavior Requirements**
+docs/spec/Section 4.5 - Config View.md,132,### **4.5.5.3 Logging Requirements**
+docs/spec/Section 4.5 - Config View.md,142,# **4.5.6 List File Editors**
+docs/spec/Section 4.5 - Config View.md,149,### **4.5.6.1 Editor Requirements**
+docs/spec/Section 4.5 - Config View.md,158,### **4.5.6.2 Validation Rules**
+docs/spec/Section 4.5 - Config View.md,164,### **4.5.6.3 Save Behavior**
+docs/spec/Section 4.5 - Config View.md,171,# **4.5.7 Data Preview & Metadata**
+docs/spec/Section 4.5 - Config View.md,181,### **4.5.7.1 Data Preview Requirements**
+docs/spec/Section 4.5 - Config View.md,188,### **4.5.7.2 Metadata Requirements**
+docs/spec/Section 4.5 - Config View.md,198,# **4.5.8 Error Log Viewer**
+docs/spec/Section 4.5 - Config View.md,201,### **4.5.8.1 Required Features**
+docs/spec/Section 4.5 - Config View.md,208,### **4.5.8.2 Error Details Must Include**
+docs/spec/Section 4.5 - Config View.md,214,### **4.5.8.3 Behavior Requirements**
+docs/spec/Section 4.5 - Config View.md,220,# **4.5.9 Profile Settings (Future‑Phase)**
+docs/spec/Section 4.6 - Explore View (future phase).md,5,# **4.6.1 Purpose of This View**
+docs/spec/Section 4.6 - Explore View (future phase).md,18,# **4.6.2 Structural Layout Requirements**
+docs/spec/Section 4.6 - Explore View (future phase).md,20,### **4.6.2.1 Root Structure**
+docs/spec/Section 4.6 - Explore View (future phase).md,25,### **4.6.2.2 Discovery Modules**
+docs/spec/Section 4.6 - Explore View (future phase).md,40,### **4.6.2.3 Module Structure**
+docs/spec/Section 4.6 - Explore View (future phase).md,48,# **4.6.3 Data Requirements**
+docs/spec/Section 4.6 - Explore View (future phase).md,50,### **4.6.3.1 Required Data Sources**
+docs/spec/Section 4.6 - Explore View (future phase).md,63,### **4.6.3.2 Required Fields Per Item**
+docs/spec/Section 4.6 - Explore View (future phase).md,78,### **4.6.3.3 Deterministic Ordering**
+docs/spec/Section 4.6 - Explore View (future phase).md,84,# **4.6.4 Module Specifications**
+docs/spec/Section 4.6 - Explore View (future phase).md,85,## **4.6.4.1 Trending Now**
+docs/spec/Section 4.6 - Explore View (future phase).md,90,## **4.6.4.2 Popular This Week**
+docs/spec/Section 4.6 - Explore View (future phase).md,94,## **4.6.4.3 Recommended For You**
+docs/spec/Section 4.6 - Explore View (future phase).md,99,## **4.6.4.4 Because You Watched…**
+docs/spec/Section 4.6 - Explore View (future phase).md,103,## **4.6.4.5 Top Genres**
+docs/spec/Section 4.6 - Explore View (future phase).md,107,## **4.6.4.6 Collections Spotlight**
+docs/spec/Section 4.6 - Explore View (future phase).md,111,## **4.6.4.7 New Releases**
+docs/spec/Section 4.6 - Explore View (future phase).md,114,## **4.6.4.8 Upcoming Releases**
+docs/spec/Section 4.6 - Explore View (future phase).md,117,## **4.6.4.9 Live TV Highlights**
+docs/spec/Section 4.6 - Explore View (future phase).md,121,## **4.6.4.10 Continue Watching**
+docs/spec/Section 4.6 - Explore View (future phase).md,124,## **4.6.4.11 Profile‑Based Picks**
+docs/spec/Section 4.6 - Explore View (future phase).md,127,## **4.6.4.12 Cross‑Service Aggregated Rows**
+docs/spec/Section 4.6 - Explore View (future phase).md,131,# **4.6.5 Interaction Requirements**
+docs/spec/Section 4.6 - Explore View (future phase).md,132,### **4.6.5.1 DPAD Navigation**
+docs/spec/Section 4.6 - Explore View (future phase).md,138,### **4.6.5.2 Mouse/Touch Interaction**
+docs/spec/Section 4.6 - Explore View (future phase).md,142,### **4.6.5.3 Keyboard Interaction**
+docs/spec/Section 4.6 - Explore View (future phase).md,147,# **4.6.6 Popup Routing Requirements**
+docs/spec/Section 4.6 - Explore View (future phase).md,158,# **4.6.7 Icon Strip Requirements**
+docs/spec/Section 4.6 - Explore View (future phase).md,169,# **4.6.8 Visual Design Requirements**
+docs/spec/Section 4.6 - Explore View (future phase).md,170,### **4.6.8.1 Module Headers**
+docs/spec/Section 4.7 - Profiles View (future phase).md,1,# **SECTION 4.7 — PROFILES VIEW (FUTURE‑PHASE)**
+docs/spec/Section 4.7 - Profiles View (future phase).md,6,# **4.7.1 Purpose of This View**
+docs/spec/Section 4.7 - Profiles View (future phase).md,22,# **4.7.2 Structural Layout Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,24,### **4.7.2.1 Root Structure**
+docs/spec/Section 4.7 - Profiles View (future phase).md,30,### **4.7.2.2 Profile Selector Grid**
+docs/spec/Section 4.7 - Profiles View (future phase).md,36,### **4.7.2.3 Profile Management Panel**
+docs/spec/Section 4.7 - Profiles View (future phase).md,46,# **4.7.3 Profile Card Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,48,### **4.7.3.1 Required Visual Elements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,53,### **4.7.3.2 Required Metadata Elements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,60,### **4.7.3.3 Interaction Behavior**
+docs/spec/Section 4.7 - Profiles View (future phase).md,65,# **4.7.4 Data Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,67,### **4.7.4.1 Required Data Fields**
+docs/spec/Section 4.7 - Profiles View (future phase).md,80,### **4.7.4.2 Watchlist Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,85,### **4.7.4.3 Watch Progress Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,90,### **4.7.4.4 Recommendation Data Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,97,# **4.7.5 Interaction Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,98,### **4.7.5.1 DPAD Navigation**
+docs/spec/Section 4.7 - Profiles View (future phase).md,104,### **4.7.5.2 Mouse/Touch Interaction**
+docs/spec/Section 4.7 - Profiles View (future phase).md,107,### **4.7.5.3 Keyboard Interaction**
+docs/spec/Section 4.7 - Profiles View (future phase).md,112,# **4.7.6 Profile Management Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,114,### **4.7.6.1 Profile Editing**
+docs/spec/Section 4.7 - Profiles View (future phase).md,120,### **4.7.6.2 Watchlist Management**
+docs/spec/Section 4.7 - Profiles View (future phase).md,124,### **4.7.6.3 Watch Progress Management**
+docs/spec/Section 4.7 - Profiles View (future phase).md,128,### **4.7.6.4 Recommendation Controls**
+docs/spec/Section 4.7 - Profiles View (future phase).md,132,### **4.7.6.5 Cross‑Service Sync Controls**
+docs/spec/Section 4.7 - Profiles View (future phase).md,138,# **4.7.7 Visual Design Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,139,### **4.7.7.1 Profile Card Layout**
+docs/spec/Section 4.7 - Profiles View (future phase).md,145,### **4.7.7.2 Avatar Requirements**
+docs/spec/Section 4.7 - Profiles View (future phase).md,150,### **4.7.7.3 Colors & Contrast**
+docs/spec/Section 4.7 - Profiles View (future phase).md,155,# **4.7.8 Popup Routing Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,1,# **SECTION 4.8 — WATCHLIST / WATCHED FILTERS (FUTURE‑PHASE)**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,6,# **4.8.1 Purpose of This View**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,17,# **4.8.2 Structural Layout Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,19,### **4.8.2.1 Root Structure**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,26,### **4.8.2.2 Filter Bar**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,41,### **4.8.2.3 Sort Bar**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,50,### **4.8.2.4 Card Grid**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,60,# **4.8.3 Card Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,62,### **4.8.3.1 Required Visual Elements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,71,### **4.8.3.2 Required Metadata Elements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,81,### **4.8.3.3 Interaction Behavior**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,87,# **4.8.4 Data Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,89,### **4.8.4.1 Required Data Sources**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,98,### **4.8.4.2 Watch Progress Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,104,### **4.8.4.3 Watchlist Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,110,# **4.8.5 Interaction Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,111,### **4.8.5.1 DPAD Navigation**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,118,### **4.8.5.2 Mouse/Touch Interaction**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,123,### **4.8.5.3 Keyboard Interaction**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,128,# **4.8.6 Popup Routing Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,138,# **4.8.7 Filtering Requirements**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,145,### **4.8.7.1 Watchlist Filter**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,149,### **4.8.7.2 Watched Filter**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,152,### **4.8.7.3 Unwatched Filter**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,155,### **4.8.7.4 In‑Progress Filter**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,158,### **4.8.7.5 Completed Filter**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,162,### **4.8.7.6 Profile Filter (Future‑Phase)**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,167,### **4.8.7.7 Service Filter (Future‑Phase)**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,170,### **4.8.7.8 Relevance Filter (Future‑Phase)**
+docs/spec/Section 4.8 - Watchlist - Watched Filters (future phase).md,174,# **4.8.8 Sorting Requirements**
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,1,# =========================================================================================
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,2,# Section 4.9 — Watchlist (Standalone Page)
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,3,# [PROJECT] my_TV_Movie (My TV Hub)
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,4,# [ROLE] Standalone Watchlist Page (non‑SPA)
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,5,# [VERSION] v4.5.0
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,6,# [UPDATED] 2025‑12‑19_00‑00‑00
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,7,# [OWNER] Andrew & Brant (internal)
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,8,# =========================================================================================
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,9,## 4.9.1 — Purpose & Scope
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,23,## 4.9.2 — Phase 4.x Master Override Context
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,33,## 4.9.3 — High‑Level Behavior
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,52,## 4.9.4 — Data Model Requirements
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,53,### Show Object (required fields)
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,71,### Season Object
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,80,### Episode Object
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,91,### StreamingLink Object
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,99,## 4.9.5 — Rendering Rules
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,100,### Collapsed Show Card
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,119,### Expanded Show View
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,120,#### 1. Hero Header (sticky)
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,132,#### 2. Overview
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,137,#### 3. Streaming Links (show‑level)
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,143,#### 4. Seasons Panel
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,154,#### 5. Episodes Panel
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,165,## 4.9.6 — Interaction Rules
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,177,## 4.9.7 — Asset Requirements
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,178,### Required asset paths
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,185,### Fallbacks
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,190,### Forbidden
+docs/spec/Section 4.9 - Watchlist (Standalone Page).md,195,## 4.9.8 — File Structure Requirements
+docs/spec/Section 5 - Popups.md,3,5.0.1 Purpose of This Section
+docs/spec/Section 5 - Popups.md,20,5.0.2 Global Popup Architecture
+docs/spec/Section 5 - Popups.md,22,5.0.2.1 Popup Structure
+docs/spec/Section 5 - Popups.md,33,5.0.2.2 Popup Stack Rules
+docs/spec/Section 5 - Popups.md,40,5.0.2.3 Popup Routing Rules
+docs/spec/Section 5 - Popups.md,47,5.0.3 Global Data Requirements
+docs/spec/Section 5 - Popups.md,63,5.0.4 Global Interaction Requirements
+docs/spec/Section 5 - Popups.md,64,5.0.4.1 DPAD Navigation
+docs/spec/Section 5 - Popups.md,69,5.0.4.2 Mouse/Touch Interaction
+docs/spec/Section 5 - Popups.md,73,5.0.4.3 Keyboard Interaction
+docs/spec/Section 5 - Popups.md,77,5.0.5 Global Visual Requirements
+docs/spec/Section 5 - Popups.md,84,5.0.6 Global Error Handling
+docs/spec/Section 5 - Popups.md,90,5.0.7 Future‑Phase Extensions
+docs/spec/Section 5 - Popups.md,98,5.0.8 End of Section 5.0 — Popups (Master Section)
+docs/spec/Section 5.1 - Show Popup (P1).md,3,5.1.1 Purpose of This Popup
+docs/spec/Section 5.1 - Show Popup (P1).md,15,5.1.2 Structural Layout Requirements
+docs/spec/Section 5.1 - Show Popup (P1).md,17,5.1.2.1 Header
+docs/spec/Section 5.1 - Show Popup (P1).md,22,5.1.2.2 Poster Section
+docs/spec/Section 5.1 - Show Popup (P1).md,25,5.1.2.3 Metadata Section
+docs/spec/Section 5.1 - Show Popup (P1).md,37,5.1.2.4 Streaming Links
+docs/spec/Section 5.1 - Show Popup (P1).md,41,5.1.2.5 Seasons List
+docs/spec/Section 5.1 - Show Popup (P1).md,49,5.1.2.6 Related Shows (Future‑Phase)
+docs/spec/Section 5.1 - Show Popup (P1).md,53,5.1.3 Data Requirements
+docs/spec/Section 5.1 - Show Popup (P1).md,62,5.1.4 Interaction Requirements
+docs/spec/Section 5.1 - Show Popup (P1).md,67,5.1.5 Routing Requirements
+docs/spec/Section 5.1 - Show Popup (P1).md,70,5.1.6 Visual Requirements
+docs/spec/Section 5.1 - Show Popup (P1).md,75,5.1.7 Error Handling
+docs/spec/Section 5.1 - Show Popup (P1).md,79,5.1.8 Future‑Phase Requirements
+docs/spec/Section 5.1 - Show Popup (P1).md,84,5.1.9 Invariants
+docs/spec/Section 5.1 - Show Popup (P1).md,88,5.1.10 End of Section 5.1 — Show Popup (P1)
+docs/spec/Section 5.2 - Season Popup (P2).md,3,5.2.1 Purpose of This Popup
+docs/spec/Section 5.2 - Season Popup (P2).md,13,5.2.2 Structural Layout Requirements
+docs/spec/Section 5.2 - Season Popup (P2).md,15,5.2.2.1 Header
+docs/spec/Section 5.2 - Season Popup (P2).md,19,5.2.2.2 Poster Section
+docs/spec/Section 5.2 - Season Popup (P2).md,22,5.2.2.3 Metadata Section
+docs/spec/Section 5.2 - Season Popup (P2).md,27,5.2.2.4 Episode List
+docs/spec/Section 5.2 - Season Popup (P2).md,40,5.2.3 Data Requirements
+docs/spec/Section 5.2 - Season Popup (P2).md,48,5.2.4 Interaction Requirements
+docs/spec/Section 5.2 - Season Popup (P2).md,53,5.2.5 Routing Requirements
+docs/spec/Section 5.2 - Season Popup (P2).md,56,5.2.6 Visual Requirements
+docs/spec/Section 5.2 - Season Popup (P2).md,61,5.2.7 Error Handling
+docs/spec/Section 5.2 - Season Popup (P2).md,65,5.2.8 Future‑Phase Requirements
+docs/spec/Section 5.2 - Season Popup (P2).md,70,5.2.9 Invariants
+docs/spec/Section 5.2 - Season Popup (P2).md,74,5.2.10 End of Section 5.2 — Season Popup (P2)
+docs/spec/Section 5.3 - Episode Popup (P3).md,3,5.3.1 Purpose of This Popup
+docs/spec/Section 5.3 - Episode Popup (P3).md,14,5.3.2 Structural Layout Requirements
+docs/spec/Section 5.3 - Episode Popup (P3).md,16,5.3.2.1 Header
+docs/spec/Section 5.3 - Episode Popup (P3).md,20,5.3.2.2 Still Image Section
+docs/spec/Section 5.3 - Episode Popup (P3).md,24,5.3.2.3 Metadata Section
+docs/spec/Section 5.3 - Episode Popup (P3).md,35,5.3.2.4 Streaming Links
+docs/spec/Section 5.3 - Episode Popup (P3).md,39,5.3.2.5 Navigation Links
+docs/spec/Section 5.3 - Episode Popup (P3).md,43,5.3.2.6 Related Episodes (Future‑Phase)
+docs/spec/Section 5.3 - Episode Popup (P3).md,47,5.3.3 Data Requirements
+docs/spec/Section 5.3 - Episode Popup (P3).md,64,5.3.4 Interaction Requirements
+docs/spec/Section 5.3 - Episode Popup (P3).md,69,5.3.5 Routing Requirements
+docs/spec/Section 5.3 - Episode Popup (P3).md,74,5.3.6 Visual Requirements
+docs/spec/Section 5.3 - Episode Popup (P3).md,79,5.3.7 Error Handling
+docs/spec/Section 5.3 - Episode Popup (P3).md,83,5.3.8 Future‑Phase Requirements
+docs/spec/Section 5.3 - Episode Popup (P3).md,89,5.3.9 Invariants
+docs/spec/Section 5.4 - Movie Popup (P4).md,3,5.4.1 Purpose of This Popup
+docs/spec/Section 5.4 - Movie Popup (P4).md,14,5.4.2 Structural Layout Requirements
+docs/spec/Section 5.4 - Movie Popup (P4).md,16,5.4.2.1 Header
+docs/spec/Section 5.4 - Movie Popup (P4).md,20,5.4.2.2 Poster Section
+docs/spec/Section 5.4 - Movie Popup (P4).md,23,5.4.2.3 Metadata Section
+docs/spec/Section 5.4 - Movie Popup (P4).md,35,5.4.2.4 Streaming Links
+docs/spec/Section 5.4 - Movie Popup (P4).md,39,5.4.2.5 Collection Metadata
+docs/spec/Section 5.4 - Movie Popup (P4).md,45,5.4.2.6 Related Movies (Future‑Phase)
+docs/spec/Section 5.4 - Movie Popup (P4).md,49,5.4.3 Data Requirements
+docs/spec/Section 5.4 - Movie Popup (P4).md,68,5.4.4 Interaction Requirements
+docs/spec/Section 5.4 - Movie Popup (P4).md,73,5.4.5 Routing Requirements
+docs/spec/Section 5.4 - Movie Popup (P4).md,77,5.4.6 Visual Requirements
+docs/spec/Section 5.4 - Movie Popup (P4).md,82,5.4.7 Error Handling
+docs/spec/Section 5.4 - Movie Popup (P4).md,86,5.4.8 Future‑Phase Requirements
+docs/spec/Section 5.4 - Movie Popup (P4).md,92,5.4.9 Invariants
+docs/spec/Section 5.4 - Movie Popup (P4).md,97,5.4.10 End of Section 5.4 — Movie Popup (P4)
+docs/spec/Section 5.5 - Collection Popup (future phase).md,3,5.5.1 Purpose of This Popup
+docs/spec/Section 5.5 - Collection Popup (future phase).md,14,5.5.2 Structural Layout Requirements
+docs/spec/Section 5.5 - Collection Popup (future phase).md,16,5.5.2.1 Header
+docs/spec/Section 5.5 - Collection Popup (future phase).md,19,5.5.2.2 Poster Section
+docs/spec/Section 5.5 - Collection Popup (future phase).md,22,5.5.2.3 Metadata Section
+docs/spec/Section 5.5 - Collection Popup (future phase).md,28,5.5.2.4 Movie List
+docs/spec/Section 5.5 - Collection Popup (future phase).md,38,5.5.2.5 Related Collections (Future‑Phase)
+docs/spec/Section 5.5 - Collection Popup (future phase).md,41,5.5.3 Data Requirements
+docs/spec/Section 5.5 - Collection Popup (future phase).md,57,5.5.4 Interaction Requirements
+docs/spec/Section 5.5 - Collection Popup (future phase).md,62,5.5.5 Routing Requirements
+docs/spec/Section 5.5 - Collection Popup (future phase).md,66,5.5.6 Visual Requirements
+docs/spec/Section 5.5 - Collection Popup (future phase).md,71,5.5.7 Error Handling
+docs/spec/Section 5.5 - Collection Popup (future phase).md,75,5.5.8 Future‑Phase Requirements
+docs/spec/Section 5.5 - Collection Popup (future phase).md,81,5.5.9 Invariants
+docs/spec/Section 5.5 - Collection Popup (future phase).md,85,5.5.10 End of Section 5.5 — Collection Popup
+docs/spec/Section 6 - UX.md,1,# **SECTION 6 — UX & ACCESSIBILITY**
+docs/spec/Section 6 - UX.md,6,# **6.1 Purpose of This Section**
+docs/spec/Section 6 - UX.md,25,# **6.2 Global UX Principles**
+docs/spec/Section 6 - UX.md,27,### **6.2.1 Predictability**
+docs/spec/Section 6 - UX.md,33,### **6.2.2 Neurodivergent‑Friendly Design**
+docs/spec/Section 6 - UX.md,41,### **6.2.3 Accessibility First**
+docs/spec/Section 6 - UX.md,49,### **6.2.4 Zero Ambiguity**
+docs/spec/Section 6 - UX.md,55,# **6.3 Navigation Model**
+docs/spec/Section 6 - UX.md,61,### **6.3.1 DPAD Navigation Rules**
+docs/spec/Section 6 - UX.md,68,### **6.3.2 Keyboard Navigation Rules**
+docs/spec/Section 6 - UX.md,73,### **6.3.3 Mouse Navigation Rules**
+docs/spec/Section 6 - UX.md,78,### **6.3.4 Touch Navigation Rules**
+docs/spec/Section 6 - UX.md,84,# **6.4 Focus Behavior**
+docs/spec/Section 6 - UX.md,85,### **6.4.1 Focus Visibility**
+docs/spec/Section 6 - UX.md,91,### **6.4.2 Focus Trapping**
+docs/spec/Section 6 - UX.md,96,### **6.4.3 Focus Memory**
+docs/spec/Section 6 - UX.md,100,# **6.5 Layout & Spacing**
+docs/spec/Section 6 - UX.md,101,### **6.5.1 Spacing Rules**
+docs/spec/Section 6 - UX.md,107,### **6.5.2 No Layout Shifts**
+docs/spec/Section 6 - UX.md,113,### **6.5.3 Responsive Behavior**
+docs/spec/Section 6 - UX.md,124,# **6.6 Color & Contrast**
+docs/spec/Section 6 - UX.md,125,### **6.6.1 High Contrast**
+docs/spec/Section 6 - UX.md,127,### **6.6.2 Theme Support**
+docs/spec/Section 6 - UX.md,133,### **6.6.3 No Flashing**
+docs/spec/Section 6 - UX.md,136,# **6.7 Typography**
+docs/spec/Section 6 - UX.md,137,### **6.7.1 Font Scaling**
+docs/spec/Section 6 - UX.md,144,### **6.7.2 Dyslexia‑Friendly Font**
+docs/spec/Section 6 - UX.md,146,### **6.7.3 Line Spacing**
+docs/spec/Section 6 - UX.md,149,# **6.8 Motion & Animation**
+docs/spec/Section 6 - UX.md,150,### **6.8.1 Reduced Motion Mode**
+docs/spec/Section 7 - Assets.md,1,# ⭐ **Section 7 — Assets.md**
+docs/spec/Section 7 - Assets.md,23,# Section 7 — Assets
+docs/spec/Section 7 - Assets.md,25,## 7.1 — Purpose
+docs/spec/Section 7 - Assets.md,34,## 7.2 — Canonical Asset Hierarchy
+docs/spec/Section 7 - Assets.md,72,## 7.3 — Naming Rules
+docs/spec/Section 7 - Assets.md,74,### 7.3.1 — Show Slugs
+docs/spec/Section 7 - Assets.md,87,### 7.3.2 — Network Logos
+docs/spec/Section 7 - Assets.md,96,### 7.3.3 — Streaming Service Icons
+docs/spec/Section 7 - Assets.md,105,### 7.3.4 — File Format
+docs/spec/Section 7 - Assets.md,114,## 7.4 — Required Asset Sets
+docs/spec/Section 7 - Assets.md,116,### 7.4.1 — Posters (Shows)
+docs/spec/Section 7 - Assets.md,132,### 7.4.2 — Backdrops (Shows)
+docs/spec/Section 7 - Assets.md,147,### 7.4.3 — Network Logos
+docs/spec/Section 7 - Assets.md,158,### 7.4.4 — Streaming Service Icons
+docs/spec/Section 7 - Assets.md,170,## 7.5 — Forbidden Assets
+docs/spec/Section 7 - Assets.md,172,### 7.5.1 — External URLs
+docs/spec/Section 7 - Assets.md,179,### 7.5.2 — Deprecated Folders
+docs/spec/Section 7 - Assets.md,186,### 7.5.3 — Inline Base64 Assets
+docs/spec/Section 7 - Assets.md,197,## 7.6 — Asset Validation Rules
+docs/spec/Section 7 - Assets.md,212,## 7.7 — watchlist.html (Section 4.9) Asset Requirements
+docs/spec/Section 7 - Assets.md,231,# End of Section 7 — Assets
+docs/spec/Section 8 - Scripts.md,1,# **SECTION 8 — SCRIPTS (HIGH‑LEVEL SPECIFICATION)**
+docs/spec/Section 8 - Scripts.md,8,# **8.0 — Scripts (Master Section Header)**
+docs/spec/Section 8 - Scripts.md,25,# **8.0.1 — Phase 4.x Update Notes (New)**
+docs/spec/Section 8 - Scripts.md,28,### **A. watchlist.html (Section 4.9)**
+docs/spec/Section 8 - Scripts.md,35,### **B. Asset Requirements (Section 7)**
+docs/spec/Section 8 - Scripts.md,41,### **C. Data.json Integrity**
+docs/spec/Section 8 - Scripts.md,50,# **8.1 — audit_versions.py**
+docs/spec/Section 8 - Scripts.md,91,# **8.2 — download_service_logos.py**
+docs/spec/Section 8 - Scripts.md,130,# **8.3 — fetch_omdb.py**
+docs/spec/Section 8 - Scripts.md,169,# **8.4 — fetch_tmdb.py**
+docs/spec/Section 8 - Scripts.md,212,# **8.5 — fetch_trakt.py**
+docs/spec/Section 8 - Scripts.md,259,# **8.6 — fetch_tvmaze.py**
+docs/spec/Section 8 - Scripts.md,307,# **8.7 — sync_trakt.py**
+docs/spec/Section 8 - Scripts.md,350,# **8.8 — Script Guarantees (New)**
+docs/spec/Section 8 - Scripts.md,363,# **8.9 — Standalone Page Exception (New)**
+docs/spec/Section 8 - Scripts.md,376,# **END OF SECTION 8 — SCRIPTS**
+docs/spec/Section 9 - Workflow.md,1,# **SECTION 9 — WORKFLOW (GITHUB ACTIONS)**
+docs/spec/Section 9 - Workflow.md,8,# **9.1 Purpose of This Section**
+docs/spec/Section 9 - Workflow.md,22,# **9.2 Workflow Categories**
+docs/spec/Section 9 - Workflow.md,31,## **Live Workflow Files**
+docs/spec/Section 9 - Workflow.md,41,# **9.3 Metadata Refresh Workflows**
+docs/spec/Section 9 - Workflow.md,44,### **Responsibilities:**
+docs/spec/Section 9 - Workflow.md,50,### **Inputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,54,### **Outputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,60,# **9.4 Asset Synchronization Workflows**
+docs/spec/Section 9 - Workflow.md,63,### **Responsibilities:**
+docs/spec/Section 9 - Workflow.md,69,### **Inputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,73,### **Outputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,79,# **9.5 Version Audit Workflows**
+docs/spec/Section 9 - Workflow.md,82,### **Responsibilities:**
+docs/spec/Section 9 - Workflow.md,88,### **Inputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,92,### **Outputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,98,# **9.6 Integrity Validation Workflows**
+docs/spec/Section 9 - Workflow.md,101,### **Responsibilities:**
+docs/spec/Section 9 - Workflow.md,107,### **Inputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,111,### **Outputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,116,# **9.7 Scheduled Maintenance Workflows**
+docs/spec/Section 9 - Workflow.md,119,### **Responsibilities:**
+docs/spec/Section 9 - Workflow.md,125,### **Inputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,128,### **Outputs (Conceptual):**
+docs/spec/Section 9 - Workflow.md,133,# **9.8 Workflow Invariants**
+docs/spec/Section 9 - Workflow.md,144,# **9.9 End of Section 9 — Workflow (GitHub Actions)**
+docs/spec/archive/Section 5.6 - Person Popup (future phase).md,1,## Section 5.6 — Person Popup (Removed)
+docs/spec/archive/Section 5.6 - Person Popup (future phase).md,3,### Status
+docs/spec/archive/Section 5.6 - Person Popup (future phase).md,7,### Reason for Removal
+docs/spec/archive/Section 5.6 - Person Popup (future phase).md,13,### Implementation Requirements
+docs/spec/archive/Section 5.6 - Person Popup (future phase).md,19,### Versioning Note
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,55,4.1 Calendar View
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,56,4.2 Shows View
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,57,4.3 Movies View
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,58,4.4 Live TV View
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,59,4.5 Config View
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,60,4.6 Explore View (future phase)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,61,4.7 Profiles View (future phase)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,62,4.8 Watchlist / Watched Filters (future phase)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,77,5.1 Show Popup (P1)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,78,5.2 Season Popup (P2)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,79,5.3 Episode Popup (P3)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,80,5.4 Movie Popup (P4)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,81,5.5 Collection Popup (future phase)
+docs/spec/archive/working_notes/FULL outline of the authoritative specV0.01.md,82,5.6 Person Popup (future phase)
+docs/spec/archive/working_notes/NOTES for the FULL authoritative spec+plan.md,235,4.5.6 List File Editors
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,5,# CHATGPT PROMPT (BEGIN)
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,103,### CORRECT:
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,113,### INCORRECT:
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,189,# CHATGPT PROMPT (END)
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,192,# ⭐ **SECTION 99 — WIP / MANUAL OVERRIDES (FULL FILE)**
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,210,# Section 99 — Manual Overrides and Transitional Updates
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,212,## 99.1 — Data Source Migration (TXT → JSON)
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,214,### Purpose
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,217,### Summary of Change
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,228,## 99.2 — JSON Schema (Authoritative)
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,252,### Schema Rules
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,263,## 99.3 — Parser Rules (parse_txt_to_json.py)
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,265,### Responsibilities
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,280,### Error Handling
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,289,## 99.4 — Workflow Pipeline Update
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,291,### New Required Order
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,298,### Workflow Requirements
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,305,## 99.5 — TMDB Normalization Rules
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,307,### Required Behavior
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,316,## 99.6 — Traceability and Auditing
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,318,### Requirements
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,327,## 99.7 — Interdependency Notes
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,329,### Required Chain
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,335,### Constraints
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,342,## 99.8 — Rationale
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,344,### Why TXT → JSON Migration
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,354,### Benefits
+docs/spec/archive/working_notes/SPEC Overide-Notes.txt,363,## 99.9 — Status
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,1,"# **SECTION 99 — WIP, Change, enhancement and SEC chanes and consideratin and upates needed**"
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,6,# **1.1 Purpose of This Section**
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,7,###
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,8,###
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,9,###
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,10,###SPEC CHANGE: TXT inputs to JSON###
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,11,###
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,12,### Concept/Idea
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,15,### Potential/Possible Approach and Design
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,18,### Design Changes Implications
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,21,### Prompt for ChatGPT
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,24,### New JSON Creation
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,27,### SPEC Update/Override Details (for Section 99)
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,30,### Identified Scripts/Changes
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,34,### Deep Considerations
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,37,### Clarifying Questions/Gaps/Assumptions
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,42,### Changes Needed to SPEC Documentation
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,70,# ⭐ **SECTION 99 — WIP / MANUAL OVERRIDES (FULL FILE)**
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,88,# Section 99 — Manual Overrides and Transitional Updates
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,90,## 99.1 — Data Source Migration (TXT → JSON)
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,92,### Purpose
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,95,### Summary of Change
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,106,## 99.2 — JSON Schema (Authoritative)
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,130,### Schema Rules
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,141,## 99.3 — Parser Rules (parse_txt_to_json.py)
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,143,### Responsibilities
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,158,### Error Handling
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,167,## 99.4 — Workflow Pipeline Update
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,169,### New Required Order
+docs/spec/archive/working_notes/Section 99 - WIP change enhancement and security notes.txt,176,### Workflow Requirements
+docs/testing/availability_status_qa_and_validation.md,1,# Availability Status QA and Validation
+docs/testing/availability_status_qa_and_validation.md,3,## Required validation categories
+docs/testing/availability_status_qa_and_validation.md,15,## Test cases
+docs/testing/availability_status_qa_and_validation.md,27,## Live repo QA commands
+docs/testing/availability_status_qa_and_validation.md,34,## Live repo QA artifact paths
+docs/testing/availability_status_qa_and_validation.md,39,## Required QA artifacts Codex must produce
+docs/testing/availability_status_qa_and_validation.md,48,## Phase 2 additions
+docs/testing/availability_status_qa_and_validation.md,61,## Metadata hardening additions
+docs/ui/availability_status_ui_integration.md,1,# Availability Status UI Integration
+docs/ui/availability_status_ui_integration.md,3,## Outcome
+docs/ui/availability_status_ui_integration.md,6,## Target surfaces
+docs/ui/availability_status_ui_integration.md,16,## Rendering rule
+docs/ui/availability_status_ui_integration.md,25,## Shared mapping
+docs/ui/availability_status_ui_integration.md,33,## UI implementation rule
+docs/ui/availability_status_ui_integration.md,36,## Live surfaces now wired
+docs/ui/availability_status_ui_integration.md,47,## Placement rule
+docs/ui_standardization/baseline_contract_v2.md,1,# Baseline Contract V2
+docs/ui_standardization/baseline_contract_v2.md,5,## Approved Component Set
+docs/ui_standardization/baseline_contract_v2.md,17,## Locked Decisions
+docs/ui_standardization/baseline_contract_v2.md,31,## Required Controls Per Entity
+docs/ui_standardization/baseline_contract_v2.md,40,## Popcorn-Only Watch Entry Model
+docs/ui_standardization/baseline_contract_v2.md,51,## Deferred Boundaries
+docs/ui_standardization/baseline_contract_v3.md,1,# Baseline Contract v3
+docs/ui_standardization/baseline_contract_v3.md,3,## Locked Baseline
+docs/ui_standardization/baseline_contract_v3.md,11,## Shared Block Names
+docs/ui_standardization/baseline_contract_v3.md,23,## Action Bar Contract
+docs/ui_standardization/baseline_contract_v3.md,40,## Card Structures
+docs/ui_standardization/baseline_contract_v3.md,42,### Show Card
+docs/ui_standardization/baseline_contract_v3.md,52,### Movie Card
+docs/ui_standardization/baseline_contract_v3.md,62,### Episode Card / Row
+docs/ui_standardization/baseline_contract_v3.md,73,## Show Detail Contract
+docs/ui_standardization/mockup_notes.md,8,# Mockup Notes
+docs/ui_standardization/mockup_notes.md,10,## Variant Influence By Mockup
+docs/ui_standardization/mockup_notes.md,12,### `mockup_show_popup.html`
+docs/ui_standardization/mockup_notes.md,19,### `mockup_movie_popup.html`
+docs/ui_standardization/mockup_notes.md,24,### `mockup_show_card.html`
+docs/ui_standardization/mockup_notes.md,29,### `mockup_movie_card.html`
+docs/ui_standardization/mockup_notes.md,35,### `mockup_episode_card.html`
+docs/ui_standardization/mockup_notes.md,42,## Intentionally Kept
+docs/ui_standardization/mockup_notes.md,49,## Intentionally Excluded
+docs/ui_standardization/mockup_notes.md,55,## What Remains Page-Specific
+docs/ui_standardization/mockup_notes.md,61,## Assumptions
+docs/ui_standardization/preserved_contract_manifest.md,1,# Preserved Contract Manifest
+docs/ui_standardization/proposed_standard_components.md,9,# Proposed Standard Components
+docs/ui_standardization/proposed_standard_components.md,11,## `standard_show_popup`
+docs/ui_standardization/proposed_standard_components.md,69,## `standard_movie_popup`
+docs/ui_standardization/proposed_standard_components.md,112,## `standard_show_card`
+docs/ui_standardization/proposed_standard_components.md,150,## `standard_movie_card`
+docs/ui_standardization/proposed_standard_components.md,187,## `standard_episode_card`
+docs/ui_standardization/proposed_standard_components.md,230,## Supporting Abstractions
+docs/ui_standardization/proposed_standard_components.md,232,### `standard_metadata_row`
+docs/ui_standardization/proposed_standard_components.md,235,### `standard_action_bar`
+docs/ui_standardization/proposed_standard_components.md,238,### `standard_poster_block`
+docs/workflows/availability_status_workflow_design.md,1,# Availability Status Workflow Design
+docs/workflows/availability_status_workflow_design.md,3,## Execution model
+docs/workflows/availability_status_workflow_design.md,13,## Recommended workflow strategy
+docs/workflows/availability_status_workflow_design.md,20,## Required workflow outputs
+docs/workflows/availability_status_workflow_design.md,28,## Live repo workflow files
+docs/workflows/availability_status_workflow_design.md,33,## Current source hierarchy note
+docs/workflows/availability_status_workflow_design.md,38,## Phase 2 workflow note
+docs/workflows/availability_status_workflow_design.md,47,## Metadata hardening workflow note
