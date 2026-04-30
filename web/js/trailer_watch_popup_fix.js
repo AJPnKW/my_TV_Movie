@@ -1,12 +1,13 @@
 /*
 FILE: web/js/trailer_watch_popup_fix.js
-VERSION: v1.2.0
-UPDATED: 2026-04-24
+VERSION: v1.3.0
+UPDATED: 2026-04-30
 CHANGE NOTES:
-- Opens the Watch/Popcorn provider popup immediately on weak networks and TV devices.
-- Uses data/watch_sources_index.json first so the popup does not need full detail JSON for normal use.
-- Shows a useful TMDB providers link immediately while local detail data loads opportunistically.
-- Reduces full-detail fallback timeout so the UI does not feel frozen.
+- Fixes movie/episode popcorn clicks when rendered buttons are missing exact data-watch-source-open identity attributes.
+- Catches popcorn/watch-source buttons by class, aria-label, title, and data attributes.
+- Derives missing movie/show/season/episode context from the closest card/row ancestors.
+- Ensures the provider modal shell exists before opening.
+- Keeps popup local-first and fast for weak trailer networks.
 */
 (function(){
   'use strict';
@@ -40,7 +41,22 @@ CHANGE NOTES:
     if (value.startsWith('/')) return appBasePath() + value;
     return value;
   }
+
+  function ensureProviderShell(){
+    let back = $('#providerBack');
+    if (back) return back;
+    back = document.createElement('div');
+    back.id = 'providerBack';
+    back.className = 'app-modal-backdrop app-modal-backdrop--provider';
+    back.setAttribute('aria-hidden', 'true');
+    back.setAttribute('role', 'dialog');
+    back.setAttribute('aria-modal', 'true');
+    back.innerHTML = '<div id="providerCard" class="app-modal-card app-modal-card--provider" tabindex="0"><div class="app-modal-header"><div id="providerTitle" class="app-modal-title">Where to watch</div><button id="providerClose" class="calbtn" type="button">Close</button></div><div id="providerBody" class="app-modal-body"></div></div>';
+    document.body.appendChild(back);
+    return back;
+  }
   function providerElements(){
+    ensureProviderShell();
     return { back: $('#providerBack'), card: $('#providerCard'), title: $('#providerTitle'), body: $('#providerBody'), close: $('#providerClose') };
   }
   function openProvider(title, html){
@@ -72,29 +88,18 @@ CHANGE NOTES:
   }
   function immediateHtml(label, fallbackUrl){
     const link = fallbackUrl ? '<a class="calbtn trailer-watch-link" href="' + escapeHtml(fallbackUrl) + '" target="_blank" rel="noopener">Open TMDB providers page</a>' : '';
-    return '<div class="trailer-watch-panel">' +
-      '<div class="trailer-watch-title">Opening watch options…</div>' +
-      '<div class="trailer-watch-note">' + escapeHtml(label || 'The popup is ready. Local watch links will appear if they load quickly.') + '</div>' +
-      link +
-      '</div>';
+    return '<div class="trailer-watch-panel"><div class="trailer-watch-title">Opening watch options…</div><div class="trailer-watch-note">' + escapeHtml(label || 'The popup is ready. Local watch links will appear if they load quickly.') + '</div>' + link + '</div>';
   }
   function errorHtml(label, fallbackUrl){
     const link = fallbackUrl ? '<a class="calbtn trailer-watch-link" href="' + escapeHtml(fallbackUrl) + '" target="_blank" rel="noopener">Open TMDB providers page</a>' : '';
-    return '<div class="trailer-watch-panel trailer-watch-panel--warn">' +
-      '<div class="trailer-watch-title">Local watch links did not load fast enough</div>' +
-      '<div class="trailer-watch-note">' + escapeHtml(label || 'The external TMDB providers page is available below while local links continue to be optimized.') + '</div>' +
-      link +
-      '</div>';
+    return '<div class="trailer-watch-panel trailer-watch-panel--warn"><div class="trailer-watch-title">Local watch links did not load fast enough</div><div class="trailer-watch-note">' + escapeHtml(label || 'The external TMDB providers page is available below while local links continue to be optimized.') + '</div>' + link + '</div>';
   }
   function sourceButton(source){
     const href = text(source && source.href);
     if (!href) return '';
     const label = text(source.label || source.key || source.type || 'Watch source');
     const note = text(source.note || source.status || '');
-    return '<a class="trailer-watch-source" href="' + escapeHtml(href) + '" target="_blank" rel="noopener">' +
-      '<span class="trailer-watch-source__label">' + escapeHtml(label) + '</span>' +
-      (note ? '<span class="trailer-watch-source__note">' + escapeHtml(note) + '</span>' : '') +
-      '</a>';
+    return '<a class="trailer-watch-source" href="' + escapeHtml(href) + '" target="_blank" rel="noopener"><span class="trailer-watch-source__label">' + escapeHtml(label) + '</span>' + (note ? '<span class="trailer-watch-source__note">' + escapeHtml(note) + '</span>' : '') + '</a>';
   }
   function providersFromWatch(item){
     if (!item || typeof item !== 'object') return [];
@@ -133,12 +138,7 @@ CHANGE NOTES:
     const fallback = text(item && item.tmdb_provider_url) || tmdbWatchUrl(kind === 'movie' ? 'movie' : 'tv', id);
     const buttons = sources.length ? sources.map(sourceButton).join('') : '<div class="trailer-watch-note">No direct local watch links are configured for this item yet.</div>';
     const fallbackLink = fallback ? '<a class="calbtn trailer-watch-link" href="' + escapeHtml(fallback) + '" target="_blank" rel="noopener">Open TMDB providers page</a>' : '';
-    return '<div class="trailer-watch-panel">' +
-      '<div class="trailer-watch-title">' + escapeHtml(title || 'Watch options') + '</div>' +
-      '<div class="trailer-watch-grid">' + buttons + '</div>' +
-      providerChipsHtml(item) +
-      fallbackLink +
-      '</div>';
+    return '<div class="trailer-watch-panel"><div class="trailer-watch-title">' + escapeHtml(title || 'Watch options') + '</div><div class="trailer-watch-grid">' + buttons + '</div>' + providerChipsHtml(item) + fallbackLink + '</div>';
   }
   async function fetchJsonWithTimeout(url, timeoutMs){
     const controller = new AbortController();
@@ -154,8 +154,12 @@ CHANGE NOTES:
     return watchIndexPromise;
   }
   function watchIndexKeys(ctx){
-    if (ctx.kind === 'movie') return ['movie:' + ctx.id];
-    return ['episode:' + ctx.showId + ':' + ctx.season + ':' + ctx.episode, 'tv:' + ctx.showId];
+    const keys = [];
+    if (ctx.kind === 'movie' && ctx.id) keys.push('movie:' + ctx.id);
+    if (ctx.showId && ctx.season && ctx.episode) keys.push('episode:' + ctx.showId + ':' + ctx.season + ':' + ctx.episode);
+    if (ctx.showId) keys.push('tv:' + ctx.showId);
+    if (ctx.id && ctx.kind !== 'movie') keys.push('tv:' + ctx.id);
+    return keys;
   }
   function lookupWatchIndex(index, ctx){
     if (!index || typeof index !== 'object' || !index.items || typeof index.items !== 'object') return null;
@@ -173,20 +177,59 @@ CHANGE NOTES:
     const episodes = Array.isArray(season && season.episodes) ? season.episodes : [];
     return episodes.find(function(item){ return Number(item.episode_number || item.number || item.ep) === Number(episodeNumber); }) || null;
   }
+  function firstAttr(el, names){
+    for (const name of names){
+      const value = el && el.getAttribute ? text(el.getAttribute(name)) : '';
+      if (value) return value;
+    }
+    return '';
+  }
+  function closestContextHost(button){
+    return button.closest('[data-id],[data-show],[data-movie-open],[data-show-open],[data-season],[data-episode],.media-card,.episode-row,.calendar-item,.watchme-item,.watchme-episode-card,.watchme-movie-card') || button;
+  }
+  function kindFromButton(button, host){
+    const explicit = text(button.getAttribute('data-watch-source-open'));
+    if (explicit) return explicit;
+    const cls = ((host && host.className) || '') + ' ' + ((button && button.className) || '');
+    if (firstAttr(button, ['data-movie-open']) || firstAttr(host, ['data-movie-open']) || /movie/i.test(cls)) return 'movie';
+    if (firstAttr(button, ['data-season', 'data-episode']) || firstAttr(host, ['data-season', 'data-episode']) || /episode/i.test(cls)) return 'episode';
+    return 'tv';
+  }
   function contextFromButton(button){
-    const kind = text(button.getAttribute('data-watch-source-open'));
-    return { kind: kind, id: text(button.getAttribute('data-id')), showId: text(button.getAttribute('data-show') || button.getAttribute('data-id')), season: text(button.getAttribute('data-season')), episode: text(button.getAttribute('data-episode')) };
+    const host = closestContextHost(button);
+    const kind = kindFromButton(button, host);
+    const id = firstAttr(button, ['data-id', 'data-tmdb-id', 'data-movie-id', 'data-movie-open', 'data-show-open']) || firstAttr(host, ['data-id', 'data-tmdb-id', 'data-movie-id', 'data-movie-open', 'data-show-open']);
+    const showId = firstAttr(button, ['data-show', 'data-show-id', 'data-show-open']) || firstAttr(host, ['data-show', 'data-show-id', 'data-show-open']) || (kind === 'movie' ? '' : id);
+    return {
+      kind: kind === 'movie' ? 'movie' : (kind === 'episode' ? 'episode' : 'tv'),
+      id: id,
+      showId: showId,
+      season: firstAttr(button, ['data-season', 'data-season-number']) || firstAttr(host, ['data-season', 'data-season-number']),
+      episode: firstAttr(button, ['data-episode', 'data-episode-number']) || firstAttr(host, ['data-episode', 'data-episode-number']),
+      title: text(button.getAttribute('aria-label') || button.getAttribute('title') || host.getAttribute('aria-label') || host.getAttribute('title'))
+    };
+  }
+  function findWatchButton(eventTarget){
+    const el = eventTarget && eventTarget.closest ? eventTarget.closest('a,button,[role="button"],.actionbar-btn') : null;
+    if (!el) return null;
+    if (el.matches('[data-watch-source-open]')) return el;
+    if (el.classList && el.classList.contains('popcorn')) return el;
+    const label = text(el.getAttribute('aria-label') || el.getAttribute('title')).toLowerCase();
+    if (label.includes('watch source') || label.includes('where to watch') || label.includes('watch options')) return el;
+    const icon = text(el.textContent);
+    if (icon.includes('🍿')) return el;
+    return null;
   }
   async function handleWatchClick(event){
-    const button = event.target && event.target.closest ? event.target.closest('[data-watch-source-open]') : null;
+    const button = findWatchButton(event.target);
     if (!button) return;
     event.preventDefault();
     event.stopPropagation();
-    event.stopImmediatePropagation();
+    if (event.stopImmediatePropagation) event.stopImmediatePropagation();
 
     const ctx = contextFromButton(button);
     const isMovie = ctx.kind === 'movie';
-    const detailId = isMovie ? ctx.id : ctx.showId;
+    const detailId = isMovie ? ctx.id : (ctx.showId || ctx.id);
     const fallback = tmdbWatchUrl(isMovie ? 'movie' : 'tv', detailId);
     openProvider('Where to watch', immediateHtml('The popup is ready. Loading local watch links now.', fallback));
 
@@ -194,7 +237,7 @@ CHANGE NOTES:
       const index = await loadWatchIndex();
       const indexed = lookupWatchIndex(index, ctx);
       if (indexed) {
-        openProvider(text(indexed.title || 'Watch options'), renderSources(indexed.title || 'Watch options', indexed, indexed.kind || ctx.kind, detailId));
+        openProvider(text(indexed.title || ctx.title || 'Watch options'), renderSources(indexed.title || ctx.title || 'Watch options', indexed, indexed.kind || ctx.kind, detailId));
         return;
       }
     } catch (_) {}
@@ -203,12 +246,12 @@ CHANGE NOTES:
       const detail = await loadDetail(detailId);
       if (!detail) throw new Error('No detail data loaded');
       if (isMovie) {
-        openProvider((detail.title || 'Movie') + ' • Watch options', renderSources(detail.title || 'Movie', detail, 'movie', detailId));
+        openProvider((detail.title || ctx.title || 'Movie') + ' • Watch options', renderSources(detail.title || ctx.title || 'Movie', detail, 'movie', detailId));
         return;
       }
       const episode = findEpisode(detail, ctx.season, ctx.episode);
       if (!episode) {
-        openProvider((detail.title || detail.name || 'Show') + ' • Watch options', renderSources(detail.title || detail.name || 'Show', detail, 'tv', detailId));
+        openProvider((detail.title || detail.name || ctx.title || 'Show') + ' • Watch options', renderSources(detail.title || detail.name || ctx.title || 'Show', detail, 'tv', detailId));
         return;
       }
       const title = (detail.title || detail.name || 'Show') + ' • ' + (episode.title || episode.name || ('Episode ' + ctx.episode));
@@ -221,23 +264,12 @@ CHANGE NOTES:
     if (document.getElementById('trailerWatchPopupFixStyles')) return;
     const style = document.createElement('style');
     style.id = 'trailerWatchPopupFixStyles';
-    style.textContent = '' +
-      '.trailer-watch-panel{display:grid;gap:12px;padding:10px;}' +
-      '.trailer-watch-title{font-size:20px;font-weight:800;line-height:1.15;}' +
-      '.trailer-watch-note{color:#cbd5e1;font-size:14px;line-height:1.35;}' +
-      '.trailer-watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;}' +
-      '.trailer-watch-source{display:grid;gap:3px;padding:12px;border-radius:12px;text-decoration:none;color:#fff;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16);}' +
-      '.trailer-watch-source:focus,.trailer-watch-source:hover{outline:2px solid rgba(96,165,250,.9);background:rgba(96,165,250,.18);}' +
-      '.trailer-watch-source__label{font-weight:800;}' +
-      '.trailer-watch-source__note{font-size:12px;color:#cbd5e1;}' +
-      '.trailer-watch-link{width:max-content;max-width:100%;}' +
-      '.trailer-provider-chips{display:flex;gap:6px;flex-wrap:wrap;}' +
-      '.trailer-provider-chip{display:inline-flex;align-items:center;gap:5px;max-width:170px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:12px;}' +
-      '.trailer-provider-chip img{width:20px;height:20px;object-fit:contain;border-radius:4px;background:#fff;}' ;
+    style.textContent = '.trailer-watch-panel{display:grid;gap:12px;padding:10px}.trailer-watch-title{font-size:20px;font-weight:800;line-height:1.15}.trailer-watch-note{color:#cbd5e1;font-size:14px;line-height:1.35}.trailer-watch-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}.trailer-watch-source{display:grid;gap:3px;padding:12px;border-radius:12px;text-decoration:none;color:#fff;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.16)}.trailer-watch-source:focus,.trailer-watch-source:hover{outline:2px solid rgba(96,165,250,.9);background:rgba(96,165,250,.18)}.trailer-watch-source__label{font-weight:800}.trailer-watch-source__note{font-size:12px;color:#cbd5e1}.trailer-watch-link{width:max-content;max-width:100%}.trailer-provider-chips{display:flex;gap:6px;flex-wrap:wrap}.trailer-provider-chip{display:inline-flex;align-items:center;gap:5px;max-width:170px;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);font-size:12px}.trailer-provider-chip img{width:20px;height:20px;object-fit:contain;border-radius:4px;background:#fff}';
     document.head.appendChild(style);
   }
   function boot(){
     installStyles();
+    ensureProviderShell();
     loadWatchIndex();
     const close = $('#providerClose');
     const back = $('#providerBack');
@@ -249,7 +281,10 @@ CHANGE NOTES:
       back.dataset.trailerFixBackBound = '1';
       back.addEventListener('click', function(event){ if (event.target === back) closeProvider(); }, true);
     }
-    document.addEventListener('click', handleWatchClick, true);
+    if (!document.documentElement.dataset.watchPopupDelegated) {
+      document.documentElement.dataset.watchPopupDelegated = '1';
+      document.addEventListener('click', handleWatchClick, true);
+    }
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
   else boot();
