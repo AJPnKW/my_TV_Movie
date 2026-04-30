@@ -90,17 +90,20 @@ foreach ($page in $pageFiles) {
         if ($navText -match '>Dashboard<|>Shows<|>Movies<|>Calendar<|>Watch Me<|>Discover<|>Config<|>Inputs Editor<') {
             Add-CheckError "$page primary nav must be icon-only visible text"
         }
-        foreach ($requiredNav in @('Dashboard','Shows','Movies','Calendar','Discover','Tracking','Config','Inputs Editor')) {
+        foreach ($requiredNav in @('Dashboard','Shows','Movies','Calendar','Tracking','Config','Inputs Editor')) {
             if ($navText -notmatch "aria-label=`"$requiredNav`"") {
                 Add-CheckError "$page icon-only nav missing required accessible label: $requiredNav"
             }
         }
-        foreach ($requiredTab in @('data-tab="dashboard"','data-tab="shows"','data-tab="movies"','data-tab="calendar"','data-tab="discover"','data-tab="manage-watch-state"','data-tab="config"','data-tab="inputs-editor"')) {
+        foreach ($requiredTab in @('data-tab="dashboard"','data-tab="shows"','data-tab="movies"','data-tab="calendar"','data-tab="manage-watch-state"','data-tab="config"','data-tab="inputs-editor"')) {
             if ($navText -notlike "*$requiredTab*") {
                 Add-CheckError "$page icon-only nav missing required primary tab: $requiredTab"
             }
         }
-        if ($navText -notmatch '🏠' -or $navText -notmatch '📺' -or $navText -notmatch '🎬' -or $navText -notmatch '📅' -or $navText -notmatch '🔍' -or $navText -notmatch '✅') {
+        if ($navText -match 'data-tab="discover"') {
+            Add-CheckError "$page primary nav must not expose deferred Discover"
+        }
+        if ($navText -notmatch '🏠' -or $navText -notmatch '📺' -or $navText -notmatch '🎞️' -or $navText -notmatch '📅' -or $navText -notmatch '✅') {
             Add-CheckError "$page icon-only nav missing required accessible labels"
         }
     }
@@ -139,6 +142,16 @@ if (Test-Path -LiteralPath 'tools/start_inputs_editor.ps1') {
 if (Test-Path -LiteralPath 'docs.zip') { Add-CheckError 'Root docs.zip should not be tracked or restored.' }
 if (Test-Path -LiteralPath 'docs (2).zip') { Add-CheckError 'Root docs (2).zip should not be tracked or restored.' }
 if (Test-Path -LiteralPath 'reports.zip') { Add-CheckError 'Root reports.zip should not be tracked or restored.' }
+$trackedZipFiles = & git ls-files '*.zip'
+foreach ($path in $trackedZipFiles) {
+    Add-CheckError "Zip artifact must not be tracked: $path"
+}
+$zipFiles = Get-ChildItem -LiteralPath $RepoRoot.Path -Recurse -File -Filter '*.zip' -Force |
+    Where-Object { $_.FullName -notmatch '\\.git\\' } |
+    ForEach-Object { [System.IO.Path]::GetRelativePath($RepoRoot.Path, $_.FullName).Replace('\','/') }
+foreach ($path in $zipFiles) {
+    Add-CheckError "Zip artifact must be cleaned up: $path"
+}
 foreach ($needle in @(
     '$staticPort = 8000',
     '$inputsPort = 8787',
@@ -246,7 +259,7 @@ $actionText = Get-Content -Raw -LiteralPath 'web/js/action_bar.js'
 foreach ($needle in @(
     "watch_source: '🍿'",
     "watched_status: '⌚'",
-    "watch_list: '🎟️'",
+    "watch_list: '🎫'",
     "favourite: '💕'",
     "ACTION_BAR_ORDER = Object.freeze"
 )) {
@@ -255,8 +268,8 @@ foreach ($needle in @(
 if ($actionText -match "rating:\s*'[^']+'") {
     Add-CheckError 'Rating icon must stay empty; rating renders as compact text.'
 }
-if ($actionText -like "*watch_list: '🎫'*") {
-    Add-CheckError 'Action bar must use Ticket U+1F3AB for watch_list, not admission ticket.'
+if ($actionText -like "*watch_list: '🎟️'*") {
+    Add-CheckError 'Action bar must use the master-contract watch_list icon.'
 }
 foreach ($needle in @(
     'compact percent',
@@ -359,10 +372,11 @@ foreach ($needle in @(
     'web/manage_watch_state.html',
     'web/discover.html',
     'web/watch_me.html',
-    'assets/custom/the_boys_hub_logo2.png',
-    '🍿 ⌚ 🎟️ 💕 76%',
-    'Primary view icons are standalone colourful Unicode/web icons',
-    'Standalone page: <code>web/manage_watch_state.html</code>'
+    'Boys logo must preserve aspect ratio',
+    '🍿 ⌚ 🎫 💕 76%',
+    'Primary nav icons are standalone Unicode/web icons',
+    'Standalone page: <code>web/manage_watch_state.html</code>',
+    'Forbidden active icons'
 )) {
     if ($masterContract -notlike "*$needle*") { Add-CheckError "Master contract missing source-of-truth entry: $needle" }
 }
@@ -370,7 +384,7 @@ $docIndex = Get-Content -Raw -LiteralPath 'docs/index.html'
 if ($docIndex -notlike '*00_master_contract.html*') {
     Add-CheckError 'docs/index.html must point to docs/00_master_contract.html.'
 }
-if ($masterContract -notlike '*Forbidden as card action icons*') {
+if ($masterContract -notlike '*Forbidden active icons*') {
     Add-CheckError 'Master contract must document forbidden card action icons.'
 }
 
@@ -546,19 +560,21 @@ function ignoreConsole(message){
       const badText = result.tabs.filter(tab => visibleTextLabels.has(tab.text));
       const framedTabs = result.tabs.filter(tab => tab.borderTopWidth > 0 || tab.borderLeftWidth > 0 || tab.borderRadius > 2);
       const missingLabels = result.tabs.filter(tab => !tab.label);
-      const requiredTabs = ['dashboard','shows','movies','calendar','discover','manage-watch-state','config','inputs-editor'];
+      const requiredTabs = ['dashboard','shows','movies','calendar','manage-watch-state','config','inputs-editor'];
       const missingRequiredTabs = requiredTabs.filter(id => !result.tabs.some(tab => tab.id === id));
       const logoRatio = result.logoRect && result.logoRect.height ? result.logoRect.width / result.logoRect.height : 99;
       const logoBad = !result.logoRect || !result.logoNatural || result.logoNatural.width !== result.logoNatural.height || logoRatio > 1.25 || result.logoRect.width > 44 || result.logoRect.height > 44 || !result.headerRect || result.logoRect.top < result.headerRect.top - 1 || result.logoRect.bottom > result.headerRect.bottom + 1 || result.headerRect.height > 70;
       const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || !result.manageHasTable || result.manageCardCount > 0 || result.manageButtonCount < 1 || result.manageColumnCount < 10 || result.manageRowCount < 1));
       const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
       const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.hostScrollWidth <= result.calendar.hostClientWidth));
-      const actionBad = result.actionButtons.some(btn => btn.icon === '🎫' || btn.icon === '▶' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
+      const deferredDiscoverInNav = result.tabs.some(tab => tab.id === 'discover');
+      const movieNavBad = result.tabs.some(tab => tab.id === 'movies' && tab.text === '🎬');
+      const actionBad = result.actionButtons.some(btn => btn.icon === '🎟️' || btn.icon === '▶' || btn.icon === '🎬' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
       const stickyBad = pageName === 'index.html' && (!result.dashHeads.some(h => /Current \/ Recent/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Watchlist/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Upcoming/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Recommendations/.test(h.text) && h.position === 'sticky'));
       const discoverBad = pageName === 'discover.html' && result.discoverCards.length > 0;
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || discoverBad || pageErrors.length){
-        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, discoverCards: result.discoverCards, errors: pageErrors });
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || deferredDiscoverInNav || movieNavBad || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || discoverBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, deferredDiscoverInNav, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, discoverCards: result.discoverCards, errors: pageErrors });
       }
       await page.close();
     }
