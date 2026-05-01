@@ -1,13 +1,12 @@
 /*
 FILE: web/js/action_bar.js
-VERSION: v1.4.0
-UPDATED: 2026-04-29T00:00:00Z
+VERSION: v1.5.0
+UPDATED: 2026-04-30T00:00:00Z
 CHANGE NOTES:
 - Standardized action order: popcorn, watched_status, watch_list, favourite, rating.
 - Uses Unicode text icons so buttons resize with card density and TV/browser font scaling.
-- Uses explicit watch_list and watched_status data attributes.
-- Renders rating as compact percent text.
-- Locks current icon contract: popcorn, watch, ticket, double-heart, compact percent rating.
+- Popcorn/watch-source buttons now carry a normalized deterministic data payload where available.
+- Popcorn click contract: open popup first, resolve watch-source data second.
 */
 
 export const ACTION_BAR_ORDER = Object.freeze([
@@ -42,6 +41,7 @@ export function applyRuntimeContract(doc = document){
   root.setAttribute('data-action-bar-order', ACTION_BAR_ORDER.join(','));
   root.setAttribute('data-watched-status-values', WATCHED_STATUS_VALUES.join(','));
   root.setAttribute('data-watch-list-values', WATCH_LIST_VALUES.join(','));
+  root.setAttribute('data-popcorn-contract', 'open_popup_first_resolve_second');
 }
 
 function escAttr(v){
@@ -64,6 +64,45 @@ function splitAttrs(attrs = {}){
   const href = next.href || '#';
   delete next.href;
   return { href, attrs: next };
+}
+
+function firstValue(...values){
+  for (const value of values){
+    const text = String(value == null ? '' : value).trim();
+    if (text) return text;
+  }
+  return '';
+}
+
+function normalizeWatchKind(value){
+  const text = String(value || '').trim().toLowerCase();
+  if (text === 'movie') return 'movie';
+  if (text === 'episode') return 'episode';
+  if (text === 'show' || text === 'tv') return 'tv';
+  return 'movie';
+}
+
+function normalizeWatchAttrs(watchOptions = {}, attrs = {}){
+  const rawKind = normalizeWatchKind(watchOptions.kind || attrs['data-kind'] || attrs['data-watch-source-open']);
+  const id = firstValue(watchOptions.id, attrs['data-id'], attrs['data-tmdb-id'], attrs['data-movie-id'], attrs['data-movie-open'], attrs['data-show-id'], attrs['data-show'], attrs['data-show-open']);
+  const showId = firstValue(watchOptions.showId, attrs['data-show-id'], attrs['data-show'], attrs['data-show-open'], rawKind === 'movie' ? '' : id);
+  const movieId = firstValue(watchOptions.movieId, attrs['data-movie-id'], attrs['data-movie-open'], rawKind === 'movie' ? id : '');
+  const season = firstValue(watchOptions.season, attrs['data-season'], attrs['data-season-number']);
+  const episode = firstValue(watchOptions.episode, attrs['data-episode'], attrs['data-episode-number']);
+  const normalized = {
+    ...attrs,
+    'data-watch-source-open': rawKind,
+    'data-kind': rawKind,
+    'data-popcorn-action': 'open-provider-popup',
+    'data-popcorn-contract': 'open-first'
+  };
+  if (id) normalized['data-id'] = id;
+  if (movieId) normalized['data-movie-id'] = movieId;
+  if (showId) normalized['data-show-id'] = showId;
+  if (showId) normalized['data-show'] = showId;
+  if (season) normalized['data-season'] = season;
+  if (episode) normalized['data-episode'] = episode;
+  return normalized;
 }
 
 function normalizeWatchAvailabilityStatus(value){
@@ -91,10 +130,7 @@ export function renderActionBarHtml(options = {}){
 
   if (options.watch){
     const watchLink = splitAttrs(options.watch.attrs || {});
-    left.push(renderAnchor('popcorn', watchLink.href, 'Watch sources', 'Watch sources', CONTRACT_ICONS.watch_source, {
-      'data-watch-source-open': options.watch.kind || 'movie',
-      ...watchLink.attrs
-    }, {
+    left.push(renderAnchor('popcorn', watchLink.href, 'Watch sources', 'Watch sources', CONTRACT_ICONS.watch_source, normalizeWatchAttrs(options.watch, watchLink.attrs), {
       availabilityStatus: options.watch.availabilityStatus
     }));
   }
