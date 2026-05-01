@@ -5,321 +5,43 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>my_TV_Movie — Master Contract</title>
 <style>
-:root {
-  color-scheme: dark;
-  --bg:#0b111a; --panel:#111a26; --panel2:#162232; --text:#e5eefb; --muted:#9fb0c8;
-  --line:#314158; --accent:#60a5fa; --warn:#fbbf24; --bad:#fb7185; --good:#34d399;
-}
-body { margin:0; font-family:Segoe UI, Arial, sans-serif; background:var(--bg); color:var(--text); line-height:1.45; }
-header { position:sticky; top:0; z-index:10; background:linear-gradient(180deg,#0b111a,#0b111ae8); border-bottom:1px solid var(--line); padding:14px 22px; }
-main { max-width:1240px; margin:0 auto; padding:22px; }
-h1,h2,h3 { color:#f8fbff; }
-h1 { margin:0 0 6px; font-size:26px; }
-h2 { margin-top:34px; border-bottom:1px solid var(--line); padding-bottom:8px; }
-a { color:#93c5fd; }
-.card { background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px; margin:14px 0; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px; }
-table { width:100%; border-collapse:collapse; margin:12px 0; background:var(--panel); border:1px solid var(--line); }
-th,td { padding:9px 10px; border:1px solid var(--line); vertical-align:top; }
-th { background:var(--panel2); text-align:left; }
-code,pre { background:#07101c; border:1px solid #243044; border-radius:8px; }
-code { padding:1px 5px; }
-pre { padding:12px; overflow:auto; }
-.status-good { color:var(--good); font-weight:700; }
-.status-warn { color:var(--warn); font-weight:700; }
-.status-bad { color:var(--bad); font-weight:700; }
-.small { color:var(--muted); font-size:13px; }
-nav.toc a { display:inline-block; margin:4px 10px 4px 0; padding:5px 9px; border:1px solid var(--line); border-radius:999px; text-decoration:none; }
+:root{color-scheme:dark;--bg:#0b111a;--panel:#111a26;--panel2:#162232;--text:#e5eefb;--muted:#9fb0c8;--line:#314158;--accent:#60a5fa;--warn:#fbbf24;--bad:#fb7185;--good:#34d399}*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}header{position:sticky;top:0;z-index:10;background:linear-gradient(180deg,#0b111a,#0b111ae8);border-bottom:1px solid var(--line);padding:14px 22px}main{max-width:1240px;margin:0 auto;padding:22px}h1,h2,h3{color:#f8fbff}h1{margin:0 0 6px;font-size:26px}h2{margin-top:34px;border-bottom:1px solid var(--line);padding-bottom:8px}a{color:#93c5fd}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}table{width:100%;border-collapse:collapse;margin:12px 0;background:var(--panel);border:1px solid var(--line)}th,td{padding:9px 10px;border:1px solid var(--line);vertical-align:top}th{background:var(--panel2);text-align:left}code,pre{background:#07101c;border:1px solid #243044;border-radius:8px}code{padding:1px 5px}pre{padding:12px;overflow:auto}.status-good,.good{color:var(--good);font-weight:700}.status-warn,.warn{color:var(--warn);font-weight:700}.status-bad,.bad{color:var(--bad);font-weight:700}.small{color:var(--muted);font-size:13px}nav.toc a{display:inline-block;margin:4px 10px 4px 0;padding:5px 9px;border:1px solid var(--line);border-radius:999px;text-decoration:none}
 </style>
 </head>
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Last rebuilt by ChatGPT on 2026-04-30.</div>
+<div class="small">Only active documentation source of truth. Version MC-2026-04-30.2. Updated incrementally from archived documentation extraction, Codex QA results, and live-rendering defects.</div>
 <nav class="toc">
-<a href="#governance">Governance</a>
-<a href="#pages">Pages</a>
-<a href="#ui">UI</a>
-<a href="#watch-state">Watch State</a>
-<a href="#trakt">Trakt</a>
-<a href="#data">Data</a>
-<a href="#assets">Assets</a>
-<a href="#qa">QA</a>
-<a href="#deprecated">Deprecated</a>
-<a href="#codex">Codex</a>
+<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#data">Data</a><a href="#assets">Assets</a><a href="#qa">QA</a><a href="#deprecated">Deprecated</a><a href="#rendering-defects">Rendering Defects</a><a href="#accountability">Accountability</a><a href="#codex">Codex</a>
 </nav>
 </header>
 <main>
-
 <section id="governance" class="card">
 <h2>1. Documentation Governance</h2>
 <p><strong>This file is the only active source of truth.</strong> All older docs are historical evidence after this reset. They may be used for recovery or comparison, but they must not override this file.</p>
-<table>
-<tr><th>Rule</th><th>Contract</th></tr>
-<tr><td>Active source of truth</td><td><code>docs/00_master_contract.html</code></td></tr>
-<tr><td>Index</td><td><code>docs/index.html</code> may point here but does not define behavior.</td></tr>
-<tr><td>Reports</td><td>Evidence only; never active design authority.</td></tr>
-<tr><td>Archived docs</td><td>Historical only. Useful ideas must be migrated into this file before Codex implements them.</td></tr>
-<tr><td>ChatGPT role</td><td>Maintains this documentation contract and audits drift.</td></tr>
-<tr><td>Codex role</td><td>Implements code against this contract. Codex must not invent new documentation architecture.</td></tr>
-</table>
+<table><tr><th>Rule</th><th>Contract</th></tr><tr><td>Active source of truth</td><td><code>docs/00_master_contract.html</code></td></tr><tr><td>Index</td><td><code>docs/index.html</code> may point here but does not define behavior.</td></tr><tr><td>Reports</td><td>Evidence only; never active design authority.</td></tr><tr><td>Archived docs</td><td>Historical only. Useful ideas must be migrated into this file before Codex implements them.</td></tr><tr><td>ChatGPT role</td><td>Maintains this documentation contract and audits drift.</td></tr><tr><td>Codex role</td><td>Implements code against this contract. Codex must not invent new documentation architecture.</td></tr></table>
 <h3>1.1 Version History and Extraction Lineage</h3>
-<table>
-<tr><th>Date</th><th>Source</th><th>Change</th><th>Reason</th></tr>
-<tr><td>2026-04-30</td><td>Current review pass</td><td>Promoted Discover from deferred/compatibility to an active discovery surface with a separate non-local feed requirement and exclusion rules.</td><td>User clarified Discover is intended to behave like a Trakt-style discovery page rather than a placeholder.</td></tr>
-<tr><td>2026-04-29</td><td>Extraction trail</td><td>Preserved watchlist/manage-state separation, card/action reuse, and asset/validation rules.</td><td>Prevent duplicate implementations and keep recovered concepts traceable.</td></tr>
-</table>
-<h3>1.2 Source Extraction Register</h3>
-<ul>
-<li><code>docs/_extraction/extraction_log.html</code> - living extraction record; master contract must be updated incrementally.</li>
-<li><code>docs/_extraction/extraction_pass_01_working_log.html</code> - records watchlist, manage-state, asset, navigation, and validation findings.</li>
-<li><code>docs/_extraction/20260429_contract_update_queue.html</code> - queued master-contract updates, including manage-state and watchlist recovery.</li>
-<li><code>docs/_extraction/master_contract_change_control_amendment.html</code> - change-control requirements for version history and source lineage.</li>
-</ul>
+<table><tr><th>Date</th><th>Version</th><th>Source</th><th>Change</th><th>Reason</th></tr><tr><td>2026-04-29</td><td>MC-2026-04-29</td><td>Extraction trail</td><td>Preserved watchlist/manage-state separation, card/action reuse, and asset/validation rules.</td><td>Prevent duplicate implementations and keep recovered concepts traceable.</td></tr><tr><td>2026-04-30</td><td>MC-2026-04-30</td><td>Current review pass</td><td>Promoted Discover from deferred/compatibility to an active discovery surface with separate non-local feed requirement and exclusion rules.</td><td>User clarified Discover is intended to behave like a Trakt-style discovery page rather than a placeholder.</td></tr><tr><td>2026-04-30</td><td>MC-2026-04-30.1</td><td>Gap closure pass</td><td>Added detailed acceptance rules for UI, Manage Watch State, Discover, Calendar, Trakt, assets, D-pad, and Codex completion.</td><td>Close vague gaps before implementation.</td></tr><tr><td>2026-04-30</td><td>MC-2026-04-30.2</td><td>Live screenshot + Codex performance pass review</td><td>Added dashboard duplicate-prevention rule, fixed card-size acceptance, sticky-nav ancestor overflow rule, performance-regression gates, and global Codex accountability/no-deferred-items rule.</td><td>Live render showed duplicate dashboard cards, oversized recommendation cards, and sticky-nav failure after performance changes.</td></tr></table>
+<h3>1.2 Source Extraction Register</h3><ul><li><code>docs/_extraction/extraction_log.html</code> - living extraction record; master contract must be updated incrementally.</li><li><code>docs/_extraction/extraction_pass_01_working_log.html</code> - records watchlist, manage-state, asset, navigation, and validation findings.</li><li><code>docs/_extraction/20260429_contract_update_queue.html</code> - queued master-contract updates, including manage-state and watchlist recovery.</li><li><code>docs/_extraction/master_contract_change_control_amendment.html</code> - change-control requirements for version history and source lineage.</li></ul>
 </section>
-
-<section id="pages" class="card">
-<h2>2. Page / Route Contract</h2>
-<table>
-<tr><th>Route</th><th>Status</th><th>Purpose</th><th>Notes</th></tr>
-<tr><td><code>web/index.html</code></td><td class="status-good">Active</td><td>Dashboard: compact daily/weekly, watchlist preview, upcoming, recommendations.</td><td>Uses shared runtime/card/action systems.</td></tr>
-<tr><td><code>web/shows.html</code></td><td class="status-good">Active</td><td>Show library.</td><td>Show card baseline for all show cards.</td></tr>
-<tr><td><code>web/movies.html</code></td><td class="status-good">Active</td><td>Movie library.</td><td>Movie card baseline for all movie cards.</td></tr>
-<tr><td><code>web/calendar.html</code></td><td class="status-good">Active</td><td>Calendar grid/list and release browsing.</td><td>Shared +X more behavior with dashboard.</td></tr>
-<tr><td><code>web/config.html</code></td><td class="status-good">Active</td><td>Application settings only.</td><td>Must not contain Manage Watch State UI.</td></tr>
-<tr><td><code>web/manage_watch_state.html</code></td><td class="status-good">Active</td><td>Standalone watch-state matrix: watched, watchlist, favourite, Trakt sync/mismatch review.</td><td>Must be separate from Config.</td></tr>
-<tr><td><code>web/watch_me.html</code></td><td class="status-warn">Compatibility / lightweight list</td><td>Simple watch/release listing if retained.</td><td>Must not duplicate Manage Watch State. Can reuse shared runtime/action systems.</td></tr>
-<tr><td><code>web/watchlist.html</code></td><td class="status-warn">Planned recovery / standalone candidate</td><td>Historical standalone watchlist/list page concept recovered from Section 4.9.</td><td>Not SPA; can be rebuilt if useful for trailer-friendly simple view.</td></tr>
-<tr><td><code>web/discover.html</code></td><td class="status-good">Active</td><td>Discovery surface similar to Trakt Discover: curated/trending/featured suggestions that are not already watched, watching, or otherwise locally known.</td><td>Uses a separate discovery feed/source from the local catalog. Must not duplicate Dashboard recommendations.</td></tr>
-<tr><td><code>web/config_trakt.html</code></td><td class="status-bad">Deprecated</td><td>Old Trakt config surface.</td><td>Archive only; Trakt management belongs in Manage Watch State / integration workflow.</td></tr>
-</table>
-</section>
-
-<section id="ui" class="card">
-<h2>3. UI Contract</h2>
-<h3>3.1 Header and Navigation</h3>
-<ul>
-<li>Header contains Boys logo, primary icon navigation, and Ready/version status.</li>
-<li>Primary nav icons are standalone Unicode/web icons, not boxed buttons.</li>
-<li>Icons must be large enough to scan visually and must not overlap at desktop, partial desktop, tablet, or phone widths.</li>
-<li>Ready/version block must not collide with navigation.</li>
-<li>Boys logo must preserve aspect ratio and must not stretch into a banner.</li>
-<li>Header is sticky and compact.</li>
-</ul>
-<h3>3.2 Media Cards</h3>
-<pre>[ image ]
+<section id="pages" class="card"><h2>2. Page / Route Contract</h2><table><tr><th>Route</th><th>Status</th><th>Purpose</th><th>Notes</th></tr><tr><td><code>web/index.html</code></td><td class="status-good">Active</td><td>Dashboard: compact daily/weekly, watchlist preview, upcoming, recommendations.</td><td>Uses shared runtime/card/action systems. Must dedupe each section before rendering.</td></tr><tr><td><code>web/shows.html</code></td><td class="status-good">Active</td><td>Show library.</td><td>Show card baseline for all show cards.</td></tr><tr><td><code>web/movies.html</code></td><td class="status-good">Active</td><td>Movie library.</td><td>Movie card baseline for all movie cards.</td></tr><tr><td><code>web/calendar.html</code></td><td class="status-good">Active</td><td>Calendar grid/list and release browsing.</td><td>Shared +X more behavior with dashboard.</td></tr><tr><td><code>web/config.html</code></td><td class="status-good">Active</td><td>Application settings only.</td><td>Must not contain Manage Watch State UI.</td></tr><tr><td><code>web/manage_watch_state.html</code></td><td class="status-good">Active</td><td>Standalone watch-state matrix: watched, watchlist, favourite, Trakt sync/mismatch review.</td><td>Must be separate from Config.</td></tr><tr><td><code>web/watch_me.html</code></td><td class="status-warn">Compatibility / lightweight list</td><td>Simple watch/release listing if retained.</td><td>Must not duplicate Manage Watch State.</td></tr><tr><td><code>web/watchlist.html</code></td><td class="status-warn">Planned recovery / standalone candidate</td><td>Historical standalone watchlist/list page concept recovered from Section 4.9.</td><td>Not SPA; rebuild only if distinct.</td></tr><tr><td><code>web/discover.html</code></td><td class="status-good">Active</td><td>Discovery surface similar to Trakt Discover.</td><td>Uses separate discovery feed/source from local catalog. Must not duplicate Dashboard recommendations.</td></tr><tr><td><code>web/config_trakt.html</code></td><td class="status-bad">Deprecated</td><td>Old Trakt config surface.</td><td>Archive only.</td></tr></table></section>
+<section id="ui" class="card"><h2>3. UI Contract</h2><h3>3.1 Header and Navigation</h3><ul><li>Header contains Boys logo, primary icon navigation, and Ready/version status.</li><li>Primary nav icons are standalone Unicode/web icons, not boxed buttons.</li><li>Icons must be large enough to scan visually and must not overlap.</li><li>Ready/version block must not collide with navigation.</li><li>Boys logo must preserve aspect ratio and must not stretch into a banner.</li><li>Header is sticky and compact.</li><li>Sticky nav must remain visible while scrolling. No ancestor wrapper may block sticky behavior through <code>overflow:hidden</code>, <code>overflow:auto</code>, transformed parent, or incorrect scroll container assignment.</li></ul><h3>3.2 Media Cards</h3><pre>[ image ]
 [ title + metadata ]
-[ action row ]</pre>
-<ul>
-<li>Action row is always below media/text, never over image.</li>
-<li>No availability badge overlays on poster/still artwork.</li>
-<li>Show cards use one renderer everywhere.</li>
-<li>Movie cards use one renderer everywhere.</li>
-<li>Episode cards use one renderer family everywhere.</li>
-</ul>
-<h3>3.3 Action Icon Strip</h3>
-<p>Required order:</p>
-<pre>🍿 ⌚ 🎫 💕 76%</pre>
-<table>
-<tr><th>Icon</th><th>Meaning</th></tr>
-<tr><td>🍿</td><td>Watch source / availability popup</td></tr>
-<tr><td>⌚</td><td>watched_status toggle</td></tr>
-<tr><td>🎫</td><td>watch_list toggle</td></tr>
-<tr><td>💕</td><td>favourite toggle</td></tr>
-<tr><td>76%</td><td>compact rating percentage</td></tr>
-</table>
-<ul>
-<li>Icon boxes must be rounded-square, not circles or pills.</li>
-<li>No <code>border-radius:999px</code> for action buttons.</li>
-<li>No action-row mini-frame.</li>
-<li>Forbidden active icons: ▶ 🎬 📏 💛 ⭐.</li>
-<li>Popcorn/watch-source popups must open from rendered movie, episode, and show cards even when exact <code>data-watch-source-open</code> attributes are incomplete; handlers may derive context from the closest card or row.</li>
-</ul>
-<h3>3.4 Filter Rails</h3>
-<ul>
-<li>Library Filters stay on the left on desktop/tablet and stack only on true mobile.</li>
-<li>Hide/show control sits on the rail edge, not inside the filter content.</li>
-<li>Remove unwanted text: “Browse” and “Shared cards, shared actions, one left filter rail.”</li>
-</ul>
-<h3>3.5 Sticky Sections</h3>
-<ul>
-<li>Dashboard sections have sticky headers: current week, watchlist, upcoming, recommendations.</li>
-<li>Sticky headers must replace naturally as the next section scrolls into view.</li>
-</ul>
-<h3>3.6 Discover</h3>
-<ul>
-<li>Discover is an active page, not a placeholder.</li>
-<li>It should feel like the rest of the app: dark, compact, card-based, and aligned to the shared runtime surface.</li>
-<li>Its feed must be curated from a separate non-local discovery source, such as trend/featured/curated Trakt-style inputs, then normalized into the shared card/action renderer.</li>
-<li>Discover must exclude items that are already watched, watching, watchlisted, or otherwise known locally unless the page explicitly shows a rationale for inclusion.</li>
-<li>Discover must not collapse into Dashboard recommendations. The two surfaces solve different problems.</li>
-</ul>
-</section>
-
-<section id="watch-state" class="card">
-<h2>4. Watch State and Manage Watch State View</h2>
-<h3>4.1 State Types</h3>
-<table>
-<tr><th>State</th><th>Meaning</th><th>UI Control</th></tr>
-<tr><td><code>watch_list</code></td><td>User intends to watch later.</td><td>Two-state switch on/off.</td></tr>
-<tr><td><code>favourite</code></td><td>User likes item / recommendation signal.</td><td>Two-state switch on/off.</td></tr>
-<tr><td><code>watched_status</code></td><td>Unwatched, partially watched, watched.</td><td>Three-state segmented switch if supported by data/Trakt; otherwise local tri-state and Trakt-compatible mapping.</td></tr>
-</table>
-<h3>4.2 Manage View Layout</h3>
-<ul>
-<li>Standalone page: <code>web/manage_watch_state.html</code>.</li>
-<li>Not embedded in Config.</li>
-<li>Lean matrix/table body with tree structure: show → season → episode; movies as single rows.</li>
-<li>Column headers identify toggles; row controls are compact switches, not large named buttons.</li>
-<li>Filters: type, watch_list, watched_status, favourite, Trakt mismatch, missing ID, queued update, unreleased blocked.</li>
-<li>Bulk actions are allowed only where safe and must respect release-state constraints.</li>
-</ul>
-<h3>4.3 State Key Format</h3>
-<pre>&lt;state_type&gt;:movie:&lt;tmdb_id&gt;
+[ action row ]</pre><ul><li>Action row is always below media/text, never over image.</li><li>No availability badge overlays on poster/still artwork.</li><li>Show cards use one renderer everywhere.</li><li>Movie cards use one renderer everywhere.</li><li>Episode cards use one renderer family everywhere.</li><li>Recommendation cards must use the same card-size contract as library cards and must not expand into large feature posters unless explicitly documented as a hero layout.</li><li>Standard poster card visual target remains compact: runtime poster asset target <code>171x257</code>; rendered card width should be fixed or clamped near that target, not stretched to fill half the viewport.</li></ul><h3>3.3 Action Icon Strip</h3><pre>🍿 ⌚ 🎫 💕 76%</pre><table><tr><th>Icon</th><th>Meaning</th></tr><tr><td>🍿</td><td>Watch source / availability popup</td></tr><tr><td>⌚</td><td>watched_status toggle</td></tr><tr><td>🎫</td><td>watch_list toggle</td></tr><tr><td>💕</td><td>favourite toggle</td></tr><tr><td>76%</td><td>compact rating percentage</td></tr></table><ul><li>Icon boxes must be rounded-square, not circles or pills.</li><li>No <code>border-radius:999px</code> for action buttons.</li><li>No action-row mini-frame.</li><li>Forbidden active icons: ▶ 🎬 📏 💛 ⭐.</li><li>Popcorn/watch-source popups must open from rendered movie, episode, and show cards even when exact <code>data-watch-source-open</code> attributes are incomplete; handlers may derive context from the closest card or row.</li></ul><h3>3.4 Filter Rails</h3><ul><li>Library Filters stay on the left on desktop/tablet and stack only on true mobile.</li><li>Hide/show control sits on the rail edge, not inside the filter content.</li><li>Remove unwanted text: “Browse” and “Shared cards, shared actions, one left filter rail.”</li></ul><h3>3.5 Sticky Sections</h3><ul><li>Dashboard sections have sticky headers: current week, watchlist, upcoming, recommendations.</li><li>Sticky headers must replace naturally as the next section scrolls into view.</li></ul><h3>3.6 Discover</h3><ul><li>Discover is an active page, not a placeholder.</li><li>Its feed must be curated from a separate non-local discovery source and normalized into the shared card/action renderer.</li><li>Discover must exclude locally known items unless labelled as re-surfaced.</li><li>Discover must not collapse into Dashboard recommendations.</li></ul></section>
+<section id="watch-state" class="card"><h2>4. Watch State and Manage Watch State View</h2><table><tr><th>State</th><th>Meaning</th><th>UI Control</th></tr><tr><td><code>watch_list</code></td><td>User intends to watch later.</td><td>Two-state switch on/off.</td></tr><tr><td><code>favourite</code></td><td>User likes item / recommendation signal.</td><td>Two-state switch on/off.</td></tr><tr><td><code>watched_status</code></td><td>Unwatched, partially watched, watched.</td><td>Three-state segmented switch if supported by data/Trakt; otherwise local tri-state and Trakt-compatible mapping.</td></tr></table><h3>4.2 Manage View Layout</h3><ul><li>Standalone page: <code>web/manage_watch_state.html</code>.</li><li>Not embedded in Config.</li><li>Lean matrix/table body with tree structure: show → season → episode; movies as single rows.</li><li>Initial render must be bounded for low-power devices. Pagination or virtualization is required when row count is large. Initial render target: no more than 50 visible rows unless validated otherwise.</li><li>Column headers identify toggles; row controls are compact switches, not large named buttons.</li><li>Filters: type, watch_list, watched_status, favourite, Trakt mismatch, missing ID, queued update, unreleased blocked.</li><li>Bulk actions are allowed only where safe.</li></ul><h3>4.3 State Key Format</h3><pre>&lt;state_type&gt;:movie:&lt;tmdb_id&gt;
 &lt;state_type&gt;:show:&lt;tmdb_id&gt;
 &lt;state_type&gt;:season:&lt;show_id&gt;:&lt;season_number&gt;
-&lt;state_type&gt;:episode:&lt;show_id&gt;:&lt;season_number&gt;:&lt;episode_number&gt;</pre>
-<h3>4.4 Release-State Constraints</h3>
-<ul>
-<li>Unreleased movie cannot be marked watched.</li>
-<li>Unreleased episode cannot be marked watched.</li>
-<li>Season cannot be fully watched if eligible released episodes are incomplete or unreleased episodes are included in the rollup incorrectly.</li>
-<li>Show rollup is derived from seasons/episodes, not manually guessed.</li>
-</ul>
-</section>
-
-<section id="trakt" class="card">
-<h2>5. Trakt Integration Contract</h2>
-<p>Trakt integration is local-first, queue-based, and explicit. No UI action may block on a network call.</p>
-<pre>Trakt pull → normalize → compare → local queue → push → pull confirmation → reconcile → report</pre>
-<table>
-<tr><th>Workflow</th><th>Required Output</th></tr>
-<tr><td>Pull</td><td>Trakt watched/history, watchlist, ratings/favourites-equivalent if available.</td></tr>
-<tr><td>Compare</td><td>Local vs Trakt mismatch list.</td></tr>
-<tr><td>Push</td><td>Queued local changes sent to Trakt.</td></tr>
-<tr><td>Reconcile</td><td>Pull after push and update local state.</td></tr>
-<tr><td>Auth recovery</td><td>Clear error report and next action; no silent failure.</td></tr>
-</table>
-<ul>
-<li>Primary match key: <code>tmdb_id</code>.</li>
-<li>Never title-only matching.</li>
-<li>Existing scripts such as <code>scripts/trakt_http.py</code>, <code>scripts/fetch_trakt.py</code>, <code>scripts/sync_trakt.py</code>, <code>scripts/trakt_device_auth.py</code>, <code>scripts/trakt_sync_watch_state.py</code>, <code>scripts/trakt_push_watch_queue.py</code>, and <code>scripts/run_pipeline_tmdb_trakt.py</code> must be audited and either integrated, archived, or documented as inactive.</li>
-</ul>
-</section>
-
-<section id="data" class="card">
-<h2>6. Data Contract</h2>
-<table>
-<tr><th>Artifact</th><th>Role</th></tr>
-<tr><td><code>data/inputs.json</code></td><td>Editable canonical input.</td></tr>
-<tr><td><code>data/data.json</code></td><td>Generated/reference/fallback; may feed standalone simple pages.</td></tr>
-<tr><td><code>data/catalog_index.json</code></td><td>First-load list/card data for main runtime.</td></tr>
-<tr><td><code>data/calendar.json</code></td><td>Date-grouped calendar/dashboard data.</td></tr>
-<tr><td><code>data/watch_sources_index.json</code></td><td>First lookup for popcorn/watch-source popup.</td></tr>
-<tr><td><code>data/catalog_detail/&lt;tmdb_id&gt;.json</code></td><td>Lazy-loaded detail data.</td></tr>
-<tr><td>Discover feed source</td><td>Separate non-local discovery pull, normalized into runtime data before rendering.</td></tr>
-</table>
-<ul>
-<li>Schema must be deterministic.</li>
-<li>Show → seasons → episodes hierarchy must fail validation if claimed but missing.</li>
-<li>Correct outputs do not prove correct inputs; source-of-truth must be validated separately.</li>
-<li>Discover feed must be documented as a distinct source so it does not drift into local catalog selection behavior.</li>
-</ul>
-</section>
-
-<section id="assets" class="card">
-<h2>7. Asset Contract</h2>
-<h3>7.1 Source and Runtime</h3>
-<table>
-<tr><th>Folder</th><th>Purpose</th></tr>
-<tr><td><code>assets/original_downloads/</code></td><td>Immutable source originals.</td></tr>
-<tr><td><code>assets/posters/</code>, <code>assets/stills/</code>, <code>assets/backdrops/</code>, <code>assets/logos/</code>, <code>assets/icons/</code></td><td>Optimized runtime assets used by pages.</td></tr>
-</table>
-<h3>7.2 Required Runtime Targets</h3>
-<table>
-<tr><th>Asset Type</th><th>Target</th><th>Notes</th></tr>
-<tr><td>Show/movie poster</td><td>171x257</td><td>Runtime card asset.</td></tr>
-<tr><td>Episode still source</td><td>320x180</td><td>Before side crop.</td></tr>
-<tr><td>Episode narrow still</td><td>256x180</td><td>Crop 10% from each side; no distortion.</td></tr>
-<tr><td>Backdrop/detail</td><td>max 780px wide unless justified</td><td>Not for card thumbnails.</td></tr>
-<tr><td>Provider/logo assets</td><td>small optimized logo</td><td>Cache-friendly.</td></tr>
-</table>
-<h3>7.3 Validation</h3>
-<ul>
-<li>Folder properties are not sufficient proof. Asset QA must inspect each image dimensions and file size.</li>
-<li>Validation must report oversized runtime assets, missing assets, wrong dimensions, broken references, and source/runtime mismatch.</li>
-<li>If file count is unchanged but total size differs heavily, optimization may be additive rather than a true replacement; this must be reported.</li>
-</ul>
-</section>
-
-<section id="standalone-watchlist" class="card">
-<h2>8. Standalone Watchlist / Simple Trailer-Friendly View</h2>
-<p>Historical Section 4.9 describes <code>web/watchlist.html</code> as a standalone non-SPA page. This concept remains useful, but the old spec is historical until rebuilt under this contract.</p>
-<h3>Retained Concept</h3>
-<ul>
-<li>Simple standalone listing, fast to load on slow trailer internet.</li>
-<li>Uses same data source, preferably optimized runtime index where possible; <code>data/data.json</code> acceptable if explicitly validated for performance.</li>
-<li>Can use collapsed show rows and expandable show → season → episode tree.</li>
-<li>No SPA router dependency.</li>
-<li>No duplicate watch-state ownership; uses shared state keys if interactive.</li>
-</ul>
-<h3>Decision</h3>
-<p><code>watch_me.html</code> and <code>watchlist.html</code> must be rationalized. If both exist, they need distinct purposes or one becomes a compatibility redirect.</p>
-</section>
-
-<section id="qa" class="card">
-<h2>9. Validation and QA Contract</h2>
-<p>Single validation entry point:</p>
-<pre>powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1</pre>
-<p>Validation must cover:</p>
-<ul>
-<li>HTML shell routes and rendered Chromium checks.</li>
-<li>Icon-only nav and no button-frame nav.</li>
-<li>Logo size/aspect ratio.</li>
-<li>Action row below media and rounded-square icons.</li>
-<li>Config does not contain Manage Watch State.</li>
-<li>Manage Watch State exists as standalone route.</li>
-<li>Watch Me compatibility decision and Discover feed registry.</li>
-<li>Asset dimensions and file-size thresholds.</li>
-<li>Trakt/local workflow scripts are integrated or archived.</li>
-<li>Docs drift: only <code>docs/00_master_contract.html</code> defines active behavior.</li>
-</ul>
-</section>
-
-<section id="deprecated" class="card">
-<h2>10. Deprecated / Legacy Registry</h2>
-<table>
-<tr><th>Legacy Item</th><th>Status</th><th>Disposition</th></tr>
-<tr><td><code>docs/spec/*</code></td><td>Historical</td><td>Archive after useful concepts are migrated into this file.</td></tr>
-<tr><td>Live TV, Explore, Profiles, Collection Popup future specs</td><td>Deferred/deprecated</td><td>Archive. Reintroduce only through this master contract.</td></tr>
-<tr><td><code>web/config_trakt.html</code></td><td>Deprecated</td><td>Archived page only.</td></tr>
-<tr><td><code>ui_contract_fix.*</code>, <code>runtime_layout_fix.css</code></td><td>Removed</td><td>Must not return as active compatibility layers.</td></tr>
-<tr><td>Old text-button nav</td><td>Removed</td><td>Primary nav is icon-only.</td></tr>
-<tr><td>Availability badges over cards</td><td>Removed</td><td>Popcorn state owns availability in card rows.</td></tr>
-</table>
-</section>
-
-<section id="codex" class="card">
-<h2>11. Codex Operating Contract</h2>
-<ul>
-<li>Read this file before coding.</li>
-<li>Do not consult archived docs as active requirements unless this file explicitly says to recover a concept.</li>
-<li>Do not create new active docs.</li>
-<li>Do not create new shims/overlays.</li>
-<li>Implement in coherent batches with validation and reports.</li>
-<li>Any missing detail must be reported as a gap, not guessed into code.</li>
-</ul>
-<h3>Next Implementation Batch</h3>
-<ol>
-<li>Update validation to treat this file as the only active docs source.</li>
-<li>Separate Manage Watch State from Config if not already done.</li>
-<li>Build Manage Watch State as a matrix/tree view with compact toggles.</li>
-<li>Audit and rationalize <code>watch_me.html</code>, <code>watchlist.html</code>, and old standalone list concepts.</li>
-<li>Perform asset-dimension QA, not just rendered viewport QA.</li>
-<li>Audit Trakt scripts and wire/report actual status.</li>
-</ol>
-</section>
-
+&lt;state_type&gt;:episode:&lt;show_id&gt;:&lt;season_number&gt;:&lt;episode_number&gt;</pre><ul><li>Unreleased movie cannot be marked watched.</li><li>Unreleased episode cannot be marked watched.</li><li>Season/show rollups are derived from children.</li></ul></section>
+<section id="trakt" class="card"><h2>5. Trakt Integration Contract</h2><p>Trakt integration is local-first, queue-based, and explicit. No UI action may block on a network call.</p><pre>Trakt pull → normalize → compare → local queue → push → pull confirmation → reconcile → report</pre><table><tr><th>Workflow</th><th>Required Output</th></tr><tr><td>Pull</td><td>Trakt watched/history, watchlist, ratings/favourites-equivalent if available.</td></tr><tr><td>Compare</td><td>Local vs Trakt mismatch list.</td></tr><tr><td>Push</td><td>Queued local changes sent to Trakt.</td></tr><tr><td>Reconcile</td><td>Pull after push and update local state.</td></tr><tr><td>Auth recovery</td><td>Clear error report and next action; no silent failure.</td></tr></table><ul><li>Primary match key: <code>tmdb_id</code>.</li><li>Never title-only matching.</li><li>Existing Trakt scripts must be audited and either integrated, archived, or documented as inactive.</li></ul></section>
+<section id="data" class="card"><h2>6. Data Contract</h2><table><tr><th>Artifact</th><th>Role</th></tr><tr><td><code>data/inputs.json</code></td><td>Editable canonical input.</td></tr><tr><td><code>data/data.json</code></td><td>Generated/reference/fallback; may feed simple standalone pages only if performance validated.</td></tr><tr><td><code>data/catalog_index.json</code></td><td>First-load list/card data for main runtime.</td></tr><tr><td><code>data/calendar.json</code></td><td>Date-grouped calendar/dashboard data.</td></tr><tr><td><code>data/watch_sources_index.json</code></td><td>First lookup for popcorn/watch-source popup.</td></tr><tr><td><code>data/catalog_detail/&lt;tmdb_id&gt;.json</code></td><td>Lazy-loaded detail data.</td></tr><tr><td>Discover feed source</td><td>Separate non-local discovery pull, normalized into runtime data before rendering.</td></tr></table><ul><li>Schema must be deterministic.</li><li>Show → seasons → episodes hierarchy must fail validation if claimed but missing.</li><li>Correct outputs do not prove correct inputs; source-of-truth must be validated separately.</li><li>Dashboard, Calendar, and Watch Me renderers must dedupe by stable item key before rendering: movie TMDB ID for movies; show ID + season + episode for episodes; show TMDB ID for shows. Duplicates across different sections are allowed only when the section purpose is distinct and documented.</li></ul></section>
+<section id="assets" class="card"><h2>7. Asset Contract</h2><table><tr><th>Folder</th><th>Purpose</th></tr><tr><td><code>assets/original_downloads/</code></td><td>Immutable source originals.</td></tr><tr><td><code>assets/posters/</code>, <code>assets/stills/</code>, <code>assets/backdrops/</code>, <code>assets/logos/</code>, <code>assets/icons/</code></td><td>Optimized runtime assets used by pages.</td></tr></table><table><tr><th>Asset Type</th><th>Target</th><th>Notes</th></tr><tr><td>Show/movie poster</td><td>171x257</td><td>Runtime card asset.</td></tr><tr><td>Episode still source</td><td>320x180</td><td>Before side crop.</td></tr><tr><td>Episode narrow still</td><td>256x180</td><td>Crop 10% from each side; no distortion.</td></tr><tr><td>Backdrop/detail</td><td>max 780px wide unless justified</td><td>Not for card thumbnails.</td></tr><tr><td>Provider/logo assets</td><td>small optimized logo</td><td>Cache-friendly.</td></tr></table><ul><li>Folder properties are not sufficient proof. Asset QA must inspect each image dimensions and file size.</li><li>Validation must report oversized runtime assets, missing assets, wrong dimensions, broken references, and source/runtime mismatch.</li><li>Images must use <code>loading="lazy"</code> and <code>decoding="async"</code> where not required above the fold.</li></ul></section>
+<section id="standalone-watchlist" class="card"><h2>8. Standalone Watchlist / Simple Trailer-Friendly View</h2><p>Historical Section 4.9 describes <code>web/watchlist.html</code> as a standalone non-SPA page. This concept remains useful, but the old spec is historical until rebuilt under this contract.</p><ul><li>Simple standalone listing, fast to load on slow trailer internet.</li><li>Uses same data source, preferably optimized runtime index where possible.</li><li>Can use collapsed show rows and expandable show → season → episode tree.</li><li>No SPA router dependency.</li><li>No duplicate watch-state ownership; uses shared state keys if interactive.</li></ul></section>
+<section id="qa" class="card"><h2>9. Validation and QA Contract</h2><pre>powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1</pre><ul><li>HTML shell routes and rendered Chromium checks.</li><li>Icon-only nav and no button-frame nav.</li><li>Logo size/aspect ratio.</li><li>Action row below media and rounded-square icons.</li><li>Config does not contain Manage Watch State.</li><li>Manage Watch State exists as standalone route.</li><li>Watch Me compatibility decision and Discover feed registry.</li><li>Asset dimensions and file-size thresholds.</li><li>Trakt/local workflow scripts are integrated or archived.</li><li>Dashboard duplicate detection: same media key may not render twice within the same day/section unless explicitly allowed by section contract.</li><li>Sticky nav validation: nav remains visible during page scroll and no ancestor overflow disables sticky behavior.</li><li>Performance regression gate: optimization passes must not increase index/calendar initial load time without a documented reason and measured benefit elsewhere.</li></ul></section>
+<section id="deprecated" class="card"><h2>10. Deprecated / Legacy Registry</h2><table><tr><th>Legacy Item</th><th>Status</th><th>Disposition</th></tr><tr><td><code>docs/spec/*</code></td><td>Historical</td><td>Archive after useful concepts are migrated into this file.</td></tr><tr><td>Live TV, Explore, Profiles, Collection Popup future specs</td><td>Deferred/deprecated</td><td>Archive. Reintroduce only through this master contract.</td></tr><tr><td><code>web/config_trakt.html</code></td><td>Deprecated</td><td>Archived page only.</td></tr><tr><td><code>ui_contract_fix.*</code>, <code>runtime_layout_fix.css</code></td><td>Removed</td><td>Must not return.</td></tr><tr><td>Old text-button nav</td><td>Removed</td><td>Primary nav is icon-only.</td></tr><tr><td>Availability badges over cards</td><td>Removed</td><td>Popcorn state owns availability.</td></tr></table></section>
+<section id="rendering-defects" class="card"><h2>11. Live Rendering Defect Closure Rules</h2><table><tr><th>Observed defect</th><th>Root-cause class</th><th>Contract rule</th><th>Validation requirement</th></tr><tr><td>Dashboard cards duplicated within each day.</td><td>Dataset merge/double-render bug.</td><td>Every dashboard section must dedupe by stable media key before rendering. Same item cannot appear twice in the same day/section.</td><td>Rendered QA must count duplicate item keys per dashboard section/day and fail on duplicates.</td></tr><tr><td>Recommendation posters render as huge feature panels.</td><td>CSS/card-size override drift.</td><td>Recommendation show/movie cards use the standard compact card renderer and poster sizing unless explicitly marked as a hero layout.</td><td>Rendered QA must check recommendation card dimensions against contract limits.</td></tr><tr><td>Top navigation no longer sticky.</td><td>Sticky context broken by parent overflow/positioning.</td><td>Top nav must remain sticky on scroll; no ancestor may disable sticky behavior.</td><td>Rendered QA must scroll and confirm header remains visible.</td></tr><tr><td>Performance pass increased index/calendar load time.</td><td>Optimization overhead or misplaced content-visibility.</td><td>Performance passes must compare before/after and must not apply content-visibility or heavy preprocessing above the fold.</td><td>Validator/report must include before/after metrics and fail or warn on regressions.</td></tr></table></section>
+<section id="accountability" class="card"><h2>12. Codex Accountability Contract</h2><ul><li>Every Codex prompt is a binding execution contract.</li><li>No task may be deferred due to size, complexity, ambiguity, or prior drift.</li><li>All master contract requirements must be implemented unless physically blocked by missing credentials, missing external service, or missing source data.</li><li>Even if blocked, Codex must still implement local UI, local workflow, queue path, validation, and status reporting.</li><li>Forbidden output categories: generic “deferred,” “not addressed,” “future work,” or “out of scope” unless mapped to an allowed blocker.</li></ul><table><tr><th>Status</th><th>Meaning</th></tr><tr><td>Implemented</td><td>Fully built, validated, and working.</td></tr><tr><td>Blocked</td><td>External dependency missing, but local workflow and validation are built.</td></tr><tr><td>Failed</td><td>Attempted but did not meet validation.</td></tr></table><p>All future Codex prompts inherit this accountability rule automatically.</p></section>
+<section id="codex" class="card"><h2>13. Codex Operating Contract</h2><ul><li>Read this file before coding.</li><li>Do not consult archived docs as active requirements unless this file explicitly says to recover a concept.</li><li>Do not create new active docs.</li><li>Do not create new shims/overlays.</li><li>Implement in coherent batches with validation and reports.</li><li>Anything not implemented must be classified as implemented, blocked, or failed validation.</li></ul><h3>Next Implementation Batch</h3><ol><li>Fix dashboard duplicate rendering by stable-key dedupe.</li><li>Restore standard recommendation card sizing.</li><li>Restore sticky top navigation and test against ancestor overflow.</li><li>Preserve performance improvements only where measured benefit is real; remove above-the-fold overhead.</li><li>Harden validator for duplicate dashboard items, sticky nav, recommendation card size, and performance regression.</li></ol></section>
 </main>
 </body>
 </html>
