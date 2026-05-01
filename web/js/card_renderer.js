@@ -41,7 +41,7 @@ function esc(value){
 
 function safeCardImage(image, kind, title){
   const src = String(image || '').trim();
-  if (src) return `<img loading="lazy" src="${esc(src)}" alt="" />`;
+  if (src) return `<img loading="lazy" decoding="async" src="${esc(src)}" alt="" />`;
   const label = kind === 'episode' ? 'No Still' : 'No Poster';
   const tag = title ? esc(String(title).slice(0,42)) : label;
   return `<div class="posterFallback posterFallback--${esc(kind)}" aria-label="${esc(label)}"><span class="posterFallback__label">${esc(label)}</span><span class="posterFallback__title">${tag}</span></div>`;

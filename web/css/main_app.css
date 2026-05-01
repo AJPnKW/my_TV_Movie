@@ -4377,6 +4377,19 @@ body.app-modal-open{
   font-size:12px;
 }
 
+.watch-state-pager{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  justify-content:flex-end;
+}
+
+.watch-state-pager__label{
+  color:var(--muted);
+  font-size:12px;
+}
+
 .watch-state-matrix th,
 .watch-state-matrix td{
   padding:7px 8px;
@@ -4420,6 +4433,28 @@ body.app-modal-open{
 
 .watch-state-matrix__title--level-1{ padding-left:26px !important; }
 .watch-state-matrix__title--level-2{ padding-left:48px !important; }
+
+.media-card,
+.calendar-week-band,
+.calendar-day,
+.calendar-tree-day,
+.watch-state-matrix tbody tr{
+  content-visibility:auto;
+  contain-intrinsic-size: 280px 220px;
+}
+
+.calendar-week-band{
+  contain-intrinsic-size: 34px 34px;
+}
+
+.calendar-day,
+.calendar-tree-day{
+  contain-intrinsic-size: 260px 240px;
+}
+
+.watch-state-matrix tbody tr{
+  contain-intrinsic-size: 42px 42px;
+}
 
 .watch-state-toggle,
 .watch-state-tristate__option{

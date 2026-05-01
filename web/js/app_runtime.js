@@ -66,6 +66,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       type: "all",
       windowDays: 14
     },
+    showById: new Map(),
+    movieById: new Map(),
+    manageWatchStatePage: 0,
     view: {
       shows: { eye: "show_all" },
       movies: { eye: "show_all" }
@@ -698,17 +701,22 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function providerLogoUrl(p){
+    if (!providerLogoUrl.cache) providerLogoUrl.cache = new Map();
+    const cacheKey = `${safeText(p?.provider_name || p?.name || "")}|${safeText(p?.logo_local || "")}|${safeText(p?.logo_path || "")}`;
+    if (providerLogoUrl.cache.has(cacheKey)) return providerLogoUrl.cache.get(cacheKey);
     const name = safeText(p?.provider_name || p?.name || "").trim();
     const explicitLocal = safeText(p?.logo_local || "").trim();
     const localFromPath = explicitLocal ? withBasePath(explicitLocal) : "";
     const tmdb = tmdbLogoUrl(p?.logo_path || "");
-    return { name, local: localFromPath, tmdb };
+    const value = { name, local: localFromPath, tmdb };
+    providerLogoUrl.cache.set(cacheKey, value);
+    return value;
   }
 
   function providerLogoImgHtml(logo, cssClass="providerlogo"){
     const src = safeText(logo?.local || logo?.tmdb || "").trim();
     if (!src) return "";
-    return `<img class="${escHtml(cssClass)}" src="${escHtml(src)}" data-fallback="${escHtml(logo?.tmdb || "")}" alt="${escHtml(logo?.name || "Provider")}" onerror="const fallback=this.dataset.fallback||'';if(fallback&&this.src!==fallback){this.src=fallback;this.dataset.fallback='';return;}this.onerror=null;const chip=this.closest('.providerchip');if(chip){chip.classList.add('fallback-only');}this.remove();" />`;
+    return `<img class="${escHtml(cssClass)}" src="${escHtml(src)}" loading="lazy" decoding="async" data-fallback="${escHtml(logo?.tmdb || "")}" alt="${escHtml(logo?.name || "Provider")}" onerror="const fallback=this.dataset.fallback||'';if(fallback&&this.src!==fallback){this.src=fallback;this.dataset.fallback='';return;}this.onerror=null;const chip=this.closest('.providerchip');if(chip){chip.classList.add('fallback-only');}this.remove();" />`;
   }
 
   function providerChipHtml(logo, href){
@@ -2319,6 +2327,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       state.data.shows  = Array.isArray(state.data.shows)  ? state.data.shows  : [];
       state.data.errors = Array.isArray(state.data.errors) ? state.data.errors : [];
       state.data.meta   = state.data.meta && typeof state.data.meta === "object" ? state.data.meta : {};
+      state.showById = new Map(state.data.shows.map(item => [String(item?.tmdb_id ?? item?.id ?? ""), item]).filter(([key]) => !!key));
+      state.movieById = new Map(state.data.movies.map(item => [String(item?.tmdb_id ?? item?.id ?? ""), item]).filter(([key]) => !!key));
       state.calendarData.days = state.calendarData.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
       state.inputs = await window.MyTVHubSharedModules.dataLoader.loadInputsFirst(["../data/inputs.json", "../inputs.json"]);
 
@@ -2463,11 +2473,15 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function getShowById(id){
-    return (state.data?.shows || []).find(s => Number(s?.id ?? s?.tmdb_id) === Number(id)) || null;
+    const key = String(id ?? "").trim();
+    if (!key) return null;
+    return state.showById?.get(key) || (state.data?.shows || []).find(s => String(s?.id ?? s?.tmdb_id ?? "") === key) || null;
   }
 
   function getMovieById(id){
-    return (state.data?.movies || []).find(m => Number(m?.id ?? m?.tmdb_id) === Number(id)) || null;
+    const key = String(id ?? "").trim();
+    if (!key) return null;
+    return state.movieById?.get(key) || (state.data?.movies || []).find(m => String(m?.id ?? m?.tmdb_id ?? "") === key) || null;
   }
 
   function hasDirectWatchSources(item){
@@ -2782,12 +2796,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const direct = normalizeImageSrc(item?.thumb || item?.still_local || "");
     if (direct) return direct;
     if (item?.kind === "episode"){
-      const show = (state.data?.shows || []).find(s => String(s?.tmdb_id ?? "") === String(item?.show_tmdb_id ?? item?.show_id ?? ""));
+      const show = getShowById(item?.show_tmdb_id ?? item?.show_id ?? "");
       return normalizeImageSrc(
         pickImage(show || item, "backdrop_local", "backdrop_path", "show_backdrop_local", "poster_local", "poster_path", "show_poster_local")
       );
     }
-    const movie = (state.data?.movies || []).find(m => String(m?.tmdb_id ?? "") === String(item?.tmdb_id ?? ""));
+    const movie = getMovieById(item?.tmdb_id ?? "");
     return normalizeImageSrc(pickImage(movie || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path", "thumb"));
   }
 
@@ -3239,7 +3253,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return `
         <div class="watchlistcard" data-watchlist-id="${escHtml(entry.id)}">
           <div class="watchlistthumb">
-            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt=""/>` : ""}
+            ${poster ? `<img loading="lazy" decoding="async" src="${escHtml(poster)}" alt=""/>` : ""}
           </div>
           <div class="watchlistbody">
             <div class="watchlisttitle">${escHtml(entry.title)}</div>
@@ -3632,8 +3646,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const movieRecs = $("#dashMovieRecs");
     if (!scheduleCols || !lastWeekCols || !watchlistEl || !showRecs || !movieRecs) return;
 
-    const showMap = new Map((state.data?.shows || []).map(s => [String(s?.tmdb_id ?? ""), s]));
-    const movieMap = new Map((state.data?.movies || []).map(m => [String(m?.tmdb_id ?? ""), m]));
+    const showMap = state.showById || new Map();
+    const movieMap = state.movieById || new Map();
     const events = collectUpcomingEvents(7, 1);
     const lastWeekOffset = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
     const pastEvents = collectPastEvents(7, lastWeekOffset, true);
@@ -4165,7 +4179,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const active = !!localState[key];
       return `<button class="watch-state-toggle" type="button" data-manage-watch-key="${escHtml(key)}" aria-label="${escHtml(label)}" title="${escHtml(label)}" aria-pressed="${active ? "true" : "false"}">${active ? "✓" : ""}</button>`;
     };
-    const rowHtml = rows.map(row => {
+    const pageSize = 50;
+    const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+    const currentPage = Math.min(Math.max(0, Number(state.manageWatchStatePage) || 0), pageCount - 1);
+    state.manageWatchStatePage = currentPage;
+    const pageRows = rows.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
+    const pageHtml = pageRows.map(row => {
       const watchKey = stateKey("watch_list", row);
       const favKey = stateKey("favourite", row);
       const watchedKey = stateKey("watched_status", row);
@@ -4186,8 +4205,17 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </tr>
       `;
     }).join("");
+    const pager = rows.length > pageSize ? `
+      <div class="watch-state-pager" aria-label="Watch state pagination">
+        <button class="calbtn" type="button" data-manage-watch-page="first" ${currentPage === 0 ? "disabled" : ""}>First</button>
+        <button class="calbtn" type="button" data-manage-watch-page="prev" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
+        <span class="watch-state-pager__label">Page ${currentPage + 1} / ${pageCount} • ${pageRows.length} rows shown</span>
+        <button class="calbtn" type="button" data-manage-watch-page="next" ${currentPage >= pageCount - 1 ? "disabled" : ""}>Next</button>
+        <button class="calbtn" type="button" data-manage-watch-page="last" ${currentPage >= pageCount - 1 ? "disabled" : ""}>Last</button>
+      </div>
+    ` : "";
     return `
-      <section class="watch-state-manager" id="manageWatchState" aria-label="Manage watch state">
+      <section class="watch-state-manager" id="manageWatchState" aria-label="Manage watch state" data-watch-state-total-rows="${rows.length}">
         <div class="dashhead">
           <h2>Manage Watch State</h2>
           <span class="muted">Local first, Trakt ready</span>
@@ -4200,6 +4228,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <span class="pill">unmatched IDs ${unmatched}</span>
           <span class="pill">sync queue ${syncQueueCount()}</span>
         </div>
+        ${pager}
         <div class="watch-state-matrix-wrap">
           <table class="watch-state-matrix">
             <thead>
@@ -4216,9 +4245,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                 <th scope="col">Validation issue</th>
               </tr>
             </thead>
-            <tbody>${rowHtml || `<tr><td colspan="10" class="inline-empty">No catalog items available for local watch-state management.</td></tr>`}</tbody>
+            <tbody>${pageHtml || `<tr><td colspan="10" class="inline-empty">No catalog items available for local watch-state management.</td></tr>`}</tbody>
           </table>
         </div>
+        ${pager}
       </section>
     `;
   }
@@ -4246,6 +4276,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
           window.MyTVHubWatchState.refresh(document);
         }
+      });
+    });
+    $$("[data-manage-watch-page]", root).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const action = safeText(btn.getAttribute("data-manage-watch-page"));
+        const pageSize = 50;
+        const rowCount = Number(root.getAttribute("data-watch-state-total-rows") || 0);
+        const pageCount = Math.max(1, Math.ceil((rowCount || 1) / pageSize));
+        if (action === "first") state.manageWatchStatePage = 0;
+        else if (action === "prev") state.manageWatchStatePage = Math.max(0, (Number(state.manageWatchStatePage) || 0) - 1);
+        else if (action === "next") state.manageWatchStatePage = Math.min(pageCount - 1, (Number(state.manageWatchStatePage) || 0) + 1);
+        else if (action === "last") state.manageWatchStatePage = pageCount - 1;
+        renderManageWatchState();
       });
     });
   }
@@ -4335,7 +4378,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </div>
         <div class="popup-hero popup-hero--dense">
           <div class="popup-hero__poster">
-            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+            ${poster ? `<img loading="lazy" decoding="async" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
           </div>
           <div class="popup-hero__body">
             <div class="popup-detail-grid popup-detail-grid--compact">
@@ -4437,7 +4480,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </div>
         <div class="popup-hero popup-hero--dense">
           <div class="popup-hero__poster">
-            ${poster ? `<img loading="lazy" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+            ${poster ? `<img loading="lazy" decoding="async" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
           </div>
           <div class="popup-hero__body">
             <div class="popup-detail-grid popup-detail-grid--compact popup-detail-grid--plain">
