@@ -1,0 +1,21 @@
+{
+  "meta": {
+    "schema": "discover.registry.v1",
+    "generated_utc": "2026-04-30T00:00:00Z",
+    "status": "config-needed",
+    "notes": "External discovery feed is not yet configured. Discover remains active but empty until a non-local source is registered."
+  },
+  "sources": [
+    {
+      "source_name": "Trakt curated discovery",
+      "source_type": "trakt",
+      "normalization_path": "discover.sources[0]",
+      "refresh_cadence": "manual",
+      "id_fields": ["tmdb_id", "trakt_id"],
+      "exclusion_rules": ["watched", "watch_list", "favourite", "locally_known", "watching"],
+      "enabled": false,
+      "feed_url": "",
+      "notes": "Add a real non-local feed before Discover can surface suggestions."
+    }
+  ]
+}

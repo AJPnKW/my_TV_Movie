@@ -12,6 +12,7 @@ import { loadJsonFirst } from './config_loader.js';
 
 let catalogIndexPromise = null;
 let calendarPromise = null;
+let discoverRegistryPromise = null;
 let inputsPromise = null;
 const detailPromises = new Map();
 
@@ -158,6 +159,17 @@ async function loadCalendarWithFallback(urls){
   return deriveCalendarFromData(fullData);
 }
 
+function emptyDiscoverRegistry(){
+  return {
+    meta: {
+      generated_utc: new Date().toISOString(),
+      schema: 'discover.registry.v1',
+      status: 'config-needed'
+    },
+    sources: []
+  };
+}
+
 export async function loadCatalogIndexFirst(urls = ['../data/catalog_index.json']){
   if (!catalogIndexPromise) catalogIndexPromise = loadJsonFirst(urls);
   return catalogIndexPromise;
@@ -166,6 +178,13 @@ export async function loadCatalogIndexFirst(urls = ['../data/catalog_index.json'
 export async function loadCalendarFirst(urls = ['../data/calendar.json']){
   if (!calendarPromise) calendarPromise = loadCalendarWithFallback(urls);
   return calendarPromise;
+}
+
+export async function loadDiscoverRegistryFirst(urls = ['../data/discover_registry.json']){
+  if (!discoverRegistryPromise){
+    discoverRegistryPromise = loadJsonFirst(urls).catch(() => emptyDiscoverRegistry());
+  }
+  return discoverRegistryPromise;
 }
 
 export async function loadCatalogDetailFirst(id, urls){
@@ -185,6 +204,7 @@ export async function loadInputsFirst(urls = ['../data/inputs.json', '../inputs.
 export function clearDataLoaderCache(){
   catalogIndexPromise = null;
   calendarPromise = null;
+  discoverRegistryPromise = null;
   inputsPromise = null;
   detailPromises.clear();
 }

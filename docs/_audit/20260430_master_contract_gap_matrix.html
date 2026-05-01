@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Master Contract Gap Matrix</title>
+  <style>
+    :root{
+      color-scheme: dark;
+      --bg:#0b111a;
+      --panel:#111a26;
+      --panel2:#162232;
+      --text:#e5eefb;
+      --muted:#9fb0c8;
+      --line:#314158;
+      --good:#34d399;
+      --warn:#fbbf24;
+      --bad:#fb7185;
+      --accent:#93c5fd;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      padding:24px;
+      background:var(--bg);
+      color:var(--text);
+      font:14px/1.45 Segoe UI, Arial, sans-serif;
+    }
+    h1,h2{ margin:0 0 10px; color:#f8fbff; }
+    .small{ color:var(--muted); font-size:13px; }
+    .card{
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:12px;
+      padding:16px;
+      margin:14px 0;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      background:var(--panel);
+      border:1px solid var(--line);
+    }
+    th,td{
+      border:1px solid var(--line);
+      padding:8px 10px;
+      vertical-align:top;
+      text-align:left;
+    }
+    th{
+      background:var(--panel2);
+      color:#f8fbff;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    code,pre{
+      background:#07101c;
+      border:1px solid #243044;
+      border-radius:8px;
+    }
+    code{ padding:1px 5px; }
+    pre{
+      padding:12px;
+      overflow:auto;
+      white-space:pre-wrap;
+    }
+    .good{ color:var(--good); font-weight:700; }
+    .warn{ color:var(--warn); font-weight:700; }
+    .bad{ color:var(--bad); font-weight:700; }
+    .tag{
+      display:inline-block;
+      padding:2px 7px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,0.04);
+      color:#dbeafe;
+      font-size:12px;
+      font-weight:700;
+      white-space:nowrap;
+    }
+    .stack{
+      display:grid;
+      gap:10px;
+    }
+    a{ color:var(--accent); }
+  </style>
+</head>
+<body>
+  <h1>00_master_contract.html Gap Matrix</h1>
+  <div class="small">
+    Review date: 2026-04-30. Scope: compare the active master contract against the current repo design and the archived/extraction evidence, then flag gaps that are still missing or only partially documented.
+  </div>
+
+  <section class="card stack">
+    <h2>Method</h2>
+    <div>
+      <div><span class="tag">Active contract</span> <code>docs/00_master_contract.html</code></div>
+      <div><span class="tag">Extraction trail</span> <code>docs/_extraction/</code></div>
+      <div><span class="tag">Archive evidence</span> <code>docs/_archive/</code></div>
+    </div>
+    <pre>Interpretation:
+- "Aligned" means the master contract and current repo design already point at the same behavior.
+- "Partial" means the contract is directionally correct but still under-specified or intentionally deferred.
+- "Gap" means the master contract still needs an explicit section or rule.</pre>
+  </section>
+
+  <section class="card">
+    <h2>Matrix</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>Master contract</th>
+          <th>Archive evidence</th>
+          <th>Extraction status</th>
+          <th>Current repo assessment</th>
+          <th>Verdict / note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Governance, versioning, extraction lineage</td>
+          <td>Master contract is active source of truth, but it does not yet expose an explicit version-history or source-extraction register section.</td>
+          <td><code>docs/_extraction/master_contract_change_control_amendment.html</code> requires version history, extraction register, active contract, deprecated appendix, and open decisions.</td>
+          <td><code>docs/_extraction/extraction_log.html</code> and <code>docs/_extraction/extraction_pass_01_working_log.html</code> both say extraction is ongoing and the master must be updated incrementally.</td>
+          <td><span class="warn">Partial</span>. The repo has the working extraction trail, but the master itself still lacks the explicit change-control tabs the extraction docs call for.</td>
+          <td class="warn">Gap. Add a version-history / extraction-lineage section to the master contract rather than relying on the working logs alone.</td>
+        </tr>
+        <tr>
+          <td>Page routes: config, manage watch state, watch me, discover</td>
+          <td><code>config</code> is app settings only. <code>manage_watch_state</code> is separate. <code>watch_me</code> is lightweight list/compatibility. <code>discover</code> is active discovery, not a dashboard duplicate.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/ARCHITECTURE.md</code> and <code>UI_COMPONENTS.md</code> describe watchlist/watch me separation, and the extraction queue explicitly calls out watchlist recovery and manage-state separation.</td>
+          <td><code>docs/_extraction/20260429_contract_update_queue.html</code> lists "Recover standalone watchlist" and "Define manage_watch_state matrix UI".</td>
+          <td><span class="good">Aligned</span> for config/manage separation and watch_me compatibility. <span class="warn">Partial</span> for discover because the master contract now needs a concrete discovery feed registry, not a deferred label.</td>
+          <td class="warn">Discover should be documented as a distinct feed/source and should exclude watched/watching/watchlisted items from the suggestion surface.</td>
+        </tr>
+        <tr>
+          <td>Header, logo, and icon-only nav</td>
+          <td>Master contract requires sticky, compact header; logo must preserve aspect ratio; nav must be standalone icons, not boxed buttons.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/UI_COMPONENTS.md</code> explicitly calls for the compact Boys logo, icon-first accessible nav, and sticky header.</td>
+          <td><code>docs/_extraction/extraction_pass_01_working_log.html</code> marks primary nav as icon-only, accessible, large enough, and not boxed by default.</td>
+          <td><span class="good">Aligned</span>. This is already reflected in the current runtime and validation path.</td>
+          <td class="good">No gap. The archive and extraction both support the current header/nav direction.</td>
+        </tr>
+        <tr>
+          <td>Card layout and action strip</td>
+          <td>Image, title/meta, then action row. Rounded-square action buttons. No overlay badges. Required order remains popcorn, watched status, watch list, favourite, rating.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/UI_COMPONENTS.md</code>, <code>show_card.md</code>, and <code>movie_card.md</code> all describe the shared card family and the action strip below the media.</td>
+          <td><code>docs/_extraction/20260429_extraction_register_batch_001.html</code> and the working log both classify card/action rules as reusable UI evidence.</td>
+          <td><span class="good">Aligned</span>. The current runtime and validator are built around the shared card/action contract.</td>
+          <td class="good">No gap. The remaining work here is maintenance, not missing documentation.</td>
+        </tr>
+        <tr>
+          <td>Calendar layout</td>
+          <td>Master contract says calendar grid/list release browsing and shared +X more behavior, but it is still looser than the archive on the hard seven-column wall-grid rule.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/calendar_view.md</code> explicitly requires a sticky calendar control bar, sticky weekday row, and seven-column month grid.</td>
+          <td>The extraction log has not yet promoted a dedicated calendar-specific register entry; the older archive evidence is present but not fully migrated.</td>
+          <td><span class="good">Implementation aligned</span>, but <span class="warn">documentation is under-specified</span> compared with the archive.</td>
+          <td class="warn">Gap. The master contract should state the seven-column/horizontal-scroll rule more explicitly so future edits do not reintroduce collapse behavior.</td>
+        </tr>
+        <tr>
+          <td>Watch state model</td>
+          <td>Master contract covers watch_list, favourite, watched_status, Trakt mismatch/queue review, and separate manage-watch-state page.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/ARCHITECTURE.md</code> and <code>docs/_archive/pre_master_contract_20260429_173237/UI_COMPONENTS.md</code> both map local state to Trakt and define watch-state identity and tree-like interaction.</td>
+          <td><code>docs/_extraction/extraction_pass_01_working_log.html</code> already captured "Manage Watch State" as table/matrix/tree oriented, with filters and bulk actions.</td>
+          <td><span class="good">Aligned</span>. The current repo now treats Manage Watch State as a standalone matrix view.</td>
+          <td class="good">No gap. This was a real extraction item and it has already been promoted into the active contract.</td>
+        </tr>
+        <tr>
+          <td>Watch Me / watchlist decision</td>
+          <td>Master contract keeps <code>watch_me.html</code> as a lightweight compatibility/list page and keeps <code>watchlist.html</code> as a planned recovery candidate.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/spec/Section 4.9 - Watchlist (Standalone Page).md</code> and the extraction register both describe the standalone watchlist concept.</td>
+          <td><code>docs/_extraction/20260429_contract_update_queue.html</code> says to recover standalone watchlist; <code>docs/_extraction/20260429_extraction_register_batch_001.html</code> says to recover it as a simple listing page separate from manage_watch_state.</td>
+          <td><span class="warn">Partial</span>. The compatibility list page exists; the standalone watchlist rebuild is still a decision, not a shipped route.</td>
+          <td class="warn">Open decision, not a defect. The repo should not duplicate Watch Me and watchlist without a documented split in purpose.</td>
+        </tr>
+        <tr>
+          <td>Asset pipeline</td>
+          <td>Master contract requires <code>assets/original_downloads</code> as source and optimized runtime folders for posters, stills, backdrops, logos, and icons.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/ARCHITECTURE.md</code> and <code>UI_COMPONENTS.md</code> both specify 171x257 posters, 256x180 stills, and small optimized logos.</td>
+          <td><code>docs/_extraction/extraction_pass_01_working_log.html</code> marks asset QA as an extract item and says file dimensions and byte sizes must be validated.</td>
+          <td><span class="good">Aligned</span>. The current validator already checks runtime image sizing and reports oversized assets.</td>
+          <td class="good">No gap. This part is consistent across master, archive, extraction, and runtime checks.</td>
+        </tr>
+        <tr>
+          <td>Validation and QA</td>
+          <td>Master contract requires rendered Chromium checks, icon-only nav, logo aspect checks, rounded-square actions, Manage Watch State separation, and asset QA.</td>
+          <td><code>docs/_archive/pre_master_contract_20260429_173237/ARCHITECTURE.md</code> and <code>README.md</code> already require runtime validation plus asset and schema reporting.</td>
+          <td><code>docs/_extraction/extraction_log.html</code> explicitly says the master must be updated incrementally and <code>docs/_extraction/master_contract_change_control_amendment.html</code> says the active contract must never be regenerated from scratch.</td>
+          <td><span class="good">Aligned</span>. Validation is now wired to the active contract and rendered QA.</td>
+          <td class="good">No gap. The validator is part of the active contract rather than a sidecar script.</td>
+        </tr>
+        <tr>
+          <td>Deprecated / legacy registry</td>
+          <td>Master contract has a deprecated registry, but it is still thinner than the archive set.</td>
+          <td>The archive contains the full historic spec set, including many separate section files and old UI docs that the master contract should reference only as historical evidence.</td>
+          <td><code>docs/_extraction/extraction_log.html</code> says the archive is evidence and old docs are not active requirements; <code>docs/_extraction/extraction_pass_01_working_log.html</code> says a deprecated feature registry still needs to be built out.</td>
+          <td><span class="warn">Partial</span>. The repo has the archive tree, but the master contract could list the legacy families more explicitly so future reviews do not rediscover them.</td>
+          <td class="warn">Recommended follow-up. Add a concise deprecated/future appendix or registry section if the next pass needs stricter drift detection.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Short Take</h2>
+    <ul>
+      <li>The biggest real doc gap is the missing explicit version-history / source-extraction register in the master contract.</li>
+      <li>The calendar still needs a sharper seven-column / horizontal-scroll statement in the master contract, even though the runtime already behaves that way.</li>
+      <li>Manage Watch State, asset sizing, and the icon-only header/nav are already backed by both archive evidence and extraction notes.</li>
+      <li>Discover is now an active surface in the master contract, but it still needs a concrete non-local feed registry and implementation proof.</li>
+    </ul>
+  </section>
+</body>
+</html>

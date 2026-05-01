@@ -21,10 +21,24 @@ CHANGE NOTES:
     catch (_) { return {}; }
   }
   function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
-  function keyFor(id,type){ return type + ':' + id; }
   function normalizeType(type){
     const clean = String(type || '').trim();
     return TYPES.has(clean) ? clean : '';
+  }
+  function contextKey(type, context){
+    const cleanType = normalizeType(type);
+    if (!cleanType) return '';
+    const ctx = context && typeof context === 'object' ? context : { kind: String(context || '').trim().toLowerCase() };
+    const kind = String(ctx.kind || '').trim().toLowerCase();
+    const id = String(ctx.id || ctx.tmdb_id || ctx.movieId || ctx.showId || '').trim();
+    const showId = String(ctx.showId || ctx.show || ctx.dataShow || '').trim();
+    const season = String(ctx.season || ctx.seasonNumber || ctx.dataSeason || '').trim();
+    const episode = String(ctx.episode || ctx.episodeNumber || ctx.dataEpisode || '').trim();
+    if (showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
+    if (showId && season) return `${cleanType}:season:${showId}:${season}`;
+    if (kind === 'movie' && id) return `${cleanType}:movie:${id}`;
+    if (kind === 'show' && id) return `${cleanType}:show:${id}`;
+    return '';
   }
   function typeFromAction(action){
     if (action === 'toggle-watch-list') return 'watch_list';
@@ -32,16 +46,14 @@ CHANGE NOTES:
     if (action === 'toggle-favourite' || action === 'toggle-favorite') return 'favourite';
     return '';
   }
-  function get(id,type){
-    const cleanType = normalizeType(type);
-    if (!id || !cleanType) return false;
-    return !!load()[keyFor(id,cleanType)];
+  function get(context,type){
+    const key = contextKey(type, context);
+    return key ? !!load()[key] : false;
   }
-  function set(id,type,value){
-    const cleanType = normalizeType(type);
-    if (!id || !cleanType) return false;
+  function set(context,type,value){
+    const key = contextKey(type, context);
+    if (!key) return false;
     const data = load();
-    const key = keyFor(id,cleanType);
     if (value) data[key] = true;
     else delete data[key];
     save(data);
@@ -62,7 +74,6 @@ CHANGE NOTES:
     if (kind === 'episode' || kind === 'season') return '';
     if (kind === 'movie' && id) return `${cleanType}:movie:${id}`;
     if (kind === 'show' && id) return `${cleanType}:show:${id}`;
-    if (kind && id) return `${cleanType}:${kind}:${id}`;
     return '';
   }
 

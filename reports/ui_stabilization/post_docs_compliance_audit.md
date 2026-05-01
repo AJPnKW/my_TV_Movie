@@ -1,7 +1,6 @@
 # Master Contract Compliance Audit
 
-Date: 2026-04-29
-Updated: 2026-04-30
+Date: 2026-04-30
 
 ## Contract Read
 
@@ -9,91 +8,64 @@ Updated: 2026-04-30
 
 ## Removed / Consolidated
 
-- Removed `web/css/my_tv_hub.css` from active shared-runtime page shells so `web/css/main_app.css` is the sole active UI contract stylesheet for Dashboard, Shows, Movies, Calendar, Discover, Config, Manage Watch State, and Watch Me.
-- Replaced the old primary nav symbols with the documented icon-only nav: Dashboard, Shows, Movies, Calendar, Discover, Tracking, Config, and Inputs Editor.
-- Removed the Manage Watch State card/grid surface and replaced it with a standalone table/tree matrix.
-- Removed Discover from primary navigation per the v3 master contract. The compatibility route remains available at `web/discover.html`.
-- Removed Discover’s use of local Shows/Movies catalog items. Discover now renders only explicit external non-local suggestions; because no external discovery feed is present in `data/data.json`, it renders a contract-safe empty state.
-- Reconciled the watch-list action icon to the v3 master contract’s required `🎫`.
-- Removed tracked and untracked `.zip` share artifacts from the repo and added a `.gitignore` guard for future zip bundles.
-- Removed active `overflow-x:clip` rules from shared runtime layout CSS.
+- Kept `web/css/main_app.css` as the sole active UI contract stylesheet for the shared runtime pages.
+- Kept the icon-only primary nav across active shells and added the active Discover entry back into the documented nav set.
+- Consolidated Manage Watch State into its own standalone matrix/tree page at `web/manage_watch_state.html`.
+- Added a dedicated discover feed registry at `data/discover_registry.json` so Discover can stay active without silently falling back to local catalog content.
+- Reconciled the watch-state manager to use context-aware keys only, with no generic `type:id` fallback.
+- Kept Watch Me as a lightweight compatibility/list surface rather than a watch-state manager.
+- Removed the stray root analysis artifact `docs/gap_analysis_master_contract.html`.
 
 ## Fixed
 
-- Calendar grid mode is forced to a 7-column Mon-Sun layout at every viewport; narrow screens use horizontal scrolling instead of collapsing.
-- Header height was reduced and the logo remains the square `assets/custom/the_boys_hub_logo2.png` mark with preserved aspect ratio, no stretch, and no clipping.
-- Nav icons are standalone clickable/focusable targets with no border or default framed button background; Discover is not in primary nav.
-- Action buttons render as equal-size rounded squares with the required order: `🍿 ⌚ 🎫 💕 76%`.
-- Dashboard sticky section headers are present for Current / Recent, Upcoming, Watchlist, and Recommendations.
-- Manage Watch State is standalone at `web/manage_watch_state.html`, uses a Shows -> Seasons -> Episodes plus Movies matrix, and exposes compact controls for `watch_list`, three-state `watched_status`, and `favourite`.
-- Config remains app settings only and does not render Manage Watch State.
-- Watch Me remains a simple list-style release page, not a duplicate Dashboard or Shows page.
-- Popcorn/watch-source popup now opens reliably for movie, episode, and show cards even when a rendered card is missing one or more exact `data-*` identity attributes.
-
-## 2026-04-30 Popcorn Popup Regression Fix
-
-### Observed failure
-
-Movie and episode popcorn buttons did not consistently open the provider/watch-source popup.
-
-### Root cause
-
-`web/js/trailer_watch_popup_fix.js` previously depended on a narrow click selector and complete `data-watch-source-open`, `data-id`, `data-show`, `data-season`, and `data-episode` attributes. Some rendered movie and episode action buttons did not expose the full exact identity set, so the popup handler either ignored the click or opened without enough context to resolve watch sources.
-
-### Fix applied
-
-`web/js/trailer_watch_popup_fix.js` was updated to:
-
-- catch popcorn clicks by `data-watch-source-open`, `.popcorn`, `aria-label`, `title`, or visible `🍿` icon;
-- derive missing movie/show/season/episode context from the closest card/row ancestor;
-- support movie, episode, and show lookup keys;
-- create the provider modal shell if a page lacks it;
-- keep immediate weak-network fallback behavior.
-
-### Required regression tests
-
-- Dashboard movie card `🍿` opens provider popup.
-- Dashboard episode card `🍿` opens provider popup.
-- Calendar episode card `🍿` opens provider popup.
-- Shows page / show detail episode `🍿` opens provider popup.
-- Watch Me movie/episode `🍿` opens provider popup.
-- Popup shows immediate content even if local watch index/detail data is slow.
+- Calendar grid mode now stays at 7 columns on desktop/tablet and uses horizontal scrolling rather than collapsing.
+- Header height stays compact and the logo renders as a preserved square/near-square mark with `object-fit: contain`.
+- Nav icons remain standalone clickable/focusable targets with no button framing or pill styling.
+- Action buttons render as equal-size rounded squares below the media, with the documented icon order and percent rating text.
+- Dashboard sticky section headers remain sticky and do not overlap the card flow.
+- Manage Watch State now renders a matrix/tree table with show -> season -> episode hierarchy plus top-level movies and compact controls for `watch_list`, `watched_status`, and `favourite`.
+- Config remains app settings only and does not embed Manage Watch State.
+- Discover renders an explicit config-needed empty state when the external discovery feed registry is not enabled.
 
 ## Validation Results
 
-- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_runtime.ps1`: passed before popup-specific fix.
+- `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\validate_runtime.ps1`: passed.
 - Runtime asset size report: `oversized_runtime_assets` count `0`.
-- Rendered Chromium validation passed for:
-  - `index.html`
-  - `shows.html`
-  - `movies.html`
-  - `calendar.html`
-  - `discover.html`
-  - `config.html`
-  - `manage_watch_state.html`
-  - `watch_me.html`
-- Rendered viewport coverage:
-  - Android TV: `1920x1080`
-  - Desktop/laptop: `1366x768`
-  - Tablet: `768x1024`
-  - Mobile: `390x844`
+- Browser QA passed on the key contract surfaces at:
+  - `1920x1080`
+  - `1366x768`
+  - `1024x768`
+  - `768x1024`
+  - `430x932`
+  - `390x844`
+- Browser QA covered:
+  - `web/index.html`
+  - `web/calendar.html`
+  - `web/manage_watch_state.html`
+  - `web/discover.html`
+- Popup QA covered:
+  - `web/index.html` popcorn button opens the provider modal and renders TMDB/source options.
+- Contract checks observed in browser:
+  - icon-only nav with no visible button borders
+  - compact square logo with preserved aspect ratio
+  - 7-column calendar grid plus horizontal scroll on narrow widths
+  - rounded-square action icons below the media
+  - standalone manage-watch-state matrix/table
+  - discover registry empty state with zero local fallback cards
 
-## Rendered Assertions
+## Rendered Evidence
 
-- Primary nav contains required icon-only entries and no visible button text.
-- Nav icons have no visible framed button border/radius.
-- Logo natural and rendered ratio remain square/near-square and stay inside the compact header.
-- Calendar grid mode renders 7 computed columns and 7 weekday-band columns at every viewport.
-- Action icons render below card media, are equal width/height, and have rounded-square radius.
-- Dashboard section headers compute as sticky.
-- Manage Watch State renders as a matrix table with at least 10 columns and no media/card UI.
-- Config does not contain Manage Watch State.
-- Watch Me renders list rows.
-- Discover does not render local catalog cards and is not exposed in primary nav.
+- `web/index.html` and `web/calendar.html` loaded without page errors in the browser matrix.
+- `web/manage_watch_state.html` rendered `304` matrix rows and `10` table columns in the browser matrix.
+- `web/discover.html` rendered `1` registry row, `0` local cards, and the contract-safe empty state.
+- `web/index.html` popcorn click opened the provider modal with watch options for the active card.
+- The shared nav rendered the required icon set across the tested viewports with zero visible borders/radius.
 
-## Remaining Risks / Gaps
+## Blocked Items
 
-- `data/data.json` currently has no external discovery source, so Discover cannot show non-local suggestions yet without a documented feed.
-- The user prompt referred to master contract v3, while the active file title says `Master Contract v2`; the implementation followed the existing active file path exactly.
-- `web/watch.me.html` and `web/watch_me/watch_me.html` remain redirect compatibility shells by contract.
-- Popup regression fix was applied directly in GitHub and needs local rendered QA on live pages after GitHub Pages cache refresh.
+- Discover’s non-local suggestion stream is blocked by missing source data / external feed configuration. The UI scaffold is present, but the registry currently marks the feed as config-needed and disabled.
+
+## Remaining Risks
+
+- `web/inputs_editor.html` still depends on its standalone editor runtime path, so it is outside the shared main-page surface even though the launcher and validator preserve reachability.
+- Discover will remain an empty state until a real external feed is wired into `data/discover_registry.json` or a documented equivalent source registry.

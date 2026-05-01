@@ -22,10 +22,12 @@ git status --short --branch
 $requiredFiles = @(
     'docs/00_master_contract.html',
     'docs/index.html',
+    'docs/ARCHITECTURE_LOG.md',
     'data/inputs.json',
     'data/data.json',
     'data/catalog_index.json',
     'data/calendar.json',
+    'data/discover_registry.json',
     'data/watch_sources_index.json',
     'web/index.html',
     'web/calendar.html',
@@ -90,20 +92,17 @@ foreach ($page in $pageFiles) {
         if ($navText -match '>Dashboard<|>Shows<|>Movies<|>Calendar<|>Watch Me<|>Discover<|>Config<|>Inputs Editor<') {
             Add-CheckError "$page primary nav must be icon-only visible text"
         }
-        foreach ($requiredNav in @('Dashboard','Shows','Movies','Calendar','Tracking','Config','Inputs Editor')) {
+        foreach ($requiredNav in @('Dashboard','Shows','Movies','Calendar','Discover','Tracking','Config','Inputs Editor')) {
             if ($navText -notmatch "aria-label=`"$requiredNav`"") {
                 Add-CheckError "$page icon-only nav missing required accessible label: $requiredNav"
             }
         }
-        foreach ($requiredTab in @('data-tab="dashboard"','data-tab="shows"','data-tab="movies"','data-tab="calendar"','data-tab="manage-watch-state"','data-tab="config"','data-tab="inputs-editor"')) {
+        foreach ($requiredTab in @('data-tab="dashboard"','data-tab="shows"','data-tab="movies"','data-tab="calendar"','data-tab="discover"','data-tab="manage-watch-state"','data-tab="config"','data-tab="inputs-editor"')) {
             if ($navText -notlike "*$requiredTab*") {
                 Add-CheckError "$page icon-only nav missing required primary tab: $requiredTab"
             }
         }
-        if ($navText -match 'data-tab="discover"') {
-            Add-CheckError "$page primary nav must not expose deferred Discover"
-        }
-        if ($navText -notmatch '🏠' -or $navText -notmatch '📺' -or $navText -notmatch '🎞️' -or $navText -notmatch '📅' -or $navText -notmatch '✅') {
+        if ($navText -notmatch '🏠' -or $navText -notmatch '📺' -or $navText -notmatch '🎞️' -or $navText -notmatch '📅' -or $navText -notmatch '🔎' -or $navText -notmatch '✅') {
             Add-CheckError "$page icon-only nav missing required accessible labels"
         }
     }
@@ -532,6 +531,8 @@ function ignoreConsole(message){
           kind: card.getAttribute('data-kind') || '',
           id: card.getAttribute('data-id') || card.getAttribute('data-show-open') || card.getAttribute('data-movie-open') || ''
         }));
+        const discoverRegistryRows = document.querySelectorAll('#panel-discover .discover-registry__table tbody tr').length;
+        const discoverEmptyState = !!document.querySelector('#panel-discover .discover-empty');
         return {
           tabs,
           logoRect,
@@ -553,28 +554,29 @@ function ignoreConsole(message){
           } : null,
           actionButtons,
           dashHeads,
-          discoverCards
+          discoverCards,
+          discoverRegistryRows,
+          discoverEmptyState
         };
       });
       const visibleTextLabels = new Set(['Dashboard','Shows','Movies','Calendar','Watch Me','Discover','Config','Inputs Editor','Manage Watch State']);
       const badText = result.tabs.filter(tab => visibleTextLabels.has(tab.text));
       const framedTabs = result.tabs.filter(tab => tab.borderTopWidth > 0 || tab.borderLeftWidth > 0 || tab.borderRadius > 2);
       const missingLabels = result.tabs.filter(tab => !tab.label);
-      const requiredTabs = ['dashboard','shows','movies','calendar','manage-watch-state','config','inputs-editor'];
+      const requiredTabs = ['dashboard','shows','movies','calendar','discover','manage-watch-state','config','inputs-editor'];
       const missingRequiredTabs = requiredTabs.filter(id => !result.tabs.some(tab => tab.id === id));
       const logoRatio = result.logoRect && result.logoRect.height ? result.logoRect.width / result.logoRect.height : 99;
       const logoBad = !result.logoRect || !result.logoNatural || result.logoNatural.width !== result.logoNatural.height || logoRatio > 1.25 || result.logoRect.width > 44 || result.logoRect.height > 44 || !result.headerRect || result.logoRect.top < result.headerRect.top - 1 || result.logoRect.bottom > result.headerRect.bottom + 1 || result.headerRect.height > 70;
       const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || !result.manageHasTable || result.manageCardCount > 0 || result.manageButtonCount < 1 || result.manageColumnCount < 10 || result.manageRowCount < 1));
       const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
       const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.hostScrollWidth <= result.calendar.hostClientWidth));
-      const deferredDiscoverInNav = result.tabs.some(tab => tab.id === 'discover');
       const movieNavBad = result.tabs.some(tab => tab.id === 'movies' && tab.text === '🎬');
       const actionBad = result.actionButtons.some(btn => btn.icon === '🎟️' || btn.icon === '▶' || btn.icon === '🎬' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
       const stickyBad = pageName === 'index.html' && (!result.dashHeads.some(h => /Current \/ Recent/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Watchlist/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Upcoming/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Recommendations/.test(h.text) && h.position === 'sticky'));
-      const discoverBad = pageName === 'discover.html' && result.discoverCards.length > 0;
+      const discoverBad = pageName === 'discover.html' && (!result.discoverRegistryRows || !result.discoverEmptyState || result.discoverCards.length > 0);
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || deferredDiscoverInNav || movieNavBad || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || discoverBad || pageErrors.length){
-        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, deferredDiscoverInNav, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, discoverCards: result.discoverCards, errors: pageErrors });
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || discoverBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
       }
       await page.close();
     }

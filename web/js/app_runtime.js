@@ -41,6 +41,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     cfg: null,
     data: null,
     calendarData: null,
+    discoverRegistry: null,
     inputs: null,
     tab: PAGE,
     lastNonShowHash: `#${PAGE}`,
@@ -2308,6 +2309,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
       state.data = await window.MyTVHubSharedModules.dataLoader.loadCatalogIndexFirst(["../data/catalog_index.json"]);
       state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/calendar.json"]);
+      state.discoverRegistry = await window.MyTVHubSharedModules.dataLoader.loadDiscoverRegistryFirst(["../data/discover_registry.json"]);
 
       if (!state.data || typeof state.data !== "object") throw new Error("catalog_index.json not loaded");
       if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar.json not loaded");
@@ -3872,20 +3874,103 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const panel = $("#panel-discover");
     if (!showsRoot || !moviesRoot || !panel) return;
 
+    const registry = state.discoverRegistry && typeof state.discoverRegistry === "object" ? state.discoverRegistry : { meta: { status: "config-needed" }, sources: [] };
+    const sources = Array.isArray(registry.sources) ? registry.sources : [];
     const localShowIds = new Set((state.data?.shows || []).map(show => safeText(show?.tmdb_id ?? show?.id ?? "")).filter(Boolean));
     const localMovieIds = new Set((state.data?.movies || []).map(movie => safeText(movie?.tmdb_id ?? movie?.id ?? "")).filter(Boolean));
-    const discoverData = state.data?.discover && typeof state.data.discover === "object" ? state.data.discover : {};
-    const shows = (Array.isArray(discoverData.shows) ? discoverData.shows : [])
-      .filter(show => !localShowIds.has(safeText(show?.tmdb_id ?? show?.id ?? "")))
-      .sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
-    const movies = (Array.isArray(discoverData.movies) ? discoverData.movies : [])
-      .filter(movie => !localMovieIds.has(safeText(movie?.tmdb_id ?? movie?.id ?? "")))
-      .sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
+    const localWatchState = readLocalWatchState();
+    const localStateKeySet = new Set(Object.keys(localWatchState));
+    const sourceItems = (source) => {
+      const items = [];
+      if (Array.isArray(source?.items)) items.push(...source.items);
+      if (Array.isArray(source?.results)) items.push(...source.results);
+      if (Array.isArray(source?.shows)) items.push(...source.shows.map(item => ({ ...item, kind: item?.kind || "show" })));
+      if (Array.isArray(source?.movies)) items.push(...source.movies.map(item => ({ ...item, kind: item?.kind || "movie" })));
+      return items.filter(item => item && typeof item === "object");
+    };
+    const itemId = (item) => safeText(item?.tmdb_id ?? item?.id ?? item?.trakt_id ?? "");
+    const itemKind = (item) => safeText(item?.kind || item?.media_type || item?.type || "");
+    const isExcluded = (item) => {
+      const id = itemId(item);
+      const kind = itemKind(item);
+      if (!id) return true;
+      if (kind === "movie" && localMovieIds.has(id)) return true;
+      if ((kind === "show" || kind === "tv" || !kind) && localShowIds.has(id)) return true;
+      if (Array.from(localStateKeySet).some(key => key.includes(`:movie:${id}`) || key.includes(`:show:${id}`))) return true;
+      if (Array.from(localStateKeySet).some(key => key.includes(`:episode:${id}:`))) return true;
+      return false;
+    };
+    const activeSources = sources.filter(source => source && source.enabled !== false);
+    const externalShows = [];
+    const externalMovies = [];
+    for (const source of activeSources){
+      for (const item of sourceItems(source)){
+        if (isExcluded(item)) continue;
+        if (safeText(item.kind || item.media_type || item.type).toLowerCase() === "movie") externalMovies.push(item);
+        else externalShows.push({ ...item, kind: "show" });
+      }
+    }
+    externalShows.sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
+    externalMovies.sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0));
 
-    showsRoot.innerHTML = shows.slice(0, 12).map(show => showCardHtml(show, { fade: false })).join("") || `<div class="muted">No external non-local show suggestions are configured.</div>`;
-    moviesRoot.innerHTML = movies.slice(0, 12).map(movie => movieCardHtml(movie, { fade: false })).join("") || `<div class="muted">No external non-local movie suggestions are configured.</div>`;
+    const registryHtml = `
+      <section class="dashblock discover-registry">
+        <div class="dashhead dashhead--compact">
+          <span class="muted">Discovery feed registry</span>
+          <span class="muted">${activeSources.length ? `${activeSources.length} configured source${activeSources.length === 1 ? "" : "s"}` : "config-needed"}</span>
+        </div>
+        <div class="discover-registry__body">
+          <table class="discover-registry__table">
+            <thead>
+              <tr>
+                <th>Source name</th>
+                <th>Type</th>
+                <th>Normalization</th>
+                <th>Cadence</th>
+                <th>ID fields</th>
+                <th>Exclusions</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${sources.length ? sources.map(source => `
+                <tr>
+                  <td>${escHtml(safeText(source.source_name || source.name || "Unnamed source"))}</td>
+                  <td>${escHtml(safeText(source.source_type || source.type || "unknown"))}</td>
+                  <td><code>${escHtml(safeText(source.normalization_path || "discover.sources[]"))}</code></td>
+                  <td>${escHtml(safeText(source.refresh_cadence || "manual"))}</td>
+                  <td><code>${escHtml(Array.isArray(source.id_fields) ? source.id_fields.join(", ") : safeText(source.id_fields || "tmdb_id"))}</code></td>
+                  <td>${escHtml(Array.isArray(source.exclusion_rules) ? source.exclusion_rules.join(", ") : safeText(source.exclusion_rules || "watched, watch_list, favourite, locally_known"))}</td>
+                  <td>${source.enabled === false ? "configured / disabled" : "enabled"}</td>
+                </tr>
+              `).join("") : `<tr><td colspan="7" class="inline-empty">No discovery source is configured yet.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    `;
+    const emptyState = `
+      <section class="dashblock discover-empty">
+        <div class="dashhead dashhead--compact">
+          <span class="muted">Discover</span>
+          <span class="muted">config-needed</span>
+        </div>
+        <div class="discover-empty__copy">
+          <p>No external discovery feed is configured yet.</p>
+          <p>Register a non-local Trakt-style source, then normalization can fill this surface with suggestions that are not already watched, watching, watchlisted, or locally known.</p>
+        </div>
+      </section>
+    `;
 
-    [showsRoot, moviesRoot].forEach(root => {
+    if (!activeSources.length || (!externalShows.length && !externalMovies.length)){
+      showsRoot.innerHTML = `<div class="discover-column">${emptyState}${registryHtml}</div>`;
+      moviesRoot.innerHTML = `<div class="discover-column">${emptyState}</div>`;
+    } else {
+      showsRoot.innerHTML = externalShows.slice(0, 12).map(show => showCardHtml(show, { fade: false })).join("") || emptyState;
+      moviesRoot.innerHTML = externalMovies.slice(0, 12).map(movie => movieCardHtml(movie, { fade: false })).join("") || emptyState;
+    }
+
+    [showsRoot, moviesRoot, panel].forEach(root => {
       if (!root) return;
       wireActionMenus(root);
       wireIconStripActions(root, renderDiscover);
@@ -3913,17 +3998,20 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function renderWatchStateManagerHtml(){
     const localState = readLocalWatchState();
     const keys = Object.keys(localState);
-    const typeCounts = {
-      watched_status: keys.filter(key => key.startsWith("watched_status:")).length,
-      watch_list: keys.filter(key => key.startsWith("watch_list:")).length,
-      favourite: keys.filter(key => key.startsWith("favourite:")).length
-    };
-    const stateKey = (type, row) => {
-      if (!row || !row.kind) return "";
-      if (row.kind === "episode") return `${type}:episode:${row.showId}:${row.seasonNumber}:${row.episodeNumber}`;
-      if (row.kind === "season") return `${type}:season:${row.showId}:${row.seasonNumber}`;
-      return `${type}:${row.kind}:${row.tmdbId}`;
-    };
+    const typeCounts = keys.reduce((acc, key) => {
+      if (key.startsWith("watched_status:")) acc.watched_status += 1;
+      else if (key.startsWith("watch_list:")) acc.watch_list += 1;
+      else if (key.startsWith("favourite:")) acc.favourite += 1;
+      return acc;
+    }, { watched_status: 0, watch_list: 0, favourite: 0 });
+    const queuedKeys = (() => {
+      try {
+        const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+        return new Set(Array.isArray(queue) ? queue.map(item => safeText(item?.key || item?.state_key || item?.id || item)).filter(Boolean) : []);
+      } catch (_) {
+        return new Set();
+      }
+    })();
     const releaseStatus = (dateText, fallback = "") => {
       const raw = safeText(dateText || "");
       if (!raw) return safeText(fallback || "unknown");
@@ -3934,25 +4022,37 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       releaseDate.setHours(0, 0, 0, 0);
       return releaseDate > today ? "unreleased" : "released";
     };
+    const stateKey = (type, row) => {
+      if (!row || !row.kind) return "";
+      if (row.kind === "episode") return `${type}:episode:${row.showId}:${row.seasonNumber}:${row.episodeNumber}`;
+      if (row.kind === "season") return `${type}:season:${row.showId}:${row.seasonNumber}`;
+      if (row.kind === "movie") return `${type}:movie:${row.tmdbId}`;
+      if (row.kind === "show") return `${type}:show:${row.tmdbId}`;
+      return "";
+    };
+    const stateValue = (type, row) => {
+      const key = stateKey(type, row);
+      const raw = key ? localState[key] : "";
+      if (raw === true) return "watched";
+      if (raw === false || raw == null || raw === "") return "unwatched";
+      if (raw === "partial" || raw === "watched" || raw === "unwatched") return raw;
+      return raw ? "watched" : "unwatched";
+    };
     const traktStatus = item => safeText(item?.trakt_id || item?.trakt || "") ? "mapped" : "missing";
     const rowIssue = row => {
       if (!row.tmdbId && row.kind !== "season" && row.kind !== "episode") return "missing tmdb_id";
       if (row.kind === "episode" && (!row.showId || !row.seasonNumber || !row.episodeNumber)) return "missing episode key";
+      if ((row.kind === "movie" || row.kind === "episode") && row.release === "unreleased") return "locked until release";
       return "";
     };
-    const queuedKeys = (() => {
-      try {
-        const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
-        return new Set(Array.isArray(queue) ? queue.map(item => safeText(item?.key || item?.state_key || item?.id || item)).filter(Boolean) : []);
-      } catch (_) {
-        return new Set();
-      }
-    })();
     const shows = (Array.isArray(state.data?.shows) ? state.data.shows : []).filter(item => item?.tmdb_id);
     const movies = (Array.isArray(state.data?.movies) ? state.data.movies : []).filter(item => item?.tmdb_id);
+    const seasonMap = new Map();
+    const showEpisodesMap = new Map();
     const rows = [];
     shows.forEach(show => {
       const showId = safeText(show?.tmdb_id ?? show?.id ?? "");
+      const seasons = Array.isArray(show?.seasons) ? show.seasons : [];
       rows.push({
         kind:"show",
         level:0,
@@ -3963,9 +4063,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         showId,
         item:show
       });
-      (Array.isArray(show?.seasons) ? show.seasons : []).forEach(season => {
+      const showEpisodeRows = [];
+      seasons.forEach(season => {
         const seasonNumber = Number(season?.season_number);
         if (!Number.isFinite(seasonNumber)) return;
+        const seasonKey = `${showId}:${seasonNumber}`;
+        const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
+        seasonMap.set(seasonKey, episodes);
+        showEpisodeRows.push(...episodes);
         rows.push({
           kind:"season",
           level:1,
@@ -3977,7 +4082,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           seasonNumber,
           item:season
         });
-        (Array.isArray(season?.episodes) ? season.episodes : []).forEach(episode => {
+        episodes.forEach(episode => {
           const episodeNumber = Number(episode?.episode_number);
           if (!Number.isFinite(episodeNumber)) return;
           rows.push({
@@ -3994,6 +4099,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           });
         });
       });
+      showEpisodesMap.set(showId, showEpisodeRows);
     });
     movies.forEach(movie => {
       const movieId = safeText(movie?.tmdb_id ?? movie?.id ?? "");
@@ -4008,20 +4114,56 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       });
     });
     const unmatched = keys.filter(key => !/^(watched_status|watch_list|favourite):(movie|show|season|episode):/.test(key)).length;
+    const watchedButtons = (row, lock = false) => {
+      const key = stateKey("watched_status", row);
+      const value = stateValue("watched_status", row);
+      const disabled = lock || row.release === "unreleased";
+      return `
+        <div class="watch-state-tristate${disabled ? " is-locked" : ""}" role="group" aria-label="watched_status">
+          ${["unwatched","partial","watched"].map(option => `<button class="watch-state-tristate__option" type="button" data-manage-watch-key="${escHtml(key)}" data-manage-watch-value="${option}" aria-pressed="${value === option ? "true" : "false"}" title="${disabled ? "Derived from released children" : option}" ${disabled ? "disabled aria-disabled=\"true\"" : ""}>${option === "unwatched" ? "0" : option === "partial" ? "½" : "✓"}</button>`).join("")}
+        </div>
+      `;
+    };
+    const derivedWatchState = row => {
+      if (row.kind === "movie" || row.kind === "episode") return watchedButtons(row, row.release === "unreleased");
+      if (row.kind === "season") {
+        const episodes = seasonMap.get(`${row.showId}:${row.seasonNumber}`) || [];
+        const eligible = episodes.filter(episode => releaseStatus(episode?.air_date, "") === "released");
+        const values = eligible.map(episode => {
+          const epRow = {
+            kind:"episode",
+            showId: row.showId,
+            seasonNumber: row.seasonNumber,
+            episodeNumber: Number(episode?.episode_number) || 0,
+            release: releaseStatus(episode?.air_date, "")
+          };
+          return stateValue("watched_status", epRow);
+        });
+        const derived = !eligible.length ? "unwatched" : values.every(v => v === "watched") ? "watched" : values.some(v => v !== "unwatched") ? "partial" : "unwatched";
+        return `<div class="watch-state-derived" title="Derived from released child episodes"><span class="watch-state-derived__value">${escHtml(derived)}</span><span class="watch-state-derived__note">derived</span></div>`;
+      }
+      if (row.kind === "show") {
+        const episodes = showEpisodesMap.get(row.showId) || [];
+        const eligible = episodes.filter(episode => releaseStatus(episode?.air_date, "") === "released");
+        const values = eligible.map(episode => {
+          const epRow = {
+            kind:"episode",
+            showId: row.showId,
+            seasonNumber: Number(episode?.season_number || episode?.season || 0),
+            episodeNumber: Number(episode?.episode_number || episode?.number || 0),
+            release: releaseStatus(episode?.air_date, "")
+          };
+          return stateValue("watched_status", epRow);
+        });
+        const derived = !eligible.length ? "unwatched" : values.every(v => v === "watched") ? "watched" : values.some(v => v !== "unwatched") ? "partial" : "unwatched";
+        return `<div class="watch-state-derived" title="Derived from released child seasons and episodes"><span class="watch-state-derived__value">${escHtml(derived)}</span><span class="watch-state-derived__note">derived</span></div>`;
+      }
+      return watchedButtons(row, false);
+    };
     const toggleCell = (type, row, label) => {
       const key = stateKey(type, row);
       const active = !!localState[key];
       return `<button class="watch-state-toggle" type="button" data-manage-watch-key="${escHtml(key)}" aria-label="${escHtml(label)}" title="${escHtml(label)}" aria-pressed="${active ? "true" : "false"}">${active ? "✓" : ""}</button>`;
-    };
-    const watchedCell = row => {
-      const key = stateKey("watched_status", row);
-      const raw = localState[key];
-      const value = raw === true ? "watched" : raw === "partial" ? "partial" : "unwatched";
-      return `
-        <div class="watch-state-tristate" role="group" aria-label="watched_status">
-          ${["unwatched","partial","watched"].map(option => `<button class="watch-state-tristate__option" type="button" data-manage-watch-key="${escHtml(key)}" data-manage-watch-value="${option}" aria-pressed="${value === option ? "true" : "false"}" title="${option}">${option === "unwatched" ? "0" : option === "partial" ? "½" : "✓"}</button>`).join("")}
-        </div>
-      `;
     };
     const rowHtml = rows.map(row => {
       const watchKey = stateKey("watch_list", row);
@@ -4030,12 +4172,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const queueHit = queuedKeys.has(watchKey) || queuedKeys.has(favKey) || queuedKeys.has(watchedKey);
       const issue = rowIssue(row);
       return `
-        <tr class="watch-state-matrix__row" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}">
+        <tr class="watch-state-matrix__row" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}" data-release="${escHtml(row.release)}">
           <th scope="row" class="watch-state-matrix__title watch-state-matrix__title--level-${escHtml(row.level)}"><span>${escHtml(row.title)}</span><small>${escHtml(row.kind)}</small></th>
           <td>${escHtml(row.release)}</td>
           <td><code>${escHtml(row.ids)}</code></td>
           <td>${toggleCell("watch_list", row, "Toggle watch_list")}</td>
-          <td>${watchedCell(row)}</td>
+          <td>${derivedWatchState(row)}</td>
           <td>${toggleCell("favourite", row, "Toggle favourite")}</td>
           <td>${escHtml(traktStatus(row.item))}</td>
           <td>${traktStatus(row.item) === "missing" ? "missing ID" : "ok"}</td>
