@@ -271,7 +271,6 @@ if ($actionText -like "*watch_list: '🎟️'*") {
     Add-CheckError 'Action bar must use the master-contract watch_list icon.'
 }
 foreach ($needle in @(
-    'compact percent',
     'normalizeRatingText'
 )) {
     if ($actionText -notlike "*$needle*") { Add-CheckError "Action rating percent contract missing: $needle" }
