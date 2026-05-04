@@ -58,11 +58,11 @@ CHANGE NOTES:
 
     a{ color:inherit; }
 
-    .app{
-      width:min(96vw, 1920px);
-      margin:0 auto;
-      padding:12px 12px 18px;
-    }
+.app{
+  width:min(96vw, 1920px);
+  margin:0 auto;
+  padding:12px 12px 18px;
+}
 
     .shell{
       margin-top:12px;
@@ -3096,8 +3096,19 @@ CHANGE NOTES:
   overflow:hidden;
   background:rgba(255,255,255,0.05);
 }
+.media-card--show .media-card__poster,
+.media-card--movie .media-card__poster,
+.dashcard--poster .media-card__poster,
+.calendar-item.media-card--movie .media-card__poster,
+.watchme-movie-card .media-card__poster,
+.popup-shell--movie .popup-hero__poster{
+  aspect-ratio:171 / 257;
+  min-height:257px;
+}
 .media-card--episode .media-card__poster,
-.calendar-item .media-card__poster{
+.calendar-item.media-card--episode .media-card__poster,
+.watchme-episode-card .media-card__poster,
+.popup-episode-card .media-card__poster{
   aspect-ratio:16 / 9;
   min-height:124px;
 }
@@ -3340,7 +3351,7 @@ CHANGE NOTES:
 }
 
 .media-card--episode .media-card__poster img,
-.calendar-item .media-card__poster img,
+.calendar-item.media-card--episode .media-card__poster img,
 .watchme-episode-card .media-card__poster img,
 .popup-episode-card .media-card__poster img{
   transform:scale(1.08);
@@ -3578,14 +3589,19 @@ CHANGE NOTES:
 }
 
 html,
-body,
+body{
+  max-width:100% !important;
+  overflow-x:visible !important;
+  overflow-y:visible !important;
+}
+
 .app,
 .shell--app,
 .main,
 .panel,
 .dash{
   max-width:100% !important;
-  overflow-x:hidden !important;
+  overflow-x:visible !important;
 }
 
 .card,
@@ -3730,7 +3746,7 @@ body,
   .calendar-day__items{
     gap:6px !important;
   }
-  .calendar-item .media-card__poster{
+  .calendar-item.media-card--movie .media-card__poster{
     min-height:72px !important;
   }
 }
@@ -4026,10 +4042,10 @@ body.app-modal-open{
   background:rgba(9,14,22,0.92) !important;
 }
 
-.calendar-item .media-card__poster,
-.calendar-tree-day__items .calendar-item .media-card__poster{
-  aspect-ratio:16 / 9 !important;
-  min-height:118px !important;
+.calendar-item.media-card--movie .media-card__poster,
+.calendar-tree-day__items .calendar-item.media-card--movie .media-card__poster{
+  aspect-ratio:171 / 257 !important;
+  min-height:257px !important;
 }
 
 .calendar-item .media-card__overlay{
@@ -4093,6 +4109,7 @@ body.app-modal-open{
   border-radius:14px;
   position:sticky;
   top:0;
+  width:100%;
   z-index:60;
   align-items:center;
 }
@@ -4197,6 +4214,54 @@ body.app-modal-open{
   line-height:1;
   white-space:nowrap;
   pointer-events:none;
+}
+
+#dashShowRecs,
+#dashMovieRecs{
+  grid-template-columns:repeat(auto-fill, minmax(124px, 1fr));
+  align-items:start;
+}
+
+#dashShowRecs .media-card,
+#dashMovieRecs .media-card{
+  min-height:0;
+}
+
+#dashShowRecs .dashcard--poster .media-card__poster,
+#dashMovieRecs .dashcard--poster .media-card__poster{
+  aspect-ratio:171 / 257 !important;
+  min-height:0 !important;
+}
+
+#dashShowRecs .media-card__body,
+#dashMovieRecs .media-card__body{
+  padding:5px 0 0;
+  gap:5px;
+}
+
+#dashShowRecs .media-card__title,
+#dashMovieRecs .media-card__title{
+  font-size:12px;
+  line-height:1.15;
+}
+
+#dashShowRecs .media-card__meta,
+#dashMovieRecs .media-card__meta,
+#dashShowRecs .media-card__submeta,
+#dashMovieRecs .media-card__submeta{
+  font-size:10px;
+  line-height:1.2;
+}
+
+.media-card,
+.watch-state-matrix tbody tr{
+  content-visibility:auto;
+  contain-intrinsic-size:260px 220px;
+}
+
+#dashShowRecs .media-card,
+#dashMovieRecs .media-card{
+  contain-intrinsic-size:180px 250px;
 }
 
 .media-card .availability-badge,
@@ -4433,28 +4498,6 @@ body.app-modal-open{
 
 .watch-state-matrix__title--level-1{ padding-left:26px !important; }
 .watch-state-matrix__title--level-2{ padding-left:48px !important; }
-
-.media-card,
-.calendar-week-band,
-.calendar-day,
-.calendar-tree-day,
-.watch-state-matrix tbody tr{
-  content-visibility:auto;
-  contain-intrinsic-size: 280px 220px;
-}
-
-.calendar-week-band{
-  contain-intrinsic-size: 34px 34px;
-}
-
-.calendar-day,
-.calendar-tree-day{
-  contain-intrinsic-size: 260px 240px;
-}
-
-.watch-state-matrix tbody tr{
-  contain-intrinsic-size: 42px 42px;
-}
 
 .watch-state-toggle,
 .watch-state-tristate__option{

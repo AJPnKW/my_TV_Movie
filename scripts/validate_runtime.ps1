@@ -486,7 +486,7 @@ function ignoreConsole(message){
       await page.goto(base + pageName, { waitUntil:'domcontentloaded', timeout:15000 });
       await page.waitForSelector('.top .nav .tab', { timeout:10000 });
       await new Promise(resolve => setTimeout(resolve, 900));
-      const result = await page.evaluate(() => {
+      const result = await page.evaluate(async () => {
         const rect = el => { const r = el.getBoundingClientRect(); return { top:r.top, bottom:r.bottom, left:r.left, right:r.right, width:r.width, height:r.height }; };
         const tabs = Array.from(document.querySelectorAll('.top .nav .tab')).map(tab => {
           const style = getComputedStyle(tab);
@@ -526,6 +526,30 @@ function ignoreConsole(message){
           };
         });
         const dashHeads = Array.from(document.querySelectorAll('#panel-dashboard > .dash > .dashblock > .dashhead')).map(head => ({ text:(head.textContent || '').trim(), position:getComputedStyle(head).position }));
+        const dashboardBlocks = Array.from(document.querySelectorAll('#panel-dashboard > .dash > .dashblock')).map(block => {
+          const keys = Array.from(block.querySelectorAll('[data-render-key]')).map(card => card.getAttribute('data-render-key') || '').filter(Boolean);
+          const duplicateKeys = Array.from(new Set(keys.filter((key, index) => keys.indexOf(key) !== index)));
+          return { title:(block.querySelector('.dashhead h2')?.textContent || '').trim(), keyCount:keys.length, duplicateKeys };
+        });
+        const recommendationCards = Array.from(document.querySelectorAll('#dashShowRecs .media-card, #dashMovieRecs .media-card')).map(card => {
+          const cardRect = rect(card);
+          const poster = card.querySelector('.media-card__poster');
+          const posterRect = poster ? rect(poster) : null;
+          return { width:cardRect.width, height:cardRect.height, posterHeight:posterRect ? posterRect.height : 0 };
+        });
+        const headerPosition = header ? getComputedStyle(header).position : '';
+        const navEntry = performance.getEntriesByType('navigation')[0];
+        const perf = navEntry ? {
+          domContentLoadedMs: Math.round(navEntry.domContentLoadedEventEnd),
+          loadMs: Math.round(navEntry.loadEventEnd),
+          responseEndMs: Math.round(navEntry.responseEnd)
+        } : null;
+        const canScroll = document.documentElement.scrollHeight > window.innerHeight + 100;
+        if (canScroll) {
+          window.scrollTo(0, Math.min(600, document.documentElement.scrollHeight - window.innerHeight));
+          await new Promise(resolve => requestAnimationFrame(resolve));
+        }
+        const headerAfterScrollRect = header ? rect(header) : null;
         const discoverCards = Array.from(document.querySelectorAll('#panel-discover .media-card')).map(card => ({
           kind: card.getAttribute('data-kind') || '',
           id: card.getAttribute('data-id') || card.getAttribute('data-show-open') || card.getAttribute('data-movie-open') || ''
@@ -553,6 +577,12 @@ function ignoreConsole(message){
           } : null,
           actionButtons,
           dashHeads,
+          dashboardBlocks,
+          recommendationCards,
+          headerPosition,
+          headerAfterScrollRect,
+          canScroll,
+          perf,
           discoverCards,
           discoverRegistryRows,
           discoverEmptyState
@@ -572,10 +602,14 @@ function ignoreConsole(message){
       const movieNavBad = result.tabs.some(tab => tab.id === 'movies' && tab.text === '🎬');
       const actionBad = result.actionButtons.some(btn => btn.icon === '🎟️' || btn.icon === '▶' || btn.icon === '🎬' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
       const stickyBad = pageName === 'index.html' && (!result.dashHeads.some(h => /Current \/ Recent/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Watchlist/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Upcoming/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Recommendations/.test(h.text) && h.position === 'sticky'));
+      const topNavBad = result.headerPosition !== 'sticky' || (result.canScroll && (!result.headerAfterScrollRect || Math.abs(result.headerAfterScrollRect.top) > 1));
+      const dashboardDuplicateBad = pageName === 'index.html' && result.dashboardBlocks.some(block => block.duplicateKeys.length > 0);
+      const recommendationBad = pageName === 'index.html' && result.recommendationCards.some(card => card.width > 230 || card.posterHeight > 360);
+      const performanceBad = result.perf && (result.perf.loadMs > 10000 || result.perf.domContentLoadedMs > 8000);
       const discoverBad = pageName === 'discover.html' && (!result.discoverRegistryRows || !result.discoverEmptyState || result.discoverCards.length > 0);
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || discoverBad || pageErrors.length){
-        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || topNavBad || dashboardDuplicateBad || recommendationBad || performanceBad || discoverBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
       }
       await page.close();
     }

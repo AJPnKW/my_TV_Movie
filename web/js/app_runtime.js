@@ -2327,6 +2327,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       state.data.shows  = Array.isArray(state.data.shows)  ? state.data.shows  : [];
       state.data.errors = Array.isArray(state.data.errors) ? state.data.errors : [];
       state.data.meta   = state.data.meta && typeof state.data.meta === "object" ? state.data.meta : {};
+      state.data.shows = dedupeItems(state.data.shows, item => `show:${safeText(item?.tmdb_id ?? item?.id ?? "")}`);
+      state.data.movies = dedupeItems(state.data.movies, item => `movie:${safeText(item?.tmdb_id ?? item?.id ?? "")}`);
       state.showById = new Map(state.data.shows.map(item => [String(item?.tmdb_id ?? item?.id ?? ""), item]).filter(([key]) => !!key));
       state.movieById = new Map(state.data.movies.map(item => [String(item?.tmdb_id ?? item?.id ?? ""), item]).filter(([key]) => !!key));
       state.calendarData.days = state.calendarData.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
@@ -2516,9 +2518,35 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const eventsByDate = new Map();
     for (const [dateKey, items] of Object.entries(days)){
       if (!/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) continue;
-      eventsByDate.set(dateKey, Array.isArray(items) ? items : []);
+      eventsByDate.set(dateKey, dedupeItems(Array.isArray(items) ? items : [], item => itemRenderKey(item, dateKey)));
     }
     return eventsByDate;
+  }
+
+  function itemRenderKey(item, fallback = ""){
+    const parts = [safeText(item?.kind || "item").toLowerCase()];
+    const showId = safeText(item?.show_tmdb_id ?? item?.show_id ?? item?.showId ?? "");
+    const tmdbId = safeText(item?.tmdb_id ?? item?.id ?? "");
+    const season = safeText(item?.season_number ?? item?.seasonNumber ?? "");
+    const episode = safeText(item?.episode_number ?? item?.episodeNumber ?? "");
+    if (showId) parts.push(`show:${showId}`);
+    if (tmdbId) parts.push(`id:${tmdbId}`);
+    if (season) parts.push(`s:${season}`);
+    if (episode) parts.push(`e:${episode}`);
+    if (fallback) parts.push(`d:${fallback}`);
+    return parts.join("|");
+  }
+
+  function dedupeItems(items, keyFn){
+    const seen = new Set();
+    const out = [];
+    for (const item of Array.isArray(items) ? items : []){
+      const key = safeText(keyFn ? keyFn(item) : itemRenderKey(item));
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push(item);
+    }
+    return out;
   }
 
   function updateCalendarStickyVars(){
@@ -2706,7 +2734,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       submeta: safeText(options.submeta || "").trim(),
       actionBarHtml: safeText(options.actionBar || ""),
       overlay: true,
-      extraClass: options.eyeClass || ""
+      extraClass: options.eyeClass || "",
+      renderKey: `${kind}:${safeText(id)}`
     });
   }
 
@@ -2717,8 +2746,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const image = safeText(options.image || "").trim();
     const pct = options.pct;
     const actionBar = buildIconStripHtml(kind, id, pct, title);
-    const dataAttr = kind === "movie" ? `data-movie-open="${escHtml(id)}"` : `data-show-open="${escHtml(id)}"`;
-    const facts = Array.isArray(options.facts) ? options.facts.filter(Boolean).slice(0, 2).join("") : "";
     return window.MyTVHubSharedModules.cardRenderer.renderCompactCardHtml({
       kind,
       id,
@@ -2728,7 +2755,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       meta: tertiary || subtitle,
       actionBarHtml: actionBar,
       overlay: true,
-      extraClass: `dashcard dashcard--clean dashcard--poster${options.extraClass ? ` ${options.extraClass}` : ""}`
+      extraClass: `dashcard dashcard--clean dashcard--poster${options.extraClass ? ` ${options.extraClass}` : ""}`,
+      renderKey: options.renderKey || `dash:${kind}:${safeText(id)}`
     });
   }
 
@@ -2764,6 +2792,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         available
       }),
       articleAttrs: options.articleAttrs || { tabindex: "0", "data-kind": "episode", "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum },
+      renderKey: `episode:${showId}:${seasonNum}:${episodeNum}`,
       extraClass: options.extraClass || ""
     });
   }
@@ -2875,7 +2904,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const watched = state.watchState ? isMovieWatched({ tmdb_id: movieId }) : false;
     const title = safeText(item?.title || "Movie");
     return `
-      <article class="watchme-list-item watchme-movie-card" data-kind="movie" data-movie="${escHtml(movieId)}" tabindex="0">
+      <article class="watchme-list-item watchme-movie-card" data-kind="movie" data-movie="${escHtml(movieId)}" tabindex="0" data-render-key="watchme:movie:${escHtml(movieId)}:${escHtml(entry?.dateKey || "")}">
         <button type="button" class="watchme-list-item__media" data-movie-open="${escHtml(movieId)}" aria-label="${escHtml(title)}">
           ${imageForCalendarItem(item) ? `<img src="${escHtml(imageForCalendarItem(item))}" alt="" loading="lazy" decoding="async" />` : `<span class="posterFallback__label">No Poster</span>`}
         </button>
@@ -2911,7 +2940,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const title = safeText(item?.episode_name || "Episode");
     const showTitle = safeText(item?.show_title || "Show");
     return `
-      <article class="watchme-list-item watchme-episode-card" data-kind="episode" data-show="${escHtml(showId)}" tabindex="0">
+      <article class="watchme-list-item watchme-episode-card" data-kind="episode" data-show="${escHtml(showId)}" tabindex="0" data-render-key="watchme:episode:${escHtml(showId)}:${escHtml(seasonNum)}:${escHtml(episodeNum)}:${escHtml(entry?.dateKey || "")}">
         <button type="button" class="watchme-list-item__media watchme-list-item__media--episode" data-show-open="${escHtml(showId)}" aria-label="${escHtml(`${showTitle}: ${title}`)}">
           ${imageForCalendarItem(item) ? `<img src="${escHtml(imageForCalendarItem(item))}" alt="" loading="lazy" decoding="async" />` : `<span class="posterFallback__label">No Still</span>`}
         </button>
@@ -2949,7 +2978,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return `<section class="dashblock"><div class="dashhead"><h2>${escHtml(title)}</h2><span class="muted">No matches</span></div></section>`;
     }
     const grouped = new Map();
-    entries.forEach(entry => {
+    dedupeItems(entries, entry => `${safeText(entry?.dateKey || "")}|${itemRenderKey(entry?.item || {}, safeText(entry?.dateKey || ""))}`).forEach(entry => {
       const key = safeText(entry?.dateKey || "");
       if (!key) return;
       if (!grouped.has(key)) grouped.set(key, []);
@@ -2979,7 +3008,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function renderWatchMe(){
     const root = $("#watchMeSections");
     if (!root) return;
-    const entries = buildWatchMeEntries().filter(watchMeMatches);
+    const entries = dedupeItems(buildWatchMeEntries().filter(watchMeMatches), entry => `${safeText(entry?.dateKey || "")}|${itemRenderKey(entry?.item || {}, safeText(entry?.dateKey || ""))}`);
     const type = safeText(state.watchMe?.type || "all");
     const episodes = entries.filter(entry => safeText(entry?.item?.kind) === "episode");
     const movies = entries.filter(entry => safeText(entry?.item?.kind) === "movie");
@@ -3573,7 +3602,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           available: isDateAvailable(item.release_date || dateKey)
         }),
         articleAttrs: { "data-day": dateKey, "data-kind": "movie", "data-movie": movieId, tabindex: "0" },
-        extraClass: `calendar-item calendar-item--movie${expandableClass(hidden)}`
+        extraClass: `calendar-item calendar-item--movie${expandableClass(hidden)}`,
+        renderKey: `calendar:movie:${movieId}:${dateKey}`
       });
     };
 
@@ -3584,7 +3614,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       </div>
     `;
     const renderDayCell = ({ dt, key, inMonth, num }) => {
-      const items = eventsByDate.get(key) || [];
+      const items = dedupeItems(eventsByDate.get(key) || [], item => itemRenderKey(item, key));
       const visibleLimit = state.calendarView === "list" ? items.length : 4;
       const visible = items.map((item, index) => renderItem(item, key, index >= visibleLimit)).join("");
       const more = renderMoreButton(Math.max(0, items.length - visibleLimit), `calendar-${key}`);
@@ -3601,7 +3631,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       `;
     };
     const renderTreeDay = ({ dt, key, num }) => {
-      const items = eventsByDate.get(key) || [];
+      const items = dedupeItems(eventsByDate.get(key) || [], item => itemRenderKey(item, key));
       return `
         <details class="calendar-tree-day${key === today ? " is-today" : ""}" data-daycell="${key}"${key === today ? " open" : ""}>
           <summary class="calendar-tree-day__summary">
@@ -3648,9 +3678,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     const showMap = state.showById || new Map();
     const movieMap = state.movieById || new Map();
-    const events = collectUpcomingEvents(7, 1);
+    const events = dedupeItems(collectUpcomingEvents(7, 1), entry => `${entry.dateKey}|${itemRenderKey(entry.item, entry.dateKey)}`);
     const lastWeekOffset = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
-    const pastEvents = collectPastEvents(7, lastWeekOffset, true);
+    const pastEvents = dedupeItems(collectPastEvents(7, lastWeekOffset, true), entry => `${entry.dateKey}|${itemRenderKey(entry.item, entry.dateKey)}`);
 
     const percentForItem = (item) => {
       let pct = progressPercent(item);
@@ -3673,7 +3703,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const media = item?.kind === "movie" ? movieMap.get(String(item?.tmdb_id ?? "")) : showMap.get(String(item?.tmdb_id ?? ""));
       return normalizeImageSrc(pickImage(media || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path"));
     };
-    const eventCard = (item, tertiary = "", hidden = false) => {
+    const eventCard = (item, tertiary = "", hidden = false, renderKey = "") => {
       if (item.kind === "episode"){
         const showId = Number(item.show_tmdb_id) || 0;
         const seasonNum = Number(item.season_number) || 0;
@@ -3701,6 +3731,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
           }),
           articleAttrs: { "data-show": showId, tabindex: "0" },
+          renderKey: renderKey || `dashboard:event:episode:${showId}:${seasonNum}:${episodeNum}`,
           extraClass: `dashcard dashcard--clean${expandableClass(hidden)}`
         });
       }
@@ -3712,6 +3743,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         image: imageForItem(item),
         pct: percentForItem(item),
         extraClass: expandableClass(hidden),
+        renderKey: renderKey || `dashboard:event:${target.kind}:${safeText(target.id)}`,
         facts: [
           factChipHtml("Movie"),
           item.network_name ? factChipHtml(item.network_name) : ""
@@ -3720,16 +3752,21 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     };
 
     const buildDateColumns = (entries, { descending = false } = {}) => {
-      const dateKeys = Array.from(new Set(entries.map(e => e.dateKey)));
+      const deduped = dedupeItems(entries, entry => `${safeText(entry?.dateKey || "")}|${itemRenderKey(entry?.item || {}, safeText(entry?.dateKey || ""))}`);
+      const dateKeys = Array.from(new Set(deduped.map(e => e.dateKey)));
       const ordered = descending ? dateKeys.sort((a, b) => b.localeCompare(a)) : dateKeys.sort((a, b) => a.localeCompare(b));
       return ordered.slice(0, 7).map(dateKey => {
-        const dayEntries = entries.filter(e => e.dateKey === dateKey);
+        const dayEntries = deduped.filter(e => e.dateKey === dateKey);
         const visibleLimit = 4;
         return `
         <div class="dashcol dashcol--clean">
           <div class="dashcolhead">${escHtml(formatDateShort(dateKey))}</div>
           <div class="dashcolstack" data-more-id="dashboard-${escHtml(dateKey)}">
-            ${dayEntries.map(({ item }, index) => eventCard(item, "", index >= visibleLimit)).join("") || `<div class="muted">No items</div>`}
+            ${dayEntries.map(({ item }, index) => {
+              const rowKey = itemRenderKey(item, dateKey);
+              const section = descending ? "recent" : "upcoming";
+              return eventCard(item, "", index >= visibleLimit, `dashboard:${section}:${dateKey}:${rowKey}`);
+            }).join("") || `<div class="muted">No items</div>`}
             ${renderMoreButton(Math.max(0, dayEntries.length - visibleLimit), `dashboard-${dateKey}`)}
           </div>
         </div>
@@ -3749,10 +3786,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     }
     lastWeekCols.innerHTML = buildDateColumns(pastEvents, { descending: true }) || `<div class="muted">No recent schedule.</div>`;
 
-    const watchlist = ensureWatchlist().slice(0, 8);
+    const uniqueWatchlist = dedupeItems(ensureWatchlist(), entry => `${safeText(entry?.kind || entry?.type || "watchlist")}:${safeText(entry?.tmdb_id ?? entry?.id ?? entry?.title ?? "")}`).slice(0, 8);
     const watchMeta = $("#dashWatchMeta");
-    if (watchMeta) watchMeta.textContent = watchlist.length ? `${watchlist.length} tracked items` : "No items";
-    watchlistEl.innerHTML = watchlist.length ? watchlist.map(entry => {
+    if (watchMeta) watchMeta.textContent = uniqueWatchlist.length ? `${uniqueWatchlist.length} tracked items` : "No items";
+    watchlistEl.innerHTML = uniqueWatchlist.length ? uniqueWatchlist.map(entry => {
       const id = String(entry?.tmdb_id ?? "");
       const show = showMap.get(id);
       const movie = movieMap.get(id);
@@ -3763,11 +3800,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         image: normalizeImageSrc(pickImage(media, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
         badgeHtml: "",
         pct: percentForItem(media),
+        renderKey: `dashboard:watchlist:${show ? "show" : "movie"}:${safeText(media?.tmdb_id ?? id)}`,
         facts: [factChipHtml(show ? "Show" : "Movie"), factChipHtml("Watchlist", "tone-accent")]
       });
     }).join("") : `<div class="muted">No watchlist items.</div>`;
 
-    const shows = (state.data?.shows || []).slice().sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0)).slice(0, 8);
+    const shows = dedupeItems((state.data?.shows || []).slice().sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0)), show => `show:${safeText(show?.tmdb_id ?? show?.id ?? show?.title ?? show?.name ?? "")}`).slice(0, 8);
     showRecs.innerHTML = shows.length ? shows.map(show => buildDashboardCard("show", show?.tmdb_id, {
       title: safeText(show?.title || show?.name || "Show"),
       subtitle: truncateText(show?.overview || "", 84),
@@ -3775,10 +3813,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       image: normalizeImageSrc(pickImage(show, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
       badgeHtml: "",
       pct: percentForItem(show),
+      renderKey: `dashboard:recommendation:show:${safeText(show?.tmdb_id ?? show?.id ?? show?.title ?? show?.name ?? "")}`,
       facts: [factChipHtml("Discover"), (show?.genres || []).length ? factChipHtml(show.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
 
-    const movies = (state.data?.movies || []).slice().sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0)).slice(0, 8);
+    const movies = dedupeItems((state.data?.movies || []).slice().sort((a, b) => (Number(b?.popularity) || 0) - (Number(a?.popularity) || 0)), movie => `movie:${safeText(movie?.tmdb_id ?? movie?.id ?? movie?.title ?? "")}`).slice(0, 8);
     movieRecs.innerHTML = movies.length ? movies.map(movie => buildDashboardCard("movie", movie?.tmdb_id, {
       title: safeText(movie?.title || "Movie"),
       subtitle: truncateText(movie?.overview || "", 84),
@@ -3786,6 +3825,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       image: normalizeImageSrc(pickImage(movie, "poster_local", "poster_path", "backdrop_local", "backdrop_path")),
       badgeHtml: "",
       pct: percentForItem(movie),
+      renderKey: `dashboard:recommendation:movie:${safeText(movie?.tmdb_id ?? movie?.id ?? movie?.title ?? "")}`,
       facts: [factChipHtml("Movie"), (movie?.genres || []).length ? factChipHtml(movie.genres[0]?.name || "") : ""]
     })).join("") : `<div class="muted">No recommendations.</div>`;
 
@@ -3802,7 +3842,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
       }));
     });
-    $$("[data-dash-lastweek-nav]").forEach(btn => btn.addEventListener("click", () => {
+    $$("[data-dash-lastweek-nav]").forEach(btn => btn.onclick = () => {
       const action = btn.getAttribute("data-dash-lastweek-nav") || "";
       const current = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
       if (action === "back") state.dashboard.lastWeekOffsetWeeks = current + 1;
@@ -3810,7 +3850,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (action === "forward") state.dashboard.lastWeekOffsetWeeks = Math.max(0, current - 1);
       if (action === "jump-forward") state.dashboard.lastWeekOffsetWeeks = Math.max(0, current - 4);
       renderDashboard();
-    }));
+    });
     $$("[data-dash-lastweek-nav='forward'], [data-dash-lastweek-nav='jump-forward']").forEach(btn => {
       btn.disabled = lastWeekOffset === 0;
     });
@@ -4191,7 +4231,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const queueHit = queuedKeys.has(watchKey) || queuedKeys.has(favKey) || queuedKeys.has(watchedKey);
       const issue = rowIssue(row);
       return `
-        <tr class="watch-state-matrix__row" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}" data-release="${escHtml(row.release)}">
+        <tr class="watch-state-matrix__row" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}" data-release="${escHtml(row.release)}" data-render-key="${escHtml(`${row.kind}:${row.tmdbId || row.showId || ""}:${row.seasonNumber || ""}:${row.episodeNumber || ""}`)}">
           <th scope="row" class="watch-state-matrix__title watch-state-matrix__title--level-${escHtml(row.level)}"><span>${escHtml(row.title)}</span><small>${escHtml(row.kind)}</small></th>
           <td>${escHtml(row.release)}</td>
           <td><code>${escHtml(row.ids)}</code></td>
@@ -4578,7 +4618,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   }),
                   overlay: false,
                   articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
-                  extraClass: "popup-episode-card"
+                  extraClass: "popup-episode-card",
+                  renderKey: `popup:episode:${show.tmdb_id ?? ""}:${seasonNum}:${episodeNum}`
                 });
               }).join("") || `<div class="muted">No episodes available for this season.</div>`}
             </div>

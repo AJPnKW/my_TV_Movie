@@ -55,8 +55,9 @@ export function renderCompactCardHtml(options = {}){
   const posterAttrs = options.posterAttrs || {};
   const titleAttrs = options.titleAttrs || {};
   const overlay = !!options.overlay;
+  const renderKeyAttr = options.renderKey ? ` data-render-key="${esc(options.renderKey)}"` : '';
   return `
-    <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${attrString(articleAttrs)}>
+    <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}"${renderKeyAttr}${attrString(articleAttrs)}>
       <button type="button" class="imgbox media-card__poster media-card__poster--${esc(kind)} media_block"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;color:inherit;cursor:pointer;">
         ${safeCardImage(options.image, kind, options.title)}
         ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy">${options.eyebrow ? `<span class="media-card__overlay-eyebrow">${esc(options.eyebrow)}</span>` : ''}<span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
