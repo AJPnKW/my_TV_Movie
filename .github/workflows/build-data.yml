@@ -9,8 +9,10 @@ on:
     paths:
       - "data/inputs.json"
       - "data/watch_source_availability.json"
+      - "data/watch_state_queue.json"
       - "web/config.json"
       - "scripts/**"
+      - "docs/00_master_contract.html"
       - ".github/workflows/build-data.yml"
 
 permissions:
@@ -52,19 +54,43 @@ jobs:
         run: python scripts/run_pipeline_tmdb_trakt.py
 
       - name: Validate generated runtime JSON
+        if: always()
         run: |
           python -m json.tool data/data.json > /dev/null
           python -m json.tool data/catalog_index.json > /dev/null
           python -m json.tool data/calendar.json > /dev/null
+          if [ -f data/watch_state_queue.json ]; then python -m json.tool data/watch_state_queue.json > /dev/null; fi
+
+      - name: Run integrity diagnostics
+        if: always()
+        run: |
+          python scripts/qa_pipeline_integrity.py || true
+          python scripts/qa_missing_trakt_ids.py || true
+          python scripts/trakt_two_way_sync.py --dry-run || true
+
+      - name: Upload pipeline diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-data-diagnostics
+          if-no-files-found: ignore
+          path: |
+            logs/*.log.txt
+            reports/*.json
+            reports/**/*.json
+            reports/**/*.md
+            data/errors*.json
+            data/*queue*.json
 
       - name: Commit regenerated data artifacts
+        if: success()
         run: |
-          if git diff --quiet -- data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets; then
+          if git diff --quiet -- data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets data/watch_state_queue.json; then
             echo "No runtime artifact changes to commit."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets
+          git add data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets data/watch_state_queue.json
           git commit -m "build: update data artifacts"
           git push
