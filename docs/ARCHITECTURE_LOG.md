@@ -2,6 +2,9 @@
 
 ## 2026-05-04
 
+- Implemented MC-2026-05-05.1 Trakt two-way watch-state sync: file-backed `data/watch_state_queue.json`, local click queue records, inputs-editor queue/sync APIs, Trakt dry-run/live sync engine, exact watchlist/history endpoint payload generation, and validation/browser QA coverage for queue records and payload proof.
+- Commit: `5d62716f` implement trakt two way watch state sync.
+
 - Implemented MC-2026-04-30.4 contract updates for shared calendar column alignment, tri-state local-first watch-state records, queued Trakt workflow scaffolding, computed Manage Watch State statuses, popup media-detail rendering, Android TV popup focus trapping, and extended rendered validation.
 - Commit: `0105895e` fix calendar trakt watch state popup and dpad contract compliance.
 
