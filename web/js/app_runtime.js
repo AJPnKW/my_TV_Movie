@@ -88,7 +88,37 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   };
   let lastFocusEl = null;
 
+  function ensureModalShell(){
+    if (!$("#modalBack")){
+      document.body.insertAdjacentHTML("beforeend", `
+        <div id="modalBack" class="app-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true">
+          <div id="modalCard" class="app-modal-card" tabindex="0">
+            <div class="app-modal-header">
+              <div id="modalTitle" class="app-modal-title">Details</div>
+              <button id="modalClose" class="calbtn" type="button">Close</button>
+            </div>
+            <div id="modalBody" class="app-modal-body"></div>
+          </div>
+        </div>
+      `);
+    }
+    if (!$("#providerBack")){
+      document.body.insertAdjacentHTML("beforeend", `
+        <div id="providerBack" class="app-modal-backdrop app-modal-backdrop--provider" aria-hidden="true" role="dialog" aria-modal="true">
+          <div id="providerCard" class="app-modal-card app-modal-card--provider" tabindex="0">
+            <div class="app-modal-header">
+              <div id="providerTitle" class="app-modal-title">Where to watch</div>
+              <button id="providerClose" class="calbtn" type="button">Close</button>
+            </div>
+            <div id="providerBody" class="app-modal-body"></div>
+          </div>
+        </div>
+      `);
+    }
+  }
+
   function ensureMainAppShell(){
+    ensureModalShell();
     const nav = $(".nav");
     if (nav && !$("[data-tab='inputs-editor']", nav)){
       nav.insertAdjacentHTML("beforeend", `<a class="tab" data-tab="inputs-editor" href="#inputs-editor" role="tab" aria-selected="false" aria-label="Inputs Editor" title="Inputs Editor" data-label="Inputs Editor">✎</a>`);
@@ -1760,6 +1790,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function buildActionBarHtml(kind, id, options={}){
     const title = safeText(options.title || options.titleText || "").trim();
     const statusContext = options.statusContext || {};
+    const releaseStatus = safeText(options.availabilityStatus || (options.available === false ? "unreleased" : "")).trim();
+    const stateAttrs = {
+      "data-kind": kind,
+      "data-id": id,
+      "data-tmdb-id": id,
+      "data-title": title,
+      "data-no-default": "1",
+      ...(releaseStatus ? { "data-release-status": releaseStatus, "data-watch-availability": releaseStatus } : {}),
+      ...(options.traktId != null ? { "data-trakt-id": options.traktId } : {}),
+      ...(statusContext.showId != null ? { "data-status-show": statusContext.showId, "data-show": statusContext.showId } : {}),
+      ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber, "data-season": statusContext.seasonNumber } : {}),
+      ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber, "data-episode": statusContext.episodeNumber } : {})
+    };
     return window.MyTVHubSharedModules.actionBar.renderActionBarHtml({
       compact: !!options.compact,
       watch: options.popcornAttrs ? {
@@ -1767,9 +1810,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         attrs: options.popcornAttrs || {},
         availabilityStatus: safeText(options.availabilityStatus || "").trim()
       } : null,
-      favourite: { active: !!options.favouriteActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } },
-      status: options.showStatusAction ? { active: !!options.watchedActive, attrs: { "data-kind": kind, "data-id": id, "data-title": title, "data-no-default": "1", ...(statusContext.showId != null ? { "data-status-show": statusContext.showId } : {}), ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber } : {}), ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber } : {}) } } : null,
-      watched: { active: !!options.watchListActive || !!options.favoriteActive, attrs: { "data-kind": kind, "data-id": id, ...(options.watchedAttrs || {}) } },
+      favourite: { active: !!options.favouriteActive, attrs: stateAttrs },
+      status: options.showStatusAction ? { active: !!options.watchedActive, attrs: stateAttrs } : null,
+      watched: { active: !!options.watchListActive || !!options.favoriteActive, attrs: { ...stateAttrs, ...(options.watchedAttrs || {}) } },
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}` : "--" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
@@ -1943,7 +1986,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           const episode = getEpisodeItem(show, seasonNum, episodeNum);
           if (!episode) return;
           const title = safeText(episode.title || episode.name || `Episode ${episodeNum}`);
-          openProviderModal(`${safeText(show.title || show.name || "Show")} • ${title} • Watch source`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id ?? show.id }));
+          openProviderModal(`${safeText(show.title || show.name || "Show")} • ${title} • Watch source`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id ?? show.id, seasonNumber: seasonNum, episodeNumber: episodeNum }));
         }
       });
     });
@@ -2009,6 +2052,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const card = $("#modalCard");
     if (card) {
       card.scrollTop = 0;
+      wirePopupDpad(card);
       $("#modalClose")?.focus();
     } else {
       $("#modalClose").focus();
@@ -2089,6 +2133,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const card = $("#providerCard");
     if (card){
       card.scrollTop = 0;
+      wirePopupDpad(card);
       $("#providerClose")?.focus();
     } else {
       $("#providerClose").focus();
@@ -2114,12 +2159,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   ].join(",");
 
   function isModalOpen(){
-    return $("#providerBack").style.display === "flex" || $("#modalBack").style.display === "flex";
+    return $("#providerBack")?.style.display === "flex" || $("#modalBack")?.style.display === "flex";
   }
 
   function activeModalCard(){
-    if ($("#providerBack").style.display === "flex") return $("#providerCard");
-    if ($("#modalBack").style.display === "flex") return $("#modalCard");
+    if ($("#providerBack")?.style.display === "flex") return $("#providerCard");
+    if ($("#modalBack")?.style.display === "flex") return $("#modalCard");
     return null;
   }
 
@@ -4097,6 +4142,37 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     } catch (_) { return 0; }
   }
 
+  function readWatchSyncQueue(){
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.loadQueue === "function") {
+      return window.MyTVHubWatchState.loadQueue();
+    }
+    try {
+      const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+      return Array.isArray(queue) ? queue : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function stateRecordValue(record, type){
+    const cleanType = safeText(type);
+    if (record && typeof record === "object" && !Array.isArray(record)){
+      const value = safeText(record.new_value).toLowerCase();
+      if (cleanType === "watched_status") return ["unwatched","partial","watched"].includes(value) ? value : "unwatched";
+      return value === "on" ? "on" : "off";
+    }
+    if (cleanType === "watched_status"){
+      if (record === true) return "watched";
+      const text = safeText(record).toLowerCase();
+      return ["unwatched","partial","watched"].includes(text) ? text : "unwatched";
+    }
+    return record ? "on" : "off";
+  }
+
+  function traktAuthAvailable(){
+    return !!state.cfg?.trakt_sync?.enabled;
+  }
+
   function renderWatchStateManagerHtml(){
     const localState = readLocalWatchState();
     const keys = Object.keys(localState);
@@ -4106,14 +4182,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       else if (key.startsWith("favourite:")) acc.favourite += 1;
       return acc;
     }, { watched_status: 0, watch_list: 0, favourite: 0 });
-    const queuedKeys = (() => {
-      try {
-        const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
-        return new Set(Array.isArray(queue) ? queue.map(item => safeText(item?.key || item?.state_key || item?.id || item)).filter(Boolean) : []);
-      } catch (_) {
-        return new Set();
-      }
-    })();
+    const syncQueue = readWatchSyncQueue();
+    const queuedKeys = new Set(syncQueue.map(item => safeText(item?.item_key || item?.key || item?.state_key || item?.id || item)).filter(Boolean));
     const releaseStatus = (dateText, fallback = "") => {
       const raw = safeText(dateText || "");
       if (!raw) return safeText(fallback || "unknown");
@@ -4135,17 +4205,36 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const stateValue = (type, row) => {
       const key = stateKey(type, row);
       const raw = key ? localState[key] : "";
-      if (raw === true) return "watched";
-      if (raw === false || raw == null || raw === "") return "unwatched";
-      if (raw === "partial" || raw === "watched" || raw === "unwatched") return raw;
-      return raw ? "watched" : "unwatched";
+      return stateRecordValue(raw, type);
     };
-    const traktStatus = item => safeText(item?.trakt_id || item?.trakt || "") ? "mapped" : "missing";
+    const rowRecords = row => ["watch_list","watched_status","favourite"]
+      .map(type => localState[stateKey(type, row)])
+      .filter(record => record && typeof record === "object" && !Array.isArray(record));
+    const rowHasTraktId = row => !!safeText(row?.item?.trakt_id || row?.item?.trakt || row?.traktId || "");
     const rowIssue = row => {
       if (!row.tmdbId && row.kind !== "season" && row.kind !== "episode") return "missing tmdb_id";
       if (row.kind === "episode" && (!row.showId || !row.seasonNumber || !row.episodeNumber)) return "missing episode key";
       if ((row.kind === "movie" || row.kind === "episode") && row.release === "unreleased") return "locked until release";
       return "";
+    };
+    const computedStatus = row => {
+      const records = rowRecords(row);
+      const issue = rowIssue(row);
+      const recordIssue = records.find(record => record.validation_status && record.validation_status !== "ok");
+      if (issue || recordIssue) return recordIssue?.sync_status || "validation_issue";
+      if (["watch_list","watched_status","favourite"].some(type => queuedKeys.has(stateKey(type, row)))) return "queued";
+      const explicit = records.map(record => safeText(record.sync_status)).find(Boolean);
+      if (explicit) return explicit;
+      if (!traktAuthAvailable()) return "auth_required";
+      if (!rowHasTraktId(row) && (row.kind === "movie" || row.kind === "show")) return "missing_id";
+      return records.length ? "local_only" : "synced";
+    };
+    const computedMismatch = row => rowRecords(row).some(record => safeText(record.sync_status) === "mismatch");
+    const computedQueued = row => ["watch_list","watched_status","favourite"].some(type => queuedKeys.has(stateKey(type, row)));
+    const computedValidationIssue = row => {
+      const issue = rowIssue(row);
+      const recordIssue = rowRecords(row).find(record => record.validation_status && record.validation_status !== "ok");
+      return issue || safeText(recordIssue?.sync_error || recordIssue?.validation_status || "");
     };
     const shows = (Array.isArray(state.data?.shows) ? state.data.shows : []).filter(item => item?.tmdb_id);
     const movies = (Array.isArray(state.data?.movies) ? state.data.movies : []).filter(item => item?.tmdb_id);
@@ -4162,6 +4251,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         release: releaseStatus(show?.first_air_date, show?.status),
         ids:`tmdb:${showId}${show?.trakt_id ? ` / trakt:${safeText(show.trakt_id)}` : ""}`,
         tmdbId:showId,
+        traktId:safeText(show?.trakt_id || ""),
         showId,
         item:show
       });
@@ -4180,6 +4270,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           release: releaseStatus(season?.air_date, ""),
           ids:`show:${showId} / S${seasonNumber}`,
           tmdbId:showId,
+          traktId:safeText(show?.trakt_id || ""),
           showId,
           seasonNumber,
           item:season
@@ -4194,6 +4285,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             release: releaseStatus(episode?.air_date, ""),
             ids:`show:${showId} / S${seasonNumber}E${episodeNumber}${episode?.id ? ` / tmdb:${safeText(episode.id)}` : ""}`,
             tmdbId:safeText(episode?.id || ""),
+            traktId:safeText(episode?.trakt_id || ""),
             showId,
             seasonNumber,
             episodeNumber,
@@ -4212,6 +4304,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         release: releaseStatus(movie?.release_date, movie?.status),
         ids:`tmdb:${movieId}${movie?.trakt_id ? ` / trakt:${safeText(movie.trakt_id)}` : ""}`,
         tmdbId:movieId,
+        traktId:safeText(movie?.trakt_id || ""),
         item:movie
       });
     });
@@ -4222,7 +4315,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const disabled = lock || row.release === "unreleased";
       return `
         <div class="watch-state-tristate${disabled ? " is-locked" : ""}" role="group" aria-label="watched_status">
-          ${["unwatched","partial","watched"].map(option => `<button class="watch-state-tristate__option" type="button" data-manage-watch-key="${escHtml(key)}" data-manage-watch-value="${option}" aria-pressed="${value === option ? "true" : "false"}" title="${disabled ? "Derived from released children" : option}" ${disabled ? "disabled aria-disabled=\"true\"" : ""}>${option === "unwatched" ? "0" : option === "partial" ? "½" : "✓"}</button>`).join("")}
+          ${["unwatched","partial","watched"].map(option => `<button class="watch-state-tristate__option" type="button" data-manage-watch-key="${escHtml(key)}" data-kind="${escHtml(row.kind)}" data-tmdb-id="${escHtml(row.tmdbId)}" data-trakt-id="${escHtml(row.traktId || "")}" data-show="${escHtml(row.showId || "")}" data-season="${escHtml(row.seasonNumber || "")}" data-episode="${escHtml(row.episodeNumber || "")}" data-release-status="${escHtml(row.release)}" data-manage-watch-value="${option}" aria-pressed="${value === option ? "true" : "false"}" title="${disabled ? "Derived from released children" : option}" ${disabled ? "disabled aria-disabled=\"true\"" : ""}>${option === "unwatched" ? "0" : option === "partial" ? "1/2" : "✓"}</button>`).join("")}
         </div>
       `;
     };
@@ -4264,8 +4357,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     };
     const toggleCell = (type, row, label) => {
       const key = stateKey(type, row);
-      const active = !!localState[key];
-      return `<button class="watch-state-toggle" type="button" data-manage-watch-key="${escHtml(key)}" aria-label="${escHtml(label)}" title="${escHtml(label)}" aria-pressed="${active ? "true" : "false"}">${active ? "✓" : ""}</button>`;
+      const active = stateRecordValue(localState[key], type) === "on";
+      return `<button class="watch-state-toggle" type="button" data-manage-watch-key="${escHtml(key)}" data-kind="${escHtml(row.kind)}" data-tmdb-id="${escHtml(row.tmdbId)}" data-trakt-id="${escHtml(row.traktId || "")}" data-show="${escHtml(row.showId || "")}" data-season="${escHtml(row.seasonNumber || "")}" data-episode="${escHtml(row.episodeNumber || "")}" data-release-status="${escHtml(row.release)}" aria-label="${escHtml(label)}" title="${escHtml(label)}" aria-pressed="${active ? "true" : "false"}">${active ? "✓" : ""}</button>`;
     };
     const pageSize = 50;
     const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
@@ -4277,7 +4370,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const favKey = stateKey("favourite", row);
       const watchedKey = stateKey("watched_status", row);
       const queueHit = queuedKeys.has(watchKey) || queuedKeys.has(favKey) || queuedKeys.has(watchedKey);
-      const issue = rowIssue(row);
+      const issue = computedValidationIssue(row);
       return `
         <tr class="watch-state-matrix__row" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}" data-release="${escHtml(row.release)}" data-render-key="${escHtml(`${row.kind}:${row.tmdbId || row.showId || ""}:${row.seasonNumber || ""}:${row.episodeNumber || ""}`)}">
           <th scope="row" class="watch-state-matrix__title watch-state-matrix__title--level-${escHtml(row.level)}"><span>${escHtml(row.title)}</span><small>${escHtml(row.kind)}</small></th>
@@ -4286,9 +4379,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <td>${toggleCell("watch_list", row, "Toggle watch_list")}</td>
           <td>${derivedWatchState(row)}</td>
           <td>${toggleCell("favourite", row, "Toggle favourite")}</td>
-          <td>${escHtml(traktStatus(row.item))}</td>
-          <td>${traktStatus(row.item) === "missing" ? "missing ID" : "ok"}</td>
-          <td>${queueHit ? "queued" : ""}</td>
+          <td data-computed-status="trakt">${escHtml(computedStatus(row))}</td>
+          <td data-computed-status="mismatch">${computedMismatch(row) ? "true" : "false"}</td>
+          <td data-computed-status="queued">${queueHit || computedQueued(row) ? "true" : "false"}</td>
           <td>${issue ? escHtml(issue) : ""}</td>
         </tr>
       `;
@@ -4348,10 +4441,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const key = safeText(btn.getAttribute("data-manage-watch-key"));
         const value = btn.getAttribute("data-manage-watch-value");
         const next = value ? value : btn.getAttribute("aria-pressed") !== "true";
+        const context = {
+          kind: safeText(btn.getAttribute("data-kind")),
+          tmdb_id: safeText(btn.getAttribute("data-tmdb-id")),
+          trakt_id: safeText(btn.getAttribute("data-trakt-id")),
+          showId: safeText(btn.getAttribute("data-show")),
+          seasonNumber: safeText(btn.getAttribute("data-season")),
+          episodeNumber: safeText(btn.getAttribute("data-episode")),
+          release_status: safeText(btn.getAttribute("data-release-status"))
+        };
         if (value && window.MyTVHubWatchState && typeof window.MyTVHubWatchState.setValueByKey === "function") {
-          window.MyTVHubWatchState.setValueByKey(key, next);
+          window.MyTVHubWatchState.setValueByKey(key, next, context);
         } else if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.setByKey === "function") {
-          window.MyTVHubWatchState.setByKey(key, next);
+          window.MyTVHubWatchState.setByKey(key, next, context);
         } else {
           const data = readLocalWatchState();
           if (value && next !== "unwatched") data[key] = next;
@@ -4873,10 +4975,16 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   on($("#providerClose"), "click", closeProviderModal);
   on($("#providerBack"), "click", (e) => { if (e.target === $("#providerBack")) closeProviderModal(); });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape"){
+    if (e.key === "Escape" || e.key === "Backspace" || e.key === "BrowserBack"){
       closeAllActionMenus();
-      if ($("#providerBack").style.display === "flex") return closeProviderModal();
-      if ($("#modalBack").style.display === "flex") return closeModal();
+      if ($("#providerBack")?.style.display === "flex") return closeProviderModal();
+      if ($("#modalBack")?.style.display === "flex") return closeModal();
+      return;
+    }
+    if (isModalOpen() && ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)){
+      e.preventDefault();
+      e.stopPropagation();
+      moveFocus(e.key);
       return;
     }
     if (e.key === "Tab"){

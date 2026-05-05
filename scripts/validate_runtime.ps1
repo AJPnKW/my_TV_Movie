@@ -280,6 +280,9 @@ if ($actionText -match "rating:\s*'[^']+'") {
 if ($actionText -like "*watch_list: '🎟️'*") {
     Add-CheckError 'Action bar must use the master-contract watch_list icon.'
 }
+if ($actionText -notmatch "WATCHED_STATUS_VALUES[\s\S]*'unwatched'[\s\S]*'partial'[\s\S]*'watched'") {
+    Add-CheckError 'action_bar.js must expose watched_status tri-state values: unwatched, partial, watched.'
+}
 foreach ($needle in @(
     'normalizeRatingText'
 )) {
@@ -362,12 +365,47 @@ $watchStateText = Get-Content -Raw -LiteralPath 'web/js/watch_state_manager.js'
 foreach ($needle in @(
     '${cleanType}:episode:${showId}:${season}:${episode}',
     '${cleanType}:movie:${id}',
-    '${cleanType}:show:${id}'
+    '${cleanType}:show:'
 )) {
     if ($watchStateText -notlike "*$needle*") { Add-CheckError "Watch-state key pattern missing: $needle" }
 }
 if ($watchStateText -match 'return keyFor\(cleanType,id\)') {
     Add-CheckError 'watch_state_manager.js must not fall back to generic type:id keys.'
+}
+foreach ($needle in @(
+    'mytv_watch_sync_queue_v1',
+    "'local_only','queued','synced','mismatch','missing_id','validation_issue','auth_required','failed'",
+    'WATCHED_VALUES',
+    'previous_value',
+    'new_value',
+    'changed_at',
+    'sync_status',
+    'validation_status',
+    'sync_error',
+    'unreleased movie/episode cannot become watched'
+)) {
+    if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing local-first Trakt/watch-state contract: $needle" }
+}
+if ($watchStateText -match '(?i)title\s*===|title-only') {
+    Add-CheckError 'watch_state_manager.js must not implement title-only matching.'
+}
+foreach ($needle in @(
+    'data-computed-status="trakt"',
+    'data-computed-status="mismatch"',
+    'data-computed-status="queued"',
+    'computedValidationIssue',
+    'traktAuthAvailable',
+    'readWatchSyncQueue'
+)) {
+    if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing computed Manage Watch State contract: $needle" }
+}
+foreach ($needle in @(
+    '--calendar-col-min:var(--contract-still-w)',
+    '--calendar-grid-gap:10px',
+    'repeat(7,minmax(var(--calendar-col-min),1fr))',
+    'calc((var(--calendar-col-min) * 7) + (var(--calendar-grid-gap) * 6))'
+)) {
+    if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing shared calendar column contract: $needle" }
 }
 
 Write-Host '== Duplicate action/popup handlers =='
@@ -390,6 +428,7 @@ Write-Host '== Documentation source-of-truth consistency =='
 $masterContract = Get-Content -Raw -LiteralPath 'docs/00_master_contract.html'
 foreach ($needle in @(
     'docs/00_master_contract.html',
+    'MC-2026-04-30.4',
     'web/manage_watch_state.html',
     'web/discover.html',
     'web/watch_me.html',
@@ -407,6 +446,24 @@ if ($docIndex -notlike '*00_master_contract.html*') {
 }
 if ($masterContract -notlike '*Forbidden active icons*') {
     Add-CheckError 'Master contract must document forbidden card action icons.'
+}
+foreach ($needle in @(
+    'requirements, user-provided examples, dimensions, visual targets, state names, and acceptance rules must not be simplified',
+    'Abbott Elementary',
+    'Team Building',
+    'S05E01 • 22 min',
+    'Oct 1, 2025',
+    'The teachers prepare for the upcoming school year with new faces and big changes on the horizon.',
+    'Header cell left/right bounds must align exactly',
+    'Trakt status</code>, <code>Mismatch</code>, <code>Queued</code>, and <code>Validation issue</code> are computed',
+    'unwatched → partial → watched → unwatched',
+    'local queue event',
+    'D-pad/Android TV validation',
+    'poster Half <code>171x257</code>',
+    'narrow still Half <code>240x135</code>',
+    'episode source still <code>320x180</code>'
+)) {
+    if ($masterContract -notlike "*$needle*") { Add-CheckError "Master contract missing MC-2026-04-30.4 detailed rule/example: $needle" }
 }
 
 Write-Host '== Runtime asset size report =='
@@ -512,13 +569,24 @@ function ignoreConsole(message){
       let providerDetailRendered = true;
       let providerDetailText = '';
       if (pageName === 'index.html'){
-        const providerDetailSample = await page.evaluate(() => window.MyTVHubSharedModules?.popupController?.renderMediaDetailBlockHtml?.({
-          kind:'movie',
-          primary:'Validation Movie',
-          meta:'90 min • May 4, 2026',
-          overview:'Validation overview'
-        }) || '');
-        providerDetailRendered = /popup-media-detail/.test(providerDetailSample);
+        const providerDetailSample = await page.evaluate(() => {
+          const episode = window.MyTVHubSharedModules?.popupController?.renderMediaDetailBlockHtml?.({
+            kind:'episode',
+            primary:'Abbott Elementary',
+            secondary:'Team Building',
+            meta:'S05E01 • 22 min',
+            date:'Oct 1, 2025',
+            overview:'The teachers prepare for the upcoming school year with new faces and big changes on the horizon.'
+          }) || '';
+          const movie = window.MyTVHubSharedModules?.popupController?.renderMediaDetailBlockHtml?.({
+            kind:'movie',
+            primary:'Validation Movie',
+            meta:'90 min • May 4, 2026',
+            overview:'Validation overview'
+          }) || '';
+          return episode + movie;
+        });
+        providerDetailRendered = /popup-media-detail/.test(providerDetailSample) && /Abbott Elementary/.test(providerDetailSample) && /Team Building/.test(providerDetailSample) && /S05E01 • 22 min/.test(providerDetailSample) && /Oct 1, 2025/.test(providerDetailSample) && /The teachers prepare/.test(providerDetailSample);
         providerDetailText = providerDetailSample.replace(/<[^>]+>/g, '').trim();
       }
       const result = await page.evaluate(async () => {
@@ -619,6 +687,26 @@ function ignoreConsole(message){
         const weekendDay = document.querySelector('.calendar-day--weekend');
         const weekdayDay = Array.from(document.querySelectorAll('.calendar-day')).find(day => !day.classList.contains('calendar-day--weekend'));
         const weekendBandDay = document.querySelector('.calendar-week-band__day.is-weekend');
+        const firstWeekBand = document.querySelector('.calendar-week-band');
+        const firstWeekHeaders = firstWeekBand ? Array.from(firstWeekBand.querySelectorAll('.calendar-week-band__day')).map(rect) : [];
+        const firstWeekDays = Array.from(document.querySelectorAll('.calendar-month-grid > .calendar-day')).slice(0, 7).map(rect);
+        const calendarAlignment = firstWeekHeaders.map((headerRect, index) => {
+          const dayRect = firstWeekDays[index] || null;
+          return dayRect ? { index, leftDelta: Math.abs(headerRect.left - dayRect.left), rightDelta: Math.abs(headerRect.right - dayRect.right), widthDelta: Math.abs(headerRect.width - dayRect.width) } : { index, missingDay: true };
+        });
+        const watchStatusValues = (document.documentElement.getAttribute('data-watched-status-values') || '').split(',').filter(Boolean);
+        const watchStateBefore = JSON.parse(localStorage.getItem('mytv_watch_state_v1') || '{}');
+        const queueBefore = JSON.parse(localStorage.getItem('mytv_watch_sync_queue_v1') || '[]');
+        const watchButton = Array.from(document.querySelectorAll('[data-watch-state-action="toggle-watched-status"]')).find(btn => !/not_yet_released|unreleased/.test(btn.getAttribute('data-release-status') || btn.getAttribute('data-watch-availability') || '')) || document.querySelector('[data-watch-state-action="toggle-watched-status"]');
+        if (watchButton) watchButton.click();
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const watchStateAfter = JSON.parse(localStorage.getItem('mytv_watch_state_v1') || '{}');
+        const queueAfter = JSON.parse(localStorage.getItem('mytv_watch_sync_queue_v1') || '[]');
+        const manageComputed = manage ? {
+          trakt: Array.from(manage.querySelectorAll('[data-computed-status="trakt"]')).map(el => (el.textContent || '').trim()).filter(Boolean),
+          mismatch: Array.from(manage.querySelectorAll('[data-computed-status="mismatch"]')).map(el => (el.textContent || '').trim()).filter(Boolean),
+          queued: Array.from(manage.querySelectorAll('[data-computed-status="queued"]')).map(el => (el.textContent || '').trim()).filter(Boolean)
+        } : null;
         const discoverCards = Array.from(document.querySelectorAll('#panel-discover .media-card')).map(card => ({
           kind: card.getAttribute('data-kind') || '',
           id: card.getAttribute('data-id') || card.getAttribute('data-show-open') || card.getAttribute('data-movie-open') || ''
@@ -651,8 +739,19 @@ function ignoreConsole(message){
             weekendBackground: weekendDay ? getComputedStyle(weekendDay).backgroundColor : '',
             weekdayBackground: weekdayDay ? getComputedStyle(weekdayDay).backgroundColor : '',
             weekendBandBackground: weekendBandDay ? getComputedStyle(weekendBandDay).backgroundColor : '',
-            episodeImageSrcs: calendarEpisodeImages
+            episodeImageSrcs: calendarEpisodeImages,
+            alignment: calendarAlignment
           } : null,
+          watchStateAction: {
+            hasWatchButton: !!watchButton,
+            watchedValues: watchStatusValues,
+            beforeKeys: Object.keys(watchStateBefore).length,
+            afterKeys: Object.keys(watchStateAfter).length,
+            queueBefore: Array.isArray(queueBefore) ? queueBefore.length : 0,
+            queueAfter: Array.isArray(queueAfter) ? queueAfter.length : 0,
+            hasQueuedRecord: Array.isArray(queueAfter) && queueAfter.some(item => item && item.sync_status === 'queued' && item.item_key && item.previous_value != null && item.new_value != null)
+          },
+          manageComputed,
           actionButtons,
           dashHeads,
           sectionHeads,
@@ -682,6 +781,7 @@ function ignoreConsole(message){
       const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || !result.manageHasTable || result.manageCardCount > 0 || result.manageButtonCount < 1 || result.manageColumnCount < 10 || result.manageRowCount < 1));
       const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
       const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.hostScrollWidth <= result.calendar.hostClientWidth));
+      const calendarAlignmentBad = pageName === 'calendar.html' && (!result.calendar || !result.calendar.alignment || result.calendar.alignment.length !== 7 || result.calendar.alignment.some(pair => pair.missingDay || pair.leftDelta > 1 || pair.rightDelta > 1 || pair.widthDelta > 1));
       const calendarDuplicateDateBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.duplicateCellDateCount !== 0 || result.calendar.weekBandDateCount < 7);
       const calendarWeekendBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.weekendDayCount < 1 || result.calendar.weekendBandDayCount < 1 || result.calendar.weekendBackground === result.calendar.weekdayBackground);
       const calendarStillBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.episodeImageSrcs.some(src => /poster/i.test(src)));
@@ -696,11 +796,13 @@ function ignoreConsole(message){
       const posterSizeBad = result.posterCards.some(card => card.width > 176 || card.height > 267 || card.contract !== '171x257');
       const stillSizeBad = result.stillCards.some(card => card.width > 245 || card.height > 140 || card.contract !== '240x135');
       const popupDetailBad = pageName === 'index.html' && (!result.providerDetailRendered || !result.providerDetailText);
+      const watchStateActionBad = pageName === 'index.html' && (!result.watchStateAction || !result.watchStateAction.watchedValues.includes('partial') || !result.watchStateAction.hasWatchButton || !result.watchStateAction.hasQueuedRecord);
+      const manageComputedBad = pageName === 'manage_watch_state.html' && (!result.manageComputed || !result.manageComputed.trakt.length || !result.manageComputed.mismatch.length || !result.manageComputed.queued.length || result.manageComputed.mismatch.some(value => !['true','false'].includes(value)) || result.manageComputed.queued.some(value => !['true','false'].includes(value)));
       const performanceBad = result.perf && (result.perf.loadMs > 10000 || result.perf.domContentLoadedMs > 8000);
       const discoverBad = pageName === 'discover.html' && (!result.discoverRegistryRows || !result.discoverEmptyState || result.discoverCards.length > 0);
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || calendarDuplicateDateBad || calendarWeekendBad || calendarStillBad || actionBad || stickyBad || topNavBad || stickyAncestorBad || sectionStickyBad || dashboardDuplicateBad || recommendationBad || posterSizeBad || stillSizeBad || popupDetailBad || performanceBad || discoverBad || pageErrors.length){
-        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, headerStickyAncestors: result.headerStickyAncestors, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, sectionHeads: result.sectionHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, posterCards: result.posterCards, stillCards: result.stillCards, providerDetailRendered: result.providerDetailRendered, providerDetailText: result.providerDetailText, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || calendarAlignmentBad || calendarDuplicateDateBad || calendarWeekendBad || calendarStillBad || actionBad || stickyBad || topNavBad || stickyAncestorBad || sectionStickyBad || dashboardDuplicateBad || recommendationBad || posterSizeBad || stillSizeBad || popupDetailBad || watchStateActionBad || manageComputedBad || performanceBad || discoverBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, headerStickyAncestors: result.headerStickyAncestors, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, sectionHeads: result.sectionHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, posterCards: result.posterCards, stillCards: result.stillCards, providerDetailRendered: result.providerDetailRendered, providerDetailText: result.providerDetailText, watchStateAction: result.watchStateAction, manageComputed: result.manageComputed, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
       }
       await page.close();
     }

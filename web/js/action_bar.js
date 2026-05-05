@@ -27,6 +27,7 @@ const CONTRACT_ICONS = Object.freeze({
 
 export const WATCHED_STATUS_VALUES = Object.freeze([
   'unwatched',
+  'partial',
   'watched'
 ]);
 
@@ -141,6 +142,7 @@ export function renderActionBarHtml(options = {}){
       'data-watch-state-action': 'toggle-watched-status',
       'data-action-menu': 'watched_status',
       'data-no-default': '1',
+      'aria-pressed': options.status.active ? 'true' : 'false',
       ...statusLink.attrs
     }));
   }
@@ -150,6 +152,7 @@ export function renderActionBarHtml(options = {}){
     center.push(renderAnchor(`watch-list${options.watched.active ? ' active' : ''}`, watchedLink.href, 'Toggle watch list', 'Watch list', CONTRACT_ICONS.watch_list, {
       'data-watch-state-action': 'toggle-watch-list',
       'data-action': 'toggle-watch-list',
+      'aria-pressed': options.watched.active ? 'true' : 'false',
       ...watchedLink.attrs
     }));
   }
@@ -160,6 +163,7 @@ export function renderActionBarHtml(options = {}){
       'data-watch-state-action': 'toggle-favourite',
       'data-action': 'toggle-favourite',
       'data-no-default': '1',
+      'aria-pressed': options.favourite.active ? 'true' : 'false',
       ...favouriteLink.attrs
     }));
   }

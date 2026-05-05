@@ -35,8 +35,12 @@ async function inspect(pathname, viewport) {
   });
   await page.goto(`${BASE_URL}/web/${pathname}`, { waitUntil: "load", timeout: 60000 });
   await sleep(2500);
-  const metrics = await page.evaluate(() => {
+  const metrics = await page.evaluate(async () => {
     const bodyOverflow = document.documentElement.scrollWidth > document.documentElement.clientWidth + 2;
+    const rect = (el) => {
+      const r = el?.getBoundingClientRect?.();
+      return r ? { left: r.left, right: r.right, width: r.width, top: r.top, bottom: r.bottom, height: r.height } : null;
+    };
     const firstCard = document.querySelector(".media-card, .calendar-day");
     const firstImg = document.querySelector(".calendar-item .media-card__poster img, .calendar-item .imgbox img, .media-card__poster img, .imgbox img");
     const dashCols = document.querySelector("#dashScheduleCols");
@@ -45,6 +49,50 @@ async function inspect(pathname, viewport) {
     const visibleCalendarItems = Array.from(document.querySelectorAll(".calendar-item")).filter(el => getComputedStyle(el).display !== "none" && !el.classList.contains("hidden"));
     const firstRect = firstCard?.getBoundingClientRect();
     const imageRect = firstImg?.getBoundingClientRect();
+    const firstWeekHeaders = calendarBand ? Array.from(calendarBand.querySelectorAll(".calendar-week-band__day")).map(rect) : [];
+    const firstWeekDays = Array.from(document.querySelectorAll(".calendar-month-grid > .calendar-day")).slice(0, 7).map(rect);
+    const calendarAlignment = firstWeekHeaders.map((headerRect, index) => {
+      const dayRect = firstWeekDays[index];
+      return dayRect ? {
+        index,
+        leftDelta: Math.abs(headerRect.left - dayRect.left),
+        rightDelta: Math.abs(headerRect.right - dayRect.right),
+        widthDelta: Math.abs(headerRect.width - dayRect.width)
+      } : { index, missingDay: true };
+    });
+    const calendarEpisodePosterImages = Array.from(document.querySelectorAll(".calendar-item.media-card--episode img")).filter(img => /poster/i.test(img.getAttribute("src") || "")).length;
+    const weekendDay = document.querySelector(".calendar-day--weekend");
+    const weekdayDay = Array.from(document.querySelectorAll(".calendar-day")).find(day => !day.classList.contains("calendar-day--weekend"));
+    const popupDetailSample = window.MyTVHubSharedModules?.popupController?.renderMediaDetailBlockHtml?.({
+      kind: "episode",
+      primary: "Abbott Elementary",
+      secondary: "Team Building",
+      meta: "S05E01 • 22 min",
+      date: "Oct 1, 2025",
+      overview: "The teachers prepare for the upcoming school year with new faces and big changes on the horizon."
+    }) || "";
+    const queueBefore = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+    const watchButton = Array.from(document.querySelectorAll('[data-watch-state-action="toggle-watched-status"]')).find(btn => !/not_yet_released|unreleased/.test(btn.getAttribute("data-release-status") || btn.getAttribute("data-watch-availability") || "")) || document.querySelector('[data-watch-state-action="toggle-watched-status"]');
+    if (watchButton) watchButton.click();
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    const queueAfter = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+    const popupButton = document.querySelector("[data-watch-source-open]");
+    let popupFocus = { attempted: false, opened: false, focusInside: false, closedByBack: false };
+    if (popupButton) {
+      popupButton.click();
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const modal = document.querySelector('#providerBack[style*="flex"] #providerCard, #modalBack[style*="flex"] #modalCard');
+      if (modal) {
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const focusInside = modal.contains(document.activeElement);
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace", bubbles: true }));
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        popupFocus = { attempted: true, opened: true, focusInside, closedByBack: !document.querySelector('#providerBack[style*="flex"], #modalBack[style*="flex"]') };
+      } else {
+        popupFocus = { attempted: true, opened: false, focusInside: false, closedByBack: false };
+      }
+    }
     return {
       bodyOverflow,
       cardWidth: Math.round(firstRect?.width || 0),
@@ -55,7 +103,17 @@ async function inspect(pathname, viewport) {
       calendarColumns: calendarGrid ? getComputedStyle(calendarGrid).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
       calendarBandColumns: calendarBand ? getComputedStyle(calendarBand).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
       calendarItems: visibleCalendarItems.length,
-      calendarItemImages: visibleCalendarItems.filter(el => el.querySelector(".media-card__poster img, .imgbox img")).length
+      calendarItemImages: visibleCalendarItems.filter(el => el.querySelector(".media-card__poster img, .imgbox img")).length,
+      calendarDuplicateDateCount: document.querySelectorAll(".calendar-day__date").length,
+      calendarWeekendStyled: !!weekendDay && !!weekdayDay && getComputedStyle(weekendDay).backgroundColor !== getComputedStyle(weekdayDay).backgroundColor,
+      calendarEpisodePosterImages,
+      calendarAlignment,
+      watchedStatusValues: (document.documentElement.getAttribute("data-watched-status-values") || "").split(",").filter(Boolean),
+      watchQueueBefore: Array.isArray(queueBefore) ? queueBefore.length : 0,
+      watchQueueAfter: Array.isArray(queueAfter) ? queueAfter.length : 0,
+      watchQueueHasQueuedRecord: Array.isArray(queueAfter) && queueAfter.some(item => item && item.sync_status === "queued" && item.item_key && item.previous_value != null && item.new_value != null),
+      popupDetailOk: /Abbott Elementary/.test(popupDetailSample) && /Team Building/.test(popupDetailSample) && /S05E01 • 22 min/.test(popupDetailSample) && /Oct 1, 2025/.test(popupDetailSample) && /The teachers prepare/.test(popupDetailSample),
+      popupFocus
     };
   });
   await page.close();
@@ -67,6 +125,9 @@ try {
   for (const viewport of VIEWPORTS) {
     results.push(await inspect("index.html", viewport));
     results.push(await inspect("calendar.html", viewport));
+    if (viewport.name === "android-tv-1080p" || viewport.name === "laptop") {
+      results.push(await inspect("manage_watch_state.html", viewport));
+    }
   }
   const failures = [];
   for (const result of results) {
@@ -84,6 +145,18 @@ try {
     }
     if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarItems > 0 && result.calendarItemImages < result.calendarItems) {
       failures.push(`${result.viewport} calendar.html: calendar episode/movie cards missing images (${result.calendarItemImages}/${result.calendarItems})`);
+    }
+    if (result.pathname === "calendar.html" && result.calendarAlignment?.some(pair => pair.missingDay || pair.leftDelta > 1 || pair.rightDelta > 1 || pair.widthDelta > 1)) {
+      failures.push(`${result.viewport} calendar.html: header/day column bounds misaligned`);
+    }
+    if (result.pathname === "calendar.html" && result.calendarDuplicateDateCount !== 0) failures.push(`${result.viewport} calendar.html: duplicate date row rendered`);
+    if (result.pathname === "calendar.html" && !result.calendarWeekendStyled) failures.push(`${result.viewport} calendar.html: weekend styling missing`);
+    if (result.pathname === "calendar.html" && result.calendarEpisodePosterImages > 0) failures.push(`${result.viewport} calendar.html: episode calendar image uses poster`);
+    if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
+    if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
+    if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
+    if (result.viewport === "android-tv-1080p" && result.pathname === "index.html" && result.popupFocus.attempted && (!result.popupFocus.opened || !result.popupFocus.focusInside || !result.popupFocus.closedByBack)) {
+      failures.push(`${result.viewport} index.html: popup D-pad focus trap/back close failed`);
     }
   }
   console.log(JSON.stringify({ results, failures }, null, 2));

@@ -1,112 +1,280 @@
 /*
 FILE: web/js/watch_state_manager.js
-VERSION: v1.4.0
-UPDATED: 2026-04-29
+VERSION: v2.0.0
+UPDATED: 2026-04-30
 CHANGE NOTES:
-- Stores watched_status, watch_list, and favourite locally for offline/trailer use.
-- Updates visible active states immediately after click.
-- Does not require Trakt/network to respond before the UI changes.
-- Keys state by item context so one card cannot toggle another item with the same local id.
+- Stores local-first watch_state records with sync/validation metadata.
+- watched_status is tri-state: unwatched -> partial -> watched -> unwatched.
+- Every valid action-bar or Manage Watch State click creates/updates a local queue event.
+- Trakt network is not required for immediate UI updates.
 */
 (function(){
   'use strict';
-  const KEY='mytv_watch_state_v1';
-  const TYPES = new Set(['watched_status','watch_list','favourite']);
 
-  function load(){
+  const KEY = 'mytv_watch_state_v1';
+  const QUEUE_KEY = 'mytv_watch_sync_queue_v1';
+  const TYPES = new Set(['watched_status','watch_list','favourite']);
+  const WATCHED_VALUES = ['unwatched','partial','watched'];
+  const BINARY_VALUES = ['off','on'];
+  const SYNC_STATUS_VALUES = ['local_only','queued','synced','mismatch','missing_id','validation_issue','auth_required','failed'];
+
+  function nowIso(){ return new Date().toISOString(); }
+  function safeText(value){ return String(value == null ? '' : value).trim(); }
+
+  function loadRaw(){
     try {
       const parsed = JSON.parse(localStorage.getItem(KEY) || '{}') || {};
-      return parsed && typeof parsed === 'object' ? parsed : {};
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+    } catch (_) {
+      return {};
     }
-    catch (_) { return {}; }
   }
+
   function save(data){ localStorage.setItem(KEY, JSON.stringify(data)); }
+
+  function loadQueue(){
+    try {
+      const parsed = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]') || [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function saveQueue(queue){ localStorage.setItem(QUEUE_KEY, JSON.stringify(queue)); }
+
   function normalizeType(type){
-    const clean = String(type || '').trim();
+    const clean = safeText(type);
     return TYPES.has(clean) ? clean : '';
   }
+
+  function itemTypeForKind(kind){
+    const clean = safeText(kind).toLowerCase();
+    if (clean === 'movie') return 'movie';
+    if (clean === 'episode') return 'episode';
+    if (clean === 'season') return 'season';
+    if (clean === 'show' || clean === 'tv') return 'show';
+    return clean;
+  }
+
+  function normalizeValue(type, value){
+    const cleanType = normalizeType(type);
+    if (cleanType === 'watched_status'){
+      const text = safeText(value).toLowerCase();
+      return WATCHED_VALUES.includes(text) ? text : (value === true ? 'watched' : 'unwatched');
+    }
+    const text = safeText(value).toLowerCase();
+    if (BINARY_VALUES.includes(text)) return text;
+    return value === true ? 'on' : 'off';
+  }
+
+  function valueOf(record, type){
+    const cleanType = normalizeType(type);
+    if (record && typeof record === 'object' && !Array.isArray(record)){
+      return normalizeValue(cleanType, record.new_value);
+    }
+    if (cleanType === 'watched_status'){
+      if (record === true) return 'watched';
+      return normalizeValue(cleanType, record);
+    }
+    return record ? 'on' : 'off';
+  }
+
+  function parseKey(key){
+    const parts = safeText(key).split(':');
+    const stateType = normalizeType(parts[0]);
+    const itemType = itemTypeForKind(parts[1]);
+    if (!stateType || !itemType) return null;
+    if (itemType === 'episode' && parts.length >= 5){
+      return { state_type: stateType, item_type: 'episode', show_id: parts[2], season_number: parts[3], episode_number: parts[4], tmdb_id: parts[2] };
+    }
+    if (itemType === 'season' && parts.length >= 4){
+      return { state_type: stateType, item_type: 'season', show_id: parts[2], season_number: parts[3], tmdb_id: parts[2] };
+    }
+    if ((itemType === 'movie' || itemType === 'show') && parts.length >= 3){
+      return { state_type: stateType, item_type: itemType, tmdb_id: parts[2], show_id: itemType === 'show' ? parts[2] : '' };
+    }
+    return null;
+  }
+
   function contextKey(type, context){
     const cleanType = normalizeType(type);
     if (!cleanType) return '';
-    const ctx = context && typeof context === 'object' ? context : { kind: String(context || '').trim().toLowerCase() };
-    const kind = String(ctx.kind || '').trim().toLowerCase();
-    const id = String(ctx.id || ctx.tmdb_id || ctx.movieId || ctx.showId || '').trim();
-    const showId = String(ctx.showId || ctx.show || ctx.dataShow || '').trim();
-    const season = String(ctx.season || ctx.seasonNumber || ctx.dataSeason || '').trim();
-    const episode = String(ctx.episode || ctx.episodeNumber || ctx.dataEpisode || '').trim();
-    if (showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
-    if (showId && season) return `${cleanType}:season:${showId}:${season}`;
+    const ctx = context && typeof context === 'object' ? context : { kind: safeText(context).toLowerCase() };
+    const kind = itemTypeForKind(ctx.kind || ctx.item_type);
+    const id = safeText(ctx.id || ctx.tmdb_id || ctx.movieId || ctx.showId);
+    const showId = safeText(ctx.showId || ctx.show_id || ctx.show || ctx.dataShow || (kind === 'show' ? id : ''));
+    const season = safeText(ctx.season || ctx.seasonNumber || ctx.season_number || ctx.dataSeason);
+    const episode = safeText(ctx.episode || ctx.episodeNumber || ctx.episode_number || ctx.dataEpisode);
+    if (kind === 'episode' && showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
+    if (kind === 'season' && showId && season) return `${cleanType}:season:${showId}:${season}`;
     if (kind === 'movie' && id) return `${cleanType}:movie:${id}`;
-    if (kind === 'show' && id) return `${cleanType}:show:${id}`;
+    if (kind === 'show' && (showId || id)) return `${cleanType}:show:${showId || id}`;
+    if (showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
     return '';
   }
+
   function typeFromAction(action){
     if (action === 'toggle-watch-list') return 'watch_list';
     if (action === 'toggle-watched-status') return 'watched_status';
     if (action === 'toggle-favourite' || action === 'toggle-favorite') return 'favourite';
     return '';
   }
+
+  function contextFromButton(btn, type){
+    const kind = itemTypeForKind(btn.getAttribute('data-kind') || btn.getAttribute('data-item-type') || '');
+    const showId = safeText(btn.getAttribute('data-show') || btn.getAttribute('data-status-show') || btn.getAttribute('data-show-id'));
+    const season = safeText(btn.getAttribute('data-season') || btn.getAttribute('data-status-season') || btn.getAttribute('data-season-number'));
+    const episode = safeText(btn.getAttribute('data-watch-episode') || btn.getAttribute('data-episode') || btn.getAttribute('data-status-episode') || btn.getAttribute('data-episode-number'));
+    const id = safeText(btn.getAttribute('data-id') || btn.getAttribute('data-tmdb-id') || btn.getAttribute('data-movie-id') || (kind === 'episode' ? showId : ''));
+    return {
+      kind,
+      id,
+      tmdb_id: safeText(btn.getAttribute('data-tmdb-id') || id || showId),
+      trakt_id: safeText(btn.getAttribute('data-trakt-id')),
+      showId,
+      seasonNumber: season,
+      episodeNumber: episode,
+      title: safeText(btn.getAttribute('data-title')),
+      release_status: safeText(btn.getAttribute('data-release-status') || btn.getAttribute('data-watch-availability')),
+      state_type: normalizeType(type)
+    };
+  }
+
+  function contextKeyFromButton(btn, type){
+    if (!btn) return '';
+    return contextKey(type, contextFromButton(btn, type));
+  }
+
+  function validationFor(key, context, nextValue){
+    const parsed = parseKey(key);
+    if (!parsed) return { sync_status: 'validation_issue', validation_status: 'validation_issue', sync_error: 'missing item key' };
+    if (!parsed.tmdb_id && parsed.item_type !== 'episode' && parsed.item_type !== 'season'){
+      return { sync_status: 'missing_id', validation_status: 'missing_id', sync_error: 'missing tmdb_id' };
+    }
+    if (parsed.item_type === 'episode' && (!parsed.show_id || !parsed.season_number || !parsed.episode_number)){
+      return { sync_status: 'validation_issue', validation_status: 'validation_issue', sync_error: 'missing show_id/season_number/episode_number' };
+    }
+    const releaseStatus = safeText(context?.release_status).toLowerCase();
+    if (parsed.state_type === 'watched_status' && nextValue === 'watched' && (releaseStatus === 'not_yet_released' || releaseStatus === 'unreleased')){
+      return { sync_status: 'validation_issue', validation_status: 'validation_issue', sync_error: 'unreleased movie/episode cannot become watched' };
+    }
+    return { sync_status: 'queued', validation_status: 'ok', sync_error: '' };
+  }
+
+  function buildRecord(key, nextValue, context = {}, previousValue = ''){
+    const parsed = parseKey(key) || {};
+    const stateType = parsed.state_type || normalizeType(context.state_type);
+    const value = normalizeValue(stateType, nextValue);
+    const validation = validationFor(key, context, value);
+    return {
+      item_key: key,
+      item_type: parsed.item_type || itemTypeForKind(context.kind),
+      tmdb_id: safeText(context.tmdb_id || parsed.tmdb_id),
+      trakt_id: safeText(context.trakt_id),
+      show_id: safeText(context.showId || context.show_id || parsed.show_id),
+      season_number: safeText(context.seasonNumber || context.season_number || parsed.season_number),
+      episode_number: safeText(context.episodeNumber || context.episode_number || parsed.episode_number),
+      state_type: stateType,
+      previous_value: normalizeValue(stateType, previousValue),
+      new_value: value,
+      changed_at: nowIso(),
+      sync_status: validation.sync_status,
+      validation_status: validation.validation_status,
+      sync_error: validation.sync_error
+    };
+  }
+
+  function upsertQueue(record){
+    if (!record || record.sync_status !== 'queued') return;
+    const queue = loadQueue().filter(item => !(safeText(item.item_key || item.key || item.state_key) === record.item_key && safeText(item.state_type) === record.state_type));
+    queue.push({
+      ...record,
+      key: record.item_key,
+      state_key: record.item_key,
+      queue_status: 'pending'
+    });
+    saveQueue(queue);
+  }
+
+  function load(){
+    return loadRaw();
+  }
+
   function get(context,type){
     const key = contextKey(type, context);
-    return key ? !!load()[key] : false;
+    return key ? getByKey(key) : false;
   }
+
+  function getValue(context,type){
+    const key = contextKey(type, context);
+    return key ? getValueByKey(key) : normalizeValue(type, '');
+  }
+
   function set(context,type,value){
     const key = contextKey(type, context);
-    if (!key) return false;
-    const data = load();
-    if (value) data[key] = true;
-    else delete data[key];
-    save(data);
-    return !!value;
+    return setValueByKey(key, normalizeValue(type, value), { ...(context || {}), state_type: type });
   }
-  function toggle(id,type){ return set(id,type,!get(id,type)); }
 
-  function contextKeyFromButton(btn,type){
-    const cleanType = normalizeType(type);
-    if (!btn || !cleanType) return '';
-    const kind = String(btn.getAttribute('data-kind') || '').trim().toLowerCase();
-    const id = String(btn.getAttribute('data-id') || '').trim();
-    const showId = String(btn.getAttribute('data-show') || btn.getAttribute('data-status-show') || '').trim();
-    const season = String(btn.getAttribute('data-season') || btn.getAttribute('data-status-season') || '').trim();
-    const episode = String(btn.getAttribute('data-watch-episode') || btn.getAttribute('data-episode') || btn.getAttribute('data-status-episode') || '').trim();
-    if (showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
-    if (showId && season) return `${cleanType}:season:${showId}:${season}`;
-    if (kind === 'episode' || kind === 'season') return '';
-    if (kind === 'movie' && id) return `${cleanType}:movie:${id}`;
-    if (kind === 'show' && id) return `${cleanType}:show:${id}`;
-    return '';
+  function toggle(context,type){
+    const key = contextKey(type, context);
+    return toggleByKey(key, context);
   }
 
   function getByKey(key){
-    return key ? !!load()[key] : false;
+    const parsed = parseKey(key);
+    const value = getValueByKey(key);
+    return parsed?.state_type === 'watched_status' ? value !== 'unwatched' : value === 'on';
   }
 
   function getValueByKey(key){
-    if (!key) return '';
-    const data = load();
-    return Object.prototype.hasOwnProperty.call(data, key) ? data[key] : '';
+    const parsed = parseKey(key);
+    if (!parsed) return '';
+    return valueOf(loadRaw()[key], parsed.state_type);
   }
 
-  function setByKey(key,value){
-    if (!key) return false;
-    const data = load();
-    if (value) data[key] = true;
-    else delete data[key];
+  function setByKey(key,value,context = {}){
+    const parsed = parseKey(key);
+    const next = parsed?.state_type === 'watched_status' ? (value ? 'watched' : 'unwatched') : (value ? 'on' : 'off');
+    return setValueByKey(key, next, context);
+  }
+
+  function setValueByKey(key,value,context = {}){
+    const parsed = parseKey(key);
+    if (!parsed) return false;
+    const data = loadRaw();
+    const previous = valueOf(data[key], parsed.state_type);
+    const next = normalizeValue(parsed.state_type, value);
+    const record = buildRecord(key, next, { ...context, state_type: parsed.state_type }, previous);
+    if (record.sync_status === 'validation_issue' || record.validation_status === 'validation_issue'){
+      data[key] = { ...record, new_value: previous };
+    } else if (parsed.state_type === 'watched_status' && next === 'unwatched'){
+      data[key] = record;
+    } else if (parsed.state_type !== 'watched_status' && next === 'off'){
+      data[key] = record;
+    } else {
+      data[key] = record;
+    }
     save(data);
-    return !!value;
+    upsertQueue(data[key]);
+    return getByKey(key);
   }
 
-  function setValueByKey(key,value){
-    if (!key) return false;
-    const data = load();
-    if (value === false || value == null || value === '' || value === 'unwatched') delete data[key];
-    else data[key] = value;
-    save(data);
-    return !!data[key];
+  function nextValueForKey(key){
+    const parsed = parseKey(key);
+    if (!parsed) return '';
+    const current = getValueByKey(key);
+    if (parsed.state_type === 'watched_status'){
+      const idx = WATCHED_VALUES.indexOf(current);
+      return WATCHED_VALUES[(idx + 1) % WATCHED_VALUES.length];
+    }
+    return current === 'on' ? 'off' : 'on';
   }
 
-  function toggleByKey(key){
-    return setByKey(key,!getByKey(key));
+  function toggleByKey(key,context = {}){
+    const next = nextValueForKey(key);
+    if (!next) return false;
+    return setValueByKey(key, next, context);
   }
 
   function applyButtonState(btn){
@@ -117,12 +285,14 @@ CHANGE NOTES:
     if (!type) return;
     const key = contextKeyFromButton(btn,type);
     if (!key) return;
-    const active = getByKey(key);
+    const value = getValueByKey(key);
+    const active = type === 'watched_status' ? value !== 'unwatched' : value === 'on';
     btn.classList.toggle('active', active);
     btn.setAttribute('aria-pressed', active ? 'true' : 'false');
     btn.setAttribute('data-watch-state-active', active ? '1' : '0');
     btn.setAttribute('data-watch-state-type', type);
     btn.setAttribute('data-watch-state-key', key);
+    btn.setAttribute('data-watch-state-value', value);
   }
 
   function refresh(root){
@@ -132,21 +302,44 @@ CHANGE NOTES:
   document.addEventListener('click',function(e){
     const btn = e.target && e.target.closest ? e.target.closest('[data-watch-state-action]') : null;
     if (!btn) return;
-    const id = btn.getAttribute('data-id');
     const action = btn.getAttribute('data-watch-state-action');
     const type = typeFromAction(action);
     if (!type) return;
-    const key = contextKeyFromButton(btn,type);
+    const context = contextFromButton(btn, type);
+    const key = contextKey(type, context);
     if (!key) return;
     e.preventDefault();
     e.stopPropagation();
     if (e.stopImmediatePropagation) e.stopImmediatePropagation();
-    toggleByKey(key);
-    applyButtonState(btn);
+    toggleByKey(key, context);
+    refresh(document);
+    document.dispatchEvent(new CustomEvent('mytv:watch-state-changed', { detail: { key, state_type: type, value: getValueByKey(key) } }));
   }, true);
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ refresh(document); });
   else refresh(document);
 
-  window.MyTVHubWatchState = Object.assign(window.MyTVHubWatchState || {}, { load, save, get, set, toggle, getByKey, getValueByKey, setByKey, setValueByKey, toggleByKey, refresh });
+  window.MyTVHubWatchState = Object.assign(window.MyTVHubWatchState || {}, {
+    TYPES: Array.from(TYPES),
+    WATCHED_VALUES,
+    BINARY_VALUES,
+    SYNC_STATUS_VALUES,
+    load,
+    save,
+    loadQueue,
+    saveQueue,
+    contextKey,
+    contextKeyFromButton,
+    parseKey,
+    get,
+    getValue,
+    set,
+    toggle,
+    getByKey,
+    getValueByKey,
+    setByKey,
+    setValueByKey,
+    toggleByKey,
+    refresh
+  });
 })();

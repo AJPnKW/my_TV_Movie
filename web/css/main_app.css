@@ -3984,26 +3984,29 @@ body.app-modal-open{
   min-width:92px;
 }
 
-.calendar-month-grid{
-  gap:10px !important;
-}
-
 #calendar{
   overflow-x:auto;
   overflow-y:visible;
   padding-bottom:8px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(148,163,184,.55) rgba(15,23,42,.35);
 }
 
 .calendar-month-grid{
-  grid-template-columns:repeat(7,minmax(var(--contract-still-w),1fr)) !important;
-  min-width:calc((var(--contract-still-w) * 7) + 48px) !important;
+  gap:var(--calendar-grid-gap) !important;
+  grid-template-columns:repeat(7,minmax(var(--calendar-col-min),1fr)) !important;
+  min-width:calc((var(--calendar-col-min) * 7) + (var(--calendar-grid-gap) * 6)) !important;
   overflow:visible !important;
 }
 
 .calendar-week-band{
   display:grid !important;
-  grid-template-columns:repeat(7,minmax(var(--contract-still-w),1fr)) !important;
-  min-width:calc((var(--contract-still-w) * 7) + 48px) !important;
+  grid-template-columns:repeat(7,minmax(var(--calendar-col-min),1fr)) !important;
+  gap:var(--calendar-grid-gap) !important;
+  min-width:0 !important;
+  padding:0 !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
 }
 
 .calendar-day{
@@ -4104,6 +4107,8 @@ body.app-modal-open{
   --contract-poster-h:257px;
   --contract-still-w:240px;
   --contract-still-h:135px;
+  --calendar-col-min:var(--contract-still-w);
+  --calendar-grid-gap:10px;
 }
 
 .top{
