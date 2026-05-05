@@ -419,6 +419,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </div>
       </div>
     `);
+
+    applyStickySectionHeads(main);
   }
 
   function setStatus(ok, msg) {
@@ -770,6 +772,38 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       <div class="providerblock">
         <div class="providerrows">${rows}</div>
       </div>`;
+  }
+
+  function renderPopupMediaDetailBlock(kind, item, context={}){
+    const normalizedKind = safeText(kind).toLowerCase();
+    if (normalizedKind === "episode"){
+      const show = context.show || {};
+      const seasonNum = Number(item?.season_number ?? context.seasonNum ?? context.seasonNumber ?? 0) || 0;
+      const episodeNum = Number(item?.episode_number ?? context.episodeNum ?? context.episodeNumber ?? 0) || 0;
+      return window.MyTVHubSharedModules.popupController.renderMediaDetailBlockHtml({
+        kind: "episode",
+        primary: safeText(show?.title || show?.name || item?.show_title || "Show"),
+        secondary: safeText(item?.title || item?.name || item?.episode_name || `Episode ${episodeNum}`),
+        meta: episodeMetaLine(seasonNum, episodeNum, item?.runtime),
+        date: pickAirDate(item) ? fmtDate(pickAirDate(item)) : "",
+        overview: truncateText(item?.overview || "", 320)
+      });
+    }
+    if (normalizedKind === "movie"){
+      const runtime = Number(item?.runtime);
+      const releaseDate = pickAirDate(item) || item?.release_date || "";
+      const meta = [
+        Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "",
+        releaseDate ? fmtDate(releaseDate) : ""
+      ].filter(Boolean).join(" • ");
+      return window.MyTVHubSharedModules.popupController.renderMediaDetailBlockHtml({
+        kind: "movie",
+        primary: safeText(item?.title || "Movie"),
+        meta,
+        overview: truncateText(item?.overview || "", 320)
+      });
+    }
+    return "";
   }
 
   function progressPercent(obj){
@@ -1852,6 +1886,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const providerItem = (kind === "season" || kind === "episode") ? (context.show || item) : item;
     const providerKind = (kind === "movie") ? "movie" : "tv";
     const providerHtml = renderWatchProvidersHtml(providerItem, providerKind);
+    const mediaDetailHtml = renderPopupMediaDetailBlock(kind, item, context);
     const optionHtml = options.length ? options.map(opt => `
       <a class="watch-option-btn watch-option-btn--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
         <span class="watch-option-btn__label">${escHtml(opt.label)}</span>
@@ -1860,6 +1895,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       </a>
     `).join("") : `<div class="muted" style="font-size:12px;">No configured direct watch sources for this item yet.</div>`;
     return `
+      ${mediaDetailHtml}
       <div class="watch-source-grid">
         <div class="watch-source-panel watch-source-panel--links">
           <div class="watch-source-panel__title">Watch now</div>
@@ -2556,6 +2592,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (calbar) document.documentElement.style.setProperty("--calbar-h", `${calbar.offsetHeight}px`);
   }
 
+  function applyStickySectionHeads(root=document){
+    updateCalendarStickyVars();
+    $$(".dashblock > .dashhead", root).forEach(head => {
+      head.classList.add("sticky-section-head");
+      head.setAttribute("data-sticky-section-head", "1");
+    });
+  }
+
   function updateTodayLabel(){
     const el = $("#calTodayLabel");
     if (!el) return;
@@ -2822,16 +2866,20 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function imageForCalendarItem(item){
-    const direct = normalizeImageSrc(item?.thumb || item?.still_local || "");
-    if (direct) return direct;
     if (item?.kind === "episode"){
+      const still = normalizeImageSrc(pickImage(item, "still_local", "still_path", "episode_still_local", "episode_still_path", "still", "thumb"));
+      if (still && !/poster/i.test(still)) return still;
       const show = getShowById(item?.show_tmdb_id ?? item?.show_id ?? "");
-      return normalizeImageSrc(
-        pickImage(show || item, "backdrop_local", "backdrop_path", "show_backdrop_local", "poster_local", "poster_path", "show_poster_local")
-      );
+      const backdrop = normalizeImageSrc(pickImage(item, "backdrop_local", "backdrop_path", "show_backdrop_local") || pickImage(show || {}, "backdrop_local", "backdrop_path"));
+      if (backdrop && !/poster/i.test(backdrop)) return backdrop;
+      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 135'%3E%3Crect width='240' height='135' fill='%23111827'/%3E%3Cpath d='M96 44h48v47H96z' fill='%23233447'/%3E%3Cpath d='M106 58l27 16-27 16z' fill='%239fb0c8'/%3E%3C/svg%3E";
     }
-    const movie = getMovieById(item?.tmdb_id ?? "");
-    return normalizeImageSrc(pickImage(movie || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path", "thumb"));
+    if (item?.kind === "movie"){
+      const movie = getMovieById(item?.tmdb_id ?? "");
+      return normalizeImageSrc(pickImage(movie || item, "poster_local", "poster_path"));
+    }
+    const show = getShowById(item?.show_tmdb_id ?? item?.show_id ?? item?.tmdb_id ?? "");
+    return normalizeImageSrc(pickImage(show || item, "poster_local", "poster_path", "show_poster_local"));
   }
 
   function bindCalendarItemActions(root){
@@ -3608,7 +3656,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     };
 
     const renderBandDay = ({ dt, key, inMonth }) => `
-      <div class="calendar-week-band__day${inMonth ? "" : " is-other-month"}${key === today ? " is-today" : ""}">
+      <div class="calendar-week-band__day${inMonth ? "" : " is-other-month"}${key === today ? " is-today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " is-weekend" : ""}">
         <span class="calendar-week-band__weekday">${escHtml(dt.toLocaleDateString(undefined, { weekday: "short" }))}</span>
         <span class="calendar-week-band__date">${escHtml(dt.toLocaleDateString(undefined, { month: "short", day: "numeric" }))}</span>
       </div>
@@ -3620,9 +3668,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const more = renderMoreButton(Math.max(0, items.length - visibleLimit), `calendar-${key}`);
       return `
         <section class="calendar-day${inMonth ? "" : " calendar-day--other-month"}${key === today ? " calendar-day--today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-day--weekend" : ""}" data-daycell="${key}">
-          <div class="calendar-day__head">
-            <div class="calendar-day__date">${num}</div>
-          </div>
           <div class="calendar-day__items" data-more-id="calendar-${escHtml(key)}">
             ${visible || `<div class="calendar-day__empty">${inMonth ? "No releases" : ""}</div>`}
             ${more}
@@ -3633,7 +3678,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const renderTreeDay = ({ dt, key, num }) => {
       const items = dedupeItems(eventsByDate.get(key) || [], item => itemRenderKey(item, key));
       return `
-        <details class="calendar-tree-day${key === today ? " is-today" : ""}" data-daycell="${key}"${key === today ? " open" : ""}>
+        <details class="calendar-tree-day${key === today ? " is-today" : ""}${(dt.getDay() === 0 || dt.getDay() === 6) ? " calendar-tree-day--weekend" : ""}" data-daycell="${key}"${key === today ? " open" : ""}>
           <summary class="calendar-tree-day__summary">
             <span class="calendar-tree-day__date">
               <span class="calendar-tree-day__weekday">${escHtml(dt.toLocaleDateString(undefined, { weekday: "short" }))}</span>
@@ -3664,6 +3709,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </div>
       `;
     requestAnimationFrame(() => updateCalendarStickyVars());
+    applyStickySectionHeads($("#panel-calendar"));
     bindCalendarItemActions($("#calendar"));
     bindMoreToggles($("#calendar"));
   }
@@ -3842,6 +3888,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         gotoShow(parseInt(card.getAttribute("data-show") || "0", 10));
       }));
     });
+    applyStickySectionHeads($("#panel-dashboard"));
     $$("[data-dash-lastweek-nav]").forEach(btn => btn.onclick = () => {
       const action = btn.getAttribute("data-dash-lastweek-nav") || "";
       const current = Math.max(0, Number(state.dashboard?.lastWeekOffsetWeeks) || 0);
@@ -4026,6 +4073,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     [showsRoot, moviesRoot, panel].forEach(root => {
       if (!root) return;
+      applyStickySectionHeads(root);
       wireActionMenus(root);
       wireIconStripActions(root, renderDiscover);
       wireWatchSourceButtons(root);

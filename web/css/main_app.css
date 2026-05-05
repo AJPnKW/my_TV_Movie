@@ -3421,7 +3421,8 @@ CHANGE NOTES:
   grid-template-columns:repeat(7, minmax(0, 1fr));
   grid-auto-flow:unset;
   grid-auto-columns:auto;
-  overflow-x:visible;
+  overflow-x:auto;
+  max-width:100%;
 }
 #dashScheduleCols .dashcol,
 #dashLastWeekCols .dashcol{
@@ -3994,41 +3995,39 @@ body.app-modal-open{
 }
 
 .calendar-month-grid{
-  grid-template-columns:repeat(7,minmax(132px,1fr)) !important;
-  min-width:924px !important;
+  grid-template-columns:repeat(7,minmax(var(--contract-still-w),1fr)) !important;
+  min-width:calc((var(--contract-still-w) * 7) + 48px) !important;
   overflow:visible !important;
 }
 
 .calendar-week-band{
   display:grid !important;
-  grid-template-columns:repeat(7,minmax(132px,1fr)) !important;
-  min-width:924px !important;
+  grid-template-columns:repeat(7,minmax(var(--contract-still-w),1fr)) !important;
+  min-width:calc((var(--contract-still-w) * 7) + 48px) !important;
 }
 
 .calendar-day{
   min-height:clamp(240px, 22vw, 340px) !important;
   display:grid !important;
-  grid-template-rows:auto 1fr;
+  grid-template-rows:1fr;
   gap:10px;
   padding:10px !important;
   border-radius:18px;
   background:rgba(255,255,255,0.03);
 }
 
+.calendar-day--weekend,
+.calendar-tree-day--weekend{
+  background:rgba(148,163,184,0.14) !important;
+}
+
+.calendar-week-band__day.is-weekend{
+  background:rgba(148,163,184,0.18) !important;
+  border-color:rgba(203,213,225,0.18) !important;
+}
+
 .calendar-day--other-month{
   opacity:0.84 !important;
-}
-
-.calendar-day__head{
-  justify-content:space-between !important;
-  align-items:center !important;
-  gap:10px !important;
-  margin:0 !important;
-}
-
-.calendar-day__date{
-  font-size:17px;
-  font-weight:900;
 }
 
 .calendar-day__items{
@@ -4101,6 +4100,10 @@ body.app-modal-open{
 :root{
   --ui_action_box: clamp(20px, 1.4vw, 30px);
   --ui-header-h: 42px;
+  --contract-poster-w:171px;
+  --contract-poster-h:257px;
+  --contract-still-w:240px;
+  --contract-still-h:135px;
 }
 
 .top{
@@ -4217,8 +4220,13 @@ body.app-modal-open{
 }
 
 #dashShowRecs,
-#dashMovieRecs{
-  grid-template-columns:repeat(auto-fill, minmax(124px, 1fr));
+#dashMovieRecs,
+#discoverShowsGrid,
+#discoverMoviesGrid,
+.media-grid--shows,
+.media-grid--movies{
+  grid-template-columns:repeat(auto-fill, var(--contract-poster-w)) !important;
+  justify-content:start;
   align-items:start;
 }
 
@@ -4229,8 +4237,9 @@ body.app-modal-open{
 
 #dashShowRecs .dashcard--poster .media-card__poster,
 #dashMovieRecs .dashcard--poster .media-card__poster{
-  aspect-ratio:171 / 257 !important;
-  min-height:0 !important;
+  width:var(--contract-poster-w) !important;
+  height:var(--contract-poster-h) !important;
+  min-height:var(--contract-poster-h) !important;
 }
 
 #dashShowRecs .media-card__body,
@@ -4262,6 +4271,103 @@ body.app-modal-open{
 #dashShowRecs .media-card,
 #dashMovieRecs .media-card{
   contain-intrinsic-size:180px 250px;
+}
+
+.media-card--show,
+.media-card--movie{
+  width:var(--contract-poster-w) !important;
+  max-width:var(--contract-poster-w) !important;
+  min-height:0 !important;
+}
+
+.media-card--show .media-card__poster,
+.media-card--movie .media-card__poster{
+  width:var(--contract-poster-w) !important;
+  height:var(--contract-poster-h) !important;
+  min-height:var(--contract-poster-h) !important;
+  aspect-ratio:171 / 257 !important;
+}
+
+.media-card--episode .media-card__poster,
+.calendar-item.media-card--episode .media-card__poster,
+.watchme-episode-card .media-card__poster,
+.popup-episode-card .media-card__poster{
+  width:min(100%, var(--contract-still-w)) !important;
+  max-width:var(--contract-still-w) !important;
+  height:var(--contract-still-h) !important;
+  aspect-ratio:16 / 9 !important;
+  min-height:var(--contract-still-h) !important;
+}
+
+.calendar-item.media-card--episode{
+  width:var(--contract-still-w) !important;
+  max-width:var(--contract-still-w) !important;
+}
+
+.sticky-section-head{
+  position:sticky !important;
+  top:calc(var(--sticky-top, var(--ui-header-h)) + 2px) !important;
+  z-index:45 !important;
+  background:rgba(8,12,20,.96) !important;
+  backdrop-filter:blur(8px);
+}
+
+.popup-media-detail{
+  display:grid;
+  gap:3px;
+  padding:8px 10px;
+  margin:0 0 8px;
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:10px;
+  background:rgba(255,255,255,0.045);
+}
+
+.popup-media-detail__primary{
+  color:#f8fbff;
+  font-size:14px;
+  line-height:1.15;
+  font-weight:950;
+}
+
+.popup-media-detail__secondary{
+  color:#e5eefb;
+  font-size:13px;
+  line-height:1.2;
+  font-weight:850;
+}
+
+.popup-media-detail__meta,
+.popup-media-detail__date{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.2;
+  font-weight:800;
+}
+
+.popup-media-detail__overview{
+  color:#d9e4f5;
+  font-size:12px;
+  line-height:1.35;
+}
+
+.providerblock{ margin-top:6px !important; }
+.providerrows{ gap:4px !important; }
+.providerrow{
+  gap:3px !important;
+  padding:5px 7px !important;
+  min-height:0 !important;
+}
+.providerchips{ gap:4px !important; }
+.providerchip{
+  gap:4px !important;
+  padding:4px 7px !important;
+  min-height:26px !important;
+}
+
+@media (max-width:560px){
+  .dashrecs{
+    grid-template-columns:1fr !important;
+  }
 }
 
 .media-card .availability-badge,

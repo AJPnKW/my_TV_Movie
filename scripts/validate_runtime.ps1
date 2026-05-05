@@ -16,6 +16,16 @@ function Test-CommandAvailable {
     return $null -ne (Get-Command $Name -ErrorAction SilentlyContinue)
 }
 
+function ConvertTo-RepoRelativePath {
+    param([Parameter(Mandatory)][string]$Path)
+    $root = $RepoRoot.Path.TrimEnd('\', '/')
+    $full = [System.IO.Path]::GetFullPath($Path)
+    if ($full.StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $full.Substring($root.Length).TrimStart('\', '/').Replace('\','/')
+    }
+    return $full.Replace('\','/')
+}
+
 Write-Host '== Git state =='
 git status --short --branch
 
@@ -147,7 +157,7 @@ foreach ($path in $trackedZipFiles) {
 }
 $zipFiles = Get-ChildItem -LiteralPath $RepoRoot.Path -Recurse -File -Filter '*.zip' -Force |
     Where-Object { $_.FullName -notmatch '\\.git\\' } |
-    ForEach-Object { [System.IO.Path]::GetRelativePath($RepoRoot.Path, $_.FullName).Replace('\','/') }
+    ForEach-Object { ConvertTo-RepoRelativePath $_.FullName }
 foreach ($path in $zipFiles) {
     Add-CheckError "Zip artifact must be cleaned up: $path"
 }
@@ -282,6 +292,7 @@ if ($actionText -notmatch '\$\{numeric\}%') {
 Write-Host '== Card/action layout contract =='
 $cardRendererText = Get-Content -Raw -LiteralPath 'web/js/card_renderer.js'
 $appRuntimeText = Get-Content -Raw -LiteralPath 'web/js/app_runtime.js'
+$popupControllerText = Get-Content -Raw -LiteralPath 'web/js/popup_controller.js'
 $mainCssText = Get-Content -Raw -LiteralPath 'web/css/main_app.css'
 $runtimeText = Get-Content -Raw -LiteralPath 'web/js/runtime_render_fix.js'
 foreach ($legacy in @('web/css/runtime_layout_fix.css','web/css/ui_contract_fix.css','web/js/ui_contract_fix.js')) {
@@ -298,6 +309,18 @@ if ($mainCssText -match 'overflow(?:-[xy])?\s*:\s*clip') {
 }
 if ($mainCssText -notmatch '--ui_action_box:\s*clamp') {
     Add-CheckError 'main_app.css must define adaptive action box sizing.'
+}
+foreach ($needle in @('--contract-poster-w:171px','--contract-poster-h:257px','--contract-still-w:240px','--contract-still-h:135px')) {
+    if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing media size contract: $needle" }
+}
+if ($cardRendererText -notlike '*data-media-shape*' -or $cardRendererText -notlike '*data-contract-size*') {
+    Add-CheckError 'card_renderer.js must stamp rendered media cards with media-shape and contract-size metadata.'
+}
+if ($popupControllerText -notlike '*renderMediaDetailBlockHtml*' -or $popupControllerText -notlike '*popup-media-detail*') {
+    Add-CheckError 'popup_controller.js must own the unified popup media detail block.'
+}
+if ($appRuntimeText -notlike '*renderPopupMediaDetailBlock*' -or $appRuntimeText -notlike '*renderMediaDetailBlockHtml*') {
+    Add-CheckError 'app_runtime.js must render the popup media detail block before provider groups.'
 }
 if ($mainCssText -notlike '*Consolidated documentation-contract shell, card, action, and watch-state management rules*') {
     Add-CheckError 'main_app.css must own the finalized card/action/header contract rules.'
@@ -486,6 +509,18 @@ function ignoreConsole(message){
       await page.goto(base + pageName, { waitUntil:'domcontentloaded', timeout:15000 });
       await page.waitForSelector('.top .nav .tab', { timeout:10000 });
       await new Promise(resolve => setTimeout(resolve, 900));
+      let providerDetailRendered = true;
+      let providerDetailText = '';
+      if (pageName === 'index.html'){
+        const providerDetailSample = await page.evaluate(() => window.MyTVHubSharedModules?.popupController?.renderMediaDetailBlockHtml?.({
+          kind:'movie',
+          primary:'Validation Movie',
+          meta:'90 min • May 4, 2026',
+          overview:'Validation overview'
+        }) || '');
+        providerDetailRendered = /popup-media-detail/.test(providerDetailSample);
+        providerDetailText = providerDetailSample.replace(/<[^>]+>/g, '').trim();
+      }
       const result = await page.evaluate(async () => {
         const rect = el => { const r = el.getBoundingClientRect(); return { top:r.top, bottom:r.bottom, left:r.left, right:r.right, width:r.width, height:r.height }; };
         const tabs = Array.from(document.querySelectorAll('.top .nav .tab')).map(tab => {
@@ -503,6 +538,23 @@ function ignoreConsole(message){
         const header = document.querySelector('.top');
         const logoRect = logo ? rect(logo) : null;
         const headerRect = header ? rect(header) : null;
+        const headerStickyAncestors = [];
+        if (header){
+          let node = header.parentElement;
+          while (node && node !== document.documentElement){
+            const style = getComputedStyle(node);
+            headerStickyAncestors.push({
+              tag: node.tagName.toLowerCase(),
+              id: node.id || '',
+              cls: node.className || '',
+              overflowX: style.overflowX,
+              overflowY: style.overflowY,
+              transform: style.transform,
+              contain: style.contain
+            });
+            node = node.parentElement;
+          }
+        }
         const manage = document.querySelector('#manageWatchState');
         const manageTable = manage ? manage.querySelector('.watch-state-matrix') : null;
         const calendarGrid = document.querySelector('.calendar-month-grid');
@@ -531,6 +583,11 @@ function ignoreConsole(message){
           const duplicateKeys = Array.from(new Set(keys.filter((key, index) => keys.indexOf(key) !== index)));
           return { title:(block.querySelector('.dashhead h2')?.textContent || '').trim(), keyCount:keys.length, duplicateKeys };
         });
+        const sectionHeads = Array.from(document.querySelectorAll('[data-sticky-section-head="1"]')).map(head => {
+          const headRect = rect(head);
+          const style = getComputedStyle(head);
+          return { text:(head.textContent || '').trim(), position:style.position, top:style.top, rect:headRect };
+        });
         const recommendationCards = Array.from(document.querySelectorAll('#dashShowRecs .media-card, #dashMovieRecs .media-card')).map(card => {
           const cardRect = rect(card);
           const poster = card.querySelector('.media-card__poster');
@@ -550,6 +607,18 @@ function ignoreConsole(message){
           await new Promise(resolve => requestAnimationFrame(resolve));
         }
         const headerAfterScrollRect = header ? rect(header) : null;
+        const posterCards = Array.from(document.querySelectorAll('.media-card[data-media-shape="poster"] .media-card__poster')).map(poster => {
+          const posterRect = rect(poster);
+          return { width:posterRect.width, height:posterRect.height, contract:poster.getAttribute('data-contract-size') || '' };
+        });
+        const stillCards = Array.from(document.querySelectorAll('.media-card[data-media-shape="still"] .media-card__poster')).map(poster => {
+          const posterRect = rect(poster);
+          return { width:posterRect.width, height:posterRect.height, contract:poster.getAttribute('data-contract-size') || '' };
+        });
+        const calendarEpisodeImages = Array.from(document.querySelectorAll('.calendar-item.media-card--episode img')).map(img => img.getAttribute('src') || '');
+        const weekendDay = document.querySelector('.calendar-day--weekend');
+        const weekdayDay = Array.from(document.querySelectorAll('.calendar-day')).find(day => !day.classList.contains('calendar-day--weekend'));
+        const weekendBandDay = document.querySelector('.calendar-week-band__day.is-weekend');
         const discoverCards = Array.from(document.querySelectorAll('#panel-discover .media-card')).map(card => ({
           kind: card.getAttribute('data-kind') || '',
           id: card.getAttribute('data-id') || card.getAttribute('data-show-open') || card.getAttribute('data-movie-open') || ''
@@ -560,6 +629,7 @@ function ignoreConsole(message){
           tabs,
           logoRect,
           headerRect,
+          headerStickyAncestors,
           logoNatural: logo ? { width:logo.naturalWidth, height:logo.naturalHeight } : null,
           hasManage: !!manage,
           manageButtonCount: manage ? manage.querySelectorAll('[data-manage-watch-key]').length : 0,
@@ -573,12 +643,23 @@ function ignoreConsole(message){
             weekColumns: calendarWeek ? splitColumns(getComputedStyle(calendarWeek).gridTemplateColumns) : 0,
             weekDisplay: calendarWeek ? getComputedStyle(calendarWeek).display : '',
             hostClientWidth: calendarHost ? calendarHost.clientWidth : 0,
-            hostScrollWidth: calendarHost ? calendarHost.scrollWidth : 0
+            hostScrollWidth: calendarHost ? calendarHost.scrollWidth : 0,
+            duplicateCellDateCount: document.querySelectorAll('.calendar-day__date').length,
+            weekBandDateCount: document.querySelectorAll('.calendar-week-band__date').length,
+            weekendDayCount: document.querySelectorAll('.calendar-day--weekend').length,
+            weekendBandDayCount: document.querySelectorAll('.calendar-week-band__day.is-weekend').length,
+            weekendBackground: weekendDay ? getComputedStyle(weekendDay).backgroundColor : '',
+            weekdayBackground: weekdayDay ? getComputedStyle(weekdayDay).backgroundColor : '',
+            weekendBandBackground: weekendBandDay ? getComputedStyle(weekendBandDay).backgroundColor : '',
+            episodeImageSrcs: calendarEpisodeImages
           } : null,
           actionButtons,
           dashHeads,
+          sectionHeads,
           dashboardBlocks,
           recommendationCards,
+          posterCards,
+          stillCards,
           headerPosition,
           headerAfterScrollRect,
           canScroll,
@@ -588,6 +669,8 @@ function ignoreConsole(message){
           discoverEmptyState
         };
       });
+      result.providerDetailRendered = providerDetailRendered;
+      result.providerDetailText = providerDetailText;
       const visibleTextLabels = new Set(['Dashboard','Shows','Movies','Calendar','Watch Me','Discover','Config','Inputs Editor','Manage Watch State']);
       const badText = result.tabs.filter(tab => visibleTextLabels.has(tab.text));
       const framedTabs = result.tabs.filter(tab => tab.borderTopWidth > 0 || tab.borderLeftWidth > 0 || tab.borderRadius > 2);
@@ -599,17 +682,25 @@ function ignoreConsole(message){
       const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || !result.manageHasTable || result.manageCardCount > 0 || result.manageButtonCount < 1 || result.manageColumnCount < 10 || result.manageRowCount < 1));
       const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
       const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.hostScrollWidth <= result.calendar.hostClientWidth));
+      const calendarDuplicateDateBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.duplicateCellDateCount !== 0 || result.calendar.weekBandDateCount < 7);
+      const calendarWeekendBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.weekendDayCount < 1 || result.calendar.weekendBandDayCount < 1 || result.calendar.weekendBackground === result.calendar.weekdayBackground);
+      const calendarStillBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.episodeImageSrcs.some(src => /poster/i.test(src)));
       const movieNavBad = result.tabs.some(tab => tab.id === 'movies' && tab.text === '🎬');
       const actionBad = result.actionButtons.some(btn => btn.icon === '🎟️' || btn.icon === '▶' || btn.icon === '🎬' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
       const stickyBad = pageName === 'index.html' && (!result.dashHeads.some(h => /Current \/ Recent/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Watchlist/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Upcoming/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Recommendations/.test(h.text) && h.position === 'sticky'));
       const topNavBad = result.headerPosition !== 'sticky' || (result.canScroll && (!result.headerAfterScrollRect || Math.abs(result.headerAfterScrollRect.top) > 1));
+      const stickyAncestorBad = result.headerStickyAncestors.some(node => /(hidden|auto|clip)/.test(String(node.overflowX || '') + ' ' + String(node.overflowY || '')) || (node.transform && node.transform !== 'none') || (node.contain && node.contain !== 'none'));
+      const sectionStickyBad = ['index.html','shows.html','movies.html','discover.html'].includes(pageName) && (!result.sectionHeads.length || result.sectionHeads.some(head => head.position !== 'sticky' || !head.top || head.top === 'auto'));
       const dashboardDuplicateBad = pageName === 'index.html' && result.dashboardBlocks.some(block => block.duplicateKeys.length > 0);
       const recommendationBad = pageName === 'index.html' && result.recommendationCards.some(card => card.width > 230 || card.posterHeight > 360);
+      const posterSizeBad = result.posterCards.some(card => card.width > 176 || card.height > 267 || card.contract !== '171x257');
+      const stillSizeBad = result.stillCards.some(card => card.width > 245 || card.height > 140 || card.contract !== '240x135');
+      const popupDetailBad = pageName === 'index.html' && (!result.providerDetailRendered || !result.providerDetailText);
       const performanceBad = result.perf && (result.perf.loadMs > 10000 || result.perf.domContentLoadedMs > 8000);
       const discoverBad = pageName === 'discover.html' && (!result.discoverRegistryRows || !result.discoverEmptyState || result.discoverCards.length > 0);
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || actionBad || stickyBad || topNavBad || dashboardDuplicateBad || recommendationBad || performanceBad || discoverBad || pageErrors.length){
-        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || calendarDuplicateDateBad || calendarWeekendBad || calendarStillBad || actionBad || stickyBad || topNavBad || stickyAncestorBad || sectionStickyBad || dashboardDuplicateBad || recommendationBad || posterSizeBad || stillSizeBad || popupDetailBad || performanceBad || discoverBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, headerStickyAncestors: result.headerStickyAncestors, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, sectionHeads: result.sectionHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, posterCards: result.posterCards, stillCards: result.stillCards, providerDetailRendered: result.providerDetailRendered, providerDetailText: result.providerDetailText, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
       }
       await page.close();
     }
