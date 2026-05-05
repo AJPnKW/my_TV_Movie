@@ -2,6 +2,9 @@
 
 ## 2026-05-04
 
+- Implemented MC-2026-04-30.4 contract updates for shared calendar column alignment, tri-state local-first watch-state records, queued Trakt workflow scaffolding, computed Manage Watch State statuses, popup media-detail rendering, Android TV popup focus trapping, and extended rendered validation.
+- Commit: `0105895e` fix calendar trakt watch state popup and dpad contract compliance.
+
 - Fixed dashboard duplicate rendering guards with shared card render keys, scoped dashboard dedupe, and non-accumulating dashboard navigation handlers.
 - Restored the top app nav as a true sticky header and compacted dashboard recommendation card sizing.
 - Extended runtime validation to cover duplicate dashboard render keys, sticky top nav pinning, compact recommendation dimensions, and local rendered performance thresholds against `docs/00_master_contract.html`.
