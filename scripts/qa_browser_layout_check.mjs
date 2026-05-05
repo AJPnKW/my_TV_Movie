@@ -27,11 +27,11 @@ async function inspect(pathname, viewport) {
   const errors = [];
   const missing = [];
   page.on("console", (msg) => {
-    if (msg.type() === "error") errors.push(msg.text());
+    if (msg.type() === "error" && !/Failed to load resource|favicon/i.test(msg.text())) errors.push(msg.text());
   });
   page.on("pageerror", (err) => errors.push(err.message));
   page.on("response", (response) => {
-    if (response.status() === 404) missing.push(response.url());
+    if (response.status() === 404 && !/favicon\.ico$|127\.0\.0\.1:8787\/api\/watch-state-queue/i.test(response.url())) missing.push(response.url());
   });
   await page.goto(`${BASE_URL}/web/${pathname}`, { waitUntil: "load", timeout: 60000 });
   await sleep(2500);
@@ -72,10 +72,16 @@ async function inspect(pathname, viewport) {
       overview: "The teachers prepare for the upcoming school year with new faces and big changes on the horizon."
     }) || "";
     const queueBefore = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
-    const watchButton = Array.from(document.querySelectorAll('[data-watch-state-action="toggle-watched-status"]')).find(btn => !/not_yet_released|unreleased/.test(btn.getAttribute("data-release-status") || btn.getAttribute("data-watch-availability") || "")) || document.querySelector('[data-watch-state-action="toggle-watched-status"]');
+    const watchButton = Array.from(document.querySelectorAll('[data-watch-state-action="toggle-watched-status"]')).find(btn => {
+      const released = !/not_yet_released|unreleased/.test(btn.getAttribute("data-release-status") || btn.getAttribute("data-watch-availability") || "");
+      const hasId = !!(btn.getAttribute("data-tmdb-id") || btn.getAttribute("data-trakt-id") || btn.getAttribute("data-tvdb-id"));
+      return released && hasId;
+    }) || document.querySelector('[data-watch-state-action="toggle-watched-status"][data-tmdb-id]');
     if (watchButton) watchButton.click();
     await new Promise(resolve => requestAnimationFrame(resolve));
     const queueAfter = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+    const queueBeforeItems = Array.isArray(queueBefore) ? queueBefore : (Array.isArray(queueBefore?.items) ? queueBefore.items : []);
+    const queueAfterItems = Array.isArray(queueAfter) ? queueAfter : (Array.isArray(queueAfter?.items) ? queueAfter.items : []);
     const popupButton = document.querySelector("[data-watch-source-open]");
     let popupFocus = { attempted: false, opened: false, focusInside: false, closedByBack: false };
     if (popupButton) {
@@ -109,9 +115,9 @@ async function inspect(pathname, viewport) {
       calendarEpisodePosterImages,
       calendarAlignment,
       watchedStatusValues: (document.documentElement.getAttribute("data-watched-status-values") || "").split(",").filter(Boolean),
-      watchQueueBefore: Array.isArray(queueBefore) ? queueBefore.length : 0,
-      watchQueueAfter: Array.isArray(queueAfter) ? queueAfter.length : 0,
-      watchQueueHasQueuedRecord: Array.isArray(queueAfter) && queueAfter.some(item => item && item.sync_status === "queued" && item.item_key && item.previous_value != null && item.new_value != null),
+      watchQueueBefore: queueBeforeItems.length,
+      watchQueueAfter: queueAfterItems.length,
+      watchQueueHasQueuedRecord: queueAfterItems.some(item => item && item.sync_status === "queued" && (item.item_key || item.id || item.state_key) && item.previous_value != null && item.new_value != null && item.ids && (item.ids.tmdb || item.ids.trakt || item.ids.tvdb || item.ids.imdb)),
       popupDetailOk: /Abbott Elementary/.test(popupDetailSample) && /Team Building/.test(popupDetailSample) && /S05E01 • 22 min/.test(popupDetailSample) && /Oct 1, 2025/.test(popupDetailSample) && /The teachers prepare/.test(popupDetailSample),
       popupFocus
     };

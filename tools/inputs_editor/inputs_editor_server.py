@@ -26,6 +26,7 @@ from urllib.parse import parse_qs, quote, urlparse
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
 INPUTS_JSON = DATA_DIR / "inputs.json"
+WATCH_STATE_QUEUE_JSON = DATA_DIR / "watch_state_queue.json"
 WEB_DIR = REPO_ROOT / "web"
 UI_FILE = WEB_DIR / "inputs_editor.html"
 CONFIG_JSON = WEB_DIR / "config.json"
@@ -96,6 +97,96 @@ def _atomic_write(path: Path, obj: dict):
                 tmp.unlink()
             except Exception:
                 pass
+
+
+def _read_watch_state_queue() -> dict:
+    if not WATCH_STATE_QUEUE_JSON.exists():
+        return {
+            "generated_utc": "",
+            "schema": "watch_state_queue.v1",
+            "items": [],
+            "dry_run_payload": {},
+        }
+    try:
+        obj = json.loads(WATCH_STATE_QUEUE_JSON.read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        obj = {}
+    if not isinstance(obj, dict):
+        obj = {}
+    obj.setdefault("schema", "watch_state_queue.v1")
+    obj.setdefault("generated_utc", "")
+    if not isinstance(obj.get("items"), list):
+        obj["items"] = []
+    if not isinstance(obj.get("dry_run_payload"), dict):
+        obj["dry_run_payload"] = {}
+    return obj
+
+
+def _validate_queue_record(record: dict) -> dict:
+    if not isinstance(record, dict):
+        raise ValueError("queue record must be an object")
+    normalized = copy.deepcopy(record)
+    record_id = str(normalized.get("id") or "").strip()
+    media_type = str(normalized.get("media_type") or "").strip().lower()
+    state_type = str(normalized.get("state_type") or "").strip().lower()
+    ids = normalized.get("ids") if isinstance(normalized.get("ids"), dict) else {}
+    if not record_id:
+        raise ValueError("queue record requires id")
+    if media_type not in {"movie", "show", "episode"}:
+        raise ValueError("queue record media_type must be movie, show, or episode")
+    if state_type not in {"watched_status", "watch_list", "favourite"}:
+        raise ValueError("queue record state_type is invalid")
+    if not any(str(ids.get(key) or "").strip() for key in ("tmdb", "trakt", "imdb", "tvdb")):
+        normalized["validation_status"] = "validation_issue"
+        normalized["sync_status"] = "validation_issue"
+        normalized["error"] = "missing IDs; title-only matching is forbidden"
+    else:
+        normalized.setdefault("validation_status", "ok")
+        normalized.setdefault("sync_status", "queued")
+        normalized.setdefault("error", "")
+    normalized["id"] = record_id
+    normalized["media_type"] = media_type
+    normalized["state_type"] = state_type
+    normalized["ids"] = ids
+    normalized["show"] = normalized.get("show") if isinstance(normalized.get("show"), dict) else {"season": None, "episode": None}
+    normalized.setdefault("changed_at", _now_utc_iso())
+    return normalized
+
+
+def _upsert_watch_state_queue_record(record: dict) -> dict:
+    queue = _read_watch_state_queue()
+    normalized = _validate_queue_record(record)
+    items = [item for item in queue["items"] if str(item.get("id") or "") != normalized["id"]]
+    items.append(normalized)
+    queue["items"] = items
+    queue["generated_utc"] = _now_utc_iso()
+    _atomic_write(WATCH_STATE_QUEUE_JSON, queue)
+    return queue
+
+
+def _run_trakt_sync(dry_run: bool = True) -> dict:
+    command = [sys.executable, str(REPO_ROOT / "scripts" / "trakt_two_way_sync.py")]
+    if dry_run:
+        command.append("--dry-run")
+    completed = subprocess.run(
+        command,
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=180,
+        check=False,
+    )
+    try:
+        report = json.loads(completed.stdout)
+    except Exception:
+        report = {}
+    return {
+        "ok": completed.returncode == 0,
+        "returncode": completed.returncode,
+        "report": report,
+        "stdout": completed.stdout[-8000:],
+        "stderr": completed.stderr[-8000:],
+    }
 
 
 def _backup_inputs() -> str | None:
@@ -343,6 +434,10 @@ class Handler(BaseHTTPRequestHandler):
             _json(self, 200, {"ok": True, "inputs": _read_inputs()})
             return
 
+        if path == "/api/watch-state-queue":
+            _json(self, 200, {"ok": True, "queue": _read_watch_state_queue()})
+            return
+
         if path == "/api/config":
             if not CONFIG_JSON.exists():
                 _json(self, 200, {"ok": True, "config": {}})
@@ -452,6 +547,43 @@ class Handler(BaseHTTPRequestHandler):
                 str(obj.get("remote") or "github"),
                 str(obj.get("branch") or "main"),
             )
+            _json(self, 200 if result.get("ok") else 500, result)
+            return
+
+        if parsed.path == "/api/watch-state-queue":
+            body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
+                "utf-8", errors="replace"
+            )
+            try:
+                obj = json.loads(body)
+            except Exception as exc:
+                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+                return
+            try:
+                if isinstance(obj, dict) and isinstance(obj.get("record"), dict):
+                    queue = _upsert_watch_state_queue_record(obj["record"])
+                elif isinstance(obj, dict) and isinstance(obj.get("items"), list):
+                    queue = _read_watch_state_queue()
+                    for record in obj["items"]:
+                        queue = _upsert_watch_state_queue_record(record)
+                else:
+                    raise ValueError("payload requires record or items")
+            except Exception as exc:
+                _json(self, 400, {"ok": False, "error": str(exc)})
+                return
+            _json(self, 200, {"ok": True, "queue": queue})
+            return
+
+        if parsed.path == "/api/trakt/sync":
+            body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
+                "utf-8", errors="replace"
+            )
+            try:
+                obj = json.loads(body) if body.strip() else {}
+            except Exception as exc:
+                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+                return
+            result = _run_trakt_sync(dry_run=obj.get("dry_run", True) is not False)
             _json(self, 200 if result.get("ok") else 500, result)
             return
 

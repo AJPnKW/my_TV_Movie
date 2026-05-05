@@ -54,6 +54,9 @@ function episodeEntry(show, season, episode){
   return {
     kind: 'episode',
     date: dateKey,
+    episode_tmdb_id: safeInt(episode.id || episode.tmdb_id || episode.episode_tmdb_id),
+    episode_trakt_id: safeText(episode.trakt_id),
+    episode_tvdb_id: safeText(episode.tvdb_id),
     show_id: showId,
     show_tmdb_id: showId,
     show_title: safeText(show.title || show.name),

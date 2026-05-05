@@ -35,7 +35,9 @@ CHANGE NOTES:
   function loadQueue(){
     try {
       const parsed = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]') || [];
-      return Array.isArray(parsed) ? parsed : [];
+      if (Array.isArray(parsed)) return parsed;
+      if (parsed && typeof parsed === 'object' && Array.isArray(parsed.items)) return parsed.items;
+      return [];
     } catch (_) {
       return [];
     }
@@ -126,12 +128,15 @@ CHANGE NOTES:
     const showId = safeText(btn.getAttribute('data-show') || btn.getAttribute('data-status-show') || btn.getAttribute('data-show-id'));
     const season = safeText(btn.getAttribute('data-season') || btn.getAttribute('data-status-season') || btn.getAttribute('data-season-number'));
     const episode = safeText(btn.getAttribute('data-watch-episode') || btn.getAttribute('data-episode') || btn.getAttribute('data-status-episode') || btn.getAttribute('data-episode-number'));
-    const id = safeText(btn.getAttribute('data-id') || btn.getAttribute('data-tmdb-id') || btn.getAttribute('data-movie-id') || (kind === 'episode' ? showId : ''));
+    const tmdbAttr = safeText(btn.getAttribute('data-tmdb-id'));
+    const id = safeText(btn.getAttribute('data-id') || tmdbAttr || btn.getAttribute('data-movie-id') || (kind === 'episode' ? showId : ''));
     return {
       kind,
       id,
-      tmdb_id: safeText(btn.getAttribute('data-tmdb-id') || id || showId),
+      tmdb_id: tmdbAttr || (kind === 'episode' ? '' : id || showId),
       trakt_id: safeText(btn.getAttribute('data-trakt-id')),
+      imdb_id: safeText(btn.getAttribute('data-imdb-id')),
+      tvdb_id: safeText(btn.getAttribute('data-tvdb-id')),
       showId,
       seasonNumber: season,
       episodeNumber: episode,
@@ -149,8 +154,16 @@ CHANGE NOTES:
   function validationFor(key, context, nextValue){
     const parsed = parseKey(key);
     if (!parsed) return { sync_status: 'validation_issue', validation_status: 'validation_issue', sync_error: 'missing item key' };
-    if (!parsed.tmdb_id && parsed.item_type !== 'episode' && parsed.item_type !== 'season'){
+    const contextTmdb = safeText(context?.tmdb_id);
+    const contextTrakt = safeText(context?.trakt_id);
+    const contextImdb = safeText(context?.imdb_id);
+    const contextTvdb = safeText(context?.tvdb_id);
+    const hasAnyExternalId = !!(contextTmdb || contextTrakt || contextImdb || contextTvdb || parsed.tmdb_id);
+    if (!hasAnyExternalId && parsed.item_type !== 'season'){
       return { sync_status: 'missing_id', validation_status: 'missing_id', sync_error: 'missing tmdb_id' };
+    }
+    if (parsed.item_type === 'episode' && !contextTmdb && !contextTrakt && !contextTvdb){
+      return { sync_status: 'validation_issue', validation_status: 'validation_issue', sync_error: 'missing episode ID; title-only matching is forbidden' };
     }
     if (parsed.item_type === 'episode' && (!parsed.show_id || !parsed.season_number || !parsed.episode_number)){
       return { sync_status: 'validation_issue', validation_status: 'validation_issue', sync_error: 'missing show_id/season_number/episode_number' };
@@ -167,11 +180,14 @@ CHANGE NOTES:
     const stateType = parsed.state_type || normalizeType(context.state_type);
     const value = normalizeValue(stateType, nextValue);
     const validation = validationFor(key, context, value);
+    const itemType = parsed.item_type || itemTypeForKind(context.kind);
     return {
       item_key: key,
-      item_type: parsed.item_type || itemTypeForKind(context.kind),
-      tmdb_id: safeText(context.tmdb_id || parsed.tmdb_id),
+      item_type: itemType,
+      tmdb_id: safeText(context.tmdb_id || (itemType === 'episode' ? '' : parsed.tmdb_id)),
       trakt_id: safeText(context.trakt_id),
+      imdb_id: safeText(context.imdb_id),
+      tvdb_id: safeText(context.tvdb_id),
       show_id: safeText(context.showId || context.show_id || parsed.show_id),
       season_number: safeText(context.seasonNumber || context.season_number || parsed.season_number),
       episode_number: safeText(context.episodeNumber || context.episode_number || parsed.episode_number),
@@ -185,16 +201,61 @@ CHANGE NOTES:
     };
   }
 
+  function queueRecordFromStateRecord(record){
+    if (!record || typeof record !== 'object') return null;
+    const id = safeText(record.item_key || record.key || record.state_key || record.id);
+    if (!id) return null;
+    const mediaType = itemTypeForKind(record.item_type || record.media_type);
+    const queueRecord = {
+      id,
+      media_type: mediaType,
+      state_type: normalizeType(record.state_type),
+      previous_value: normalizeValue(record.state_type, record.previous_value),
+      new_value: normalizeValue(record.state_type, record.new_value),
+      ids: {
+        trakt: safeText(record.trakt_id || record.ids?.trakt),
+        tmdb: safeText(record.tmdb_id || record.ids?.tmdb),
+        imdb: safeText(record.imdb_id || record.ids?.imdb),
+        tvdb: safeText(record.tvdb_id || record.ids?.tvdb)
+      },
+      show: {
+        season: safeText(record.season_number || record.show?.season),
+        episode: safeText(record.episode_number || record.show?.episode)
+      },
+      changed_at: safeText(record.changed_at) || nowIso(),
+      sync_status: safeText(record.sync_status) || 'queued',
+      validation_status: safeText(record.validation_status) || 'ok',
+      error: safeText(record.sync_error || record.error),
+      item_key: id,
+      item_type: mediaType,
+      tmdb_id: safeText(record.tmdb_id || record.ids?.tmdb),
+      trakt_id: safeText(record.trakt_id || record.ids?.trakt),
+      show_id: safeText(record.show_id || record.showId),
+      season_number: safeText(record.season_number || record.show?.season),
+      episode_number: safeText(record.episode_number || record.show?.episode),
+      key: id,
+      state_key: id,
+      queue_status: safeText(record.sync_status) === 'queued' ? 'pending' : safeText(record.sync_status || 'queued')
+    };
+    return queueRecord;
+  }
+
+  function postQueueRecord(record){
+    if (!record || typeof fetch !== 'function') return;
+    fetch('http://127.0.0.1:8787/api/watch-state-queue', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ record })
+    }).catch(() => {});
+  }
+
   function upsertQueue(record){
-    if (!record || record.sync_status !== 'queued') return;
-    const queue = loadQueue().filter(item => !(safeText(item.item_key || item.key || item.state_key) === record.item_key && safeText(item.state_type) === record.state_type));
-    queue.push({
-      ...record,
-      key: record.item_key,
-      state_key: record.item_key,
-      queue_status: 'pending'
-    });
+    const queueRecord = queueRecordFromStateRecord(record);
+    if (!queueRecord) return;
+    const queue = loadQueue().filter(item => !(safeText(item.item_key || item.key || item.state_key || item.id) === queueRecord.id && safeText(item.state_type) === queueRecord.state_type));
+    queue.push(queueRecord);
     saveQueue(queue);
+    postQueueRecord(queueRecord);
   }
 
   function load(){

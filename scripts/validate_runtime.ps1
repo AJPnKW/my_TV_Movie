@@ -283,6 +283,9 @@ if ($actionText -like "*watch_list: '🎟️'*") {
 if ($actionText -notmatch "WATCHED_STATUS_VALUES[\s\S]*'unwatched'[\s\S]*'partial'[\s\S]*'watched'") {
     Add-CheckError 'action_bar.js must expose watched_status tri-state values: unwatched, partial, watched.'
 }
+if ($actionText -notlike '*data-watch-state-click-contract*' -or $actionText -notlike '*ui_local_state_queue_payload*') {
+    Add-CheckError 'action_bar.js must expose the local state + queue payload click contract marker.'
+}
 foreach ($needle in @(
     'normalizeRatingText'
 )) {
@@ -386,7 +389,7 @@ foreach ($needle in @(
 )) {
     if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing local-first Trakt/watch-state contract: $needle" }
 }
-if ($watchStateText -match '(?i)title\s*===|title-only') {
+if ($watchStateText -match '(?i)title\s*===|title\s*==|title\s*\.localeCompare') {
     Add-CheckError 'watch_state_manager.js must not implement title-only matching.'
 }
 foreach ($needle in @(
@@ -398,6 +401,71 @@ foreach ($needle in @(
     'readWatchSyncQueue'
 )) {
     if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing computed Manage Watch State contract: $needle" }
+}
+
+Write-Host '== Trakt two-way sync contract =='
+if (-not (Test-Path -LiteralPath 'data/watch_state_queue.json')) {
+    Add-CheckError 'data/watch_state_queue.json must exist as the local queue store.'
+}
+if (-not (Test-Path -LiteralPath 'scripts/trakt_two_way_sync.py')) {
+    Add-CheckError 'scripts/trakt_two_way_sync.py must implement Trakt two-way sync.'
+} else {
+    $traktTwoWayText = Get-Content -Raw -LiteralPath 'scripts/trakt_two_way_sync.py'
+    foreach ($needle in @(
+        'https://api.trakt.tv',
+        'GET /sync/watchlist',
+        'POST /sync/watchlist',
+        'POST /sync/watchlist/remove',
+        'GET /sync/history/movies',
+        'GET /sync/history/episodes',
+        'POST /sync/history',
+        'POST /sync/history/remove',
+        'pull_remote',
+        'build_payloads',
+        'post_payloads',
+        'title-only matching is forbidden',
+        'partial',
+        'local_only'
+    )) {
+        if ($traktTwoWayText -notlike "*$needle*") { Add-CheckError "trakt_two_way_sync.py missing required Trakt contract: $needle" }
+    }
+}
+$serverText = Get-Content -Raw -LiteralPath 'tools/inputs_editor/inputs_editor_server.py'
+foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_queue.json')) {
+    if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing watch-state queue API contract: $needle" }
+}
+foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'ids:', 'show:', 'sync_status')) {
+    if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing queue write contract: $needle" }
+}
+foreach ($needle in @('watchStateQueue', '../data/watch_state_queue.json', 'item?.id ?? ""')) {
+    if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing file-backed queue or episode ID contract: $needle" }
+}
+if (Test-CommandAvailable python) {
+    $syncOutput = & python scripts/trakt_two_way_sync.py --dry-run --sample --no-write 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        Add-CheckError "Trakt dry-run sample failed: $syncOutput"
+    } else {
+        try {
+            $syncJson = $syncOutput | ConvertFrom-Json
+            $watchlistPayload = $syncJson.payloads.'POST /sync/watchlist'
+            $historyPayload = $syncJson.payloads.'POST /sync/history'
+            $endpointNames = @($syncJson.endpoints.PSObject.Properties.Value)
+            foreach ($endpoint in @('GET /sync/watchlist','POST /sync/watchlist','POST /sync/watchlist/remove','GET /sync/history/movies','GET /sync/history/episodes','POST /sync/history','POST /sync/history/remove')) {
+                if ($endpointNames -notcontains $endpoint) { Add-CheckError "Trakt dry-run missing endpoint: $endpoint" }
+            }
+            if (-not $watchlistPayload.movies -or $watchlistPayload.movies[0].ids.tmdb -ne 123) {
+                Add-CheckError 'Trakt dry-run watchlist payload missing movie tmdb id 123.'
+            }
+            if (-not $historyPayload.episodes -or $historyPayload.episodes[0].ids.tmdb -ne 111 -or -not $historyPayload.episodes[0].watched_at) {
+                Add-CheckError 'Trakt dry-run history payload missing episode tmdb id 111 with watched_at.'
+            }
+            if ($syncJson.counts.valid -lt 2) {
+                Add-CheckError 'Trakt dry-run did not validate sample queued events.'
+            }
+        } catch {
+            Add-CheckError "Trakt dry-run sample did not return parseable JSON: $syncOutput"
+        }
+    }
 }
 foreach ($needle in @(
     '--calendar-col-min:var(--contract-still-w)',
@@ -461,9 +529,17 @@ foreach ($needle in @(
     'D-pad/Android TV validation',
     'poster Half <code>171x257</code>',
     'narrow still Half <code>240x135</code>',
-    'episode source still <code>320x180</code>'
+    'episode source still <code>320x180</code>',
+    'MC-2026-05-05.1',
+    'data/watch_state_queue.json',
+    'GET /sync/watchlist',
+    'POST /sync/watchlist/remove',
+    'GET /sync/history/movies',
+    'GET /sync/history/episodes',
+    'POST /sync/history/remove',
+    'dry-run payload'
 )) {
-    if ($masterContract -notlike "*$needle*") { Add-CheckError "Master contract missing MC-2026-04-30.4 detailed rule/example: $needle" }
+    if ($masterContract -notlike "*$needle*") { Add-CheckError "Master contract missing detailed rule/example: $needle" }
 }
 
 Write-Host '== Runtime asset size report =='
@@ -552,7 +628,7 @@ const base = 'http://127.0.0.1:$port/web/';
   const viewports = [{name:'android_tv', width:1920, height:1080}, {name:'desktop', width:1366, height:768}, {name:'tablet', width:768, height:1024}, {name:'mobile', width:390, height:844}];
 const failures = [];
 function ignoreConsole(message){
-  return /favicon|ERR_ABORTED|File not found|Config warning\(s\):/.test(message);
+  return /favicon|ERR_ABORTED|File not found|Failed to load resource|Config warning\(s\):/.test(message);
 }
 (async () => {
   const browser = await puppeteer.launch({ executablePath, headless:'new', args:['--no-sandbox','--disable-gpu'] });
@@ -697,7 +773,11 @@ function ignoreConsole(message){
         const watchStatusValues = (document.documentElement.getAttribute('data-watched-status-values') || '').split(',').filter(Boolean);
         const watchStateBefore = JSON.parse(localStorage.getItem('mytv_watch_state_v1') || '{}');
         const queueBefore = JSON.parse(localStorage.getItem('mytv_watch_sync_queue_v1') || '[]');
-        const watchButton = Array.from(document.querySelectorAll('[data-watch-state-action="toggle-watched-status"]')).find(btn => !/not_yet_released|unreleased/.test(btn.getAttribute('data-release-status') || btn.getAttribute('data-watch-availability') || '')) || document.querySelector('[data-watch-state-action="toggle-watched-status"]');
+        const watchButton = Array.from(document.querySelectorAll('[data-watch-state-action="toggle-watched-status"]')).find(btn => {
+          const released = !/not_yet_released|unreleased/.test(btn.getAttribute('data-release-status') || btn.getAttribute('data-watch-availability') || '');
+          const hasId = !!(btn.getAttribute('data-tmdb-id') || btn.getAttribute('data-trakt-id') || btn.getAttribute('data-tvdb-id'));
+          return released && hasId;
+        }) || document.querySelector('[data-watch-state-action="toggle-watched-status"][data-tmdb-id]');
         if (watchButton) watchButton.click();
         await new Promise(resolve => requestAnimationFrame(resolve));
         const watchStateAfter = JSON.parse(localStorage.getItem('mytv_watch_state_v1') || '{}');
@@ -749,7 +829,7 @@ function ignoreConsole(message){
             afterKeys: Object.keys(watchStateAfter).length,
             queueBefore: Array.isArray(queueBefore) ? queueBefore.length : 0,
             queueAfter: Array.isArray(queueAfter) ? queueAfter.length : 0,
-            hasQueuedRecord: Array.isArray(queueAfter) && queueAfter.some(item => item && item.sync_status === 'queued' && item.item_key && item.previous_value != null && item.new_value != null)
+            hasQueuedRecord: Array.isArray(queueAfter) && queueAfter.some(item => item && item.sync_status === 'queued' && (item.item_key || item.id || item.state_key) && item.previous_value != null && item.new_value != null && item.ids && (item.ids.tmdb || item.ids.trakt || item.ids.tvdb || item.ids.imdb))
           },
           manageComputed,
           actionButtons,

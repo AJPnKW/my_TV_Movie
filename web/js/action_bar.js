@@ -43,6 +43,7 @@ export function applyRuntimeContract(doc = document){
   root.setAttribute('data-watched-status-values', WATCHED_STATUS_VALUES.join(','));
   root.setAttribute('data-watch-list-values', WATCH_LIST_VALUES.join(','));
   root.setAttribute('data-popcorn-contract', 'open_popup_first_resolve_second');
+  root.setAttribute('data-watch-state-click-contract', 'ui_local_state_queue_payload');
 }
 
 function escAttr(v){

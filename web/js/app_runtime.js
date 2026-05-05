@@ -41,6 +41,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     cfg: null,
     data: null,
     calendarData: null,
+    watchStateQueue: null,
     discoverRegistry: null,
     inputs: null,
     tab: PAGE,
@@ -1791,14 +1792,17 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const title = safeText(options.title || options.titleText || "").trim();
     const statusContext = options.statusContext || {};
     const releaseStatus = safeText(options.availabilityStatus || (options.available === false ? "unreleased" : "")).trim();
+    const tmdbForState = safeText(options.tmdbId ?? options.tmdb_id ?? (kind === "episode" ? "" : id));
     const stateAttrs = {
       "data-kind": kind,
       "data-id": id,
-      "data-tmdb-id": id,
+      "data-tmdb-id": tmdbForState,
       "data-title": title,
       "data-no-default": "1",
       ...(releaseStatus ? { "data-release-status": releaseStatus, "data-watch-availability": releaseStatus } : {}),
       ...(options.traktId != null ? { "data-trakt-id": options.traktId } : {}),
+      ...(options.imdbId != null ? { "data-imdb-id": options.imdbId } : {}),
+      ...(options.tvdbId != null ? { "data-tvdb-id": options.tvdbId } : {}),
       ...(statusContext.showId != null ? { "data-status-show": statusContext.showId, "data-show": statusContext.showId } : {}),
       ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber, "data-season": statusContext.seasonNumber } : {}),
       ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber, "data-episode": statusContext.episodeNumber } : {})
@@ -2399,6 +2403,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       state.data = await window.MyTVHubSharedModules.dataLoader.loadCatalogIndexFirst(["../data/catalog_index.json"]);
       state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/calendar.json"]);
       state.discoverRegistry = await window.MyTVHubSharedModules.dataLoader.loadDiscoverRegistryFirst(["../data/discover_registry.json"]);
+      state.watchStateQueue = await window.MyTVHubSharedModules.configLoader.loadJsonFirst(["../data/watch_state_queue.json"]).catch(() => ({ items: [] }));
 
       if (!state.data || typeof state.data !== "object") throw new Error("catalog_index.json not loaded");
       if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar.json not loaded");
@@ -2853,6 +2858,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const showId = Number(item?.show_tmdb_id ?? item?.show_id ?? item?.tmdb_id) || 0;
     const seasonNum = Number(item?.season_number ?? item?.season ?? 0) || 0;
     const episodeNum = Number(item?.episode_number ?? item?.episode ?? 0) || 0;
+    const episodeTmdbId = safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "");
     const pct = Number.isFinite(item?.progress) ? Math.max(0, Math.min(100, item.progress)) : (Number.isFinite(options.pct) ? options.pct : null);
     const available = isEpisodeAvailable(item);
     const watched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
@@ -2869,6 +2875,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       actionBarHtml: buildActionBarHtml("episode", episodeNum, {
         title: safeText(options.title || item?.episode_name || "Episode"),
         compact: true,
+        tmdbId: episodeTmdbId,
+        traktId: safeText(item?.trakt_id || item?.episode_trakt_id || ""),
+        tvdbId: safeText(item?.tvdb_id || item?.episode_tvdb_id || ""),
         pct,
         showWatchedAction: true,
         watchedActive: watched,
@@ -3046,6 +3055,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           ${buildActionBarHtml("episode", episodeNum, {
         title,
         compact: true,
+        tmdbId: safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? ""),
+        traktId: safeText(item?.trakt_id || item?.episode_trakt_id || ""),
+        tvdbId: safeText(item?.tvdb_id || item?.episode_tvdb_id || ""),
         pct: progressPercent(item),
         watchedActive: state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false,
         showWatchedAction: true,
@@ -3810,6 +3822,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           actionBarHtml: buildActionBarHtml("episode", episodeNum, {
             title: safeText(item.episode_name || "Episode"),
             compact: true,
+            tmdbId: safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? ""),
+            traktId: safeText(item?.trakt_id || item?.episode_trakt_id || ""),
+            tvdbId: safeText(item?.tvdb_id || item?.episode_tvdb_id || ""),
             pct: percentForItem(item),
             watchedActive: state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false,
             showWatchedAction: true,
@@ -4136,21 +4151,27 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function syncQueueCount(){
-    try {
-      const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
-      return Array.isArray(queue) ? queue.length : 0;
-    } catch (_) { return 0; }
+    return readWatchSyncQueue().length;
   }
 
   function readWatchSyncQueue(){
+    const fileQueue = Array.isArray(state.watchStateQueue?.items) ? state.watchStateQueue.items : [];
     if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.loadQueue === "function") {
-      return window.MyTVHubWatchState.loadQueue();
+      const localQueue = window.MyTVHubWatchState.loadQueue();
+      const seen = new Set();
+      return [...localQueue, ...fileQueue].filter(item => {
+        const key = safeText(item?.id || item?.item_key || item?.key || item?.state_key || item);
+        if (!key || seen.has(`${key}:${safeText(item?.state_type)}`)) return false;
+        seen.add(`${key}:${safeText(item?.state_type)}`);
+        return true;
+      });
     }
     try {
       const queue = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
-      return Array.isArray(queue) ? queue : [];
+      const localQueue = Array.isArray(queue) ? queue : (Array.isArray(queue?.items) ? queue.items : []);
+      return [...localQueue, ...fileQueue];
     } catch (_) {
-      return [];
+      return fileQueue;
     }
   }
 
@@ -4755,6 +4776,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                   actionBarHtml: buildActionBarHtml("episode", episodeNum, {
                     title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
                     compact: true,
+                    tmdbId: safeText(ep?.episode_tmdb_id ?? ep?.episode_id ?? ep?.tmdb_episode_id ?? ep?.id ?? ""),
+                    traktId: safeText(ep?.trakt_id || ep?.episode_trakt_id || ""),
+                    tvdbId: safeText(ep?.tvdb_id || ep?.episode_tvdb_id || ""),
                     pct: epPct,
                     watchedActive: epWatched,
                     showWatchedAction: true,
