@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
 from availability_status_lib import DATA_JSON, REPO_ROOT, load_json, strip_jsonc, write_json_atomic
-from fetch_tmdb_assets import download_asset, iter_asset_refs
+from fetch_tmdb_assets import DEFAULT_IMAGE_BASE, download_asset, iter_asset_refs, load_image_sizes
 from validate_runtime_assets import EXPECTED_FIELDS
 
 CONFIG_JSON = REPO_ROOT / "web" / "config.json"
@@ -197,11 +197,12 @@ def main() -> int:
 
     fetch_results: List[Dict[str, Any]] = []
     if args.fetch_missing:
+        image_sizes = load_image_sizes(REPO_ROOT)
         refs = iter_asset_refs(data)
         for ref in refs:
             if _abs_local(ref["local_path"]).exists():
                 continue
-            result = download_asset("https://image.tmdb.org/t/p/original", REPO_ROOT, ref, args.timeout, args.retries)
+            result = download_asset(DEFAULT_IMAGE_BASE, REPO_ROOT, ref, args.timeout, args.retries, image_sizes)
             fetch_results.append(result)
         for result in fetch_results:
             if result.get("status") == "downloaded":

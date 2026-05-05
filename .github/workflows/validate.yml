@@ -24,7 +24,7 @@ jobs:
       - name: Availability validation
         run: |
           python scripts/validate_secret_name_drift.py
-          python scripts/self_heal_asset_metadata.py
+          python scripts/self_heal_asset_metadata.py --fetch-missing
           python scripts/validate_availability_overlay.py
           python scripts/enrich_data_with_availability.py
           python scripts/qa_availability_status.py
@@ -40,4 +40,4 @@ jobs:
           node --check web/js/config_loader.js
           node --check web/js/data_loader.js
           node --check web/js/popup_controller.js
-          node --check web/js/watch_me_runtime.js
+          node --check web/js/watch_state_manager.js
