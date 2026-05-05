@@ -6,10 +6,10 @@
 - Commit: `adf6cc48` update github actions to node24-native versions.
 
 - Updated the build-data diagnostics artifact upload action from Node 20-era `actions/upload-artifact@v4` to the Node 24-native major line so pipeline warning annotations are not reintroduced by the diagnostics step.
-- Commit: `deb87e6c` fix github workflow node24 warnings.
+- Commit: `816d5ada` fix github workflow node24 warnings.
 
 - Replaced legacy branch-based GitHub Pages deployment with an explicit workflow using Node 24-native Pages actions, so Pages warnings are controlled in repository code instead of GitHub's generated legacy workflow.
-- Commit: `deb87e6c` fix github workflow node24 warnings.
+- Commit: `816d5ada` fix github workflow node24 warnings.
 
 - Restored GitHub validation workflow integrity by adding the missing availability source validator, aligning the validate workflow with the asset fetch precondition used by build-data, fixing the self-heal asset downloader call signature/base URL, and replacing the retired `watch_me_runtime.js` syntax check with the active shared watch-state runtime module.
 - Commit: `f3f3948f` fix github validation workflow availability checks.
