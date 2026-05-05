@@ -47,11 +47,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 20.2208,
-  "vote_average": 7.4,
-  "vote_count": 1595,
+  "popularity": 24.165,
+  "vote_average": 7.382,
+  "vote_count": 1658,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-04-22T22:14:59Z",
+  "availability_checked_at": "2026-05-05T21:11:57Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1317288",
@@ -142,6 +142,15 @@
     "providers": {
       "CA": [
         {
+          "provider_id": 119,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/movie/1317288-marty-supreme/watch?locale=CA"
+        },
+        {
           "provider_id": 2,
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
@@ -212,6 +221,15 @@
           "availability_type": "rent",
           "display_priority": 81,
           "deep_link": "https://www.themoviedb.org/movie/1317288-marty-supreme/watch?locale=CA"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 111,
+          "deep_link": "https://www.themoviedb.org/movie/1317288-marty-supreme/watch?locale=CA"
         }
       ],
       "US": [
@@ -249,6 +267,24 @@
           "logo_local": "",
           "availability_type": "buy",
           "display_priority": 8,
+          "deep_link": "https://www.themoviedb.org/movie/1317288-marty-supreme/watch?locale=US"
+        },
+        {
+          "provider_id": 1899,
+          "provider_name": "HBO Max",
+          "logo_path": "/jbe4gVSfRlbPTdESXhEKpornsfu.jpg",
+          "logo_local": "/assets/logos/services/jbe4gVSfRlbPTdESXhEKpornsfu.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 11,
+          "deep_link": "https://www.themoviedb.org/movie/1317288-marty-supreme/watch?locale=US"
+        },
+        {
+          "provider_id": 1825,
+          "provider_name": "HBO Max Amazon Channel",
+          "logo_path": "/embS4GPK7c8pjbuY2O2irV5rYch.jpg",
+          "logo_local": "",
+          "availability_type": "flatrate",
+          "display_priority": 12,
           "deep_link": "https://www.themoviedb.org/movie/1317288-marty-supreme/watch?locale=US"
         },
         {
@@ -381,6 +417,15 @@
         }
       ],
       "AU": [
+        {
+          "provider_id": 21,
+          "provider_name": "Stan",
+          "logo_path": "/sSfxJXq7s8oHf3XWd0FtqagPDsF.jpg",
+          "logo_local": "/assets/logos/services/sSfxJXq7s8oHf3XWd0FtqagPDsF.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 11,
+          "deep_link": "https://www.themoviedb.org/movie/1317288-marty-supreme/watch?locale=AU"
+        },
         {
           "provider_id": 2,
           "provider_name": "Apple TV Store",

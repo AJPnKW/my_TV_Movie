@@ -62,11 +62,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 13.7107,
+  "popularity": 12.9351,
   "vote_average": 7.5,
-  "vote_count": 5051,
+  "vote_count": 5073,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-04-22T22:14:59Z",
+  "availability_checked_at": "2026-05-05T21:11:57Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/575264",
@@ -294,6 +294,15 @@
       ],
       "US": [
         {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/movie/575264-mission-impossible-dead-reckoning-part-one/watch?locale=US"
+        },
+        {
           "provider_id": 10,
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
@@ -444,15 +453,6 @@
           "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
           "availability_type": "flatrate",
           "display_priority": 155,
-          "deep_link": "https://www.themoviedb.org/movie/575264-mission-impossible-dead-reckoning-part-one/watch?locale=US"
-        },
-        {
-          "provider_id": 8,
-          "provider_name": "Netflix",
-          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 0,
           "deep_link": "https://www.themoviedb.org/movie/575264-mission-impossible-dead-reckoning-part-one/watch?locale=US"
         }
       ],
@@ -671,7 +671,7 @@
           "provider_name": "10",
           "logo_path": "/8fIieu3ZfmTPu8eozZbtgATcPO5.jpg",
           "logo_local": "",
-          "availability_type": "free",
+          "availability_type": "ads",
           "display_priority": 22,
           "deep_link": "https://www.themoviedb.org/movie/575264-mission-impossible-dead-reckoning-part-one/watch?locale=AU"
         },

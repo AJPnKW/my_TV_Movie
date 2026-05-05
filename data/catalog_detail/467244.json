@@ -24,28 +24,14 @@
     {
       "id": 36,
       "name": "History"
+    },
+    {
+      "id": 10752,
+      "name": "War"
     }
   ],
   "collection": null,
   "production_companies": [
-    {
-      "id": 41077,
-      "logo_path": "/1ZXsGaFPgrgS6ZZGS37AqD5uU12.png",
-      "name": "A24",
-      "origin_country": "US"
-    },
-    {
-      "id": 6705,
-      "logo_path": "/iNB1FCwT4XjO6wkN3PnpPnwr9GX.png",
-      "name": "Film4 Productions",
-      "origin_country": "GB"
-    },
-    {
-      "id": 103376,
-      "logo_path": "/zAyfGEx1LJOkwNTrHugnWHzLRE.png",
-      "name": "Access Entertainment",
-      "origin_country": "US"
-    },
     {
       "id": 27543,
       "logo_path": null,
@@ -57,9 +43,31 @@
       "logo_path": "/6AgubRvSBoz7hXbDc27okPhNbO0.png",
       "name": "Extreme Emotions",
       "origin_country": "PL"
+    },
+    {
+      "id": 103376,
+      "logo_path": "/zAyfGEx1LJOkwNTrHugnWHzLRE.png",
+      "name": "Access Entertainment",
+      "origin_country": "US"
+    },
+    {
+      "id": 41077,
+      "logo_path": "/1ZXsGaFPgrgS6ZZGS37AqD5uU12.png",
+      "name": "A24",
+      "origin_country": "US"
+    },
+    {
+      "id": 6705,
+      "logo_path": "/iNB1FCwT4XjO6wkN3PnpPnwr9GX.png",
+      "name": "Film4 Productions",
+      "origin_country": "GB"
     }
   ],
   "production_countries": [
+    {
+      "iso_3166_1": "US",
+      "name": "United States of America"
+    },
     {
       "iso_3166_1": "PL",
       "name": "Poland"
@@ -67,17 +75,13 @@
     {
       "iso_3166_1": "GB",
       "name": "United Kingdom"
-    },
-    {
-      "iso_3166_1": "US",
-      "name": "United States of America"
     }
   ],
-  "popularity": 7.3897,
-  "vote_average": 7.015,
-  "vote_count": 2558,
+  "popularity": 6.0531,
+  "vote_average": 7.016,
+  "vote_count": 2576,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-04-22T22:14:59Z",
+  "availability_checked_at": "2026-05-05T21:11:57Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/467244",
@@ -260,6 +264,15 @@
       ],
       "US": [
         {
+          "provider_id": 9,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 3,
+          "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=US"
+        },
+        {
           "provider_id": 10,
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
@@ -366,6 +379,15 @@
           "availability_type": "rent",
           "display_priority": 127,
           "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=US"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 204,
+          "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=US"
         }
       ],
       "GB": [
@@ -421,15 +443,6 @@
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
           "display_priority": 7,
-          "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=GB"
-        },
-        {
-          "provider_id": 103,
-          "provider_name": "Channel 4",
-          "logo_path": "/uMWCgjsGnO5IoQtqxXOjnQA5gt9.jpg",
-          "logo_local": "",
-          "availability_type": "ads",
-          "display_priority": 10,
           "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=GB"
         },
         {
@@ -585,6 +598,24 @@
           "logo_local": "",
           "availability_type": "buy",
           "display_priority": 21,
+          "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=AU"
+        },
+        {
+          "provider_id": 11,
+          "provider_name": "MUBI",
+          "logo_path": "/x570VpH2C9EKDf1riP83rYc5dnL.jpg",
+          "logo_local": "",
+          "availability_type": "flatrate",
+          "display_priority": 23,
+          "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=AU"
+        },
+        {
+          "provider_id": 201,
+          "provider_name": "MUBI Amazon Channel",
+          "logo_path": "/a4IDLKjvP5gvq7tNlg2Xw5YyEkI.jpg",
+          "logo_local": "",
+          "availability_type": "flatrate",
+          "display_priority": 75,
           "deep_link": "https://www.themoviedb.org/movie/467244-the-zone-of-interest/watch?locale=AU"
         }
       ]
