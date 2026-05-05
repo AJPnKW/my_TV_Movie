@@ -12,7 +12,7 @@
 - Commit: `816d5ada` fix github workflow node24 warnings.
 
 - Updated build-data to explicitly dispatch the Pages workflow after generated artifact commits, because bot pushes made with `GITHUB_TOKEN` do not naturally fan out into a second workflow run.
-- Commit: pending.
+- Commit: `1cfd0d35` trigger pages after data artifact builds.
 
 - Restored GitHub validation workflow integrity by adding the missing availability source validator, aligning the validate workflow with the asset fetch precondition used by build-data, fixing the self-heal asset downloader call signature/base URL, and replacing the retired `watch_me_runtime.js` syntax check with the active shared watch-state runtime module.
 - Commit: `f3f3948f` fix github validation workflow availability checks.
