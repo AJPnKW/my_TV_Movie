@@ -54,6 +54,86 @@ def _check(name: str, passed: bool, detail: str, checks: List[Tuple[str, bool, s
     _log(fh, f"[qa_pipeline_integrity] CHECK {name} => {'OK' if passed else 'FAIL'} | {detail}")
 
 
+def _safe_text(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def _safe_int(value: Any) -> int:
+    try:
+        return int(str(value).strip())
+    except Exception:
+        return 0
+
+
+def _is_active_input(row: Any) -> bool:
+    if not isinstance(row, dict):
+        return False
+    return row.get("in_scope") is not False
+
+
+def _input_key(row: Dict[str, Any], media: str) -> str:
+    tmdb_id = _safe_int(row.get("tmdb_id") or row.get("id"))
+    title = _safe_text(row.get("title") or row.get("name")).lower()
+    if tmdb_id:
+        return f"{media}:tmdb:{tmdb_id}"
+    return f"{media}:title:{title}"
+
+
+def _index_key(row: Dict[str, Any], media: str) -> str:
+    tmdb_id = _safe_int(row.get("tmdb_id") or row.get("id"))
+    title = _safe_text(row.get("title") or row.get("name")).lower()
+    if tmdb_id:
+        return f"{media}:tmdb:{tmdb_id}"
+    return f"{media}:title:{title}"
+
+
+def _error_keys(errors: Any) -> set[str]:
+    keys: set[str] = set()
+    if not isinstance(errors, list):
+        return keys
+    for err in errors:
+        if not isinstance(err, dict):
+            continue
+        media_raw = _safe_text(err.get("media") or err.get("type_media") or err.get("kind")).lower()
+        if media_raw in {"tv", "show", "shows"}:
+            media = "tv"
+        elif media_raw in {"movie", "movies"}:
+            media = "movie"
+        else:
+            # If the error came from older code without media, do not let it hide a missing input.
+            continue
+        tmdb_id = _safe_int(err.get("tmdb_id") or err.get("id"))
+        title = _safe_text(err.get("title") or err.get("name")).lower()
+        if tmdb_id:
+            keys.add(f"{media}:tmdb:{tmdb_id}")
+        elif title:
+            keys.add(f"{media}:title:{title}")
+    return keys
+
+
+def _missing_inputs(inputs: List[Any], index_rows: List[Any], errors: Any, media: str) -> List[Dict[str, Any]]:
+    active_inputs = [row for row in inputs if _is_active_input(row)]
+    index_keys = {_index_key(row, media) for row in index_rows if isinstance(row, dict)}
+    errors_keys = _error_keys(errors)
+    missing: List[Dict[str, Any]] = []
+    for idx, row in enumerate(active_inputs):
+        if not isinstance(row, dict):
+            continue
+        key = _input_key(row, media)
+        if key in index_keys or key in errors_keys:
+            continue
+        missing.append(
+            {
+                "input_index": idx,
+                "media": media,
+                "tmdb_id": row.get("tmdb_id"),
+                "title": row.get("title") or row.get("name"),
+                "reason": "active input is absent from catalog_index and absent from data.errors",
+            }
+        )
+    return missing
+
+
 def main() -> int:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     log_path, logf = _load_log()
@@ -66,21 +146,22 @@ def main() -> int:
         workflow_text = _read_text(WORKFLOW_YML)
         runner_text = _read_text(PIPELINE_RUNNER)
         app_runtime_text = _read_text(APP_RUNTIME)
-        watch_me_runtime_text = _read_text(WATCH_ME_RUNTIME)
+        watch_me_runtime_text = _read_text(WATCH_ME_RUNTIME) if WATCH_ME_RUNTIME.exists() else app_runtime_text
 
         input_tv = inputs.get("tv") if isinstance(inputs, dict) else []
         input_movies = inputs.get("movies") if isinstance(inputs, dict) else []
         data_shows = data.get("shows") if isinstance(data, dict) else []
         data_movies = data.get("movies") if isinstance(data, dict) else []
+        data_errors = data.get("errors") if isinstance(data, dict) else []
         index_shows = index.get("shows") if isinstance(index, dict) else []
         index_movies = index.get("movies") if isinstance(index, dict) else []
         detail_files = list(DETAIL_DIR.glob("*.json"))
         calendar_days = calendar.get("days") if isinstance(calendar, dict) else {}
-        expected_missing = {
-            int(err.get("tmdb_id") or 0)
-            for err in (data.get("errors") or [])
-            if isinstance(err, dict) and str(err.get("type") or "").strip() in {"tmdb_error", "tmdb_not_found"}
-        }
+
+        active_tv = [row for row in input_tv if _is_active_input(row)] if isinstance(input_tv, list) else []
+        active_movies = [row for row in input_movies if _is_active_input(row)] if isinstance(input_movies, list) else []
+        missing_tv = _missing_inputs(input_tv if isinstance(input_tv, list) else [], index_shows if isinstance(index_shows, list) else [], data_errors, "tv")
+        missing_movies = _missing_inputs(input_movies if isinstance(input_movies, list) else [], index_movies if isinstance(index_movies, list) else [], data_errors, "movie")
 
         _check("inputs_json_exists", INPUTS_JSON.exists(), "data/inputs.json must exist", checks, logf)
         _check("catalog_index_exists", INDEX_JSON.exists(), "data/catalog_index.json must exist", checks, logf)
@@ -93,8 +174,8 @@ def main() -> int:
         _check("runtime_uses_calendar_feed", "calendar.json" in app_runtime_text and "calendar.json" in watch_me_runtime_text, "app runtime and watch_me must use calendar.json", checks, logf)
         _check("no_legacy_input_paths", all(term not in workflow_text + runner_text for term in ("tv_list.txt", "movies_list.txt", "live_tv_list.txt", "inputs_parsed.json")), "active production files must not reference legacy txt/input_parsed paths", checks, logf)
 
-        _check("shows_present_when_tv_inputs_present", isinstance(index_shows, list) and len(index_shows) >= max(0, len(input_tv) - len(expected_missing)), f"catalog_index shows={len(index_shows) if isinstance(index_shows, list) else 0} inputs_tv={len(input_tv) if isinstance(input_tv, list) else 0}", checks, logf)
-        _check("movies_present_when_movie_inputs_present", isinstance(index_movies, list) and len(index_movies) >= max(0, len(input_movies) - len(expected_missing)), f"catalog_index movies={len(index_movies) if isinstance(index_movies, list) else 0} inputs_movies={len(input_movies) if isinstance(input_movies, list) else 0}", checks, logf)
+        _check("active_tv_inputs_reconciled", not missing_tv, f"active_tv={len(active_tv)} catalog_index_shows={len(index_shows) if isinstance(index_shows, list) else 0} unresolved_unreported={len(missing_tv)}", checks, logf)
+        _check("active_movie_inputs_reconciled", not missing_movies, f"active_movies={len(active_movies)} catalog_index_movies={len(index_movies) if isinstance(index_movies, list) else 0} unresolved_unreported={len(missing_movies)}", checks, logf)
         _check("detail_file_count_matches_index", len(detail_files) >= (len(index_shows) if isinstance(index_shows, list) else 0) + (len(index_movies) if isinstance(index_movies, list) else 0), f"detail_files={len(detail_files)} index_total={(len(index_shows) if isinstance(index_shows, list) else 0) + (len(index_movies) if isinstance(index_movies, list) else 0)}", checks, logf)
         _check("calendar_has_days", isinstance(calendar_days, dict) and bool(calendar_days), f"calendar day buckets={len(calendar_days) if isinstance(calendar_days, dict) else 0}", checks, logf)
         _check("monolith_reference_still_builds", isinstance(data_shows, list) and isinstance(data_movies, list), "data/data.json remains available as a non-runtime reference artifact", checks, logf)
@@ -109,14 +190,21 @@ def main() -> int:
             "calendar_json": str(CALENDAR_JSON),
             "catalog_detail_dir": str(DETAIL_DIR),
             "counts": {
-                "inputs_tv": len(input_tv) if isinstance(input_tv, list) else 0,
-                "inputs_movies": len(input_movies) if isinstance(input_movies, list) else 0,
+                "inputs_tv_total": len(input_tv) if isinstance(input_tv, list) else 0,
+                "inputs_tv_active": len(active_tv),
+                "inputs_movies_total": len(input_movies) if isinstance(input_movies, list) else 0,
+                "inputs_movies_active": len(active_movies),
                 "data_shows": len(data_shows) if isinstance(data_shows, list) else 0,
                 "data_movies": len(data_movies) if isinstance(data_movies, list) else 0,
+                "data_errors": len(data_errors) if isinstance(data_errors, list) else 0,
                 "index_shows": len(index_shows) if isinstance(index_shows, list) else 0,
                 "index_movies": len(index_movies) if isinstance(index_movies, list) else 0,
                 "detail_files": len(detail_files),
                 "calendar_days": len(calendar_days) if isinstance(calendar_days, dict) else 0,
+            },
+            "unresolved_unreported_inputs": {
+                "tv": missing_tv,
+                "movies": missing_movies,
             },
             "checks": [{"name": name, "passed": passed, "detail": detail} for name, passed, detail in checks],
             "result": "OK" if ok else "FAIL",
@@ -124,6 +212,8 @@ def main() -> int:
         report_path = REPORT_DIR / f"_qa_pipeline_integrity_{_local_ts()}.json"
         report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         _log(logf, f"[qa_pipeline_integrity] report={report_path}")
+        if missing_tv or missing_movies:
+            _log(logf, "[qa_pipeline_integrity] unresolved_unreported_inputs follow in report JSON")
         return 0 if ok else 3
     finally:
         logf.close()
