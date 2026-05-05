@@ -2,6 +2,9 @@
 
 ## 2026-05-04
 
+- Updated GitHub workflow actions to Node-24-native major versions for checkout, setup-python, and setup-node to remove the Node 20 deprecation warning.
+- Commit: `adf6cc48` update github actions to node24-native versions.
+
 - Restored GitHub validation workflow integrity by adding the missing availability source validator, aligning the validate workflow with the asset fetch precondition used by build-data, fixing the self-heal asset downloader call signature/base URL, and replacing the retired `watch_me_runtime.js` syntax check with the active shared watch-state runtime module.
 - Commit: `f3f3948f` fix github validation workflow availability checks.
 
