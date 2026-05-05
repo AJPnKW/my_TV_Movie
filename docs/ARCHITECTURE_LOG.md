@@ -2,6 +2,9 @@
 
 ## 2026-05-04
 
+- Restored GitHub validation workflow integrity by adding the missing availability source validator, aligning the validate workflow with the asset fetch precondition used by build-data, fixing the self-heal asset downloader call signature/base URL, and replacing the retired `watch_me_runtime.js` syntax check with the active shared watch-state runtime module.
+- Commit: `f3f3948f` fix github validation workflow availability checks.
+
 - Implemented MC-2026-05-05.1 Trakt two-way watch-state sync: file-backed `data/watch_state_queue.json`, local click queue records, inputs-editor queue/sync APIs, Trakt dry-run/live sync engine, exact watchlist/history endpoint payload generation, and validation/browser QA coverage for queue records and payload proof.
 - Commit: `5d62716f` implement trakt two way watch state sync.
 
