@@ -1,5 +1,12 @@
 # Architecture Log
 
+## 2026-05-06
+
+- Implemented MC-2026-05-05.2 interaction compliance with canonical local watch-state resolution feeding card action render state across Dashboard, Shows, Movies, Discover, and popups.
+- Updated Manage Watch State from a fixed first-page matrix into a searchable, sortable, pageable matrix with inline edits, row state keys, and persistent first/prev/next/last controls.
+- Extended rendered browser QA to prove action icon changes, local state writes, queue writes, Manage Watch State row reflection, cross-view state consistency, and episode carousel controls with retained show/season context on Android TV and laptop viewports.
+- Commit: `02d0f83d` implement interaction compliance validation.
+
 ## 2026-05-05
 
 - Removed the live render compatibility shims from the focus bootstrap so the shared runtime owns card image normalization and watch-source popup handling directly.
