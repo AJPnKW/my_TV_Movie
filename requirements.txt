@@ -9,12 +9,14 @@
 # - requests is REQUIRED (TMDB/Trakt HTTP)
 # - python-dotenv is used for local .env support (no override)
 # - tqdm/orjson are OPTIONAL but supported by scripts when installed
+# - Pillow is REQUIRED by runtime asset optimization in the data pipeline
 # ==============================================================================
 
 requests==2.32.3
 python-dotenv==1.0.1
 tqdm==4.66.5
 orjson==3.10.7
+Pillow==10.4.0
 
 # Flask is optional (local only); not required for GitHub Pages:
 # Flask==3.0.3
