@@ -1,5 +1,13 @@
 # Architecture Log
 
+## 2026-05-05
+
+- Removed the live render compatibility shims from the focus bootstrap so the shared runtime owns card image normalization and watch-source popup handling directly.
+- Removed duplicate Shows/Movies action-menu binding after render so card action handlers do not accumulate.
+- Wired runtime asset optimization into the generated-data pipeline and extended it to resize runtime-only fetched assets that have no original-download source file, reducing oversized decode work before validation.
+- Updated runtime validation to forbid reintroducing the removed render/popup shims and to enforce zero oversized runtime assets.
+- Commit: `5718497f` remove legacy render shims and optimize runtime assets.
+
 ## 2026-05-04
 
 - Updated GitHub workflow actions to Node-24-native major versions for checkout, setup-python, and setup-node to remove the Node 20 deprecation warning.
