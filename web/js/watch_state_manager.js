@@ -354,6 +354,16 @@ CHANGE NOTES:
     btn.setAttribute('data-watch-state-type', type);
     btn.setAttribute('data-watch-state-key', key);
     btn.setAttribute('data-watch-state-value', value);
+    const icon = btn.querySelector('.actionbar-btn__icon');
+    if (icon){
+      const nextIcon = type === 'watched_status'
+        ? (value === 'watched' ? '✓' : value === 'partial' ? '◐' : '⌚')
+        : type === 'watch_list'
+          ? (value === 'on' ? '🎟' : '🎫')
+          : (value === 'on' ? '💕' : '♡');
+      icon.textContent = nextIcon;
+      btn.setAttribute('data-watch-state-icon', nextIcon);
+    }
   }
 
   function refresh(root){

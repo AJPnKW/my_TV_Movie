@@ -70,6 +70,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     showById: new Map(),
     movieById: new Map(),
     manageWatchStatePage: 0,
+    manageWatchState: {
+      search: "",
+      type: "all",
+      pageSize: 50,
+      sortKey: "title",
+      sortDir: "asc"
+    },
     view: {
       shows: { eye: "show_all" },
       movies: { eye: "show_all" }
@@ -994,6 +1001,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function isEpisodeWatched(showId, seasonNum, episodeNum){
+    if (canonicalStateValue("watched_status", {
+      kind: "episode",
+      showId,
+      seasonNumber: seasonNum,
+      episodeNumber: episodeNum
+    }, "") === "watched") return true;
     const ws = state.watchState;
     const show = ws?.shows?.[String(showId)];
     const season = show?.seasons?.[String(seasonNum)];
@@ -1509,7 +1522,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (mode === "show_all") return { hide:false, fade:false };
     const watched = kind === "movies" ? isMovieWatched(item) : isShowWatched(item);
     const id = String(item?.tmdb_id ?? "");
-    const inWatchlist = !!(id && getWatchlistSet().has(id));
+    const inWatchlist = !!(id && canonicalWatchListActive(kind === "movies" ? "movie" : "show", id, getWatchlistSet().has(id)));
     const inLibrary = !!(item?.in_library || item?.library || item?.inLibrary);
     const rated = !!(item?.rating || item?.user_rating || item?.rating_user);
     const listed = inWatchlist; // nearest proxy for now
@@ -1793,6 +1806,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const statusContext = options.statusContext || {};
     const releaseStatus = safeText(options.availabilityStatus || (options.available === false ? "unreleased" : "")).trim();
     const tmdbForState = safeText(options.tmdbId ?? options.tmdb_id ?? (kind === "episode" ? "" : id));
+    const actionContext = canonicalStateContext(kind, id, options);
+    const watchedStatusValue = canonicalStateValue("watched_status", actionContext, options.watchedActive ? "watched" : "unwatched");
+    const watchListValue = canonicalStateValue("watch_list", actionContext, (options.watchListActive || options.favoriteActive) ? "on" : "off");
+    const favouriteValue = canonicalStateValue("favourite", actionContext, options.favouriteActive ? "on" : "off");
     const stateAttrs = {
       "data-kind": kind,
       "data-id": id,
@@ -1814,9 +1831,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         attrs: options.popcornAttrs || {},
         availabilityStatus: safeText(options.availabilityStatus || "").trim()
       } : null,
-      favourite: { active: !!options.favouriteActive, attrs: stateAttrs },
-      status: options.showStatusAction ? { active: !!options.watchedActive, attrs: stateAttrs } : null,
-      watched: { active: !!options.watchListActive || !!options.favoriteActive, attrs: { ...stateAttrs, ...(options.watchedAttrs || {}) } },
+      favourite: { active: favouriteValue === "on", attrs: stateAttrs },
+      status: options.showStatusAction ? { active: watchedStatusValue !== "unwatched", attrs: stateAttrs } : null,
+      watched: { active: watchListValue === "on", attrs: { ...stateAttrs, ...(options.watchedAttrs || {}) } },
       rating: { icon: Number.isFinite(options.pct) && options.pct > 0 ? `${Math.round(options.pct)}` : "--" },
       menusHtml: `${actionMenuHtml(kind, id, title)}${options.showStatusAction ? statusMenuHtml(kind, id, title, statusContext, !!options.available) : ""}`
     });
@@ -2682,8 +2699,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function isShowWatched(show){
-    const ws = state.watchState;
     const id = String(show?.tmdb_id ?? "");
+    if (id && canonicalStateValue("watched_status", { kind: "show", id, tmdb_id: id, showId: id }, "") === "watched") return true;
+    const ws = state.watchState;
     if (!ws || !ws.shows || !id) return false;
     const entry = ws.shows[id];
     if (!entry || !entry.seasons || typeof entry.seasons !== "object") return false;
@@ -2718,8 +2736,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function isMovieWatched(m){
-    const ws = state.watchState;
     const id = String(m?.tmdb_id ?? "");
+    if (id && canonicalStateValue("watched_status", { kind: "movie", id, tmdb_id: id }, "") === "watched") return true;
+    const ws = state.watchState;
     return !!(ws && ws.movies && id && ws.movies[id]);
   }
 
@@ -3163,7 +3182,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       }
       const id = String(s?.tmdb_id ?? "");
       if (wantWatchlist === "watchlist"){
-        if (!id || !watchlistSet.has(id)) return false;
+        if (!id || !canonicalWatchListActive("show", id, watchlistSet.has(id))) return false;
       }
       if (wantWatchStatus.length){
         const status = safeText(getLocalStatusValue("show", id)).toLowerCase();
@@ -3203,6 +3222,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (showsSummary) showsSummary.textContent = `${shows.length} results`;
     wireActionMenus($("#showsGrid"));
     wireIconStripActions($("#showsGrid"), renderShows);
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+      window.MyTVHubWatchState.refresh($("#showsGrid"));
+    }
 
     $$("[data-show-open]", $("#showsGrid")).forEach(el => {
       el.addEventListener("click", () => {
@@ -3270,7 +3292,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       }
       const id = String(m?.tmdb_id ?? "");
       if (wantWatchlist === "watchlist"){
-        if (!id || !watchlistSet.has(id)) return false;
+        if (!id || !canonicalWatchListActive("movie", id, watchlistSet.has(id))) return false;
       }
       if (wantWatchStatus.length){
         const status = safeText(getLocalStatusValue("movie", id)).toLowerCase();
@@ -3308,6 +3330,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (moviesSummary) moviesSummary.textContent = `${movies.length} results`;
     wireActionMenus($("#moviesGrid"));
     wireIconStripActions($("#moviesGrid"), renderMovies);
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+      window.MyTVHubWatchState.refresh($("#moviesGrid"));
+    }
 
     $$("[data-movie-open]", $("#moviesGrid")).forEach(el => {
       el.addEventListener("click", () => {
@@ -3524,6 +3549,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     }
     wireActionMenus(host);
     wireWatchSourceButtons(host);
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+      window.MyTVHubWatchState.refresh(host);
+    }
   }
 
   async function openShowModal(showId){
@@ -3621,6 +3649,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
     wireActionMenus(host);
     wireWatchSourceButtons(host);
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+      window.MyTVHubWatchState.refresh(host);
+    }
 
     const bindCarousel = (trackSelector, attrName) => {
       const track = $(trackSelector, host);
@@ -4134,6 +4165,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       wireActionMenus(root);
       wireIconStripActions(root, renderDiscover);
       wireWatchSourceButtons(root);
+      if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+        window.MyTVHubWatchState.refresh(root);
+      }
       $$("[data-show-open]", root).forEach(el => el.addEventListener("click", () => gotoShow(parseInt(el.getAttribute("data-show-open") || "0", 10))));
       $$("[data-movie-open]", root).forEach(el => el.addEventListener("click", () => openMovieModal(parseInt(el.getAttribute("data-movie-open") || "0", 10))));
     });
@@ -4185,6 +4219,59 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       return ["unwatched","partial","watched"].includes(text) ? text : "unwatched";
     }
     return record ? "on" : "off";
+  }
+
+  function canonicalStateKey(type, context = {}){
+    const ctx = context && typeof context === "object" ? context : {};
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.contextKey === "function"){
+      return window.MyTVHubWatchState.contextKey(type, ctx);
+    }
+    const cleanType = safeText(type);
+    const kind = safeText(ctx.kind || ctx.item_type).toLowerCase();
+    const id = safeText(ctx.id || ctx.tmdb_id || ctx.movieId || ctx.showId);
+    const showId = safeText(ctx.showId || ctx.show_id || ctx.show || (kind === "show" ? id : ""));
+    const season = safeText(ctx.seasonNumber || ctx.season_number || ctx.season);
+    const episode = safeText(ctx.episodeNumber || ctx.episode_number || ctx.episode);
+    if (kind === "episode" && showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
+    if (kind === "season" && showId && season) return `${cleanType}:season:${showId}:${season}`;
+    if (kind === "movie" && id) return `${cleanType}:movie:${id}`;
+    if ((kind === "show" || kind === "tv") && (showId || id)) return `${cleanType}:show:${showId || id}`;
+    return "";
+  }
+
+  function canonicalStateValue(type, context = {}, fallback = ""){
+    const key = canonicalStateKey(type, context);
+    const data = readLocalWatchState();
+    if (key && Object.prototype.hasOwnProperty.call(data, key)){
+      return stateRecordValue(data[key], type);
+    }
+    if (type === "watched_status") return fallback === true ? "watched" : (["unwatched","partial","watched"].includes(safeText(fallback).toLowerCase()) ? safeText(fallback).toLowerCase() : "unwatched");
+    return fallback === true || safeText(fallback).toLowerCase() === "on" ? "on" : "off";
+  }
+
+  function canonicalStateContext(kind, id, options = {}){
+    const statusContext = options.statusContext || {};
+    const tmdbId = safeText(options.tmdbId ?? options.tmdb_id ?? (kind === "episode" ? "" : id));
+    return {
+      kind,
+      id: safeText(id),
+      tmdb_id: tmdbId,
+      trakt_id: safeText(options.traktId ?? options.trakt_id ?? ""),
+      imdb_id: safeText(options.imdbId ?? options.imdb_id ?? ""),
+      tvdb_id: safeText(options.tvdbId ?? options.tvdb_id ?? ""),
+      showId: safeText(statusContext.showId ?? options.showId ?? options.show_id ?? ""),
+      seasonNumber: safeText(statusContext.seasonNumber ?? options.seasonNumber ?? options.season_number ?? ""),
+      episodeNumber: safeText(statusContext.episodeNumber ?? options.episodeNumber ?? options.episode_number ?? ""),
+      release_status: safeText(options.availabilityStatus || (options.available === false ? "unreleased" : ""))
+    };
+  }
+
+  function canonicalWatchListActive(kind, id, fallback = false){
+    return canonicalStateValue("watch_list", { kind, id, tmdb_id: id, showId: kind === "show" ? id : "" }, fallback ? "on" : "off") === "on";
+  }
+
+  function canonicalFavouriteActive(kind, id, fallback = false){
+    return canonicalStateValue("favourite", { kind, id, tmdb_id: id, showId: kind === "show" ? id : "" }, fallback ? "on" : "off") === "on";
   }
 
   function traktAuthAvailable(){
@@ -4327,6 +4414,55 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       });
     });
     const unmatched = keys.filter(key => !/^(watched_status|watch_list|favourite):(movie|show|season|episode):/.test(key)).length;
+    const manageState = state.manageWatchState || (state.manageWatchState = { search: "", type: "all", pageSize: 50, sortKey: "title", sortDir: "asc" });
+    const searchText = safeText(manageState.search).toLowerCase();
+    const typeFilter = safeText(manageState.type || "all");
+    const sortKey = safeText(manageState.sortKey || "title");
+    const sortDir = safeText(manageState.sortDir || "asc") === "desc" ? "desc" : "asc";
+    const pageSize = Math.max(1, Number(manageState.pageSize) || 50);
+    const derivedWatchStateText = row => {
+      if (row.kind === "movie" || row.kind === "episode") return stateValue("watched_status", row);
+      const episodes = row.kind === "season" ? (seasonMap.get(`${row.showId}:${row.seasonNumber}`) || []) : (showEpisodesMap.get(row.showId) || []);
+      const eligible = episodes.filter(episode => releaseStatus(episode?.air_date, "") === "released");
+      const values = eligible.map(episode => {
+        const epRow = {
+          kind:"episode",
+          showId: row.showId,
+          seasonNumber: row.kind === "season" ? row.seasonNumber : Number(episode?.season_number || episode?.season || 0),
+          episodeNumber: Number(episode?.episode_number || episode?.number || 0),
+          release: releaseStatus(episode?.air_date, "")
+        };
+        return stateValue("watched_status", epRow);
+      });
+      return !eligible.length ? "unwatched" : values.every(v => v === "watched") ? "watched" : values.some(v => v !== "unwatched") ? "partial" : "unwatched";
+    };
+    const sortValue = (row, key) => {
+      if (key === "kind" || key === "type") return row.kind;
+      if (key === "release") return row.release;
+      if (key === "watch_list") return stateValue("watch_list", row);
+      if (key === "watched_status") return row.kind === "movie" || row.kind === "episode" ? stateValue("watched_status", row) : safeText(derivedWatchStateText(row));
+      if (key === "favourite") return stateValue("favourite", row);
+      if (key === "trakt") return computedStatus(row);
+      if (key === "mismatch") return computedMismatch(row) ? "true" : "false";
+      if (key === "queued") return computedQueued(row) ? "true" : "false";
+      if (key === "validation") return computedValidationIssue(row);
+      return row.title;
+    };
+    const sortRows = inputRows => inputRows.slice().sort((a, b) => {
+      const av = safeText(sortValue(a, sortKey)).toLowerCase();
+      const bv = safeText(sortValue(b, sortKey)).toLowerCase();
+      const result = av.localeCompare(bv, undefined, { numeric: true, sensitivity: "base" });
+      return sortDir === "desc" ? -result : result;
+    });
+    const filteredRows = sortRows(rows.filter(row => {
+      if (typeFilter !== "all" && row.kind !== typeFilter) return false;
+      if (!searchText) return true;
+      return [row.title, row.kind, row.ids, row.release].some(value => safeText(value).toLowerCase().includes(searchText));
+    }));
+    const sortButton = (key, label) => {
+      const active = sortKey === key;
+      return `<button class="watch-state-sort" type="button" data-manage-watch-sort="${escHtml(key)}" aria-sort="${active ? sortDir : "none"}">${escHtml(label)}${active ? ` ${sortDir === "desc" ? "↓" : "↑"}` : ""}</button>`;
+    };
     const watchedButtons = (row, lock = false) => {
       const key = stateKey("watched_status", row);
       const value = stateValue("watched_status", row);
@@ -4340,35 +4476,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const derivedWatchState = row => {
       if (row.kind === "movie" || row.kind === "episode") return watchedButtons(row, row.release === "unreleased");
       if (row.kind === "season") {
-        const episodes = seasonMap.get(`${row.showId}:${row.seasonNumber}`) || [];
-        const eligible = episodes.filter(episode => releaseStatus(episode?.air_date, "") === "released");
-        const values = eligible.map(episode => {
-          const epRow = {
-            kind:"episode",
-            showId: row.showId,
-            seasonNumber: row.seasonNumber,
-            episodeNumber: Number(episode?.episode_number) || 0,
-            release: releaseStatus(episode?.air_date, "")
-          };
-          return stateValue("watched_status", epRow);
-        });
-        const derived = !eligible.length ? "unwatched" : values.every(v => v === "watched") ? "watched" : values.some(v => v !== "unwatched") ? "partial" : "unwatched";
+        const derived = derivedWatchStateText(row);
         return `<div class="watch-state-derived" title="Derived from released child episodes"><span class="watch-state-derived__value">${escHtml(derived)}</span><span class="watch-state-derived__note">derived</span></div>`;
       }
       if (row.kind === "show") {
-        const episodes = showEpisodesMap.get(row.showId) || [];
-        const eligible = episodes.filter(episode => releaseStatus(episode?.air_date, "") === "released");
-        const values = eligible.map(episode => {
-          const epRow = {
-            kind:"episode",
-            showId: row.showId,
-            seasonNumber: Number(episode?.season_number || episode?.season || 0),
-            episodeNumber: Number(episode?.episode_number || episode?.number || 0),
-            release: releaseStatus(episode?.air_date, "")
-          };
-          return stateValue("watched_status", epRow);
-        });
-        const derived = !eligible.length ? "unwatched" : values.every(v => v === "watched") ? "watched" : values.some(v => v !== "unwatched") ? "partial" : "unwatched";
+        const derived = derivedWatchStateText(row);
         return `<div class="watch-state-derived" title="Derived from released child seasons and episodes"><span class="watch-state-derived__value">${escHtml(derived)}</span><span class="watch-state-derived__note">derived</span></div>`;
       }
       return watchedButtons(row, false);
@@ -4378,11 +4490,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const active = stateRecordValue(localState[key], type) === "on";
       return `<button class="watch-state-toggle" type="button" data-manage-watch-key="${escHtml(key)}" data-kind="${escHtml(row.kind)}" data-tmdb-id="${escHtml(row.tmdbId)}" data-trakt-id="${escHtml(row.traktId || "")}" data-show="${escHtml(row.showId || "")}" data-season="${escHtml(row.seasonNumber || "")}" data-episode="${escHtml(row.episodeNumber || "")}" data-release-status="${escHtml(row.release)}" aria-label="${escHtml(label)}" title="${escHtml(label)}" aria-pressed="${active ? "true" : "false"}">${active ? "✓" : ""}</button>`;
     };
-    const pageSize = 50;
-    const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+    const pageCount = Math.max(1, Math.ceil(filteredRows.length / pageSize));
     const currentPage = Math.min(Math.max(0, Number(state.manageWatchStatePage) || 0), pageCount - 1);
     state.manageWatchStatePage = currentPage;
-    const pageRows = rows.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
+    const pageRows = filteredRows.slice(currentPage * pageSize, currentPage * pageSize + pageSize);
     const pageHtml = pageRows.map(row => {
       const watchKey = stateKey("watch_list", row);
       const favKey = stateKey("favourite", row);
@@ -4390,7 +4501,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const queueHit = queuedKeys.has(watchKey) || queuedKeys.has(favKey) || queuedKeys.has(watchedKey);
       const issue = computedValidationIssue(row);
       return `
-        <tr class="watch-state-matrix__row" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}" data-release="${escHtml(row.release)}" data-render-key="${escHtml(`${row.kind}:${row.tmdbId || row.showId || ""}:${row.seasonNumber || ""}:${row.episodeNumber || ""}`)}">
+        <tr class="watch-state-matrix__row" data-watch-state-row-key="${escHtml(watchedKey)}" data-watch-list-row-key="${escHtml(watchKey)}" data-favourite-row-key="${escHtml(favKey)}" data-kind="${escHtml(row.kind)}" data-level="${escHtml(row.level)}" data-release="${escHtml(row.release)}" data-render-key="${escHtml(`${row.kind}:${row.tmdbId || row.showId || ""}:${row.seasonNumber || ""}:${row.episodeNumber || ""}`)}">
           <th scope="row" class="watch-state-matrix__title watch-state-matrix__title--level-${escHtml(row.level)}"><span>${escHtml(row.title)}</span><small>${escHtml(row.kind)}</small></th>
           <td>${escHtml(row.release)}</td>
           <td><code>${escHtml(row.ids)}</code></td>
@@ -4404,17 +4515,17 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </tr>
       `;
     }).join("");
-    const pager = rows.length > pageSize ? `
+    const pager = `
       <div class="watch-state-pager" aria-label="Watch state pagination">
         <button class="calbtn" type="button" data-manage-watch-page="first" ${currentPage === 0 ? "disabled" : ""}>First</button>
         <button class="calbtn" type="button" data-manage-watch-page="prev" ${currentPage === 0 ? "disabled" : ""}>Prev</button>
-        <span class="watch-state-pager__label">Page ${currentPage + 1} / ${pageCount} • ${pageRows.length} rows shown</span>
+        <span class="watch-state-pager__label">Page ${currentPage + 1} / ${pageCount} • ${pageRows.length} / ${filteredRows.length} rows shown</span>
         <button class="calbtn" type="button" data-manage-watch-page="next" ${currentPage >= pageCount - 1 ? "disabled" : ""}>Next</button>
         <button class="calbtn" type="button" data-manage-watch-page="last" ${currentPage >= pageCount - 1 ? "disabled" : ""}>Last</button>
       </div>
-    ` : "";
+    `;
     return `
-      <section class="watch-state-manager" id="manageWatchState" aria-label="Manage watch state" data-watch-state-total-rows="${rows.length}">
+      <section class="watch-state-manager" id="manageWatchState" aria-label="Manage watch state" data-watch-state-total-rows="${filteredRows.length}" data-watch-state-page-size="${pageSize}">
         <div class="dashhead">
           <h2>Manage Watch State</h2>
           <span class="muted">Local first, Trakt ready</span>
@@ -4427,21 +4538,30 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <span class="pill">unmatched IDs ${unmatched}</span>
           <span class="pill">sync queue ${syncQueueCount()}</span>
         </div>
+        <div class="watch-state-controls" aria-label="Manage Watch State controls">
+          <label class="watch-state-control"><span>Search</span><input class="input" type="search" data-manage-watch-search value="${escHtml(manageState.search)}" placeholder="Search title, type, ID, release"></label>
+          <label class="watch-state-control"><span>Type</span><select class="input" data-manage-watch-type>
+            ${["all","show","season","episode","movie"].map(value => `<option value="${value}"${typeFilter === value ? " selected" : ""}>${value === "all" ? "All" : value}</option>`).join("")}
+          </select></label>
+          <label class="watch-state-control"><span>Rows</span><select class="input" data-manage-watch-page-size>
+            ${[10,25,50,100,250].map(value => `<option value="${value}"${pageSize === value ? " selected" : ""}>${value}</option>`).join("")}
+          </select></label>
+        </div>
         ${pager}
         <div class="watch-state-matrix-wrap">
           <table class="watch-state-matrix">
             <thead>
               <tr>
-                <th scope="col">Title / hierarchy</th>
-                <th scope="col">Release status</th>
+                <th scope="col">${sortButton("title", "Title / hierarchy")}</th>
+                <th scope="col">${sortButton("release", "Release status")}</th>
                 <th scope="col">IDs</th>
-                <th scope="col">watch_list</th>
-                <th scope="col">watched_status</th>
-                <th scope="col">favourite</th>
-                <th scope="col">Trakt status</th>
-                <th scope="col">Mismatch</th>
-                <th scope="col">Queued</th>
-                <th scope="col">Validation issue</th>
+                <th scope="col">${sortButton("watch_list", "watch_list")}</th>
+                <th scope="col">${sortButton("watched_status", "watched_status")}</th>
+                <th scope="col">${sortButton("favourite", "favourite")}</th>
+                <th scope="col">${sortButton("trakt", "Trakt status")}</th>
+                <th scope="col">${sortButton("mismatch", "Mismatch")}</th>
+                <th scope="col">${sortButton("queued", "Queued")}</th>
+                <th scope="col">${sortButton("validation", "Validation issue")}</th>
               </tr>
             </thead>
             <tbody>${pageHtml || `<tr><td colspan="10" class="inline-empty">No catalog items available for local watch-state management.</td></tr>`}</tbody>
@@ -4454,6 +4574,45 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function bindWatchStateManager(root){
     if (!root) return;
+    const manageState = state.manageWatchState || (state.manageWatchState = { search: "", type: "all", pageSize: 50, sortKey: "title", sortDir: "asc" });
+    const searchInput = root.querySelector("[data-manage-watch-search]");
+    if (searchInput){
+      searchInput.addEventListener("input", () => {
+        manageState.search = searchInput.value || "";
+        state.manageWatchStatePage = 0;
+        renderManageWatchState();
+      });
+    }
+    const typeSelect = root.querySelector("[data-manage-watch-type]");
+    if (typeSelect){
+      typeSelect.addEventListener("change", () => {
+        manageState.type = typeSelect.value || "all";
+        state.manageWatchStatePage = 0;
+        renderManageWatchState();
+      });
+    }
+    const pageSizeSelect = root.querySelector("[data-manage-watch-page-size]");
+    if (pageSizeSelect){
+      pageSizeSelect.addEventListener("change", () => {
+        manageState.pageSize = Number(pageSizeSelect.value) || 50;
+        state.manageWatchStatePage = 0;
+        renderManageWatchState();
+      });
+    }
+    $$("[data-manage-watch-sort]", root).forEach(btn => {
+      btn.addEventListener("click", () => {
+        const key = safeText(btn.getAttribute("data-manage-watch-sort"));
+        if (!key) return;
+        if (manageState.sortKey === key) {
+          manageState.sortDir = manageState.sortDir === "desc" ? "asc" : "desc";
+        } else {
+          manageState.sortKey = key;
+          manageState.sortDir = "asc";
+        }
+        state.manageWatchStatePage = 0;
+        renderManageWatchState();
+      });
+    });
     $$("[data-manage-watch-key]", root).forEach(btn => {
       btn.addEventListener("click", () => {
         const key = safeText(btn.getAttribute("data-manage-watch-key"));
@@ -4480,6 +4639,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           else delete data[key];
           localStorage.setItem("mytv_watch_state_v1", JSON.stringify(data));
         }
+        document.dispatchEvent(new CustomEvent("mytv:watch-state-changed", { detail: { key, source: "manage-watch-state" } }));
         renderManageWatchState();
         if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
           window.MyTVHubWatchState.refresh(document);
@@ -4489,8 +4649,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $$("[data-manage-watch-page]", root).forEach(btn => {
       btn.addEventListener("click", () => {
         const action = safeText(btn.getAttribute("data-manage-watch-page"));
-        const pageSize = 50;
-        const rowCount = Number(root.getAttribute("data-watch-state-total-rows") || 0);
+        const tableRoot = root.querySelector("#manageWatchState") || root;
+        const pageSize = Number(tableRoot.getAttribute("data-watch-state-page-size") || manageState.pageSize || 50);
+        const rowCount = Number(tableRoot.getAttribute("data-watch-state-total-rows") || 0);
         const pageCount = Math.max(1, Math.ceil((rowCount || 1) / pageSize));
         if (action === "first") state.manageWatchStatePage = 0;
         else if (action === "prev") state.manageWatchStatePage = Math.max(0, (Number(state.manageWatchStatePage) || 0) - 1);
@@ -4811,6 +4972,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   applySidebarState("watch-me");
   if ($("#modalClose")) $("#modalClose").textContent = "Exit";
   if ($("#providerClose")) $("#providerClose").textContent = "Exit";
+  document.addEventListener("mytv:watch-state-changed", () => {
+    if ($("#manageWatchStateRoot")) renderManageWatchState();
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.refresh === "function") {
+      window.MyTVHubWatchState.refresh(document);
+    }
+  });
 
   // NAV
   $$(".tab").forEach(btn => {

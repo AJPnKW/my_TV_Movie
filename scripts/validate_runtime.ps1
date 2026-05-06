@@ -296,6 +296,7 @@ $cardRendererText = Get-Content -Raw -LiteralPath 'web/js/card_renderer.js'
 $appRuntimeText = Get-Content -Raw -LiteralPath 'web/js/app_runtime.js'
 $popupControllerText = Get-Content -Raw -LiteralPath 'web/js/popup_controller.js'
 $mainCssText = Get-Content -Raw -LiteralPath 'web/css/main_app.css'
+$qaBrowserText = Get-Content -Raw -LiteralPath 'scripts/qa_browser_layout_check.mjs'
 foreach ($legacy in @('web/css/runtime_layout_fix.css','web/css/ui_contract_fix.css','web/js/ui_contract_fix.js')) {
     if (Test-Path -LiteralPath $legacy) { Add-CheckError "Removed compatibility layer returned to active repo: $legacy" }
 }
@@ -390,9 +391,25 @@ foreach ($needle in @(
     'data-computed-status="queued"',
     'computedValidationIssue',
     'traktAuthAvailable',
-    'readWatchSyncQueue'
+    'readWatchSyncQueue',
+    'data-manage-watch-search',
+    'data-manage-watch-page-size',
+    'data-manage-watch-sort'
 )) {
     if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing computed Manage Watch State contract: $needle" }
+}
+foreach ($needle in @(
+    'inspectInteractionCompliance',
+    'iconBefore',
+    'iconAfter',
+    'localAfterValue',
+    'queueHasKey',
+    'rowMatchesClick',
+    'paginationWorks',
+    'inlineEditWorks',
+    'retainedContext'
+)) {
+    if ($qaBrowserText -notlike "*$needle*") { Add-CheckError "qa_browser_layout_check.mjs missing rendered interaction proof: $needle" }
 }
 
 Write-Host '== Trakt two-way sync contract =='
