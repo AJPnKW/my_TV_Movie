@@ -24,7 +24,7 @@
 <tr><td>Active source</td><td><code>docs/00_master_contract.html</code></td></tr>
 <tr><td>ChatGPT role</td><td>Maintain this contract and audit drift before writing Codex prompts.</td></tr>
 <tr><td>Codex role</td><td>Implement code against this contract. No vague scope, no deferrals, no generalized placeholders.</td></tr>
-<tr><td>Detail fidelity</td><td>Requirements, examples, image sizes, state names, acceptance checks, and user-provided layouts must not be simplified, collapsed, or dropped.</td></tr>
+<tr><td>Detail fidelity</td><td>Requirements, user-provided examples, dimensions, visual targets, state names, and acceptance rules must not be simplified, collapsed, or dropped.</td></tr>
 <tr><td>Examples</td><td>User examples are acceptance tests, not optional inspiration.</td></tr>
 </table>
 <h3>1.1 Version History</h3>
@@ -34,6 +34,7 @@
 <tr><td>2026-05-05</td><td>MC-2026-05-05.1</td><td>Two-way Trakt sync: queue file, endpoints, dry-run payloads, local-first click persistence.</td></tr>
 <tr><td>2026-05-05</td><td>MC-2026-05-05.2</td><td>Repository secret inventory, CI/CD workflow topology, card action click defects, true episode carousel requirements, Manage Watch State table UX, Trakt value consistency across views.</td></tr>
 </table>
+<p>Standalone page: <code>web/manage_watch_state.html</code></p>
 </section>
 <section id="pages" class="card">
 <h2>2. Page / Route Contract</h2>
@@ -50,18 +51,25 @@
 </section>
 <section id="ui" class="card">
 <h2>3. UI, Navigation, Cards, and Media Sizes</h2>
-<ul><li>Full app header/top navigation is sticky on every runtime page, not just this documentation page.</li><li>Major section headers are sticky and hand off naturally to the next section header.</li><li>Primary nav uses standalone icons, not boxed buttons.</li><li>Boys logo preserves aspect ratio and cannot stretch into a banner.</li><li>Card action row is below media/text and never overlays image or metadata.</li><li>Show/movie posters in grids, Shows, Movies, and Dashboard Recommendations use <strong>poster Half 171x257</strong>.</li><li>Episode stills use <strong>Narrow Still Half 240x135</strong>; source/optimized still target remains <strong>320x180</strong> before crop.</li><li>Calendar episode cards use episode stills only, never show/movie posters.</li></ul>
+<ul><li>Full app header/top navigation is sticky on every runtime page, not just this documentation page.</li><li>Major section headers are sticky and hand off naturally to the next section header.</li><li>Primary nav icons are standalone Unicode/web icons, not boxed buttons.</li><li>Boys logo must preserve aspect ratio and cannot stretch into a banner.</li><li>Card action row is below media/text and never overlays image or metadata.</li><li>Show/movie posters in grids, Shows, Movies, and Dashboard Recommendations use <strong>poster Half <code>171x257</code></strong>.</li><li>Episode stills use <strong>narrow still Half <code>240x135</code></strong>; episode source still <code>320x180</code> is the source/optimized still target before crop.</li><li>Calendar episode cards use episode stills only, never show/movie posters.</li><li>Header cell left/right bounds must align exactly with matching calendar day columns.</li></ul>
 </section>
 <section id="actions" class="card">
 <h2>4. Card Action Controls — Required Behavior</h2>
 <pre>🍿 ⌚ 🎫 💕 76%</pre>
+<p>Forbidden active icons: duplicate legacy action icons, boxed icon-button replacements for the primary nav, star-rating-only replacements, and any retired ticket/bookmark/favorite symbols not listed in the required icon strip.</p>
 <table><tr><th>Control</th><th>Meaning</th><th>Required click result</th><th>Required state result</th></tr>
 <tr><td>🍿</td><td>Watch-source/provider popup</td><td>Open popup with media detail block and compact provider buttons.</td><td>No state write unless provider/action chosen.</td></tr>
-<tr><td>⌚</td><td>watched_status</td><td>Cycle <code>unwatched → partial → watched → unwatched</code>.</td><td>Update UI immediately, update local state, create/update queue event, update Manage Watch State row.</td></tr>
-<tr><td>🎫</td><td>watch_list</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update queue event, update Manage Watch State row.</td></tr>
-<tr><td>💕</td><td>favourite</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update queue event, update Manage Watch State row. If Trakt mapping is local-only, status must say local_only, not pretend synced.</td></tr>
+<tr><td>⌚</td><td>watched_status</td><td>Cycle <code>unwatched → partial → watched → unwatched</code>.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row.</td></tr>
+<tr><td>🎫</td><td>watch_list</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row.</td></tr>
+<tr><td>💕</td><td>favourite</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row. If Trakt mapping is local-only, status must say local_only, not pretend synced.</td></tr>
 <tr><td>76%</td><td>rating</td><td>Display only unless future rating editing is explicitly designed.</td><td>Always includes percent sign.</td></tr>
 </table>
+<h3>4.2 Mandatory Popup Detail Example</h3>
+<pre>Abbott Elementary
+Team Building
+S05E01 • 22 min
+Oct 1, 2025
+The teachers prepare for the upcoming school year with new faces and big changes on the horizon.</pre>
 <h3>4.1 Cross-view Consistency</h3>
 <ul><li>The same media item must show the same watch_list, favourite, and watched_status in Dashboard, Shows, Movies, Calendar, Discover, Watch Me, and Manage Watch State.</li><li>State cannot be view-local. One canonical state key must drive all views.</li><li>When a user clicks an action icon in one view, every matching card/row in every active view must render the same state after refresh/rerender.</li><li>Action visual state must be both readable and functional: if it lights up, the underlying state must exist; if state changes, the icon must change.</li><li>Validation must click ⌚/🎫/💕 on a card, confirm visual state changes, confirm queue/local state changes, then open Manage Watch State and confirm the same media row changed.</li></ul>
 </section>
@@ -89,13 +97,13 @@
 <tr><td>Single-line rows</td><td>Default table rows must stay compact and single-line where practical; expanded details are optional, not the default.</td></tr>
 <tr><td>Editing</td><td>watch_list, favourite, and watched_status cells are editable controls. They must change values, persist local state, and create queue events.</td></tr>
 <tr><td>Tree</td><td>Show → season → episode hierarchy is preserved without turning rows into large cards.</td></tr>
-<tr><td>Status columns</td><td>Trakt status, Mismatch, Queued, Validation issue are computed values, not static labels.</td></tr>
+<tr><td>Status columns</td><td><code>Trakt status</code>, <code>Mismatch</code>, <code>Queued</code>, and <code>Validation issue</code> are computed values, not static labels.</td></tr>
 </table>
 </section>
 <section id="trakt" class="card">
 <h2>7. Trakt Sync Contract</h2>
 <pre>device auth → pull → normalize → compare → local queue → push → confirmation pull → reconcile → report</pre>
-<ul><li>Trakt two-way sync is required and not optional.</li><li>UI writes are local-first and queue-backed. Live network response is not required for immediate UI change.</li><li>Primary match key is ID-based: Trakt, TMDB, IMDB, TVDB, slug where available. Title-only writes are forbidden.</li><li>Required pull endpoints: <code>GET /sync/watchlist</code>, <code>GET /sync/history/movies</code>, <code>GET /sync/history/episodes</code>.</li><li>Required push endpoints: <code>POST /sync/watchlist</code>, <code>POST /sync/watchlist/remove</code>, <code>POST /sync/history</code>, <code>POST /sync/history/remove</code>.</li><li><code>partial</code> watched_status is local-only unless a specific Trakt playback/progress mapping is intentionally implemented.</li><li><code>favourite</code> is local-only unless explicitly mapped to Trakt ratings or another Trakt-supported construct. If local-only, the UI must say local_only.</li><li>The same state value must display consistently across all pages.</li></ul>
+<ul><li>Trakt two-way sync is required and not optional.</li><li>UI writes are local-first and queue-backed. Live network response is not required for immediate UI change.</li><li>Local queue file is <code>data/watch_state_queue.json</code>.</li><li>Primary match key is ID-based: Trakt, TMDB, IMDB, TVDB, slug where available. Title-only writes are forbidden.</li><li>Required pull endpoints: <code>GET /sync/watchlist</code>, <code>GET /sync/history/movies</code>, <code>GET /sync/history/episodes</code>.</li><li>Required push endpoints: <code>POST /sync/watchlist</code>, <code>POST /sync/watchlist/remove</code>, <code>POST /sync/history</code>, <code>POST /sync/history/remove</code>.</li><li><code>partial</code> watched_status is local-only unless a specific Trakt playback/progress mapping is intentionally implemented.</li><li><code>favourite</code> is local-only unless explicitly mapped to Trakt ratings or another Trakt-supported construct. If local-only, the UI must say local_only.</li><li>The same state value must display consistently across all pages.</li></ul>
 <h3>7.1 Required Repository Secrets</h3>
 <table><tr><th>Secret</th><th>Purpose</th><th>Required in workflows</th></tr>
 <tr><td><code>API_OMDB_KEY</code></td><td>OMDB metadata enrichment.</td><td>build-data, validate where metadata validation requires it.</td></tr>
@@ -121,7 +129,7 @@
 </section>
 <section id="qa" class="card">
 <h2>9. Validation Acceptance Tests</h2>
-<ul><li>Click ⌚/🎫/💕 on Dashboard card → visual state changes → queue/local state changes → Manage Watch State row matches.</li><li>Repeat same click test on Shows and Movies card views.</li><li>Verify same media item has same state across Dashboard, Shows, Movies, Calendar, Discover, Watch Me, Manage Watch State.</li><li>Episode carousel test: show/season header remains visible, next/previous controls work, keyboard and D-pad navigation work, plain overflowing row fails.</li><li>Manage Watch State test: search works, type filter works, rows-per-page changes, first/previous/next/last work, column-header sorting works, inline state edits persist and queue.</li><li>Trakt dry-run test: queued records generate endpoint-specific payloads or explicit local_only/missing_id/validation_issue status.</li><li>CI test: validate, build-data, and pages workflows pass; workflow diagnostics artifacts exist when failure occurs.</li></ul>
+<ul><li>Click ⌚/🎫/💕 on Dashboard card → visual state changes → queue/local state changes → Manage Watch State row matches.</li><li>Repeat same click test on Shows and Movies card views.</li><li>Verify same media item has same state across Dashboard, Shows, Movies, Calendar, Discover, Watch Me, Manage Watch State.</li><li>Episode carousel test: show/season header remains visible, next/previous controls work, keyboard and D-pad navigation work, plain overflowing row fails.</li><li>D-pad/Android TV validation must prove focus order, popup trapping, and Back/Escape close behavior.</li><li>Manage Watch State test: search works, type filter works, rows-per-page changes, first/previous/next/last work, column-header sorting works, inline state edits persist and queue.</li><li>Trakt dry-run test: queued records generate endpoint-specific payloads or explicit local_only/missing_id/validation_issue status.</li><li>CI test: validate, build-data, and pages workflows pass; workflow diagnostics artifacts exist when failure occurs.</li></ul>
 </section>
 <section id="accountability" class="card"><h2>10. Accountability</h2><ul><li>No deferrals for items above.</li><li>Do not report success unless behavior is proven in rendered/browser QA or deterministic script output.</li><li>Do not generalize user feedback into broad labels; preserve operational details.</li><li>If behavior is not implemented, classify as failed validation or blocked by a concrete external dependency.</li></ul></section>
 <section id="codex" class="card"><h2>11. Next Codex Batch</h2><ol><li>Fix card action controls so ⌚/🎫/💕 work in every card view and update canonical state + queue + Manage Watch State.</li><li>Replace episode rows with true carousels with controls, D-pad/keyboard support, and retained show/season context.</li><li>Rebuild Manage Watch State as a compact sortable/filterable/paginated editable table/tree.</li><li>Fix Trakt icon/state consistency across all views.</li><li>Harden validation for all acceptance tests in Section 9.</li><li>Preserve workflow/secret/CI contract in Section 8.</li></ol></section>
