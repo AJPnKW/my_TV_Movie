@@ -57,6 +57,23 @@ def target_for(src: Path) -> tuple[Path, dict[str, Any]] | None:
     return ASSETS / rel, target
 
 
+def target_for_runtime(src: Path) -> tuple[Path, dict[str, Any]] | None:
+    try:
+        rel = src.relative_to(ASSETS)
+    except ValueError:
+        return None
+    if not rel.parts or rel.parts[0] == "original_downloads":
+        return None
+    family = rel.parts[0].lower()
+    target = TARGETS.get(family)
+    if not target:
+        return None
+    original = ORIGINALS / rel
+    if original.exists():
+        return None
+    return src, target
+
+
 def save_image(img: Image.Image, path: Path) -> None:
     suffix = path.suffix.lower()
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -94,7 +111,7 @@ def prepare_runtime_image(img: Image.Image, target: dict[str, Any]) -> Image.Ima
 
 
 def optimize_one(src: Path, dry_run: bool = False) -> dict[str, Any] | None:
-    mapped = target_for(src)
+    mapped = target_for(src) or target_for_runtime(src)
     if not mapped:
         return None
     dest, target = mapped
@@ -138,7 +155,14 @@ def main() -> int:
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
-    files = [p for p in ORIGINALS.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTS]
+    original_files = [p for p in ORIGINALS.rglob("*") if p.is_file() and p.suffix.lower() in IMAGE_EXTS]
+    runtime_only_files = [
+        p for p in ASSETS.rglob("*")
+        if p.is_file()
+        and p.suffix.lower() in IMAGE_EXTS
+        and target_for_runtime(p)
+    ]
+    files = original_files + runtime_only_files
     rows: list[dict[str, Any]] = []
     for src in files:
         row = optimize_one(src, dry_run=args.dry_run)
@@ -155,7 +179,8 @@ def main() -> int:
         "source_root": "assets/original_downloads",
         "targets": TARGETS,
         "counts": {
-            "source_files": len(files),
+            "source_files": len(original_files),
+            "runtime_only_files": len(runtime_only_files),
             "processed": len(rows),
             "errors": sum(1 for r in rows if r.get("error")),
         },

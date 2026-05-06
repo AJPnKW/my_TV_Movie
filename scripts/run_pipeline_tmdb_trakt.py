@@ -23,6 +23,7 @@ FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
 FETCH_TMDB_ASSETS = SCRIPTS_DIR / "fetch_tmdb_assets.py"
 SELF_HEAL_ASSET_METADATA = SCRIPTS_DIR / "self_heal_asset_metadata.py"
+OPTIMIZE_RUNTIME_ASSETS = SCRIPTS_DIR / "optimize_runtime_assets.py"
 VALIDATE_AVAILABILITY = SCRIPTS_DIR / "validate_availability_overlay.py"
 ENRICH_AVAILABILITY = SCRIPTS_DIR / "enrich_data_with_availability.py"
 BUILD_SPLIT_RUNTIME = SCRIPTS_DIR / "build_split_runtime.py"
@@ -111,6 +112,13 @@ def main() -> int:
         return rc
 
     rc = _run_one("ASSET_METADATA_SELF_HEAL", SELF_HEAL_ASSET_METADATA, "--fetch-missing")
+    if rc != 0:
+        print("\n--- SUMMARY ---")
+        print(f"started : {started}")
+        print(f"finished: {_ts()}")
+        return rc
+
+    rc = _run_one("RUNTIME_ASSET_OPTIMIZE", OPTIMIZE_RUNTIME_ASSETS)
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")

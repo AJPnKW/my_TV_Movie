@@ -52,8 +52,6 @@ $requiredFiles = @(
     'web/js/action_bar.js',
     'web/js/watch_state_manager.js',
     'web/js/data_loader.js',
-    'web/js/trailer_watch_popup_fix.js',
-    'web/js/runtime_render_fix.js',
     'run_local_servers.bat',
     'run_server.bat',
     'run_schema.bat',
@@ -213,8 +211,6 @@ $scanFiles = @(
     'web/js/app_runtime.js',
     'web/js/chrometv_focus.js',
     'web/js/data_loader.js',
-    'web/js/runtime_render_fix.js',
-    'web/js/trailer_watch_popup_fix.js',
     'web/js/watch_state_manager.js',
     'web/css/main_app.css'
 )
@@ -300,7 +296,6 @@ $cardRendererText = Get-Content -Raw -LiteralPath 'web/js/card_renderer.js'
 $appRuntimeText = Get-Content -Raw -LiteralPath 'web/js/app_runtime.js'
 $popupControllerText = Get-Content -Raw -LiteralPath 'web/js/popup_controller.js'
 $mainCssText = Get-Content -Raw -LiteralPath 'web/css/main_app.css'
-$runtimeText = Get-Content -Raw -LiteralPath 'web/js/runtime_render_fix.js'
 foreach ($legacy in @('web/css/runtime_layout_fix.css','web/css/ui_contract_fix.css','web/js/ui_contract_fix.js')) {
     if (Test-Path -LiteralPath $legacy) { Add-CheckError "Removed compatibility layer returned to active repo: $legacy" }
 }
@@ -348,9 +343,6 @@ if (($mainCssText | Select-String -Pattern '(?m)^\s*\.actionbar-btn\s*\{' -AllMa
 }
 if ($mainCssText -match '(?s)\.tab\s*\{[^}]*border\s*:\s*1px') {
     Add-CheckError 'Primary nav tabs must not keep button borders.'
-}
-if ($runtimeText -match 'replace\(/%/g') {
-    Add-CheckError 'Runtime shims must not strip percent signs from compact ratings.'
 }
 if ($appRuntimeText -notlike '*panel-manage-watch-state*' -or $appRuntimeText -notlike '*id="manageWatchState"*' -or $appRuntimeText -notlike '*watch-state-matrix*' -or $appRuntimeText -notlike '*data-manage-watch-key*' -or $appRuntimeText -notlike '*data-manage-watch-value*') {
     Add-CheckError 'Manage Watch State must be a standalone reachable view with local toggles.'
@@ -477,12 +469,14 @@ foreach ($needle in @(
 }
 
 Write-Host '== Duplicate action/popup handlers =='
-$popupShimText = Get-Content -Raw -LiteralPath 'web/js/trailer_watch_popup_fix.js'
-if ($popupShimText -notlike '*__myTvHubTrailerWatchPopupFixLoaded*') {
-    Add-CheckError 'Popup shim does not expose loaded guard.'
+$focusTextForShims = Get-Content -Raw -LiteralPath 'web/js/chrometv_focus.js'
+foreach ($shim in @('runtime_render_fix.js','trailer_watch_popup_fix.js')) {
+    if ($focusTextForShims -like "*$shim*") {
+        Add-CheckError "Focus bootstrap must not load retired runtime shim: $shim"
+    }
 }
-if ($appRuntimeText -like '*function wireWatchSourceButtons*' -and $appRuntimeText -notlike '*if (window.__myTvHubTrailerWatchPopupFixLoaded) return;*') {
-    Add-CheckError 'app_runtime watch-source fallback is not guarded by trailer_watch_popup_fix.'
+if ($appRuntimeText -like '*__myTvHubTrailerWatchPopupFixLoaded*') {
+    Add-CheckError 'app_runtime must own watch-source buttons directly; trailer_watch_popup_fix guard remains.'
 }
 $activeActionOwners = @('web/js/action_bar.js')
 foreach ($jsFile in Get-ChildItem -LiteralPath 'web/js' -Filter '*.js' -File) {
@@ -589,12 +583,11 @@ Write-Host '== Loader contract =='
 $focusText = Get-Content -Raw -LiteralPath 'web/js/chrometv_focus.js'
 foreach ($needle in @(
     "loadScript('./js/watch_state_manager.js');",
-    "loadScript('./js/runtime_render_fix.js');",
-    "loadScript('./js/trailer_watch_popup_fix.js');"
+    "window.MyTVHubFocus"
 )) {
     if ($focusText -notlike "*$needle*") { Add-CheckError "Missing focus bootstrap loader: $needle" }
 }
-foreach ($needle in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js')) {
+foreach ($needle in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js','runtime_render_fix.js','trailer_watch_popup_fix.js')) {
     if ($focusText -like "*$needle*") { Add-CheckError "Focus bootstrap still loads removed compatibility layer: $needle" }
 }
 

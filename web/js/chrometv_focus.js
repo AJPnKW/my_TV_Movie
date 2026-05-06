@@ -19,8 +19,6 @@
   }
 
   loadScript('./js/watch_state_manager.js');
-  loadScript('./js/runtime_render_fix.js');
-  loadScript('./js/trailer_watch_popup_fix.js');
   function activeRoot(){
     var providerBack = document.getElementById('providerBack');
     if (providerBack && getComputedStyle(providerBack).display !== 'none' && providerBack.getAttribute('aria-hidden') !== 'true'){

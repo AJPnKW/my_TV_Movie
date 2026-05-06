@@ -1967,7 +1967,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function wireWatchSourceButtons(container){
-    if (window.__myTvHubTrailerWatchPopupFixLoaded) return;
     if (!container) return;
     $$("[data-watch-source-open]", container).forEach(btn => {
       btn.addEventListener("click", async (e) => {
@@ -3224,7 +3223,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         renderShows();
       });
     });
-    wireActionMenus($("#showsGrid"));
     wireWatchSourceButtons($("#showsGrid"));
     $$("[data-action='toggle-watched'][data-kind='show']", $("#showsGrid")).forEach(btn => {
       btn.addEventListener("click", async (e) => {
@@ -3330,7 +3328,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         renderMovies();
       });
     });
-    wireActionMenus($("#moviesGrid"));
     wireWatchSourceButtons($("#moviesGrid"));
     $$("[data-action='toggle-watched'][data-kind='movie']", $("#moviesGrid")).forEach(btn => {
       btn.addEventListener("click", async (e) => {

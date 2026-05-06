@@ -141,8 +141,6 @@ export function renderActionBarHtml(options = {}){
     const statusLink = splitAttrs(options.status.attrs || {});
     center.push(renderAnchor(`watched-status${options.status.active ? ' active' : ''}`, statusLink.href, 'Toggle watched status', 'Watched status', CONTRACT_ICONS.watched_status, {
       'data-watch-state-action': 'toggle-watched-status',
-      'data-action-menu': 'watched_status',
-      'data-no-default': '1',
       'aria-pressed': options.status.active ? 'true' : 'false',
       ...statusLink.attrs
     }));
