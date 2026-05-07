@@ -45,12 +45,14 @@ async function inspect(pathname, viewport) {
     const firstImg = document.querySelector(".calendar-item .media-card__poster img, .calendar-item .imgbox img, .media-card__poster img, .imgbox img");
     const dashCols = document.querySelector("#dashScheduleCols");
     const calendarGrid = document.querySelector(".calendar-month-grid");
-    const calendarBand = document.querySelector(".calendar-week-band");
+    const calendarBand = document.querySelector(".calendar-week-header, .calendar-week-band");
+    const calendarBody = document.querySelector(".calendar-week-body");
+    const appHeader = document.querySelector(".top");
     const visibleCalendarItems = Array.from(document.querySelectorAll(".calendar-item")).filter(el => getComputedStyle(el).display !== "none" && !el.classList.contains("hidden"));
     const firstRect = firstCard?.getBoundingClientRect();
     const imageRect = firstImg?.getBoundingClientRect();
     const firstWeekHeaders = calendarBand ? Array.from(calendarBand.querySelectorAll(".calendar-week-band__day")).map(rect) : [];
-    const firstWeekDays = Array.from(document.querySelectorAll(".calendar-month-grid > .calendar-day")).slice(0, 7).map(rect);
+    const firstWeekDays = calendarBody ? Array.from(calendarBody.querySelectorAll(":scope > .calendar-day")).slice(0, 7).map(rect) : Array.from(document.querySelectorAll(".calendar-month-grid > .calendar-day")).slice(0, 7).map(rect);
     const calendarAlignment = firstWeekHeaders.map((headerRect, index) => {
       const dayRect = firstWeekDays[index];
       return dayRect ? {
@@ -63,6 +65,28 @@ async function inspect(pathname, viewport) {
     const calendarEpisodePosterImages = Array.from(document.querySelectorAll(".calendar-item.media-card--episode img")).filter(img => /poster/i.test(img.getAttribute("src") || "")).length;
     const weekendDay = document.querySelector(".calendar-day--weekend");
     const weekdayDay = Array.from(document.querySelectorAll(".calendar-day")).find(day => !day.classList.contains("calendar-day--weekend"));
+    const weekendHeaderDay = document.querySelector(".calendar-week-band__day.is-weekend");
+    const weekdayHeaderDay = Array.from(document.querySelectorAll(".calendar-week-band__day")).find(day => !day.classList.contains("is-weekend"));
+    const calendarHeaderRect = rect(calendarBand);
+    const firstCalendarDayRect = firstWeekDays[0] || null;
+    const calendarHeaderOverlaysCards = !!(calendarHeaderRect && firstCalendarDayRect && calendarHeaderRect.bottom > firstCalendarDayRect.top + 1);
+    const sectionHeaderOverlaysCards = Array.from(document.querySelectorAll('[data-sticky-section-head="1"], #panel-calendar > .dashhead')).some(head => {
+      const headRect = rect(head);
+      const scope = head.parentElement;
+      const content = scope?.querySelector?.(".media-card, .dashgrid, .dashrow, .calendar-scroller, .watch-state-matrix-wrap");
+      const contentRect = content ? rect(content) : null;
+      return !!(headRect && contentRect && headRect.bottom > contentRect.top + 1);
+    });
+    const canScroll = document.documentElement.scrollHeight > window.innerHeight + 100;
+    const headerPosition = appHeader ? getComputedStyle(appHeader).position : "";
+    let headerAfterScrollTop = null;
+    if (canScroll) {
+      window.scrollTo(0, Math.min(520, document.documentElement.scrollHeight - window.innerHeight));
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      headerAfterScrollTop = rect(appHeader)?.top ?? null;
+      window.scrollTo(0, 0);
+      await new Promise(resolve => requestAnimationFrame(resolve));
+    }
     const popupDetailSample = window.MyTVHubSharedModules?.popupController?.renderMediaDetailBlockHtml?.({
       kind: "episode",
       primary: "Abbott Elementary",
@@ -106,14 +130,21 @@ async function inspect(pathname, viewport) {
       imageWidth: Math.round(imageRect?.width || 0),
       imageHeight: Math.round(imageRect?.height || 0),
       dashboardColumns: dashCols ? getComputedStyle(dashCols).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
-      calendarColumns: calendarGrid ? getComputedStyle(calendarGrid).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
+      calendarColumns: calendarBody ? getComputedStyle(calendarBody).gridTemplateColumns.split(" ").filter(Boolean).length : (calendarGrid ? getComputedStyle(calendarGrid).gridTemplateColumns.split(" ").filter(Boolean).length : 0),
       calendarBandColumns: calendarBand ? getComputedStyle(calendarBand).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
+      calendarRowClientWidth: calendarBody ? calendarBody.clientWidth : 0,
+      calendarRowScrollWidth: calendarBody ? calendarBody.scrollWidth : 0,
       calendarItems: visibleCalendarItems.length,
       calendarItemImages: visibleCalendarItems.filter(el => el.querySelector(".media-card__poster img, .imgbox img")).length,
       calendarDuplicateDateCount: document.querySelectorAll(".calendar-day__date").length,
-      calendarWeekendStyled: !!weekendDay && !!weekdayDay && getComputedStyle(weekendDay).backgroundColor !== getComputedStyle(weekdayDay).backgroundColor,
+      calendarWeekendStyled: !!weekendDay && !!weekdayDay && !!weekendHeaderDay && !!weekdayHeaderDay && getComputedStyle(weekendDay).backgroundColor !== getComputedStyle(weekdayDay).backgroundColor && getComputedStyle(weekendHeaderDay).backgroundColor !== getComputedStyle(weekdayHeaderDay).backgroundColor,
       calendarEpisodePosterImages,
       calendarAlignment,
+      calendarHeaderOverlaysCards,
+      sectionHeaderOverlaysCards,
+      headerPosition,
+      headerAfterScrollTop,
+      stickyHeaderOk: headerPosition === "sticky" && (!canScroll || Math.abs(headerAfterScrollTop || 0) <= 1),
       watchedStatusValues: (document.documentElement.getAttribute("data-watched-status-values") || "").split(",").filter(Boolean),
       watchQueueBefore: queueBeforeItems.length,
       watchQueueAfter: queueAfterItems.length,
@@ -316,12 +347,18 @@ try {
     if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarBandColumns !== 7) {
       failures.push(`${result.viewport} calendar.html: expected 7 day/date band columns, found ${result.calendarBandColumns}`);
     }
+    if ((result.viewport === "tablet-portrait" || result.viewport.startsWith("phone")) && result.pathname === "calendar.html" && result.calendarRowScrollWidth <= result.calendarRowClientWidth) {
+      failures.push(`${result.viewport} calendar.html: horizontal calendar row scroll missing`);
+    }
     if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarItems > 0 && result.calendarItemImages < result.calendarItems) {
       failures.push(`${result.viewport} calendar.html: calendar episode/movie cards missing images (${result.calendarItemImages}/${result.calendarItems})`);
     }
     if (result.pathname === "calendar.html" && result.calendarAlignment?.some(pair => pair.missingDay || pair.leftDelta > 1 || pair.rightDelta > 1 || pair.widthDelta > 1)) {
       failures.push(`${result.viewport} calendar.html: header/day column bounds misaligned`);
     }
+    if (result.pathname === "calendar.html" && result.calendarHeaderOverlaysCards) failures.push(`${result.viewport} calendar.html: calendar header overlays first row`);
+    if (result.sectionHeaderOverlaysCards) failures.push(`${result.viewport} ${result.pathname}: section header overlays cards`);
+    if (!result.stickyHeaderOk) failures.push(`${result.viewport} ${result.pathname}: sticky app header failed on scroll`);
     if (result.pathname === "calendar.html" && result.calendarDuplicateDateCount !== 0) failures.push(`${result.viewport} calendar.html: duplicate date row rendered`);
     if (result.pathname === "calendar.html" && !result.calendarWeekendStyled) failures.push(`${result.viewport} calendar.html: weekend styling missing`);
     if (result.pathname === "calendar.html" && result.calendarEpisodePosterImages > 0) failures.push(`${result.viewport} calendar.html: episode calendar image uses poster`);

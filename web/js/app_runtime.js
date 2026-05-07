@@ -2654,13 +2654,20 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function updateCalendarStickyVars(){
     const topBar = $(".top");
     const calbar = $("#panel-calendar .dashhead");
-    if (topBar) document.documentElement.style.setProperty("--sticky-top", `${topBar.offsetHeight + 8}px`);
-    if (calbar) document.documentElement.style.setProperty("--calbar-h", `${calbar.offsetHeight}px`);
+    const headerHeight = topBar ? Math.ceil(topBar.getBoundingClientRect().height) : 42;
+    const sectionTop = headerHeight + 8;
+    const sectionHeight = calbar ? Math.ceil(calbar.getBoundingClientRect().height) : 0;
+    document.documentElement.style.setProperty("--app-header-height", `${headerHeight}px`);
+    document.documentElement.style.setProperty("--sticky-app-top", "0px");
+    document.documentElement.style.setProperty("--sticky-section-top", `${sectionTop}px`);
+    document.documentElement.style.setProperty("--sticky-calendar-top", `${sectionTop + sectionHeight + 8}px`);
+    document.documentElement.style.setProperty("--sticky-top", `${sectionTop}px`);
+    document.documentElement.style.setProperty("--calbar-h", `${sectionHeight}px`);
   }
 
   function applyStickySectionHeads(root=document){
     updateCalendarStickyVars();
-    $$(".dashblock > .dashhead", root).forEach(head => {
+    $$(".dashblock > .dashhead, .panel > .dashhead, .watch-state-manager > .dashhead", root).forEach(head => {
       head.classList.add("sticky-section-head");
       head.setAttribute("data-sticky-section-head", "1");
     });
@@ -2678,9 +2685,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (!cell) return false;
     updateCalendarStickyVars();
     const rootStyle = getComputedStyle(document.documentElement);
-    const stickyTop = parseFloat(rootStyle.getPropertyValue("--sticky-top")) || 0;
-    const calbarH = parseFloat(rootStyle.getPropertyValue("--calbar-h")) || 0;
-    const offset = stickyTop + calbarH + 8;
+    const offset = parseFloat(rootStyle.getPropertyValue("--sticky-calendar-top")) || 0;
     const top = cell.getBoundingClientRect().top + window.scrollY - offset;
     window.scrollTo({ top, behavior:"smooth" });
     cell.classList.add("today-jump");
@@ -2934,6 +2939,24 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         target.classList.add("is-expanded");
         target.setAttribute("data-expanded", "1");
       });
+    });
+  }
+
+  function bindCalendarWeekScroll(root){
+    if (!root) return;
+    $$(".calendar-week-header", root).forEach(header => {
+      const week = header.getAttribute("data-calendar-week") || "";
+      const body = root.querySelector(`.calendar-week-body[data-calendar-week-body="${CSS.escape(week)}"]`);
+      if (!body) return;
+      let syncing = false;
+      const sync = (source, target) => {
+        if (syncing) return;
+        syncing = true;
+        target.scrollLeft = source.scrollLeft;
+        requestAnimationFrame(() => { syncing = false; });
+      };
+      header.addEventListener("scroll", () => sync(header, body), { passive:true });
+      body.addEventListener("scroll", () => sync(body, header), { passive:true });
     });
   }
 
@@ -3784,12 +3807,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         </div>
       `
       : `
-        <div class="calendar-month-grid">
+        <div class="calendar-scroller calendar-month-grid">
           ${weeks.map((week, weekIndex) => `
-            <div class="calendar-week-band" data-calendar-week="${weekIndex}">
+            <div class="calendar-week-header calendar-week-band" data-calendar-week="${weekIndex}">
               ${week.map(renderBandDay).join("")}
             </div>
-            ${week.map(renderDayCell).join("")}
+            <div class="calendar-week-body" data-calendar-week-body="${weekIndex}">
+              ${week.map(renderDayCell).join("")}
+            </div>
           `).join("")}
         </div>
       `;
@@ -3797,6 +3822,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     applyStickySectionHeads($("#panel-calendar"));
     bindCalendarItemActions($("#calendar"));
     bindMoreToggles($("#calendar"));
+    bindCalendarWeekScroll($("#calendar"));
   }
 
   function renderDashboard(){
@@ -4667,6 +4693,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (!root) return;
     root.innerHTML = renderWatchStateManagerHtml();
     bindWatchStateManager(root);
+    applyStickySectionHeads(root);
   }
 
   async function renderConfig(){

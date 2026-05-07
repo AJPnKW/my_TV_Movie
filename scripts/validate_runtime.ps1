@@ -312,6 +312,18 @@ if ($mainCssText -match 'overflow(?:-[xy])?\s*:\s*clip') {
 if ($mainCssText -notmatch '--ui_action_box:\s*clamp') {
     Add-CheckError 'main_app.css must define adaptive action box sizing.'
 }
+foreach ($needle in @(
+    '--app-header-height',
+    '--sticky-app-top',
+    '--sticky-section-top',
+    '--sticky-calendar-top',
+    '--calendar-week-columns',
+    '.calendar-scroller',
+    '.calendar-week-header',
+    '.calendar-week-body'
+)) {
+    if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing shared sticky/calendar contract: $needle" }
+}
 foreach ($needle in @('--contract-poster-w:171px','--contract-poster-h:257px','--contract-still-w:240px','--contract-still-h:135px')) {
     if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing media size contract: $needle" }
 }
@@ -712,7 +724,8 @@ function ignoreConsole(message){
         const manage = document.querySelector('#manageWatchState');
         const manageTable = manage ? manage.querySelector('.watch-state-matrix') : null;
         const calendarGrid = document.querySelector('.calendar-month-grid');
-        const calendarWeek = document.querySelector('.calendar-week-band');
+        const calendarWeek = document.querySelector('.calendar-week-header, .calendar-week-band');
+        const calendarBody = document.querySelector('.calendar-week-body');
         const calendarHost = document.querySelector('#calendar');
         const splitColumns = value => String(value || '').split(' ').filter(Boolean).length;
         const actionButtons = Array.from(document.querySelectorAll('.media-card .actionbar-btn')).slice(0, 12).map(btn => {
@@ -761,6 +774,10 @@ function ignoreConsole(message){
           await new Promise(resolve => requestAnimationFrame(resolve));
         }
         const headerAfterScrollRect = header ? rect(header) : null;
+        if (canScroll) {
+          window.scrollTo(0, 0);
+          await new Promise(resolve => requestAnimationFrame(resolve));
+        }
         const posterCards = Array.from(document.querySelectorAll('.media-card[data-media-shape="poster"] .media-card__poster')).map(poster => {
           const posterRect = rect(poster);
           return { width:posterRect.width, height:posterRect.height, contract:poster.getAttribute('data-contract-size') || '' };
@@ -773,12 +790,24 @@ function ignoreConsole(message){
         const weekendDay = document.querySelector('.calendar-day--weekend');
         const weekdayDay = Array.from(document.querySelectorAll('.calendar-day')).find(day => !day.classList.contains('calendar-day--weekend'));
         const weekendBandDay = document.querySelector('.calendar-week-band__day.is-weekend');
-        const firstWeekBand = document.querySelector('.calendar-week-band');
+        const weekdayBandDay = Array.from(document.querySelectorAll('.calendar-week-band__day')).find(day => !day.classList.contains('is-weekend'));
+        const firstWeekBand = document.querySelector('.calendar-week-header, .calendar-week-band');
         const firstWeekHeaders = firstWeekBand ? Array.from(firstWeekBand.querySelectorAll('.calendar-week-band__day')).map(rect) : [];
-        const firstWeekDays = Array.from(document.querySelectorAll('.calendar-month-grid > .calendar-day')).slice(0, 7).map(rect);
+        const firstWeekBody = document.querySelector('.calendar-week-body');
+        const firstWeekDays = firstWeekBody ? Array.from(firstWeekBody.querySelectorAll(':scope > .calendar-day')).slice(0, 7).map(rect) : Array.from(document.querySelectorAll('.calendar-month-grid > .calendar-day')).slice(0, 7).map(rect);
         const calendarAlignment = firstWeekHeaders.map((headerRect, index) => {
           const dayRect = firstWeekDays[index] || null;
           return dayRect ? { index, leftDelta: Math.abs(headerRect.left - dayRect.left), rightDelta: Math.abs(headerRect.right - dayRect.right), widthDelta: Math.abs(headerRect.width - dayRect.width) } : { index, missingDay: true };
+        });
+        const calendarHeaderRect = firstWeekBand ? rect(firstWeekBand) : null;
+        const firstCalendarDayRect = firstWeekDays[0] || null;
+        const calendarHeaderOverlaysCards = !!(calendarHeaderRect && firstCalendarDayRect && calendarHeaderRect.bottom > firstCalendarDayRect.top + 1);
+        const sectionHeaderOverlaysCards = Array.from(document.querySelectorAll('[data-sticky-section-head="1"], #panel-calendar > .dashhead')).some(head => {
+          const headRect = rect(head);
+          const scope = head.parentElement;
+          const content = scope?.querySelector?.('.media-card, .dashgrid, .dashrow, .calendar-scroller, .watch-state-matrix-wrap');
+          const contentRect = content ? rect(content) : null;
+          return !!(headRect && contentRect && headRect.bottom > contentRect.top + 1);
         });
         const watchStatusValues = (document.documentElement.getAttribute('data-watched-status-values') || '').split(',').filter(Boolean);
         const watchStateBefore = JSON.parse(localStorage.getItem('mytv_watch_state_v1') || '{}');
@@ -817,11 +846,13 @@ function ignoreConsole(message){
           manageRowCount: manageTable ? manageTable.querySelectorAll('tbody tr').length : 0,
           watchListCount: document.querySelectorAll('.watchme-list-item').length,
           calendar: calendarGrid ? {
-            gridColumns: splitColumns(getComputedStyle(calendarGrid).gridTemplateColumns),
+            gridColumns: calendarBody ? splitColumns(getComputedStyle(calendarBody).gridTemplateColumns) : splitColumns(getComputedStyle(calendarGrid).gridTemplateColumns),
             weekColumns: calendarWeek ? splitColumns(getComputedStyle(calendarWeek).gridTemplateColumns) : 0,
             weekDisplay: calendarWeek ? getComputedStyle(calendarWeek).display : '',
             hostClientWidth: calendarHost ? calendarHost.clientWidth : 0,
             hostScrollWidth: calendarHost ? calendarHost.scrollWidth : 0,
+            rowClientWidth: calendarBody ? calendarBody.clientWidth : 0,
+            rowScrollWidth: calendarBody ? calendarBody.scrollWidth : 0,
             duplicateCellDateCount: document.querySelectorAll('.calendar-day__date').length,
             weekBandDateCount: document.querySelectorAll('.calendar-week-band__date').length,
             weekendDayCount: document.querySelectorAll('.calendar-day--weekend').length,
@@ -829,8 +860,11 @@ function ignoreConsole(message){
             weekendBackground: weekendDay ? getComputedStyle(weekendDay).backgroundColor : '',
             weekdayBackground: weekdayDay ? getComputedStyle(weekdayDay).backgroundColor : '',
             weekendBandBackground: weekendBandDay ? getComputedStyle(weekendBandDay).backgroundColor : '',
+            weekdayBandBackground: weekdayBandDay ? getComputedStyle(weekdayBandDay).backgroundColor : '',
             episodeImageSrcs: calendarEpisodeImages,
-            alignment: calendarAlignment
+            alignment: calendarAlignment,
+            headerOverlaysCards: calendarHeaderOverlaysCards,
+            sectionHeaderOverlaysCards
           } : null,
           watchStateAction: {
             hasWatchButton: !!watchButton,
@@ -870,10 +904,11 @@ function ignoreConsole(message){
       const logoBad = !result.logoRect || !result.logoNatural || result.logoNatural.width !== result.logoNatural.height || logoRatio > 1.25 || result.logoRect.width > 44 || result.logoRect.height > 44 || !result.headerRect || result.logoRect.top < result.headerRect.top - 1 || result.logoRect.bottom > result.headerRect.bottom + 1 || result.headerRect.height > 70;
       const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || !result.manageHasTable || result.manageCardCount > 0 || result.manageButtonCount < 1 || result.manageColumnCount < 10 || result.manageRowCount < 1));
       const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
-      const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.hostScrollWidth <= result.calendar.hostClientWidth));
+      const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.rowScrollWidth <= result.calendar.rowClientWidth));
       const calendarAlignmentBad = pageName === 'calendar.html' && (!result.calendar || !result.calendar.alignment || result.calendar.alignment.length !== 7 || result.calendar.alignment.some(pair => pair.missingDay || pair.leftDelta > 1 || pair.rightDelta > 1 || pair.widthDelta > 1));
       const calendarDuplicateDateBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.duplicateCellDateCount !== 0 || result.calendar.weekBandDateCount < 7);
-      const calendarWeekendBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.weekendDayCount < 1 || result.calendar.weekendBandDayCount < 1 || result.calendar.weekendBackground === result.calendar.weekdayBackground);
+      const calendarWeekendBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.weekendDayCount < 1 || result.calendar.weekendBandDayCount < 1 || result.calendar.weekendBackground === result.calendar.weekdayBackground || result.calendar.weekendBandBackground === result.calendar.weekdayBandBackground);
+      const calendarOverlayBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.headerOverlaysCards || result.calendar.sectionHeaderOverlaysCards);
       const calendarStillBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.episodeImageSrcs.some(src => /poster/i.test(src)));
       const movieNavBad = result.tabs.some(tab => tab.id === 'movies' && tab.text === '🎬');
       const actionBad = result.actionButtons.some(btn => btn.icon === '🎟️' || btn.icon === '▶' || btn.icon === '🎬' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
@@ -891,7 +926,7 @@ function ignoreConsole(message){
       const performanceBad = result.perf && (result.perf.loadMs > 10000 || result.perf.domContentLoadedMs > 8000);
       const discoverBad = pageName === 'discover.html' && (!result.discoverRegistryRows || !result.discoverEmptyState || result.discoverCards.length > 0);
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || calendarAlignmentBad || calendarDuplicateDateBad || calendarWeekendBad || calendarStillBad || actionBad || stickyBad || topNavBad || stickyAncestorBad || sectionStickyBad || dashboardDuplicateBad || recommendationBad || posterSizeBad || stillSizeBad || popupDetailBad || watchStateActionBad || manageComputedBad || performanceBad || discoverBad || pageErrors.length){
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || calendarAlignmentBad || calendarDuplicateDateBad || calendarWeekendBad || calendarOverlayBad || calendarStillBad || actionBad || stickyBad || topNavBad || stickyAncestorBad || sectionStickyBad || dashboardDuplicateBad || recommendationBad || posterSizeBad || stillSizeBad || popupDetailBad || watchStateActionBad || manageComputedBad || performanceBad || discoverBad || pageErrors.length){
         failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, headerStickyAncestors: result.headerStickyAncestors, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, sectionHeads: result.sectionHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, posterCards: result.posterCards, stillCards: result.stillCards, providerDetailRendered: result.providerDetailRendered, providerDetailText: result.providerDetailText, watchStateAction: result.watchStateAction, manageComputed: result.manageComputed, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
       }
       await page.close();
