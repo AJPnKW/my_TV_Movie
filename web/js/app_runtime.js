@@ -2073,6 +2073,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (card) {
       card.scrollTop = 0;
       wirePopupDpad(card);
+      bindFloatingNavControls(card, card, { vertical: true, horizontal: false });
       $("#modalClose")?.focus();
     } else {
       $("#modalClose").focus();
@@ -2154,6 +2155,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (card){
       card.scrollTop = 0;
       wirePopupDpad(card);
+      bindFloatingNavControls(card, card, { vertical: true, horizontal: false });
       $("#providerClose")?.focus();
     } else {
       $("#providerClose").focus();
@@ -2960,13 +2962,139 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
+  function scrollMetric(target, axis){
+    if (!target) return { pos:0, size:0, scrollSize:0 };
+    const horizontal = axis === "x";
+    return {
+      pos: horizontal ? target.scrollLeft : target.scrollTop,
+      size: horizontal ? target.clientWidth : target.clientHeight,
+      scrollSize: horizontal ? target.scrollWidth : target.scrollHeight
+    };
+  }
+
+  function bindFloatingNavControls(host, scrollTarget, options = {}){
+    if (!host || !scrollTarget) return;
+    const horizontal = options.horizontal !== false;
+    const vertical = options.vertical === true;
+    if (!host.style.position && getComputedStyle(host).position === "static") host.style.position = "relative";
+    let nav = host.querySelector(":scope > .floating-nav");
+    if (!nav){
+      host.insertAdjacentHTML("beforeend", `
+        <div class="floating-nav" data-floating-nav-host="1" aria-label="Floating navigation controls">
+          <button class="floating-nav__btn" type="button" data-floating-nav="left" aria-label="Scroll left">‹</button>
+          <button class="floating-nav__btn" type="button" data-floating-nav="right" aria-label="Scroll right">›</button>
+          <button class="floating-nav__btn" type="button" data-floating-nav="up" aria-label="Scroll up">⌃</button>
+          <button class="floating-nav__btn" type="button" data-floating-nav="down" aria-label="Scroll down">⌄</button>
+        </div>
+      `);
+      nav = host.querySelector(":scope > .floating-nav");
+    }
+    const buttons = $$("[data-floating-nav]", nav);
+    const amount = (axis) => {
+      const metric = scrollMetric(scrollTarget, axis);
+      return Math.max(axis === "x" ? 180 : 160, Math.floor(metric.size * 0.82));
+    };
+    const update = () => {
+      const x = scrollMetric(scrollTarget, "x");
+      const y = scrollMetric(scrollTarget, "y");
+      const canLeft = horizontal && x.pos > 1;
+      const canRight = horizontal && x.pos + x.size < x.scrollSize - 1;
+      const canUp = vertical && y.pos > 1;
+      const canDown = vertical && y.pos + y.size < y.scrollSize - 1;
+      const available = { left: canLeft, right: canRight, up: canUp, down: canDown };
+      buttons.forEach(btn => {
+        const dir = btn.getAttribute("data-floating-nav") || "";
+        const show = !!available[dir];
+        btn.hidden = !show;
+        btn.disabled = !show;
+      });
+      nav.toggleAttribute("data-floating-nav-active", Object.values(available).some(Boolean));
+    };
+    buttons.forEach(btn => {
+      if (btn.dataset.floatingBound === "1") return;
+      btn.dataset.floatingBound = "1";
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const dir = btn.getAttribute("data-floating-nav") || "";
+        if (dir === "left") scrollTarget.scrollBy({ left: -amount("x"), behavior: "smooth" });
+        if (dir === "right") scrollTarget.scrollBy({ left: amount("x"), behavior: "smooth" });
+        if (dir === "up") scrollTarget.scrollBy({ top: -amount("y"), behavior: "smooth" });
+        if (dir === "down") scrollTarget.scrollBy({ top: amount("y"), behavior: "smooth" });
+        setTimeout(update, 180);
+      });
+    });
+    scrollTarget.addEventListener("scroll", update, { passive:true });
+    window.addEventListener("resize", update, { passive:true });
+    requestAnimationFrame(update);
+  }
+
+  function focusVisibleCarouselCard(carousel, dir){
+    const viewport = $(".carousel-viewport", carousel);
+    const cards = $$(".carousel-track > .media-card, .carousel-track > [tabindex]", carousel).filter(isVisible);
+    if (!viewport || !cards.length) return;
+    const viewportRect = viewport.getBoundingClientRect();
+    const visibleCards = cards.filter(card => {
+      const cardRect = card.getBoundingClientRect();
+      return cardRect.right > viewportRect.left + 4 && cardRect.left < viewportRect.right - 4;
+    });
+    const target = dir < 0 ? visibleCards[0] : visibleCards[visibleCards.length - 1];
+    if (target && typeof target.focus === "function") target.focus({ preventScroll:true });
+  }
+
+  function bindManualCarousels(root){
+    if (!root) return;
+    $$("[data-manual-carousel]", root).forEach(carousel => {
+      if (carousel.dataset.manualCarouselBound === "1") return;
+      carousel.dataset.manualCarouselBound = "1";
+      const viewport = $(".carousel-viewport", carousel);
+      const track = $(".carousel-track", carousel);
+      const buttons = $$("[data-carousel-nav], [data-ep-nav]", carousel);
+      if (!viewport || !track || !buttons.length) return;
+      const pageAmount = () => Math.max(240, Math.floor(viewport.clientWidth * 0.86));
+      const update = () => {
+        const metric = scrollMetric(viewport, "x");
+        const canPrev = metric.pos > 1;
+        const canNext = metric.pos + metric.size < metric.scrollSize - 1;
+        buttons.forEach(btn => {
+          const action = btn.getAttribute("data-carousel-nav") || btn.getAttribute("data-ep-nav") || "";
+          const enabled = /prev/.test(action) ? canPrev : /next/.test(action) ? canNext : true;
+          btn.disabled = !enabled;
+          btn.setAttribute("aria-disabled", enabled ? "false" : "true");
+        });
+      };
+      const move = (direction) => {
+        viewport.scrollBy({ left: direction * pageAmount(), behavior: "smooth" });
+        setTimeout(() => {
+          focusVisibleCarouselCard(carousel, direction);
+          update();
+        }, 220);
+      };
+      buttons.forEach(btn => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const action = btn.getAttribute("data-carousel-nav") || btn.getAttribute("data-ep-nav") || "";
+          if (/prev/.test(action)) move(-1);
+          if (/next/.test(action)) move(1);
+        });
+      });
+      carousel.addEventListener("keydown", (e) => {
+        if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+        e.preventDefault();
+        e.stopPropagation();
+        move(e.key === "ArrowLeft" ? -1 : 1);
+      });
+      viewport.addEventListener("scroll", update, { passive:true });
+      bindFloatingNavControls(carousel, viewport, { horizontal: true, vertical: false });
+      requestAnimationFrame(update);
+    });
+  }
+
   function imageForCalendarItem(item){
     if (item?.kind === "episode"){
       const still = normalizeImageSrc(pickImage(item, "still_local", "still_path", "episode_still_local", "episode_still_path", "still", "thumb"));
       if (still && !/poster/i.test(still)) return still;
-      const show = getShowById(item?.show_tmdb_id ?? item?.show_id ?? "");
-      const backdrop = normalizeImageSrc(pickImage(item, "backdrop_local", "backdrop_path", "show_backdrop_local") || pickImage(show || {}, "backdrop_local", "backdrop_path"));
-      if (backdrop && !/poster/i.test(backdrop)) return backdrop;
       return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 135'%3E%3Crect width='240' height='135' fill='%23111827'/%3E%3Cpath d='M96 44h48v47H96z' fill='%23233447'/%3E%3Cpath d='M106 58l27 16-27 16z' fill='%239fb0c8'/%3E%3C/svg%3E";
     }
     if (item?.kind === "movie"){
@@ -3693,7 +3821,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     };
 
     bindCarousel("[data-season-track]", "data-season-nav");
-    bindCarousel(".carousel", "data-ep-nav");
+    bindFloatingNavControls($(".seasonrail", host), $("[data-season-track]", host), { horizontal: true, vertical: false });
+    bindManualCarousels(host);
   }
 
   function renderCalendar(){
@@ -3823,6 +3952,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     bindCalendarItemActions($("#calendar"));
     bindMoreToggles($("#calendar"));
     bindCalendarWeekScroll($("#calendar"));
+    bindFloatingNavControls($("#calendar"), $(".calendar-scroller", $("#calendar")), { horizontal: true, vertical: false });
   }
 
   function renderDashboard(){
@@ -4929,62 +5059,63 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </div>
         </div>
         <div class="section section-card">
-          <div class="section-card__head">
-            <div class="section-card__meta">${escHtml(seasonEpisodeCount ? `${seasonEpisodeCount} episodes` : "No episodes")}</div>
-          </div>
-          <div class="epnav">
-            <div class="carousel-controls">
-              <button class="epnavbtn" type="button" data-ep-nav="jump-prev" aria-label="Jump back episodes">«</button>
-              <button class="epnavbtn" type="button" data-ep-nav="prev" aria-label="Previous episodes">‹</button>
+          <div class="carousel manual-carousel episode-carousel" data-manual-carousel="episodes" aria-label="${escHtml(`${title} ${seasonLabel} episodes`)}">
+            <div class="carousel-header">
+              <div class="carousel-heading">
+                <div class="carousel-title">${escHtml(title)}</div>
+                <div class="carousel-context">${escHtml(`${seasonLabel} • ${seasonEpisodeCount ? `${seasonEpisodeCount} episodes` : "No episodes"}`)}</div>
+              </div>
+              <div class="carousel-controls" aria-label="Episode carousel navigation">
+                <button class="epnavbtn" type="button" data-carousel-nav="prev" data-ep-nav="prev" aria-label="Previous episodes">‹</button>
+                <button class="epnavbtn" type="button" data-carousel-nav="next" data-ep-nav="next" aria-label="Next episodes">›</button>
+              </div>
             </div>
-            <div class="carousel" role="list">
-              ${episodes.map(ep => {
-                const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
-                const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
-                const epPct = (() => {
-                  let v = progressPercent(ep);
-                  if (v == null){
-                    const raw = Number(ep?.vote_average ?? ep?.rating ?? ep?.rating_percent ?? ep?.rating_pct ?? 0);
-                    if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
-                  }
-                  return v;
-                })();
-                const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, seasonNum, episodeNum) : false;
-                return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
-                  image: pickImage(ep, "still_local", "still_path"),
-                  eyebrow: title,
-                  title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                  badgeHtml: "",
-                  meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime),
-                  submeta: safeText(pickAirDate(ep) ? fmtDate(pickAirDate(ep)) : ""),
-                  description: safeText(ep?.overview || ""),
-                  actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+            <div class="carousel-viewport" tabindex="0" data-carousel-viewport>
+              <div class="carousel-track" role="list" data-carousel-track>
+                ${episodes.map(ep => {
+                  const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
+                  const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
+                  const epPct = (() => {
+                    let v = progressPercent(ep);
+                    if (v == null){
+                      const raw = Number(ep?.vote_average ?? ep?.rating ?? ep?.rating_percent ?? ep?.rating_pct ?? 0);
+                      if (Number.isFinite(raw) && raw > 0) v = Math.round(raw <= 10 ? raw * 10 : raw);
+                    }
+                    return v;
+                  })();
+                  const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, seasonNum, episodeNum) : false;
+                  return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+                    image: pickImage(ep, "still_local", "still_path"),
+                    eyebrow: title,
                     title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                    compact: true,
-                    tmdbId: safeText(ep?.episode_tmdb_id ?? ep?.episode_id ?? ep?.tmdb_episode_id ?? ep?.id ?? ""),
-                    traktId: safeText(ep?.trakt_id || ep?.episode_trakt_id || ""),
-                    tvdbId: safeText(ep?.tvdb_id || ep?.episode_tvdb_id || ""),
-                    pct: epPct,
-                    watchedActive: epWatched,
-                    showWatchedAction: true,
-                    showStatusAction: true,
-                    watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
-                    popcornAttrs: hasDirectWatchSources(ep) ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
-                    popcornKind: "episode",
-                    availabilityStatus: availabilityStatusOf(ep),
-                    available: isEpisodeAvailable(ep),
-                    statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
-                  }),
-                  overlay: false,
-                  articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
-                  extraClass: "popup-episode-card",
-                  renderKey: `popup:episode:${show.tmdb_id ?? ""}:${seasonNum}:${episodeNum}`
-                });
-              }).join("") || `<div class="muted">No episodes available for this season.</div>`}
-            </div>
-            <div class="carousel-controls">
-              <button class="epnavbtn" type="button" data-ep-nav="next" aria-label="Next episodes">›</button>
-              <button class="epnavbtn" type="button" data-ep-nav="jump-next" aria-label="Jump forward episodes">»</button>
+                    badgeHtml: "",
+                    meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime),
+                    submeta: safeText(pickAirDate(ep) ? fmtDate(pickAirDate(ep)) : ""),
+                    description: safeText(ep?.overview || ""),
+                    actionBarHtml: buildActionBarHtml("episode", episodeNum, {
+                      title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
+                      compact: true,
+                      tmdbId: safeText(ep?.episode_tmdb_id ?? ep?.episode_id ?? ep?.tmdb_episode_id ?? ep?.id ?? ""),
+                      traktId: safeText(ep?.trakt_id || ep?.episode_trakt_id || ""),
+                      tvdbId: safeText(ep?.tvdb_id || ep?.episode_tvdb_id || ""),
+                      pct: epPct,
+                      watchedActive: epWatched,
+                      showWatchedAction: true,
+                      showStatusAction: true,
+                      watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
+                      popcornAttrs: hasDirectWatchSources(ep) ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
+                      popcornKind: "episode",
+                      availabilityStatus: availabilityStatusOf(ep),
+                      available: isEpisodeAvailable(ep),
+                      statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
+                    }),
+                    overlay: false,
+                    articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
+                    extraClass: "popup-episode-card",
+                    renderKey: `popup:episode:${show.tmdb_id ?? ""}:${seasonNum}:${episodeNum}`
+                  });
+                }).join("") || `<div class="muted">No episodes available for this season.</div>`}
+              </div>
             </div>
           </div>
         </div>

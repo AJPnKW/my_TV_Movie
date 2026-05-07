@@ -45,6 +45,7 @@ async function inspect(pathname, viewport) {
     const firstImg = document.querySelector(".calendar-item .media-card__poster img, .calendar-item .imgbox img, .media-card__poster img, .imgbox img");
     const dashCols = document.querySelector("#dashScheduleCols");
     const calendarGrid = document.querySelector(".calendar-month-grid");
+    const calendarScroller = document.querySelector(".calendar-scroller");
     const calendarBand = document.querySelector(".calendar-week-header, .calendar-week-band");
     const calendarBody = document.querySelector(".calendar-week-body");
     const appHeader = document.querySelector(".top");
@@ -53,6 +54,8 @@ async function inspect(pathname, viewport) {
     const imageRect = firstImg?.getBoundingClientRect();
     const firstWeekHeaders = calendarBand ? Array.from(calendarBand.querySelectorAll(".calendar-week-band__day")).map(rect) : [];
     const firstWeekDays = calendarBody ? Array.from(calendarBody.querySelectorAll(":scope > .calendar-day")).slice(0, 7).map(rect) : Array.from(document.querySelectorAll(".calendar-month-grid > .calendar-day")).slice(0, 7).map(rect);
+    const dayWidths = firstWeekDays.map(day => day?.width || 0);
+    const dayWidthDelta = dayWidths.length ? Math.max(...dayWidths) - Math.min(...dayWidths) : 0;
     const calendarAlignment = firstWeekHeaders.map((headerRect, index) => {
       const dayRect = firstWeekDays[index];
       return dayRect ? {
@@ -63,12 +66,34 @@ async function inspect(pathname, viewport) {
       } : { index, missingDay: true };
     });
     const calendarEpisodePosterImages = Array.from(document.querySelectorAll(".calendar-item.media-card--episode img")).filter(img => /poster/i.test(img.getAttribute("src") || "")).length;
+    const calendarEpisodeNonStillImages = Array.from(document.querySelectorAll(".calendar-item.media-card--episode img")).filter(img => {
+      const src = img.getAttribute("src") || "";
+      return src && !/\/stills\/episodes\//i.test(src) && !/^data:image\/svg\+xml/i.test(src);
+    }).length;
     const weekendDay = document.querySelector(".calendar-day--weekend");
     const weekdayDay = Array.from(document.querySelectorAll(".calendar-day")).find(day => !day.classList.contains("calendar-day--weekend"));
     const weekendHeaderDay = document.querySelector(".calendar-week-band__day.is-weekend");
     const weekdayHeaderDay = Array.from(document.querySelectorAll(".calendar-week-band__day")).find(day => !day.classList.contains("is-weekend"));
     const calendarHeaderRect = rect(calendarBand);
     const firstCalendarDayRect = firstWeekDays[0] || null;
+    const calendarCrossingCards = Array.from(document.querySelectorAll(".calendar-day")).flatMap(day => {
+      const dayRect = day.getBoundingClientRect();
+      return Array.from(day.querySelectorAll(".calendar-item, .more-toggle")).filter(card => {
+        const style = getComputedStyle(card);
+        const cardRect = card.getBoundingClientRect();
+        return style.display !== "none" && style.visibility !== "hidden" && cardRect.width > 0 && cardRect.height > 0;
+      }).map(card => {
+        const cardRect = card.getBoundingClientRect();
+        return {
+          day: day.getAttribute("data-daycell") || "",
+          className: card.className || "",
+          leftOverflow: Math.max(0, dayRect.left - cardRect.left),
+          rightOverflow: Math.max(0, cardRect.right - dayRect.right),
+          widthOverflow: Math.max(0, cardRect.width - dayRect.width)
+        };
+      }).filter(hit => hit.leftOverflow > 1 || hit.rightOverflow > 1 || hit.widthOverflow > 1);
+    });
+    const calendarFloatingNav = Array.from(document.querySelectorAll("#calendar .floating-nav__btn")).filter(btn => !btn.hidden && !btn.disabled).map(btn => btn.getAttribute("data-floating-nav"));
     const calendarHeaderOverlaysCards = !!(calendarHeaderRect && firstCalendarDayRect && calendarHeaderRect.bottom > firstCalendarDayRect.top + 1);
     const sectionHeaderOverlaysCards = Array.from(document.querySelectorAll('[data-sticky-section-head="1"], #panel-calendar > .dashhead')).some(head => {
       const headRect = rect(head);
@@ -134,11 +159,17 @@ async function inspect(pathname, viewport) {
       calendarBandColumns: calendarBand ? getComputedStyle(calendarBand).gridTemplateColumns.split(" ").filter(Boolean).length : 0,
       calendarRowClientWidth: calendarBody ? calendarBody.clientWidth : 0,
       calendarRowScrollWidth: calendarBody ? calendarBody.scrollWidth : 0,
+      calendarScrollerClientWidth: calendarScroller ? calendarScroller.clientWidth : 0,
+      calendarScrollerScrollWidth: calendarScroller ? calendarScroller.scrollWidth : 0,
+      calendarDayWidthDelta: Math.round(dayWidthDelta * 100) / 100,
+      calendarCrossingCards,
+      calendarFloatingNav,
       calendarItems: visibleCalendarItems.length,
       calendarItemImages: visibleCalendarItems.filter(el => el.querySelector(".media-card__poster img, .imgbox img")).length,
       calendarDuplicateDateCount: document.querySelectorAll(".calendar-day__date").length,
       calendarWeekendStyled: !!weekendDay && !!weekdayDay && !!weekendHeaderDay && !!weekdayHeaderDay && getComputedStyle(weekendDay).backgroundColor !== getComputedStyle(weekdayDay).backgroundColor && getComputedStyle(weekendHeaderDay).backgroundColor !== getComputedStyle(weekdayHeaderDay).backgroundColor,
       calendarEpisodePosterImages,
+      calendarEpisodeNonStillImages,
       calendarAlignment,
       calendarHeaderOverlaysCards,
       sectionHeaderOverlaysCards,
@@ -303,10 +334,23 @@ async function inspectInteractionCompliance(viewport) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     const modal = document.querySelector('#modalBack[style*="flex"] #modalCard');
     const title = modal?.querySelector(".popup-hero__title")?.textContent?.trim() || "";
-    const season = modal?.querySelector(".seasonname")?.textContent?.trim() || "";
-    const prev = modal?.querySelector('[data-ep-nav="prev"]');
-    const next = modal?.querySelector('[data-ep-nav="next"]');
-    const track = modal?.querySelector(".carousel");
+    const carousel = modal?.querySelector('[data-manual-carousel="episodes"]');
+    const season = carousel?.querySelector(".carousel-context")?.textContent?.trim() || modal?.querySelector(".seasonname")?.textContent?.trim() || "";
+    const prev = carousel?.querySelector('[data-ep-nav="prev"]');
+    const next = carousel?.querySelector('[data-ep-nav="next"]');
+    const viewport = carousel?.querySelector(".carousel-viewport");
+    const track = carousel?.querySelector(".carousel-track");
+    const before = viewport?.scrollLeft || 0;
+    const floatingBefore = Array.from(carousel?.querySelectorAll(".floating-nav__btn") || []).filter(btn => !btn.hidden && !btn.disabled).map(btn => btn.getAttribute("data-floating-nav"));
+    next?.click();
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const afterClick = viewport?.scrollLeft || 0;
+    viewport?.focus();
+    carousel?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true }));
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const afterDpad = viewport?.scrollLeft || 0;
+    const floating = Array.from(carousel?.querySelectorAll(".floating-nav__btn") || []).filter(btn => !btn.hidden && !btn.disabled).map(btn => btn.getAttribute("data-floating-nav"));
+    const contextAfter = carousel?.querySelector(".carousel-context")?.textContent?.trim() || "";
     return {
       checked: true,
       opened: !!modal,
@@ -314,7 +358,12 @@ async function inspectInteractionCompliance(viewport) {
       season,
       prevNext: !!prev && !!next,
       track: !!track,
-      retainedContext: !!title && !!season
+      viewport: !!viewport,
+      movedByClick: afterClick > before,
+      movedByDpad: afterDpad < afterClick,
+      retainedContext: !!title && !!season && contextAfter === season,
+      floatingBefore,
+      floating
     };
   });
 
@@ -347,7 +396,7 @@ try {
     if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarBandColumns !== 7) {
       failures.push(`${result.viewport} calendar.html: expected 7 day/date band columns, found ${result.calendarBandColumns}`);
     }
-    if ((result.viewport === "tablet-portrait" || result.viewport.startsWith("phone")) && result.pathname === "calendar.html" && result.calendarRowScrollWidth <= result.calendarRowClientWidth) {
+    if ((result.viewport === "tablet-portrait" || result.viewport.startsWith("phone")) && result.pathname === "calendar.html" && result.calendarScrollerScrollWidth <= result.calendarScrollerClientWidth) {
       failures.push(`${result.viewport} calendar.html: horizontal calendar row scroll missing`);
     }
     if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarItems > 0 && result.calendarItemImages < result.calendarItems) {
@@ -356,12 +405,16 @@ try {
     if (result.pathname === "calendar.html" && result.calendarAlignment?.some(pair => pair.missingDay || pair.leftDelta > 1 || pair.rightDelta > 1 || pair.widthDelta > 1)) {
       failures.push(`${result.viewport} calendar.html: header/day column bounds misaligned`);
     }
+    if (result.pathname === "calendar.html" && result.calendarDayWidthDelta > 1) failures.push(`${result.viewport} calendar.html: day cells have unequal widths`);
+    if (result.pathname === "calendar.html" && result.calendarCrossingCards?.length) failures.push(`${result.viewport} calendar.html: calendar card or +more crosses day cell boundary`);
+    if ((result.viewport === "tablet-portrait" || result.viewport.startsWith("phone")) && result.pathname === "calendar.html" && !result.calendarFloatingNav?.includes("right")) failures.push(`${result.viewport} calendar.html: floating right nav missing for scrollable calendar`);
     if (result.pathname === "calendar.html" && result.calendarHeaderOverlaysCards) failures.push(`${result.viewport} calendar.html: calendar header overlays first row`);
     if (result.sectionHeaderOverlaysCards) failures.push(`${result.viewport} ${result.pathname}: section header overlays cards`);
     if (!result.stickyHeaderOk) failures.push(`${result.viewport} ${result.pathname}: sticky app header failed on scroll`);
     if (result.pathname === "calendar.html" && result.calendarDuplicateDateCount !== 0) failures.push(`${result.viewport} calendar.html: duplicate date row rendered`);
     if (result.pathname === "calendar.html" && !result.calendarWeekendStyled) failures.push(`${result.viewport} calendar.html: weekend styling missing`);
     if (result.pathname === "calendar.html" && result.calendarEpisodePosterImages > 0) failures.push(`${result.viewport} calendar.html: episode calendar image uses poster`);
+    if (result.pathname === "calendar.html" && result.calendarEpisodeNonStillImages > 0) failures.push(`${result.viewport} calendar.html: episode calendar image is not still/placeholder`);
     if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
     if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
     if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
@@ -383,7 +436,10 @@ try {
     if (!result.manage?.paginationWorks) failures.push(`${result.viewport} interaction: Manage Watch State first/prev/next/last pagination failed`);
     if (!result.manage?.sortingWorks) failures.push(`${result.viewport} interaction: Manage Watch State column sorting failed`);
     if (!result.manage?.inlineEditWorks) failures.push(`${result.viewport} interaction: Manage Watch State inline edit failed`);
-    if (!result.carousel?.opened || !result.carousel?.prevNext || !result.carousel?.retainedContext) failures.push(`${result.viewport} interaction: episode carousel controls/context failed`);
+    if (!result.carousel?.opened || !result.carousel?.prevNext || !result.carousel?.viewport || !result.carousel?.retainedContext) failures.push(`${result.viewport} interaction: episode carousel controls/context failed`);
+    if (result.carousel?.opened && (!result.carousel?.movedByClick || !result.carousel?.movedByDpad)) failures.push(`${result.viewport} interaction: episode carousel manual/D-pad navigation failed`);
+    if (result.carousel?.opened && !result.carousel?.floatingBefore?.includes("right")) failures.push(`${result.viewport} interaction: carousel floating right nav missing before movement`);
+    if (result.carousel?.opened && !result.carousel?.floating?.some(dir => dir === "left" || dir === "right")) failures.push(`${result.viewport} interaction: carousel floating horizontal nav missing after movement`);
   }
   console.log(JSON.stringify({ results, interactionResults, failures }, null, 2));
   if (failures.length) process.exitCode = 1;

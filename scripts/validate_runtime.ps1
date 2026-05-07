@@ -419,7 +419,11 @@ foreach ($needle in @(
     'rowMatchesClick',
     'paginationWorks',
     'inlineEditWorks',
-    'retainedContext'
+    'retainedContext',
+    'calendarCrossingCards',
+    'calendarDayWidthDelta',
+    'movedByDpad',
+    'floating'
 )) {
     if ($qaBrowserText -notlike "*$needle*") { Add-CheckError "qa_browser_layout_check.mjs missing rendered interaction proof: $needle" }
 }
@@ -489,12 +493,21 @@ if (Test-CommandAvailable python) {
     }
 }
 foreach ($needle in @(
-    '--calendar-col-min:var(--contract-still-w)',
+    '--calendar-col-min:132px',
     '--calendar-grid-gap:10px',
-    'repeat(7,minmax(var(--calendar-col-min),1fr))',
+    '--calendar-week-columns:repeat(7, minmax(0, 1fr))',
     'calc((var(--calendar-col-min) * 7) + (var(--calendar-grid-gap) * 6))'
 )) {
     if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing shared calendar column contract: $needle" }
+}
+foreach ($needle in @(
+    'data-manual-carousel="episodes"',
+    'data-carousel-viewport',
+    'data-carousel-track',
+    'bindManualCarousels',
+    'bindFloatingNavControls'
+)) {
+    if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing manual carousel/floating nav contract: $needle" }
 }
 
 Write-Host '== Duplicate action/popup handlers =='
@@ -727,6 +740,7 @@ function ignoreConsole(message){
         const calendarWeek = document.querySelector('.calendar-week-header, .calendar-week-band');
         const calendarBody = document.querySelector('.calendar-week-body');
         const calendarHost = document.querySelector('#calendar');
+        const calendarScroller = document.querySelector('.calendar-scroller');
         const splitColumns = value => String(value || '').split(' ').filter(Boolean).length;
         const actionButtons = Array.from(document.querySelectorAll('.media-card .actionbar-btn')).slice(0, 12).map(btn => {
           const style = getComputedStyle(btn);
@@ -787,6 +801,7 @@ function ignoreConsole(message){
           return { width:posterRect.width, height:posterRect.height, contract:poster.getAttribute('data-contract-size') || '' };
         });
         const calendarEpisodeImages = Array.from(document.querySelectorAll('.calendar-item.media-card--episode img')).map(img => img.getAttribute('src') || '');
+        const calendarEpisodeNonStillImages = calendarEpisodeImages.filter(src => src && !/\/stills\/episodes\//i.test(src) && !/^data:image\/svg\+xml/i.test(src));
         const weekendDay = document.querySelector('.calendar-day--weekend');
         const weekdayDay = Array.from(document.querySelectorAll('.calendar-day')).find(day => !day.classList.contains('calendar-day--weekend'));
         const weekendBandDay = document.querySelector('.calendar-week-band__day.is-weekend');
@@ -795,10 +810,29 @@ function ignoreConsole(message){
         const firstWeekHeaders = firstWeekBand ? Array.from(firstWeekBand.querySelectorAll('.calendar-week-band__day')).map(rect) : [];
         const firstWeekBody = document.querySelector('.calendar-week-body');
         const firstWeekDays = firstWeekBody ? Array.from(firstWeekBody.querySelectorAll(':scope > .calendar-day')).slice(0, 7).map(rect) : Array.from(document.querySelectorAll('.calendar-month-grid > .calendar-day')).slice(0, 7).map(rect);
+        const dayWidths = firstWeekDays.map(day => day?.width || 0);
+        const dayWidthDelta = dayWidths.length ? Math.max(...dayWidths) - Math.min(...dayWidths) : 0;
         const calendarAlignment = firstWeekHeaders.map((headerRect, index) => {
           const dayRect = firstWeekDays[index] || null;
           return dayRect ? { index, leftDelta: Math.abs(headerRect.left - dayRect.left), rightDelta: Math.abs(headerRect.right - dayRect.right), widthDelta: Math.abs(headerRect.width - dayRect.width) } : { index, missingDay: true };
         });
+        const calendarCrossingCards = Array.from(document.querySelectorAll('.calendar-day')).flatMap(day => {
+          const dayRect = day.getBoundingClientRect();
+          return Array.from(day.querySelectorAll('.calendar-item, .more-toggle')).filter(card => {
+            const style = getComputedStyle(card);
+            const cardRect = card.getBoundingClientRect();
+            return style.display !== 'none' && style.visibility !== 'hidden' && cardRect.width > 0 && cardRect.height > 0;
+          }).map(card => {
+            const cardRect = card.getBoundingClientRect();
+            return {
+              day: day.getAttribute('data-daycell') || '',
+              leftOverflow: Math.max(0, dayRect.left - cardRect.left),
+              rightOverflow: Math.max(0, cardRect.right - dayRect.right),
+              widthOverflow: Math.max(0, cardRect.width - dayRect.width)
+            };
+          }).filter(hit => hit.leftOverflow > 1 || hit.rightOverflow > 1 || hit.widthOverflow > 1);
+        });
+        const calendarFloatingNav = Array.from(document.querySelectorAll('#calendar .floating-nav__btn')).filter(btn => !btn.hidden && !btn.disabled).map(btn => btn.getAttribute('data-floating-nav'));
         const calendarHeaderRect = firstWeekBand ? rect(firstWeekBand) : null;
         const firstCalendarDayRect = firstWeekDays[0] || null;
         const calendarHeaderOverlaysCards = !!(calendarHeaderRect && firstCalendarDayRect && calendarHeaderRect.bottom > firstCalendarDayRect.top + 1);
@@ -853,6 +887,11 @@ function ignoreConsole(message){
             hostScrollWidth: calendarHost ? calendarHost.scrollWidth : 0,
             rowClientWidth: calendarBody ? calendarBody.clientWidth : 0,
             rowScrollWidth: calendarBody ? calendarBody.scrollWidth : 0,
+            scrollerClientWidth: calendarScroller ? calendarScroller.clientWidth : 0,
+            scrollerScrollWidth: calendarScroller ? calendarScroller.scrollWidth : 0,
+            dayWidthDelta,
+            crossingCards: calendarCrossingCards,
+            floatingNav: calendarFloatingNav,
             duplicateCellDateCount: document.querySelectorAll('.calendar-day__date').length,
             weekBandDateCount: document.querySelectorAll('.calendar-week-band__date').length,
             weekendDayCount: document.querySelectorAll('.calendar-day--weekend').length,
@@ -862,6 +901,7 @@ function ignoreConsole(message){
             weekendBandBackground: weekendBandDay ? getComputedStyle(weekendBandDay).backgroundColor : '',
             weekdayBandBackground: weekdayBandDay ? getComputedStyle(weekdayBandDay).backgroundColor : '',
             episodeImageSrcs: calendarEpisodeImages,
+            episodeNonStillImageCount: calendarEpisodeNonStillImages.length,
             alignment: calendarAlignment,
             headerOverlaysCards: calendarHeaderOverlaysCards,
             sectionHeaderOverlaysCards
@@ -904,12 +944,14 @@ function ignoreConsole(message){
       const logoBad = !result.logoRect || !result.logoNatural || result.logoNatural.width !== result.logoNatural.height || logoRatio > 1.25 || result.logoRect.width > 44 || result.logoRect.height > 44 || !result.headerRect || result.logoRect.top < result.headerRect.top - 1 || result.logoRect.bottom > result.headerRect.bottom + 1 || result.headerRect.height > 70;
       const manageBad = (pageName === 'config.html' && result.hasManage) || (pageName === 'manage_watch_state.html' && (!result.hasManage || !result.manageHasTable || result.manageCardCount > 0 || result.manageButtonCount < 1 || result.manageColumnCount < 10 || result.manageRowCount < 1));
       const watchBad = pageName === 'watch_me.html' && result.watchListCount < 1;
-      const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.rowScrollWidth <= result.calendar.rowClientWidth));
+      const calendarBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.gridColumns !== 7 || result.calendar.weekColumns !== 7 || result.calendar.weekDisplay === 'none' || (viewport.width < 924 && result.calendar.scrollerScrollWidth <= result.calendar.scrollerClientWidth));
       const calendarAlignmentBad = pageName === 'calendar.html' && (!result.calendar || !result.calendar.alignment || result.calendar.alignment.length !== 7 || result.calendar.alignment.some(pair => pair.missingDay || pair.leftDelta > 1 || pair.rightDelta > 1 || pair.widthDelta > 1));
+      const calendarCellBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.dayWidthDelta > 1 || (result.calendar.crossingCards || []).length > 0 || (viewport.width < 924 && !(result.calendar.floatingNav || []).includes('right')));
       const calendarDuplicateDateBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.duplicateCellDateCount !== 0 || result.calendar.weekBandDateCount < 7);
       const calendarWeekendBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.weekendDayCount < 1 || result.calendar.weekendBandDayCount < 1 || result.calendar.weekendBackground === result.calendar.weekdayBackground || result.calendar.weekendBandBackground === result.calendar.weekdayBandBackground);
       const calendarOverlayBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.headerOverlaysCards || result.calendar.sectionHeaderOverlaysCards);
       const calendarStillBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.episodeImageSrcs.some(src => /poster/i.test(src)));
+      const calendarEpisodeTypeBad = pageName === 'calendar.html' && (!result.calendar || result.calendar.episodeNonStillImageCount > 0);
       const movieNavBad = result.tabs.some(tab => tab.id === 'movies' && tab.text === '🎬');
       const actionBad = result.actionButtons.some(btn => btn.icon === '🎟️' || btn.icon === '▶' || btn.icon === '🎬' || btn.icon === '📏' || btn.icon === '💛' || btn.icon === '⭐' || Math.abs(btn.width - btn.height) > 1 || btn.radius < 7 || btn.radius > 10 || btn.radius >= (btn.width / 2) || !btn.belowImage);
       const stickyBad = pageName === 'index.html' && (!result.dashHeads.some(h => /Current \/ Recent/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Watchlist/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Upcoming/.test(h.text) && h.position === 'sticky') || !result.dashHeads.some(h => /Recommendations/.test(h.text) && h.position === 'sticky'));
@@ -926,8 +968,8 @@ function ignoreConsole(message){
       const performanceBad = result.perf && (result.perf.loadMs > 10000 || result.perf.domContentLoadedMs > 8000);
       const discoverBad = pageName === 'discover.html' && (!result.discoverRegistryRows || !result.discoverEmptyState || result.discoverCards.length > 0);
       const pageErrors = errors.filter(error => !ignoreConsole(error));
-      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || calendarAlignmentBad || calendarDuplicateDateBad || calendarWeekendBad || calendarOverlayBad || calendarStillBad || actionBad || stickyBad || topNavBad || stickyAncestorBad || sectionStickyBad || dashboardDuplicateBad || recommendationBad || posterSizeBad || stillSizeBad || popupDetailBad || watchStateActionBad || manageComputedBad || performanceBad || discoverBad || pageErrors.length){
-        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, headerStickyAncestors: result.headerStickyAncestors, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, actionButtons: result.actionButtons, dashHeads: result.dashHeads, sectionHeads: result.sectionHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, posterCards: result.posterCards, stillCards: result.stillCards, providerDetailRendered: result.providerDetailRendered, providerDetailText: result.providerDetailText, watchStateAction: result.watchStateAction, manageComputed: result.manageComputed, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
+      if (badText.length || framedTabs.length || missingLabels.length || missingRequiredTabs.length || movieNavBad || logoBad || manageBad || watchBad || calendarBad || calendarAlignmentBad || calendarCellBad || calendarDuplicateDateBad || calendarWeekendBad || calendarOverlayBad || calendarStillBad || calendarEpisodeTypeBad || actionBad || stickyBad || topNavBad || stickyAncestorBad || sectionStickyBad || dashboardDuplicateBad || recommendationBad || posterSizeBad || stillSizeBad || popupDetailBad || watchStateActionBad || manageComputedBad || performanceBad || discoverBad || pageErrors.length){
+        failures.push({ viewport: viewport.name, page: pageName, badText, framedTabs, missingLabels, missingRequiredTabs, movieNavBad, logoRatio, logoRect: result.logoRect, headerRect: result.headerRect, headerPosition: result.headerPosition, headerAfterScrollRect: result.headerAfterScrollRect, headerStickyAncestors: result.headerStickyAncestors, canScroll: result.canScroll, manageButtonCount: result.manageButtonCount, manageHasTable: result.manageHasTable, manageCardCount: result.manageCardCount, manageColumnCount: result.manageColumnCount, manageRowCount: result.manageRowCount, watchListCount: result.watchListCount, calendar: result.calendar, calendarCellBad, actionButtons: result.actionButtons, dashHeads: result.dashHeads, sectionHeads: result.sectionHeads, dashboardBlocks: result.dashboardBlocks, recommendationCards: result.recommendationCards, posterCards: result.posterCards, stillCards: result.stillCards, providerDetailRendered: result.providerDetailRendered, providerDetailText: result.providerDetailText, watchStateAction: result.watchStateAction, manageComputed: result.manageComputed, perf: result.perf, discoverCards: result.discoverCards, discoverRegistryRows: result.discoverRegistryRows, discoverEmptyState: result.discoverEmptyState, errors: pageErrors });
       }
       await page.close();
     }
