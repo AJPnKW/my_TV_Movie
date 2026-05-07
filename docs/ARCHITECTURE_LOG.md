@@ -2,6 +2,11 @@
 
 ## 2026-05-06
 
+- Replaced independent sticky offsets for the app header, section headers, and calendar weekday header with one runtime-fed CSS variable model.
+- Reworked calendar month rendering into paired `.calendar-week-header` and `.calendar-week-body` grids so weekday/date cells and day columns share the same column, gap, padding, and border model without overlaying the first row.
+- Extended rendered validation to prove sticky app header persistence, section/calendar non-overlap, exact header/body column bounds, weekend styling in both header/body, duplicate-date prevention, and contained mobile calendar row scroll.
+- Commit: `34bad4c2` fix sticky header calendar alignment.
+
 - Implemented MC-2026-05-05.2 interaction compliance with canonical local watch-state resolution feeding card action render state across Dashboard, Shows, Movies, Discover, and popups.
 - Updated Manage Watch State from a fixed first-page matrix into a searchable, sortable, pageable matrix with inline edits, row state keys, and persistent first/prev/next/last controls.
 - Extended rendered browser QA to prove action icon changes, local state writes, queue writes, Manage Watch State row reflection, cross-view state consistency, and episode carousel controls with retained show/season context on Android TV and laptop viewports.
