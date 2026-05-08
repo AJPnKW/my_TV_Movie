@@ -4382,6 +4382,7 @@ body.app-modal-open{
   white-space:nowrap !important;
 }
 
+.manual-carousel,
 .manual-carousel.carousel{
   display:grid !important;
   gap:10px !important;
@@ -4418,6 +4419,7 @@ body.app-modal-open{
   backdrop-filter:blur(8px);
 }
 
+.episode-carousel .episode-carousel-header,
 .episode-carousel .carousel-header{
   position:relative;
   top:auto;
@@ -4466,6 +4468,7 @@ body.app-modal-open{
   outline:none;
 }
 
+.episode-carousel .episode-carousel-viewport,
 .episode-carousel .carousel-viewport{
   --carousel-side-pad:0px;
   position:relative;
@@ -4497,6 +4500,7 @@ body.app-modal-open{
   scroll-snap-align:start !important;
 }
 
+.episode-carousel .episode-carousel-track > .episode-card,
 .episode-carousel .carousel-track > .popup-episode-card{
   border:1px solid rgba(148,163,184,.26);
   border-radius:12px;
@@ -4577,6 +4581,7 @@ body.app-modal-open{
 }
 
 @media (min-width:1180px){
+  .episode-carousel .episode-carousel-viewport,
   .episode-carousel .carousel-viewport{
     max-width:min(100%, calc((var(--contract-still-w) * 3) + 24px + (var(--carousel-side-pad) * 2)));
   }
@@ -4587,6 +4592,7 @@ body.app-modal-open{
     padding:8px;
   }
 
+  .episode-carousel .episode-carousel-viewport,
   .episode-carousel .carousel-viewport{
     --carousel-side-pad:0px;
     max-width:100%;
@@ -5263,6 +5269,8 @@ body,
 
 .calendar-day{
   min-width:0 !important;
+  width:auto !important;
+  max-width:100% !important;
   margin:0 !important;
   overflow:hidden !important;
 }
@@ -5304,4 +5312,57 @@ body,
   .calendar-week-header:first-child + .calendar-week-body{
     margin-top:208px !important;
   }
+}
+
+/* MC-2026-05-07 screenshot containment hardening: day population cannot change column width. */
+.calendar-week-body > .calendar-day,
+.calendar-week-header > .calendar-week-band__day{
+  width:auto !important;
+  max-width:100% !important;
+  min-width:0 !important;
+}
+
+.calendar-day,
+.calendar-day__items,
+.calendar-day__items > *,
+.calendar-item,
+.calendar-item.media-card,
+.calendar-item.episode-row,
+.calendar-item .media-card__body,
+.calendar-item .actionbar,
+.calendar-day .more-toggle{
+  max-inline-size:100% !important;
+  min-inline-size:0 !important;
+  inline-size:100% !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+
+.calendar-item .media-card__poster,
+.calendar-item .media_block{
+  max-inline-size:100% !important;
+  min-inline-size:0 !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+  justify-self:stretch !important;
+}
+
+.calendar-item .actionbar{
+  --ui_action_box:24px;
+  grid-template-columns:auto minmax(0, 1fr) auto !important;
+  gap:2px !important;
+}
+
+.calendar-item .actionbar-left,
+.calendar-item .actionbar-center,
+.calendar-item .actionbar-right{
+  gap:2px !important;
+  min-width:0 !important;
+  overflow:hidden !important;
+}
+
+.calendar-item .actionbar-rating{
+  max-width:32px !important;
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
 }

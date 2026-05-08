@@ -14,6 +14,7 @@ import * as availabilityUi from './availability_ui.js';
 import * as cardRenderer from './card_renderer.js';
 import * as popupController from './popup_controller.js';
 import * as actionBar from './action_bar.js';
+import './watch_state_manager.js';
 import '../config.js';
 
 window.MyTVHubSharedModules = Object.freeze({
@@ -42,6 +43,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     data: null,
     calendarData: null,
     watchStateQueue: null,
+    providerRegistry: null,
     discoverRegistry: null,
     inputs: null,
     tab: PAGE,
@@ -1804,7 +1806,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function buildActionBarHtml(kind, id, options={}){
     const title = safeText(options.title || options.titleText || "").trim();
     const statusContext = options.statusContext || {};
-    const releaseStatus = safeText(options.availabilityStatus || (options.available === false ? "unreleased" : "")).trim();
+    const availabilityStatus = safeText(options.availabilityStatus || "").trim();
+    const releaseStatus = /^(not_yet_released|unreleased)$/i.test(availabilityStatus) ? availabilityStatus : "";
     const tmdbForState = safeText(options.tmdbId ?? options.tmdb_id ?? (kind === "episode" ? "" : id));
     const actionContext = canonicalStateContext(kind, id, options);
     const watchedStatusValue = canonicalStateValue("watched_status", actionContext, options.watchedActive ? "watched" : "unwatched");
@@ -1908,14 +1911,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const href = safeText(entry.href).trim();
       if (!href) return null;
       const key = safeText(entry.key).trim().toLowerCase();
+      const health = providerHealthForSource(key, href);
+      if (health.blocked) return null;
       const priority = key ? fallbackOrder.indexOf(key) : -1;
       return {
         key,
         type: safeText(entry.type || "external").trim().toLowerCase() || "external",
         label: safeText(entry.label || `Source ${idx + 1}`),
-        note: safeText(entry.note || entry.description || ""),
+        note: safeText(entry.note || entry.description || health.note || ""),
         status: safeText(entry.status || ""),
         href,
+        provider_status: health.status,
+        provider_id: health.provider_id,
         priority: priority >= 0 ? priority : 100 + idx
       };
     }).filter(Boolean).sort((a, b) => {
@@ -1935,7 +1942,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (!safeHref) return;
       options.push({ type, label, href: safeHref, note });
     };
-    collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note || opt.status));
+    collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note || opt.provider_status || opt.status));
     const seen = new Set();
     return options.filter(opt => {
       const key = `${opt.type}|${opt.href}`;
@@ -2024,6 +2031,36 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       obj.rt ||
       ""
     ).trim();
+  }
+
+  function providerRegistryRecords(){
+    const registry = state.providerRegistry && typeof state.providerRegistry === "object" ? state.providerRegistry : {};
+    return Array.isArray(registry.providers) ? registry.providers : (Array.isArray(registry.items) ? registry.items : []);
+  }
+
+  function providerDomainFromUrl(href){
+    try {
+      return new URL(safeText(href)).hostname.toLowerCase().replace(/^www\./, "");
+    } catch (_) {
+      return "";
+    }
+  }
+
+  function providerHealthForSource(key, href){
+    const sourceKey = safeText(key).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    const domain = providerDomainFromUrl(href);
+    const record = providerRegistryRecords().find(item => {
+      const providerId = safeText(item?.provider_id).toLowerCase();
+      const itemDomain = safeText(item?.domain).toLowerCase().replace(/^www\./, "");
+      return (sourceKey && providerId === sourceKey) || (domain && itemDomain === domain);
+    });
+    const status = safeText(record?.status || "active").toLowerCase();
+    return {
+      blocked: status === "blocked" || status === "archived",
+      status,
+      provider_id: safeText(record?.provider_id || sourceKey),
+      note: safeText(record?.notes || "")
+    };
   }
 
   function getCompanyNames(list){
@@ -2422,6 +2459,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/calendar.json"]);
       state.discoverRegistry = await window.MyTVHubSharedModules.dataLoader.loadDiscoverRegistryFirst(["../data/discover_registry.json"]);
       state.watchStateQueue = await window.MyTVHubSharedModules.configLoader.loadJsonFirst(["../data/watch_state_queue.json"]).catch(() => ({ items: [] }));
+      state.providerRegistry = await window.MyTVHubSharedModules.configLoader.loadJsonFirst(["../data/provider_registry.json"]).catch(() => ({ providers: [] }));
 
       if (!state.data || typeof state.data !== "object") throw new Error("catalog_index.json not loaded");
       if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar.json not loaded");
@@ -3030,8 +3068,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function focusVisibleCarouselCard(carousel, dir){
-    const viewport = $(".carousel-viewport", carousel);
-    const cards = $$(".carousel-track > .media-card, .carousel-track > [tabindex]", carousel).filter(isVisible);
+    const viewport = $(".episode-carousel-viewport, .carousel-viewport", carousel);
+    const cards = $$(".episode-carousel-track > .episode-card, .carousel-track > .media-card, .carousel-track > [tabindex]", carousel).filter(isVisible);
     if (!viewport || !cards.length) return;
     const viewportRect = viewport.getBoundingClientRect();
     const visibleCards = cards.filter(card => {
@@ -3047,8 +3085,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $$("[data-manual-carousel]", root).forEach(carousel => {
       if (carousel.dataset.manualCarouselBound === "1") return;
       carousel.dataset.manualCarouselBound = "1";
-      const viewport = $(".carousel-viewport", carousel);
-      const track = $(".carousel-track", carousel);
+      const viewport = $(".episode-carousel-viewport, .carousel-viewport", carousel);
+      const track = $(".episode-carousel-track, .carousel-track", carousel);
       const buttons = $$("[data-carousel-nav], [data-ep-nav]", carousel);
       if (!viewport || !track || !buttons.length) return;
       const pageAmount = () => Math.max(240, Math.floor(viewport.clientWidth * 0.86));
@@ -4330,11 +4368,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function readLocalWatchState(){
-    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.load === "function") {
-      return window.MyTVHubWatchState.load();
-    }
-    try { return JSON.parse(localStorage.getItem("mytv_watch_state_v1") || "{}") || {}; }
-    catch (_) { return {}; }
+    return window.MyTVHubWatchState && typeof window.MyTVHubWatchState.load === "function"
+      ? window.MyTVHubWatchState.load()
+      : {};
   }
 
   function syncQueueCount(){
@@ -4363,6 +4399,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function stateRecordValue(record, type){
+    if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.valueOf === "function") {
+      return window.MyTVHubWatchState.valueOf(record, type);
+    }
     const cleanType = safeText(type);
     if (record && typeof record === "object" && !Array.isArray(record)){
       const value = safeText(record.new_value).toLowerCase();
@@ -4382,16 +4421,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (window.MyTVHubWatchState && typeof window.MyTVHubWatchState.contextKey === "function"){
       return window.MyTVHubWatchState.contextKey(type, ctx);
     }
-    const cleanType = safeText(type);
-    const kind = safeText(ctx.kind || ctx.item_type).toLowerCase();
-    const id = safeText(ctx.id || ctx.tmdb_id || ctx.movieId || ctx.showId);
-    const showId = safeText(ctx.showId || ctx.show_id || ctx.show || (kind === "show" ? id : ""));
-    const season = safeText(ctx.seasonNumber || ctx.season_number || ctx.season);
-    const episode = safeText(ctx.episodeNumber || ctx.episode_number || ctx.episode);
-    if (kind === "episode" && showId && season && episode) return `${cleanType}:episode:${showId}:${season}:${episode}`;
-    if (kind === "season" && showId && season) return `${cleanType}:season:${showId}:${season}`;
-    if (kind === "movie" && id) return `${cleanType}:movie:${id}`;
-    if ((kind === "show" || kind === "tv") && (showId || id)) return `${cleanType}:show:${showId || id}`;
     return "";
   }
 
@@ -5059,19 +5088,19 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           </div>
         </div>
         <div class="section section-card">
-          <div class="carousel manual-carousel episode-carousel" data-manual-carousel="episodes" aria-label="${escHtml(`${title} ${seasonLabel} episodes`)}">
-            <div class="carousel-header">
+          <div class="manual-carousel episode-carousel" data-manual-carousel="episodes" aria-label="${escHtml(`${title} ${seasonLabel} episodes`)}">
+            <div class="episode-carousel-header carousel-header">
               <div class="carousel-heading">
                 <div class="carousel-title">${escHtml(title)}</div>
                 <div class="carousel-context">${escHtml(`${seasonLabel} • ${seasonEpisodeCount ? `${seasonEpisodeCount} episodes` : "No episodes"}`)}</div>
               </div>
-              <div class="carousel-controls" aria-label="Episode carousel navigation">
+              <div class="episode-carousel-controls carousel-controls" aria-label="Episode carousel navigation">
                 <button class="epnavbtn" type="button" data-carousel-nav="prev" data-ep-nav="prev" aria-label="Previous episodes">‹</button>
                 <button class="epnavbtn" type="button" data-carousel-nav="next" data-ep-nav="next" aria-label="Next episodes">›</button>
               </div>
             </div>
-            <div class="carousel-viewport" tabindex="0" data-carousel-viewport>
-              <div class="carousel-track" role="list" data-carousel-track>
+            <div class="episode-carousel-viewport carousel-viewport" tabindex="0" data-carousel-viewport>
+              <div class="episode-carousel-track carousel-track" role="list" data-carousel-track>
                 ${episodes.map(ep => {
                   const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
                   const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
@@ -5111,7 +5140,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     }),
                     overlay: false,
                     articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
-                    extraClass: "popup-episode-card",
+                    extraClass: "popup-episode-card episode-card",
                     renderKey: `popup:episode:${show.tmdb_id ?? ""}:${seasonNum}:${episodeNum}`
                   });
                 }).join("") || `<div class="muted">No episodes available for this season.</div>`}

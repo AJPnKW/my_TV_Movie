@@ -38,6 +38,7 @@ $requiredFiles = @(
     'data/catalog_index.json',
     'data/calendar.json',
     'data/discover_registry.json',
+    'data/provider_registry.json',
     'data/watch_sources_index.json',
     'web/index.html',
     'web/calendar.html',
@@ -426,6 +427,9 @@ foreach ($needle in @(
     'summariesVisible',
     'widgetFrame',
     'viewportClipsTrack',
+    'actionViews',
+    'providerProof',
+    'providerBlockedLinks',
     'floating'
 )) {
     if ($qaBrowserText -notlike "*$needle*") { Add-CheckError "qa_browser_layout_check.mjs missing rendered interaction proof: $needle" }
@@ -464,6 +468,12 @@ foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_
 }
 foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'ids:', 'show:', 'sync_status')) {
     if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing queue write contract: $needle" }
+}
+foreach ($needle in @('__myTvHubWatchStateManagerLoaded', 'valueOf')) {
+    if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing canonical owner guard/export: $needle" }
+}
+if ($appRuntimeText -notlike "*import './watch_state_manager.js';*") {
+    Add-CheckError 'app_runtime.js must import watch_state_manager.js before rendering action bars.'
 }
 foreach ($needle in @('watchStateQueue', '../data/watch_state_queue.json', 'item?.id ?? ""')) {
     if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing file-backed queue or episode ID contract: $needle" }
@@ -504,9 +514,22 @@ foreach ($needle in @(
     if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing shared calendar column contract: $needle" }
 }
 foreach ($needle in @(
+    'max-inline-size:100% !important',
+    '.calendar-week-body > .calendar-day',
+    '.calendar-day .more-toggle',
+    '--ui_action_box:24px'
+)) {
+    if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing calendar containment hardening: $needle" }
+}
+foreach ($needle in @(
     'data-manual-carousel="episodes"',
     'data-carousel-viewport',
     'data-carousel-track',
+    'episode-carousel-header',
+    'episode-carousel-controls',
+    'episode-carousel-viewport',
+    'episode-carousel-track',
+    'episode-card',
     'bindManualCarousels',
     'bindFloatingNavControls'
 )) {
@@ -517,10 +540,35 @@ foreach ($needle in @(
     'max-width:min(100%, calc((var(--contract-still-w) * 3)',
     '.episode-carousel .popup-episode-card .media-card__summary',
     'display:none !important',
-    '.episode-carousel .carousel-viewport',
+    '.episode-carousel .episode-carousel-viewport',
     'border-radius:12px'
 )) {
     if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing framed episode carousel widget contract: $needle" }
+}
+
+Write-Host '== Provider health registry =='
+$providerRegistryText = Get-Content -Raw -LiteralPath 'data/provider_registry.json'
+try {
+    $providerRegistry = $providerRegistryText | ConvertFrom-Json
+    $providers = @($providerRegistry.providers)
+    foreach ($field in @('provider_id','domain','url_pattern','status','last_tested','tls_status','redirect_status','final_domain','notes')) {
+        if (@($providers | Where-Object { -not $_.PSObject.Properties[$field] }).Count -gt 0) {
+            Add-CheckError "provider_registry.json missing required provider field: $field"
+        }
+    }
+    foreach ($domain in @('smashystream.com','2embed.org','superembed.stream','multiembed.mov')) {
+        $record = $providers | Where-Object { $_.domain -eq $domain } | Select-Object -First 1
+        if (-not $record -or $record.status -ne 'blocked') { Add-CheckError "provider_registry.json must classify blocked provider: $domain" }
+    }
+    foreach ($domain in @('vidsrc.net','2embed.cc')) {
+        $record = $providers | Where-Object { $_.domain -eq $domain } | Select-Object -First 1
+        if (-not $record -or $record.status -ne 'active') { Add-CheckError "provider_registry.json must classify active candidate: $domain" }
+    }
+} catch {
+    Add-CheckError 'provider_registry.json is not parseable JSON.'
+}
+foreach ($needle in @('../data/provider_registry.json','providerHealthForSource','health.blocked','providerBlockedLinks')) {
+    if (($appRuntimeText + $qaBrowserText) -notlike "*$needle*") { Add-CheckError "provider health filtering/QA missing: $needle" }
 }
 
 Write-Host '== Duplicate action/popup handlers =='

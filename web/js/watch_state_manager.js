@@ -10,6 +10,8 @@ CHANGE NOTES:
 */
 (function(){
   'use strict';
+  if (window.__myTvHubWatchStateManagerLoaded) return;
+  window.__myTvHubWatchStateManagerLoaded = true;
 
   const KEY = 'mytv_watch_state_v1';
   const QUEUE_KEY = 'mytv_watch_sync_queue_v1';
@@ -397,6 +399,7 @@ CHANGE NOTES:
     SYNC_STATUS_VALUES,
     load,
     save,
+    valueOf,
     loadQueue,
     saveQueue,
     contextKey,

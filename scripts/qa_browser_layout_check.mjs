@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer-core";
+import { readFileSync } from "node:fs";
 
 const BASE_URL = (process.env.BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
 
@@ -133,6 +134,7 @@ async function inspect(pathname, viewport) {
     const queueAfterItems = Array.isArray(queueAfter) ? queueAfter : (Array.isArray(queueAfter?.items) ? queueAfter.items : []);
     const popupButton = document.querySelector("[data-watch-source-open]");
     let popupFocus = { attempted: false, opened: false, focusInside: false, closedByBack: false };
+    let providerBlockedLinks = [];
     if (popupButton) {
       popupButton.click();
       await new Promise(resolve => setTimeout(resolve, 900));
@@ -142,6 +144,9 @@ async function inspect(pathname, viewport) {
       });
       const modal = visibleModalHost?.querySelector("#providerCard, #modalCard");
       if (modal) {
+        providerBlockedLinks = Array.from(modal.querySelectorAll("a[href]"))
+          .map(link => link.href)
+          .filter(href => /smashystream\.com|2embed\.org|superembed\.stream|multiembed\.mov/i.test(href));
         document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
         await new Promise(resolve => requestAnimationFrame(resolve));
         const focusInside = modal.contains(document.activeElement);
@@ -189,6 +194,7 @@ async function inspect(pathname, viewport) {
       watchQueueAfter: queueAfterItems.length,
       watchQueueHasQueuedRecord: queueAfterItems.some(item => item && item.sync_status === "queued" && (item.item_key || item.id || item.state_key) && item.previous_value != null && item.new_value != null && item.ids && (item.ids.tmdb || item.ids.trakt || item.ids.tvdb || item.ids.imdb)),
       popupDetailOk: /Abbott Elementary/.test(popupDetailSample) && /Team Building/.test(popupDetailSample) && /S05E01 • 22 min/.test(popupDetailSample) && /Oct 1, 2025/.test(popupDetailSample) && /The teachers prepare/.test(popupDetailSample),
+      providerBlockedLinks,
       popupFocus
     };
   });
@@ -270,6 +276,8 @@ async function inspectInteractionCompliance(viewport) {
     };
   }, click);
 
+  let actionViews = [];
+
   await page.goto(`${BASE_URL}/web/manage_watch_state.html`, { waitUntil: "load", timeout: 60000 });
   await sleep(2500);
   const manage = await page.evaluate(async (proof) => {
@@ -333,6 +341,62 @@ async function inspectInteractionCompliance(viewport) {
     return out;
   }, click);
 
+  for (const viewPath of ["index.html", "calendar.html", "shows.html", "movies.html"]) {
+    await page.goto(`${BASE_URL}/web/${viewPath}`, { waitUntil: "load", timeout: 60000 });
+    await sleep(2500);
+    await page.waitForFunction(() => document.querySelector('[data-watch-state-action]') || document.querySelector('[data-show-open]'), { timeout: 12000 }).catch(() => {});
+    await sleep(viewPath === "shows.html" ? 1250 : 250);
+    actionViews.push(await page.evaluate(async (viewPath) => {
+      window.MyTVHubWatchState?.refresh?.(document);
+      if (viewPath === "shows.html" && !document.querySelector('[data-watch-state-action]')) {
+        document.querySelector("[data-show-open]")?.click();
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        window.MyTVHubWatchState?.refresh?.(document);
+      }
+      const result = { viewPath, checked: true, actions: [] };
+      const types = ["toggle-watched-status", "toggle-watch-list", "toggle-favourite"];
+      for (const action of types) {
+        const btn = Array.from(document.querySelectorAll(`[data-watch-state-action="${action}"]`)).find(candidate => {
+          const release = candidate.getAttribute("data-release-status") || candidate.getAttribute("data-watch-availability") || "";
+          const key = candidate.getAttribute("data-watch-state-key");
+          const hasId = candidate.getAttribute("data-tmdb-id") || candidate.getAttribute("data-trakt-id") || candidate.getAttribute("data-tvdb-id") || (viewPath === "shows.html" && key);
+          return key && hasId && !/not_yet_released|unreleased/.test(release);
+        });
+        if (!btn) {
+          result.actions.push({ action, found: false });
+          continue;
+        }
+        const key = btn.getAttribute("data-watch-state-key");
+        const iconBefore = btn.querySelector(".actionbar-btn__icon")?.textContent || "";
+        const valueBefore = btn.getAttribute("data-watch-state-value") || "";
+        const queueBefore = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+        const beforeItems = Array.isArray(queueBefore) ? queueBefore : (Array.isArray(queueBefore?.items) ? queueBefore.items : []);
+        btn.click();
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        const queueAfter = JSON.parse(localStorage.getItem("mytv_watch_sync_queue_v1") || "[]");
+        const afterItems = Array.isArray(queueAfter) ? queueAfter : (Array.isArray(queueAfter?.items) ? queueAfter.items : []);
+        const localAfter = JSON.parse(localStorage.getItem("mytv_watch_state_v1") || "{}");
+        const iconAfter = btn.querySelector(".actionbar-btn__icon")?.textContent || "";
+        const valueAfter = btn.getAttribute("data-watch-state-value") || "";
+        result.actions.push({
+          action,
+          found: true,
+          key,
+          iconBefore,
+          iconAfter,
+          valueBefore,
+          valueAfter,
+          localAfterValue: localAfter[key]?.new_value || localAfter[key],
+          queueCountBefore: beforeItems.length,
+          queueCountAfter: afterItems.length,
+          queueHasKey: afterItems.some(item => (item.item_key || item.key || item.state_key || item.id) === key)
+        });
+      }
+      result.ok = result.actions.every(item => item.found && item.valueAfter !== item.valueBefore && item.localAfterValue === item.valueAfter && item.queueHasKey);
+      return result;
+    }, viewPath));
+  }
+
   await page.goto(`${BASE_URL}/web/shows.html`, { waitUntil: "load", timeout: 60000 });
   await sleep(2500);
   const carousel = await page.evaluate(async () => {
@@ -342,13 +406,15 @@ async function inspectInteractionCompliance(viewport) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     const modal = document.querySelector('#modalBack[style*="flex"] #modalCard');
     const title = modal?.querySelector(".popup-hero__title")?.textContent?.trim() || "";
-    const carousel = modal?.querySelector('[data-manual-carousel="episodes"]');
+    const carousel = modal?.querySelector('.episode-carousel[data-manual-carousel="episodes"]');
     const season = carousel?.querySelector(".carousel-context")?.textContent?.trim() || modal?.querySelector(".seasonname")?.textContent?.trim() || "";
     const prev = carousel?.querySelector('[data-ep-nav="prev"]');
     const next = carousel?.querySelector('[data-ep-nav="next"]');
-    const viewport = carousel?.querySelector(".carousel-viewport");
-    const track = carousel?.querySelector(".carousel-track");
-    const cards = Array.from(track?.querySelectorAll(".popup-episode-card") || []);
+    const header = carousel?.querySelector(".episode-carousel-header");
+    const controls = carousel?.querySelector(".episode-carousel-controls");
+    const viewport = carousel?.querySelector(".episode-carousel-viewport");
+    const track = carousel?.querySelector(".episode-carousel-track");
+    const cards = Array.from(track?.querySelectorAll(".episode-card") || []);
     const viewportStyle = viewport ? getComputedStyle(viewport) : null;
     const carouselStyle = carousel ? getComputedStyle(carousel) : null;
     const viewportRect = viewport?.getBoundingClientRect();
@@ -384,6 +450,7 @@ async function inspectInteractionCompliance(viewport) {
       title,
       season,
       prevNext: !!prev && !!next,
+      shell: !!carousel && !!header && !!controls,
       track: !!track,
       viewport: !!viewport,
       cardWidths,
@@ -401,7 +468,20 @@ async function inspectInteractionCompliance(viewport) {
   });
 
   await page.close();
-  return { pathname: "interaction-contract", viewport: viewport.name, errors, missing, click, crossView, manage, carousel };
+  return { pathname: "interaction-contract", viewport: viewport.name, errors, missing, click, crossView, actionViews, manage, carousel };
+}
+
+function providerRegistryProof() {
+  const registry = JSON.parse(readFileSync("data/provider_registry.json", "utf8"));
+  const providers = Array.isArray(registry.providers) ? registry.providers : [];
+  const byDomain = Object.fromEntries(providers.map(item => [item.domain, item]));
+  return {
+    exists: true,
+    count: providers.length,
+    blocked: ["smashystream.com", "2embed.org", "superembed.stream", "multiembed.mov"].every(domain => byDomain[domain]?.status === "blocked"),
+    active: ["vidsrc.net", "2embed.cc"].every(domain => byDomain[domain]?.status === "active"),
+    fields: providers.every(item => ["provider_id","domain","url_pattern","status","last_tested","tls_status","redirect_status","final_domain","notes"].every(field => Object.prototype.hasOwnProperty.call(item, field)))
+  };
 }
 
 try {
@@ -416,6 +496,8 @@ try {
     }
   }
   const failures = [];
+  const providerProof = providerRegistryProof();
+  if (!providerProof.exists || !providerProof.fields || !providerProof.blocked || !providerProof.active) failures.push("provider registry classification/fields failed");
   for (const result of results) {
     if (result.errors.length) failures.push(`${result.viewport} ${result.pathname}: console errors`);
     if (result.missing.length) failures.push(`${result.viewport} ${result.pathname}: 404 responses`);
@@ -451,6 +533,7 @@ try {
     if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
     if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
     if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
+    if (result.providerBlockedLinks?.length) failures.push(`${result.viewport} ${result.pathname}: blocked provider visible as active`);
     if (result.viewport === "android-tv-1080p" && result.pathname === "index.html" && result.popupFocus.attempted && (!result.popupFocus.opened || !result.popupFocus.focusInside || !result.popupFocus.closedByBack)) {
       failures.push(`${result.viewport} index.html: popup D-pad focus trap/back close failed`);
     }
@@ -463,13 +546,14 @@ try {
     if (result.click?.found && result.click.localAfterValue !== result.click.valueAfter) failures.push(`${result.viewport} interaction: local state did not match clicked value`);
     if (result.click?.found && !result.click.queueHasKey) failures.push(`${result.viewport} interaction: queued state record missing for clicked item`);
     if (result.crossView?.checked && (!result.crossView.found || result.crossView.value !== result.click.valueAfter)) failures.push(`${result.viewport} interaction: clicked movie state not consistent in Movies view`);
+    if (!result.actionViews?.length || result.actionViews.some(view => !view.ok)) failures.push(`${result.viewport} interaction: action clicks inconsistent across Dashboard/Calendar/Shows/Movies`);
     if (!result.manage?.rowMatchesClick) failures.push(`${result.viewport} interaction: Manage Watch State row did not reflect clicked item`);
     if (!result.manage?.searchWorks) failures.push(`${result.viewport} interaction: Manage Watch State search failed`);
     if (!result.manage?.pageSizeWorks) failures.push(`${result.viewport} interaction: Manage Watch State page size failed`);
     if (!result.manage?.paginationWorks) failures.push(`${result.viewport} interaction: Manage Watch State first/prev/next/last pagination failed`);
     if (!result.manage?.sortingWorks) failures.push(`${result.viewport} interaction: Manage Watch State column sorting failed`);
     if (!result.manage?.inlineEditWorks) failures.push(`${result.viewport} interaction: Manage Watch State inline edit failed`);
-    if (!result.carousel?.opened || !result.carousel?.prevNext || !result.carousel?.viewport || !result.carousel?.retainedContext) failures.push(`${result.viewport} interaction: episode carousel controls/context failed`);
+    if (!result.carousel?.opened || !result.carousel?.shell || !result.carousel?.prevNext || !result.carousel?.viewport || !result.carousel?.track || !result.carousel?.retainedContext) failures.push(`${result.viewport} interaction: episode carousel shell/controls/context failed`);
     if (result.carousel?.opened && (!result.carousel?.widgetFrame || !result.carousel?.viewportFrame || !result.carousel?.viewportClipsTrack)) failures.push(`${result.viewport} interaction: episode carousel is not rendered as a framed clipped widget`);
     if (result.carousel?.opened && result.carousel?.summariesVisible) failures.push(`${result.viewport} interaction: episode carousel still shows long row-style summaries`);
     if (result.carousel?.opened && result.carousel?.visibleCardCount > 4) failures.push(`${result.viewport} interaction: episode carousel exposes too many cards like a plain row`);
@@ -478,7 +562,7 @@ try {
     if (result.carousel?.opened && !result.carousel?.floatingBefore?.includes("right")) failures.push(`${result.viewport} interaction: carousel floating right nav missing before movement`);
     if (result.carousel?.opened && !result.carousel?.floating?.some(dir => dir === "left" || dir === "right")) failures.push(`${result.viewport} interaction: carousel floating horizontal nav missing after movement`);
   }
-  console.log(JSON.stringify({ results, interactionResults, failures }, null, 2));
+  console.log(JSON.stringify({ providerProof, results, interactionResults, failures }, null, 2));
   if (failures.length) process.exitCode = 1;
 } finally {
   await browser.close();
