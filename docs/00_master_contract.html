@@ -11,9 +11,9 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Version MC-2026-05-05.2. Incremental update for repo secrets, CI/CD, card actions, true episode carousel, Manage Watch State UX, and Trakt-state consistency.</div>
+<div class="small">Only active documentation source of truth. Version MC-2026-05-05.3. Incremental update for visual acceptance, carousel proof, provider-link health, and control-thread drift prevention.</div>
 <nav class="toc">
-<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#codex">Codex</a>
+<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#providers">Providers</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#control">Control Rules</a><a href="#codex">Codex</a>
 </nav>
 </header>
 <main>
@@ -26,6 +26,7 @@
 <tr><td>Codex role</td><td>Implement code against this contract. No vague scope, no deferrals, no generalized placeholders.</td></tr>
 <tr><td>Detail fidelity</td><td>Requirements, user-provided examples, dimensions, visual targets, state names, and acceptance rules must not be simplified, collapsed, or dropped.</td></tr>
 <tr><td>Examples</td><td>User examples are acceptance tests, not optional inspiration.</td></tr>
+<tr><td>Visual proof</td><td>A feature name is not proof. If the user asks for a carousel, popup, sticky header, table, or navigation control, rendered QA must prove the required visual structure and behavior.</td></tr>
 </table>
 <h3>1.1 Version History</h3>
 <table><tr><th>Date</th><th>Version</th><th>Change</th></tr>
@@ -33,16 +34,16 @@
 <tr><td>2026-04-30</td><td>MC-2026-04-30.4</td><td>Calendar alignment, popup detail, tri-state watched status, D-pad, explicit media dimensions.</td></tr>
 <tr><td>2026-05-05</td><td>MC-2026-05-05.1</td><td>Two-way Trakt sync: queue file, endpoints, dry-run payloads, local-first click persistence.</td></tr>
 <tr><td>2026-05-05</td><td>MC-2026-05-05.2</td><td>Repository secret inventory, CI/CD workflow topology, card action click defects, true episode carousel requirements, Manage Watch State table UX, Trakt value consistency across views.</td></tr>
+<tr><td>2026-05-05</td><td>MC-2026-05-05.3</td><td>Added visual acceptance gate, anti-generalization control rule, provider URL health/safety contract, and explicit carousel widget proof requirements.</td></tr>
 </table>
-<p>Standalone page: <code>web/manage_watch_state.html</code></p>
 </section>
 <section id="pages" class="card">
 <h2>2. Page / Route Contract</h2>
 <table><tr><th>Route</th><th>Status</th><th>Purpose</th><th>Hard rules</th></tr>
 <tr><td><code>web/index.html</code></td><td class="good">Active</td><td>Dashboard</td><td>Sticky app nav, sticky section headers, no duplicate cards per day/section, compact dashboard recommendations.</td></tr>
-<tr><td><code>web/shows.html</code></td><td class="good">Active</td><td>Show library</td><td>Shared show card renderer, poster Half 171x257, working card action controls.</td></tr>
+<tr><td><code>web/shows.html</code></td><td class="good">Active</td><td>Show library</td><td>Shared show card renderer, poster Half 171x257, working card action controls, show popup uses true episode carousel.</td></tr>
 <tr><td><code>web/movies.html</code></td><td class="good">Active</td><td>Movie library</td><td>Shared movie card renderer, poster Half 171x257, working card action controls.</td></tr>
-<tr><td><code>web/calendar.html</code></td><td class="good">Active</td><td>Calendar</td><td>Seven-column desktop/tablet grid, one weekday/date header, aligned first row, weekend shading, episode stills not posters.</td></tr>
+<tr><td><code>web/calendar.html</code></td><td class="good">Active</td><td>Calendar</td><td>Seven-column desktop/tablet grid, one weekday/date header, aligned first row, weekend shading, episode stills not posters, card actions work.</td></tr>
 <tr><td><code>web/manage_watch_state.html</code></td><td class="good">Active</td><td>Watch state data manager</td><td>Excel-like sortable/filterable editable table/tree; must allow search, pagination, per-column sorting, row edits, and value changes.</td></tr>
 <tr><td><code>web/config.html</code></td><td class="good">Active</td><td>Settings only</td><td>Must not embed Manage Watch State.</td></tr>
 <tr><td><code>web/discover.html</code></td><td class="good">Active</td><td>External discovery</td><td>Separate discovery registry/feed; not dashboard duplicate.</td></tr>
@@ -51,12 +52,11 @@
 </section>
 <section id="ui" class="card">
 <h2>3. UI, Navigation, Cards, and Media Sizes</h2>
-<ul><li>Full app header/top navigation is sticky on every runtime page, not just this documentation page.</li><li>Major section headers are sticky and hand off naturally to the next section header.</li><li>Primary nav icons are standalone Unicode/web icons, not boxed buttons.</li><li>Boys logo must preserve aspect ratio and cannot stretch into a banner.</li><li>Card action row is below media/text and never overlays image or metadata.</li><li>Show/movie posters in grids, Shows, Movies, and Dashboard Recommendations use <strong>poster Half <code>171x257</code></strong>.</li><li>Episode stills use <strong>narrow still Half <code>240x135</code></strong>; episode source still <code>320x180</code> is the source/optimized still target before crop.</li><li>Calendar episode cards use episode stills only, never show/movie posters.</li><li>Header cell left/right bounds must align exactly with matching calendar day columns.</li></ul>
+<ul><li>Full app header/top navigation is sticky on every runtime page.</li><li>Major section headers are sticky and hand off naturally to the next section header.</li><li>Primary nav icons are standalone Unicode/web icons, not boxed buttons.</li><li>Boys logo must preserve aspect ratio and cannot stretch into a banner.</li><li>Card action row is below media/text and never overlays image or metadata.</li><li>Show/movie posters in grids, Shows, Movies, and Dashboard Recommendations use <strong>poster Half <code>171x257</code></strong>.</li><li>Episode stills use <strong>narrow still Half <code>240x135</code></strong>; episode source still <code>320x180</code> is the source/optimized still target before crop.</li><li>Calendar episode cards use episode stills only, never show/movie posters.</li><li>Header cell left/right bounds must align exactly with matching calendar day columns.</li></ul>
 </section>
 <section id="actions" class="card">
 <h2>4. Card Action Controls — Required Behavior</h2>
 <pre>🍿 ⌚ 🎫 💕 76%</pre>
-<p>Forbidden active icons: duplicate legacy action icons, boxed icon-button replacements for the primary nav, star-rating-only replacements, and any retired ticket/bookmark/favorite symbols not listed in the required icon strip.</p>
 <table><tr><th>Control</th><th>Meaning</th><th>Required click result</th><th>Required state result</th></tr>
 <tr><td>🍿</td><td>Watch-source/provider popup</td><td>Open popup with media detail block and compact provider buttons.</td><td>No state write unless provider/action chosen.</td></tr>
 <tr><td>⌚</td><td>watched_status</td><td>Cycle <code>unwatched → partial → watched → unwatched</code>.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row.</td></tr>
@@ -64,26 +64,29 @@
 <tr><td>💕</td><td>favourite</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row. If Trakt mapping is local-only, status must say local_only, not pretend synced.</td></tr>
 <tr><td>76%</td><td>rating</td><td>Display only unless future rating editing is explicitly designed.</td><td>Always includes percent sign.</td></tr>
 </table>
+<h3>4.1 Cross-view Consistency</h3>
+<ul><li>The same media item must show the same watch_list, favourite, and watched_status in Dashboard, Shows, Movies, Calendar, Discover, Watch Me, and Manage Watch State.</li><li>State cannot be view-local. One canonical state key must drive all views.</li><li>When a user clicks an action icon in one view, every matching card/row in every active view must render the same state after refresh/rerender.</li><li>Action visual state must be both readable and functional: if it lights up, the underlying state must exist; if state changes, the icon must change.</li><li>Validation must click ⌚/🎫/💕 on a Dashboard card and Calendar card, confirm visual state changes, confirm queue/local state changes, then open Manage Watch State and confirm the same media row changed.</li></ul>
 <h3>4.2 Mandatory Popup Detail Example</h3>
 <pre>Abbott Elementary
 Team Building
 S05E01 • 22 min
 Oct 1, 2025
 The teachers prepare for the upcoming school year with new faces and big changes on the horizon.</pre>
-<h3>4.1 Cross-view Consistency</h3>
-<ul><li>The same media item must show the same watch_list, favourite, and watched_status in Dashboard, Shows, Movies, Calendar, Discover, Watch Me, and Manage Watch State.</li><li>State cannot be view-local. One canonical state key must drive all views.</li><li>When a user clicks an action icon in one view, every matching card/row in every active view must render the same state after refresh/rerender.</li><li>Action visual state must be both readable and functional: if it lights up, the underlying state must exist; if state changes, the icon must change.</li><li>Validation must click ⌚/🎫/💕 on a card, confirm visual state changes, confirm queue/local state changes, then open Manage Watch State and confirm the same media row changed.</li></ul>
 </section>
 <section id="carousel" class="card">
 <h2>5. Episode Carousel Contract</h2>
-<p>Episode rows are not acceptable as plain horizontal overflow rows. They must be true carousels with controls, focus management, and retained context.</p>
-<table><tr><th>Requirement</th><th>Contract</th></tr>
-<tr><td>Container</td><td>Each show/season episode strip is a named carousel region with accessible label containing show and season context.</td></tr>
-<tr><td>Navigation</td><td>Visible previous/next controls; keyboard left/right; Android TV D-pad left/right; optional page dots/count.</td></tr>
-<tr><td>Context retention</td><td>Show title and season title/header remain visible while moving through carousel items. Horizontal scrolling must not make the user lose the show/season context.</td></tr>
-<tr><td>Card layout</td><td>Episode cards use Narrow Still Half 240x135 and consistent episode metadata.</td></tr>
-<tr><td>Focus</td><td>Focus stays inside the carousel while navigating cards and controls; D-pad up/down moves predictably to previous/next section.</td></tr>
-<tr><td>Scroll behavior</td><td>Carousel can use scroll-snap but must also expose real controls. A plain overflowing row without carousel controls fails validation.</td></tr>
+<p>Episode rows are not acceptable as plain horizontal overflow rows. A carousel means an explicit controlled widget, not a CSS row with overflow.</p>
+<table><tr><th>Required element</th><th>Acceptance rule</th></tr>
+<tr><td>Carousel shell</td><td>Rendered DOM has one parent <code>.episode-carousel</code> or equivalent carousel role/contract marker.</td></tr>
+<tr><td>Header/context</td><td>Show title and season title remain visible while moving through episodes.</td></tr>
+<tr><td>Viewport</td><td>Dedicated carousel viewport clips the track; it is not just the page row overflowing horizontally.</td></tr>
+<tr><td>Track</td><td>Dedicated track contains episode cards and uses scroll-snap or transform/page movement.</td></tr>
+<tr><td>Controls</td><td>Visible previous and next buttons exist, are focusable, and change the visible episode card group.</td></tr>
+<tr><td>Cards</td><td>Episode cards use Narrow Still Half 240x135, episode title, SxxExx, runtime/date, and action row.</td></tr>
+<tr><td>Keyboard/D-pad</td><td>Left/right moves inside the carousel; up/down exits predictably to surrounding sections.</td></tr>
+<tr><td>Proof</td><td>Rendered QA must click next/previous and verify scroll/transform position changes and context remains visible.</td></tr>
 </table>
+<p><strong>Fail condition:</strong> a row of episode data or plain horizontal scroll without carousel controls is not a carousel.</p>
 </section>
 <section id="watch-state" class="card">
 <h2>6. Manage Watch State — Exact UX Contract</h2>
@@ -118,21 +121,41 @@ The teachers prepare for the upcoming school year with new faces and big changes
 <tr><td><code>LOGGING_TOKEN</code></td><td>Optional diagnostic/logging integration.</td><td>Only where logging scripts require it.</td></tr>
 </table>
 </section>
+<section id="providers" class="card">
+<h2>8. Watch Provider Link Health Contract</h2>
+<p>Provider links are treated as external health-checked targets. The app must not keep broken, unsafe, or redirect-abusive providers active.</p>
+<table><tr><th>Status</th><th>Meaning</th><th>Runtime behavior</th></tr>
+<tr><td><code>active</code></td><td>Domain opens over modern HTTPS, does not redirect to unrelated advertising/security-risk domains, and creates a usable provider page.</td><td>May show in popup.</td></tr>
+<tr><td><code>degraded</code></td><td>Intermittent, slow, or partial failures.</td><td>May show behind warning or lower priority.</td></tr>
+<tr><td><code>blocked</code></td><td>DNS failure, unsupported SSL/TLS, empty tab/no URL, known spam redirect, browser security failure, or user-reported unsafe behavior.</td><td>Must not appear as normal provider option.</td></tr>
+<tr><td><code>archived</code></td><td>Previously used provider retained only for audit/history.</td><td>Not active.</td></tr>
+</table>
+<ul><li>Provider QA must record domain, generated URL pattern, media type, TMDB ID, season/episode, status code/error class, redirect final domain if safe to capture, test timestamp, and disposition.</li><li>Provider QA must classify browser messages like <code>ERR_SSL_VERSION_OR_CIPHER_MISMATCH</code> as provider-side TLS/SSL failure unless evidence proves local browser issue.</li><li>Provider links that open a blank tab with no URL or no target must be classified as broken generation logic.</li><li>Provider links that redirect to unrelated advertising or unsafe domains must be blocked/archived.</li><li>The app must not auto-discover or add unknown replacement providers without explicit review and health classification.</li></ul>
+</section>
 <section id="ci" class="card">
-<h2>8. CI/CD and Workflow Contract</h2>
+<h2>9. CI/CD and Workflow Contract</h2>
 <table><tr><th>Workflow</th><th>Required behavior</th></tr>
-<tr><td><code>.github/workflows/validate.yml</code></td><td>Runs syntax, availability validation, asset validation, runtime catalog integrity, JS checks, rendered/browser QA, and Trakt dry-run. Must use Node 24 action majors and Python 3.12.</td></tr>
+<tr><td><code>.github/workflows/validate.yml</code></td><td>Runs syntax, availability validation, asset validation, runtime catalog integrity, JS checks, rendered/browser QA, provider health QA, and Trakt dry-run. Must use Node 24 action majors and Python 3.12.</td></tr>
 <tr><td><code>.github/workflows/build-data.yml</code></td><td>Runs full data pipeline, validates JSON, uploads diagnostics on success/failure, commits generated artifacts, then dispatches Pages after artifact commits.</td></tr>
 <tr><td><code>.github/workflows/pages.yml</code></td><td>Deploys GitHub Pages using workflow deployment so bot-generated data commits publish.</td></tr>
 </table>
-<ul><li>Every script referenced by workflows must exist in repo and be syntax validated. Missing validator scripts fail the contract.</li><li>Workflow steps must not reference retired files such as removed watch_me runtime files.</li><li>Availability validation scripts must be explicit and present: <code>validate_availability_overlay.py</code>, <code>enrich_data_with_availability.py</code>, <code>qa_availability_status.py</code>, <code>qa_availability_phase2.py</code>, <code>validate_runtime_assets.py</code>, <code>validate_runtime_catalog_integrity.py</code>, plus any replacement explicitly listed here.</li><li>Asset self-heal must run before runtime asset validation where missing assets can be fetched safely.</li><li>Node 20 warnings are not accepted as harmless drift; workflow actions must be updated to supported Node 24 action majors.</li><li>Failure logs and reports must be uploaded as artifacts even when the main pipeline fails.</li><li>Credential existence is not enough. Workflows must pass all required secrets into the exact steps that use them.</li></ul>
+<ul><li>Every script referenced by workflows must exist in repo and be syntax validated.</li><li>Workflow steps must not reference retired files.</li><li>Node 20 warnings are not accepted as harmless drift; workflow actions must be updated to supported Node 24 action majors.</li><li>Failure logs and reports must be uploaded as artifacts even when the main pipeline fails.</li><li>Credential existence is not enough. Workflows must pass all required secrets into the exact steps that use them.</li></ul>
 </section>
 <section id="qa" class="card">
-<h2>9. Validation Acceptance Tests</h2>
-<ul><li>Click ⌚/🎫/💕 on Dashboard card → visual state changes → queue/local state changes → Manage Watch State row matches.</li><li>Repeat same click test on Shows and Movies card views.</li><li>Verify same media item has same state across Dashboard, Shows, Movies, Calendar, Discover, Watch Me, Manage Watch State.</li><li>Episode carousel test: show/season header remains visible, next/previous controls work, keyboard and D-pad navigation work, plain overflowing row fails.</li><li>D-pad/Android TV validation must prove focus order, popup trapping, and Back/Escape close behavior.</li><li>Manage Watch State test: search works, type filter works, rows-per-page changes, first/previous/next/last work, column-header sorting works, inline state edits persist and queue.</li><li>Trakt dry-run test: queued records generate endpoint-specific payloads or explicit local_only/missing_id/validation_issue status.</li><li>CI test: validate, build-data, and pages workflows pass; workflow diagnostics artifacts exist when failure occurs.</li></ul>
+<h2>10. Validation Acceptance Tests</h2>
+<ul><li>Click ⌚/🎫/💕 on Dashboard card and Calendar card → visual state changes → queue/local state changes → Manage Watch State row matches.</li><li>Verify same media item has same state across Dashboard, Shows, Movies, Calendar, Discover, Watch Me, Manage Watch State.</li><li>Episode carousel test: show/season header remains visible, previous/next controls work, keyboard and D-pad navigation work, scroll/transform position changes, plain overflowing row fails.</li><li>D-pad/Android TV validation must prove focus order, popup trapping, and Back/Escape close behavior.</li><li>Manage Watch State test: search works, type filter works, rows-per-page changes, first/previous/next/last work, column-header sorting works, inline state edits persist and queue.</li><li>Provider health test: broken TLS, DNS failure, blank URL generation, and unsafe redirect domains are blocked or archived and not shown as normal active options.</li><li>Trakt dry-run test: queued records generate endpoint-specific payloads or explicit local_only/missing_id/validation_issue status.</li><li>CI test: validate, build-data, and pages workflows pass; workflow diagnostics artifacts exist when failure occurs.</li></ul>
 </section>
-<section id="accountability" class="card"><h2>10. Accountability</h2><ul><li>No deferrals for items above.</li><li>Do not report success unless behavior is proven in rendered/browser QA or deterministic script output.</li><li>Do not generalize user feedback into broad labels; preserve operational details.</li><li>If behavior is not implemented, classify as failed validation or blocked by a concrete external dependency.</li></ul></section>
-<section id="codex" class="card"><h2>11. Next Codex Batch</h2><ol><li>Fix card action controls so ⌚/🎫/💕 work in every card view and update canonical state + queue + Manage Watch State.</li><li>Replace episode rows with true carousels with controls, D-pad/keyboard support, and retained show/season context.</li><li>Rebuild Manage Watch State as a compact sortable/filterable/paginated editable table/tree.</li><li>Fix Trakt icon/state consistency across all views.</li><li>Harden validation for all acceptance tests in Section 9.</li><li>Preserve workflow/secret/CI contract in Section 8.</li></ol></section>
+<section id="control" class="card"><h2>11. Control Thread Drift-Prevention Rules</h2>
+<table><tr><th>Failure mode</th><th>Required correction</th></tr>
+<tr><td>Assistant accepts a label such as “carousel” without rendered proof.</td><td>Reject as unproven. Require visible shell, viewport, track, prev/next controls, movement, retained context, and D-pad/keyboard QA.</td></tr>
+<tr><td>Detailed user example becomes a vague requirement.</td><td>Preserve the example verbatim or convert it into a measurable acceptance test.</td></tr>
+<tr><td>Codex reports success but user screenshot contradicts it.</td><td>User screenshot wins. Reclassify as failed validation and fix root cause.</td></tr>
+<tr><td>Feature works on one page but not another.</td><td>Classify as cross-view state or renderer ownership drift. Fix shared owner, not one page.</td></tr>
+<tr><td>Provider URL works/fails inconsistently.</td><td>Classify by health state and generated URL pattern; do not keep unsafe or broken providers active.</td></tr>
+</table>
+</section>
+<section id="accountability" class="card"><h2>12. Accountability</h2><ul><li>No deferrals for items above.</li><li>Do not report success unless behavior is proven in rendered/browser QA or deterministic script output.</li><li>Do not generalize user feedback into broad labels; preserve operational details.</li><li>If behavior is not implemented, classify as failed validation or blocked by a concrete external dependency.</li></ul></section>
+<section id="codex" class="card"><h2>13. Next Codex Batch</h2><ol><li>Fix calendar card cell containment and equal-width day columns.</li><li>Implement true show-popup episode carousel with visible shell, viewport, track, controls, movement proof, and retained context.</li><li>Fix card action controls on Calendar and Dashboard so ⌚/🎫/💕 update canonical state + queue + Manage Watch State.</li><li>Add provider health registry and block/archive broken or unsafe provider URL patterns.</li><li>Harden rendered QA so screenshots like the current reported failures cannot pass.</li></ol></section>
 </main>
 </body>
 </html>
