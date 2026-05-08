@@ -1,5 +1,13 @@
 # Architecture Log
 
+## 2026-05-07
+
+- Implemented MC-2026-05-07.1 interaction compliance for calendar containment, episode carousel shell structure, canonical watch-state action ownership, provider health filtering, and rendered QA proof.
+- Added `data/provider_registry.json` as the runtime provider health registry and filtered blocked/archived providers from watch-source popup rendering.
+- Corrected show action release-state handling so provider unavailability does not mark show actions as unreleased, while movie/episode release locks remain enforced through explicit release status.
+- Extended browser QA and runtime validation to prove equal calendar columns, no cross-cell card overflow, true episode carousel movement/context, cross-view action queue consistency, blocked provider exclusion, and provider registry classification.
+- Commit: `1681e8245` fix calendar carousel actions provider compliance.
+
 ## 2026-05-06
 
 - Replaced independent sticky offsets for the app header, section headers, and calendar weekday header with one runtime-fed CSS variable model.

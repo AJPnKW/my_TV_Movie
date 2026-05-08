@@ -37,6 +37,7 @@
 <tr><td>2026-05-05</td><td>MC-2026-05-05.3</td><td>Added visual acceptance gate, anti-generalization control rule, provider URL health/safety contract, and explicit carousel widget proof requirements.</td></tr>
 <tr><td>2026-05-07</td><td>MC-2026-05-07.1</td><td>Calendar equal-cell containment, required episode-carousel DOM shell, watch_state_manager canonical state ownership, provider health registry classifications, floating navigation proof, and screenshot-visible rendered QA hardening.</td></tr>
 </table>
+<p>Standalone page: <code>web/manage_watch_state.html</code></p>
 </section>
 <section id="pages" class="card">
 <h2>2. Page / Route Contract</h2>
@@ -65,9 +66,11 @@
 <tr><td>💕</td><td>favourite</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row. If Trakt mapping is local-only, status must say local_only, not pretend synced.</td></tr>
 <tr><td>76%</td><td>rating</td><td>Display only unless future rating editing is explicitly designed.</td><td>Always includes percent sign.</td></tr>
 </table>
-<h3>4.1 Cross-view Consistency</h3>
+<h3>4.1 Forbidden active icons</h3>
+<ul><li>Watched status must not use a play triangle or clapperboard.</li><li>Watch list must not use a ruler icon.</li><li>Favourite must not use a yellow single-heart icon.</li><li>Rating must not use a star icon; rating remains compact percent text.</li></ul>
+<h3>4.2 Cross-view Consistency</h3>
 <ul><li>The same media item must show the same watch_list, favourite, and watched_status in Dashboard, Shows, Movies, Calendar, Discover, Watch Me, and Manage Watch State.</li><li>State cannot be view-local. One canonical state key must drive all views.</li><li>When a user clicks an action icon in one view, every matching card/row in every active view must render the same state after refresh/rerender.</li><li>Action visual state must be both readable and functional: if it lights up, the underlying state must exist; if state changes, the icon must change.</li><li>Validation must click ⌚/🎫/💕 on a Dashboard card and Calendar card, confirm visual state changes, confirm queue/local state changes, then open Manage Watch State and confirm the same media row changed.</li></ul>
-<h3>4.2 Mandatory Popup Detail Example</h3>
+<h3>4.3 Mandatory Popup Detail Example</h3>
 <pre>Abbott Elementary
 Team Building
 S05E01 • 22 min
