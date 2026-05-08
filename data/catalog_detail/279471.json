@@ -67,11 +67,11 @@
     "vote_average": 7.333,
     "vote_count": 15
   },
-  "popularity": 37.0218,
-  "vote_average": 8.039,
-  "vote_count": 271,
+  "popularity": 35.1383,
+  "vote_average": 8.046,
+  "vote_count": 272,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-08T04:21:02Z",
+  "availability_checked_at": "2026-05-08T10:55:57Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/279471",
@@ -97,10 +97,50 @@
       }
     ],
     "providers": {
-      "CA": [],
-      "US": [],
-      "GB": [],
-      "AU": []
+      "CA": [
+        {
+          "provider_id": 337,
+          "provider_name": "Disney Plus",
+          "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 3,
+          "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=CA"
+        }
+      ],
+      "US": [
+        {
+          "provider_id": 15,
+          "provider_name": "Hulu",
+          "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+          "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 6,
+          "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=US"
+        }
+      ],
+      "GB": [
+        {
+          "provider_id": 337,
+          "provider_name": "Disney Plus",
+          "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 3,
+          "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=GB"
+        }
+      ],
+      "AU": [
+        {
+          "provider_id": 337,
+          "provider_name": "Disney Plus",
+          "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 4,
+          "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=AU"
+        }
+      ]
     }
   },
   "seasons": [
@@ -120,7 +160,7 @@
       "provider_page": "https://www.themoviedb.org/tv/279471/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/279471/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-08T04:21:02Z",
+      "availability_checked_at": "2026-05-08T10:55:57Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/279471/1",
@@ -146,10 +186,50 @@
           }
         ],
         "providers": {
-          "CA": [],
-          "US": [],
-          "GB": [],
-          "AU": []
+          "CA": [
+            {
+              "provider_id": 337,
+              "provider_name": "Disney Plus",
+              "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+              "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 3,
+              "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=CA"
+            }
+          ],
+          "US": [
+            {
+              "provider_id": 15,
+              "provider_name": "Hulu",
+              "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+              "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 6,
+              "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=US"
+            }
+          ],
+          "GB": [
+            {
+              "provider_id": 337,
+              "provider_name": "Disney Plus",
+              "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+              "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 3,
+              "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=GB"
+            }
+          ],
+          "AU": [
+            {
+              "provider_id": 337,
+              "provider_name": "Disney Plus",
+              "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+              "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 4,
+              "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=AU"
+            }
+          ]
         }
       },
       "episodes": [
@@ -170,7 +250,7 @@
           "provider_page": "https://www.themoviedb.org/tv/279471/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/279471/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-08T04:21:02Z",
+          "availability_checked_at": "2026-05-08T10:55:57Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/279471/1/1",
@@ -259,10 +339,50 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 15,
+                  "provider_name": "Hulu",
+                  "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 6,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 4,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -283,7 +403,7 @@
           "provider_page": "https://www.themoviedb.org/tv/279471/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/279471/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-08T04:21:02Z",
+          "availability_checked_at": "2026-05-08T10:55:57Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/279471/1/2",
@@ -372,10 +492,50 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 15,
+                  "provider_name": "Hulu",
+                  "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 6,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 4,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -396,7 +556,7 @@
           "provider_page": "https://www.themoviedb.org/tv/279471/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/279471/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-08T04:21:02Z",
+          "availability_checked_at": "2026-05-08T10:55:57Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/279471/1/3",
@@ -485,10 +645,50 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 15,
+                  "provider_name": "Hulu",
+                  "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 6,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 4,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -509,7 +709,7 @@
           "provider_page": "https://www.themoviedb.org/tv/279471/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/279471/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-08T04:21:02Z",
+          "availability_checked_at": "2026-05-08T10:55:57Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/279471/1/4",
@@ -598,10 +798,50 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 15,
+                  "provider_name": "Hulu",
+                  "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 6,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 337,
+                  "provider_name": "Disney Plus",
+                  "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 4,
+                  "deep_link": "https://www.themoviedb.org/tv/279471-malcolm-in-the-middle-life-s-still-unfair/watch?locale=AU"
+                }
+              ]
             }
           }
         }
