@@ -423,6 +423,9 @@ foreach ($needle in @(
     'calendarCrossingCards',
     'calendarDayWidthDelta',
     'movedByDpad',
+    'summariesVisible',
+    'widgetFrame',
+    'viewportClipsTrack',
     'floating'
 )) {
     if ($qaBrowserText -notlike "*$needle*") { Add-CheckError "qa_browser_layout_check.mjs missing rendered interaction proof: $needle" }
@@ -508,6 +511,16 @@ foreach ($needle in @(
     'bindFloatingNavControls'
 )) {
     if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing manual carousel/floating nav contract: $needle" }
+}
+foreach ($needle in @(
+    '.episode-carousel.manual-carousel',
+    'max-width:min(100%, calc((var(--contract-still-w) * 3)',
+    '.episode-carousel .popup-episode-card .media-card__summary',
+    'display:none !important',
+    '.episode-carousel .carousel-viewport',
+    'border-radius:12px'
+)) {
+    if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing framed episode carousel widget contract: $needle" }
 }
 
 Write-Host '== Duplicate action/popup handlers =='

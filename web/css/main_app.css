@@ -4392,6 +4392,18 @@ body.app-modal-open{
   position:relative !important;
 }
 
+.episode-carousel.manual-carousel{
+  gap:12px !important;
+  padding:10px !important;
+  border:1px solid rgba(125,211,252,.22);
+  border-radius:14px;
+  background:
+    linear-gradient(180deg, rgba(8,47,73,.22), rgba(8,12,20,.76)),
+    rgba(8,12,20,.88);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  isolation:isolate;
+}
+
 .carousel-header{
   display:flex;
   align-items:center;
@@ -4404,6 +4416,15 @@ body.app-modal-open{
   padding:8px 0;
   background:rgba(11,16,24,.94);
   backdrop-filter:blur(8px);
+}
+
+.episode-carousel .carousel-header{
+  position:relative;
+  top:auto;
+  padding:0 2px 10px;
+  border-bottom:1px solid rgba(148,163,184,.18);
+  background:transparent;
+  backdrop-filter:none;
 }
 
 .carousel-heading{
@@ -4445,6 +4466,21 @@ body.app-modal-open{
   outline:none;
 }
 
+.episode-carousel .carousel-viewport{
+  --carousel-side-pad:0px;
+  position:relative;
+  box-sizing:border-box;
+  max-width:min(100%, calc((var(--contract-still-w) * 3) + 24px + (var(--carousel-side-pad) * 2)));
+  margin-inline:auto;
+  padding:10px var(--carousel-side-pad) 14px;
+  border:1px solid rgba(148,163,184,.22);
+  border-radius:12px;
+  background:
+    linear-gradient(90deg, rgba(8,12,20,.96), rgba(8,12,20,0) 42px, rgba(8,12,20,0) calc(100% - 42px), rgba(8,12,20,.96)),
+    rgba(2,6,23,.42);
+  box-shadow:0 10px 28px rgba(0,0,0,.20);
+}
+
 .carousel-track{
   display:flex;
   gap:12px;
@@ -4461,11 +4497,100 @@ body.app-modal-open{
   scroll-snap-align:start !important;
 }
 
+.episode-carousel .carousel-track > .popup-episode-card{
+  border:1px solid rgba(148,163,184,.26);
+  border-radius:12px;
+  background:rgba(15,23,42,.92);
+  box-shadow:0 10px 20px rgba(0,0,0,.18);
+}
+
 .manual-carousel .popup-episode-card .media-card__poster{
   width:var(--contract-still-w) !important;
   max-width:var(--contract-still-w) !important;
   height:var(--contract-still-h) !important;
   min-height:var(--contract-still-h) !important;
+}
+
+.episode-carousel .popup-episode-card .media-card__poster{
+  border-radius:12px 12px 0 0 !important;
+}
+
+.episode-carousel .popup-episode-card .media-card__body{
+  display:grid;
+  grid-template-rows:minmax(0, 1fr) auto;
+  gap:8px !important;
+  min-height:112px;
+  padding:8px !important;
+}
+
+.episode-carousel .popup-episode-card .media-card__copy{
+  gap:3px !important;
+  min-width:0;
+}
+
+.episode-carousel .popup-episode-card .media-card__eyebrow{
+  display:none !important;
+}
+
+.episode-carousel .popup-episode-card .media-card__title{
+  display:-webkit-box !important;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden !important;
+  min-height:34px;
+  font-size:13px !important;
+  line-height:1.24 !important;
+  font-weight:900 !important;
+}
+
+.episode-carousel .popup-episode-card .media-card__meta,
+.episode-carousel .popup-episode-card .media-card__submeta{
+  overflow:hidden !important;
+  text-overflow:ellipsis !important;
+  white-space:nowrap !important;
+  font-size:11px !important;
+  line-height:1.2 !important;
+}
+
+.episode-carousel .popup-episode-card .media-card__summary{
+  display:none !important;
+}
+
+.episode-carousel .popup-episode-card .actionbar{
+  --ui_action_box:28px;
+  gap:3px;
+  align-self:end;
+}
+
+.episode-carousel .popup-episode-card .actionbar-left,
+.episode-carousel .popup-episode-card .actionbar-center,
+.episode-carousel .popup-episode-card .actionbar-right{
+  gap:3px;
+}
+
+.episode-carousel .floating-nav__btn[data-floating-nav="left"]{
+  left:12px;
+}
+
+.episode-carousel .floating-nav__btn[data-floating-nav="right"]{
+  right:12px;
+}
+
+@media (min-width:1180px){
+  .episode-carousel .carousel-viewport{
+    max-width:min(100%, calc((var(--contract-still-w) * 3) + 24px + (var(--carousel-side-pad) * 2)));
+  }
+}
+
+@media (max-width:760px){
+  .episode-carousel.manual-carousel{
+    padding:8px;
+  }
+
+  .episode-carousel .carousel-viewport{
+    --carousel-side-pad:0px;
+    max-width:100%;
+  }
 }
 
 .floating-nav{

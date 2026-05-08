@@ -135,15 +135,23 @@ async function inspect(pathname, viewport) {
     let popupFocus = { attempted: false, opened: false, focusInside: false, closedByBack: false };
     if (popupButton) {
       popupButton.click();
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const modal = document.querySelector('#providerBack[style*="flex"] #providerCard, #modalBack[style*="flex"] #modalCard');
+      await new Promise(resolve => setTimeout(resolve, 900));
+      const visibleModalHost = Array.from(document.querySelectorAll("#providerBack, #modalBack")).find(host => {
+        const style = getComputedStyle(host);
+        return style.display !== "none" && style.visibility !== "hidden";
+      });
+      const modal = visibleModalHost?.querySelector("#providerCard, #modalCard");
       if (modal) {
         document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
         await new Promise(resolve => requestAnimationFrame(resolve));
         const focusInside = modal.contains(document.activeElement);
         document.dispatchEvent(new KeyboardEvent("keydown", { key: "Backspace", bubbles: true }));
         await new Promise(resolve => requestAnimationFrame(resolve));
-        popupFocus = { attempted: true, opened: true, focusInside, closedByBack: !document.querySelector('#providerBack[style*="flex"], #modalBack[style*="flex"]') };
+        const stillOpen = Array.from(document.querySelectorAll("#providerBack, #modalBack")).some(host => {
+          const style = getComputedStyle(host);
+          return style.display !== "none" && style.visibility !== "hidden";
+        });
+        popupFocus = { attempted: true, opened: true, focusInside, closedByBack: !stillOpen };
       } else {
         popupFocus = { attempted: true, opened: false, focusInside: false, closedByBack: false };
       }
@@ -340,6 +348,25 @@ async function inspectInteractionCompliance(viewport) {
     const next = carousel?.querySelector('[data-ep-nav="next"]');
     const viewport = carousel?.querySelector(".carousel-viewport");
     const track = carousel?.querySelector(".carousel-track");
+    const cards = Array.from(track?.querySelectorAll(".popup-episode-card") || []);
+    const viewportStyle = viewport ? getComputedStyle(viewport) : null;
+    const carouselStyle = carousel ? getComputedStyle(carousel) : null;
+    const viewportRect = viewport?.getBoundingClientRect();
+    const visibleCards = viewportRect ? cards.filter(card => {
+      const rect = card.getBoundingClientRect();
+      return rect.width > 0 && rect.right > viewportRect.left + 4 && rect.left < viewportRect.right - 4;
+    }) : [];
+    const cardWidths = cards.slice(0, 5).map(card => Math.round(card.getBoundingClientRect().width));
+    const summariesVisible = cards.some(card => {
+      const summary = card.querySelector(".media-card__summary");
+      if (!summary) return false;
+      const style = getComputedStyle(summary);
+      const rect = summary.getBoundingClientRect();
+      return style.display !== "none" && style.visibility !== "hidden" && rect.height > 2;
+    });
+    const widgetFrame = !!carouselStyle && parseFloat(carouselStyle.borderTopWidth) > 0 && parseFloat(carouselStyle.borderRadius) >= 8;
+    const viewportFrame = !!viewportStyle && parseFloat(viewportStyle.borderTopWidth) > 0 && parseFloat(viewportStyle.borderRadius) >= 8;
+    const viewportClipsTrack = !!viewport && viewport.scrollWidth > viewport.clientWidth && ["auto", "scroll"].includes(viewportStyle?.overflowX);
     const before = viewport?.scrollLeft || 0;
     const floatingBefore = Array.from(carousel?.querySelectorAll(".floating-nav__btn") || []).filter(btn => !btn.hidden && !btn.disabled).map(btn => btn.getAttribute("data-floating-nav"));
     next?.click();
@@ -359,6 +386,12 @@ async function inspectInteractionCompliance(viewport) {
       prevNext: !!prev && !!next,
       track: !!track,
       viewport: !!viewport,
+      cardWidths,
+      visibleCardCount: visibleCards.length,
+      summariesVisible,
+      widgetFrame,
+      viewportFrame,
+      viewportClipsTrack,
       movedByClick: afterClick > before,
       movedByDpad: afterDpad < afterClick,
       retainedContext: !!title && !!season && contextAfter === season,
@@ -437,6 +470,10 @@ try {
     if (!result.manage?.sortingWorks) failures.push(`${result.viewport} interaction: Manage Watch State column sorting failed`);
     if (!result.manage?.inlineEditWorks) failures.push(`${result.viewport} interaction: Manage Watch State inline edit failed`);
     if (!result.carousel?.opened || !result.carousel?.prevNext || !result.carousel?.viewport || !result.carousel?.retainedContext) failures.push(`${result.viewport} interaction: episode carousel controls/context failed`);
+    if (result.carousel?.opened && (!result.carousel?.widgetFrame || !result.carousel?.viewportFrame || !result.carousel?.viewportClipsTrack)) failures.push(`${result.viewport} interaction: episode carousel is not rendered as a framed clipped widget`);
+    if (result.carousel?.opened && result.carousel?.summariesVisible) failures.push(`${result.viewport} interaction: episode carousel still shows long row-style summaries`);
+    if (result.carousel?.opened && result.carousel?.visibleCardCount > 4) failures.push(`${result.viewport} interaction: episode carousel exposes too many cards like a plain row`);
+    if (result.carousel?.opened && result.carousel?.cardWidths?.some(width => Math.abs(width - 240) > 2)) failures.push(`${result.viewport} interaction: episode carousel cards are not narrow-still 240px cards`);
     if (result.carousel?.opened && (!result.carousel?.movedByClick || !result.carousel?.movedByDpad)) failures.push(`${result.viewport} interaction: episode carousel manual/D-pad navigation failed`);
     if (result.carousel?.opened && !result.carousel?.floatingBefore?.includes("right")) failures.push(`${result.viewport} interaction: carousel floating right nav missing before movement`);
     if (result.carousel?.opened && !result.carousel?.floating?.some(dir => dir === "left" || dir === "right")) failures.push(`${result.viewport} interaction: carousel floating horizontal nav missing after movement`);
