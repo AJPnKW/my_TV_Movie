@@ -2,145 +2,113 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>my_TV_Movie Media Renamer</title>
+<title>Media Cleanup Pipeline</title>
 <style>
-body{font-family:Segoe UI,Arial,sans-serif;margin:24px;background:#f8fafc;color:#111827;line-height:1.48}
-section{background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:16px;margin:14px 0}
-h1,h2{margin-top:0} table{border-collapse:collapse;width:100%;margin:10px 0} th,td{border:1px solid #cbd5e1;padding:8px;vertical-align:top;text-align:left}
-th{background:#e2e8f0} code{background:#e2e8f0;padding:2px 5px;border-radius:4px}.good{color:#0f766e;font-weight:700}.warn{color:#b45309;font-weight:700}
+body { font-family: Segoe UI, Arial, sans-serif; line-height: 1.45; margin: 24px; max-width: 1200px; color: #1f2937; }
+h1, h2, h3 { color: #111827; }
+.notice { border: 1px solid #f59e0b; background: #fffbeb; padding: 14px; border-radius: 12px; }
+.good { border: 1px solid #10b981; background: #ecfdf5; padding: 14px; border-radius: 12px; }
+code, pre { background: #f3f4f6; border-radius: 6px; }
+code { padding: 2px 5px; }
+pre { padding: 12px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; }
+th, td { border: 1px solid #d1d5db; padding: 8px; vertical-align: top; }
+th { background: #e5e7eb; text-align: left; }
 </style>
 </head>
 <body>
-<h1>my_TV_Movie Media Renamer</h1>
+<h1>Media Cleanup Pipeline</h1>
+<div class="good"><strong>Home-user model:</strong> build a plan, then apply safe changes. Safe matches are fixed automatically. Problem files are left alone.</div>
 
-<section>
 <h2>Purpose</h2>
-<p>The media renamer is a simple home-user utility for cleaning <code>C:\X1_Share\Recordings</code>. It scans recordings, uses the my_TV_Movie catalog as the only matching authority, prepares a plan, and fixes only safe changes in one batch. It does not ask for per-file approval.</p>
-<p class="good">Safe matches will be fixed automatically. Problem files will be left alone.</p>
-</section>
+<p>This pipeline cleans recorded and downloaded movies and TV episodes under <code>C:\X1_Share\Recordings</code>. It replaces the earlier complex utility workflow with two actions only.</p>
 
-<section>
-<h2>Home-user workflow</h2>
-<ol>
-<li>Open the app.</li>
-<li>Confirm the recordings folder. The default is <code>C:\X1_Share\Recordings</code>.</li>
-<li>Confirm the output root. The default is also <code>C:\X1_Share\Recordings</code>.</li>
-<li>Click <b>Scan Recordings</b>.</li>
-<li>Read the summary counts: Ready to fix, Already OK, Needs review, Broken/empty, Duplicates, and Skipped support files.</li>
-<li>Click <b>Fix Safe Changes</b>. The app moves safe TV episodes, safe movies, broken files, and duplicate extras in one batch.</li>
-<li>Use <b>Scan Again</b> after fixing to refresh the summary.</li>
-</ol>
-<p>Advanced settings are hidden behind the <b>Advanced settings</b> button. Normal use does not require changing them.</p>
-</section>
-
-<section>
-<h2>Final folder structure</h2>
+<h2>Two actions</h2>
 <table>
-<tr><th>Media</th><th>Final path</th></tr>
-<tr><td>TV episode</td><td><code>C:\X1_Share\Recordings\TV\&lt;Show Name&gt; [&lt;tmdb_id&gt;]\Season 01 - &lt;Season Name&gt;\&lt;Show Name&gt; - S01E01 - &lt;Episode Name&gt;.ext</code></td></tr>
-<tr><td>TV episode with generic or missing season name</td><td><code>C:\X1_Share\Recordings\TV\&lt;Show Name&gt; [&lt;tmdb_id&gt;]\Season 01\&lt;Show Name&gt; - S01E01 - &lt;Episode Name&gt;.ext</code></td></tr>
-<tr><td>Movie</td><td><code>C:\X1_Share\Recordings\Movies\&lt;Movie Name&gt; (&lt;Year&gt;) [&lt;tmdb_id&gt;]\&lt;Movie Name&gt; (&lt;Year&gt;).ext</code></td></tr>
+<tr><th>Action</th><th>What happens</th><th>Changes files?</th></tr>
+<tr><td>Build Cleanup Plan</td><td>Scans recordings, validates files, matches against the repo catalog, detects duplicates, and writes reports.</td><td>No</td></tr>
+<tr><td>Apply Cleanup Plan</td><td>Applies only safe planned moves, renames, duplicate moves, quarantine moves, and empty-folder cleanup.</td><td>Yes</td></tr>
 </table>
-<p><code>TV</code> and <code>Movies</code> are the only final media library folders. The tool never creates a third final show library. If an old third folder exists from earlier runs, the scanner includes it, moves valid content into <code>TV</code> or <code>Movies</code>, removes it only when empty, and reports when it cannot be removed.</p>
-</section>
 
-<section>
-<h2>Catalog and reference data</h2>
-<p>Matching comes only from this repo:</p>
+<h2>Final folder structure</h2>
+<p>The only final media library folders are:</p>
+<pre>C:\X1_Share\Recordings\TV
+C:\X1_Share\Recordings\Movies</pre>
+<p>The pipeline must not create a final <code>Shows</code> folder. If an accidental <code>Shows</code> folder exists from a previous run, it is scanned, safe content is moved into <code>TV</code> or <code>Movies</code>, and the folder is removed only if empty.</p>
+
+<h3>TV destination</h3>
+<pre>C:\X1_Share\Recordings\TV\&lt;Show Name&gt; [&lt;tmdb_id&gt;]\Season 01 - &lt;Season Name&gt;\&lt;Show Name&gt; - S01E01 - &lt;Episode Name&gt;.ext</pre>
+<p>If the season name is generic or missing, the folder is <code>Season 01</code>.</p>
+
+<h3>Movie destination</h3>
+<pre>C:\X1_Share\Recordings\Movies\&lt;Movie Name&gt; (&lt;Year&gt;) [&lt;tmdb_id&gt;]\&lt;Movie Name&gt; (&lt;Year&gt;).ext</pre>
+
+<h2>Catalog authority</h2>
+<p>The pipeline matches only against the existing <code>my_TV_Movie</code> repo catalog:</p>
 <ul>
 <li><code>data\catalog_index.json</code></li>
 <li><code>data\catalog_detail\*.json</code></li>
 </ul>
-<p>The app builds <code>tools\media_renamer\media_reference.json</code> for speed. It contains movie TMDb IDs, titles, release years, normalized title tokens, show TMDb IDs, first-air years, seasons, season names, episodes, and episode names.</p>
-</section>
+<p>A smaller runtime reference is generated at <code>tools\media_renamer\media_reference.json</code>.</p>
 
-<section>
-<h2>Matching rules</h2>
-<ul>
-<li><b>85% or higher confidence</b> is safe.</li>
-<li>Below 85% goes to review and is left in place.</li>
-<li>A TMDb ID in a folder or filename is strong evidence.</li>
-<li>The parser supports <code>S01E01</code>, <code>s01e01</code>, <code>S2_E1</code>, <code>5x04</code>, <code>S2026E01</code>, embedded TV provider names such as <code>embed_tv_126027_5_16</code>, and malformed names such as a missing closing parenthesis.</li>
-<li>Bad padding such as <code>S01E010</code> is normalized to <code>S01E10</code>.</li>
-<li>Movie title numbers are preserved, including <code>The Devil Wears Prada 2</code>.</li>
-<li>A file already inside a show folder is treated as likely belonging to that show, but a stronger filename match can override a wrong folder.</li>
-<li>Loose files in the recordings root, files in <code>TV\_Unsorted</code>, and files in placeholder folders such as <code>ShowA</code> and <code>ShowB</code> are included.</li>
-</ul>
-</section>
-
-<section>
-<h2>What is safe</h2>
+<h2>Safe action rules</h2>
 <table>
-<tr><th>Summary bucket</th><th>Meaning</th><th>Fix behavior</th></tr>
-<tr><td>Ready to fix</td><td>TV/movie match is at least 85%, or a sidecar clearly shares a base name with a safe media file.</td><td>Moved/renamed during <b>Fix Safe Changes</b>.</td></tr>
-<tr><td>Already OK</td><td>The file is already in the correct final TV or Movies path.</td><td>Left alone.</td></tr>
-<tr><td>Needs review</td><td>Confidence is below 85%, an episode number is missing, or the file cannot be proven safe.</td><td>Left alone and shown in Problem files.</td></tr>
-<tr><td>Broken/empty</td><td>Zero-byte file, temporary-looking recording, or invalid video stream when checking is enabled.</td><td>Moved to quarantine during fixing.</td></tr>
-<tr><td>Duplicates</td><td>Multiple files point to the same movie or episode identity.</td><td>The best copy is kept; extras are moved to duplicates.</td></tr>
-<tr><td>Skipped support files</td><td>Unlinked support files or folders such as assets, reports, metadata, caches, and app folders.</td><td>Left alone.</td></tr>
+<tr><th>Safe action</th><th>Requirement</th></tr>
+<tr><td>TV move/rename</td><td>Confidence at least 85, destination under TV, known TMDb show ID, known season and episode.</td></tr>
+<tr><td>Movie move/rename</td><td>Confidence at least 85, destination under Movies, known TMDb movie ID.</td></tr>
+<tr><td>Quarantine</td><td>Zero-byte, temporary, or ffprobe-broken media file.</td></tr>
+<tr><td>Duplicate move</td><td>Duplicate identity is deterministic and a better keeper is selected.</td></tr>
+<tr><td>Empty folder cleanup</td><td>Only after safe moves; no media file is deleted.</td></tr>
 </table>
-</section>
 
-<section>
-<h2>Duplicates</h2>
-<p>Duplicates are grouped by destination identity first: TV uses type, TMDb ID, season, and episode; movies use type and TMDb ID. The best copy is kept by preferring readable video, larger size, and an already-normalized file when quality is otherwise equivalent. Same-size files can be hashed when the advanced setting is enabled. Duplicate extras are moved to:</p>
-<p><code>C:\X1_Share\Recordings\_MediaRenamer_Duplicates\&lt;timestamp&gt;\</code></p>
-<p>Duplicates are never silently deleted. The execution log records the kept item and each moved duplicate.</p>
-</section>
+<h2>Problem files</h2>
+<p>Problem files are not moved. They are reported when the pipeline cannot prove the correct action. Reasons include low confidence, no catalog match, ambiguous duplicate tie, invalid extensionless file, unlinked sidecar, or unsafe destination.</p>
 
-<section>
-<h2>Quarantine</h2>
-<p>Zero-byte files and broken or incomplete files are not deleted. They are moved only when <b>Fix Safe Changes</b> is clicked:</p>
-<p><code>C:\X1_Share\Recordings\_MediaRenamer_Quarantine\&lt;timestamp&gt;\</code></p>
-<p>A scan is a plan only and never moves files.</p>
-</section>
+<h2>Specific cleanup behaviours</h2>
+<table>
+<tr><th>Condition</th><th>Behaviour</th></tr>
+<tr><td>Loose root files</td><td>Included in scan and moved when safely matched.</td></tr>
+<tr><td><code>TV\_Unsorted</code></td><td>Included in scan.</td></tr>
+<tr><td><code>ShowA</code> and <code>ShowB</code></td><td>Included in scan, safe content moved out, folders removed if empty.</td></tr>
+<tr><td><code>movies</code></td><td>Content is migrated to canonical <code>Movies</code> when safely matched.</td></tr>
+<tr><td>Duplicate show folders</td><td>Safe files are normalized into <code>Show Name [tmdb_id]</code>.</td></tr>
+<tr><td>Wrong-folder files</td><td>Filename and catalog identity can override folder context.</td></tr>
+<tr><td>Zero-byte files</td><td>Moved to <code>_MediaRenamer_Quarantine</code> on apply.</td></tr>
+<tr><td>Duplicate losers</td><td>Moved to <code>_MediaRenamer_Duplicates</code> on apply.</td></tr>
+<tr><td>Sidecars</td><td><code>.srt</code>, <code>.ass</code>, <code>.vtt</code>, and <code>.nfo</code> move only when clearly linked.</td></tr>
+</table>
 
-<section>
-<h2>Sidecars and support files</h2>
-<p><code>.srt</code>, <code>.ass</code>, <code>.vtt</code>, and <code>.nfo</code> files move only when they clearly share the same base name as a matched media file. Unrelated images, documents, scripts, web pages, and other support assets are skipped and reported as support files.</p>
-</section>
-
-<section>
-<h2>ShowA and ShowB cleanup</h2>
-<p><code>ShowA</code> and <code>ShowB</code> are treated as media placeholder folders, not support folders. The scanner includes their files, moves safe matches into final <code>TV</code> or <code>Movies</code> folders, and removes those placeholder folders only if they become empty after safe moves. If anything remains, the folder stays and the execution log explains why.</p>
-</section>
-
-<section>
 <h2>Reports</h2>
-<p>Every scan run creates this set under <code>reports\media_renamer\&lt;timestamp&gt;\</code>, plus <code>reports\media_renamer\&lt;timestamp&gt;.zip</code>:</p>
+<p>Plan reports are written under <code>reports\media_renamer\&lt;timestamp&gt;\</code>.</p>
 <table>
-<tr><th>File</th><th>Purpose</th></tr>
-<tr><td><code>scan_plan.json</code></td><td>Full machine-readable scan plan with summary, options, and every row.</td></tr>
-<tr><td><code>scan_plan.csv</code></td><td>Spreadsheet-friendly version of the scan plan.</td></tr>
-<tr><td><code>summary.html</code></td><td>Readable report with summary cards and the planned rows.</td></tr>
-<tr><td><code>execution_log.json</code></td><td>Machine-readable execution actions. Empty until safe changes are fixed.</td></tr>
-<tr><td><code>execution.log.txt</code></td><td>Line-based execution log for quick inspection.</td></tr>
-<tr><td><code>&lt;timestamp&gt;.zip</code></td><td>Zip copy of the same report files for sharing or archiving.</td></tr>
+<tr><th>File</th><th>Meaning</th></tr>
+<tr><td><code>scan_plan.json</code></td><td>Full machine-readable plan.</td></tr>
+<tr><td><code>scan_plan.csv</code></td><td>Spreadsheet-readable plan.</td></tr>
+<tr><td><code>summary.html</code></td><td>Simple home-user summary.</td></tr>
+<tr><td><code>problem_files.csv</code></td><td>Files left alone and why.</td></tr>
+<tr><td><code>execution_preview.log.txt</code></td><td>Safe actions preview.</td></tr>
+<tr><td><code>execution_log.json</code></td><td>Apply results after execution.</td></tr>
+<tr><td><code>execution.log.txt</code></td><td>Plain-text apply log.</td></tr>
+<tr><td><code>post_apply_summary.html</code></td><td>Apply summary.</td></tr>
 </table>
-<p>The app has buttons for <b>Open latest report</b>, <b>Open reports folder</b>, and <b>Export problem list</b>.</p>
-</section>
 
-<section>
-<h2>Run commands</h2>
-<table>
-<tr><th>Task</th><th>Command</th></tr>
-<tr><td>Open the app</td><td><code>py scripts\run_media_renamer.py</code></td></tr>
-<tr><td>Validate the tool</td><td><code>py scripts\validate_media_renamer.py</code></td></tr>
-<tr><td>Run non-GUI self-test</td><td><code>py scripts\run_media_renamer.py --self-test</code></td></tr>
-<tr><td>Command-line scan</td><td><code>py tools\media_renamer\media_renamer_engine.py --input-root C:\X1_Share\Recordings --output-root C:\X1_Share\Recordings</code></td></tr>
-</table>
-</section>
+<h2>Commands</h2>
+<h3>Validate</h3>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\validate_media_cleanup_pipeline.ps1</pre>
+<h3>Build Cleanup Plan</h3>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_plan.ps1</pre>
+<h3>Apply Cleanup Plan</h3>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\apply_media_cleanup_plan.ps1</pre>
+<h3>Optional two-button launcher</h3>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_launcher.ps1</pre>
 
-<section>
 <h2>Troubleshooting</h2>
 <table>
-<tr><th>Problem</th><th>What to do</th></tr>
-<tr><td>Many files go to review</td><td>Check whether the show or movie exists in <code>data\catalog_index.json</code> and <code>data\catalog_detail</code>. The renamer does not use internet lookups.</td></tr>
-<tr><td>Extensionless file stays in review</td><td>Enable the advanced ffprobe check if ffprobe is installed. If it still cannot prove a video stream, the file is left alone.</td></tr>
-<tr><td>Destination already exists</td><td>The tool avoids overwriting by adding a numbered suffix or by classifying duplicate extras. Inspect the duplicate report before deleting anything manually.</td></tr>
-<tr><td>Old placeholder folder remains</td><td>The folder was not empty after safe fixes. Open the latest execution log to see which files blocked cleanup.</td></tr>
-<tr><td>Reports are missing</td><td>Run validation. The validator checks syntax, rules, reference building, parser coverage, report expectations, PySide6 usage, and TV/Movies output rules.</td></tr>
+<tr><th>Problem</th><th>Fix</th></tr>
+<tr><td>Too many problem files</td><td>Confirm the titles exist in <code>data\catalog_index.json</code> and details exist under <code>data\catalog_detail</code>.</td></tr>
+<tr><td>ffprobe unavailable</td><td>The plan still runs, but completeness proof is weaker. Install FFmpeg later if needed.</td></tr>
+<tr><td>Apply refuses to run</td><td>Build a fresh cleanup plan first.</td></tr>
+<tr><td>A folder remains</td><td>It still contains files that were not safe to move. Check <code>problem_files.csv</code>.</td></tr>
 </table>
-</section>
 </body>
 </html>

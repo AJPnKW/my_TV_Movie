@@ -1,22 +1,13 @@
 {
-  "schema": "media_renamer.rules.v3",
-  "version": "0.3.0",
-  "default_input_root": "C:\\X1_Share\\Recordings",
-  "default_output_root": "C:\\X1_Share\\Recordings",
-  "default_gui_runtime": "PySide6",
-  "minimum_auto_confidence": 85,
-  "default_scan_workers": 4,
-  "max_scan_workers": 12,
-  "folder_tree": {
-    "tv_root": "TV",
-    "movies_root": "Movies",
-    "show_folder": "{show_title} [{tmdb_id}]",
-    "season_folder": "Season {season_number_2} - {season_name}",
-    "season_folder_generic": "Season {season_number_2}",
-    "episode_file": "{show_title} - S{season_number_2}E{episode_number_2} - {episode_name}{extension}",
-    "movie_folder": "{movie_title} ({year}) [{tmdb_id}]",
-    "movie_file": "{movie_title} ({year}){extension}"
-  },
+  "schema": "media_cleanup.rules.v1",
+  "min_confidence": 85,
+  "final_media_folders": [
+    "TV",
+    "Movies"
+  ],
+  "forbidden_output_folders": [
+    "Shows"
+  ],
   "media_extensions": [
     ".mp4",
     ".mkv",
@@ -34,28 +25,28 @@
     ".vtt",
     ".nfo"
   ],
-  "skip_directory_names": [
+  "skip_folders": [
     "_Metadata",
     "assets",
     "archived",
     "reports",
     ".git",
-    ".venv",
-    ".venv_media_renamer",
-    ".venv_media_renamer_pyside6",
     "__pycache__",
     "_MediaRenamer_Quarantine",
-    "_MediaRenamer_Duplicates",
-    ".ai_backups",
-    ".ai_downloads",
-    ".ai_uploads"
+    "_MediaRenamer_Duplicates"
   ],
-  "cleanup_folder_names": [
+  "always_include_folders": [
+    "TV",
+    "Movies",
+    "movies",
+    "_Unsorted",
     "ShowA",
     "ShowB",
     "Shows"
   ],
+  "extensionless_min_size_bytes": 10000000,
+  "max_validation_workers": 4,
+  "default_media_root": "C:\\X1_Share\\Recordings",
   "quarantine_folder": "_MediaRenamer_Quarantine",
-  "duplicates_folder": "_MediaRenamer_Duplicates",
-  "extensionless_media_min_bytes": 20000000
+  "duplicates_folder": "_MediaRenamer_Duplicates"
 }

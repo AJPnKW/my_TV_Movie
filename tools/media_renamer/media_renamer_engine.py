@@ -32,8 +32,11 @@ ProgressCallback = Callable[[str], None]
 
 EPISODE_PATTERNS = [
     re.compile(r"(?i)(?:^|[^a-z0-9])s(?P<season>\d{1,4})\s*[_. -]*e(?P<episode>\d{1,4})(?:$|[^a-z0-9])"),
+    re.compile(r"(?i)(?:^|[^a-z0-9])s(?P<season>\d{1,4})\s*[_. -]*e(?P<episode>\d{1,4})[a-z]{1,3}(?:$|[^a-z0-9])"),
     re.compile(r"(?i)(?:^|[^a-z0-9])s(?P<season>\d{1,4})\s*[_ -]+e(?P<episode>\d{1,4})(?:$|[^a-z0-9])"),
     re.compile(r"(?i)(?:^|[^a-z0-9])(?P<season>\d{1,4})\s*x\s*(?P<episode>\d{1,4})(?:$|[^a-z0-9])"),
+    re.compile(r"(?i)s(?P<season>\d{1,4})\s*[_. -]*e(?P<episode>\d{1,4})(?:$|[^a-z0-9])"),
+    re.compile(r"(?i)s(?P<season>\d{1,4})\s*[_. -]*e(?P<episode>\d{1,4})[a-z]{1,3}(?:$|[^a-z0-9])"),
 ]
 EMBED_TV_PATTERN = re.compile(r"(?i)embed[_ .-]*tv[_ .-]*(?P<tmdb>\d+)[_ .-]+(?P<season>\d+)[_ .-]+(?P<episode>\d+)")
 TMDB_ID_PATTERN = re.compile(r"\[(?P<tmdb>\d{2,9})\]")
@@ -194,6 +197,9 @@ def title_hint_from_name(name: str) -> str:
     text = EMBED_TV_PATTERN.sub(" ", text)
     text = TMDB_ID_PATTERN.sub(" ", text)
     text = re.sub(r"(?i)(?:^|[^a-z0-9])s\d{1,4}\s*[_. -]*e\d{1,4}(?:$|[^a-z0-9])", " ", text)
+    text = re.sub(r"(?i)(?:^|[^a-z0-9])s\d{1,4}\s*[_. -]*e\d{1,4}[a-z]{1,3}(?:$|[^a-z0-9])", " ", text)
+    text = re.sub(r"(?i)s\d{1,4}\s*[_. -]*e\d{1,4}(?:$|[^a-z0-9])", " ", text)
+    text = re.sub(r"(?i)s\d{1,4}\s*[_. -]*e\d{1,4}[a-z]{1,3}(?:$|[^a-z0-9])", " ", text)
     text = re.sub(r"(?i)(?:^|[^a-z0-9])\d{1,4}\s*x\s*\d{1,4}(?:$|[^a-z0-9])", " ", text)
     text = YEAR_PATTERN.sub(" ", text)
     text = re.sub(r"(?i)\b(720p|1080p|2160p|4k|hd|fullhd|uhd|webrip|web dl|web-dl|hdtv|x264|x265|h264|h265|aac|tmp|copy|proper|repack)\b", " ", text)
@@ -296,7 +302,7 @@ def season_folder_name(season: dict[str, Any], season_number: int) -> str:
     if not name:
         return f"Season {season_number:02d}"
     key = normalize_key(name)
-    if key in {"season", f"season {season_number}", f"season {season_number:02d}"}:
+    if key in {"season", str(season_number), f"{season_number:02d}", f"season {season_number}", f"season {season_number:02d}"}:
         return f"Season {season_number:02d}"
     return f"Season {season_number:02d} - {name}"
 
@@ -493,7 +499,8 @@ def mark_duplicates(items: list[PlanItem], output_root: Path, stamp: str, use_ha
         best = max(members, key=lambda item: (item.ffprobe_status == "ok", item.size_bytes, normalized_bonus(item), item.confidence))
         hashes: dict[str, str] = {}
         if use_hash:
-            for member in members:
+            same_size_members = [member for member in members if sum(1 for other in members if other.size_bytes == member.size_bytes) > 1]
+            for member in same_size_members:
                 try:
                     hashes[member.source_path] = item_hash(Path(member.source_path))
                 except OSError:
@@ -684,20 +691,29 @@ def move_path(source: Path, destination: Path, move_files: bool) -> str:
     return str(final_destination)
 
 
-def cleanup_empty_source_folders(source: Path, input_root: Path, rows: list[dict[str, Any]]) -> None:
-    cleanup_names = {"showa", "showb", "shows", "_unsorted"}
+def cleanup_empty_source_folders(source: Path, input_root: Path, rows: list[dict[str, Any]], rules: dict[str, Any]) -> None:
+    cleanup_names = {safe_text(name).lower() for name in rules.get("cleanup_folder_names", [])}
+    cleanup_names.add("_unsorted")
+    protected_names = {
+        "tv",
+        "movies",
+        safe_text(rules.get("quarantine_folder", "_MediaRenamer_Quarantine")).lower(),
+        safe_text(rules.get("duplicates_folder", "_MediaRenamer_Duplicates")).lower(),
+    }
     folder = source
     while folder != input_root:
         if input_root not in folder.parents:
             break
-        if folder.name.lower() not in cleanup_names:
-            folder = folder.parent
-            continue
+        folder_name = folder.name.lower()
+        if folder_name in protected_names:
+            break
         try:
             folder.rmdir()
-            rows.append(log_row("remove_empty_folder", str(folder), "", str(folder), "", 100, "empty folder removed after safe moves", "executed", ""))
+            rows.append(log_row("remove_empty_folder", str(folder), "", str(folder), "", 100, "empty source folder removed after safe moves", "executed", ""))
         except OSError as exc:
-            rows.append(log_row("remove_empty_folder", str(folder), "", str(folder), "", 0, "folder not empty after safe moves", "skipped", str(exc)))
+            if folder_name in cleanup_names:
+                rows.append(log_row("remove_empty_folder", str(folder), "", str(folder), "", 0, "folder not empty after safe moves", "skipped", str(exc)))
+            break
         folder = folder.parent
 
 
@@ -721,6 +737,7 @@ def log_row(action: str, source: str, destination: str, title: str, tmdb_id: Any
 
 def execute_plan(options: ExecutionOptions, progress_callback: ProgressCallback | None = None) -> tuple[Path, list[dict[str, Any]]]:
     payload = load_plan(options.plan_json_path)
+    rules = load_rules()
     report_dir = options.plan_json_path.parent
     option_data = payload.get("options", {}) if isinstance(payload, dict) else {}
     input_root = Path(safe_text(option_data.get("input_root")) or str(DEFAULT_RECORDING_ROOT))
@@ -737,7 +754,8 @@ def execute_plan(options: ExecutionOptions, progress_callback: ProgressCallback 
         try:
             final_destination = move_path(source, destination, options.move_files)
             execution_rows.append(log_row(safe_text(row.get("action")), str(source), final_destination, safe_text(row.get("matched_title")), row.get("tmdb_id"), row.get("confidence"), safe_text(row.get("reason")), "executed", "", row.get("season_number"), row.get("episode_number")))
-            cleanup_empty_source_folders(source.parent, input_root, execution_rows)
+            if options.move_files:
+                cleanup_empty_source_folders(source.parent, input_root, execution_rows, rules)
         except Exception as exc:
             execution_rows.append(log_row(safe_text(row.get("action")), str(source), str(destination), safe_text(row.get("matched_title")), row.get("tmdb_id"), row.get("confidence"), safe_text(row.get("reason")), "failed", str(exc), row.get("season_number"), row.get("episode_number")))
         if progress_callback:
@@ -779,6 +797,7 @@ def run_self_test(repo_root: Path) -> None:
         "Abbott_Elementary_Safety_Day_S05E15.mp4": (5, 15, 0),
         "CIA_(2026)_(2026)_S01E010.mp4": (1, 10, 0),
         "Hacks__5x04.mp4": (5, 4, 0),
+        "MarshalsS01E05.mp4": (1, 5, 0),
         "Come_Dine_with_Me_(S2026E01).mp4": (2026, 1, 0),
         "vsembed.ru_embed_tv_126027_5_16.mp4": (5, 16, 126027),
         "The_Hunting_Party_(S02E10.mp4": (2, 10, 0),

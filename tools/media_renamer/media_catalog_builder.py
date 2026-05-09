@@ -1,250 +1,246 @@
-"""Build the compact media reference used by the home media renamer."""
+# FILE: tools/media_renamer/media_catalog_builder.py
+# VERSION: v0.4.0
+# CHANGE NOTES:
+# - Builds a compact media cleanup reference from the existing my_TV_Movie catalog.
+# - Uses data/catalog_index.json and data/catalog_detail/*.json as the only authority.
+# - Designed for the two-step cleanup pipeline: plan, then apply.
 
 from __future__ import annotations
 
 import json
 import re
-from dataclasses import dataclass
-from datetime import datetime, timezone
+import unicodedata
+from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 
-CATALOG_INDEX = Path("data/catalog_index.json")
-DETAIL_DIR = Path("data/catalog_detail")
-REFERENCE_PATH = Path("tools/media_renamer/media_reference.json")
+MEDIA_REFERENCE_SCHEMA = "media_cleanup.reference.v1"
 
 
-def safe_text(value: Any) -> str:
+def utc_now_text() -> str:
+    return datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def safe_text(value: object) -> str:
     return "" if value is None else str(value).strip()
 
 
-def safe_int(value: Any, fallback: int = 0) -> int:
+def safe_int(value: object, fallback: int = 0) -> int:
     try:
-        return int(str(value).strip())
+        text = safe_text(value)
+        if not text:
+            return fallback
+        return int(text)
     except (TypeError, ValueError):
         return fallback
 
 
-def year_from(value: Any) -> str:
-    match = re.search(r"(19\d{2}|20\d{2})", safe_text(value))
+def year_from_date(value: object) -> str:
+    text = safe_text(value)
+    match = re.search(r"(19\d{2}|20\d{2})", text)
     return match.group(1) if match else ""
 
 
-def normalize_key(value: str) -> str:
-    text = safe_text(value).lower().replace("&", " and ")
-    text = re.sub(r"\[[0-9]+\]", " ", text)
-    text = re.sub(r"\([12][0-9]{3}\)", " ", text)
+def normalize_title(value: object) -> str:
+    text = unicodedata.normalize("NFKD", safe_text(value))
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = text.lower().replace("&", " and ")
+    text = re.sub(r"[_\-.]+", " ", text)
     text = re.sub(r"[^a-z0-9]+", " ", text)
-    text = re.sub(r"\b(the|a|an)\b", " ", text)
     return re.sub(r"\s+", " ", text).strip()
 
 
-def title_tokens(*values: Any) -> list[str]:
-    tokens: set[str] = set()
-    for value in values:
-        key = normalize_key(safe_text(value))
-        if key:
-            tokens.add(key)
-            tokens.update(part for part in key.split() if part)
-    return sorted(tokens)
+def title_tokens(value: object) -> list[str]:
+    normalized = normalize_title(value)
+    if not normalized:
+        return []
+    return [part for part in normalized.split(" ") if part]
 
 
-def read_json(path: Path) -> Any:
-    return json.loads(path.read_text(encoding="utf-8-sig"))
-
-
-def write_json(path: Path, payload: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+def load_json(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as handle:
+        data = json.load(handle)
+    if not isinstance(data, dict):
+        raise ValueError(f"JSON object expected: {path}")
+    return data
 
 
 @dataclass(frozen=True)
-class BuildStats:
-    shows: int
-    movies: int
-    episodes: int
-    detail_files_read: int
-    detail_files_missing: int
+class EpisodeReference:
+    season_number: int
+    episode_number: int
+    name: str
+    tmdb_id: int = 0
 
-    def as_dict(self) -> dict[str, int]:
+    def as_dict(self) -> dict[str, Any]:
         return {
-            "shows": self.shows,
-            "movies": self.movies,
-            "episodes": self.episodes,
-            "detail_files_read": self.detail_files_read,
-            "detail_files_missing": self.detail_files_missing,
+            "season_number": self.season_number,
+            "episode_number": self.episode_number,
+            "name": self.name,
+            "tmdb_id": self.tmdb_id,
+            "tokens": title_tokens(self.name),
         }
 
 
-def season_label(name: str, number: int) -> str:
-    key = normalize_key(name)
-    if not key or key in {"season", f"season {number}", f"season {number:02d}"}:
-        return ""
-    return safe_text(name)
+@dataclass(frozen=True)
+class SeasonReference:
+    season_number: int
+    name: str
+    episodes: list[EpisodeReference] = field(default_factory=list)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "season_number": self.season_number,
+            "name": self.name,
+            "tokens": title_tokens(self.name),
+            "episodes": [episode.as_dict() for episode in sorted(self.episodes, key=lambda item: item.episode_number)],
+        }
 
 
-def detail_path_for(repo_root: Path, item: dict[str, Any], tmdb_id: int) -> Path:
-    detail_text = safe_text(item.get("detail_path")).lstrip("/\\")
-    if detail_text:
-        return repo_root / detail_text
-    return repo_root / DETAIL_DIR / f"{tmdb_id}.json"
+@dataclass(frozen=True)
+class ShowReference:
+    tmdb_id: int
+    title: str
+    year: str
+    seasons: list[SeasonReference] = field(default_factory=list)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "tmdb_id": self.tmdb_id,
+            "title": self.title,
+            "year": self.year,
+            "tokens": title_tokens(self.title),
+            "aliases": sorted(set([normalize_title(self.title), normalize_title(f"{self.title} {self.year}")])),
+            "seasons": [season.as_dict() for season in sorted(self.seasons, key=lambda item: item.season_number)],
+        }
 
 
-def show_from(index_item: dict[str, Any], detail: dict[str, Any] | None) -> dict[str, Any]:
-    source = detail or index_item
-    tmdb_id = safe_int(source.get("tmdb_id") or source.get("id") or index_item.get("tmdb_id") or index_item.get("id"))
-    title = safe_text(source.get("title") or source.get("name") or index_item.get("title") or index_item.get("name"))
-    first_air_year = year_from(source.get("first_air_date") or source.get("release_date") or index_item.get("first_air_date"))
-    alternate_values = [
-        title,
-        source.get("name"),
-        source.get("original_name"),
-        index_item.get("title"),
-        index_item.get("name"),
-        index_item.get("original_name"),
-    ]
-    seasons: list[dict[str, Any]] = []
-    for season in source.get("seasons", []) if isinstance(source.get("seasons"), list) else []:
-        if not isinstance(season, dict):
+@dataclass(frozen=True)
+class MovieReference:
+    tmdb_id: int
+    title: str
+    year: str
+
+    def as_dict(self) -> dict[str, Any]:
+        display_title = f"{self.title} ({self.year})" if self.year else self.title
+        return {
+            "tmdb_id": self.tmdb_id,
+            "title": self.title,
+            "year": self.year,
+            "tokens": title_tokens(self.title),
+            "aliases": sorted(set([normalize_title(self.title), normalize_title(display_title)])),
+        }
+
+
+def _detail_path_from_index(repo_root: Path, item: dict[str, Any]) -> Path | None:
+    raw_path = safe_text(item.get("detail_path"))
+    if raw_path:
+        candidate = repo_root / raw_path.lstrip("/\\")
+        if candidate.exists():
+            return candidate
+    tmdb_id = safe_int(item.get("tmdb_id") or item.get("id"))
+    if tmdb_id:
+        candidate = repo_root / "data" / "catalog_detail" / f"{tmdb_id}.json"
+        if candidate.exists():
+            return candidate
+    return None
+
+
+def _build_show(repo_root: Path, index_item: dict[str, Any]) -> ShowReference:
+    detail_path = _detail_path_from_index(repo_root, index_item)
+    detail = load_json(detail_path) if detail_path else index_item
+    tmdb_id = safe_int(detail.get("tmdb_id") or detail.get("id") or index_item.get("tmdb_id") or index_item.get("id"))
+    title = safe_text(detail.get("title") or detail.get("name") or index_item.get("title") or index_item.get("name"))
+    year = year_from_date(detail.get("first_air_date") or detail.get("release_date") or index_item.get("first_air_date") or index_item.get("release_date"))
+    seasons: list[SeasonReference] = []
+    for season_data in detail.get("seasons", []):
+        if not isinstance(season_data, dict):
             continue
-        season_number = safe_int(season.get("season_number"))
-        episodes: list[dict[str, Any]] = []
-        for episode in season.get("episodes", []) if isinstance(season.get("episodes"), list) else []:
-            if not isinstance(episode, dict):
+        season_number = safe_int(season_data.get("season_number"))
+        if season_number < 0:
+            continue
+        season_name = safe_text(season_data.get("name")) or f"Season {season_number}"
+        episodes: list[EpisodeReference] = []
+        for episode_data in season_data.get("episodes", []):
+            if not isinstance(episode_data, dict):
                 continue
-            episode_number = safe_int(episode.get("episode_number"))
+            episode_number = safe_int(episode_data.get("episode_number"))
+            if episode_number <= 0:
+                continue
             episodes.append(
-                {
-                    "episode_number": episode_number,
-                    "episode_name": safe_text(episode.get("name") or episode.get("title")) or f"Episode {episode_number:02d}",
-                }
+                EpisodeReference(
+                    season_number=season_number,
+                    episode_number=episode_number,
+                    name=safe_text(episode_data.get("name") or episode_data.get("title")) or f"Episode {episode_number}",
+                    tmdb_id=safe_int(episode_data.get("tmdb_id") or episode_data.get("id")),
+                )
             )
-        seasons.append(
-            {
-                "season_number": season_number,
-                "season_name": season_label(safe_text(season.get("name")), season_number),
-                "episodes": sorted(episodes, key=lambda item: item["episode_number"]),
-            }
-        )
-    return {
-        "tmdb_id": tmdb_id,
-        "title": title,
-        "first_air_year": first_air_year,
-        "alternate_normalized_title_tokens": title_tokens(*alternate_values),
-        "seasons": sorted(seasons, key=lambda item: item["season_number"]),
-    }
+        seasons.append(SeasonReference(season_number=season_number, name=season_name, episodes=episodes))
+    return ShowReference(tmdb_id=tmdb_id, title=title, year=year, seasons=seasons)
 
 
-def movie_from(index_item: dict[str, Any], detail: dict[str, Any] | None) -> dict[str, Any]:
-    source = detail or index_item
-    tmdb_id = safe_int(source.get("tmdb_id") or source.get("id") or index_item.get("tmdb_id") or index_item.get("id"))
-    title = safe_text(source.get("title") or source.get("name") or index_item.get("title") or index_item.get("name"))
-    release_year = year_from(source.get("release_date") or index_item.get("release_date") or source.get("year") or index_item.get("year"))
-    alternate_values = [
-        title,
-        source.get("original_title"),
-        source.get("name"),
-        index_item.get("title"),
-        index_item.get("original_title"),
-        index_item.get("name"),
-    ]
-    return {
-        "tmdb_id": tmdb_id,
-        "title": title,
-        "release_year": release_year,
-        "alternate_normalized_title_tokens": title_tokens(*alternate_values),
-    }
+def _build_movie(repo_root: Path, index_item: dict[str, Any]) -> MovieReference:
+    detail_path = _detail_path_from_index(repo_root, index_item)
+    detail = load_json(detail_path) if detail_path else index_item
+    tmdb_id = safe_int(detail.get("tmdb_id") or detail.get("id") or index_item.get("tmdb_id") or index_item.get("id"))
+    title = safe_text(detail.get("title") or detail.get("name") or index_item.get("title") or index_item.get("name"))
+    year = year_from_date(detail.get("release_date") or index_item.get("release_date") or detail.get("first_air_date") or index_item.get("first_air_date"))
+    return MovieReference(tmdb_id=tmdb_id, title=title, year=year)
 
 
-def build_media_reference(repo_root: Path) -> tuple[Path, BuildStats]:
+def build_media_reference(repo_root: Path, output_path: Path | None = None) -> dict[str, Any]:
     repo_root = repo_root.resolve()
-    index_path = repo_root / CATALOG_INDEX
-    detail_dir = repo_root / DETAIL_DIR
-    reference_path = repo_root / REFERENCE_PATH
+    index_path = repo_root / "data" / "catalog_index.json"
     if not index_path.exists():
-        raise FileNotFoundError(f"Catalog index not found: {index_path}")
-    if not detail_dir.exists():
-        raise FileNotFoundError(f"Catalog detail folder not found: {detail_dir}")
-
-    index = read_json(index_path)
-    shows_raw = index.get("shows") if isinstance(index, dict) else []
-    movies_raw = index.get("movies") if isinstance(index, dict) else []
-    shows: list[dict[str, Any]] = []
-    movies: list[dict[str, Any]] = []
-    detail_files_read = 0
-    detail_files_missing = 0
-    generated_utc = datetime.now(timezone.utc).isoformat()
-    if reference_path.exists():
-        try:
-            existing = read_json(reference_path)
-        except (OSError, json.JSONDecodeError):
-            existing = {}
-        if isinstance(existing, dict) and safe_text(existing.get("generated_utc")):
-            generated_utc = safe_text(existing.get("generated_utc"))
-
-    for item in shows_raw if isinstance(shows_raw, list) else []:
-        if not isinstance(item, dict):
-            continue
-        tmdb_id = safe_int(item.get("tmdb_id") or item.get("id"))
-        if not tmdb_id:
-            continue
-        detail: dict[str, Any] | None = None
-        detail_path = detail_path_for(repo_root, item, tmdb_id)
-        if detail_path.exists():
-            payload = read_json(detail_path)
-            detail = payload if isinstance(payload, dict) else None
-            detail_files_read += 1
-        else:
-            detail_files_missing += 1
-        shows.append(show_from(item, detail))
-
-    for item in movies_raw if isinstance(movies_raw, list) else []:
-        if not isinstance(item, dict):
-            continue
-        tmdb_id = safe_int(item.get("tmdb_id") or item.get("id"))
-        if not tmdb_id:
-            continue
-        detail: dict[str, Any] | None = None
-        detail_path = detail_path_for(repo_root, item, tmdb_id)
-        if detail_path.exists():
-            payload = read_json(detail_path)
-            detail = payload if isinstance(payload, dict) else None
-        movies.append(movie_from(item, detail))
-
-    episode_count = sum(len(season["episodes"]) for show in shows for season in show["seasons"])
-    payload = {
-        "schema": "media_renamer.reference.v3",
-        "version": "0.3.0",
-        "generated_utc": generated_utc,
-        "source": {
-            "catalog_index": str(index_path),
-            "catalog_detail": str(detail_dir),
+        raise FileNotFoundError(f"Required catalog index not found: {index_path}")
+    catalog_index = load_json(index_path)
+    shows = []
+    movies = []
+    for item in catalog_index.get("shows", []):
+        if isinstance(item, dict):
+            show = _build_show(repo_root, item)
+            if show.tmdb_id and show.title:
+                shows.append(show.as_dict())
+    for item in catalog_index.get("movies", []):
+        if isinstance(item, dict):
+            movie = _build_movie(repo_root, item)
+            if movie.tmdb_id and movie.title:
+                movies.append(movie.as_dict())
+    reference = {
+        "meta": {
+            "schema": MEDIA_REFERENCE_SCHEMA,
+            "generated_utc": utc_now_text(),
+            "source": "data/catalog_index.json + data/catalog_detail/*.json",
+            "show_count": len(shows),
+            "movie_count": len(movies),
         },
-        "stats": {
-            "shows": len(shows),
-            "movies": len(movies),
-            "episodes": episode_count,
-            "detail_files_read": detail_files_read,
-            "detail_files_missing": detail_files_missing,
-        },
-        "movies": sorted(movies, key=lambda item: normalize_key(item["title"])),
-        "shows": sorted(shows, key=lambda item: normalize_key(item["title"])),
+        "shows": sorted(shows, key=lambda item: normalize_title(item.get("title"))),
+        "movies": sorted(movies, key=lambda item: normalize_title(item.get("title"))),
     }
-    write_json(reference_path, payload)
-    return reference_path, BuildStats(len(shows), len(movies), episode_count, detail_files_read, detail_files_missing)
+    destination = output_path or repo_root / "tools" / "media_renamer" / "media_reference.json"
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(reference, ensure_ascii=False, indent=2), encoding="utf-8")
+    return reference
 
 
-def main() -> None:
-    import argparse
+def load_or_build_media_reference(repo_root: Path, force: bool = False) -> dict[str, Any]:
+    reference_path = repo_root / "tools" / "media_renamer" / "media_reference.json"
+    if force or not reference_path.exists():
+        return build_media_reference(repo_root, reference_path)
+    data = load_json(reference_path)
+    if data.get("meta", {}).get("schema") != MEDIA_REFERENCE_SCHEMA:
+        return build_media_reference(repo_root, reference_path)
+    return data
 
-    parser = argparse.ArgumentParser(description="Build the compact media renamer reference.")
-    parser.add_argument("--repo-root", default=str(Path.cwd()))
-    args = parser.parse_args()
-    path, stats = build_media_reference(Path(args.repo_root))
-    print(f"reference_path={path}")
-    print(json.dumps(stats.as_dict(), indent=2))
 
-
-if __name__ == "__main__":
-    main()
+__all__ = [
+    "MEDIA_REFERENCE_SCHEMA",
+    "build_media_reference",
+    "load_or_build_media_reference",
+    "normalize_title",
+    "safe_int",
+    "safe_text",
+    "title_tokens",
+]
