@@ -174,6 +174,14 @@ def build_media_reference(repo_root: Path) -> tuple[Path, BuildStats]:
     movies: list[dict[str, Any]] = []
     detail_files_read = 0
     detail_files_missing = 0
+    generated_utc = datetime.now(timezone.utc).isoformat()
+    if reference_path.exists():
+        try:
+            existing = read_json(reference_path)
+        except (OSError, json.JSONDecodeError):
+            existing = {}
+        if isinstance(existing, dict) and safe_text(existing.get("generated_utc")):
+            generated_utc = safe_text(existing.get("generated_utc"))
 
     for item in shows_raw if isinstance(shows_raw, list) else []:
         if not isinstance(item, dict):
@@ -208,7 +216,7 @@ def build_media_reference(repo_root: Path) -> tuple[Path, BuildStats]:
     payload = {
         "schema": "media_renamer.reference.v3",
         "version": "0.3.0",
-        "generated_utc": datetime.now(timezone.utc).isoformat(),
+        "generated_utc": generated_utc,
         "source": {
             "catalog_index": str(index_path),
             "catalog_detail": str(detail_dir),

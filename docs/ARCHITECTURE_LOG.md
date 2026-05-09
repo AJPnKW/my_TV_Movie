@@ -6,7 +6,7 @@
 - Normalized media renamer output rules to final `TV` and `Movies` folders only, with old third-folder content scanned for cleanup but never created as an output library.
 - Rebuilt the media renamer scan/execution engine around catalog-only matching, 85% safe automation, quarantine, duplicate handling, sidecar movement, placeholder folder cleanup, and fixed report filenames.
 - Updated HTML documentation, validator coverage, self-test launcher, compact media reference generation, and overlay package delivery.
-- Commit: `d5e184394` refactor media renamer home utility.
+- Commit: `27e14c2a4` refactor media renamer home utility.
 
 ## 2026-05-07
 
