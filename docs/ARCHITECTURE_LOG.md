@@ -1,5 +1,13 @@
 # Architecture Log
 
+## 2026-05-09
+
+- Refactored the media renamer into a PySide6 one-screen home-user utility with folder choice, scan, batch safe fix, problem files, and reports sections.
+- Normalized media renamer output rules to final `TV` and `Movies` folders only, with old third-folder content scanned for cleanup but never created as an output library.
+- Rebuilt the media renamer scan/execution engine around catalog-only matching, 85% safe automation, quarantine, duplicate handling, sidecar movement, placeholder folder cleanup, and fixed report filenames.
+- Updated HTML documentation, validator coverage, self-test launcher, compact media reference generation, and overlay package delivery.
+- Commit: `d5e184394` refactor media renamer home utility.
+
 ## 2026-05-07
 
 - Implemented MC-2026-05-07.1 interaction compliance for calendar containment, episode carousel shell structure, canonical watch-state action ownership, provider health filtering, and rendered QA proof.
