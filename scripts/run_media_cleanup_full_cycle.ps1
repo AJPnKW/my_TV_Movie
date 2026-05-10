@@ -1,5 +1,5 @@
 # FILE: scripts/run_media_cleanup_full_cycle.ps1
-# VERSION: v0.4.3
+# VERSION: v0.4.4
 # UPDATED: 2026-05-09
 $ErrorActionPreference = "Stop"
 
@@ -35,7 +35,7 @@ function Invoke-Step {
     }
 }
 
-Write-RunLog "Media cleanup full cycle v0.4.3"
+Write-RunLog "Media cleanup full cycle v0.4.4"
 Write-RunLog "Repo: $RepoRoot"
 Write-RunLog "MediaRoot: $MediaRoot"
 Write-RunLog "RunOut: $RunOut"

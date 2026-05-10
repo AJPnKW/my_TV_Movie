@@ -1,5 +1,5 @@
 # FILE: scripts/validate_media_cleanup_pipeline.ps1
-# VERSION: v0.4.3
+# VERSION: v0.4.4
 # UPDATED: 2026-05-09
 $ErrorActionPreference = "Stop"
 

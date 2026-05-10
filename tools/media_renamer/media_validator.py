@@ -1,5 +1,5 @@
 # FILE: tools/media_renamer/media_validator.py
-# VERSION: v0.4.3
+# VERSION: v0.4.4
 # UPDATED: 2026-05-09
 # CHANGE NOTES:
 # - Fixed validator false-positive caused by scanning its own rule text.

@@ -1,5 +1,5 @@
 # FILE: scripts/validate_media_renamer.py
-# VERSION: v0.4.3
+# VERSION: v0.4.4
 from __future__ import annotations
 
 from pathlib import Path

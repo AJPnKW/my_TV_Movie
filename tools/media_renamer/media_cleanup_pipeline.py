@@ -1,5 +1,5 @@
 # FILE: tools/media_renamer/media_cleanup_pipeline.py
-# VERSION: v0.4.3
+# VERSION: v0.4.4
 # UPDATED: 2026-05-09
 # CHANGE NOTES:
 # - Replaces over-complex UI-dependent flow with a deterministic two-step pipeline.
@@ -7,6 +7,7 @@
 # - Forces final media folders to TV and Movies only; never Shows.
 # - Adds aggressive safe cleanup for root/ShowB/_Unsorted files when title + season + episode are clear.
 # - Uses catalog data as authority and falls back to Episode NN only after show/season/episode identity is proven.
+# - Treats destination-exists conflicts during apply as duplicate moves instead of errors.
 from __future__ import annotations
 
 import argparse
@@ -25,7 +26,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Any
 
-VERSION = "0.4.3"
+VERSION = "0.4.4"
 DEFAULT_MEDIA_ROOT = Path(r"C:\X1_Share\Recordings")
 MEDIA_EXTENSIONS = {".mp4", ".mkv", ".avi", ".mov", ".m4v", ".ts", ".mpg", ".mpeg", ".wmv"}
 SIDECAR_EXTENSIONS = {".srt", ".ass", ".vtt", ".nfo"}
@@ -641,6 +642,15 @@ def move_path(source: Path, destination: Path) -> None:
     shutil.move(str(source), str(destination))
 
 
+def duplicate_destination_for_conflict(media_root: Path, plan_dir: Path, source: Path) -> Path:
+    stamp = plan_dir.name
+    try:
+        rel = source.relative_to(media_root)
+    except ValueError:
+        rel = Path(source.name)
+    return unique_destination(media_root / "_MediaRenamer_Duplicates" / stamp / rel)
+
+
 def repair_movies_case(media_root: Path, logs: list[ExecutionRow]) -> None:
     actual = actual_child_dir(media_root, "Movies")
     proper = media_root / "Movies"
@@ -705,6 +715,11 @@ def apply_plan(repo_root: Path, media_root: Path) -> tuple[Path, dict[str, int]]
                     continue
                 if dest is None:
                     raise ValueError("destination is required")
+                if dest.exists() and source.resolve() != dest.resolve() and row.action in {"move_to_tv", "move_to_movies", "move_sidecar"}:
+                    duplicate_dest = duplicate_destination_for_conflict(media_root, plan_dir, source)
+                    move_path(source, duplicate_dest)
+                    logs.append(ExecutionRow(datetime.now().isoformat(timespec="seconds"), "move_conflict_duplicate", str(source), str(duplicate_dest), "ok", f"destination already existed: {dest}"))
+                    continue
                 move_path(source, dest)
                 logs.append(ExecutionRow(datetime.now().isoformat(timespec="seconds"), row.action, str(source), str(dest), "ok", ""))
         except Exception as exc:  # visible in execution log

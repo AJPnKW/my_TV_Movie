@@ -1,5 +1,5 @@
 # FILE: scripts/apply_media_cleanup_plan.ps1
-# VERSION: v0.4.3
+# VERSION: v0.4.4
 # UPDATED: 2026-05-09
 $ErrorActionPreference = "Stop"
 

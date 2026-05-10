@@ -1,5 +1,5 @@
 # FILE: tools/media_renamer/media_catalog_builder.py
-# VERSION: v0.4.3
+# VERSION: v0.4.4
 from __future__ import annotations
 
 from pathlib import Path
