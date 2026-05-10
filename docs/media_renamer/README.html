@@ -4,111 +4,28 @@
 <meta charset="utf-8">
 <title>Media Cleanup Pipeline</title>
 <style>
-body { font-family: Segoe UI, Arial, sans-serif; line-height: 1.45; margin: 24px; max-width: 1200px; color: #1f2937; }
-h1, h2, h3 { color: #111827; }
-.notice { border: 1px solid #f59e0b; background: #fffbeb; padding: 14px; border-radius: 12px; }
-.good { border: 1px solid #10b981; background: #ecfdf5; padding: 14px; border-radius: 12px; }
-code, pre { background: #f3f4f6; border-radius: 6px; }
-code { padding: 2px 5px; }
-pre { padding: 12px; overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; margin: 12px 0 24px; }
-th, td { border: 1px solid #d1d5db; padding: 8px; vertical-align: top; }
-th { background: #e5e7eb; text-align: left; }
-</style>
+body{font-family:Segoe UI,Arial,sans-serif;line-height:1.45;margin:24px;background:#101216;color:#f2f2f2}h1,h2{color:#fff}code,pre{background:#1f2430;color:#e8e8e8;padding:10px;border-radius:8px;display:block;white-space:pre-wrap}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{border:1px solid #3a4050;padding:8px;vertical-align:top}th{background:#202838}.bad{color:#ff9b9b}.ok{color:#9dffb0}</style>
 </head>
 <body>
 <h1>Media Cleanup Pipeline</h1>
-<div class="good"><strong>Home-user model:</strong> build a plan, then apply safe changes. Safe matches are fixed automatically. Problem files are left alone.</div>
-
-<h2>Purpose</h2>
-<p>This pipeline cleans recorded and downloaded movies and TV episodes under <code>C:\X1_Share\Recordings</code>. It replaces the earlier complex utility workflow with two actions only.</p>
-
-<h2>Two actions</h2>
-<table>
-<tr><th>Action</th><th>What happens</th><th>Changes files?</th></tr>
-<tr><td>Build Cleanup Plan</td><td>Scans recordings, validates files, matches against the repo catalog, detects duplicates, and writes reports.</td><td>No</td></tr>
-<tr><td>Apply Cleanup Plan</td><td>Applies only safe planned moves, renames, duplicate moves, quarantine moves, and empty-folder cleanup.</td><td>Yes</td></tr>
-</table>
-
-<h2>Final folder structure</h2>
-<p>The only final media library folders are:</p>
-<pre>C:\X1_Share\Recordings\TV
-C:\X1_Share\Recordings\Movies</pre>
-<p>The pipeline must not create a final <code>Shows</code> folder. If an accidental <code>Shows</code> folder exists from a previous run, it is scanned, safe content is moved into <code>TV</code> or <code>Movies</code>, and the folder is removed only if empty.</p>
-
-<h3>TV destination</h3>
-<pre>C:\X1_Share\Recordings\TV\&lt;Show Name&gt; [&lt;tmdb_id&gt;]\Season 01 - &lt;Season Name&gt;\&lt;Show Name&gt; - S01E01 - &lt;Episode Name&gt;.ext</pre>
-<p>If the season name is generic or missing, the folder is <code>Season 01</code>.</p>
-
-<h3>Movie destination</h3>
-<pre>C:\X1_Share\Recordings\Movies\&lt;Movie Name&gt; (&lt;Year&gt;) [&lt;tmdb_id&gt;]\&lt;Movie Name&gt; (&lt;Year&gt;).ext</pre>
-
-<h2>Catalog authority</h2>
-<p>The pipeline matches only against the existing <code>my_TV_Movie</code> repo catalog:</p>
-<ul>
-<li><code>data\catalog_index.json</code></li>
-<li><code>data\catalog_detail\*.json</code></li>
-</ul>
-<p>A smaller runtime reference is generated at <code>tools\media_renamer\media_reference.json</code>.</p>
-
-<h2>Safe action rules</h2>
-<table>
-<tr><th>Safe action</th><th>Requirement</th></tr>
-<tr><td>TV move/rename</td><td>Confidence at least 85, destination under TV, known TMDb show ID, known season and episode.</td></tr>
-<tr><td>Movie move/rename</td><td>Confidence at least 85, destination under Movies, known TMDb movie ID.</td></tr>
-<tr><td>Quarantine</td><td>Zero-byte, temporary, or ffprobe-broken media file.</td></tr>
-<tr><td>Duplicate move</td><td>Duplicate identity is deterministic and a better keeper is selected.</td></tr>
-<tr><td>Empty folder cleanup</td><td>Only after safe moves; no media file is deleted.</td></tr>
-</table>
-
+<p>This tool is now a two-step home-user pipeline. It is not a complex review app. The user builds a cleanup plan, then applies safe changes.</p>
+<h2>Final folder rule</h2>
+<table><tr><th>Allowed</th><th>Forbidden</th></tr><tr><td><code>C:\X1_Share\Recordings\TV</code><code>C:\X1_Share\Recordings\Movies</code></td><td><code>C:\X1_Share\Recordings\Shows</code></td></tr></table>
+<h2>Run commands</h2>
+<pre>Set-Location -LiteralPath "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
+powershell -ExecutionPolicy Bypass -File scripts\validate_media_cleanup_pipeline.ps1
+powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_plan.ps1
+powershell -ExecutionPolicy Bypass -File scripts\apply_media_cleanup_plan.ps1
+powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_plan.ps1</pre>
+<h2>What plan mode does</h2>
+<ul><li>Scans <code>C:\X1_Share\Recordings</code>.</li><li>Includes loose root files, TV, Movies/movies, _Unsorted, ShowA, ShowB, and any old Shows folder.</li><li>Builds a plan only. It does not move files.</li><li>Creates reports under <code>reports\media_renamer\timestamp</code>.</li></ul>
+<h2>What apply mode does</h2>
+<ul><li>Moves only safe planned TV and Movie matches.</li><li>Moves duplicate losers to <code>_MediaRenamer_Duplicates</code>.</li><li>Moves zero-byte files to <code>_MediaRenamer_Quarantine</code>.</li><li>Moves lowercase <code>movies</code> content into <code>Movies</code>.</li><li>Removes ShowA, ShowB, and Shows only if empty.</li></ul>
+<h2>Safe match rule</h2>
+<p>A file is safe when the repo catalog identifies the media item and confidence is at least 85. TV files require TMDb show identity plus season and episode. Movie files require TMDb movie identity.</p>
 <h2>Problem files</h2>
-<p>Problem files are not moved. They are reported when the pipeline cannot prove the correct action. Reasons include low confidence, no catalog match, ambiguous duplicate tie, invalid extensionless file, unlinked sidecar, or unsafe destination.</p>
-
-<h2>Specific cleanup behaviours</h2>
-<table>
-<tr><th>Condition</th><th>Behaviour</th></tr>
-<tr><td>Loose root files</td><td>Included in scan and moved when safely matched.</td></tr>
-<tr><td><code>TV\_Unsorted</code></td><td>Included in scan.</td></tr>
-<tr><td><code>ShowA</code> and <code>ShowB</code></td><td>Included in scan, safe content moved out, folders removed if empty.</td></tr>
-<tr><td><code>movies</code></td><td>Content is migrated to canonical <code>Movies</code> when safely matched.</td></tr>
-<tr><td>Duplicate show folders</td><td>Safe files are normalized into <code>Show Name [tmdb_id]</code>.</td></tr>
-<tr><td>Wrong-folder files</td><td>Filename and catalog identity can override folder context.</td></tr>
-<tr><td>Zero-byte files</td><td>Moved to <code>_MediaRenamer_Quarantine</code> on apply.</td></tr>
-<tr><td>Duplicate losers</td><td>Moved to <code>_MediaRenamer_Duplicates</code> on apply.</td></tr>
-<tr><td>Sidecars</td><td><code>.srt</code>, <code>.ass</code>, <code>.vtt</code>, and <code>.nfo</code> move only when clearly linked.</td></tr>
-</table>
-
+<p>Problem files are left alone and listed in <code>problem_files.csv</code>. Reasons include no catalog match, confidence below 85, unlinked sidecar, extensionless file not proven, or unresolved duplicate tie.</p>
 <h2>Reports</h2>
-<p>Plan reports are written under <code>reports\media_renamer\&lt;timestamp&gt;\</code>.</p>
-<table>
-<tr><th>File</th><th>Meaning</th></tr>
-<tr><td><code>scan_plan.json</code></td><td>Full machine-readable plan.</td></tr>
-<tr><td><code>scan_plan.csv</code></td><td>Spreadsheet-readable plan.</td></tr>
-<tr><td><code>summary.html</code></td><td>Simple home-user summary.</td></tr>
-<tr><td><code>problem_files.csv</code></td><td>Files left alone and why.</td></tr>
-<tr><td><code>execution_preview.log.txt</code></td><td>Safe actions preview.</td></tr>
-<tr><td><code>execution_log.json</code></td><td>Apply results after execution.</td></tr>
-<tr><td><code>execution.log.txt</code></td><td>Plain-text apply log.</td></tr>
-<tr><td><code>post_apply_summary.html</code></td><td>Apply summary.</td></tr>
-</table>
-
-<h2>Commands</h2>
-<h3>Validate</h3>
-<pre>powershell -ExecutionPolicy Bypass -File scripts\validate_media_cleanup_pipeline.ps1</pre>
-<h3>Build Cleanup Plan</h3>
-<pre>powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_plan.ps1</pre>
-<h3>Apply Cleanup Plan</h3>
-<pre>powershell -ExecutionPolicy Bypass -File scripts\apply_media_cleanup_plan.ps1</pre>
-<h3>Optional two-button launcher</h3>
-<pre>powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_launcher.ps1</pre>
-
-<h2>Troubleshooting</h2>
-<table>
-<tr><th>Problem</th><th>Fix</th></tr>
-<tr><td>Too many problem files</td><td>Confirm the titles exist in <code>data\catalog_index.json</code> and details exist under <code>data\catalog_detail</code>.</td></tr>
-<tr><td>ffprobe unavailable</td><td>The plan still runs, but completeness proof is weaker. Install FFmpeg later if needed.</td></tr>
-<tr><td>Apply refuses to run</td><td>Build a fresh cleanup plan first.</td></tr>
-<tr><td>A folder remains</td><td>It still contains files that were not safe to move. Check <code>problem_files.csv</code>.</td></tr>
-</table>
-</body>
-</html>
+<table><tr><th>File</th><th>Meaning</th></tr><tr><td>scan_plan.json</td><td>Machine-readable plan.</td></tr><tr><td>scan_plan.csv</td><td>Spreadsheet-friendly plan.</td></tr><tr><td>problem_files.csv</td><td>Files left untouched.</td></tr><tr><td>summary.html</td><td>Human-readable summary.</td></tr><tr><td>execution.log.txt</td><td>Plain text action log after apply.</td></tr></table>
+<h2>Version</h2><p>v0.4.3</p>
+</body></html>

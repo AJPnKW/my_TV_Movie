@@ -1,52 +1,11 @@
 {
-  "schema": "media_cleanup.rules.v1",
-  "min_confidence": 85,
-  "final_media_folders": [
-    "TV",
-    "Movies"
-  ],
-  "forbidden_output_folders": [
-    "Shows"
-  ],
-  "media_extensions": [
-    ".mp4",
-    ".mkv",
-    ".avi",
-    ".mov",
-    ".m4v",
-    ".ts",
-    ".mpg",
-    ".mpeg",
-    ".wmv"
-  ],
-  "sidecar_extensions": [
-    ".srt",
-    ".ass",
-    ".vtt",
-    ".nfo"
-  ],
-  "skip_folders": [
-    "_Metadata",
-    "assets",
-    "archived",
-    "reports",
-    ".git",
-    "__pycache__",
-    "_MediaRenamer_Quarantine",
-    "_MediaRenamer_Duplicates"
-  ],
-  "always_include_folders": [
-    "TV",
-    "Movies",
-    "movies",
-    "_Unsorted",
-    "ShowA",
-    "ShowB",
-    "Shows"
-  ],
-  "extensionless_min_size_bytes": 10000000,
-  "max_validation_workers": 4,
+  "version": "0.4.2",
+  "final_folders": ["TV", "Movies"],
+  "forbidden_output_folders": ["Shows"],
   "default_media_root": "C:\\X1_Share\\Recordings",
-  "quarantine_folder": "_MediaRenamer_Quarantine",
-  "duplicates_folder": "_MediaRenamer_Duplicates"
+  "safe_confidence_threshold": 85,
+  "media_extensions": [".mp4", ".mkv", ".avi", ".mov", ".m4v", ".ts", ".mpg", ".mpeg", ".wmv"],
+  "sidecar_extensions": [".srt", ".ass", ".vtt", ".nfo"],
+  "root_quarantine_folder": "_MediaRenamer_Quarantine",
+  "root_duplicates_folder": "_MediaRenamer_Duplicates"
 }
