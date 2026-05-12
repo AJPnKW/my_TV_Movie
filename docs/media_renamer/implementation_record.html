@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Media Cleanup Implementation Record</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;margin:28px;background:#0d1117;color:#f3f4f6}h1,h2{color:#fff}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #30363d;padding:8px;vertical-align:top}th{background:#1f2937}.ok{color:#5eead4;font-weight:700}code{background:#111827;padding:2px 5px;border-radius:4px}</style>
+</head>
+<body>
+<h1>Media Cleanup Implementation Record</h1>
+<p><strong>Version:</strong> v0.5.1</p>
+<p><strong>Purpose:</strong> normalize <code>C:\X1_Share\Recordings</code> into <code>TV</code> and <code>Movies</code>, then generate a production-quality HTML title page for the normalized recordings.</p>
+<h2>User Workflow</h2>
+<table><tr><th>Button</th><th>Action</th><th>Result</th></tr>
+<tr><td>Clean Recordings Now</td><td>Validate, build plan, apply safe actions, repeat until no safe actions remain, generate media library page, create support ZIP.</td><td>One user action for routine cleanup.</td></tr>
+<tr><td>Check Only</td><td>Builds a cleanup plan without moving files.</td><td>Used for review only.</td></tr>
+<tr><td>Generate Media Library Page</td><td>Scans normalized TV and Movies folders and writes the HTML/JSON library.</td><td>Creates <code>C:\X1_Share\Recordings\Media_Library.html</code>.</td></tr>
+<tr><td>Open Media Library</td><td>Opens the latest local HTML page.</td><td>Immediate user access to the listing.</td></tr>
+</table>
+<h2>Metadata included in Media_Library.html</h2>
+<table><tr><th>Media type</th><th>Fields included</th><th>Source</th></tr>
+<tr><td>TV show</td><td>show title, TMDb ID, first air date, status, genres, episode runtime default, overview, TMDb URL</td><td><code>data/catalog_detail/&lt;tmdb_id&gt;.json</code></td></tr>
+<tr><td>TV season</td><td>season number, season name, premiere date, episode count</td><td><code>data/catalog_detail/&lt;tmdb_id&gt;.json seasons[]</code></td></tr>
+<tr><td>TV episode</td><td>S##E##, episode name, episode air date, runtime, overview, file path, file size, extension</td><td><code>data/catalog_detail/&lt;tmdb_id&gt;.json seasons[].episodes[]</code> plus local file scan</td></tr>
+<tr><td>Movie</td><td>movie title, TMDb ID, release date, runtime, status, genres, overview, TMDb URL, file path, file size, extension</td><td><code>data/catalog_detail/&lt;tmdb_id&gt;.json</code> plus local file scan</td></tr>
+</table>
+<h2>Output files</h2>
+<table><tr><th>Path</th><th>Purpose</th></tr>
+<tr><td><code>C:\X1_Share\Recordings\Media_Library.html</code></td><td>Main title page for recordings.</td></tr>
+<tr><td><code>C:\X1_Share\Recordings\Media_Library.json</code></td><td>Structured data behind the page.</td></tr>
+<tr><td><code>reports\media_library\&lt;timestamp&gt;\recordings_library.html</code></td><td>Timestamped report copy.</td></tr>
+<tr><td><code>reports\media_library\&lt;timestamp&gt;\recordings_library.json</code></td><td>Timestamped JSON report copy.</td></tr>
+</table>
+<h2>Failure handling</h2>
+<p>The GUI failure dialog now includes the exact log path and an <strong>Open Log</strong> button. The main screen also shows clickable links to the run log, latest report, support ZIP, and media library page when available.</p>
+</body>
+</html>

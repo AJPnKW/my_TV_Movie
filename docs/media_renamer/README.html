@@ -1,31 +1,23 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Media Cleanup Pipeline</title>
-<style>
-body{font-family:Segoe UI,Arial,sans-serif;line-height:1.45;margin:24px;background:#101216;color:#f2f2f2}h1,h2{color:#fff}code,pre{background:#1f2430;color:#e8e8e8;padding:10px;border-radius:8px;display:block;white-space:pre-wrap}table{border-collapse:collapse;width:100%;margin:12px 0}th,td{border:1px solid #3a4050;padding:8px;vertical-align:top}th{background:#202838}.bad{color:#ff9b9b}.ok{color:#9dffb0}</style>
-</head>
+<head><meta charset="utf-8"><title>Media Cleanup Hub Runbook</title><style>body{font-family:Segoe UI,Arial,sans-serif;margin:28px;background:#0d1117;color:#f3f4f6}h1,h2{color:#fff}code{background:#111827;padding:2px 5px;border-radius:4px}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #30363d;padding:8px}th{background:#1f2937}</style></head>
 <body>
-<h1>Media Cleanup Pipeline</h1>
-<p>This tool is now a two-step home-user pipeline. It is not a complex review app. The user builds a cleanup plan, then applies safe changes.</p>
-<h2>Final folder rule</h2>
-<table><tr><th>Allowed</th><th>Forbidden</th></tr><tr><td><code>C:\X1_Share\Recordings\TV</code><code>C:\X1_Share\Recordings\Movies</code></td><td><code>C:\X1_Share\Recordings\Shows</code></td></tr></table>
-<h2>Run commands</h2>
-<pre>Set-Location -LiteralPath "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
-powershell -ExecutionPolicy Bypass -File scripts\validate_media_cleanup_pipeline.ps1
-powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_plan.ps1
-powershell -ExecutionPolicy Bypass -File scripts\apply_media_cleanup_plan.ps1
-powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_plan.ps1</pre>
-<h2>What plan mode does</h2>
-<ul><li>Scans <code>C:\X1_Share\Recordings</code>.</li><li>Includes loose root files, TV, Movies/movies, _Unsorted, ShowA, ShowB, and any old Shows folder.</li><li>Builds a plan only. It does not move files.</li><li>Creates reports under <code>reports\media_renamer\timestamp</code>.</li></ul>
-<h2>What apply mode does</h2>
-<ul><li>Moves only safe planned TV and Movie matches.</li><li>Moves duplicate losers to <code>_MediaRenamer_Duplicates</code>.</li><li>Moves zero-byte files to <code>_MediaRenamer_Quarantine</code>.</li><li>Moves lowercase <code>movies</code> content into <code>Movies</code>.</li><li>Removes ShowA, ShowB, and Shows only if empty.</li></ul>
-<h2>Safe match rule</h2>
-<p>A file is safe when the repo catalog identifies the media item and confidence is at least 85. TV files require TMDb show identity plus season and episode. Movie files require TMDb movie identity.</p>
-<h2>Problem files</h2>
-<p>Problem files are left alone and listed in <code>problem_files.csv</code>. Reasons include no catalog match, confidence below 85, unlinked sidecar, extensionless file not proven, or unresolved duplicate tie.</p>
-<h2>Reports</h2>
-<table><tr><th>File</th><th>Meaning</th></tr><tr><td>scan_plan.json</td><td>Machine-readable plan.</td></tr><tr><td>scan_plan.csv</td><td>Spreadsheet-friendly plan.</td></tr><tr><td>problem_files.csv</td><td>Files left untouched.</td></tr><tr><td>summary.html</td><td>Human-readable summary.</td></tr><tr><td>execution.log.txt</td><td>Plain text action log after apply.</td></tr></table>
-<h2>Version</h2><p>v0.4.4</p>
+<h1>Media Cleanup Hub Runbook</h1>
+<h2>Normal user workflow</h2>
+<ol>
+<li>Run <code>powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_launcher.ps1</code>.</li>
+<li>Click <strong>Clean Recordings Now</strong>.</li>
+<li>Open <strong>Media Library</strong> when the run completes.</li>
+</ol>
+<h2>What the cleanup does</h2>
+<p>The cleanup pipeline normalizes recordings under <code>C:\X1_Share\Recordings</code>. Safe matches are fixed automatically. Problem files are left alone and reported. Nothing is silently deleted.</p>
+<table><tr><th>Final folder</th><th>Purpose</th></tr><tr><td><code>TV</code></td><td>Normalized show folders, season folders, episode files.</td></tr><tr><td><code>Movies</code></td><td>Normalized movie folders and movie files.</td></tr></table>
+<h2>Media library page</h2>
+<p>The generator creates <code>C:\X1_Share\Recordings\Media_Library.html</code> and <code>C:\X1_Share\Recordings\Media_Library.json</code>. The page includes show/movie title, TMDb ID, release or air date, runtime, genres, status, S##E##, episode name, file path, and file size.</p>
+<h2>Direct commands</h2>
+<pre>powershell -ExecutionPolicy Bypass -File scripts\run_media_cleanup_full_cycle.ps1
+powershell -ExecutionPolicy Bypass -File scripts\generate_media_library_page.ps1
+powershell -ExecutionPolicy Bypass -File scripts\validate_media_library_page.ps1</pre>
+<h2>Failure messages</h2>
+<p>If a run fails, the GUI shows an <strong>Open Log</strong> button and a clickable link to the run log. Use the support ZIP from <code>.ai_uploads</code> for troubleshooting.</p>
 </body></html>

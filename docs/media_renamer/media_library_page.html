@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Media Library Page Implementation</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;background:#0b1020;color:#eef4ff;margin:24px;line-height:1.5}
+table{border-collapse:collapse;width:100%;margin:14px 0}
+td,th{border:1px solid #263653;padding:8px;text-align:left}
+th{background:#17243d}
+code{background:#111827;padding:2px 5px;border-radius:5px}
+</style>
+</head>
+<body>
+<h1>Media Library Page Implementation</h1>
+<table>
+<tr><th>Output</th><th>Path</th></tr>
+<tr><td>HTML page</td><td><code>C:\X1_Share\Recordings\Media_Library.html</code></td></tr>
+<tr><td>JSON data</td><td><code>C:\X1_Share\Recordings\Media_Library.json</code></td></tr>
+<tr><td>Timestamped report copy</td><td><code>C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie\reports\media_library\YYYYMMDD_HHMMSS\</code></td></tr>
+</table>
+<h2>Included metadata</h2>
+<table>
+<tr><th>Type</th><th>Fields</th></tr>
+<tr><td>TV show</td><td>Title, TMDb ID, first air date, status, genres, runtime, overview</td></tr>
+<tr><td>TV episode</td><td>S##E##, episode title, air date, runtime, file name, file path, file size</td></tr>
+<tr><td>Movie</td><td>Title, TMDb ID, release date, runtime, status, genres, overview, file name, file path, file size</td></tr>
+</table>
+<h2>Layout</h2>
+<p>The page is a condensed expand/collapse tree: TV Shows → Show → Season → Episode, and Movies → Movie → Files. Search filters titles, TMDb IDs, genres, dates, episode names, and file names.</p>
+</body>
+</html>

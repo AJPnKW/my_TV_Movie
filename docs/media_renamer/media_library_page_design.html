@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Media Library Page Design Record</title><style>body{font-family:Segoe UI,Arial,sans-serif;background:#0b1020;color:#edf4ff;margin:24px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #33415f;padding:6px;text-align:left}code{background:#111b33;padding:2px 5px;border-radius:4px}</style></head>
+<body>
+<h1>Media Library Page Design Record</h1>
+<p>Version v0.6.1 generates a compact local title page at <code>C:\X1_Share\Recordings\Media_Library.html</code>.</p>
+<table><tr><th>Requirement</th><th>Implementation</th></tr>
+<tr><td>Condensed layout</td><td>One-line show rows using a flex layout; no large cards; no show-row first-air-date/runtime fields.</td></tr>
+<tr><td>Show-level new-release indicators</td><td>Each show row includes green <code>new 7d</code> and blue <code>new 14d</code> badges calculated from TMDb episode air dates.</td></tr>
+<tr><td>Single-click expand</td><td>Clicking a show expands/collapses all seasons and episodes for that show at once.</td></tr>
+<tr><td>Performance</td><td>The generator loads only catalog detail JSON files referenced by local TV/Movie folder TMDb IDs instead of parsing every catalog detail file.</td></tr>
+<tr><td>Metadata retained</td><td>Episode rows include S##E##, episode title, air date, runtime, size, and file name. Movie rows include release date, runtime, status, genres, size, and file name.</td></tr>
+<tr><td>User app workflow</td><td>The GUI uses a fast cleanup cycle for normal use and has a separate Generate Media Library action.</td></tr>
+</table>
+<h2>v0.6.1 QA correction</h2><p><code>Released</code> is valid movie/show metadata and is no longer treated as an old layout marker. Forbidden layout checks remain focused on structural markers such as <code>stat-card</code>, <code>card-grid</code>, <code>large-stat</code>, <code>First </code>, and <code>show-line</code>.</p></body></html>

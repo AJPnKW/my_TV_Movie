@@ -1,61 +1,41 @@
-# FILE: scripts/run_media_cleanup_plan.ps1
-# VERSION: v0.4.4
-# UPDATED: 2026-05-09
 $ErrorActionPreference = "Stop"
-
 $RepoRoot = "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
 $MediaRoot = "C:\X1_Share\Recordings"
 $LogDir = Join-Path $RepoRoot "reports\media_renamer_launcher_logs"
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$Stamp = Get-Date -Format "yyyyMMdd_HHmmss"
-$Log = Join-Path $LogDir "plan_$Stamp.log.txt"
-
-function Write-LogLine {
-    param([string]$Message)
-    $Message | Tee-Object -FilePath $Log -Append
+$Script:Log = Join-Path $LogDir ((Split-Path -Leaf $PSCommandPath).Replace('.ps1','') + '_' + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.log.txt')
+function Log([string]$m){ $line='[{0}] {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'),$m; Write-Host $line; Add-Content -LiteralPath $Script:Log -Value $line -Encoding UTF8 }
+function Ensure-Python(){
+  $venv = Join-Path $RepoRoot '.venv_media_cleanup'
+  $py = Join-Path $venv 'Scripts\python.exe'
+  if (!(Test-Path -LiteralPath $py)){
+    Log "Creating Python 3.12 venv"
+    & py -3.12 -m venv $venv *>> $Script:Log
+    if ($LASTEXITCODE -ne 0){ throw "Python venv creation failed. Log: $Script:Log" }
+  }
+  if (!(Test-Path -LiteralPath $py)){ throw "Python executable missing: $py" }
+  return $py
 }
-
-function Invoke-NativeLogged {
-    param([string]$Label, [scriptblock]$Command)
-    Write-LogLine ""
-    Write-LogLine "START: $Label"
-    $OriginalErrorActionPreference = $ErrorActionPreference
-    $ErrorActionPreference = "Continue"
-    $Output = & $Command 2>&1
-    $ExitCode = $LASTEXITCODE
-    $ErrorActionPreference = $OriginalErrorActionPreference
-    foreach ($Line in $Output) { Write-LogLine ([string]$Line) }
-    if ($ExitCode -ne 0) {
-        Write-LogLine "FAIL: $Label (exit code $ExitCode)"
-        throw "$Label failed. Log: $Log"
-    }
-    Write-LogLine "PASS: $Label"
+function Run-Python([string[]]$Args,[string]$Label){
+  $py=Ensure-Python
+  Log "START: $Label"
+  Log ("CMD: {0} {1}" -f $py, ($Args -join ' '))
+  & $py @Args *>> $Script:Log
+  $code=$LASTEXITCODE
+  Log "EXIT: $Label = $code"
+  if ($code -ne 0){ throw "$Label failed. Log: $Script:Log" }
 }
-
-function Invoke-Python312 {
-    param([string[]]$Arguments)
-    $Python = Join-Path $RepoRoot ".venv_media_cleanup\Scripts\python.exe"
-    if (-not (Test-Path -LiteralPath $Python)) {
-        py -3.12 -m venv (Join-Path $RepoRoot ".venv_media_cleanup")
-    }
-    if (-not (Test-Path -LiteralPath $Python)) {
-        throw "Python 3.12 venv was not created at $Python"
-    }
-    & $Python @Arguments
+function RepoArg(){
+  $p=Join-Path $RepoRoot 'tools\media_renamer\media_cleanup_pipeline.py'
+  if (!(Test-Path -LiteralPath $p)){ throw "Missing pipeline: $p" }
+  $t=Get-Content -LiteralPath $p -Raw -Encoding UTF8
+  if ($t -match '--repo-root'){ return '--repo-root' }
+  return '--repo'
 }
-
 Set-Location -LiteralPath $RepoRoot
-Set-Content -LiteralPath $Log -Value "Building cleanup plan..." -Encoding UTF8
-Write-LogLine "Repo: $RepoRoot"
-Write-LogLine "Media: $MediaRoot"
-Write-Host "Building cleanup plan..."
-Write-Host "Repo: $RepoRoot"
-Write-Host "Media: $MediaRoot"
 
-Invoke-NativeLogged "Build cleanup plan" {
-    Invoke-Python312 @("tools\media_renamer\media_cleanup_pipeline.py", "plan", "--repo-root", $RepoRoot, "--media-root", $MediaRoot)
-}
-
-Write-LogLine "Cleanup plan completed. Log: $Log"
-Write-Host "Cleanup plan completed. Log: $Log"
-if (-not $env:MEDIA_CLEANUP_NO_PAUSE) { Read-Host "Press Enter to close" }
+Log 'Build cleanup plan v0.6.6'
+$pipeline=Join-Path $RepoRoot 'tools\media_renamer\media_cleanup_pipeline.py'
+$ra=RepoArg
+Run-Python @($pipeline,'plan',$ra,$RepoRoot,'--media-root',$MediaRoot) 'Build cleanup plan'
+Log "PASS. Log: $Script:Log"

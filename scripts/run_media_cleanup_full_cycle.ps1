@@ -1,6 +1,9 @@
 # FILE: scripts/run_media_cleanup_full_cycle.ps1
-# VERSION: v0.4.4
-# UPDATED: 2026-05-09
+# VERSION: v0.5.6
+# UPDATED: 2026-05-10
+# CHANGE NOTES:
+# - Runs validation, iterative plan/apply, and media library generation.
+# - Creates upload ZIP after logs are no longer locked.
 $ErrorActionPreference = "Stop"
 
 $RepoRoot = "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
@@ -16,7 +19,8 @@ $env:MEDIA_CLEANUP_NO_PAUSE = "1"
 function Write-RunLog {
     param([string]$Message)
     $Line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
-    $Line | Tee-Object -FilePath $Log -Append
+    Add-Content -LiteralPath $Log -Value $Line -Encoding UTF8
+    Write-Host $Line
 }
 
 function Invoke-Step {
@@ -35,32 +39,55 @@ function Invoke-Step {
     }
 }
 
-Write-RunLog "Media cleanup full cycle v0.4.4"
+function Get-LatestPlanSummary {
+    $ReportsRoot = Join-Path $RepoRoot "reports\media_renamer"
+    $Latest = Get-ChildItem -LiteralPath $ReportsRoot -Directory -ErrorAction SilentlyContinue |
+        Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "scan_plan.json") } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if (-not $Latest) { return $null }
+    $Plan = Get-Content -LiteralPath (Join-Path $Latest.FullName "scan_plan.json") -Raw | ConvertFrom-Json
+    return [pscustomobject]@{
+        PlanDir = $Latest.FullName
+        ReadyToFix = [int]$Plan.summary.ready_to_fix
+    }
+}
+
+Write-RunLog "Media cleanup full cycle v0.5.6"
 Write-RunLog "Repo: $RepoRoot"
 Write-RunLog "MediaRoot: $MediaRoot"
 Write-RunLog "RunOut: $RunOut"
 
 Invoke-Step "Validate pipeline" {
     Set-Location -LiteralPath $RepoRoot
-    powershell -ExecutionPolicy Bypass -File "scripts\validate_media_cleanup_pipeline.ps1"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\validate_media_cleanup_pipeline.ps1"
 }
 
-Invoke-Step "Build cleanup plan before apply" {
+for ($Pass = 1; $Pass -le 5; $Pass++) {
+    Invoke-Step "Build cleanup plan pass $Pass" {
+        Set-Location -LiteralPath $RepoRoot
+        powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\run_media_cleanup_plan.ps1"
+    }
+
+    $Summary = Get-LatestPlanSummary
+    if ($Summary) {
+        Write-RunLog ("Plan pass {0}: ready_to_fix={1}; plan={2}" -f $Pass, $Summary.ReadyToFix, $Summary.PlanDir)
+        if ($Summary.ReadyToFix -le 0) { break }
+    }
+
+    Invoke-Step "Apply safe cleanup plan pass $Pass" {
+        Set-Location -LiteralPath $RepoRoot
+        powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\apply_media_cleanup_plan.ps1"
+    }
+}
+
+Invoke-Step "Generate media library page" {
     Set-Location -LiteralPath $RepoRoot
-    powershell -ExecutionPolicy Bypass -File "scripts\run_media_cleanup_plan.ps1"
+    powershell -NoProfile -ExecutionPolicy Bypass -File "scripts\generate_media_library_page.ps1"
 }
 
-Invoke-Step "Apply safe cleanup plan" {
-    Set-Location -LiteralPath $RepoRoot
-    powershell -ExecutionPolicy Bypass -File "scripts\apply_media_cleanup_plan.ps1"
-}
-
-Invoke-Step "Build cleanup plan after apply" {
-    Set-Location -LiteralPath $RepoRoot
-    powershell -ExecutionPolicy Bypass -File "scripts\run_media_cleanup_plan.ps1"
-}
-
-Invoke-Step "Create current directory listings" {
+Invoke-Step "Create current directory listing" {
     $ListingTxt = Join-Path $RunOut "recordings_tree_after_cleanup.log.txt"
     $ListingCsv = Join-Path $RunOut "recordings_tree_after_cleanup.csv"
 
@@ -76,31 +103,25 @@ Invoke-Step "Create current directory listings" {
 }
 
 Invoke-Step "Collect latest reports" {
-    $ReportsRoot = Join-Path $RepoRoot "reports\media_renamer"
-    $ReportCopy = Join-Path $RunOut "latest_reports"
-    New-Item -ItemType Directory -Force -Path $ReportCopy | Out-Null
-
-    Get-ChildItem -LiteralPath $ReportsRoot -Directory -ErrorAction SilentlyContinue |
-        Sort-Object LastWriteTime -Descending |
-        Select-Object -First 5 |
-        ForEach-Object {
-            Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $ReportCopy $_.Name) -Recurse -Force
-        }
-
-    $LauncherLogs = Join-Path $RepoRoot "reports\media_renamer_launcher_logs"
-    if (Test-Path -LiteralPath $LauncherLogs) {
-        Copy-Item -LiteralPath $LauncherLogs -Destination (Join-Path $RunOut "media_renamer_launcher_logs") -Recurse -Force
+    $ReportsRoot = Join-Path $RepoRoot "reports"
+    $ReportCopy = Join-Path $RunOut "reports"
+    if (Test-Path -LiteralPath $ReportsRoot) {
+        Copy-Item -LiteralPath $ReportsRoot -Destination $ReportCopy -Recurse -Force
     }
+    Copy-Item -LiteralPath (Join-Path $MediaRoot "Media_Library.html") -Destination (Join-Path $RunOut "Media_Library.html") -Force -ErrorAction SilentlyContinue
+    Copy-Item -LiteralPath (Join-Path $MediaRoot "Media_Library.json") -Destination (Join-Path $RunOut "Media_Library.json") -Force -ErrorAction SilentlyContinue
 }
 
-Invoke-Step "Create upload zip" {
-    $ZipOut = "$RunOut.zip"
-    Compress-Archive -LiteralPath (Join-Path $RunOut "*") -DestinationPath $ZipOut -Force
-    Write-RunLog "UPLOAD THIS FILE: $ZipOut"
-}
+$ZipOut = "$RunOut.zip"
+Compress-Archive -LiteralPath (Join-Path $RunOut "*") -DestinationPath $ZipOut -Force
 
+Write-RunLog "UPLOAD THIS FILE: $ZipOut"
+Write-Host ""
+Write-Host "Media cleanup complete."
+Write-Host "Media Library:"
+Write-Host (Join-Path $MediaRoot "Media_Library.html")
 Write-Host ""
 Write-Host "UPLOAD THIS FILE:"
-Write-Host "$RunOut.zip"
+Write-Host $ZipOut
 Write-Host ""
 if (-not $env:MEDIA_CLEANUP_NO_PAUSE_PARENT) { Read-Host "Press Enter to close" }

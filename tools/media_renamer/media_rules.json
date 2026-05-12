@@ -1,11 +1,26 @@
 {
-  "version": "0.4.2",
-  "final_folders": ["TV", "Movies"],
+  "version": "0.4.6",
+  "media_root_default": "C:\\X1_Share\\Recordings",
+  "tv_folder_name": "TV",
+  "movie_folder_name": "Movies",
   "forbidden_output_folders": ["Shows"],
-  "default_media_root": "C:\\X1_Share\\Recordings",
-  "safe_confidence_threshold": 85,
   "media_extensions": [".mp4", ".mkv", ".avi", ".mov", ".m4v", ".ts", ".mpg", ".mpeg", ".wmv"],
   "sidecar_extensions": [".srt", ".ass", ".vtt", ".nfo"],
-  "root_quarantine_folder": "_MediaRenamer_Quarantine",
-  "root_duplicates_folder": "_MediaRenamer_Duplicates"
+  "support_extensions": [".jpg", ".jpeg", ".png", ".webp", ".avif", ".pdf", ".docx", ".html", ".ps1", ".json", ".bak", ".txt"],
+  "skip_folder_names": ["_Metadata", "assets", "archived", "reports", ".git", "__pycache__", "_MediaRenamer_Quarantine", "_MediaRenamer_Duplicates", "_MediaRenamer_Review"],
+  "never_skip_folder_names": ["TV", "Movies", "movies", "_Unsorted", "ShowA", "ShowB"],
+  "safe_confidence": 85,
+  "review_folder": "_MediaRenamer_Review",
+  "duplicate_folder": "_MediaRenamer_Duplicates",
+  "quarantine_folder": "_MediaRenamer_Quarantine",
+  "generic_season_names": ["Season 1", "Season 2", "Season 3", "Series 1", "Series 2", "Series 3"],
+  "legacy_folder_cleanup": true,
+  "acceptance": {
+    "no_root_media": true,
+    "no_legacy_live_tv_folders_with_media": true,
+    "no_duplicate_same_tmdb_folders": true,
+    "no_generic_duplicate_season_folders": true,
+    "no_showa_showb_live_folders": true,
+    "movies_folder_must_be_titlecase": true
+  }
 }
