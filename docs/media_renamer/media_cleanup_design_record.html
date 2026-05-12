@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Media Cleanup Design Record</title><style>body{font-family:Segoe UI,Arial,sans-serif;background:#06101f;color:#f4f7ff;margin:24px}code,pre{background:#0d1830;padding:3px 5px;border-radius:5px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #25426d;padding:7px}th{background:#0d1830}</style></head><body>
+<h1>Media Cleanup Design Record</h1><p><b>Version:</b> v0.6.8</p>
+<h2>Single pipeline contract</h2><pre>1. Build naming cleanup plan.
+2. Apply safe naming cleanup.
+3. Repeat until no safe actions remain.
+4. QA every TV/Movie media file with ffprobe.
+5. Repair files needing repair with ffmpeg.
+6. Regenerate Media_Library.html and JSON.
+7. Produce logs/reports.</pre>
+<h2>Correct final folders</h2><pre>C:\X1_Share\Recordings\TV
+C:\X1_Share\Recordings\Movies</pre>
+<h2>Script quality rules</h2><table><tr><th>Rule</th><th>Reason</th></tr><tr><td>No Invoke-NativeProcess helper.</td><td>It repeatedly failed due null method calls.</td></tr><tr><td>No $Args assignment or @Args splatting.</td><td>$Args is a PowerShell automatic variable and caused Python to run without arguments.</td></tr><tr><td>No ProcessStartInfo.ArgumentList.Add.</td><td>Not safe across Windows PowerShell 5.1/.NET variants.</td></tr><tr><td>Use Start-Process with quoted .Arguments and separate stdout/stderr files.</td><td>Prevents NativeCommandError and redirect conflicts.</td></tr></table>
+<h2>Primary command</h2><pre>powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run_media_cleanup_integrated.ps1</pre>
+</body></html>

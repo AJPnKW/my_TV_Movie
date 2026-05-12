@@ -1,50 +1,27 @@
-$ErrorActionPreference = "Stop"
-$RepoRoot = "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
-$MediaRoot = "C:\X1_Share\Recordings"
-$LogDir = Join-Path $RepoRoot "reports\media_renamer_launcher_logs"
-New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$Script:Log = Join-Path $LogDir ((Split-Path -Leaf $PSCommandPath).Replace('.ps1','') + '_' + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.log.txt')
-function Log([string]$m){ $line='[{0}] {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'),$m; Write-Host $line; Add-Content -LiteralPath $Script:Log -Value $line -Encoding UTF8 }
-function Ensure-Python(){
-  $venv = Join-Path $RepoRoot '.venv_media_cleanup'
-  $py = Join-Path $venv 'Scripts\python.exe'
-  if (!(Test-Path -LiteralPath $py)){
-    Log "Creating Python 3.12 venv"
-    & py -3.12 -m venv $venv *>> $Script:Log
-    if ($LASTEXITCODE -ne 0){ throw "Python venv creation failed. Log: $Script:Log" }
-  }
-  if (!(Test-Path -LiteralPath $py)){ throw "Python executable missing: $py" }
-  return $py
-}
-function Run-Python([string[]]$Args,[string]$Label){
-  $py=Ensure-Python
-  Log "START: $Label"
-  Log ("CMD: {0} {1}" -f $py, ($Args -join ' '))
-  & $py @Args *>> $Script:Log
-  $code=$LASTEXITCODE
-  Log "EXIT: $Label = $code"
-  if ($code -ne 0){ throw "$Label failed. Log: $Script:Log" }
-}
-function RepoArg(){
-  $p=Join-Path $RepoRoot 'tools\media_renamer\media_cleanup_pipeline.py'
-  if (!(Test-Path -LiteralPath $p)){ throw "Missing pipeline: $p" }
-  $t=Get-Content -LiteralPath $p -Raw -Encoding UTF8
-  if ($t -match '--repo-root'){ return '--repo-root' }
-  return '--repo'
-}
-Set-Location -LiteralPath $RepoRoot
+# FILE: scripts/start_media_http_server.ps1
+# VERSION: v0.6.8
+# UPDATED: 2026-05-11
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
 
-Log 'Start media HTTP server v0.6.6'
-$py=Ensure-Python
-$port=8010
-$url="http://AJP-Laptop-X1CG10:$port/Media_Library.html"
-$existing=Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
-if($existing){ Log "Already listening: $url"; Write-Host $url; return }
-$serverLog=Join-Path $LogDir ('media_http_server_' + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.log.txt')
-$args='-m http.server 8010 --bind 0.0.0.0 --directory "' + $MediaRoot + '"'
-Start-Process -FilePath $py -ArgumentList $args -WindowStyle Minimized -RedirectStandardOutput $serverLog -RedirectStandardError $serverLog | Out-Null
-Start-Sleep -Seconds 2
-$check=Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue
-if(!$check){ throw "HTTP server did not start. Log: $serverLog" }
-Log "Started: $url"
-Write-Host $url
+$RepoRoot = 'C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie'
+$MediaRoot = 'C:\X1_Share\Recordings'
+. (Join-Path $RepoRoot 'scripts\media_cleanup_common.ps1')
+$LogDir = Join-Path $RepoRoot 'reports\media_http_server_logs'
+New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+$Log = Join-Path $LogDir ('media_http_server_{0}.log.txt' -f (Get-Date -Format 'yyyyMMdd_HHmmss'))
+$Err = Join-Path $LogDir ('media_http_server_{0}.err.txt' -f (Get-Date -Format 'yyyyMMdd_HHmmss'))
+$Python = Get-MediaCleanupPython -RepoRoot $RepoRoot
+$Script = Join-Path $RepoRoot 'tools\media_renamer\media_http_server.py'
+$ArgumentText = Join-MediaCleanupArgumentList -ArgumentList @($Script,'--root',$MediaRoot,'--host','0.0.0.0','--port','8010')
+
+Write-MediaCleanupLog -LogPath $Log -Message 'Start media HTTP server v0.6.8'
+Write-MediaCleanupLog -LogPath $Log -Message ('CMD: {0} {1}' -f $Python, $ArgumentText)
+$Process = Start-Process -FilePath $Python -ArgumentList $ArgumentText -WorkingDirectory $RepoRoot -RedirectStandardOutput $Log -RedirectStandardError $Err -WindowStyle Minimized -PassThru
+$PidFile = Join-Path $LogDir 'media_http_server.pid.txt'
+Set-Content -LiteralPath $PidFile -Value ([string]$Process.Id) -Encoding UTF8
+Write-Host 'Media HTTP server started.'
+Write-Host 'URL: http://AJP-Laptop-X1CG10:8010/Media_Library.html'
+Write-Host "PID: $($Process.Id)"
+Write-Host "Log: $Log"
+Write-Host "Error log: $Err"

@@ -1,39 +1,111 @@
+# FILE: tools/media_renamer/media_cleanup_launcher.py
+# VERSION: v0.6.8
+# UPDATED: 2026-05-11
 from __future__ import annotations
-import subprocess,sys
+
+import subprocess
+import sys
 from pathlib import Path
-from PySide6.QtCore import QObject,QRunnable,QThreadPool,Signal,QUrl
-from PySide6.QtGui import QDesktopServices
-from PySide6.QtWidgets import QApplication,QLabel,QMessageBox,QPushButton,QTextEdit,QVBoxLayout,QHBoxLayout,QWidget
-class Sig(QObject): finished=Signal(int,str,str)
-class Work(QRunnable):
- def __init__(self,repo,script): super().__init__(); self.repo=repo; self.script=script; self.signals=Sig()
- def run(self):
-  cmd=['powershell','-NoProfile','-ExecutionPolicy','Bypass','-File',str(self.repo/'scripts'/self.script)]; r=subprocess.run(cmd,cwd=str(self.repo),capture_output=True,text=True); out=(r.stdout or '')+('\n'+r.stderr if r.stderr else ''); log=''
-  for line in out.splitlines():
-   if 'Log:' in line: log=line.split('Log:',1)[1].strip()
-  self.signals.finished.emit(r.returncode,out,log)
-class App(QWidget):
- def __init__(self):
-  super().__init__(); self.repo=Path(__file__).resolve().parents[2]; self.media=Path(r'C:\X1_Share\Recordings'); self.pool=QThreadPool.globalInstance(); self.last=''; self.setWindowTitle('Media Cleanup Hub'); self.resize(980,560)
-  lay=QVBoxLayout(); title=QLabel('Media Cleanup Hub'); title.setStyleSheet('font-size:24px;font-weight:900'); lay.addWidget(title); lay.addWidget(QLabel('Run cleanup, generate the library page, start the media server, and test playback.'))
-  row=QHBoxLayout();
-  for text,script in [('Clean + Generate Library','run_media_cleanup_fast_cycle.ps1'),('Check Only','run_media_cleanup_plan.ps1'),('Generate Library','generate_media_library_page.ps1'),('Playback QA','qa_media_playback.ps1'),('Start HTTP Server','start_media_http_server.ps1')]:
-   b=QPushButton(text); b.clicked.connect(lambda _=False,s=script:self.run(s)); row.addWidget(b)
-  lay.addLayout(row); row2=QHBoxLayout()
-  for text,fn in [('Open Library',self.open_lib),('Open Recordings',self.open_rec),('Open Reports',self.open_reports),('Open Last Log',self.open_log)]:
-   b=QPushButton(text); b.clicked.connect(fn); row2.addWidget(b)
-  lay.addLayout(row2); self.status=QLabel('Ready'); self.out=QTextEdit(); self.out.setReadOnly(True); lay.addWidget(self.status); lay.addWidget(self.out); self.setLayout(lay); self.setStyleSheet('QWidget{background:#050914;color:#f2f6ff;font-family:Segoe UI;font-size:13px}QPushButton{background:#132441;border:1px solid #274166;border-radius:8px;padding:8px;font-weight:700}QTextEdit{background:#07101f;border:1px solid #263b5f;border-radius:8px;font-family:Consolas}')
- def run(self,s): self.status.setText('Running '+s); w=Work(self.repo,s); w.signals.finished.connect(self.done); self.pool.start(w)
- def done(self,code,out,log):
-  self.out.append(out); self.last=log or self.last; self.status.setText('Finished' if code==0 else 'Failed')
-  if code!=0:
-   m=QMessageBox(self); m.setWindowTitle('Run failed'); m.setText('The run did not finish successfully.'); m.setInformativeText('Log: '+(self.last or 'No log path found')); ob=m.addButton('Open Log',QMessageBox.ActionRole); m.addButton(QMessageBox.Ok); m.exec();
-   if m.clickedButton() is ob: self.open_log()
- def open(self,p): QDesktopServices.openUrl(QUrl.fromLocalFile(str(p)))
- def open_lib(self): self.open(self.media/'Media_Library.html')
- def open_rec(self): self.open(self.media)
- def open_reports(self): self.open(self.repo/'reports')
- def open_log(self):
-  if self.last: self.open(Path(self.last))
-def main(): app=QApplication(sys.argv); w=App(); w.show(); return app.exec()
-if __name__=='__main__': raise SystemExit(main())
+
+from PySide6.QtCore import QObject, QRunnable, QThreadPool, Signal
+from PySide6.QtWidgets import QApplication, QLabel, QPushButton, QTextEdit, QVBoxLayout, QWidget, QHBoxLayout
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+class WorkerSignals(QObject):
+    finished = Signal(int, str)
+
+
+class CommandWorker(QRunnable):
+    def __init__(self, command: list[str]) -> None:
+        super().__init__()
+        self.command = [str(x) for x in command]
+        self.signals = WorkerSignals()
+
+    def run(self) -> None:
+        completed = subprocess.run(self.command, cwd=str(REPO_ROOT), capture_output=True, text=True, check=False)
+        output = (completed.stdout or "") + ("\n" + completed.stderr if completed.stderr else "")
+        self.signals.finished.emit(completed.returncode, output)
+
+
+class MediaCleanupWindow(QWidget):
+    def __init__(self) -> None:
+        super().__init__()
+        self.pool = QThreadPool.globalInstance()
+        self.setWindowTitle("Media Cleanup Hub")
+        self.resize(980, 620)
+        self.status = QLabel("Ready")
+        self.output = QTextEdit()
+        self.output.setReadOnly(True)
+        self.clean_button = QPushButton("Clean + QA + Generate Library")
+        self.check_button = QPushButton("Check Naming Only")
+        self.library_button = QPushButton("Generate Media Library")
+        self.qa_button = QPushButton("QA Playback")
+        self.repair_button = QPushButton("Repair Playback Issues")
+        self.open_button = QPushButton("Open Media Library")
+        self.server_button = QPushButton("Start Network Media Page")
+        self.report_button = QPushButton("Open Reports Folder")
+        self.clean_button.clicked.connect(lambda: self.run_script("run_media_cleanup_integrated.ps1", "Clean + QA + Generate Library"))
+        self.check_button.clicked.connect(lambda: self.run_script("run_media_cleanup_plan.ps1", "Check Naming Only"))
+        self.library_button.clicked.connect(lambda: self.run_script("generate_media_library_page.ps1", "Generate Media Library"))
+        self.qa_button.clicked.connect(lambda: self.run_script("qa_media_playback.ps1", "QA Playback"))
+        self.repair_button.clicked.connect(lambda: self.run_script("repair_media_playback.ps1", "Repair Playback Issues"))
+        self.open_button.clicked.connect(self.open_library)
+        self.server_button.clicked.connect(lambda: self.run_script("start_media_http_server.ps1", "Start Network Media Page"))
+        self.report_button.clicked.connect(self.open_reports)
+        layout = QVBoxLayout()
+        title = QLabel("Media Cleanup Hub")
+        title.setObjectName("title")
+        subtitle = QLabel("One process: clean names, validate media files, repair playback issues, and generate the local library page.")
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+        row1 = QHBoxLayout(); row1.addWidget(self.clean_button); row1.addWidget(self.check_button); row1.addWidget(self.library_button)
+        row2 = QHBoxLayout(); row2.addWidget(self.qa_button); row2.addWidget(self.repair_button); row2.addWidget(self.server_button)
+        row3 = QHBoxLayout(); row3.addWidget(self.open_button); row3.addWidget(self.report_button)
+        layout.addLayout(row1); layout.addLayout(row2); layout.addLayout(row3); layout.addWidget(self.status); layout.addWidget(self.output)
+        self.setLayout(layout)
+        self.setStyleSheet("""
+            QWidget { background:#06101f; color:#f4f7ff; font:14px 'Segoe UI'; }
+            QLabel#title { font-size:34px; font-weight:900; letter-spacing:2px; }
+            QPushButton { background:#14284c; border:1px solid #2b4a7c; border-radius:10px; color:#fff; padding:12px; font-weight:800; }
+            QPushButton:hover { border-color:#78e8ff; }
+            QTextEdit { background:#020812; border:1px solid #1f3156; border-radius:10px; font-family:Consolas; }
+        """)
+
+    def set_busy(self, busy: bool) -> None:
+        for button in [self.clean_button, self.check_button, self.library_button, self.qa_button, self.repair_button, self.server_button]:
+            button.setEnabled(not busy)
+
+    def run_script(self, script_name: str, label: str) -> None:
+        self.set_busy(True)
+        self.status.setText(f"Running: {label}")
+        self.output.append(f"\nSTART: {label}\n")
+        command = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(REPO_ROOT / "scripts" / script_name)]
+        worker = CommandWorker(command)
+        worker.signals.finished.connect(lambda code, out: self.command_finished(label, code, out))
+        self.pool.start(worker)
+
+    def command_finished(self, label: str, code: int, output: str) -> None:
+        self.output.append(output)
+        self.output.append(f"\nFINISHED: {label}; exit code {code}\n")
+        self.status.setText("Ready" if code == 0 else f"Failed: {label}")
+        self.set_busy(False)
+
+    def open_library(self) -> None:
+        subprocess.Popen(["explorer", r"C:\X1_Share\Recordings\Media_Library.html"])
+
+    def open_reports(self) -> None:
+        subprocess.Popen(["explorer", str(REPO_ROOT / "reports")])
+
+
+def main() -> int:
+    app = QApplication(sys.argv)
+    window = MediaCleanupWindow()
+    window.show()
+    return app.exec()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

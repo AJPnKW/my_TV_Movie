@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Media File QA Pipeline</title><style>body{font-family:Segoe UI,Arial,sans-serif;background:#06101f;color:#f4f7ff;margin:24px}code,pre{background:#0d1830;padding:3px 5px;border-radius:5px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #25426d;padding:7px}th{background:#0d1830}</style></head><body>
+<h1>Media File QA Pipeline</h1>
+<p><b>Version:</b> v0.6.8</p>
+<h2>Required integrated flow</h2>
+<pre>Plan/apply naming cleanup → ffprobe QA for all TV/Movie files → repair flagged files → regenerate Media_Library.html</pre>
+<h2>Scope</h2>
+<p>All media files under <code>C:\X1_Share\Recordings\TV</code> and <code>C:\X1_Share\Recordings\Movies</code> are in scope. The two Your Friends &amp; Neighbors files are examples only, not the scope limit.</p>
+<h2>QA criteria</h2>
+<table><tr><th>Check</th><th>Rule</th></tr><tr><td>Readable</td><td>ffprobe must parse format and streams.</td></tr><tr><td>Video</td><td>Video stream must exist and duration must be above zero.</td></tr><tr><td>Container</td><td>MP4 is preferred for Android/Chromecast/browser playback.</td></tr><tr><td>Codec</td><td>H.264/H.265 video and AAC/MP3/AC3/EAC3 audio are treated as TV-safe enough.</td></tr><tr><td>Repair</td><td>Remux to MP4 faststart first; transcode to H.264/AAC only if remux fails.</td></tr><tr><td>Safety</td><td>Original files are backed up before replacement under <code>_MediaRenamer_Originals\timestamp</code>.</td></tr></table>
+<h2>Commands</h2>
+<pre>powershell -NoProfile -ExecutionPolicy Bypass -File scripts\run_media_cleanup_integrated.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\qa_media_playback.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\repair_media_playback.ps1</pre>
+</body></html>

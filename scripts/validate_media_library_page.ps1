@@ -1,41 +1,28 @@
-$ErrorActionPreference = "Stop"
-$RepoRoot = "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
-$MediaRoot = "C:\X1_Share\Recordings"
-$LogDir = Join-Path $RepoRoot "reports\media_renamer_launcher_logs"
-New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$Script:Log = Join-Path $LogDir ((Split-Path -Leaf $PSCommandPath).Replace('.ps1','') + '_' + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.log.txt')
-function Log([string]$m){ $line='[{0}] {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'),$m; Write-Host $line; Add-Content -LiteralPath $Script:Log -Value $line -Encoding UTF8 }
-function Ensure-Python(){
-  $venv = Join-Path $RepoRoot '.venv_media_cleanup'
-  $py = Join-Path $venv 'Scripts\python.exe'
-  if (!(Test-Path -LiteralPath $py)){
-    Log "Creating Python 3.12 venv"
-    & py -3.12 -m venv $venv *>> $Script:Log
-    if ($LASTEXITCODE -ne 0){ throw "Python venv creation failed. Log: $Script:Log" }
-  }
-  if (!(Test-Path -LiteralPath $py)){ throw "Python executable missing: $py" }
-  return $py
-}
-function Run-Python([string[]]$Args,[string]$Label){
-  $py=Ensure-Python
-  Log "START: $Label"
-  Log ("CMD: {0} {1}" -f $py, ($Args -join ' '))
-  & $py @Args *>> $Script:Log
-  $code=$LASTEXITCODE
-  Log "EXIT: $Label = $code"
-  if ($code -ne 0){ throw "$Label failed. Log: $Script:Log" }
-}
-function RepoArg(){
-  $p=Join-Path $RepoRoot 'tools\media_renamer\media_cleanup_pipeline.py'
-  if (!(Test-Path -LiteralPath $p)){ throw "Missing pipeline: $p" }
-  $t=Get-Content -LiteralPath $p -Raw -Encoding UTF8
-  if ($t -match '--repo-root'){ return '--repo-root' }
-  return '--repo'
-}
-Set-Location -LiteralPath $RepoRoot
+# FILE: scripts/validate_media_library_page.ps1
+# VERSION: v0.6.8
+# UPDATED: 2026-05-11
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
 
-Log 'Validate media library page v0.6.6'
-$script=Join-Path $RepoRoot 'tools\media_renamer\media_library_page.py'
-Run-Python @('-m','py_compile',$script) 'Compile media_library_page.py'
-Run-Python @($script,'self-test','--repo',$RepoRoot,'--media-root',$MediaRoot) 'Self-test media library page'
-Log "PASS. Log: $Script:Log"
+$RepoRoot = 'C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie'
+$MediaRoot = 'C:\X1_Share\Recordings'
+. (Join-Path $RepoRoot 'scripts\media_cleanup_common.ps1')
+$LogDir = Join-Path $RepoRoot 'reports\media_renamer_launcher_logs'
+New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+$Log = Join-Path $LogDir ('validate_media_library_page_{0}.log.txt' -f (Get-Date -Format 'yyyyMMdd_HHmmss'))
+$Python = Get-MediaCleanupPython -RepoRoot $RepoRoot
+$Script = Join-Path $RepoRoot 'tools\media_renamer\media_library_page.py'
+
+Write-MediaCleanupLog -LogPath $Log -Message 'Validate media library page v0.6.8'
+Invoke-MediaCleanupNativeCommand -FilePath $Python -ArgumentList @('-m','py_compile',$Script) -LogPath $Log -WorkingDirectory $RepoRoot
+Invoke-MediaCleanupNativeCommand -FilePath $Python -ArgumentList @($Script,'--self-test','--repo',$RepoRoot,'--media-root',$MediaRoot) -LogPath $Log -WorkingDirectory $RepoRoot
+
+$RequiredMarkers = @('data-layout="compact-tree-v0.6.8"','Copy HTTP','Copy UNC','Copy SMB','new 7d','new 14d')
+$Generated = Join-Path $MediaRoot 'Media_Library.html'
+if (Test-Path -LiteralPath $Generated) {
+    $Html = Get-Content -LiteralPath $Generated -Raw -Encoding UTF8
+    foreach ($Marker in $RequiredMarkers) {
+        if ($Html -notlike "*$Marker*") { throw "Generated page missing marker: $Marker" }
+    }
+}
+Write-MediaCleanupLog -LogPath $Log -Message 'PASS: Media library validation completed.'

@@ -1,41 +1,18 @@
-$ErrorActionPreference = "Stop"
-$RepoRoot = "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
-$MediaRoot = "C:\X1_Share\Recordings"
-$LogDir = Join-Path $RepoRoot "reports\media_renamer_launcher_logs"
-New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
-$Script:Log = Join-Path $LogDir ((Split-Path -Leaf $PSCommandPath).Replace('.ps1','') + '_' + (Get-Date -Format 'yyyyMMdd_HHmmss') + '.log.txt')
-function Log([string]$m){ $line='[{0}] {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'),$m; Write-Host $line; Add-Content -LiteralPath $Script:Log -Value $line -Encoding UTF8 }
-function Ensure-Python(){
-  $venv = Join-Path $RepoRoot '.venv_media_cleanup'
-  $py = Join-Path $venv 'Scripts\python.exe'
-  if (!(Test-Path -LiteralPath $py)){
-    Log "Creating Python 3.12 venv"
-    & py -3.12 -m venv $venv *>> $Script:Log
-    if ($LASTEXITCODE -ne 0){ throw "Python venv creation failed. Log: $Script:Log" }
-  }
-  if (!(Test-Path -LiteralPath $py)){ throw "Python executable missing: $py" }
-  return $py
-}
-function Run-Python([string[]]$Args,[string]$Label){
-  $py=Ensure-Python
-  Log "START: $Label"
-  Log ("CMD: {0} {1}" -f $py, ($Args -join ' '))
-  & $py @Args *>> $Script:Log
-  $code=$LASTEXITCODE
-  Log "EXIT: $Label = $code"
-  if ($code -ne 0){ throw "$Label failed. Log: $Script:Log" }
-}
-function RepoArg(){
-  $p=Join-Path $RepoRoot 'tools\media_renamer\media_cleanup_pipeline.py'
-  if (!(Test-Path -LiteralPath $p)){ throw "Missing pipeline: $p" }
-  $t=Get-Content -LiteralPath $p -Raw -Encoding UTF8
-  if ($t -match '--repo-root'){ return '--repo-root' }
-  return '--repo'
-}
-Set-Location -LiteralPath $RepoRoot
+# FILE: scripts/apply_media_cleanup_plan.ps1
+# VERSION: v0.6.8
+# UPDATED: 2026-05-11
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
 
-Log 'Apply cleanup plan v0.6.6'
-$pipeline=Join-Path $RepoRoot 'tools\media_renamer\media_cleanup_pipeline.py'
-$ra=RepoArg
-Run-Python @($pipeline,'apply',$ra,$RepoRoot,'--media-root',$MediaRoot) 'Apply cleanup plan'
-Log "PASS. Log: $Script:Log"
+$RepoRoot = 'C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie'
+$MediaRoot = 'C:\X1_Share\Recordings'
+. (Join-Path $RepoRoot 'scripts\media_cleanup_common.ps1')
+$LogDir = Join-Path $RepoRoot 'reports\media_renamer_launcher_logs'
+New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
+$Log = Join-Path $LogDir ('apply_{0}.log.txt' -f (Get-Date -Format 'yyyyMMdd_HHmmss'))
+$Python = Get-MediaCleanupPython -RepoRoot $RepoRoot
+$RepoArg = Get-MediaCleanupPipelineRepoArgument -RepoRoot $RepoRoot
+
+Write-MediaCleanupLog -LogPath $Log -Message 'Applying cleanup plan v0.6.8'
+Invoke-MediaCleanupNativeCommand -FilePath $Python -ArgumentList @('tools\media_renamer\media_cleanup_pipeline.py','apply',$RepoArg,$RepoRoot,'--media-root',$MediaRoot) -LogPath $Log -WorkingDirectory $RepoRoot
+Write-MediaCleanupLog -LogPath $Log -Message 'PASS: Cleanup apply completed.'

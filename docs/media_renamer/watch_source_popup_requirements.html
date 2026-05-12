@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Watch Source Popup Requirements</title><style>body{font-family:Segoe UI,Arial,sans-serif;background:#06101f;color:#f4f7ff;margin:24px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #25426d;padding:7px;vertical-align:top}th{background:#0d1830}.done{color:#2bd576}.open{color:#ffd166}</style></head><body>
+<h1>Watch Source Popup Requirements</h1><p><b>Version:</b> v0.6.8</p>
+<table><tr><th>Requirement</th><th>Implementation</th><th>Status</th></tr>
+<tr><td>Every popup/form gets a reference label in bottom-right.</td><td>provider_popup_guard.js injects REF-### labels into dialogs/forms.</td><td class="done">Implemented</td></tr>
+<tr><td>Sticky close/exit buttons.</td><td>Runtime class added to close/exit buttons.</td><td class="done">Implemented</td></tr>
+<tr><td>Remove duplicate Watch Source title text.</td><td>Provider title simplified to Watch Sources.</td><td class="done">Implemented</td></tr>
+<tr><td>Remove ACTIVE CANDIDATE FROM USER FINDINGS and ACTIVE.</td><td>Runtime text cleanup removes exact strings.</td><td class="done">Implemented</td></tr>
+<tr><td>Source health icon: eye plus green check for VidEasy and 2Embed CC, warning for others.</td><td>Runtime source enhancement adds status icon.</td><td class="done">Implemented</td></tr>
+<tr><td>Compact Watch Now and Where to Watch rows.</td><td>Runtime CSS removes borders and reduces spacing.</td><td class="done">Implemented</td></tr>
+<tr><td>Copyable recording filename line.</td><td>Runtime appends copyable recording name when show/episode context is available.</td><td class="done">Implemented</td></tr>
+<tr><td>After selecting source, ask watched / partial / did not watch / recorded.</td><td>Runtime prompt records local status and calls MyTVHubWatchState when context supports it.</td><td class="done">Implemented</td></tr>
+</table>
+</body></html>

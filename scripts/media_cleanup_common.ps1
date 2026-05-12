@@ -1,100 +1,153 @@
 # FILE: scripts/media_cleanup_common.ps1
-# VERSION: v0.6.4
+# VERSION: v0.6.8
 # UPDATED: 2026-05-11
-# PURPOSE: Shared, location-independent helper for Media Cleanup Hub scripts.
-$ErrorActionPreference = "Stop"
+# CHANGE NOTES:
+# - Shared PowerShell helper for Media Cleanup scripts.
+# - Uses safe native command execution across Windows PowerShell versions.
+# - Uses approved verbs for PSScriptAnalyzer compatibility.
+# - Writes clean UTF-8 logs and captures stdout/stderr without NativeCommandError noise.
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = 'Stop'
 
 function Get-MediaCleanupRepoRoot {
-    $Fixed = "C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie"
-    if (Test-Path -LiteralPath (Join-Path $Fixed "tools\media_renamer\media_cleanup_pipeline.py")) { return $Fixed }
-    $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
-    $Candidate = Resolve-Path -LiteralPath (Join-Path $Here "..") -ErrorAction SilentlyContinue
-    if ($Candidate -and (Test-Path -LiteralPath (Join-Path $Candidate.Path "tools\media_renamer\media_cleanup_pipeline.py"))) { return $Candidate.Path }
-    throw "Cannot find my_TV_Movie repo root. Expected $Fixed"
+    $Current = (Get-Location).Path
+    while ($Current) {
+        if (Test-Path -LiteralPath (Join-Path $Current 'tools\media_renamer')) {
+            return $Current
+        }
+        $Parent = Split-Path -Parent $Current
+        if ([string]::IsNullOrWhiteSpace($Parent) -or $Parent -eq $Current) { break }
+        $Current = $Parent
+    }
+    return 'C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie'
+}
+
+function Write-MediaCleanupLog {
+    param(
+        [Parameter(Mandatory=$true)][string]$LogPath,
+        [Parameter(Mandatory=$true)][string]$Message
+    )
+    $Parent = Split-Path -Parent $LogPath
+    if (-not (Test-Path -LiteralPath $Parent)) { New-Item -ItemType Directory -Force -Path $Parent | Out-Null }
+    $Line = '[{0}] {1}' -f (Get-Date -Format 'yyyy-MM-dd HH:mm:ss'), $Message
+    Add-Content -LiteralPath $LogPath -Value $Line -Encoding UTF8
+    Write-Host $Line
 }
 
 function Get-MediaCleanupPython {
-    param([string]$RepoRoot)
-    $Venv = Join-Path $RepoRoot ".venv_media_cleanup\Scripts\python.exe"
-    if (-not (Test-Path -LiteralPath $Venv)) {
-        $Py = Get-Command py -ErrorAction SilentlyContinue
-        if (-not $Py) { throw "Python launcher 'py' was not found." }
-        $Result = Invoke-NativeProcess -FilePath $Py.Source -Arguments @("-3.12", "-m", "venv", (Join-Path $RepoRoot ".venv_media_cleanup")) -LogPath $null
-        if ($Result.ExitCode -ne 0) { throw "Could not create Python 3.12 venv: $($Result.Output)" }
+    param([Parameter(Mandatory=$true)][string]$RepoRoot)
+    $VenvPython = Join-Path $RepoRoot '.venv_media_cleanup\Scripts\python.exe'
+    if (Test-Path -LiteralPath $VenvPython) { return $VenvPython }
+
+    $PreferredPython = 'C:\Users\andrew\_shell\.venv_py312\Scripts\python.exe'
+    if (Test-Path -LiteralPath $PreferredPython) { return $PreferredPython }
+
+    $UtilitiesPython = 'C:\Utilities\Python\3.12\python.exe'
+    if (Test-Path -LiteralPath $UtilitiesPython) { return $UtilitiesPython }
+
+    $PyLauncher = (Get-Command py.exe -ErrorAction SilentlyContinue)
+    if ($null -ne $PyLauncher) {
+        return $PyLauncher.Source
     }
-    if (-not (Test-Path -LiteralPath $Venv)) { throw "Python venv was not created at $Venv" }
-    return $Venv
+
+    $PythonCommand = (Get-Command python.exe -ErrorAction SilentlyContinue)
+    if ($null -ne $PythonCommand) {
+        return $PythonCommand.Source
+    }
+
+    throw 'Python 3.12 was not found. Install Python 3.12 or restore C:\Users\andrew\_shell\.venv_py312.'
 }
 
-function New-CleanUtf8Writer {
-    param([string]$Path)
-    $Dir = Split-Path -Parent $Path
-    if ($Dir) { New-Item -ItemType Directory -Force -Path $Dir | Out-Null }
-    $Encoding = New-Object System.Text.UTF8Encoding($false)
-    return New-Object System.IO.StreamWriter($Path, $false, $Encoding)
+function Join-MediaCleanupArgumentList {
+    param([string[]]$ArgumentList)
+    $Quoted = foreach ($Item in $ArgumentList) {
+        if ($null -eq $Item) { continue }
+        $Text = [string]$Item
+        if ($Text -match '[\s"&|<>^]') {
+            '"' + ($Text -replace '"', '\"') + '"'
+        } else {
+            $Text
+        }
+    }
+    return ($Quoted -join ' ')
 }
 
-function Write-CleanLog {
-    param([string]$Path, [string]$Message)
-    $Dir = Split-Path -Parent $Path
-    if ($Dir) { New-Item -ItemType Directory -Force -Path $Dir | Out-Null }
-    $Encoding = New-Object System.Text.UTF8Encoding($false)
-    $Clean = ($Message -replace "`0", "")
-    [System.IO.File]::AppendAllText($Path, $Clean + [Environment]::NewLine, $Encoding)
-}
-
-function Invoke-NativeProcess {
+function Invoke-MediaCleanupNativeCommand {
     param(
         [Parameter(Mandatory=$true)][string]$FilePath,
-        [Parameter(Mandatory=$true)][string[]]$Arguments,
-        [string]$LogPath
+        [Parameter(Mandatory=$true)][string[]]$ArgumentList,
+        [Parameter(Mandatory=$true)][string]$LogPath,
+        [string]$WorkingDirectory = ''
     )
-    $Psi = New-Object System.Diagnostics.ProcessStartInfo
-    $Psi.FileName = $FilePath
-    foreach ($Arg in $Arguments) { [void]$Psi.ArgumentList.Add($Arg) }
-    $Psi.UseShellExecute = $false
-    $Psi.RedirectStandardOutput = $true
-    $Psi.RedirectStandardError = $true
-    $Psi.CreateNoWindow = $true
-    $Process = New-Object System.Diagnostics.Process
-    $Process.StartInfo = $Psi
-    [void]$Process.Start()
-    $StdOut = $Process.StandardOutput.ReadToEnd()
-    $StdErr = $Process.StandardError.ReadToEnd()
-    $Process.WaitForExit()
-    $Output = (($StdOut, $StdErr) -join [Environment]::NewLine) -replace "`0", ""
-    if ($LogPath) { Write-CleanLog -Path $LogPath -Message $Output }
-    return [pscustomobject]@{ ExitCode = $Process.ExitCode; Output = $Output }
+
+    if (-not (Test-Path -LiteralPath $FilePath) -and -not (Get-Command $FilePath -ErrorAction SilentlyContinue)) {
+        throw "Executable not found: $FilePath"
+    }
+
+    if ([string]::IsNullOrWhiteSpace($WorkingDirectory)) {
+        $WorkingDirectory = (Get-Location).Path
+    }
+
+    $TempBase = Join-Path ([System.IO.Path]::GetTempPath()) ('media_cleanup_' + [guid]::NewGuid().ToString('N'))
+    $StdOut = $TempBase + '.stdout.log'
+    $StdErr = $TempBase + '.stderr.log'
+    $ArgumentsText = Join-MediaCleanupArgumentList -ArgumentList $ArgumentList
+
+    Write-MediaCleanupLog -LogPath $LogPath -Message ('CMD: {0} {1}' -f $FilePath, $ArgumentsText)
+
+    $Process = Start-Process -FilePath $FilePath `
+        -ArgumentList $ArgumentsText `
+        -WorkingDirectory $WorkingDirectory `
+        -RedirectStandardOutput $StdOut `
+        -RedirectStandardError $StdErr `
+        -NoNewWindow `
+        -PassThru `
+        -Wait
+
+    foreach ($OutputFile in @($StdOut, $StdErr)) {
+        if (Test-Path -LiteralPath $OutputFile) {
+            $Content = Get-Content -LiteralPath $OutputFile -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+            if (-not [string]::IsNullOrWhiteSpace($Content)) {
+                $CleanContent = $Content -replace "`0", ''
+                Add-Content -LiteralPath $LogPath -Value $CleanContent -Encoding UTF8
+                Write-Host $CleanContent
+            }
+            Remove-Item -LiteralPath $OutputFile -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    if ($Process.ExitCode -ne 0) {
+        throw ('Command failed with exit code {0}: {1} {2}' -f $Process.ExitCode, $FilePath, $ArgumentsText)
+    }
+
+    return $Process.ExitCode
 }
 
-function Get-MediaCleanupPipelineRepoArg {
-    param([string]$Python, [string]$PipelinePath, [string]$LogPath)
-    $Help = Invoke-NativeProcess -FilePath $Python -Arguments @($PipelinePath, "-h") -LogPath $LogPath
-    if ($Help.Output -match "--repo-root") { return "--repo-root" }
-    if ($Help.Output -match "--repo") { return "--repo" }
-    throw "Could not determine repo argument from media_cleanup_pipeline.py -h"
+function Get-MediaCleanupPipelineRepoArgument {
+    param([Parameter(Mandatory=$true)][string]$RepoRoot)
+    $Pipeline = Join-Path $RepoRoot 'tools\media_renamer\media_cleanup_pipeline.py'
+    if (-not (Test-Path -LiteralPath $Pipeline)) { return '--repo' }
+    $Text = Get-Content -LiteralPath $Pipeline -Raw -Encoding UTF8
+    if ($Text -match '--repo-root') { return '--repo-root' }
+    return '--repo'
 }
 
-function Invoke-MediaCleanupPipeline {
-    param(
-        [Parameter(Mandatory=$true)][ValidateSet("plan", "apply")][string]$Mode,
-        [Parameter(Mandatory=$true)][string]$RepoRoot,
-        [Parameter(Mandatory=$true)][string]$MediaRoot,
-        [Parameter(Mandatory=$true)][string]$LogPath
-    )
-    $Python = Get-MediaCleanupPython -RepoRoot $RepoRoot
-    $Pipeline = Join-Path $RepoRoot "tools\media_renamer\media_cleanup_pipeline.py"
-    if (-not (Test-Path -LiteralPath $Pipeline)) { throw "Missing pipeline: $Pipeline" }
-    $RepoArg = Get-MediaCleanupPipelineRepoArg -Python $Python -PipelinePath $Pipeline -LogPath $LogPath
-    $Args = @($Pipeline, $Mode, $RepoArg, $RepoRoot, "--media-root", $MediaRoot)
-    $Result = Invoke-NativeProcess -FilePath $Python -Arguments $Args -LogPath $LogPath
-    if ($Result.ExitCode -ne 0) { throw "media_cleanup_pipeline.py $Mode failed with exit code $($Result.ExitCode). Log: $LogPath`n$($Result.Output)" }
-    return $Result.Output
-}
-
-function Get-LatestMediaReportDir {
-    param([string]$RepoRoot)
-    $Root = Join-Path $RepoRoot "reports\media_renamer"
+function Get-MediaCleanupLatestPlanDirectory {
+    param([Parameter(Mandatory=$true)][string]$RepoRoot)
+    $Root = Join-Path $RepoRoot 'reports\media_renamer'
     if (-not (Test-Path -LiteralPath $Root)) { return $null }
-    return Get-ChildItem -LiteralPath $Root -Directory -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+    return Get-ChildItem -LiteralPath $Root -Directory -ErrorAction SilentlyContinue |
+        Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName 'scan_plan.json') } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+}
+
+function Get-MediaCleanupPlanSummary {
+    param([Parameter(Mandatory=$true)][string]$RepoRoot)
+    $Plan = Get-MediaCleanupLatestPlanDirectory -RepoRoot $RepoRoot
+    if ($null -eq $Plan) { return $null }
+    $JsonPath = Join-Path $Plan.FullName 'scan_plan.json'
+    $Payload = Get-Content -LiteralPath $JsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+    return $Payload.summary
 }
