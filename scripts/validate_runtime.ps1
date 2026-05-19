@@ -680,6 +680,10 @@ foreach ($needle in @(
 foreach ($needle in @(
     'MC-2026-05-18.2 Runtime Recovery Lineage',
     'MC-2026-05-19.1 Watch Source Provider Strip and Filename Copy Schema',
+    'Current version MC-2026-05-19.1',
+    'Last updated: 2026-05-19',
+    '<tr><td>2026-05-19</td><td>MC-2026-05-19.1</td>',
+    'Freshness rule',
     'Repo inventory, file/folder structure, and runtime ownership map',
     'Watch Source popup schema and provider lifecycle',
     'Provider section schema',
