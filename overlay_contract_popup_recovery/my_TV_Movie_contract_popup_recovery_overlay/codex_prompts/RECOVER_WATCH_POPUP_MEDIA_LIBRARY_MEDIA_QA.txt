@@ -1,0 +1,54 @@
+You are working in:
+
+C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie
+
+SOURCE OF TRUTH:
+docs/00_master_contract.html
+
+TASK:
+Recover the Watch Source popup and related UI from drift. Do not simplify. Do not replace existing detailed layouts with minimal fallbacks.
+
+ROOT CAUSES:
+1. provider_popup_guard.js replaced the real watch popup with a minimal provider-only fallback.
+2. docs/00_master_contract.html was too summary-level and missing explicit popup schema, inventory, and lineage.
+3. Media Library nav/page was not correctly added to the top nav.
+4. Episode cards do not show TMDB ID.
+5. Trailer/light mode is not implemented.
+6. Media cleanup pipeline is not fully enforcing ffprobe/ffmpeg media-file QA and repair.
+
+REQUIRED IMPLEMENTATION:
+1. Restore Watch Source popup layout with full metadata, description, generated filename, Watch Now, Where to Watch, sticky Exit, and REF: POP-WATCH-SOURCE.
+2. provider_popup_guard.js must only post-process existing popup DOM. It must not replace popup HTML.
+3. Preserve legacy providers. Classify as active/degraded/legacy/blocked/archived. Do not delete legacy URL records.
+4. VidEasy and 2Embed CC render with 👁️ ✅. Other non-blocked providers render with 👁️ ⚠️ unless validated active.
+5. Add TMDB ID to episode card detail lines.
+6. Add web/Media_Library.html and nav icon 📚 opening in separate tab.
+7. Add Full/Light slider near Ready/version. Light mode suppresses image asset src creation while preserving text/actions/popups.
+8. Integrate ffprobe media QA and ffmpeg stream-copy remux into single media cleanup pipeline.
+
+VALIDATION MUST FAIL IF:
+- Watch popup only shows provider names.
+- Media metadata, description, generated filename, sticky Exit, or ref label is missing.
+- Admin provider text appears.
+- Blocked provider appears in default popup.
+- Legacy providers are deleted.
+- Media Library nav icon misplaced.
+- Episode card TMDB ID missing.
+- Light mode loads suppressed images.
+- ffprobe/ffmpeg QA path or media QA reports are missing.
+
+RUN:
+py scripts\validate_media_renamer.py
+powershell -ExecutionPolicy Bypass -File scripts\validate_runtime.ps1
+node scripts\qa_browser_layout_check.mjs
+
+RETURN ONLY:
+1. git status
+2. commits
+3. files changed
+4. root causes fixed
+5. restored popup proof
+6. Media Library proof
+7. light mode proof
+8. media QA proof
+9. validation results
