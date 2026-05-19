@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>my_TV_Movie — Master Contract</title>
+<style>
+:root{color-scheme:dark;--bg:#0b111a;--panel:#111a26;--panel2:#162232;--text:#e5eefb;--muted:#9fb0c8;--line:#314158;--accent:#38bdf8;--warn:#fbbf24;--bad:#fb7185;--good:#34d399}*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0b111a,#0b111ae8);border-bottom:1px solid var(--line);padding:14px 22px}main{max-width:1380px;margin:0 auto;padding:22px}h1,h2,h3{color:#f8fbff}h1{margin:0 0 6px;font-size:26px}h2{margin-top:34px;border-bottom:1px solid var(--line);padding-bottom:8px}a{color:#93c5fd}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}table{width:100%;border-collapse:collapse;margin:12px 0;background:var(--panel);border:1px solid var(--line)}th,td{padding:9px 10px;border:1px solid var(--line);vertical-align:top}th{background:var(--panel2);text-align:left}code,pre{background:#07101c;border:1px solid #243044;border-radius:8px}code{padding:1px 5px}pre{padding:12px;overflow:auto}.good{color:var(--good);font-weight:700}.warn{color:var(--warn);font-weight:700}.bad{color:var(--bad);font-weight:700}.small{color:var(--muted);font-size:13px}nav.toc a{display:inline-block;margin:4px 10px 4px 0;padding:5px 9px;border:1px solid var(--line);border-radius:999px;text-decoration:none}.lineage{font-size:12px;color:var(--muted);margin-top:-6px}.must{color:#f8fbff;font-weight:700}.no{color:var(--bad);font-weight:700}.ok{color:var(--good);font-weight:700}
+</style>
+</head>
+<body>
+<header>
+<h1>my_TV_Movie — Master Contract</h1>
+<div class="small">Only active documentation source of truth. Version MC-2026-05-09.2. Recovery contract for popup drift, Media Library, media QA pipeline, light mode, nav inventory, and contract lineage.</div>
+<nav class="toc">
+<a href="#governance">Governance</a><a href="#inventory">Inventory</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#cards">Cards</a><a href="#watch-popup">Watch Popup</a><a href="#providers">Providers</a><a href="#media-library">Media Library</a><a href="#media-qa">Media QA</a><a href="#runtime-profile">Runtime Profile</a><a href="#validation">Validation</a><a href="#codex">Codex</a>
+</nav>
+</header>
+<main>
+<section id="governance" class="card">
+<h2>1. Documentation Governance</h2>
+<div class="lineage">Added: MC-2026-04-29 | Updated: MC-2026-05-09.2 | Origin: contract drift recovery</div>
+<table><tr><th>Rule</th><th>Requirement</th></tr>
+<tr><td>Source of truth</td><td><code>docs/00_master_contract.html</code> is the only active source of truth.</td></tr>
+<tr><td>No regeneration</td><td>The contract must be modified incrementally. It must not be regenerated from scratch in a way that drops details.</td></tr>
+<tr><td>Archive first</td><td>Before any major contract update, archive the current file under <code>docs/_archive/contracts/</code>.</td></tr>
+<tr><td>Section lineage</td><td>Each major section must show Added, Updated, and Origin. New changes must update the lineage, not overwrite it.</td></tr>
+<tr><td>Examples</td><td>User examples are acceptance tests. They are not limits and must not be simplified into vague requirements.</td></tr>
+<tr><td>Screenshot authority</td><td>User screenshots override claimed QA success. Screenshot-visible failures become validation failures.</td></tr>
+</table>
+<h3>1.1 Version History</h3>
+<table><tr><th>Version</th><th>Date</th><th>Added / Changed</th></tr>
+<tr><td>MC-2026-04-29</td><td>2026-04-29</td><td>Initial consolidated contract.</td></tr>
+<tr><td>MC-2026-04-30.4</td><td>2026-04-30</td><td>Calendar, popup detail, tri-state watched status, D-pad, media dimensions.</td></tr>
+<tr><td>MC-2026-05-05.3</td><td>2026-05-05</td><td>Visual proof, provider health, true carousel contract, control-thread drift rules.</td></tr>
+<tr><td>MC-2026-05-07.1</td><td>2026-05-07</td><td>Calendar equal-cell containment, carousel shell, watch_state_manager ownership, provider classifications.</td></tr>
+<tr><td>MC-2026-05-09.2</td><td>2026-05-09</td><td>Recovered lost detail: repo inventory, popup schema, provider lifecycle, Media Library page, media QA pipeline, light mode, popup reference labels, TMDB IDs on cards, and nav ownership.</td></tr>
+</table>
+</section>
+<section id="inventory" class="card">
+<h2>2. Repository Inventory and Runtime Ownership</h2>
+<div class="lineage">Added: MC-2026-05-09.2 | Updated: MC-2026-05-09.2 | Origin: missing inventory caused runtime/popup drift</div>
+<table><tr><th>Path / File</th><th>Purpose</th><th>Owner / Rule</th></tr>
+<tr><td><code>docs/00_master_contract.html</code></td><td>Only active contract.</td><td>ChatGPT maintains; Codex implements against it.</td></tr>
+<tr><td><code>docs/_archive/contracts/</code></td><td>Archived contract versions and archive policy.</td><td>Never deleted; used to recover dropped details.</td></tr>
+<tr><td><code>web/js/app_runtime.js</code></td><td>Main runtime shell, panels, dashboard, calendar, popups, view wiring.</td><td>Primary owner for runtime rendering. Do not replace popup HTML from guard scripts.</td></tr>
+<tr><td><code>web/js/watch_state_manager.js</code></td><td>Canonical watch_list, watched_status, favourite state resolver and queue writer.</td><td>Only owner for card/action state. Other files may call it, not duplicate it.</td></tr>
+<tr><td><code>web/js/card_renderer.js</code></td><td>Shared card HTML generation.</td><td>Cards must include TMDB ID in episode details.</td></tr>
+<tr><td><code>web/js/provider_popup_guard.js</code></td><td>Compatibility guard only.</td><td class="no">Must not rebuild the popup. It may only remove forbidden admin text or suppress blocked providers.</td></tr>
+<tr><td><code>web/js/trailer_watch_popup_fix.js</code></td><td>Legacy compatibility file.</td><td>Must be audited; no active popup ownership unless explicitly retained.</td></tr>
+<tr><td><code>web/css/main_app.css</code></td><td>Canonical CSS for runtime UI.</td><td>Owns layout, popup, cards, nav, carousel, calendar.</td></tr>
+<tr><td><code>data/provider_registry.json</code></td><td>Streaming provider lifecycle registry.</td><td>Keeps active/degraded/legacy/blocked/archived providers. Do not delete legacy providers.</td></tr>
+<tr><td><code>web/Media_Library.html</code></td><td>Media QA / cleanup status page.</td><td>Required page. Opens in separate tab from nav icon.</td></tr>
+<tr><td><code>tools/media_renamer/</code></td><td>Media rename, match, QA, repair pipeline.</td><td>Must validate every media file, not just names.</td></tr>
+<tr><td><code>scripts/validate_runtime.ps1</code></td><td>Runtime validation entry point.</td><td>Must fail on documented popup, nav, card, provider, and light-mode regressions.</td></tr>
+<tr><td><code>scripts/qa_browser_layout_check.mjs</code></td><td>Rendered browser QA.</td><td>Must prove behavior from DOM/screens, not labels.</td></tr>
+</table>
+</section>
+<section id="pages" class="card">
+<h2>3. Page / Route Contract</h2>
+<div class="lineage">Added: MC-2026-04-29 | Updated: MC-2026-05-09.2 | Origin: page/nav drift and missing Media Library button</div>
+<table><tr><th>Route</th><th>Status</th><th>View Button</th><th>Hard Rules</th></tr>
+<tr><td><code>web/index.html</code></td><td class="ok">Active</td><td>Home icon</td><td>Dashboard. Sticky nav and sticky section headers.</td></tr>
+<tr><td><code>web/shows.html</code></td><td class="ok">Active</td><td>TV/show icon</td><td>Show library. Left filter rail. Show popups. Episode carousel.</td></tr>
+<tr><td><code>web/movies.html</code></td><td class="ok">Active</td><td>Film icon</td><td>Movie library. Movie popups.</td></tr>
+<tr><td><code>web/calendar.html</code></td><td class="ok">Active</td><td>Calendar icon</td><td>Seven equal columns. Episode cards use stills.</td></tr>
+<tr><td><code>web/manage_watch_state.html</code></td><td class="ok">Active</td><td>Check/state icon</td><td>Excel-like editable matrix.</td></tr>
+<tr><td><code>web/discover.html</code></td><td class="ok">Active</td><td>Search icon</td><td>Discovery. Not duplicate dashboard.</td></tr>
+<tr><td><code>web/config.html</code></td><td class="ok">Active</td><td>Gear icon</td><td>Settings. Runtime profile controls.</td></tr>
+<tr><td><code>web/inputs_editor.html</code></td><td class="ok">Active</td><td>Edit icon</td><td>Inputs editor.</td></tr>
+<tr><td><code>web/Media_Library.html</code></td><td class="ok">Required</td><td>Library/books icon</td><td>Must appear in the top view icon banner, not beside/under the Boys logo. Opens separate browser tab.</td></tr>
+<tr><td><code>web/watch_me.html</code></td><td class="warn">Compatibility</td><td>Optional/hidden</td><td>Simple list view only; not Manage Watch State.</td></tr>
+</table>
+</section>
+<section id="ui" class="card">
+<h2>4. UI, Navigation, Cards, and Media Sizes</h2>
+<div class="lineage">Added: MC-2026-04-30.4 | Updated: MC-2026-05-09.2 | Origin: under-documented UI section caused invented layout and missing buttons</div>
+<ul>
+<li>The Boys logo stays in the left logo slot and must not overlap navigation or content.</li>
+<li>All view buttons live inside the top view icon banner/nav area. No view button may render under the logo or under the left filter rail.</li>
+<li>Primary nav icons are standalone Unicode/web icons with hover title and aria-label.</li>
+<li>Every form, page shell, and popup has a small bottom-right reference label. Cards do not.</li>
+<li>Examples: <code>REF: PAGE-SHOWS</code>, <code>REF: POP-WATCH-SOURCE-EPISODE</code>, <code>REF: POP-WATCH-SOURCE-MOVIE</code>, <code>REF: PAGE-MEDIA-LIBRARY</code>.</li>
+<li>Poster Half size remains <code>171x257</code>. Narrow still Half remains <code>240x135</code>. Episode source still target remains <code>320x180</code>.</li>
+<li>Calendar cards use episode stills only. Shows/Movies use posters. Dashboard recommendation posters remain compact.</li>
+<li>Floating directional navigation may be added for wide/scrollable containers, but must not cover action icons.</li>
+</ul>
+</section>
+<section id="cards" class="card">
+<h2>5. Card Field Contract</h2>
+<div class="lineage">Added: MC-2026-05-09.2 | Updated: MC-2026-05-09.2 | Origin: TMDB ID missing from episode card details</div>
+<table><tr><th>Card Type</th><th>Required Fields</th><th>Example</th></tr>
+<tr><td>Episode card</td><td>Show title, episode title, <code>SxxExx • runtime</code>, TMDB ID, action row, rating.</td><td><pre>CIA
+Broken Glass
+S01E12 • 43 min
+TMDB: 123456</pre></td></tr>
+<tr><td>Episode card</td><td>Use bullet separator <code>•</code>. User may type <code>*</code> in feedback but rendered UI uses <code>•</code>.</td><td><pre>FROM
+What a Long Strange Trip It's Been
+S04E05 • 52 min
+TMDB: 124364</pre></td></tr>
+<tr><td>Movie card</td><td>Movie title, release year/date where available, runtime where available, TMDB ID, action row, rating.</td><td><code>TMDB: id</code> visible where card space allows.</td></tr>
+</table>
+</section>
+<section id="watch-popup" class="card">
+<h2>6. Watch Source Popup Contract</h2>
+<div class="lineage">Added: MC-2026-04-30.4 | Updated: MC-2026-05-09.2 | Origin: popup renderer drift replaced detailed popup with provider-only list</div>
+<p class="must">This is a restoration requirement, not a new feature. The popup must preserve media context and provider sections.</p>
+<h3>6.1 Episode Watch Popup Layout</h3>
+<pre>┌────────────────────────────────────────────────────────────────────────────┐
+│ [Episode still/image OR hidden in Light mode] [Show Title]        [Exit]  │
+│                                      [Episode Title]                       │
+│                                      S11E01 • 68 min • May 8, 2026 • TMDB: 67482 │
+│                                      [description]                         │
+│                                      [generated filename copy line]         │
+│                                                                            │
+│ STREAMERS / WATCH NOW       PROVIDERS / WHERE TO WATCH                     │
+│ VidSrc 👁️ ⚠️                 AU [provider icons]                           │
+│ VidEasy 👁️ ✅                CA [provider icons]                           │
+│ 2Embed CC 👁️ ✅              UK [provider icons]                           │
+│ Legacy streamers section     US [provider icons]                           │
+│                                                                            │
+│                                                     REF: POP-WATCH-SOURCE-EPISODE │
+└────────────────────────────────────────────────────────────────────────────┘</pre>
+<table><tr><th>Element</th><th>Rule</th></tr>
+<tr><td>Title area</td><td>Show title and episode title render once. Remove duplicate title/header text such as “Title • Episode • Watch source”.</td></tr>
+<tr><td>Exit</td><td>Exit button is sticky and inside the top media-detail section. All popup exits are sticky.</td></tr>
+<tr><td>Metadata row</td><td>Single line: <code>S11E01 • 68 min • May 8, 2026 • TMDB: 67482</code>.</td></tr>
+<tr><td>Description</td><td>Full episode description below metadata.</td></tr>
+<tr><td>Generated filename</td><td>One blank line after description, then selectable filename text.</td></tr>
+<tr><td>Example filename</td><td><code>RuPaul's Drag Race All Stars - S11E01 - Break Dancin' 2 - Electric Rugaloo [05-05-26] [67482]</code></td></tr>
+<tr><td>Left side</td><td>Popcorn/watch popup streams area formats on the left side.</td></tr>
+<tr><td>Reference label</td><td>Bottom-right: <code>REF: POP-WATCH-SOURCE-EPISODE</code>.</td></tr>
+<tr><td>Guard scripts</td><td><code>provider_popup_guard.js</code> must not rebuild this popup. It may only post-process forbidden text or blocked providers.</td></tr>
+</table>
+<h3>6.2 Movie Watch Popup Layout</h3>
+<table><tr><th>Element</th><th>Rule</th></tr>
+<tr><td>Title area</td><td>Movie title renders once. No duplicate “Watch source” title.</td></tr>
+<tr><td>Metadata row</td><td>Single line: <code>Runtime • Release date • TMDB: id</code>.</td></tr>
+<tr><td>Description</td><td>Movie overview below metadata.</td></tr>
+<tr><td>Generated filename</td><td>Movie filename copy line generated from media renamer rules.</td></tr>
+<tr><td>Reference label</td><td>Bottom-right: <code>REF: POP-WATCH-SOURCE-MOVIE</code>.</td></tr>
+</table>
+</section>
+<section id="providers" class="card">
+<h2>7. Streaming Provider Lifecycle</h2>
+<div class="lineage">Added: MC-2026-05-05.3 | Updated: MC-2026-05-09.2 | Origin: providers were removed instead of classified</div>
+<table><tr><th>Status</th><th>Runtime Display</th><th>Rule</th></tr>
+<tr><td><code>active</code></td><td>Visible in Watch Now with <code>👁️ ✅</code> if verified working well.</td><td>Examples currently marked working: VidEasy, 2Embed CC.</td></tr>
+<tr><td><code>degraded</code></td><td>Visible with <code>👁️ ⚠️</code>.</td><td>Keep visible unless unsafe.</td></tr>
+<tr><td><code>legacy</code></td><td>Visible in a Legacy streamers section.</td><td>Do not delete; retain for later retest.</td></tr>
+<tr><td><code>blocked</code></td><td>Hidden from normal popup.</td><td>Unsafe redirect, TLS failure, blank tab, DNS failure.</td></tr>
+<tr><td><code>archived</code></td><td>Hidden; retained for audit.</td><td>Do not remove historical record.</td></tr>
+</table>
+<ul>
+<li>Public popup must not show raw admin text: <code>ACTIVE</code>, <code>ACTIVE CANDIDATE FROM USER FINDINGS</code>, <code>BLOCKED</code>, <code>ARCHIVED</code>.</li>
+<li>Do not remove streaming URL patterns from data just because they fail today. Reclassify as degraded, legacy, blocked, or archived.</li>
+<li>Where to Watch section aligns country code and provider icons on one row per country.</li>
+<li>Remove outline borders around provider icons and streaming services; compact line spacing.</li>
+</ul>
+</section>
+<section id="media-library" class="card">
+<h2>8. Media Library Page</h2>
+<div class="lineage">Added: MC-2026-05-09.2 | Updated: MC-2026-05-09.2 | Origin: requested new Media_Library.html and nav icon</div>
+<table><tr><th>Requirement</th><th>Rule</th></tr>
+<tr><td>File</td><td><code>web/Media_Library.html</code> must exist.</td></tr>
+<tr><td>Nav</td><td>Top view icon banner must include a library/books icon. It opens <code>Media_Library.html</code> in a separate browser tab.</td></tr>
+<tr><td>Placement</td><td>Icon must be inside the view button banner, not below/left of the logo and not behind the left filter rail.</td></tr>
+<tr><td>Purpose</td><td>Shows media cleanup/QA status, latest report links, file buckets, and validation summary.</td></tr>
+<tr><td>Reference label</td><td><code>REF: PAGE-MEDIA-LIBRARY</code>.</td></tr>
+<tr><td>Statuses</td><td>OK, repaired, needs review, quarantined, duplicate, unsupported.</td></tr>
+</table>
+</section>
+<section id="media-qa" class="card">
+<h2>9. Media File QA and Repair Pipeline</h2>
+<div class="lineage">Added: MC-2026-05-09.2 | Updated: MC-2026-05-09.2 | Origin: media renamer drifted into naming-only instead of full file QA</div>
+<p class="must">This is part of the single media cleanup pipeline. It applies to all media files, not just examples.</p>
+<pre>scan → identify → filename match → ffprobe QA → classify → repair/remux if safe → rename/move → final validation → report</pre>
+<table><tr><th>Stage</th><th>Requirement</th></tr>
+<tr><td>Scan</td><td>Process all supported media files under selected input folders.</td></tr>
+<tr><td>Filename match</td><td>Match against repo catalog data and media rules.</td></tr>
+<tr><td>ffprobe QA</td><td>Validate container readable, duration present, video stream where expected, audio stream where expected, codec readable, not zero-byte, not truncated/incomplete where detectable, extension/container consistency.</td></tr>
+<tr><td>Compatibility target</td><td>Output must work in VLC and X-plore.</td></tr>
+<tr><td>Repair/remux</td><td>If readable but poorly packaged, repair using ffmpeg stream copy before rename/move.</td></tr>
+<tr><td>Quarantine</td><td>If repair fails or file is unsafe to repair, quarantine and report. Never silently skip.</td></tr>
+<tr><td>Reports</td><td><code>media_file_qa.csv</code>, <code>media_file_qa.json</code>, <code>repair_actions.log.txt</code>, <code>unrepaired_files.csv</code>, <code>final_summary.html</code>.</td></tr>
+</table>
+</section>
+<section id="runtime-profile" class="card">
+<h2>10. Runtime Profile / Trailer Light Mode</h2>
+<div class="lineage">Added: MC-2026-05-09.2 | Updated: MC-2026-05-09.2 | Origin: trailer network performance requirement</div>
+<table><tr><th>Requirement</th><th>Rule</th></tr>
+<tr><td>Profiles</td><td><code>Full</code> and <code>Light</code>.</td></tr>
+<tr><td>Trailer default</td><td>If browser/device context indicates trailer subnet <code>192.168.2.x</code> where detectable, default to Light. Browser IP detection may be limited; user override is required.</td></tr>
+<tr><td>User control</td><td>Add slider under <code>Ready v1.5.1</code> status: Full / Light. User can change for current browser session.</td></tr>
+<tr><td>Light behavior</td><td>Do not render or load image assets. Render text, actions, ratings, provider links, Trakt state, and layout.</td></tr>
+<tr><td>Network rule</td><td>No hidden <code>img src</code> in Light mode. Suppressed images must not download.</td></tr>
+</table>
+</section>
+<section id="validation" class="card">
+<h2>11. Validation Acceptance Tests</h2>
+<div class="lineage">Added: MC-2026-05-05.3 | Updated: MC-2026-05-09.2 | Origin: failures passed QA despite visible drift</div>
+<ul>
+<li>Fail if Watch popup contains only provider names and loses media details.</li>
+<li>Fail if popup lacks show/movie title, episode/movie title, metadata row, TMDB ID, description, generated filename, Watch Now, Where to Watch, sticky Exit, and ref label.</li>
+<li>Fail if <code>provider_popup_guard.js</code> replaces popup HTML instead of post-processing.</li>
+<li>Fail if Media Library nav icon renders outside top view button banner.</li>
+<li>Fail if Media Library page is missing.</li>
+<li>Fail if episode cards omit TMDB ID.</li>
+<li>Fail if Light mode still creates image <code>src</code> values.</li>
+<li>Fail if media cleanup validator lacks ffprobe checks or ffmpeg repair/remux path.</li>
+<li>Fail if public provider popup shows raw admin notes/status.</li>
+<li>Fail if legacy streamers are deleted instead of classified.</li>
+</ul>
+</section>
+<section id="codex" class="card"><h2>12. Codex Operating Contract</h2>
+<div class="lineage">Added: MC-2026-05-05.2 | Updated: MC-2026-05-09.2 | Origin: Codex drift and over-simplification</div>
+<ol>
+<li>Read this contract first.</li>
+<li>Do not simplify examples into vague summaries.</li>
+<li>Do not replace a renderer when the task is to clean specific text.</li>
+<li>Preserve prior working design unless the contract explicitly changes it.</li>
+<li>Update validation with each fix.</li>
+<li>Return proof, not claims.</li>
+</ol></section>
+</main>
+</body>
+</html>
