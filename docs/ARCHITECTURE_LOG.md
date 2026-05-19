@@ -1,5 +1,12 @@
 # Architecture Log
 
+## 2026-05-19
+
+- Corrected Watch Source Providers rendering so country rows use compact same-row provider logo/text hyperlink anchors, provider URLs stay in `href` only, and provider anchors do not render as buttons/cards.
+- Corrected generated filename copy rendering so the visible primary copy control is the full generated filename string and the copied value stays identical to the displayed value.
+- Added MC-2026-05-19.1 contract lineage and validation coverage for provider strip and filename-copy drift.
+- Commit: `88ebac9aa3` fix-watch-source-provider-copy-rendering.
+
 ## 2026-05-18
 
 - Implemented runtime recovery for Watch Source popup schema, plain Streaming/Providers rows, generated filename copy, popup reference label, shared episode card rendering, Media Library primary-nav placement, Full/Light runtime mode, and media QA pipeline enforcement.
