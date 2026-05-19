@@ -6,6 +6,7 @@
 - Corrected generated filename copy rendering so the visible primary copy control is the full generated filename string and the copied value stays identical to the displayed value.
 - Added MC-2026-05-19.1 contract lineage and validation coverage for provider strip and filename-copy drift.
 - Commit: `88ebac9aa3` fix-watch-source-provider-copy-rendering.
+- Commit: `924940dfd3` normalize-watch-source-provider-labels.
 
 ## 2026-05-18
 
