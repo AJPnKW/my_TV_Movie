@@ -869,7 +869,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         seenLabels.add(key);
         canonicalProviders.push({ provider: p, label });
       });
-      const chips = canonicalProviders.slice(0, 8).map(entry => {
+      const chips = canonicalProviders.slice(0, 6).map(entry => {
         const p = entry.provider;
         const href = safeText(p?.deep_link) || regionLink || tmdbWatchUrl(kind, id);
         const label = entry.label;
