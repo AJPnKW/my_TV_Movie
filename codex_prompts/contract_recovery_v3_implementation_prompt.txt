@@ -1,0 +1,76 @@
+﻿You are working in:
+C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie
+
+SOURCE OF TRUTH:
+docs/00_master_contract.html
+
+TASK:
+Fix the popup, navigation, Media Library, trailer/light mode, TMDB ID display, and media-file QA drift documented in the MC-2026-05-18.1 recovery section.
+
+NON-NEGOTIABLE RULES:
+- Do not regenerate the contract from scratch.
+- Do not replace the watch popup with a minimal provider list.
+- Do not remove legacy streaming providers; classify them as active, degraded, legacy, blocked, or archived.
+- Do not simplify user examples into generic wording.
+- Screenshot-visible failures override previous QA claims.
+
+IMPLEMENTATION REQUIREMENTS:
+1. Restore Watch Source popup to full two-panel design:
+   - left media detail panel
+   - right provider panel
+   - sticky Exit button
+   - title, episode/movie title, metadata row, TMDB ID, description, generated filename copy line
+   - streamers/watch-now section on left side
+   - providers/where-to-watch section aligned by country/provider row
+   - no raw admin notes/status text
+   - provider lifecycle indicators: eye + check/warning
+
+2. Add popup/form reference labels:
+   - bottom-right visible label on every page/form/popup panel
+   - not on media cards
+
+3. Add TMDB ID to episode card metadata:
+   - Show title
+   - Episode title
+   - SxxExx • runtime • TMDB: id
+
+4. Fix Media Library navigation:
+   - add Media_Library.html
+   - add library icon to standard nav header
+   - icon must not render under logo or left filter rail
+   - opens Media_Library.html in a separate tab
+
+5. Add Trailer/Light mode:
+   - if detectable local network is 192.168.2.x, default browser session to light mode where possible
+   - otherwise provide session slider under Ready/version area
+   - modes: Full / Light
+   - Light mode does not create img src for posters/stills/backdrops but renders all text/actions
+   - user override persists for current browser session
+
+6. Media QA pipeline:
+   - every file in media cleanup pipeline gets ffprobe validation
+   - safe remux uses ffmpeg stream copy
+   - report media_file_qa.csv, media_file_qa.json, repair_actions.log.txt, unrepaired_files.csv, final_summary.html
+   - validation must fail if ffprobe/ffmpeg paths are absent from the pipeline
+
+7. Contract/inventory:
+   - preserve and extend docs/00_master_contract.html
+   - add/update file inventory, folder inventory, runtime ownership map, popup schema, provider lifecycle, validation matrix
+   - every major section needs Added / Updated / Origin metadata
+
+VALIDATION:
+Run:
+powershell -ExecutionPolicy Bypass -File scripts\validate_runtime.ps1
+node scripts\qa_browser_layout_check.mjs
+py scripts\validate_media_renamer.py
+
+RETURN ONLY:
+1. git status
+2. commits
+3. files changed
+4. root causes fixed
+5. popup rendered proof
+6. nav/media library proof
+7. trailer light mode proof
+8. media QA proof
+9. validation results
