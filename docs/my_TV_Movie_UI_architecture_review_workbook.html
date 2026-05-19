@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>my_TV_Movie — UI Architecture Review Workbook</title>
+<style>
+:root{color-scheme:dark;--bg:#08111f;--panel:#101b2c;--panel2:#14243a;--line:#314158;--text:#edf5ff;--muted:#a9bad0;--view:#60a5fa;--popup:#f472b6;--form:#34d399;--process:#fbbf24;--report:#a78bfa;--risk:#fb7185}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(120deg,#08111f,#111827);color:var(--text);font-family:Segoe UI,Arial,sans-serif;line-height:1.42}
+header{position:sticky;top:0;z-index:20;background:#08111fee;border-bottom:1px solid var(--line);padding:14px 18px} h1{margin:0;font-size:24px} h2{margin-top:28px;border-bottom:1px solid var(--line);padding-bottom:8px} h3{margin-top:18px}
+main{max-width:1500px;margin:auto;padding:18px} nav a{display:inline-block;color:#dbeafe;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:5px 9px;margin:5px 5px 0 0;font-size:13px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;margin:14px 0} .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+table{width:100%;border-collapse:collapse;margin:10px 0;background:#0d1726} th,td{border:1px solid var(--line);padding:8px;vertical-align:top} th{background:var(--panel2);text-align:left}
+code,pre{background:#050b14;border:1px solid #25364f;border-radius:8px} code{padding:1px 4px} pre{padding:10px;white-space:pre-wrap} .small{color:var(--muted);font-size:13px}
+.badge{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px;font-weight:700} .view{background:#1d4ed855;border:1px solid var(--view)} .popup{background:#be185d55;border:1px solid var(--popup)} .form{background:#04785755;border:1px solid var(--form)} .process{background:#a1620755;border:1px solid var(--process)} .report{background:#6d28d955;border:1px solid var(--report)} .risk{background:#be123c55;border:1px solid var(--risk)}
+textarea,input,select{width:100%;background:#07101c;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px;font-family:inherit} button{background:#2563eb;color:white;border:0;border-radius:10px;padding:8px 11px;font-weight:700;cursor:pointer} .sticky-tools{position:fixed;right:16px;bottom:16px;display:grid;gap:8px;z-index:30} .ref{font-weight:900;letter-spacing:.04em}
+@media print{.sticky-tools,header nav{display:none} header{position:static} body{background:white;color:black} .card,table{break-inside:avoid}}
+</style>
+<script>
+function exportFeedback(){
+ const rows=[...document.querySelectorAll('[data-feedback-row]')].map(row=>({
+  ref:row.querySelector('[data-ref]')?.textContent.trim()||'',
+  status:row.querySelector('[data-status]')?.value||'',
+  priority:row.querySelector('[data-priority]')?.value||'',
+  feedback:row.querySelector('[data-feedback]')?.value||''
+ })).filter(x=>x.status||x.priority||x.feedback);
+ const blob=new Blob([JSON.stringify({exported:new Date().toISOString(),rows},null,2)],{type:'application/json'});
+ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='my_TV_Movie_UI_review_feedback.json'; a.click();
+}
+function printPage(){window.print();}
+</script>
+</head>
+<body>
+<header>
+<h1>my_TV_Movie — UI Architecture Review Workbook</h1>
+<div class="small">Generated 2026-05-19 05:09. Goal: stop drift by giving every page, popup, form, section, function, and process a stable reference ID.</div>
+<nav>
+<a href="#model">Reference Model</a><a href="#tree">App Tree</a><a href="#media-library">Media Library / WD TV Live</a><a href="#ownership">Ownership</a><a href="#review">Feedback Grid</a><a href="#codex">Codex Direction</a>
+</nav>
+</header>
+<main>
+
+<section id="model" class="card">
+<h2>1. Numbering and Reference Model</h2>
+<table>
+<tr><th>Range</th><th>Type</th><th>Colour</th><th>Examples</th><th>Rule</th></tr>
+<tr><td>001–019</td><td><span class="badge view">Views / pages</span></td><td>Blue</td><td>Dashboard, Shows, Movies, Calendar, Media Library</td><td>User-facing page/view shells.</td></tr>
+<tr><td>020–039</td><td><span class="badge form">Input / setup forms</span></td><td>Green</td><td>Inputs Editor, Config, Media Library settings</td><td>Forms that collect/maintain data.</td></tr>
+<tr><td>040–059</td><td><span class="badge process">Functional processing</span></td><td>Yellow</td><td>Build data, Trakt sync, media QA/remux</td><td>Workflow/process execution logic.</td></tr>
+<tr><td>060–079</td><td><span class="badge popup">Popups / modal panels</span></td><td>Pink</td><td>Watch Source, Show Detail, Movie Detail</td><td>Temporary interactive shells over a page.</td></tr>
+<tr><td>080–099</td><td><span class="badge report">General reports</span></td><td>Purple</td><td>QA summary, Media Library report, UI inventory</td><td>Human review/reporting views.</td></tr>
+<tr><td>100–119</td><td><span class="badge form">Import / intake</span></td><td>Green</td><td>input JSON, imported media folders</td><td>Inbound data acquisition.</td></tr>
+<tr><td>120–139</td><td><span class="badge report">Export / output</span></td><td>Purple</td><td>renamed media, QA CSV/JSON, GitHub Pages data</td><td>Outbound files/data.</td></tr>
+<tr><td>200–299</td><td><span class="badge process">Setup / load / conversion</span></td><td>Yellow</td><td>asset optimization, conversion staging</td><td>Batch setup/conversion processes.</td></tr>
+<tr><td>2100–2199</td><td><span class="badge risk">Audit / validation</span></td><td>Red</td><td>runtime QA, duplicate renderer audit</td><td>Controls to catch drift/regression.</td></tr>
+</table>
+</section>
+
+<section id="tree" class="card">
+<h2>2. Tree-Structured UI / Function Inventory</h2>
+<table><tr><th>Ref</th><th>Object</th><th>Type</th><th>Owner pointer</th><th>Rule</th></tr><tr><td class='ref'>001-PAGE-DASHBOARD</td><td>Dashboard page layout / sections / sticky headers</td><td>View</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>002-PAGE-SHOWS</td><td>Shows page layout / filter rail / card grid</td><td>View</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>003-PAGE-MOVIES</td><td>Movies page layout / filter rail / card grid</td><td>View</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>004-PAGE-CALENDAR</td><td>Calendar view / day rows / episode card parity</td><td>View</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>005-PAGE-DISCOVER</td><td>Discover view / scope / feed behavior</td><td>View</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>006-PAGE-CONFIG</td><td>Config view / runtime profile controls</td><td>Form</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>007-PAGE-MANAGE-WATCH-STATE</td><td>Manage Watch State table/tree</td><td>Form</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>008-PAGE-MEDIA-LIBRARY</td><td>Media Library / WD TV Live / local network access</td><td>View/Form/Report</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>061-POP-WATCH-SOURCE</td><td>Watch Source popup layout</td><td>Popup</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>062-POP-SHOW-DETAIL</td><td>Show detail popup + episode carousel</td><td>Popup</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>063-POP-MOVIE-DETAIL</td><td>Movie detail popup</td><td>Popup</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>041-PROC-TRAKT-SYNC</td><td>Trakt push/pull/queue/reconcile</td><td>Process</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>042-PROC-MEDIA-QA</td><td>Media file QA / remux / reports</td><td>Process</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr>
+<tr><td class='ref'>2101-AUDIT-RENDERER-OWNERSHIP</td><td>Duplicate renderer / shared code audit</td><td>Audit</td><td>See ownership matrix</td><td>Must have one canonical renderer/owner where applicable.</td></tr></table>
+</section>
+
+<section id="media-library" class="card">
+<h2>3. Media Library / WD TV Live Architecture</h2>
+<p>The enhanced Media Library is a bridge between the website catalog and a local media device/storage target usable from home or trailer, reducing WAN traffic and Wi-Fi load when the media is local.</p>
+<div class="grid">
+<div class="card">
+<h3>Network intent</h3>
+<table><tr><th>Location</th><th>Local network</th><th>Intent</th></tr>
+<tr><td>Home</td><td>192.168.1.x</td><td>Use local WD TV Live/media device access.</td></tr>
+<tr><td>Trailer</td><td>192.168.2.x</td><td>Use local/trailer-accessible path when the device is at trailer or reachable through trailer network.</td></tr>
+<tr><td>Fallback</td><td>Unknown</td><td>Show path/status diagnostics and do not assume availability.</td></tr></table>
+</div>
+<div class="card">
+<h3>Required functions</h3>
+<ul>
+<li>Inventory local media folders and device-visible paths.</li>
+<li>Map catalog item → expected file name → actual media file path.</li>
+<li>Run media QA: ffprobe status, duration, video/audio stream, codec, container, extension match.</li>
+<li>Repair/remux with stream copy when safe; quarantine/report if not safe.</li>
+<li>Use local network paths to reduce trailer bandwidth/Wi-Fi load.</li>
+</ul>
+</div>
+</div>
+<h3>Workflow</h3>
+<pre>catalog item
+→ expected filename
+→ local network profile
+→ candidate media folders
+→ file inventory
+→ match confidence
+→ ffprobe QA
+→ optional ffmpeg remux
+→ rename/move result
+→ VLC/X-plore compatibility result
+→ Media Library status</pre>
+</section>
+
+<section id="ownership" class="card">
+<h2>4. Renderer / Code Ownership Matrix</h2>
+<table>
+<tr><th>Object</th><th>Canonical owner</th><th>Used by</th><th>Forbidden drift</th></tr>
+<tr><td>Episode card</td><td><code>card_renderer.js</code></td><td>Dashboard, Calendar, Show popup carousel, Watch Me</td><td>Separate dashboard/calendar card markup.</td></tr>
+<tr><td>Show card</td><td><code>card_renderer.js</code></td><td>Shows, Dashboard recommendations, Discover</td><td>View-specific show card variants.</td></tr>
+<tr><td>Movie card</td><td><code>card_renderer.js</code></td><td>Movies, Dashboard recommendations, Discover</td><td>Different action rows per page.</td></tr>
+<tr><td>Watch Source Popup</td><td><code>app_runtime.js</code></td><td>Popcorn action from all cards</td><td>Provider guard replacing popup body.</td></tr>
+<tr><td>Provider rows</td><td><code>app_runtime.js</code></td><td>Watch Source Popup</td><td>Visible URL text; button/card outlines.</td></tr>
+<tr><td>Watch state</td><td><code>watch_state_manager.js</code></td><td>All cards + Manage Watch State</td><td>Page-local state logic.</td></tr>
+<tr><td>Media Library nav</td><td><code>media_library_header_button.js</code> or static nav</td><td>All page headers</td><td>Fallback insertion into logo/body/header overlay.</td></tr>
+<tr><td>Media QA</td><td><code>tools/media_renamer/media_file_qa.py</code></td><td>Media Library / renamer pipeline</td><td>Optional-only ffprobe validation.</td></tr>
+</table>
+</section>
+
+<section id="review" class="card">
+<h2>5. Structured Feedback Review Grid</h2>
+<table>
+<tr><th>Ref</th><th>Type</th><th>Review object</th><th>Status</th><th>Priority</th><th>Feedback</th></tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>001-PAGE-DASHBOARD</td>
+<td>View</td>
+<td>Dashboard page layout / sections / sticky headers</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>002-PAGE-SHOWS</td>
+<td>View</td>
+<td>Shows page layout / filter rail / card grid</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>003-PAGE-MOVIES</td>
+<td>View</td>
+<td>Movies page layout / filter rail / card grid</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>004-PAGE-CALENDAR</td>
+<td>View</td>
+<td>Calendar view / day rows / episode card parity</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>005-PAGE-DISCOVER</td>
+<td>View</td>
+<td>Discover view / scope / feed behavior</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>006-PAGE-CONFIG</td>
+<td>Form</td>
+<td>Config view / runtime profile controls</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>007-PAGE-MANAGE-WATCH-STATE</td>
+<td>Form</td>
+<td>Manage Watch State table/tree</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>008-PAGE-MEDIA-LIBRARY</td>
+<td>View/Form/Report</td>
+<td>Media Library / WD TV Live / local network access</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>061-POP-WATCH-SOURCE</td>
+<td>Popup</td>
+<td>Watch Source popup layout</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>062-POP-SHOW-DETAIL</td>
+<td>Popup</td>
+<td>Show detail popup + episode carousel</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>063-POP-MOVIE-DETAIL</td>
+<td>Popup</td>
+<td>Movie detail popup</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>041-PROC-TRAKT-SYNC</td>
+<td>Process</td>
+<td>Trakt push/pull/queue/reconcile</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>042-PROC-MEDIA-QA</td>
+<td>Process</td>
+<td>Media file QA / remux / reports</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+<tr data-feedback-row>
+<td class="ref" data-ref>2101-AUDIT-RENDERER-OWNERSHIP</td>
+<td>Audit</td>
+<td>Duplicate renderer / shared code audit</td>
+<td><select data-status><option></option><option>OK</option><option>Wrong layout</option><option>Missing function</option><option>Drift</option><option>Needs more detail</option></select></td>
+<td><select data-priority><option></option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></td>
+<td><textarea data-feedback rows="3" placeholder="Specific feedback for this reference ID"></textarea></td>
+</tr>
+</table>
+</section>
+
+<section id="codex" class="card">
+<h2>6. Codex / Documentation Direction</h2>
+<pre>Build and maintain a UI Architecture Contract System.
+
+Rules:
+1. Every visible object gets a stable REF ID.
+2. Every REF ID has one owner renderer and one CSS owner.
+3. Dashboard/calendar/show/movie cards must use shared renderers.
+4. Feedback must reference REF IDs.
+5. Written requirements override mockup ambiguity.
+6. User screenshots become validation cases.
+7. New files are only created for materially new functionality.
+8. Existing files are modified in place unless an owner does not exist.
+9. Validation fails when duplicate renderer paths exist for the same object.
+10. Media Library must support local network/device workflows for home and trailer use.</pre>
+</section>
+
+</main>
+<div class="sticky-tools"><button onclick="exportFeedback()">Export Feedback JSON</button><button onclick="printPage()">Print / Save PDF</button></div>
+</body>
+</html>
