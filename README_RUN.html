@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Run HP290 Stage 03</title><style>body{font-family:Segoe UI,Arial,sans-serif;margin:24px;line-height:1.4}code,pre{background:#f3f4f6;padding:8px;border-radius:6px;display:block;white-space:pre-wrap}</style></head><body>
+<h1>HP290 Stage 03 Allocate Media Volume</h1>
+<p>Run from X1 Windows PowerShell, not from inside SSH.</p>
+<pre>Set-Location -LiteralPath "C:\Users\andrew\Downloads"
+Remove-Item -LiteralPath ".\hp290_stage03_allocate_media_volume_runner_v2" -Recurse -Force -ErrorAction SilentlyContinue
+Expand-Archive -LiteralPath ".\hp290_stage03_allocate_media_volume_runner_v2.zip" -DestinationPath ".\hp290_stage03_allocate_media_volume_runner_v2" -Force
+Set-Location -LiteralPath ".\hp290_stage03_allocate_media_volume_runner_v2"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\run_hp290_stage_03_allocate_media_volume_from_x1.ps1</pre>
+<p>The script copies the HP output ZIP back to <code>C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie\.ai_uploads</code>.</p>
+</body></html>
