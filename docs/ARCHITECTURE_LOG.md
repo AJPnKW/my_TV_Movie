@@ -1,5 +1,12 @@
 # Architecture Log
 
+## 2026-05-18
+
+- Implemented runtime recovery for Watch Source popup schema, plain Streaming/Providers rows, generated filename copy, popup reference label, shared episode card rendering, Media Library primary-nav placement, Full/Light runtime mode, and media QA pipeline enforcement.
+- Hardened runtime, browser, and media-renamer validation for popup title/labels/rows, provider admin-text suppression, generated filename controls, sticky Exit, episode TMDB metadata, shared dashboard/calendar card markup, Media Library nav placement, Light mode image suppression, ffprobe/ffmpeg stream-copy QA, and contract lineage sections.
+- Updated `docs/00_master_contract.html` additively and archived the prior contract snapshot under `docs/_archive/contracts/`.
+- Commit: `560c14857` recover-watch-source-runtime-contracts.
+
 ## 2026-05-09
 
 - Refactored the media renamer into a PySide6 one-screen home-user utility with folder choice, scan, batch safe fix, problem files, and reports sections.
