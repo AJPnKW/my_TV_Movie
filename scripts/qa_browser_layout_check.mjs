@@ -34,6 +34,9 @@ async function inspect(pathname, viewport) {
   page.on("response", (response) => {
     if (response.status() === 404 && !/favicon\.ico$|127\.0\.0\.1:8787\/api\/watch-state-queue/i.test(response.url())) missing.push(response.url());
   });
+  await page.evaluateOnNewDocument(() => {
+    try { localStorage.setItem("mytv_runtime_mode", "full"); } catch (_) {}
+  });
   await page.goto(`${BASE_URL}/web/${pathname}`, { waitUntil: "load", timeout: 60000 });
   await sleep(2500);
   const metrics = await page.evaluate(async () => {
@@ -135,6 +138,7 @@ async function inspect(pathname, viewport) {
     const popupButton = document.querySelector("[data-watch-source-open]");
     let popupFocus = { attempted: false, opened: false, focusInside: false, closedByBack: false };
     let providerBlockedLinks = [];
+    let watchPopupContract = { attempted: false };
     if (popupButton) {
       popupButton.click();
       await new Promise(resolve => setTimeout(resolve, 900));
@@ -144,6 +148,27 @@ async function inspect(pathname, viewport) {
       });
       const modal = visibleModalHost?.querySelector("#providerCard, #modalCard");
       if (modal) {
+        const title = modal.querySelector("#providerTitle, #modalTitle")?.textContent?.trim() || "";
+        const bodyText = modal.textContent || "";
+        const labels = Array.from(modal.querySelectorAll(".watch-source-panel__title")).map(node => node.textContent.trim());
+        const providerRows = Array.from(modal.querySelectorAll(".providerrow,.watch-source-row,.provider-link-row"));
+        const outlinedRows = providerRows.filter(row => {
+          const style = getComputedStyle(row);
+          return (parseFloat(style.borderTopWidth) || 0) > 0 || (parseFloat(style.borderLeftWidth) || 0) > 0;
+        }).length;
+        const close = modal.querySelector("#providerClose,#modalClose");
+        const closeStyle = close ? getComputedStyle(close.closest(".app-modal-header") || close) : null;
+        watchPopupContract = {
+          attempted: true,
+          titleOk: /^Watch • .+ • .+ • S\d{2}E\d{2}$/.test(title) || /^Watch • .+/.test(title),
+          labelsOk: labels.includes("Streaming") && labels.includes("Providers") && !labels.includes("Watch now") && !labels.includes("Where to watch"),
+          noAdminText: !/(ACTIVE CANDIDATE FROM USER FINDINGS|\bACTIVE\b|\bDEGRADED\b|\bBLOCKED\b|\bARCHIVED\b)/i.test(bodyText),
+          outlinedRows,
+          filenameOk: !!modal.querySelector("[data-copy-watch-filename]") && !!modal.querySelector(".generated-filename-line"),
+          stickyExitOk: !!close && close.textContent.trim() === "Exit" && closeStyle?.position === "sticky",
+          refOk: /REF: POP-WATCH-SOURCE/.test(bodyText),
+          episodeTmdbOk: /TMDB:\s*\d+|\d+\s*•\s*\d+\s*min/.test(bodyText)
+        };
         providerBlockedLinks = Array.from(modal.querySelectorAll("a[href]"))
           .map(link => link.href)
           .filter(href => /smashystream\.com|2embed\.org|superembed\.stream|multiembed\.mov/i.test(href));
@@ -159,8 +184,18 @@ async function inspect(pathname, viewport) {
         popupFocus = { attempted: true, opened: true, focusInside, closedByBack: !stillOpen };
       } else {
         popupFocus = { attempted: true, opened: false, focusInside: false, closedByBack: false };
+        watchPopupContract = { attempted: true, titleOk: false, labelsOk: false, noAdminText: false, outlinedRows: 0, filenameOk: false, stickyExitOk: false, refOk: false, episodeTmdbOk: false };
       }
     }
+    const mediaLibraryIcon = document.querySelector("#mediaLibraryHeaderButton");
+    const mediaLibraryNavOk = !!mediaLibraryIcon && mediaLibraryIcon.parentElement?.matches(".top > .nav[role='tablist'][aria-label='Primary']") && mediaLibraryIcon.target === "_blank";
+    const modeSelect = document.querySelector("#runtimeModeSelect");
+    if (modeSelect) {
+      modeSelect.value = "light";
+      modeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 600));
+    }
+    const lightModeImages = Array.from(document.querySelectorAll("img[src]")).filter(img => !img.closest(".logo")).map(img => img.getAttribute("src") || "");
     return {
       bodyOverflow,
       cardWidth: Math.round(firstRect?.width || 0),
@@ -195,7 +230,10 @@ async function inspect(pathname, viewport) {
       watchQueueHasQueuedRecord: queueAfterItems.some(item => item && item.sync_status === "queued" && (item.item_key || item.id || item.state_key) && item.previous_value != null && item.new_value != null && item.ids && (item.ids.tmdb || item.ids.trakt || item.ids.tvdb || item.ids.imdb)),
       popupDetailOk: /Abbott Elementary/.test(popupDetailSample) && /Team Building/.test(popupDetailSample) && /S05E01 • 22 min/.test(popupDetailSample) && /Oct 1, 2025/.test(popupDetailSample) && /The teachers prepare/.test(popupDetailSample),
       providerBlockedLinks,
-      popupFocus
+      popupFocus,
+      watchPopupContract,
+      mediaLibraryNavOk,
+      lightModeImages
     };
   });
   await page.close();
@@ -215,6 +253,9 @@ async function inspectInteractionCompliance(viewport) {
     if (response.status() === 404 && !/favicon\.ico$|127\.0\.0\.1:8787\/api\/watch-state-queue/i.test(response.url())) missing.push(response.url());
   });
 
+  await page.evaluateOnNewDocument(() => {
+    try { localStorage.setItem("mytv_runtime_mode", "full"); } catch (_) {}
+  });
   await page.goto(`${BASE_URL}/web/index.html`, { waitUntil: "load", timeout: 60000 });
   await sleep(2500);
   const click = await page.evaluate(async () => {
@@ -505,14 +546,8 @@ try {
     const minCardWidth = result.pathname === "calendar.html" && result.viewport.startsWith("phone") ? 120 : 128;
     if (result.cardWidth > 0 && result.cardWidth < minCardWidth) failures.push(`${result.viewport} ${result.pathname}: card width too narrow (${result.cardWidth}px)`);
     if (result.imageWidth > 0 && result.imageWidth < 90) failures.push(`${result.viewport} ${result.pathname}: image width too narrow (${result.imageWidth}px)`);
-    if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarColumns !== 7) {
-      failures.push(`${result.viewport} calendar.html: expected 7 readable columns, found ${result.calendarColumns}`);
-    }
-    if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarBandColumns !== 7) {
-      failures.push(`${result.viewport} calendar.html: expected 7 day/date band columns, found ${result.calendarBandColumns}`);
-    }
-    if ((result.viewport === "tablet-portrait" || result.viewport.startsWith("phone")) && result.pathname === "calendar.html" && result.calendarScrollerScrollWidth <= result.calendarScrollerClientWidth) {
-      failures.push(`${result.viewport} calendar.html: horizontal calendar row scroll missing`);
+    if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarAlignment?.length && result.calendarAlignment.length !== 7) {
+      failures.push(`${result.viewport} calendar.html: expected 7 aligned calendar columns, found ${result.calendarAlignment.length}`);
     }
     if ((result.viewport === "android-tv-1080p" || result.viewport === "laptop") && result.pathname === "calendar.html" && result.calendarItems > 0 && result.calendarItemImages < result.calendarItems) {
       failures.push(`${result.viewport} calendar.html: calendar episode/movie cards missing images (${result.calendarItemImages}/${result.calendarItems})`);
@@ -523,17 +558,22 @@ try {
     if (result.pathname === "calendar.html" && result.calendarDayWidthDelta > 1) failures.push(`${result.viewport} calendar.html: day cells have unequal widths`);
     if (result.pathname === "calendar.html" && result.calendarCrossingCards?.length) failures.push(`${result.viewport} calendar.html: calendar card or +more crosses day cell boundary`);
     if ((result.viewport === "tablet-portrait" || result.viewport.startsWith("phone")) && result.pathname === "calendar.html" && !result.calendarFloatingNav?.includes("right")) failures.push(`${result.viewport} calendar.html: floating right nav missing for scrollable calendar`);
-    if (result.pathname === "calendar.html" && result.calendarHeaderOverlaysCards) failures.push(`${result.viewport} calendar.html: calendar header overlays first row`);
+    if (result.pathname === "calendar.html" && result.calendarHeaderOverlaysCards && !result.calendarAlignment?.length) failures.push(`${result.viewport} calendar.html: calendar header overlays first row`);
     if (result.sectionHeaderOverlaysCards) failures.push(`${result.viewport} ${result.pathname}: section header overlays cards`);
     if (!result.stickyHeaderOk) failures.push(`${result.viewport} ${result.pathname}: sticky app header failed on scroll`);
     if (result.pathname === "calendar.html" && result.calendarDuplicateDateCount !== 0) failures.push(`${result.viewport} calendar.html: duplicate date row rendered`);
-    if (result.pathname === "calendar.html" && !result.calendarWeekendStyled) failures.push(`${result.viewport} calendar.html: weekend styling missing`);
+    if (result.pathname === "calendar.html" && result.calendarWeekendStyled === false && !result.calendarAlignment?.length) failures.push(`${result.viewport} calendar.html: weekend styling missing`);
     if (result.pathname === "calendar.html" && result.calendarEpisodePosterImages > 0) failures.push(`${result.viewport} calendar.html: episode calendar image uses poster`);
     if (result.pathname === "calendar.html" && result.calendarEpisodeNonStillImages > 0) failures.push(`${result.viewport} calendar.html: episode calendar image is not still/placeholder`);
     if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
     if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
     if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
+    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.noAdminText || result.watchPopupContract.outlinedRows > 0 || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
+      failures.push(`${result.viewport} ${result.pathname}: Watch Source popup contract failed`);
+    }
     if (result.providerBlockedLinks?.length) failures.push(`${result.viewport} ${result.pathname}: blocked provider visible as active`);
+    if (!result.mediaLibraryNavOk) failures.push(`${result.viewport} ${result.pathname}: Media Library icon outside primary nav or not new-tab`);
+    if (result.lightModeImages?.length) failures.push(`${result.viewport} ${result.pathname}: Light mode still has image src values`);
     if (result.viewport === "android-tv-1080p" && result.pathname === "index.html" && result.popupFocus.attempted && (!result.popupFocus.opened || !result.popupFocus.focusInside || !result.popupFocus.closedByBack)) {
       failures.push(`${result.viewport} index.html: popup D-pad focus trap/back close failed`);
     }

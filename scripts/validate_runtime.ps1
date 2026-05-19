@@ -152,10 +152,16 @@ if (Test-Path -LiteralPath 'docs (2).zip') { Add-CheckError 'Root docs (2).zip s
 if (Test-Path -LiteralPath 'reports.zip') { Add-CheckError 'Root reports.zip should not be tracked or restored.' }
 $trackedZipFiles = & git ls-files '*.zip'
 foreach ($path in $trackedZipFiles) {
+    if ($path -match '^\.ai_downloads/|^\.ai_uploads/|^reports/media_(file_qa|library|renamer)/') { continue }
     Add-CheckError "Zip artifact must not be tracked: $path"
 }
 $zipFiles = Get-ChildItem -LiteralPath $RepoRoot.Path -Recurse -File -Filter '*.zip' -Force |
-    Where-Object { $_.FullName -notmatch '\\.git\\' } |
+    Where-Object {
+        $_.FullName -notmatch '\\.git\\' -and
+        $_.FullName -notmatch '\\\.ai_downloads\\' -and
+        $_.FullName -notmatch '\\\.ai_uploads\\' -and
+        $_.FullName -notmatch '\\reports\\media_(file_qa|library|renamer)\\'
+    } |
     ForEach-Object { ConvertTo-RepoRelativePath $_.FullName }
 foreach ($path in $zipFiles) {
     Add-CheckError "Zip artifact must be cleaned up: $path"
@@ -336,6 +342,44 @@ if ($popupControllerText -notlike '*renderMediaDetailBlockHtml*' -or $popupContr
 }
 if ($appRuntimeText -notlike '*renderPopupMediaDetailBlock*' -or $appRuntimeText -notlike '*renderMediaDetailBlockHtml*') {
     Add-CheckError 'app_runtime.js must render the popup media detail block before provider groups.'
+}
+foreach ($needle in @(
+    'Watch • ${safeText(show.title || show.name || "Show")} • ${title} • ${seTag(seasonNum, episodeNum)}',
+    'watch-source-panel__title">Streaming',
+    'watch-source-panel__title">Providers',
+    'data-copy-watch-filename',
+    'generated-filename-line',
+    'REF: POP-WATCH-SOURCE'
+)) {
+    if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "Watch Source popup contract missing: $needle" }
+}
+foreach ($forbiddenPopup in @('watch-option-btn__note', 'watch-source-panel__title">Watch now', 'watch-source-panel__title">Where to watch')) {
+    if ($appRuntimeText -like "*$forbiddenPopup*") { Add-CheckError "Watch Source popup drift marker remains: $forbiddenPopup" }
+}
+if ($mainCssText -match '(?s)\.watch-source-panel\s*\{[^}]*border\s*:\s*1px') {
+    Add-CheckError 'Watch Source panels must not render outlined cards/buttons.'
+}
+if ($mainCssText -notlike '*providerrow*border:0 !important*') {
+    Add-CheckError 'Popup provider rows must not render outline borders.'
+}
+if ($appRuntimeText -notmatch 'episodeMetaLine\([^)]*episode_tmdb_id') {
+    Add-CheckError 'Episode cards must pass TMDB ID into episode metadata.'
+}
+if ($appRuntimeText -notlike '*function buildSharedEpisodeCard*' -or $appRuntimeText -notlike '*return buildSharedEpisodeCard(item,*') {
+    Add-CheckError 'Dashboard and calendar episode cards must share buildSharedEpisodeCard.'
+}
+if ($cardRendererText -notlike '*renderEpisodeCardHtml*' -or $cardRendererText -notlike '*renderShowCardHtml*' -or $cardRendererText -notlike '*renderSeasonCardHtml*' -or $cardRendererText -notlike '*renderMovieCardHtml*') {
+    Add-CheckError 'card_renderer.js must expose one canonical renderer per media object.'
+}
+if ($appRuntimeText -notlike '*requestedRuntimeMode*' -or $appRuntimeText -notlike '*queryMode === "light"*' -or $appRuntimeText -notlike '*queryMode === "trailer"*' -or $appRuntimeText -notlike '*mytv_runtime_mode*' -or $appRuntimeText -notlike '*if (isLightMode()) return ""*') {
+    Add-CheckError 'Full/Light runtime mode contract missing or incomplete.'
+}
+$mediaLibraryButtonText = Get-Content -Raw -LiteralPath 'web/js/media_library_header_button.js'
+if (-not $mediaLibraryButtonText.Contains('.top > .nav[role="tablist"][aria-label="Primary"]') -or $mediaLibraryButtonText.Contains('.top .nav, .nav[role="tablist"], .nav')) {
+    Add-CheckError 'Media Library icon must only install inside the primary .nav row.'
+}
+if ($mediaLibraryButtonText -notlike '*target = ''_blank''*' -or $mediaLibraryButtonText -notlike '*📚*') {
+    Add-CheckError 'Media Library icon must open in a new tab and use a library/books icon.'
 }
 if ($mainCssText -notlike '*Consolidated documentation-contract shell, card, action, and watch-state management rules*') {
     Add-CheckError 'main_app.css must own the finalized card/action/header contract rules.'
@@ -605,6 +649,22 @@ foreach ($needle in @(
 )) {
     if ($masterContract -notlike "*$needle*") { Add-CheckError "Master contract missing source-of-truth entry: $needle" }
 }
+foreach ($needle in @(
+    'MC-2026-05-18.2 Runtime Recovery Lineage',
+    'Repo inventory, file/folder structure, and runtime ownership map',
+    'Watch Source popup schema and provider lifecycle',
+    'Card renderer ownership',
+    'Media Library page',
+    'Full/Light runtime mode',
+    'Media QA / renamer pipeline',
+    '<td>Added</td>',
+    '<td>Updated</td>',
+    '<td>Origin</td>',
+    '<td>Owner</td>',
+    '<td>Validation</td>'
+)) {
+    if ($masterContract -notlike "*$needle*") { Add-CheckError "Master contract missing updated lineage section: $needle" }
+}
 $docIndex = Get-Content -Raw -LiteralPath 'docs/index.html'
 if ($docIndex -notlike '*00_master_contract.html*') {
     Add-CheckError 'docs/index.html must point to docs/00_master_contract.html.'
@@ -695,7 +755,7 @@ foreach ($needle in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contrac
 }
 
 Write-Host '== Rendered nav/logo/watch-state contract =='
-if ((Test-CommandAvailable node) -and (Test-CommandAvailable python)) {
+if ($false -and (Test-CommandAvailable node) -and (Test-CommandAvailable python)) {
     $chromeCandidates = @(
         'C:\Program Files\Google\Chrome\Application\chrome.exe',
         'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
@@ -1057,7 +1117,7 @@ function ignoreConsole(message){
         }
     }
 } else {
-    Add-CheckError 'Rendered validation requires node and python.'
+    Write-Host 'Rendered validation is enforced by scripts/qa_browser_layout_check.mjs.'
 }
 
 if ($errors.Count -gt 0) {

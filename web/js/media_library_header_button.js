@@ -13,7 +13,7 @@ CHANGE NOTES:
   window.__myTvMediaLibraryHeaderButtonLoaded = true;
 
   function install(){
-    const nav = document.querySelector('.top .nav, .nav[role="tablist"], .nav');
+    const nav = document.querySelector('.top > .nav[role="tablist"][aria-label="Primary"]');
     if (!nav) return;
 
     let link = document.getElementById('mediaLibraryHeaderButton');

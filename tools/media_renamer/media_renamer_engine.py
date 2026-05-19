@@ -49,7 +49,7 @@ class ScanOptions:
     repo_root: Path
     input_root: Path = DEFAULT_RECORDING_ROOT
     output_root: Path = DEFAULT_RECORDING_ROOT
-    validate_with_ffprobe: bool = False
+    validate_with_ffprobe: bool = True
     detect_hash_duplicates: bool = False
     skip_support_folders: bool = True
     minimum_auto_confidence: int = 85

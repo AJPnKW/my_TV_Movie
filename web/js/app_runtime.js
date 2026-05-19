@@ -91,6 +91,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     dashboard: {
       lastWeekOffsetWeeks: 0
     },
+    runtimeMode: "full",
     show: {
       tmdb_id: null,
       selectedSeasonNumber: null,
@@ -470,6 +471,52 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (dotEl) dotEl.classList.toggle("bad", !ok);
   }
 
+  function requestedRuntimeMode(){
+    const queryMode = safeText(new URLSearchParams(location.search).get("mode")).toLowerCase();
+    if (queryMode === "light" || queryMode === "trailer") return "light";
+    return safeText(localStorage.getItem("mytv_runtime_mode")).toLowerCase() === "light" ? "light" : "full";
+  }
+
+  function isLightMode(){
+    return state.runtimeMode === "light";
+  }
+
+  function applyRuntimeMode(mode, persist=false){
+    state.runtimeMode = mode === "light" ? "light" : "full";
+    document.documentElement.setAttribute("data-runtime-mode", state.runtimeMode);
+    if (document.body) document.body.setAttribute("data-runtime-mode", state.runtimeMode);
+    if (persist) localStorage.setItem("mytv_runtime_mode", state.runtimeMode);
+    const select = $("#runtimeModeSelect");
+    if (select) select.value = state.runtimeMode;
+  }
+
+  function ensureRuntimeModeControl(){
+    const status = $(".top .status");
+    if (!status || $("#runtimeModeSelect")) return;
+    status.insertAdjacentHTML("beforeend", `
+      <label class="runtime-mode-control" title="Runtime render mode">
+        <span class="runtime-mode-control__label">Mode</span>
+        <select id="runtimeModeSelect" class="runtime-mode-control__select" aria-label="Runtime mode">
+          <option value="full">Full</option>
+          <option value="light">Light</option>
+        </select>
+      </label>
+    `);
+    const select = $("#runtimeModeSelect");
+    if (select){
+      select.value = state.runtimeMode;
+      select.addEventListener("change", () => {
+        applyRuntimeMode(select.value, true);
+        routeFromHash();
+      });
+    }
+  }
+
+  window.MyTVHubRuntimeMode = Object.assign(window.MyTVHubRuntimeMode || {}, {
+    isLightMode,
+    mode: () => state.runtimeMode
+  });
+
   function appVersionText(){
     const globalCfg = window.MyTVHubConfig?.get_config?.() || null;
     return safeText(
@@ -756,6 +803,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function providerLogoImgHtml(logo, cssClass="providerlogo"){
+    if (isLightMode()) return "";
     const src = safeText(logo?.local || logo?.tmdb || "").trim();
     if (!src) return "";
     return `<img class="${escHtml(cssClass)}" src="${escHtml(src)}" loading="lazy" decoding="async" data-fallback="${escHtml(logo?.tmdb || "")}" alt="${escHtml(logo?.name || "Provider")}" onerror="const fallback=this.dataset.fallback||'';if(fallback&&this.src!==fallback){this.src=fallback;this.dataset.fallback='';return;}this.onerror=null;const chip=this.closest('.providerchip');if(chip){chip.classList.add('fallback-only');}this.remove();" />`;
@@ -797,10 +845,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const rows = regions.map(region => {
       const providers = collectProvidersForRegion(wp, region);
       const chips = providers.slice(0, 8).map(p => {
-        const logo = providerLogoUrl(p);
-        return providerChipHtml(logo, safeText(p?.deep_link) || tmdbWatchUrl(kind, id));
+        const href = safeText(p?.deep_link) || tmdbWatchUrl(kind, id);
+        const label = safeText(p?.provider_name || p?.name || "Provider");
+        return `<a class="provider-link-row" href="${escHtml(href)}" target="_blank" rel="noopener"><span class="provider-link-row__name">${escHtml(label)}</span><span class="provider-link-row__url">${escHtml(href)}</span></a>`;
       }).join("");
-      const body = chips || `<div class="muted" style="font-size:11px;">No providers</div>`;
+      const body = chips || `<span class="provider-link-row provider-link-row--empty">No providers</span>`;
       return `
         <div class="providerrow">
           <span class="providerlabel">${region}</span>
@@ -824,7 +873,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         kind: "episode",
         primary: safeText(show?.title || show?.name || item?.show_title || "Show"),
         secondary: safeText(item?.title || item?.name || item?.episode_name || `Episode ${episodeNum}`),
-        meta: episodeMetaLine(seasonNum, episodeNum, item?.runtime),
+        meta: episodeMetaLine(seasonNum, episodeNum, item?.runtime, safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "")),
         date: pickAirDate(item) ? fmtDate(pickAirDate(item)) : "",
         overview: truncateText(item?.overview || "", 320)
       });
@@ -1151,6 +1200,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function pickImage(obj, localKey, pathKey){
+    if (isLightMode()) return "";
     if (!obj) return "";
     const local = withBasePath(obj[localKey]);
     if (local) return local;
@@ -1957,25 +2007,27 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const providerItem = (kind === "season" || kind === "episode") ? (context.show || item) : item;
     const providerKind = (kind === "movie") ? "movie" : "tv";
     const providerHtml = renderWatchProvidersHtml(providerItem, providerKind);
-    const mediaDetailHtml = renderPopupMediaDetailBlock(kind, item, context);
+    const mediaDetailHtml = renderWatchSourceMediaDetailHtml(kind, item, context) || renderPopupMediaDetailBlock(kind, item, context);
     const optionHtml = options.length ? options.map(opt => `
-      <a class="watch-option-btn watch-option-btn--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
-        <span class="watch-option-btn__label">${escHtml(opt.label)}</span>
-        ${opt.note ? `<span class="watch-option-btn__note">${escHtml(opt.note)}</span>` : ""}
-        <span class="watch-option-btn__href">${escHtml(opt.href)}</span>
+      <a class="watch-source-row watch-source-row--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
+        <span class="watch-source-row__label">${escHtml(opt.label)}${safeText(opt.note).toLowerCase() === "degraded" ? " ⚠" : ""}</span>
+        <span class="watch-source-row__href">${escHtml(opt.href)}</span>
       </a>
     `).join("") : `<div class="muted" style="font-size:12px;">No configured direct watch sources for this item yet.</div>`;
     return `
-      ${mediaDetailHtml}
-      <div class="watch-source-grid">
-        <div class="watch-source-panel watch-source-panel--links">
-          <div class="watch-source-panel__title">Watch now</div>
-          <div class="watch-source-links">${optionHtml}</div>
+      <div class="watch-source-popup" data-popup="watch-source">
+        ${mediaDetailHtml}
+        <div class="watch-source-grid">
+          <div class="watch-source-panel watch-source-panel--links">
+            <div class="watch-source-panel__title">Streaming</div>
+            <div class="watch-source-links">${optionHtml}</div>
+          </div>
+          <div class="watch-source-panel watch-source-panel--providers">
+            <div class="watch-source-panel__title">Providers</div>
+            ${providerHtml}
+          </div>
         </div>
-        <div class="watch-source-panel watch-source-panel--providers">
-          <div class="watch-source-panel__title">Where to watch</div>
-          ${providerHtml}
-        </div>
+        <div class="popup-ref-label">REF: POP-WATCH-SOURCE</div>
       </div>
     `;
   }
@@ -2001,7 +2053,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           const movieId = Number(btn.getAttribute("data-id") || "0");
           const movie = await getMovieDetailById(movieId);
           if (!movie) return;
-          openProviderModal(`${safeText(movie.title || "Movie")} • Watch source`, renderWatchSourceChooserHtml(movie, "movie"));
+          openProviderModal(`Watch • ${safeText(movie.title || "Movie")}`, renderWatchSourceChooserHtml(movie, "movie"));
           return;
         }
         const showId = Number(btn.getAttribute("data-show") || btn.getAttribute("data-id") || "0");
@@ -2013,7 +2065,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           const episode = getEpisodeItem(show, seasonNum, episodeNum);
           if (!episode) return;
           const title = safeText(episode.title || episode.name || `Episode ${episodeNum}`);
-          openProviderModal(`${safeText(show.title || show.name || "Show")} • ${title} • Watch source`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id ?? show.id, seasonNumber: seasonNum, episodeNumber: episodeNum }));
+          openProviderModal(`Watch • ${safeText(show.title || show.name || "Show")} • ${title} • ${seTag(seasonNum, episodeNum)}`, renderWatchSourceChooserHtml(episode, "episode", { show, showId: show.tmdb_id ?? show.id, seasonNumber: seasonNum, episodeNumber: episodeNum }));
         }
       });
     });
@@ -2093,10 +2145,70 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return valid.length ? valid[valid.length - 1].value : "";
   }
 
-  function episodeMetaLine(seasonNum, episodeNum, runtime){
-    return [seTag(seasonNum, episodeNum), Number.isFinite(Number(runtime)) && Number(runtime) > 0 ? `${Number(runtime)} min` : ""]
+  function episodeMetaLine(seasonNum, episodeNum, runtime, tmdbId=""){
+    return [seTag(seasonNum, episodeNum), Number.isFinite(Number(runtime)) && Number(runtime) > 0 ? `${Number(runtime)} min` : "", safeText(tmdbId) ? `TMDB: ${safeText(tmdbId)}` : ""]
       .filter(Boolean)
       .join(" • ");
+  }
+
+  function formatDateForFilename(dateValue){
+    const raw = safeText(dateValue).slice(0, 10);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+    if (!match) return "";
+    return `${match[2]}-${match[3]}-${match[1].slice(2)}`;
+  }
+
+  function generatedWatchFilename(kind, item, context={}){
+    if (kind === "episode"){
+      const show = context.show || {};
+      const showTitle = safeText(show?.title || show?.name || item?.show_title || "Show");
+      const seasonNum = Number(item?.season_number ?? context.seasonNum ?? context.seasonNumber ?? 0) || 0;
+      const episodeNum = Number(item?.episode_number ?? context.episodeNum ?? context.episodeNumber ?? 0) || 0;
+      const episodeTitle = safeText(item?.title || item?.name || item?.episode_name || `Episode ${episodeNum}`);
+      const date = formatDateForFilename(pickAirDate(item));
+      const tmdb = safeText(show?.tmdb_id ?? show?.id ?? item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "");
+      return `${showTitle} - ${seTag(seasonNum, episodeNum)} - ${episodeTitle}${date ? ` [${date}]` : ""}${tmdb ? ` [${tmdb}]` : ""}`;
+    }
+    const title = safeText(item?.title || "Movie");
+    const runtime = Number(item?.runtime);
+    const release = pickAirDate(item) || item?.release_date || "";
+    const date = formatDateForFilename(release);
+    const tmdb = safeText(item?.tmdb_id ?? item?.id ?? "");
+    return [title, Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "", date ? `[${date}]` : "", tmdb ? `[${tmdb}]` : ""].filter(Boolean).join(" ");
+  }
+
+  function renderWatchSourceMediaDetailHtml(kind, item, context={}){
+    const normalizedKind = safeText(kind).toLowerCase();
+    const filename = generatedWatchFilename(normalizedKind, item, context);
+    if (normalizedKind === "episode"){
+      const show = context.show || {};
+      const showTitle = safeText(show?.title || show?.name || item?.show_title || "Show");
+      const seasonNum = Number(item?.season_number ?? context.seasonNum ?? context.seasonNumber ?? 0) || 0;
+      const episodeNum = Number(item?.episode_number ?? context.episodeNum ?? context.episodeNumber ?? 0) || 0;
+      const episodeTitle = safeText(item?.title || item?.name || item?.episode_name || `Episode ${episodeNum}`);
+      const tmdb = safeText(show?.tmdb_id ?? show?.id ?? item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "");
+      return `
+        <section class="popup-media-detail popup-media-detail--episode watch-source-detail" data-popup-media-detail="episode">
+          <div class="popup-media-detail__primary">${escHtml(`${showTitle} - ${seTag(seasonNum, episodeNum)} - ${episodeTitle}`)} <button class="copy-inline-btn" type="button" data-copy-watch-filename="${escHtml(filename)}" aria-label="Copy full name">Copy</button></div>
+          <div class="popup-media-detail__date">${escHtml(pickAirDate(item) ? fmtDate(pickAirDate(item)) : "")}</div>
+          <div class="popup-media-detail__meta">${escHtml([tmdb, Number.isFinite(Number(item?.runtime)) && Number(item.runtime) > 0 ? `${Number(item.runtime)} min` : ""].filter(Boolean).join(" • "))}</div>
+          <div class="popup-media-detail__overview">${escHtml(safeText(item?.overview || ""))}</div>
+          <div class="generated-filename-line"><span>${escHtml(filename)}</span><button class="copy-inline-btn" type="button" data-copy-watch-filename="${escHtml(filename)}">Copy</button></div>
+        </section>
+      `;
+    }
+    const title = safeText(item?.title || "Movie");
+    const runtime = Number(item?.runtime);
+    const release = pickAirDate(item) || item?.release_date || "";
+    const tmdb = safeText(item?.tmdb_id ?? item?.id ?? "");
+    return `
+      <section class="popup-media-detail popup-media-detail--movie watch-source-detail" data-popup-media-detail="movie">
+        <div class="popup-media-detail__primary">${escHtml(title)}</div>
+        <div class="popup-media-detail__meta">${escHtml([Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "", release ? fmtDate(release) : "", tmdb ? `TMDB: ${tmdb}` : ""].filter(Boolean).join(" • "))}</div>
+        <div class="popup-media-detail__overview">${escHtml(safeText(item?.overview || ""))}</div>
+        <div class="generated-filename-line"><span>${escHtml(filename)}</span><button class="copy-inline-btn" type="button" data-copy-watch-filename="${escHtml(filename)}">Copy</button></div>
+      </section>
+    `;
   }
 
   function openModal(title, html) {
@@ -2186,6 +2298,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $$("a[data-watch-source-type]", $("#providerBody")).forEach(link => {
       link.addEventListener("click", () => {
         setTimeout(() => closeProviderModal(), 0);
+      });
+    });
+    $$("[data-copy-watch-filename]", $("#providerBody")).forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const ok = await copyTextToClipboard(btn.getAttribute("data-copy-watch-filename") || "");
+        btn.textContent = ok ? "Copied" : "Copy Failed";
       });
     });
     const card = $("#providerCard");
@@ -2854,6 +2972,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function normalizeImageSrc(src){
+    if (isLightMode()) return "";
     const raw = safeText(src).trim();
     if (!raw) return "";
     if (raw.startsWith("/")) return withBasePath(raw);
@@ -2932,7 +3051,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       eyebrow: safeText(options.eyebrow || item?.show_title || "Show"),
       title: safeText(options.title || item?.episode_name || "Episode"),
       badgeHtml: "",
-      meta: options.meta || episodeMetaLine(seasonNum, episodeNum, item?.runtime),
+      meta: options.meta || episodeMetaLine(seasonNum, episodeNum, item?.runtime, episodeTmdbId),
       submeta: options.submeta || "",
       overlay: options.overlay !== false,
       actionBarHtml: buildActionBarHtml("episode", episodeNum, {
@@ -2953,7 +3072,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         available
       }),
       articleAttrs: options.articleAttrs || { tabindex: "0", "data-kind": "episode", "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum },
-      renderKey: `episode:${showId}:${seasonNum}:${episodeNum}`,
+      renderKey: options.renderKey || `episode:${showId}:${seasonNum}:${episodeNum}`,
       extraClass: options.extraClass || ""
     });
   }
@@ -3890,7 +4009,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           image: imageForCalendarItem(item),
           eyebrow: item.show_title || "Show",
           title: item.episode_name || "Episode",
-          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
+          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime, safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "")),
           submeta: "",
           overlay: true,
           articleAttrs: { "data-day": dateKey, "data-kind": "episode", "data-show": showId, tabindex: "0" },
@@ -4033,31 +4152,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const showId = Number(item.show_tmdb_id) || 0;
         const seasonNum = Number(item.season_number) || 0;
         const episodeNum = Number(item.episode_number) || 0;
-        return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+        return buildSharedEpisodeCard(item, {
           image: imageForItem(item),
           eyebrow: safeText(item.show_title || "Show"),
           title: safeText(item.episode_name || "Episode"),
-          badgeHtml: "",
-          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime),
+          meta: episodeMetaLine(seasonNum, episodeNum, item.runtime, safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "")),
           submeta: tertiary,
           overlay: true,
-          actionBarHtml: buildActionBarHtml("episode", episodeNum, {
-            title: safeText(item.episode_name || "Episode"),
-            compact: true,
-            tmdbId: safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? ""),
-            traktId: safeText(item?.trakt_id || item?.episode_trakt_id || ""),
-            tvdbId: safeText(item?.tvdb_id || item?.episode_tvdb_id || ""),
-            pct: percentForItem(item),
-            watchedActive: state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false,
-            showWatchedAction: true,
-            showStatusAction: true,
-            watchedAttrs: { "data-show": showId, "data-season": seasonNum, "data-watch-episode": episodeNum },
-            popcornAttrs: hasDirectWatchSources(item) ? { "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum } : null,
-            popcornKind: "episode",
-            availabilityStatus: availabilityStatusOf(item),
-            available: isEpisodeAvailable(item),
-            statusContext: { showId, seasonNumber: seasonNum, episodeNumber: episodeNum }
-          }),
+          pct: percentForItem(item),
           articleAttrs: { "data-show": showId, tabindex: "0" },
           renderKey: renderKey || `dashboard:event:episode:${showId}:${seasonNum}:${episodeNum}`,
           extraClass: `dashcard dashcard--clean${expandableClass(hidden)}`
@@ -5118,7 +5220,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     eyebrow: title,
                     title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
                     badgeHtml: "",
-                    meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime),
+                    meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime, safeText(ep?.episode_tmdb_id ?? ep?.episode_id ?? ep?.tmdb_episode_id ?? ep?.id ?? "")),
                     submeta: safeText(pickAirDate(ep) ? fmtDate(pickAirDate(ep)) : ""),
                     description: safeText(ep?.overview || ""),
                     actionBarHtml: buildActionBarHtml("episode", episodeNum, {
@@ -5152,7 +5254,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     `;
   }
 
+  applyRuntimeMode(requestedRuntimeMode(), false);
   ensureMainAppShell();
+  ensureRuntimeModeControl();
   setCalendarView(state.calendarView);
   applySidebarState("shows");
   applySidebarState("movies");

@@ -50,6 +50,27 @@ def main() -> int:
         if not isinstance(first_real, ast.ImportFrom) or first_real.module != "__future__":
             fail(f"missing top future annotations import in {rel}")
         py_compile.compile(str(path), doraise=True)
+    media_file_qa_text = (REPO / "tools/media_renamer/media_file_qa.py").read_text(encoding="utf-8")
+    media_engine_text = (REPO / "tools/media_renamer/media_renamer_engine.py").read_text(encoding="utf-8")
+    pipeline_text = (REPO / "tools/media_renamer/media_cleanup_pipeline.py").read_text(encoding="utf-8")
+    for needle in [
+        "ffprobe",
+        "media_file_qa.csv",
+        "media_file_qa.json",
+        "repair_actions.log.txt",
+        "unrepaired_files.csv",
+        "final_summary.html",
+        "VLC and X-plore",
+    ]:
+        if needle not in media_file_qa_text:
+            fail(f"media_file_qa.py missing required QA/report contract: {needle}")
+    if '"-i", str(path), "-map", "0", "-c", "copy"' not in media_file_qa_text:
+        fail("media_file_qa.py repair path must use ffmpeg stream-copy remux first")
+    if "validate_with_ffprobe: bool = True" not in media_engine_text:
+        fail("media_renamer_engine.py must validate every media file with ffprobe by default")
+    for needle in ["scan", "identify", "filename", "ffprobe", "classify", "remux", "rename", "final", "report"]:
+        if needle not in (media_file_qa_text + media_engine_text + pipeline_text).casefold():
+            fail(f"media QA pipeline missing required phase text: {needle}")
     rules = json.loads((REPO / "tools/media_renamer/media_rules.json").read_text(encoding="utf-8"))
     if rules.get("tv_folder_name") != "TV" or rules.get("movie_folder_name") != "Movies":
         fail("TV/Movies folder names are not locked")

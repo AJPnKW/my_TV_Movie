@@ -39,9 +39,17 @@ function esc(value){
 }
 
 
+function runtimeLightMode(){
+  try {
+    return !!(window.MyTVHubRuntimeMode && window.MyTVHubRuntimeMode.isLightMode && window.MyTVHubRuntimeMode.isLightMode());
+  } catch (_) {
+    return false;
+  }
+}
+
 function safeCardImage(image, kind, title){
   const src = String(image || '').trim();
-  if (src) return `<img loading="lazy" decoding="async" src="${esc(src)}" alt="" />`;
+  if (src && !runtimeLightMode()) return `<img loading="lazy" decoding="async" src="${esc(src)}" alt="" />`;
   const label = kind === 'episode' ? 'No Still' : 'No Poster';
   const tag = title ? esc(String(title).slice(0,42)) : label;
   return `<div class="posterFallback posterFallback--${esc(kind)}" aria-label="${esc(label)}"><span class="posterFallback__label">${esc(label)}</span><span class="posterFallback__title">${tag}</span></div>`;
@@ -82,8 +90,24 @@ export function renderCompactEpisodeCardHtml(options = {}){
   return renderCompactCardHtml({
     ...options,
     kind: 'episode',
-    extraClass: `episode-row episode_row${options.extraClass ? ` ${options.extraClass}` : ''}`
+    extraClass: `episode-card episode-row episode_row${options.extraClass ? ` ${options.extraClass}` : ''}`
   });
+}
+
+export function renderEpisodeCardHtml(options = {}){
+  return renderCompactEpisodeCardHtml(options);
+}
+
+export function renderShowCardHtml(options = {}){
+  return renderCompactCardHtml({ ...options, kind: 'show' });
+}
+
+export function renderSeasonCardHtml(options = {}){
+  return renderCompactCardHtml({ ...options, kind: 'season' });
+}
+
+export function renderMovieCardHtml(options = {}){
+  return renderCompactCardHtml({ ...options, kind: 'movie' });
 }
 
 function attrString(attrs = {}){
@@ -99,6 +123,10 @@ if (typeof window !== 'undefined'){
     applyRuntimeContract,
     providerFallbackLabel,
     renderCompactCardHtml,
-    renderCompactEpisodeCardHtml
+    renderCompactEpisodeCardHtml,
+    renderEpisodeCardHtml,
+    renderShowCardHtml,
+    renderSeasonCardHtml,
+    renderMovieCardHtml
   });
 }

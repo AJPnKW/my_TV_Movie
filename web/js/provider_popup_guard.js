@@ -16,7 +16,7 @@ CHANGE NOTES:
   if (window.__myTvMovieProviderPopupGuardLoaded) return;
   window.__myTvMovieProviderPopupGuardLoaded = true;
 
-  const PROVIDER_REGISTRY_URL = './data/provider_registry.json';
+  const PROVIDER_REGISTRY_URL = '../data/provider_registry.json';
   const BLOCKED_STATUSES = new Set(['blocked', 'archived']);
   const FORBIDDEN_TEXTS = new Set([
     'active candidate from user findings',
