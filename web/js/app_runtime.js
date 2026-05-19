@@ -806,7 +806,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (isLightMode()) return "";
     const src = safeText(logo?.local || logo?.tmdb || "").trim();
     if (!src) return "";
-    return `<img class="${escHtml(cssClass)}" src="${escHtml(src)}" loading="lazy" decoding="async" data-fallback="${escHtml(logo?.tmdb || "")}" alt="${escHtml(logo?.name || "Provider")}" onerror="const fallback=this.dataset.fallback||'';if(fallback&&this.src!==fallback){this.src=fallback;this.dataset.fallback='';return;}this.onerror=null;const chip=this.closest('.providerchip');if(chip){chip.classList.add('fallback-only');}this.remove();" />`;
+    return `<img class="${escHtml(cssClass)}" src="${escHtml(src)}" loading="lazy" decoding="async" data-fallback="${escHtml(logo?.tmdb || "")}" alt="${escHtml(logo?.name || "Provider")}" onerror="const fallback=this.dataset.fallback||'';if(fallback&&this.src!==fallback){this.src=fallback;this.dataset.fallback='';return;}this.onerror=null;const chip=this.closest('.providerchip,.provider-anchor');if(chip){chip.classList.add('fallback-only');}this.remove();" />`;
   }
 
   function providerChipHtml(logo, href){
@@ -844,16 +844,21 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const regions = ["CA", "US", "GB", "AU"];
     const rows = regions.map(region => {
       const providers = collectProvidersForRegion(wp, region);
+      const regionLink = safeText(wp?.[region]?.link || "");
       const chips = providers.slice(0, 8).map(p => {
-        const href = safeText(p?.deep_link) || tmdbWatchUrl(kind, id);
+        const href = safeText(p?.deep_link) || regionLink || tmdbWatchUrl(kind, id);
         const label = safeText(p?.provider_name || p?.name || "Provider");
-        return `<a class="provider-link-row" href="${escHtml(href)}" target="_blank" rel="noopener"><span class="provider-link-row__name">${escHtml(label)}</span><span class="provider-link-row__url">${escHtml(href)}</span></a>`;
+        const logo = providerLogoUrl(p);
+        const hasLogo = !!safeText(logo?.local || logo?.tmdb || "").trim();
+        const logoHtml = providerLogoImgHtml(logo, "providerlogo providerlogo--popup");
+        const textClass = hasLogo && logoHtml ? "providertext providertext--fallback" : "providertext providertext--visible";
+        return `<a class="provider-anchor${hasLogo ? "" : " no-logo"}" href="${escHtml(href)}" target="_blank" rel="noopener" title="${escHtml(label)}" aria-label="${escHtml(label)}">${logoHtml}<span class="${textClass}">${escHtml(label)}</span></a>`;
       }).join("");
-      const body = chips || `<span class="provider-link-row provider-link-row--empty">No providers</span>`;
+      const body = chips || `<span class="provider-empty">No providers</span>`;
       return `
         <div class="providerrow">
           <span class="providerlabel">${region}</span>
-          <div class="providerchips">${body}</div>
+          <div class="providerchips providerchips--popup">${body}</div>
         </div>`;
     }).join("");
 
@@ -2189,11 +2194,11 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const tmdb = safeText(show?.tmdb_id ?? show?.id ?? item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "");
       return `
         <section class="popup-media-detail popup-media-detail--episode watch-source-detail" data-popup-media-detail="episode">
-          <div class="popup-media-detail__primary">${escHtml(`${showTitle} - ${seTag(seasonNum, episodeNum)} - ${episodeTitle}`)} <button class="copy-inline-btn" type="button" data-copy-watch-filename="${escHtml(filename)}" aria-label="Copy full name">Copy</button></div>
+          <div class="popup-media-detail__primary">${escHtml(`${showTitle} - ${seTag(seasonNum, episodeNum)} - ${episodeTitle}`)}</div>
           <div class="popup-media-detail__date">${escHtml(pickAirDate(item) ? fmtDate(pickAirDate(item)) : "")}</div>
           <div class="popup-media-detail__meta">${escHtml([tmdb, Number.isFinite(Number(item?.runtime)) && Number(item.runtime) > 0 ? `${Number(item.runtime)} min` : ""].filter(Boolean).join(" • "))}</div>
           <div class="popup-media-detail__overview">${escHtml(safeText(item?.overview || ""))}</div>
-          <div class="generated-filename-line"><span>${escHtml(filename)}</span><button class="copy-inline-btn" type="button" data-copy-watch-filename="${escHtml(filename)}">Copy</button></div>
+          <div class="generated-filename-line"><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
         </section>
       `;
     }
@@ -2206,7 +2211,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="popup-media-detail__primary">${escHtml(title)}</div>
         <div class="popup-media-detail__meta">${escHtml([Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "", release ? fmtDate(release) : "", tmdb ? `TMDB: ${tmdb}` : ""].filter(Boolean).join(" • "))}</div>
         <div class="popup-media-detail__overview">${escHtml(safeText(item?.overview || ""))}</div>
-        <div class="generated-filename-line"><span>${escHtml(filename)}</span><button class="copy-inline-btn" type="button" data-copy-watch-filename="${escHtml(filename)}">Copy</button></div>
+        <div class="generated-filename-line"><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
       </section>
     `;
   }
@@ -2303,7 +2308,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     $$("[data-copy-watch-filename]", $("#providerBody")).forEach(btn => {
       btn.addEventListener("click", async () => {
         const ok = await copyTextToClipboard(btn.getAttribute("data-copy-watch-filename") || "");
-        btn.textContent = ok ? "Copied" : "Copy Failed";
+        if (btn.getAttribute("data-copy-preserve-label") === "1"){
+          btn.setAttribute("data-copy-result", ok ? "copied" : "failed");
+          btn.setAttribute("title", ok ? "Copied" : "Copy failed");
+        } else {
+          btn.textContent = ok ? "Copied" : "Copy Failed";
+        }
       });
     });
     const card = $("#providerCard");

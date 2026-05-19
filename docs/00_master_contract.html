@@ -366,6 +366,38 @@ May 15, 2026
 <pre>scan → identify → filename match → ffprobe QA → classify → safe remux/repair if needed → rename/move → final ffprobe validation → report</pre>
 </section>
 <!-- MC-2026-05-18.2-RUNTIME-RECOVERY-END -->
+<!-- MC-2026-05-19.1-WATCH-SOURCE-PROVIDER-COPY-START -->
+<section id="watch-source-provider-copy-20260519" class="card">
+<h2>MC-2026-05-19.1 Watch Source Provider Strip and Filename Copy Schema</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-19.1</td></tr>
+<tr><td>Updated</td><td>Watch Source Providers section rendering and generated filename copy control.</td></tr>
+<tr><td>Origin</td><td>User reported rendered drift where provider URLs appeared as public text, provider rows stacked vertically as text output, and filename copy rendered as a separate generic Copy control instead of the full filename string.</td></tr>
+<tr><td>Owner</td><td><code>renderWatchProvidersHtml</code> renders the Providers section. <code>renderWatchSourceMediaDetailHtml</code> renders the generated filename copy control, using <code>generatedWatchFilename</code> for the exact copied value. <code>openProviderModal</code> binds copy behavior without changing the visible filename label.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_runtime.ps1</code> and <code>scripts/qa_browser_layout_check.mjs</code> fail on visible provider URLs, stacked country/provider rows, provider anchors styled as buttons/cards, missing provider logos when logo data exists, filename copy text missing date or TMDB ID, or copied value differing from the displayed filename.</td></tr>
+</table>
+<h3>Provider section schema</h3>
+<ul>
+<li>The section title is exactly <code>Providers</code>.</li>
+<li>The Providers section renders one compact row per country.</li>
+<li>The country code is left-aligned and provider logo/text anchors render on the same row.</li>
+<li>Provider URL is allowed only in <code>href</code>. Provider URL must not be visible text.</li>
+<li>Provider anchors are hyperlinks, not buttons, and must not render button/card outline styling.</li>
+<li>If provider logo data exists, render the provider logo image in Full mode. If logo data is missing, render a compact text pill. Both logo and fallback text are inside hyperlink anchors.</li>
+</ul>
+<pre>CA  Crave • WOW Presents Plus • OUTtv • Netflix • Apple TV
+US  Amazon • Apple TV • fuboTV • Paramount Plus • Google Play • Paramount+
+GB  WOW Presents Plus
+AU  Stan</pre>
+<h3>Generated filename copy schema</h3>
+<ul>
+<li>The visible primary copy control text is exactly the full generated filename string.</li>
+<li>Clicking the visible filename control copies exactly the same string in <code>data-copy-watch-filename</code>.</li>
+<li>Episode example: <code>RuPaul's Drag Race All Stars - S11E03 - Shop Til U Drop [05-15-26] [67482]</code>.</li>
+<li>A secondary generic Copy button may exist only as secondary UI and must not replace, shorten, or mutate the visible full filename label.</li>
+</ul>
+</section>
+<!-- MC-2026-05-19.1-WATCH-SOURCE-PROVIDER-COPY-END -->
 </main>
 </body>
 </html>

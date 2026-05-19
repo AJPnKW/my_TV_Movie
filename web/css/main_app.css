@@ -4726,6 +4726,9 @@ body.app-modal-open{
 .providerblock{ margin-top:6px !important; }
 .providerrows{ gap:4px !important; }
 .providerrow{
+  display:grid !important;
+  grid-template-columns:34px minmax(0, 1fr) !important;
+  align-items:center !important;
   gap:3px !important;
   padding:2px 0 !important;
   min-height:0 !important;
@@ -4733,11 +4736,77 @@ body.app-modal-open{
   background:transparent !important;
   border-radius:0 !important;
 }
-.providerchips{ gap:4px !important; }
+.providerchips{
+  gap:4px !important;
+  align-items:center !important;
+}
+.providerchips--popup{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  line-height:1 !important;
+}
+.provider-anchor{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:22px;
+  padding:0;
+  border:0 !important;
+  background:transparent !important;
+  box-shadow:none !important;
+  outline:0;
+  color:var(--text);
+  text-decoration:none;
+  line-height:1;
+}
+.provider-anchor:focus-visible{
+  outline:2px solid rgba(96,165,250,.75);
+  outline-offset:2px;
+}
+.provider-anchor .providerlogo--popup{
+  height:22px;
+  max-height:22px;
+  max-width:74px;
+}
+.provider-anchor .providertext{
+  display:none;
+}
+.provider-anchor.no-logo .providertext,
+.provider-anchor.fallback-only .providertext,
+.provider-anchor .providertext--visible{
+  display:inline-flex;
+  align-items:center;
+  min-height:20px;
+  padding:2px 6px;
+  border:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  font-size:11px;
+  font-weight:800;
+  line-height:1.1;
+}
 .providerchip{
   gap:4px !important;
   padding:4px 7px !important;
   min-height:26px !important;
+}
+.generated-filename-copy{
+  appearance:none;
+  display:inline;
+  max-width:100%;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  font:inherit;
+  text-align:left;
+  overflow-wrap:anywhere;
+  cursor:pointer;
+}
+.generated-filename-copy:focus-visible{
+  outline:2px solid rgba(96,165,250,.75);
+  outline-offset:3px;
+  border-radius:4px;
 }
 
 @media (max-width:560px){

@@ -356,11 +356,35 @@ foreach ($needle in @(
 foreach ($forbiddenPopup in @('watch-option-btn__note', 'watch-source-panel__title">Watch now', 'watch-source-panel__title">Where to watch')) {
     if ($appRuntimeText -like "*$forbiddenPopup*") { Add-CheckError "Watch Source popup drift marker remains: $forbiddenPopup" }
 }
+foreach ($forbiddenProviderMarkup in @('provider-link-row__url', 'provider-link-row" href')) {
+    if ($appRuntimeText -like "*$forbiddenProviderMarkup*") { Add-CheckError "Provider URLs must not be rendered as visible popup text: $forbiddenProviderMarkup" }
+}
+foreach ($needle in @(
+    'class="provider-anchor',
+    'providerLogoImgHtml(logo, "providerlogo providerlogo--popup")',
+    'providerchips providerchips--popup',
+    'data-copy-preserve-label="1"',
+    'class="generated-filename-copy"',
+    'btn.getAttribute("data-copy-watch-filename")'
+)) {
+    if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "Watch Source provider/copy renderer schema missing: $needle" }
+}
 if ($mainCssText -match '(?s)\.watch-source-panel\s*\{[^}]*border\s*:\s*1px') {
     Add-CheckError 'Watch Source panels must not render outlined cards/buttons.'
 }
 if ($mainCssText -notlike '*providerrow*border:0 !important*') {
     Add-CheckError 'Popup provider rows must not render outline borders.'
+}
+foreach ($needle in @(
+    '.providerrow{',
+    'grid-template-columns:34px minmax(0, 1fr)',
+    '.provider-anchor',
+    'border:0 !important',
+    'background:transparent !important',
+    '.provider-anchor .providerlogo--popup',
+    '.generated-filename-copy'
+)) {
+    if ($mainCssText -notlike "*$needle*") { Add-CheckError "Watch Source provider/copy CSS schema missing: $needle" }
 }
 if ($appRuntimeText -notmatch 'episodeMetaLine\([^)]*episode_tmdb_id') {
     Add-CheckError 'Episode cards must pass TMDB ID into episode metadata.'
@@ -651,8 +675,13 @@ foreach ($needle in @(
 }
 foreach ($needle in @(
     'MC-2026-05-18.2 Runtime Recovery Lineage',
+    'MC-2026-05-19.1 Watch Source Provider Strip and Filename Copy Schema',
     'Repo inventory, file/folder structure, and runtime ownership map',
     'Watch Source popup schema and provider lifecycle',
+    'Provider section schema',
+    'Generated filename copy schema',
+    'Provider URL is allowed only in <code>href</code>',
+    'visible primary copy control text is exactly the full generated filename string',
     'Card renderer ownership',
     'Media Library page',
     'Full/Light runtime mode',
