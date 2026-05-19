@@ -819,6 +819,21 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return `<span class="providerchip${stateClass}">${inner}</span>`;
   }
 
+  function providerDisplayLabel(name){
+    const raw = safeText(name).trim();
+    const compact = raw.toLowerCase().replace(/\s+/g, " ");
+    if (!compact) return "Provider";
+    if (/^amazon video$|^amazon prime video$/.test(compact)) return "Amazon";
+    if (/^apple tv store$/.test(compact)) return "Apple TV";
+    if (/^google play movies$/.test(compact)) return "Google Play";
+    if (/^netflix\b/.test(compact)) return "Netflix";
+    if (/^outtv\b/.test(compact)) return "OUTtv";
+    if (/^crave\b/.test(compact)) return "Crave";
+    if (/^paramount plus (premium|essential|basic)/.test(compact)) return "Paramount Plus";
+    if (/^paramount(\+| plus).*(amazon|apple tv|roku|channel)/.test(compact)) return "Paramount+";
+    return raw.replace(/\s+$/g, "");
+  }
+
   function providerGroupHtml(item, kind, limit=4){
     const wp = getWatchProviders(item);
     const id = item?.id ?? item?.tmdb_id;
@@ -845,10 +860,20 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const rows = regions.map(region => {
       const providers = collectProvidersForRegion(wp, region);
       const regionLink = safeText(wp?.[region]?.link || "");
-      const chips = providers.slice(0, 8).map(p => {
+      const canonicalProviders = [];
+      const seenLabels = new Set();
+      providers.forEach(p => {
+        const label = providerDisplayLabel(p?.provider_name || p?.name || "Provider");
+        const key = label.toLowerCase();
+        if (seenLabels.has(key)) return;
+        seenLabels.add(key);
+        canonicalProviders.push({ provider: p, label });
+      });
+      const chips = canonicalProviders.slice(0, 8).map(entry => {
+        const p = entry.provider;
         const href = safeText(p?.deep_link) || regionLink || tmdbWatchUrl(kind, id);
-        const label = safeText(p?.provider_name || p?.name || "Provider");
-        const logo = providerLogoUrl(p);
+        const label = entry.label;
+        const logo = { ...providerLogoUrl(p), name: label };
         const hasLogo = !!safeText(logo?.local || logo?.tmdb || "").trim();
         const logoHtml = providerLogoImgHtml(logo, "providerlogo providerlogo--popup");
         const textClass = hasLogo && logoHtml ? "providertext providertext--fallback" : "providertext providertext--visible";

@@ -360,6 +360,10 @@ foreach ($forbiddenProviderMarkup in @('provider-link-row__url', 'provider-link-
     if ($appRuntimeText -like "*$forbiddenProviderMarkup*") { Add-CheckError "Provider URLs must not be rendered as visible popup text: $forbiddenProviderMarkup" }
 }
 foreach ($needle in @(
+    'function providerDisplayLabel',
+    'Apple TV Store',
+    'netflix\b',
+    'paramount plus (premium|essential|basic)',
     'class="provider-anchor',
     'providerLogoImgHtml(logo, "providerlogo providerlogo--popup")',
     'providerchips providerchips--popup',
