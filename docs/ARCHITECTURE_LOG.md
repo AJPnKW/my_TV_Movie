@@ -6,7 +6,7 @@
 - Removed stale Watch Source fallback title text from active modal shells and normalized show popup provider wording to `Providers`.
 - Archived retired runtime compatibility shims out of `web/js/`, removed retired provider/watch-option CSS selectors from active CSS, and restored required subordinate architecture/UI docs as pointers to the master contract.
 - Hardened runtime and browser validation for static Media Library nav placement, rendered occlusion/new-tab proof, stale popup fallback titles, retired shim files in active runtime folders, and legacy provider/watch-option CSS reintroduction.
-- Commit: `54dd281327` fix-nav-legacy-drift-validation.
+- Commit: `f591877365` fix-nav-legacy-drift-validation.
 
 ## 2026-05-19
 
