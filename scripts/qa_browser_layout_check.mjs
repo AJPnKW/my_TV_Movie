@@ -151,7 +151,8 @@ async function inspect(pathname, viewport) {
         const title = modal.querySelector("#providerTitle, #modalTitle")?.textContent?.trim() || "";
         const bodyText = modal.textContent || "";
         const labels = Array.from(modal.querySelectorAll(".watch-source-panel__title")).map(node => node.textContent.trim());
-        const providerRows = Array.from(modal.querySelectorAll(".providerrow,.watch-source-row,.provider-link-row"));
+        const legacyProviderRows = Array.from(modal.querySelectorAll(".provider-link-row,.watch-option-btn"));
+        const providerRows = Array.from(modal.querySelectorAll(".providerrow,.watch-source-row"));
         const providerCountryRows = Array.from(modal.querySelectorAll(".providerrow"));
         const providerRowProof = providerCountryRows.map(row => {
           const label = row.querySelector(".providerlabel");
@@ -206,6 +207,7 @@ async function inspect(pathname, viewport) {
           attempted: true,
           titleOk: /^Watch • .+ • .+ • S\d{2}E\d{2}$/.test(title) || /^Watch • .+/.test(title),
           labelsOk: labels.includes("Streaming") && labels.includes("Providers") && !labels.includes("Watch now") && !labels.includes("Where to watch"),
+          noLegacyProviderMarkup: legacyProviderRows.length === 0,
           noAdminText: !/(ACTIVE CANDIDATE FROM USER FINDINGS|\bACTIVE\b|\bDEGRADED\b|\bBLOCKED\b|\bARCHIVED\b)/i.test(bodyText),
           outlinedRows,
           providerRows: providerRowProof,
@@ -241,7 +243,18 @@ async function inspect(pathname, viewport) {
       }
     }
     const mediaLibraryIcon = document.querySelector("#mediaLibraryHeaderButton");
-    const mediaLibraryNavOk = !!mediaLibraryIcon && mediaLibraryIcon.parentElement?.matches(".top > .nav[role='tablist'][aria-label='Primary']") && mediaLibraryIcon.target === "_blank";
+    const mediaLibraryRect = mediaLibraryIcon?.getBoundingClientRect?.();
+    const mediaLibraryCenter = mediaLibraryRect ? { x: mediaLibraryRect.left + mediaLibraryRect.width / 2, y: mediaLibraryRect.top + mediaLibraryRect.height / 2 } : null;
+    const mediaLibraryTopElement = mediaLibraryCenter ? document.elementFromPoint(mediaLibraryCenter.x, mediaLibraryCenter.y) : null;
+    const mediaLibraryNavOk = !!mediaLibraryIcon &&
+      mediaLibraryIcon.parentElement?.matches(".top > .nav[role='tablist'][aria-label='Primary']") &&
+      mediaLibraryIcon.target === "_blank" &&
+      /Media_Library\.html$/i.test(mediaLibraryIcon.getAttribute("href") || "") &&
+      !!mediaLibraryRect &&
+      mediaLibraryRect.width > 0 &&
+      mediaLibraryRect.height > 0 &&
+      mediaLibraryTopElement &&
+      (mediaLibraryTopElement === mediaLibraryIcon || mediaLibraryIcon.contains(mediaLibraryTopElement));
     const modeSelect = document.querySelector("#runtimeModeSelect");
     if (modeSelect) {
       modeSelect.value = "light";
@@ -621,7 +634,7 @@ try {
     if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
     if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
     if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
-    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.noAdminText || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
+    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.noAdminText || !result.watchPopupContract.noLegacyProviderMarkup || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
       failures.push(`${result.viewport} ${result.pathname}: Watch Source popup contract failed`);
     }
     if (result.providerBlockedLinks?.length) failures.push(`${result.viewport} ${result.pathname}: blocked provider visible as active`);

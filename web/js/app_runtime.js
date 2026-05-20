@@ -118,7 +118,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div id="providerBack" class="app-modal-backdrop app-modal-backdrop--provider" aria-hidden="true" role="dialog" aria-modal="true">
           <div id="providerCard" class="app-modal-card app-modal-card--provider" tabindex="0">
             <div class="app-modal-header">
-              <div id="providerTitle" class="app-modal-title">Where to watch</div>
+              <div id="providerTitle" class="app-modal-title">Providers</div>
               <button id="providerClose" class="calbtn" type="button">Close</button>
             </div>
             <div id="providerBody" class="app-modal-body"></div>
@@ -5177,7 +5177,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <div class="popup-hero__body">
             <div class="popup-detail-grid popup-detail-grid--compact popup-detail-grid--plain">
               <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(show))}</strong></div>
-              <div class="popup-detail"><span>Where to watch</span><strong>${escHtml(formatProviderSummary(show))}</strong></div>
+              <div class="popup-detail"><span>Providers</span><strong>${escHtml(formatProviderSummary(show))}</strong></div>
               <div class="popup-detail"><span>Status</span><strong>${escHtml(safeText(show?.status || "Unavailable"))}</strong></div>
               <div class="popup-detail"><span>Network</span><strong>${escHtml(networks.join(" • ") || "Unavailable")}</strong></div>
               <div class="popup-detail"><span>Seasons</span><strong>${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "Unavailable")}</strong></div>

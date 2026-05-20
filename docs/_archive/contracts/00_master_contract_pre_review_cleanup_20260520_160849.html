@@ -11,7 +11,7 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Current version MC-2026-05-20.1. Last updated: 2026-05-20. Latest additive lineage: Media Library static primary-nav placement, retired runtime shim archiving, stale popup-title removal, and validation hardening against legacy provider markup.</div>
+<div class="small">Only active documentation source of truth. Current version MC-2026-05-19.1. Last updated: 2026-05-19. Latest additive lineage: Watch Source provider strip, hidden provider URL rule, provider logo hyperlink rule, and exact generated filename copy rule.</div>
 <nav class="toc">
 <a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
 </nav>
@@ -39,7 +39,6 @@
 <tr><td>2026-05-18</td><td>MC-2026-05-18.1</td><td>Recovered Watch Source popup, Media Library, Full/Light runtime mode, and media QA pipeline requirements from user screenshot/runtime drift.</td></tr>
 <tr><td>2026-05-18</td><td>MC-2026-05-18.2</td><td>Added runtime ownership map, popup schema, card renderer ownership, provider lifecycle, Media Library page ownership, Full/Light mode ownership, media QA pipeline, and validation matrix lineage.</td></tr>
 <tr><td>2026-05-19</td><td>MC-2026-05-19.1</td><td>Added exact Watch Source provider strip schema, provider logo hyperlink rule, hidden URL rule, no provider button/card outline rule, exact generated filename copy-string rule, and validation fail rules.</td></tr>
-<tr><td>2026-05-20</td><td>MC-2026-05-20.1</td><td>Made Media Library a static primary-nav shell link, archived retired runtime shims out of active web/js, removed stale Where-to-watch fallback labels, restored required subordinate architecture/UI docs as contract pointers, and hardened validation against legacy provider markup and misplaced/occluded nav links.</td></tr>
 </table>
 <p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
 <p>Standalone page: <code>web/manage_watch_state.html</code></p>
@@ -216,8 +215,8 @@ The teachers prepare for the upcoming school year with new faces and big changes
 <tr><td>Left media detail panel</td><td>Still/poster in Full mode; no image in Light mode; title; episode/movie title; action row; rating; metadata; TMDB ID; date; description; generated filename copy line.</td></tr>
 <tr><td>Metadata row</td><td>Episodes: <code>S11E01 • 68 min • May 8, 2026 • TMDB: 67482</code>. Movies: <code>Runtime • Release date • TMDB: id</code>.</td></tr>
 <tr><td>Generated filename line</td><td>Plain selectable text after one blank line below description. Example: <code>RuPaul's Drag Race All Stars - S11E01 - Break Dancin' 2 - Electric Rugaloo [05-05-26] [67482]</code>.</td></tr>
-<tr><td>Streaming</td><td>Rendered on the left side as compact rows. Provider name plus eye icon plus status icon. No raw admin notes.</td></tr>
-<tr><td>Providers</td><td>Country and provider icons aligned on the same row. Compact spacing. No outline boxes around provider icons or streaming service buttons unless required for focus state.</td></tr>
+<tr><td>Streamers / Watch Now</td><td>Rendered on the left side as compact rows. Provider name plus eye icon plus status icon. No raw admin notes.</td></tr>
+<tr><td>Providers / Where to Watch</td><td>Country and provider icons aligned on the same row. Compact spacing. No outline boxes around provider icons or streaming service buttons unless required for focus state.</td></tr>
 <tr><td>Exit</td><td>Sticky Exit button inside the popup shell. All popup exits must remain visible while scrolling.</td></tr>
 <tr><td>Reference label</td><td>Small bottom-right label such as <code>REF: POP-WATCH-SOURCE</code>.</td></tr>
 </table>
@@ -344,10 +343,10 @@ May 15, 2026
 <h3>R14. Media Library page</h3>
 <table><tr><th>Field</th><th>Value</th></tr>
 <tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
-<tr><td>Updated</td><td>Media Library icon placement is primary nav only. As of MC-2026-05-20.1 the link must be present in each active app page shell, not only injected later by JavaScript.</td></tr>
+<tr><td>Updated</td><td>Media Library icon placement is primary nav only.</td></tr>
 <tr><td>Origin</td><td>User reported icon rendering outside the view icon row/under overlay.</td></tr>
-<tr><td>Owner</td><td>Active app page shells own the static link. <code>web/js/media_library_header_button.js</code> only normalizes/moves the existing link into the primary nav if a shell or cached page is missing it.</td></tr>
-<tr><td>Validation</td><td>Browser QA fails if <code>#mediaLibraryHeaderButton</code> is outside <code>.top &gt; .nav[role="tablist"][aria-label="Primary"]</code>, does not open a new tab, lacks the library/books icon, is visually occluded by page content, or is absent from active page-shell nav markup.</td></tr>
+<tr><td>Owner</td><td><code>web/js/media_library_header_button.js</code>.</td></tr>
+<tr><td>Validation</td><td>Browser QA fails if <code>#mediaLibraryHeaderButton</code> is outside <code>.top &gt; .nav[role="tablist"][aria-label="Primary"]</code> or does not open a new tab.</td></tr>
 </table>
 
 <h3>R15. Full/Light runtime mode</h3>
@@ -403,30 +402,6 @@ AU  Stan</pre>
 </ul>
 </section>
 <!-- MC-2026-05-19.1-WATCH-SOURCE-PROVIDER-COPY-END -->
-<!-- MC-2026-05-20.1-NAV-LEGACY-DRIFT-START -->
-<section id="nav-legacy-drift-20260520" class="card">
-<h2>MC-2026-05-20.1 Navigation and Legacy Runtime Drift Recovery</h2>
-<table><tr><th>Field</th><th>Value</th></tr>
-<tr><td>Added</td><td>MC-2026-05-20.1</td></tr>
-<tr><td>Updated</td><td>Media Library navigation, retired runtime shim handling, stale Watch Source fallback labels, provider CSS drift controls, and subordinate documentation inventory.</td></tr>
-<tr><td>Origin</td><td>User reported the Media Library icon rendering behind current-view content and raised concern that documentation/code drift was being simplified or missed.</td></tr>
-<tr><td>Owner</td><td>Active page shells own static primary navigation. <code>web/js/media_library_header_button.js</code> is a normalizer only. <code>web/css/main_app.css</code> owns active provider/watch-source styling. Retired shims are archived under <code>docs/_archive/runtime_shims/</code>.</td></tr>
-<tr><td>Validation</td><td><code>scripts/validate_runtime.ps1</code> fails if active shells omit the static Media Library nav link, stale <code>Where to watch</code> modal fallback text returns, retired shims exist under <code>web/js/</code>, retired provider/watch-option CSS selectors return, required subordinate docs are missing, or the contract metadata is stale. <code>scripts/qa_browser_layout_check.mjs</code> fails if the Media Library link is outside the primary nav, does not open a new tab, or is occluded by rendered content.</td></tr>
-</table>
-<h3>Media Library nav schema</h3>
-<ul>
-<li>Every active app shell includes <code>#mediaLibraryHeaderButton</code> directly inside <code>.top &gt; .nav[role="tablist"][aria-label="Primary"]</code>.</li>
-<li>The link uses the library/books icon <code>📚</code>, standard <code>tab media-library-view-icon</code> styling, <code>href="./Media_Library.html"</code>, <code>target="_blank"</code>, and <code>rel="noopener"</code>.</li>
-<li>No fallback may append the icon to <code>body</code>, header logo, content areas, overlays, or filter/sidebar regions.</li>
-</ul>
-<h3>Legacy runtime/CSS schema</h3>
-<ul>
-<li><code>web/js/runtime_render_fix.js</code> and <code>web/js/trailer_watch_popup_fix.js</code> are archived, not active runtime files.</li>
-<li>Active CSS must not retain retired <code>.provider-link-row</code> or <code>.watch-option-btn</code> selectors.</li>
-<li>Static popup shells use <code>Providers</code> as the fallback title; <code>Where to watch</code> is not an active fallback label.</li>
-</ul>
-</section>
-<!-- MC-2026-05-20.1-NAV-LEGACY-DRIFT-END -->
 </main>
 </body>
 </html>

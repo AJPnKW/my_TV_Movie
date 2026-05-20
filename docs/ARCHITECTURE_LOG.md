@@ -1,5 +1,13 @@
 # Architecture Log
 
+## 2026-05-20
+
+- Made the Media Library link a static primary-nav item in active app page shells, with the existing normalizer limited to correcting/moving the shell link into `.top > .nav[role="tablist"][aria-label="Primary"]`.
+- Removed stale Watch Source fallback title text from active modal shells and normalized show popup provider wording to `Providers`.
+- Archived retired runtime compatibility shims out of `web/js/`, removed retired provider/watch-option CSS selectors from active CSS, and restored required subordinate architecture/UI docs as pointers to the master contract.
+- Hardened runtime and browser validation for static Media Library nav placement, rendered occlusion/new-tab proof, stale popup fallback titles, retired shim files in active runtime folders, and legacy provider/watch-option CSS reintroduction.
+- Commit: `54dd281327` fix-nav-legacy-drift-validation.
+
 ## 2026-05-19
 
 - Corrected Watch Source Providers rendering so country rows use compact same-row provider logo/text hyperlink anchors, provider URLs stay in `href` only, and provider anchors do not render as buttons/cards.

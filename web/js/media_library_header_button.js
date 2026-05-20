@@ -1,11 +1,12 @@
 /*
 FILE: web/js/media_library_header_button.js
-VERSION: v0.7.0
-UPDATED: 2026-05-18
+VERSION: v0.7.1
+UPDATED: 2026-05-20
 CHANGE NOTES:
 - Places the Media Library icon only inside the primary .nav view-icon row.
 - Removes broad fallback placement that could append the icon into the logo/header/body area.
 - Clears inline styles so the icon inherits the same nav styling as the other view icons.
+- Normalizes the static shell link instead of relying on deferred injection for visible placement.
 */
 (function(){
   'use strict';
@@ -20,10 +21,10 @@ CHANGE NOTES:
     if (!link) {
       link = document.createElement('a');
       link.id = 'mediaLibraryHeaderButton';
-      link.textContent = '📚';
     }
 
     link.className = 'tab media-library-view-icon';
+    link.textContent = '📚';
     link.href = './Media_Library.html';
     link.target = '_blank';
     link.rel = 'noopener';

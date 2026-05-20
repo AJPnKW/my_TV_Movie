@@ -1877,15 +1877,15 @@ CHANGE NOTES:
       gap:8px;
     }
     .providerrow{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
-      align-items:flex-start;
-      border:1px solid rgba(255,255,255,0.10);
-      background:rgba(8,12,18,0.58);
-      border-radius:10px;
-      padding:8px 10px;
-      min-height:60px;
+      display:grid;
+      grid-template-columns:34px minmax(0, 1fr);
+      gap:3px;
+      align-items:center;
+      border:0;
+      background:transparent;
+      border-radius:0;
+      padding:2px 0;
+      min-height:0;
     }
     .providerlabel{
       font-size:10px;
@@ -2780,8 +2780,7 @@ CHANGE NOTES:
   display:grid;
   gap:4px;
 }
-.watch-source-row,
-.provider-link-row{
+.watch-source-row{
   display:grid;
   grid-template-columns:max-content minmax(0, 1fr);
   gap:8px;
@@ -2793,14 +2792,12 @@ CHANGE NOTES:
   text-decoration:none;
   line-height:1.2;
 }
-.watch-source-row__label,
-.provider-link-row__name{
+.watch-source-row__label{
   font-size:13px;
   font-weight:800;
   white-space:nowrap;
 }
-.watch-source-row__href,
-.provider-link-row__url{
+.watch-source-row__href{
   font-size:12px;
   color:var(--muted);
   overflow-wrap:anywhere;
@@ -3871,16 +3868,6 @@ body{
 .seasonov{
   line-height:1.35 !important;
   margin:0 !important;
-}
-
-.watch-option-btn{
-  gap:2px !important;
-  padding:8px !important;
-  min-height:0 !important;
-}
-
-.watch-option-btn__href{
-  display:none !important;
 }
 
 .epnav{
