@@ -47,12 +47,17 @@ function runtimeLightMode(){
   }
 }
 
-function safeCardImage(image, kind, title){
-  const src = String(image || '').trim();
-  if (src && !runtimeLightMode()) return `<img loading="lazy" decoding="async" src="${esc(src)}" alt="" />`;
+function fallbackCardImageHtml(kind, title){
   const label = kind === 'episode' ? 'No Still' : 'No Poster';
   const tag = title ? esc(String(title).slice(0,42)) : label;
   return `<div class="posterFallback posterFallback--${esc(kind)}" aria-label="${esc(label)}"><span class="posterFallback__label">${esc(label)}</span><span class="posterFallback__title">${tag}</span></div>`;
+}
+
+function safeCardImage(image, kind, title){
+  const src = String(image || '').trim();
+  const fallback = fallbackCardImageHtml(kind, title);
+  if (src && !runtimeLightMode()) return `<img loading="lazy" decoding="async" src="${esc(src)}" alt="" data-fallback-html="${esc(fallback)}" onerror="this.insertAdjacentHTML('afterend', this.dataset.fallbackHtml || ''); this.remove();" />`;
+  return fallback;
 }
 export function renderCompactCardHtml(options = {}){
   const kind = options.kind || 'show';
@@ -65,9 +70,10 @@ export function renderCompactCardHtml(options = {}){
   const posterAttrs = options.posterAttrs || {};
   const titleAttrs = options.titleAttrs || {};
   const overlay = !!options.overlay;
+  const density = String(options.density || 'standard').trim() || 'standard';
   const renderKeyAttr = options.renderKey ? ` data-render-key="${esc(options.renderKey)}"` : '';
   return `
-    <article class="card media-card media-card--${esc(kind)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}" data-media-shape="${esc(mediaShape)}" data-contract-size="${esc(mediaSize)}"${renderKeyAttr}${attrString(articleAttrs)}>
+    <article class="card media-card media-card--${esc(kind)} media-card--density-${esc(density)}${options.extraClass ? ` ${esc(options.extraClass)}` : ''}" data-media-shape="${esc(mediaShape)}" data-contract-size="${esc(mediaSize)}"${renderKeyAttr}${attrString(articleAttrs)}>
       <button type="button" class="imgbox media-card__poster media-card__poster--${esc(kind)} media_block" data-media-shape="${esc(mediaShape)}" data-contract-size="${esc(mediaSize)}"${idAttr}${attrString(posterAttrs)} style="padding:0;border:0;background:none;color:inherit;cursor:pointer;">
         ${safeCardImage(options.image, kind, options.title)}
         ${overlay ? `<div class="media-card__overlay"><div class="media-card__overlay-copy">${options.eyebrow ? `<span class="media-card__overlay-eyebrow">${esc(options.eyebrow)}</span>` : ''}<span class="media-card__overlay-title">${esc(options.title)}</span>${options.meta ? `<span class="media-card__overlay-meta">${esc(options.meta)}</span>` : ''}${options.submeta ? `<span class="media-card__overlay-meta media-card__overlay-meta--subtle">${esc(options.submeta)}</span>` : ''}</div></div>` : ''}
@@ -87,10 +93,12 @@ export function renderCompactCardHtml(options = {}){
 }
 
 export function renderCompactEpisodeCardHtml(options = {}){
+  const density = String(options.density || 'standard').trim() || 'standard';
   return renderCompactCardHtml({
     ...options,
     kind: 'episode',
-    extraClass: `episode-card episode-row episode_row${options.extraClass ? ` ${options.extraClass}` : ''}`
+    density,
+    extraClass: `episode-card episode-row episode_row episode-card--${esc(density)}${options.extraClass ? ` ${options.extraClass}` : ''}`
   });
 }
 

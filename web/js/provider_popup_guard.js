@@ -96,6 +96,7 @@ CHANGE NOTES:
 
   function removeBlockedProviders(root){
     root.querySelectorAll('a[href],button[data-href],[data-provider-url]').forEach(node => {
+      if (node.closest('.watch-source-panel--links')) return;
       const href = node.getAttribute('href') || node.getAttribute('data-href') || node.getAttribute('data-provider-url') || '';
       const status = providerStatusForUrl(href);
       if (BLOCKED_STATUSES.has(status)) {

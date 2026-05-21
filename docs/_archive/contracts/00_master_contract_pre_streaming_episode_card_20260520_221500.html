@@ -11,7 +11,7 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Current version MC-2026-05-20.2. Last updated: 2026-05-20. Latest additive lineage: Streaming provider registry source-of-truth recovery, candidate/blocked provider visibility rules, shared episode-card renderer baseline, and still-image fallback validation.</div>
+<div class="small">Only active documentation source of truth. Current version MC-2026-05-20.1. Last updated: 2026-05-20. Latest additive lineage: Media Library static primary-nav placement, retired runtime shim archiving, stale popup-title removal, and validation hardening against legacy provider markup.</div>
 <nav class="toc">
 <a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
 </nav>
@@ -40,7 +40,6 @@
 <tr><td>2026-05-18</td><td>MC-2026-05-18.2</td><td>Added runtime ownership map, popup schema, card renderer ownership, provider lifecycle, Media Library page ownership, Full/Light mode ownership, media QA pipeline, and validation matrix lineage.</td></tr>
 <tr><td>2026-05-19</td><td>MC-2026-05-19.1</td><td>Added exact Watch Source provider strip schema, provider logo hyperlink rule, hidden URL rule, no provider button/card outline rule, exact generated filename copy-string rule, and validation fail rules.</td></tr>
 <tr><td>2026-05-20</td><td>MC-2026-05-20.1</td><td>Made Media Library a static primary-nav shell link, archived retired runtime shims out of active web/js, removed stale Where-to-watch fallback labels, restored required subordinate architecture/UI docs as contract pointers, and hardened validation against legacy provider markup and misplaced/occluded nav links.</td></tr>
-<tr><td>2026-05-20</td><td>MC-2026-05-20.2</td><td>Made <code>web/config.json -> streaming.embed_providers[]</code> the Streaming provider button source of truth; defined <code>ok</code>, <code>warn</code>, <code>candidate</code>, and <code>blocked</code> runtime visibility; baselined <code>buildSharedEpisodeCard</code> and <code>renderEpisodeCardHtml</code> across Calendar, Dashboard Current/Recent, and show-detail episode cards; restored episode still/backdrop/poster fallback validation.</td></tr>
 </table>
 <p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
 <p>Standalone page: <code>web/manage_watch_state.html</code></p>
@@ -428,33 +427,6 @@ AU  Stan</pre>
 </ul>
 </section>
 <!-- MC-2026-05-20.1-NAV-LEGACY-DRIFT-END -->
-<!-- MC-2026-05-20.2-STREAMING-EPISODE-CARD-START -->
-<section id="streaming-episode-card-20260520" class="card">
-<h2>MC-2026-05-20.2 Streaming Provider Registry and Episode Card Baseline</h2>
-<table><tr><th>Field</th><th>Value</th></tr>
-<tr><td>Added</td><td>MC-2026-05-20.2</td></tr>
-<tr><td>Updated</td><td>Streaming provider registry source of truth, candidate/blocked visibility rules, shared episode-card rendering, density handling, and still-image fallback order.</td></tr>
-<tr><td>Origin</td><td>User reported deployed Streaming buttons showing only VidSrc, VidEasy, FlixHQ, SFlix, and 2Embed CC, plus visible drift between Calendar episode cards and Dashboard Current/Recent episode cards.</td></tr>
-<tr><td>Owner</td><td><code>web/config.json -> streaming.embed_providers[]</code> owns provider data. <code>collectConfiguredWatchSources</code> owns Streaming link generation. <code>buildSharedEpisodeCard</code> owns normalized episode-card assembly. <code>renderEpisodeCardHtml</code> owns canonical episode-card markup. <code>episodeStillImageForCard</code> owns still/backdrop/poster fallback.</td></tr>
-<tr><td>Validation</td><td><code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> fail on provider registry drift, default-provider omissions, candidate/blocked visibility leaks, direct Calendar/Dashboard card renderer forks, missing shared renderer markers, or broken episode image fallback.</td></tr>
-</table>
-<h3>Streaming provider schema</h3>
-<ul>
-<li>The Streaming popup provider buttons are generated from <code>web/config.json -> streaming.embed_providers[]</code>.</li>
-<li><code>ok</code> and <code>warn</code> providers render by default. <code>candidate</code> providers render only when <code>streaming.show_candidate_providers</code> is true. <code>blocked</code> providers never render.</li>
-<li>Default-visible providers are VidSrc, VidEasy, SuperEmbed, MultiEmbed, SmashyStream, FlixHQ, SFlix, 2Embed CC, and 2Embed Org.</li>
-<li>Requested but hidden candidate providers are VidSrc.me, VidSrc.to, VidLink, Nunflix, and vidsrc-embed.ru.</li>
-<li>Goojara, Cineb, and freeintertv.com remain blocked until a verified TMDB-compatible template exists.</li>
-</ul>
-<h3>Episode card baseline schema</h3>
-<ul>
-<li>Calendar, Dashboard Current/Recent, and show-detail episode cards call <code>buildSharedEpisodeCard</code>; view code must not define independent episode-card markup.</li>
-<li>Density is a parameter/class: <code>standard</code> for Dashboard/show-detail cards, <code>compact</code> for Calendar cards.</li>
-<li>Rendered cards carry <code>data-episode-card-renderer="buildSharedEpisodeCard"</code>, <code>data-episode-card-density</code>, and <code>data-image-resolver="episodeStillImageForCard"</code>.</li>
-<li>Image fallback order is episode still local/TMDB, episode still/thumb aliases, show backdrop local/TMDB, show poster local/TMDB, deterministic no-still placeholder.</li>
-</ul>
-</section>
-<!-- MC-2026-05-20.2-STREAMING-EPISODE-CARD-END -->
 </main>
 </body>
 </html>

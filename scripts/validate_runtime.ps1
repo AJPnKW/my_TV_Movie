@@ -207,8 +207,17 @@ Write-Host '== Python syntax =='
 if (-not (Test-CommandAvailable python)) {
     Add-CheckError 'python is not available for Python syntax checks'
 } else {
-    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py
+    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_episode_cards.py
     if ($LASTEXITCODE -ne 0) { Add-CheckError 'Python syntax failed' }
+}
+
+Write-Host '== Streaming provider and episode-card baseline =='
+if (-not (Test-CommandAvailable python)) {
+    Add-CheckError 'python is not available for streaming provider/card validation'
+} else {
+    $providerCardOutput = & python scripts/validate_streaming_episode_cards.py 2>&1
+    Write-Host $providerCardOutput
+    if ($LASTEXITCODE -ne 0) { Add-CheckError "Streaming provider/card baseline failed: $providerCardOutput" }
 }
 
 Write-Host '== JSON parse =='
@@ -655,7 +664,7 @@ try {
 } catch {
     Add-CheckError 'provider_registry.json is not parseable JSON.'
 }
-foreach ($needle in @('../data/provider_registry.json','providerHealthForSource','health.blocked','providerBlockedLinks')) {
+foreach ($needle in @('../data/provider_registry.json','providerHealthForSource','streaming.embed_providers','show_candidate_providers','status === "blocked"','providerBlockedLinks')) {
     if (($appRuntimeText + $qaBrowserText) -notlike "*$needle*") { Add-CheckError "provider health filtering/QA missing: $needle" }
 }
 
@@ -700,9 +709,11 @@ foreach ($needle in @(
     'MC-2026-05-18.2 Runtime Recovery Lineage',
     'MC-2026-05-19.1 Watch Source Provider Strip and Filename Copy Schema',
     'MC-2026-05-20.1 Navigation and Legacy Runtime Drift Recovery',
-    'Current version MC-2026-05-20.1',
+    'MC-2026-05-20.2 Streaming Provider Registry and Episode Card Baseline',
+    'Current version MC-2026-05-20.2',
     'Last updated: 2026-05-20',
     '<tr><td>2026-05-20</td><td>MC-2026-05-20.1</td>',
+    '<tr><td>2026-05-20</td><td>MC-2026-05-20.2</td>',
     'Freshness rule',
     'Repo inventory, file/folder structure, and runtime ownership map',
     'Watch Source popup schema and provider lifecycle',
@@ -715,6 +726,8 @@ foreach ($needle in @(
     'Card renderer ownership',
     'Media Library page',
     'Full/Light runtime mode',
+    'Streaming provider schema',
+    'Episode card baseline schema',
     'Media QA / renamer pipeline',
     '<td>Added</td>',
     '<td>Updated</td>',

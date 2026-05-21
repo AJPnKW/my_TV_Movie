@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Episode Card Baseline</title>
+  <style>
+    body{font-family:Arial,sans-serif;line-height:1.45;max-width:980px;margin:32px auto;padding:0 18px;color:#111827}
+    code{background:#eef2f7;padding:1px 4px;border-radius:4px}
+    table{border-collapse:collapse;width:100%;margin:14px 0}
+    th,td{border:1px solid #cbd5e1;padding:8px;text-align:left;vertical-align:top}
+    th{background:#f1f5f9}
+  </style>
+</head>
+<body>
+  <h1>Episode Card Baseline</h1>
+  <p><strong>Version:</strong> 2026-05-20 shared-episode-card-renderer-baseline</p>
+  <p><strong>Added:</strong> Shared renderer markers, density contract, image resolver contract, anti-drift validation.</p>
+  <p><strong>Updated:</strong> Calendar, Dashboard Current/Recent, and show-detail episode carousel must route through <code>web/js/app_runtime.js::buildSharedEpisodeCard</code>.</p>
+  <p><strong>Origin:</strong> Calendar and Dashboard episode cards visibly diverged in layout, spacing, metadata placement, and still-image treatment.</p>
+  <p><strong>Owner:</strong> <code>web/js/app_runtime.js::buildSharedEpisodeCard</code> owns normalized episode-card assembly; <code>web/js/card_renderer.js::renderEpisodeCardHtml</code> owns canonical markup.</p>
+  <p><strong>Validation:</strong> <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code>.</p>
+
+  <h2>Renderer Contract</h2>
+  <p>Every episode card surface must call <code>buildSharedEpisodeCard</code>. Views may pass data, context, and density, but must not define independent episode-card markup or call the compact renderer directly.</p>
+  <p>Rendered episode cards carry <code>data-episode-card-renderer="buildSharedEpisodeCard"</code>, <code>data-episode-card-density</code>, and <code>data-image-resolver="episodeStillImageForCard"</code>.</p>
+
+  <h2>Densities</h2>
+  <table>
+    <thead><tr><th>Density</th><th>Use</th><th>Rule</th></tr></thead>
+    <tbody>
+      <tr><td><code>standard</code></td><td>Dashboard Current/Recent and show-detail episode carousel.</td><td>Uses the canonical episode markup with standard card sizing.</td></tr>
+      <tr><td><code>compact</code></td><td>Calendar grid/list density.</td><td>Uses the same markup and only adjusts sizing through density classes.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Image Fallback Order</h2>
+  <p><code>episodeStillImageForCard</code> resolves images in this order: episode still local path, episode still TMDB path, episode still/thumb aliases, show backdrop local/TMDB path, show poster local/TMDB path, deterministic no-still placeholder.</p>
+  <p>GitHub Pages paths must remain compatible with <code>https://ajpnkw.github.io/my_TV_Movie/web/index.html</code>. Runtime must not reference deprecated image folders.</p>
+
+  <h2>Required Metadata</h2>
+  <p>Episode cards must render title, episode title, season/episode label, runtime where available, progress/rating indicator where available, TMDB ID in metadata, availability/watch/source icons, and watched/favourite/watchlist state indicators.</p>
+
+  <h2>Covered Surfaces</h2>
+  <p>The baseline covers Calendar grid/list episode items, Dashboard Current/Recent episode items, show-detail episode carousel cards, and any future episode-card surface that displays the same media-card contract.</p>
+
+  <h2>Anti-Drift Validation</h2>
+  <p>Validation fails if Calendar or Dashboard define independent episode-card markup, call the compact renderer directly, omit shared renderer markers, omit the shared image resolver marker, render a broken image area when source data exists, or lose the default still/backdrop/poster fallback order.</p>
+</body>
+</html>

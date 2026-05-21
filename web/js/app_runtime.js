@@ -1229,21 +1229,32 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return "show_poster";
   }
 
-  function pickImage(obj, localKey, pathKey){
+  function imageKindForKey(obj, key){
+    const clean = safeText(key).toLowerCase();
+    if (clean.includes("still") || clean.includes("thumb")) return "episode_still";
+    if (clean.includes("backdrop")) return "backdrop";
+    if (clean.includes("season")) return "season_poster";
+    if (clean.includes("poster")) return inferPosterKind(obj);
+    return inferPosterKind(obj);
+  }
+
+  function pickImage(obj, ...keys){
     if (isLightMode()) return "";
     if (!obj) return "";
-    const local = withBasePath(obj[localKey]);
-    if (local) return local;
-
-    const rawPath = safeText(obj[pathKey]).trim();
-    if (!rawPath) return "";
-    if (/^https?:\/\//i.test(rawPath)) return rawPath;
-    if (rawPath.startsWith("/assets/")) return withBasePath(rawPath);
-
-    const kind = (pathKey === "still_path")
-      ? "episode_still"
-      : (pathKey === "backdrop_path" ? "backdrop" : inferPosterKind(obj));
-    return tmdbImageUrl(kind, rawPath);
+    const searchKeys = keys.length ? keys : ["poster_local", "poster_path"];
+    for (const key of searchKeys){
+      const rawPath = safeText(obj[key]).trim();
+      if (!rawPath) continue;
+      if (/^https?:\/\//i.test(rawPath)) return rawPath;
+      if (rawPath.startsWith("/assets/")) return withBasePath(rawPath);
+      if (rawPath.startsWith("/")) {
+        const tmdb = tmdbImageUrl(imageKindForKey(obj, key), rawPath);
+        if (tmdb) return tmdb;
+        return withBasePath(rawPath);
+      }
+      return withBasePath(rawPath);
+    }
+    return "";
   }
 
   function linkOrDisabled(iconKey, href, label){
@@ -1983,26 +1994,53 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return `<button class="btn watchsourcebtn" type="button" data-watch-source-open="${escHtml(kind)}"${pairs} data-function-type="${escHtml(iconType("action_play", "popup"))}"><span class="btnicon">🍿</span>${escHtml(label)}</button>`;
   }
 
-  function collectConfiguredWatchSources(item){
-    const raw = Array.isArray(item?.watch?.embed) ? item.watch.embed : [];
+  function fillStreamingTemplate(template, values){
+    const src = safeText(template).trim();
+    if (!src) return "";
+    return src
+      .replaceAll("{tmdb_id}", encodeURIComponent(safeText(values.tmdb_id)))
+      .replaceAll("{season}", encodeURIComponent(safeText(values.season)))
+      .replaceAll("{episode}", encodeURIComponent(safeText(values.episode)));
+  }
+
+  function streamingTemplateValues(kind, item, context = {}){
+    const ctx = context && typeof context === "object" ? context : {};
+    const showId = safeText(item?.show_tmdb_id ?? item?.show_id ?? ctx.showId ?? ctx.show?.tmdb_id ?? item?.tmdb_id ?? item?.id ?? "").trim();
+    const movieId = safeText(item?.tmdb_id ?? item?.id ?? ctx.tmdb_id ?? "").trim();
+    return {
+      tmdb_id: kind === "movie" ? movieId : showId,
+      season: safeText(item?.season_number ?? item?.season ?? ctx.seasonNumber ?? ctx.season ?? "").trim(),
+      episode: safeText(item?.episode_number ?? item?.episode ?? ctx.episodeNumber ?? ctx.episode ?? "").trim()
+    };
+  }
+
+  function collectConfiguredWatchSources(kind, item, context = {}){
+    const providers = Array.isArray(state.cfg?.streaming?.embed_providers) ? state.cfg.streaming.embed_providers : [];
     const fallbackOrder = Array.isArray(state.cfg?.streaming?.fallback_order) ? state.cfg.streaming.fallback_order.map(v => safeText(v).trim().toLowerCase()) : [];
-    return raw.map((entry, idx) => {
+    const showCandidates = state.cfg?.streaming?.show_candidate_providers === true;
+    const values = streamingTemplateValues(kind, item, context);
+    return providers.map((entry, idx) => {
       if (!entry || typeof entry !== "object") return null;
-      const href = safeText(entry.href).trim();
-      if (!href) return null;
       const key = safeText(entry.key).trim().toLowerCase();
-      const health = providerHealthForSource(key, href);
-      if (health.blocked) return null;
+      const status = safeText(entry.status || "ok").trim().toLowerCase();
+      if (status === "blocked") return null;
+      if (status === "candidate" && !showCandidates) return null;
+      if (!["ok", "warn", "candidate"].includes(status)) return null;
+      const template = kind === "movie" ? entry.movie_template : entry.tv_template;
+      const href = fillStreamingTemplate(template, values);
+      if (!href || href.includes("{}")) return null;
+      if (kind === "episode" && (!values.tmdb_id || !values.season || !values.episode)) return null;
+      if (kind === "movie" && !values.tmdb_id) return null;
       const priority = key ? fallbackOrder.indexOf(key) : -1;
       return {
         key,
-        type: safeText(entry.type || "external").trim().toLowerCase() || "external",
-        label: safeText(entry.label || `Source ${idx + 1}`),
-        note: safeText(entry.note || entry.description || health.note || ""),
-        status: safeText(entry.status || ""),
+        type: "external",
+        label: safeText(entry.name || entry.label || `Source ${idx + 1}`),
+        note: status === "warn" ? "degraded" : "",
+        status,
         href,
-        provider_status: health.status,
-        provider_id: health.provider_id,
+        provider_status: status,
+        provider_id: key,
         priority: priority >= 0 ? priority : 100 + idx
       };
     }).filter(Boolean).sort((a, b) => {
@@ -2022,7 +2060,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (!safeHref) return;
       options.push({ type, label, href: safeHref, note });
     };
-    collectConfiguredWatchSources(item).forEach(opt => push(opt.type, opt.label, opt.href, opt.note || opt.provider_status || opt.status));
+    collectConfiguredWatchSources(kind, item, context).forEach(opt => push(opt.type, opt.label, opt.href, opt.note));
     const seen = new Set();
     return options.filter(opt => {
       const key = `${opt.type}|${opt.href}`;
@@ -2784,7 +2822,21 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function hasDirectWatchSources(item){
     if (!item || typeof item !== "object") return false;
     if (Array.isArray(item?.watch?.embed) && item.watch.embed.length > 0) return true;
-    return Number(item?.watch_embed_count || item?.embed_count || 0) > 0 || !!item?.has_watch_sources;
+    if (Number(item?.watch_embed_count || item?.embed_count || 0) > 0 || !!item?.has_watch_sources) return true;
+    const providers = Array.isArray(state.cfg?.streaming?.embed_providers) ? state.cfg.streaming.embed_providers : [];
+    const showCandidates = state.cfg?.streaming?.show_candidate_providers === true;
+    const hasVisibleProvider = (templateKey) => providers.some(provider => {
+      const status = safeText(provider?.status || "ok").toLowerCase();
+      if (status === "blocked") return false;
+      if (status === "candidate" && !showCandidates) return false;
+      return !!safeText(provider?.[templateKey]).trim();
+    });
+    const isEpisode = !!(item?.season_number || item?.episode_number || item?.season || item?.episode || item?.kind === "episode");
+    if (isEpisode){
+      return !!(item?.show_tmdb_id || item?.show_id || item?.tmdb_id) && hasVisibleProvider("tv_template");
+    }
+    const isMovie = item?.kind === "movie" || (Object.prototype.hasOwnProperty.call(item, "release_date") && !Object.prototype.hasOwnProperty.call(item, "first_air_date"));
+    return isMovie && !!(item?.tmdb_id || item?.id) && hasVisibleProvider("movie_template");
   }
 
   function detailUrlCandidates(id){
@@ -3071,6 +3123,37 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     });
   }
 
+  const EPISODE_STILL_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 135'%3E%3Crect width='240' height='135' fill='%23111827'/%3E%3Cpath d='M96 44h48v47H96z' fill='%23233447'/%3E%3Cpath d='M106 58l27 16-27 16z' fill='%239fb0c8'/%3E%3C/svg%3E";
+
+  function episodeStillImageForCard(item, context = {}){
+    if (isLightMode()) return "";
+    const ctx = context && typeof context === "object" ? context : {};
+    const still = normalizeImageSrc(pickImage(
+      item,
+      "still_local",
+      "episode_still_local",
+      "still_path",
+      "episode_still_path",
+      "still",
+      "thumb"
+    ));
+    if (still && !/poster/i.test(still)) return still;
+    const showId = safeText(item?.show_tmdb_id ?? item?.show_id ?? ctx.showId ?? ctx.show?.tmdb_id ?? "").trim();
+    const show = ctx.show || (showId ? getShowById(showId) : null);
+    const showFallback = normalizeImageSrc(pickImage(
+      show || item,
+      "backdrop_local",
+      "backdrop_path",
+      "poster_local",
+      "poster_path",
+      "show_backdrop_local",
+      "show_backdrop_path",
+      "show_poster_local",
+      "show_poster_path"
+    ));
+    return showFallback || EPISODE_STILL_PLACEHOLDER;
+  }
+
   function buildSharedEpisodeCard(item, options = {}){
     const showId = Number(item?.show_tmdb_id ?? item?.show_id ?? item?.tmdb_id) || 0;
     const seasonNum = Number(item?.season_number ?? item?.season ?? 0) || 0;
@@ -3080,14 +3163,29 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const available = isEpisodeAvailable(item);
     const watched = state.watchState ? isEpisodeWatched(showId, seasonNum, episodeNum) : false;
     const hasSources = hasDirectWatchSources(item);
-    return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
+    const density = safeText(options.density || "standard").toLowerCase() === "compact" ? "compact" : "standard";
+    const articleAttrs = {
+      tabindex: "0",
+      "data-kind": "episode",
+      "data-show": showId,
+      "data-season": seasonNum,
+      "data-episode": episodeNum,
+      "data-episode-card-renderer": "buildSharedEpisodeCard",
+      "data-episode-card-density": density,
+      "data-image-resolver": "episodeStillImageForCard",
+      ...(options.articleAttrs || {})
+    };
+    const image = normalizeImageSrc(options.image || episodeStillImageForCard(item, options));
+    return window.MyTVHubSharedModules.cardRenderer.renderEpisodeCardHtml({
       id: showId,
-      image: safeText(options.image || "").trim(),
+      image,
       eyebrow: safeText(options.eyebrow || item?.show_title || "Show"),
       title: safeText(options.title || item?.episode_name || "Episode"),
       badgeHtml: "",
       meta: options.meta || episodeMetaLine(seasonNum, episodeNum, item?.runtime, episodeTmdbId),
       submeta: options.submeta || "",
+      description: safeText(options.description || item?.overview || ""),
+      density,
       overlay: options.overlay !== false,
       actionBarHtml: buildActionBarHtml("episode", episodeNum, {
         title: safeText(options.title || item?.episode_name || "Episode"),
@@ -3106,9 +3204,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         availabilityStatus: availabilityStatusOf(item),
         available
       }),
-      articleAttrs: options.articleAttrs || { tabindex: "0", "data-kind": "episode", "data-show": showId, "data-season": seasonNum, "data-episode": episodeNum },
+      articleAttrs,
       renderKey: options.renderKey || `episode:${showId}:${seasonNum}:${episodeNum}`,
-      extraClass: options.extraClass || ""
+      extraClass: `episode-card--${density}${options.extraClass ? ` ${options.extraClass}` : ""}`
     });
   }
 
@@ -3285,9 +3383,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function imageForCalendarItem(item){
     if (item?.kind === "episode"){
-      const still = normalizeImageSrc(pickImage(item, "still_local", "still_path", "episode_still_local", "episode_still_path", "still", "thumb"));
-      if (still && !/poster/i.test(still)) return still;
-      return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 135'%3E%3Crect width='240' height='135' fill='%23111827'/%3E%3Cpath d='M96 44h48v47H96z' fill='%23233447'/%3E%3Cpath d='M106 58l27 16-27 16z' fill='%239fb0c8'/%3E%3C/svg%3E";
+      return episodeStillImageForCard(item);
     }
     if (item?.kind === "movie"){
       const movie = getMovieById(item?.tmdb_id ?? "");
@@ -4047,6 +4143,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           meta: episodeMetaLine(seasonNum, episodeNum, item.runtime, safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "")),
           submeta: "",
           overlay: true,
+          density: "compact",
           articleAttrs: { "data-day": dateKey, "data-kind": "episode", "data-show": showId, tabindex: "0" },
           extraClass: `calendar-item calendar-item--episode${expandableClass(hidden)}`
         });
@@ -4173,12 +4270,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       ? { kind: "movie", id: item?.tmdb_id }
       : { kind: "show", id: item?.show_tmdb_id || item?.tmdb_id };
     const imageForItem = (item) => {
-      if (item?.kind === "episode") return imageForCalendarItem(item);
+      if (item?.kind === "episode") return episodeStillImageForCard(item);
       if (item?.thumb) return normalizeImageSrc(item.thumb);
-      if (item?.kind === "episode"){
-        const show = showMap.get(String(item?.show_tmdb_id ?? ""));
-        return normalizeImageSrc(pickImage(show, "backdrop_local", "backdrop_path", "poster_local", "poster_path"));
-      }
       const media = item?.kind === "movie" ? movieMap.get(String(item?.tmdb_id ?? "")) : showMap.get(String(item?.tmdb_id ?? ""));
       return normalizeImageSrc(pickImage(media || item, "poster_local", "poster_path", "backdrop_local", "backdrop_path"));
     };
@@ -4194,6 +4287,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           meta: episodeMetaLine(seasonNum, episodeNum, item.runtime, safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "")),
           submeta: tertiary,
           overlay: true,
+          density: "standard",
           pct: percentForItem(item),
           articleAttrs: { "data-show": showId, tabindex: "0" },
           renderKey: renderKey || `dashboard:event:episode:${showId}:${seasonNum}:${episodeNum}`,
@@ -5249,33 +5343,25 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
                     }
                     return v;
                   })();
-                  const epWatched = state.watchState ? isEpisodeWatched(show.tmdb_id, seasonNum, episodeNum) : false;
-                  return window.MyTVHubSharedModules.cardRenderer.renderCompactEpisodeCardHtml({
-                    image: pickImage(ep, "still_local", "still_path"),
+                  const normalizedEp = {
+                    ...ep,
+                    kind: "episode",
+                    show_tmdb_id: show.tmdb_id ?? "",
+                    show_title: title,
+                    season_number: seasonNum,
+                    episode_number: episodeNum,
+                    episode_name: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`)
+                  };
+                  return buildSharedEpisodeCard(normalizedEp, {
+                    image: episodeStillImageForCard(normalizedEp, { show }),
                     eyebrow: title,
                     title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                    badgeHtml: "",
                     meta: episodeMetaLine(seasonNum, episodeNum, ep?.runtime, safeText(ep?.episode_tmdb_id ?? ep?.episode_id ?? ep?.tmdb_episode_id ?? ep?.id ?? "")),
                     submeta: safeText(pickAirDate(ep) ? fmtDate(pickAirDate(ep)) : ""),
                     description: safeText(ep?.overview || ""),
-                    actionBarHtml: buildActionBarHtml("episode", episodeNum, {
-                      title: safeText(ep?.title || ep?.name || `Episode ${episodeNum}`),
-                      compact: true,
-                      tmdbId: safeText(ep?.episode_tmdb_id ?? ep?.episode_id ?? ep?.tmdb_episode_id ?? ep?.id ?? ""),
-                      traktId: safeText(ep?.trakt_id || ep?.episode_trakt_id || ""),
-                      tvdbId: safeText(ep?.tvdb_id || ep?.episode_tvdb_id || ""),
-                      pct: epPct,
-                      watchedActive: epWatched,
-                      showWatchedAction: true,
-                      showStatusAction: true,
-                      watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-watch-episode": episodeNum },
-                      popcornAttrs: hasDirectWatchSources(ep) ? { "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum } : null,
-                      popcornKind: "episode",
-                      availabilityStatus: availabilityStatusOf(ep),
-                      available: isEpisodeAvailable(ep),
-                      statusContext: { showId: show.tmdb_id ?? "", seasonNumber: seasonNum, episodeNumber: episodeNum }
-                    }),
                     overlay: false,
+                    density: "standard",
+                    pct: epPct,
                     articleAttrs: { tabindex: "0", "data-show": show.tmdb_id ?? "", "data-season": seasonNum, "data-episode": episodeNum },
                     extraClass: "popup-episode-card episode-card",
                     renderKey: `popup:episode:${show.tmdb_id ?? ""}:${seasonNum}:${episodeNum}`

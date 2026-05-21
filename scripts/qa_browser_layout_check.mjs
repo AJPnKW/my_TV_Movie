@@ -72,7 +72,7 @@ async function inspect(pathname, viewport) {
     const calendarEpisodePosterImages = Array.from(document.querySelectorAll(".calendar-item.media-card--episode img")).filter(img => /poster/i.test(img.getAttribute("src") || "")).length;
     const calendarEpisodeNonStillImages = Array.from(document.querySelectorAll(".calendar-item.media-card--episode img")).filter(img => {
       const src = img.getAttribute("src") || "";
-      return src && !/\/stills\/episodes\//i.test(src) && !/^data:image\/svg\+xml/i.test(src);
+      return src && !/\/stills\/episodes\//i.test(src) && !/\/backdrops\/shows\//i.test(src) && !/\/posters\/shows\//i.test(src) && !/^data:image\/svg\+xml/i.test(src);
     }).length;
     const weekendDay = document.querySelector(".calendar-day--weekend");
     const weekdayDay = Array.from(document.querySelectorAll(".calendar-day")).find(day => !day.classList.contains("calendar-day--weekend"));
@@ -151,6 +151,10 @@ async function inspect(pathname, viewport) {
         const title = modal.querySelector("#providerTitle, #modalTitle")?.textContent?.trim() || "";
         const bodyText = modal.textContent || "";
         const labels = Array.from(modal.querySelectorAll(".watch-source-panel__title")).map(node => node.textContent.trim());
+        const streamingExpected = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
+        const streamingForbidden = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","Goojara","Cineb","vidsrc-embed.ru","freeintertv.com"];
+        const streamingAnchors = Array.from(modal.querySelectorAll(".watch-source-panel--links a.watch-source-row[href]"));
+        const streamingProviderNames = streamingAnchors.map(anchor => (anchor.querySelector(".watch-source-row__label")?.textContent || anchor.textContent || "").replace("⚠", "").trim());
         const legacyProviderRows = Array.from(modal.querySelectorAll(".provider-link-row,.watch-option-btn"));
         const providerRows = Array.from(modal.querySelectorAll(".providerrow,.watch-source-row"));
         const providerCountryRows = Array.from(modal.querySelectorAll(".providerrow"));
@@ -207,6 +211,10 @@ async function inspect(pathname, viewport) {
           attempted: true,
           titleOk: /^Watch • .+ • .+ • S\d{2}E\d{2}$/.test(title) || /^Watch • .+/.test(title),
           labelsOk: labels.includes("Streaming") && labels.includes("Providers") && !labels.includes("Watch now") && !labels.includes("Where to watch"),
+          streamingProviderNames,
+          streamingDefaultProvidersOk: streamingExpected.every(name => streamingProviderNames.includes(name)),
+          streamingCandidateBlockedHidden: streamingForbidden.every(name => !streamingProviderNames.includes(name)),
+          streamingAnchorsOk: streamingAnchors.length >= streamingExpected.length && streamingAnchors.every(anchor => anchor.tagName === "A" && anchor.href),
           noLegacyProviderMarkup: legacyProviderRows.length === 0,
           noAdminText: !/(ACTIVE CANDIDATE FROM USER FINDINGS|\bACTIVE\b|\bDEGRADED\b|\bBLOCKED\b|\bARCHIVED\b)/i.test(bodyText),
           outlinedRows,
@@ -226,7 +234,7 @@ async function inspect(pathname, viewport) {
         };
         providerBlockedLinks = Array.from(modal.querySelectorAll("a[href]"))
           .map(link => link.href)
-          .filter(href => /smashystream\.com|2embed\.org|superembed\.stream|multiembed\.mov/i.test(href));
+          .filter(href => /vidsrc\.me|vidsrc\.to|vidlink\.pro|nunflix\.org|vidsrc-embed\.ru|goojara|cineb|freeintertv/i.test(href));
         document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
         await new Promise(resolve => requestAnimationFrame(resolve));
         const focusInside = modal.contains(document.activeElement);
@@ -262,6 +270,17 @@ async function inspect(pathname, viewport) {
       await new Promise(resolve => setTimeout(resolve, 600));
     }
     const lightModeImages = Array.from(document.querySelectorAll("img[src]")).filter(img => !img.closest(".logo")).map(img => img.getAttribute("src") || "");
+    const episodeCardProof = Array.from(document.querySelectorAll(".media-card--episode")).map(card => {
+      const img = card.querySelector(".media-card__poster img[src], .imgbox img[src]");
+      return {
+        renderer: card.getAttribute("data-episode-card-renderer") || "",
+        density: card.getAttribute("data-episode-card-density") || "",
+        resolver: card.getAttribute("data-image-resolver") || "",
+        renderKey: card.getAttribute("data-render-key") || "",
+        hasImageOrFallback: !!img || !!card.querySelector(".posterFallback"),
+        imgSrc: img?.getAttribute("src") || ""
+      };
+    });
     return {
       bodyOverflow,
       cardWidth: Math.round(firstRect?.width || 0),
@@ -299,7 +318,8 @@ async function inspect(pathname, viewport) {
       popupFocus,
       watchPopupContract,
       mediaLibraryNavOk,
-      lightModeImages
+      lightModeImages,
+      episodeCardProof
     };
   });
   await page.close();
@@ -579,15 +599,24 @@ async function inspectInteractionCompliance(viewport) {
 }
 
 function providerRegistryProof() {
-  const registry = JSON.parse(readFileSync("data/provider_registry.json", "utf8"));
-  const providers = Array.isArray(registry.providers) ? registry.providers : [];
-  const byDomain = Object.fromEntries(providers.map(item => [item.domain, item]));
+  const config = JSON.parse(readFileSync("web/config.json", "utf8"));
+  const providers = Array.isArray(config.streaming?.embed_providers) ? config.streaming.embed_providers : [];
+  const byName = Object.fromEntries(providers.map(item => [item.name, item]));
+  const defaultProviders = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
+  const candidates = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","vidsrc-embed.ru"];
+  const blocked = ["Goojara","Cineb","freeintertv.com"];
+  const visible = providers.filter(item => {
+    const status = String(item.status || "ok").toLowerCase();
+    return status !== "blocked" && status !== "candidate" && item.tv_template && item.movie_template;
+  }).map(item => item.name);
   return {
     exists: true,
     count: providers.length,
-    blocked: ["smashystream.com", "2embed.org", "superembed.stream", "multiembed.mov"].every(domain => byDomain[domain]?.status === "blocked"),
-    active: ["vidsrc.net", "2embed.cc"].every(domain => byDomain[domain]?.status === "active"),
-    fields: providers.every(item => ["provider_id","domain","url_pattern","status","last_tested","tls_status","redirect_status","final_domain","notes"].every(field => Object.prototype.hasOwnProperty.call(item, field)))
+    blocked: blocked.every(name => String(byName[name]?.status || "").toLowerCase() === "blocked"),
+    active: defaultProviders.every(name => ["ok","warn"].includes(String(byName[name]?.status || "").toLowerCase())),
+    candidatesHiddenByDefault: config.streaming?.show_candidate_providers === false && candidates.every(name => String(byName[name]?.status || "").toLowerCase() === "candidate" && !visible.includes(name)),
+    defaultNames: visible,
+    fields: providers.every(item => ["key","name","tv_template","movie_template","style","status"].every(field => Object.prototype.hasOwnProperty.call(item, field)))
   };
 }
 
@@ -604,7 +633,7 @@ try {
   }
   const failures = [];
   const providerProof = providerRegistryProof();
-  if (!providerProof.exists || !providerProof.fields || !providerProof.blocked || !providerProof.active) failures.push("provider registry classification/fields failed");
+  if (!providerProof.exists || !providerProof.fields || !providerProof.blocked || !providerProof.active || !providerProof.candidatesHiddenByDefault || providerProof.defaultNames.length !== 9) failures.push("provider registry classification/fields failed");
   for (const result of results) {
     if (result.errors.length) failures.push(`${result.viewport} ${result.pathname}: console errors`);
     if (result.missing.length) failures.push(`${result.viewport} ${result.pathname}: 404 responses`);
@@ -634,8 +663,11 @@ try {
     if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
     if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
     if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
-    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.noAdminText || !result.watchPopupContract.noLegacyProviderMarkup || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
+    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.streamingDefaultProvidersOk || !result.watchPopupContract.streamingCandidateBlockedHidden || !result.watchPopupContract.streamingAnchorsOk || !result.watchPopupContract.noAdminText || !result.watchPopupContract.noLegacyProviderMarkup || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
       failures.push(`${result.viewport} ${result.pathname}: Watch Source popup contract failed`);
+    }
+    if (["index.html","calendar.html"].includes(result.pathname) && result.episodeCardProof?.length && result.episodeCardProof.some(card => card.renderer !== "buildSharedEpisodeCard" || !["standard","compact"].includes(card.density) || card.resolver !== "episodeStillImageForCard" || !card.hasImageOrFallback)) {
+      failures.push(`${result.viewport} ${result.pathname}: episode cards are not using the shared renderer/image resolver baseline`);
     }
     if (result.providerBlockedLinks?.length) failures.push(`${result.viewport} ${result.pathname}: blocked provider visible as active`);
     if (!result.mediaLibraryNavOk) failures.push(`${result.viewport} ${result.pathname}: Media Library icon outside primary nav or not new-tab`);

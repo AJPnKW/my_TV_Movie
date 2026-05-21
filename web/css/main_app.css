@@ -5470,3 +5470,21 @@ body,
   overflow:hidden !important;
   text-overflow:ellipsis !important;
 }
+
+/* 2026-05-20 episode-card baseline: same markup, density-specific sizing only. */
+.media-card--episode.media-card--density-standard .media-card__poster{
+  min-height:124px;
+}
+
+.media-card--episode.media-card--density-compact .media-card__poster{
+  min-height:86px !important;
+}
+
+.media-card--episode .media-card__overlay{
+  background:linear-gradient(180deg, rgba(5,8,14,0.00), rgba(5,8,14,0.34) 44%, rgba(5,8,14,0.76) 100%) !important;
+}
+
+.media-card--episode .media-card__poster img{
+  filter:saturate(1.02) contrast(1.02) !important;
+  opacity:1 !important;
+}

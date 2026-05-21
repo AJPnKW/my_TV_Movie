@@ -28,6 +28,7 @@
       "2embed_cc",
       "2embed_org"
     ],
+    "show_candidate_providers": false,
     "embed_providers": [
       {
         "key": "vidsrc_net",
@@ -100,6 +101,78 @@
         "movie_template": "https://www.2embed.org/embed/movie?tmdb={tmdb_id}",
         "style": "query",
         "status": "warn"
+      },
+      {
+        "key": "vidsrc_me",
+        "name": "VidSrc.me",
+        "tv_template": "https://vidsrc.me/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.me/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "candidate",
+        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+      },
+      {
+        "key": "vidsrc_to",
+        "name": "VidSrc.to",
+        "tv_template": "https://vidsrc.to/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "candidate",
+        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+      },
+      {
+        "key": "vidlink",
+        "name": "VidLink",
+        "tv_template": "https://vidlink.pro/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidlink.pro/movie/{tmdb_id}",
+        "style": "path",
+        "status": "candidate",
+        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+      },
+      {
+        "key": "nunflix",
+        "name": "Nunflix",
+        "tv_template": "https://nunflix.org/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://nunflix.org/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "candidate",
+        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "name": "vidsrc-embed.ru",
+        "tv_template": "https://vidsrc-embed.ru/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc-embed.ru/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "candidate",
+        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+      },
+      {
+        "key": "goojara",
+        "name": "Goojara",
+        "tv_template": "",
+        "movie_template": "",
+        "style": "unverified",
+        "status": "blocked",
+        "notes": "No verified TMDB-compatible embed template."
+      },
+      {
+        "key": "cineb",
+        "name": "Cineb",
+        "tv_template": "",
+        "movie_template": "",
+        "style": "unverified",
+        "status": "blocked",
+        "notes": "No verified TMDB-compatible embed template."
+      },
+      {
+        "key": "freeintertv",
+        "name": "freeintertv.com",
+        "tv_template": "",
+        "movie_template": "",
+        "style": "unverified",
+        "status": "blocked",
+        "notes": "No verified TMDB-compatible embed template."
       }
     ]
   },

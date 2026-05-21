@@ -2,6 +2,12 @@
 
 ## 2026-05-20
 
+- Rebased Streaming popup provider buttons on `web/config.json -> streaming.embed_providers[]`, with `ok`/`warn` default-visible, `candidate` hidden unless explicitly enabled, and `blocked` suppressed.
+- Added requested candidate/blocked provider registry entries without making them default-active.
+- Consolidated Calendar, Dashboard Current/Recent, and show-detail episode cards through `buildSharedEpisodeCard` plus `renderEpisodeCardHtml`, with standard/compact density markers and shared still/backdrop/poster image fallback.
+- Added streaming/card anti-drift validation and documentation in `docs/streaming_provider_registry.html` and `docs/episode_card_baseline.html`.
+- Commit: pending `Fix streaming providers and unify episode card rendering`.
+
 - Made the Media Library link a static primary-nav item in active app page shells, with the existing normalizer limited to correcting/moving the shell link into `.top > .nav[role="tablist"][aria-label="Primary"]`.
 - Removed stale Watch Source fallback title text from active modal shells and normalized show popup provider wording to `Providers`.
 - Archived retired runtime compatibility shims out of `web/js/`, removed retired provider/watch-option CSS selectors from active CSS, and restored required subordinate architecture/UI docs as pointers to the master contract.
