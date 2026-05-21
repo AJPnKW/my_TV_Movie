@@ -6,7 +6,7 @@
 - Added requested candidate/blocked provider registry entries without making them default-active.
 - Consolidated Calendar, Dashboard Current/Recent, and show-detail episode cards through `buildSharedEpisodeCard` plus `renderEpisodeCardHtml`, with standard/compact density markers and shared still/backdrop/poster image fallback.
 - Added streaming/card anti-drift validation and documentation in `docs/streaming_provider_registry.html` and `docs/episode_card_baseline.html`.
-- Commit: pending `Fix streaming providers and unify episode card rendering`.
+- Commit: `258c2ab112` Fix streaming providers and unify episode card rendering.
 
 - Made the Media Library link a static primary-nav item in active app page shells, with the existing normalizer limited to correcting/moving the shell link into `.top > .nav[role="tablist"][aria-label="Primary"]`.
 - Removed stale Watch Source fallback title text from active modal shells and normalized show popup provider wording to `Providers`.
