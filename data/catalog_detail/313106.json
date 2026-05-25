@@ -41,11 +41,11 @@
       "name": "United Kingdom"
     }
   ],
-  "popularity": 1.9634,
+  "popularity": 1.9978,
   "vote_average": 8.2,
   "vote_count": 771,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/313106",
@@ -131,6 +131,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/313106",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/313106",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/313106",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/313106",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/313106",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -152,7 +197,7 @@
           "logo_path": "/j7D006Uy3UWwZ6G0xH6BMgIWTzH.jpg",
           "logo_local": "",
           "availability_type": "free",
-          "display_priority": 35,
+          "display_priority": 34,
           "deep_link": "https://www.themoviedb.org/movie/313106-doctor-who-the-day-of-the-doctor/watch?locale=US"
         }
       ],

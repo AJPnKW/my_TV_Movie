@@ -61,11 +61,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 6.0147,
-  "vote_average": 5.982,
-  "vote_count": 1734,
+  "popularity": 5.999,
+  "vote_average": 5.981,
+  "vote_count": 1736,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/848538",
@@ -151,6 +151,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/848538",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/848538",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/848538",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/848538",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/848538",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -244,7 +289,7 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/848538-argylle/watch?locale=US"
         },
         {
@@ -253,7 +298,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/848538-argylle/watch?locale=US"
         },
         {
@@ -262,7 +307,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/848538-argylle/watch?locale=US"
         },
         {
@@ -271,7 +316,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/848538-argylle/watch?locale=US"
         },
         {
@@ -280,7 +325,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/848538-argylle/watch?locale=US"
         },
         {

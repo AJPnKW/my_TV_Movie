@@ -45,11 +45,11 @@
     "vote_average": 0.0,
     "vote_count": 0
   },
-  "popularity": 0.1357,
+  "popularity": 0.2483,
   "vote_average": 6.0,
   "vote_count": 5,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/72590",
@@ -83,7 +83,7 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
         },
         {
@@ -92,7 +92,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
         },
         {
@@ -101,7 +101,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
         },
         {
@@ -110,7 +110,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
         }
       ],
@@ -145,7 +145,7 @@
       "provider_page": "https://www.themoviedb.org/tv/72590/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1",
@@ -179,7 +179,7 @@
               "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
               "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
               "availability_type": "buy",
-              "display_priority": 8,
+              "display_priority": 7,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             },
             {
@@ -188,7 +188,7 @@
               "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
               "logo_local": "",
               "availability_type": "buy",
-              "display_priority": 9,
+              "display_priority": 8,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             },
             {
@@ -197,7 +197,7 @@
               "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
               "logo_local": "",
               "availability_type": "buy",
-              "display_priority": 18,
+              "display_priority": 17,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             },
             {
@@ -206,7 +206,7 @@
               "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
               "logo_local": "",
               "availability_type": "buy",
-              "display_priority": 36,
+              "display_priority": 35,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             }
           ],
@@ -242,7 +242,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/1",
@@ -328,6 +328,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -339,7 +384,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -348,7 +393,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -357,7 +402,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -366,7 +411,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -402,7 +447,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/2",
@@ -488,6 +533,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -499,7 +589,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -508,7 +598,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -517,7 +607,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -526,7 +616,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -562,7 +652,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/3",
@@ -648,6 +738,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -659,7 +794,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -668,7 +803,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -677,7 +812,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -686,7 +821,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -722,7 +857,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/4",
@@ -808,6 +943,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -819,7 +999,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -828,7 +1008,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -837,7 +1017,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -846,7 +1026,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -882,7 +1062,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/5",
@@ -968,6 +1148,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -979,7 +1204,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -988,7 +1213,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -997,7 +1222,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1006,7 +1231,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -1042,7 +1267,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/6",
@@ -1128,6 +1353,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1139,7 +1409,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1148,7 +1418,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1157,7 +1427,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1166,7 +1436,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -1202,7 +1472,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/7",
@@ -1288,6 +1558,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1299,7 +1614,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1308,7 +1623,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1317,7 +1632,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1326,7 +1641,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -1362,7 +1677,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/8",
@@ -1448,6 +1763,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1459,7 +1819,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1468,7 +1828,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1477,7 +1837,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1486,7 +1846,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -1522,7 +1882,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/9",
@@ -1608,6 +1968,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1619,7 +2024,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1628,7 +2033,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1637,7 +2042,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1646,7 +2051,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -1682,7 +2087,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/10",
@@ -1768,6 +2173,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1779,7 +2229,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1788,7 +2238,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1797,7 +2247,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1806,7 +2256,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -1842,7 +2292,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/11",
@@ -1928,6 +2378,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/11",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/11",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/11",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/11",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/11",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1939,7 +2434,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1948,7 +2443,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1957,7 +2452,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -1966,7 +2461,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -2002,7 +2497,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/1/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/1/12",
@@ -2088,6 +2583,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/1/12",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/1/12",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/1/12",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/1/12",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/1/12",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2099,7 +2639,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -2108,7 +2648,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -2117,7 +2657,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -2126,7 +2666,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],
@@ -2163,7 +2703,7 @@
       "provider_page": "https://www.themoviedb.org/tv/72590/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/72590/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/72590/2",
@@ -2197,7 +2737,7 @@
               "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
               "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
               "availability_type": "buy",
-              "display_priority": 8,
+              "display_priority": 7,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             },
             {
@@ -2206,7 +2746,7 @@
               "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
               "logo_local": "",
               "availability_type": "buy",
-              "display_priority": 9,
+              "display_priority": 8,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             },
             {
@@ -2215,7 +2755,7 @@
               "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
               "logo_local": "",
               "availability_type": "buy",
-              "display_priority": 18,
+              "display_priority": 17,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             },
             {
@@ -2224,7 +2764,7 @@
               "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
               "logo_local": "",
               "availability_type": "buy",
-              "display_priority": 36,
+              "display_priority": 35,
               "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
             }
           ],
@@ -2260,7 +2800,7 @@
           "provider_page": "https://www.themoviedb.org/tv/72590/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72590/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72590/2/1",
@@ -2346,6 +2886,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/72590/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/72590/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/72590/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/72590/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/72590/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2357,7 +2942,7 @@
                   "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
                   "availability_type": "buy",
-                  "display_priority": 8,
+                  "display_priority": 7,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -2366,7 +2951,7 @@
                   "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 9,
+                  "display_priority": 8,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -2375,7 +2960,7 @@
                   "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 18,
+                  "display_priority": 17,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 },
                 {
@@ -2384,7 +2969,7 @@
                   "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
                   "logo_local": "",
                   "availability_type": "buy",
-                  "display_priority": 36,
+                  "display_priority": 35,
                   "deep_link": "https://www.themoviedb.org/tv/72590-gay-for-play-game-show-starring-rupaul/watch?locale=US"
                 }
               ],

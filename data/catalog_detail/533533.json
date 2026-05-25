@@ -56,11 +56,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 15.4699,
+  "popularity": 16.9777,
   "vote_average": 6.478,
-  "vote_count": 1379,
+  "vote_count": 1386,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/533533",
@@ -146,6 +146,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/533533",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/533533",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/533533",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/533533",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/533533",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -221,7 +266,7 @@
           "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
           "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
           "availability_type": "flatrate",
-          "display_priority": 6,
+          "display_priority": 5,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
         {
@@ -230,7 +275,7 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "rent",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
         {
@@ -239,6 +284,15 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
@@ -247,17 +301,8 @@
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 9,
-          "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
-        },
-        {
-          "provider_id": 2,
-          "provider_name": "Apple TV Store",
-          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
-          "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
         {
@@ -266,7 +311,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
         {
@@ -275,6 +320,15 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
+          "display_priority": 17,
+          "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
+        },
+        {
+          "provider_id": 192,
+          "provider_name": "YouTube",
+          "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
@@ -283,17 +337,8 @@
           "provider_name": "YouTube",
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 19,
-          "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
-        },
-        {
-          "provider_id": 192,
-          "provider_name": "YouTube",
-          "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
-          "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
         {
@@ -302,7 +347,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         },
         {
@@ -311,7 +356,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/533533-tron-ares/watch?locale=US"
         }
       ],

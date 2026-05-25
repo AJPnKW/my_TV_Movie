@@ -52,7 +52,7 @@
       "id": 61173,
       "name": "Chris Ord",
       "original_name": "Chris Ord",
-      "profile_path": "/A14sMNSoRYIRv3D77J5nXmSHn2b.jpg"
+      "profile_path": null
     },
     {
       "credit_id": "672544e471a545e933358e48",
@@ -84,14 +84,14 @@
     "season_number": 2,
     "show_id": 202555,
     "still_path": "/dpwUQPQFWmQU2Ym3tgCKGExVCWV.jpg",
-    "vote_average": 7.875,
-    "vote_count": 28
+    "vote_average": 7.983,
+    "vote_count": 30
   },
-  "popularity": 76.522,
-  "vote_average": 8.158,
-  "vote_count": 908,
+  "popularity": 72.6926,
+  "vote_average": 8.168,
+  "vote_count": 924,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/202555",
@@ -135,7 +135,7 @@
           "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
           "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
           "availability_type": "flatrate",
-          "display_priority": 6,
+          "display_priority": 5,
           "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
         },
         {
@@ -144,7 +144,7 @@
           "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "availability_type": "flatrate",
-          "display_priority": 7,
+          "display_priority": 6,
           "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
         }
       ],
@@ -189,7 +189,7 @@
       "provider_page": "https://www.themoviedb.org/tv/202555/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1",
@@ -233,7 +233,7 @@
               "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
               "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
               "availability_type": "flatrate",
-              "display_priority": 6,
+              "display_priority": 5,
               "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
             },
             {
@@ -242,7 +242,7 @@
               "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
               "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
               "availability_type": "flatrate",
-              "display_priority": 7,
+              "display_priority": 6,
               "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
             }
           ],
@@ -288,7 +288,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/1",
@@ -374,6 +374,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -395,7 +440,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -404,7 +449,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -450,7 +495,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/2",
@@ -536,6 +581,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -557,7 +647,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -566,7 +656,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -612,7 +702,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/3",
@@ -698,6 +788,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -719,7 +854,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -728,7 +863,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -774,7 +909,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/4",
@@ -860,6 +995,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -881,7 +1061,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -890,7 +1070,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -936,7 +1116,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/5",
@@ -1022,6 +1202,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1043,7 +1268,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -1052,7 +1277,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -1098,7 +1323,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/6",
@@ -1184,6 +1409,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1205,7 +1475,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -1214,7 +1484,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -1260,7 +1530,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/7",
@@ -1346,6 +1616,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1367,7 +1682,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -1376,7 +1691,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -1417,12 +1732,12 @@
           "still_path": "/tmYeVvTjpjNRKmSsr4uITX9qd7b.jpg",
           "still_local": "/assets/stills/episodes/tmYeVvTjpjNRKmSsr4uITX9qd7b.jpg",
           "overview": "At his inaugural Black and White Ball, Mayor Fisk tightens his grip on New York City.",
-          "vote_average": 8.6,
+          "vote_average": 8.636,
           "vote_count": 44,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/8",
@@ -1508,6 +1823,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1529,7 +1889,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -1538,7 +1898,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -1584,7 +1944,7 @@
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/1/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/1/9",
@@ -1670,6 +2030,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1691,7 +2096,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -1700,7 +2105,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -1747,7 +2152,7 @@
       "provider_page": "https://www.themoviedb.org/tv/202555/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2",
@@ -1791,7 +2196,7 @@
               "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
               "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
               "availability_type": "flatrate",
-              "display_priority": 6,
+              "display_priority": 5,
               "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
             },
             {
@@ -1800,7 +2205,7 @@
               "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
               "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
               "availability_type": "flatrate",
-              "display_priority": 7,
+              "display_priority": 6,
               "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
             }
           ],
@@ -1841,12 +2246,12 @@
           "still_path": "/hxZQi3iq4IC8K7EBd4ez2W0OQPO.jpg",
           "still_local": "/assets/stills/episodes/hxZQi3iq4IC8K7EBd4ez2W0OQPO.jpg",
           "overview": "Daredevil is in hiding, but he isn't laying low. A shadowy player from Washington, D.C. emerges.",
-          "vote_average": 8.3,
-          "vote_count": 42,
+          "vote_average": 8.239,
+          "vote_count": 44,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/1",
@@ -1932,6 +2337,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1953,7 +2403,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -1962,7 +2412,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -2003,12 +2453,12 @@
           "still_path": "/kbpZdUUA54SKeuJDXMLZJWr5qtF.jpg",
           "still_local": "/assets/stills/episodes/kbpZdUUA54SKeuJDXMLZJWr5qtF.jpg",
           "overview": "Fisk tries a new tactic to lure Daredevil out of hiding.",
-          "vote_average": 7.9,
-          "vote_count": 35,
+          "vote_average": 7.878,
+          "vote_count": 37,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/2",
@@ -2094,6 +2544,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2115,7 +2610,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -2124,7 +2619,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -2162,15 +2657,15 @@
           "name": "The Scales & the Sword",
           "air_date": "2026-03-31",
           "runtime": 50,
-          "still_path": "/vdlYtcgS1x3JURs39cxDD8MtT65.jpg",
-          "still_local": "/assets/stills/episodes/vdlYtcgS1x3JURs39cxDD8MtT65.jpg",
+          "still_path": "/tQnkwNquLwJfIdxceV5pGozDu6P.jpg",
+          "still_local": "/assets/stills/episodes/tQnkwNquLwJfIdxceV5pGozDu6P.jpg",
           "overview": "Matt Murdock and Karen Page find new allies.",
-          "vote_average": 7.6,
-          "vote_count": 35,
+          "vote_average": 7.581,
+          "vote_count": 37,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/3",
@@ -2256,6 +2751,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2277,7 +2817,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -2286,7 +2826,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -2327,12 +2867,12 @@
           "still_path": "/2wG70Lehic8WukXmUEL9jjENNn6.jpg",
           "still_local": "/assets/stills/episodes/2wG70Lehic8WukXmUEL9jjENNn6.jpg",
           "overview": "Bullseye adopts a new morning routine. Fisk takes the ring.",
-          "vote_average": 8.3,
-          "vote_count": 31,
+          "vote_average": 8.303,
+          "vote_count": 33,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/4",
@@ -2418,6 +2958,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2439,7 +3024,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -2448,7 +3033,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -2486,15 +3071,15 @@
           "name": "The Grand Design",
           "air_date": "2026-04-14",
           "runtime": 53,
-          "still_path": "/3LwlF3zBobR6QuEIDh2D71KsCq6.jpg",
-          "still_local": "/assets/stills/episodes/3LwlF3zBobR6QuEIDh2D71KsCq6.jpg",
+          "still_path": "/3Pw0G3sjFcd0qgtYqkvtIvTHxGQ.jpg",
+          "still_local": "/assets/stills/episodes/3Pw0G3sjFcd0qgtYqkvtIvTHxGQ.jpg",
           "overview": "The Anti-Vigilante Task Force intensifies its search for Daredevil and Bullseye.",
           "vote_average": 8.4,
-          "vote_count": 29,
+          "vote_count": 30,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/5",
@@ -2580,6 +3165,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2601,7 +3231,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -2610,7 +3240,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -2652,11 +3282,11 @@
           "still_local": "/assets/stills/episodes/lbuiEvKOaQEw4mG880gsdg8GKvr.jpg",
           "overview": "Fisk's operation is dealt an irrevocable blow. The resistance spills over into the streets.",
           "vote_average": 8.6,
-          "vote_count": 30,
+          "vote_count": 31,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/6",
@@ -2742,6 +3372,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2763,7 +3438,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -2772,7 +3447,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -2813,12 +3488,12 @@
           "still_path": "/rmlntMleUjbXWgEk0beQla6qTDZ.jpg",
           "still_local": "/assets/stills/episodes/rmlntMleUjbXWgEk0beQla6qTDZ.jpg",
           "overview": "A trial close to Matt Murdock's heart grabs the city's attention.",
-          "vote_average": 8.2,
-          "vote_count": 30,
+          "vote_average": 8.3,
+          "vote_count": 32,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/7",
@@ -2904,6 +3579,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2925,7 +3645,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -2934,7 +3654,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],
@@ -2975,12 +3695,12 @@
           "still_path": "/dpwUQPQFWmQU2Ym3tgCKGExVCWV.jpg",
           "still_local": "/assets/stills/episodes/dpwUQPQFWmQU2Ym3tgCKGExVCWV.jpg",
           "overview": "The city and its heroes enter an unprecedented era.",
-          "vote_average": 7.8,
-          "vote_count": 27,
+          "vote_average": 7.983,
+          "vote_count": 30,
           "provider_page": "https://www.themoviedb.org/tv/202555/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/202555/season/2/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/202555/2/8",
@@ -3066,6 +3786,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/202555/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/202555/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/202555/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/202555/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/202555/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3087,7 +3852,7 @@
                   "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 6,
+                  "display_priority": 5,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 },
                 {
@@ -3096,7 +3861,7 @@
                   "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 7,
+                  "display_priority": 6,
                   "deep_link": "https://www.themoviedb.org/tv/202555-daredevil-born-again/watch?locale=US"
                 }
               ],

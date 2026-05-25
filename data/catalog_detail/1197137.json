@@ -50,12 +50,6 @@
       "logo_path": "/8lvHyhjr8oUKOOy2dKXoALWKdp0.png",
       "name": "Universal Pictures",
       "origin_country": "US"
-    },
-    {
-      "id": 89115,
-      "logo_path": "/zQwTHJVIruUlGsa7zIdfXuSm9GG.png",
-      "name": "Divide / Conquer",
-      "origin_country": "US"
     }
   ],
   "production_countries": [
@@ -64,11 +58,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 19.6969,
-  "vote_average": 6.687,
-  "vote_count": 1089,
+  "popularity": 18.1867,
+  "vote_average": 6.7,
+  "vote_count": 1093,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1197137",
@@ -154,6 +148,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/1197137",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/1197137",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/1197137",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/1197137",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/1197137",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -233,12 +272,21 @@
       ],
       "US": [
         {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
+        },
+        {
           "provider_id": 10,
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "rent",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -247,7 +295,7 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -256,7 +304,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -265,7 +313,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -274,7 +322,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -283,7 +331,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -292,7 +340,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -301,7 +349,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         },
         {
@@ -310,16 +358,7 @@
           "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
           "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
           "availability_type": "flatrate",
-          "display_priority": 155,
-          "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
-        },
-        {
-          "provider_id": 8,
-          "provider_name": "Netflix",
-          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 0,
+          "display_priority": 154,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         }
       ],
@@ -329,15 +368,6 @@
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 4,
-          "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=GB"
-        },
-        {
-          "provider_id": 2,
-          "provider_name": "Apple TV Store",
-          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
-          "logo_local": "",
           "availability_type": "buy",
           "display_priority": 4,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=GB"
@@ -376,15 +406,6 @@
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
           "display_priority": 7,
-          "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=GB"
-        },
-        {
-          "provider_id": 130,
-          "provider_name": "Sky Store",
-          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
-          "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=GB"
         },
         {

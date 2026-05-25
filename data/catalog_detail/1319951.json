@@ -67,11 +67,11 @@
       "name": "Canada"
     }
   ],
-  "popularity": 2.5753,
-  "vote_average": 6.701,
-  "vote_count": 137,
+  "popularity": 3.1888,
+  "vote_average": 6.752,
+  "vote_count": 141,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1319951",
@@ -157,6 +157,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/1319951",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/1319951",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/1319951",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/1319951",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/1319951",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -223,7 +268,7 @@
           "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "availability_type": "flatrate",
-          "display_priority": 7,
+          "display_priority": 6,
           "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=US"
         },
         {
@@ -232,7 +277,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=US"
         },
         {
@@ -241,7 +286,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=US"
         },
         {
@@ -250,7 +295,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=US"
         },
         {
@@ -259,7 +304,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=US"
         }
       ],
@@ -348,6 +393,15 @@
       ],
       "AU": [
         {
+          "provider_id": 119,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=AU"
+        },
+        {
           "provider_id": 2,
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
@@ -399,6 +453,15 @@
           "logo_local": "",
           "availability_type": "buy",
           "display_priority": 30,
+          "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=AU"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 93,
           "deep_link": "https://www.themoviedb.org/movie/1319951-40-acres/watch?locale=AU"
         }
       ]

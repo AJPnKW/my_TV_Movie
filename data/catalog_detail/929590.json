@@ -65,11 +65,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 8.7706,
-  "vote_average": 6.859,
-  "vote_count": 4308,
+  "popularity": 9.9375,
+  "vote_average": 6.86,
+  "vote_count": 4316,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/929590",
@@ -155,6 +155,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/929590",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/929590",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/929590",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/929590",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/929590",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -284,6 +329,15 @@
           "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "availability_type": "flatrate",
+          "display_priority": 6,
+          "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
           "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
@@ -292,17 +346,8 @@
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
-          "availability_type": "rent",
-          "display_priority": 8,
-          "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
-        },
-        {
-          "provider_id": 10,
-          "provider_name": "Amazon Video",
-          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
-          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -311,7 +356,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -320,7 +365,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -329,7 +374,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -338,7 +383,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -347,7 +392,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -356,7 +401,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -365,7 +410,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -374,7 +419,7 @@
           "logo_path": "/aAb9CUHjFe9Y3O57qnrJH0KOF1B.jpg",
           "logo_local": "/assets/logos/services/aAb9CUHjFe9Y3O57qnrJH0KOF1B.jpg",
           "availability_type": "rent",
-          "display_priority": 122,
+          "display_priority": 121,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {
@@ -383,7 +428,7 @@
           "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 127,
+          "display_priority": 126,
           "deep_link": "https://www.themoviedb.org/movie/929590-civil-war/watch?locale=US"
         },
         {

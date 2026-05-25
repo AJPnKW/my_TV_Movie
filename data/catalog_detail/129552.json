@@ -71,11 +71,11 @@
     "vote_average": 8.769,
     "vote_count": 13
   },
-  "popularity": 38.7547,
-  "vote_average": 7.712,
-  "vote_count": 1144,
+  "popularity": 38.5662,
+  "vote_average": 7.709,
+  "vote_count": 1149,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/129552",
@@ -123,21 +123,21 @@
       ],
       "US": [
         {
-          "provider_id": 1796,
-          "provider_name": "Netflix Standard with Ads",
-          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 155,
-          "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-        },
-        {
           "provider_id": 8,
           "provider_name": "Netflix",
           "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
           "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
           "availability_type": "flatrate",
-          "display_priority": 0,
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+        },
+        {
+          "provider_id": 1796,
+          "provider_name": "Netflix Standard with Ads",
+          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 154,
           "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
         }
       ],
@@ -200,7 +200,7 @@
       "provider_page": "https://www.themoviedb.org/tv/129552/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1",
@@ -248,21 +248,21 @@
           ],
           "US": [
             {
-              "provider_id": 1796,
-              "provider_name": "Netflix Standard with Ads",
-              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "availability_type": "flatrate",
-              "display_priority": 155,
-              "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-            },
-            {
               "provider_id": 8,
               "provider_name": "Netflix",
               "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "availability_type": "flatrate",
-              "display_priority": 0,
+              "display_priority": 2,
+              "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+            },
+            {
+              "provider_id": 1796,
+              "provider_name": "Netflix Standard with Ads",
+              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 154,
               "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
             }
           ],
@@ -326,7 +326,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/1",
@@ -412,6 +412,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -437,21 +482,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -515,7 +560,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/2",
@@ -601,6 +646,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -626,21 +716,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -704,7 +794,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/3",
@@ -790,6 +880,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -815,21 +950,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -893,7 +1028,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/4",
@@ -979,6 +1114,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1004,21 +1184,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -1082,7 +1262,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/5",
@@ -1168,6 +1348,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1193,21 +1418,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -1271,7 +1496,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/6",
@@ -1357,6 +1582,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1382,21 +1652,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -1460,7 +1730,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/7",
@@ -1546,6 +1816,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1571,21 +1886,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -1649,7 +1964,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/8",
@@ -1735,6 +2050,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1760,21 +2120,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -1838,7 +2198,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/9",
@@ -1924,6 +2284,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1949,21 +2354,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -2027,7 +2432,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/1/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/1/10",
@@ -2113,6 +2518,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/1/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2138,21 +2588,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -2217,7 +2667,7 @@
       "provider_page": "https://www.themoviedb.org/tv/129552/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2",
@@ -2265,21 +2715,21 @@
           ],
           "US": [
             {
-              "provider_id": 1796,
-              "provider_name": "Netflix Standard with Ads",
-              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "availability_type": "flatrate",
-              "display_priority": 155,
-              "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-            },
-            {
               "provider_id": 8,
               "provider_name": "Netflix",
               "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "availability_type": "flatrate",
-              "display_priority": 0,
+              "display_priority": 2,
+              "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+            },
+            {
+              "provider_id": 1796,
+              "provider_name": "Netflix Standard with Ads",
+              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 154,
               "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
             }
           ],
@@ -2343,7 +2793,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/1",
@@ -2429,6 +2879,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2454,21 +2949,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -2532,7 +3027,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/2",
@@ -2618,6 +3113,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2643,21 +3183,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -2716,12 +3256,12 @@
           "still_path": "/a2UEjzqNokRX8AyhfPprz29OOf1.jpg",
           "still_local": "/assets/stills/episodes/a2UEjzqNokRX8AyhfPprz29OOf1.jpg",
           "overview": "Catherine aids Peter's off-the-books investigation into Foxglove while Noor stumbles upon an unexpected encounter. A hijacking spirals out of control.",
-          "vote_average": 6.966,
-          "vote_count": 29,
+          "vote_average": 6.967,
+          "vote_count": 30,
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/3",
@@ -2807,6 +3347,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2832,21 +3417,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -2905,12 +3490,12 @@
           "still_path": "/rbDBaLjXsZ4oROsub95njSK8mEI.jpg",
           "still_local": "/assets/stills/episodes/rbDBaLjXsZ4oROsub95njSK8mEI.jpg",
           "overview": "Peter and Rose infiltrate a party at the Iranian ambassador's home, arousing Javad's suspicion. Tomás and Markus lock horns over the Foxglove plan.",
-          "vote_average": 7.333,
-          "vote_count": 30,
+          "vote_average": 7.323,
+          "vote_count": 31,
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/4",
@@ -2996,6 +3581,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3021,21 +3651,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -3099,7 +3729,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/5",
@@ -3185,6 +3815,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3210,21 +3885,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -3288,7 +3963,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/6",
@@ -3374,6 +4049,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3399,21 +4119,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -3477,7 +4197,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/7",
@@ -3563,6 +4283,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3588,21 +4353,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -3666,7 +4431,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/8",
@@ -3752,6 +4517,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3777,21 +4587,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -3855,7 +4665,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/9",
@@ -3941,6 +4751,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3966,21 +4821,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -4044,7 +4899,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/2/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/2/10",
@@ -4130,6 +4985,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/2/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/2/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/2/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/2/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/2/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4155,21 +5055,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -4234,7 +5134,7 @@
       "provider_page": "https://www.themoviedb.org/tv/129552/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3",
@@ -4282,21 +5182,21 @@
           ],
           "US": [
             {
-              "provider_id": 1796,
-              "provider_name": "Netflix Standard with Ads",
-              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "availability_type": "flatrate",
-              "display_priority": 155,
-              "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-            },
-            {
               "provider_id": 8,
               "provider_name": "Netflix",
               "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "availability_type": "flatrate",
-              "display_priority": 0,
+              "display_priority": 2,
+              "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+            },
+            {
+              "provider_id": 1796,
+              "provider_name": "Netflix Standard with Ads",
+              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 154,
               "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
             }
           ],
@@ -4360,7 +5260,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/1",
@@ -4446,6 +5346,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4471,21 +5416,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -4549,7 +5494,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/2",
@@ -4635,6 +5580,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4660,21 +5650,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -4738,7 +5728,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/3",
@@ -4824,6 +5814,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4849,21 +5884,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -4927,7 +5962,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/4",
@@ -5013,6 +6048,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5038,21 +6118,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -5116,7 +6196,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/5",
@@ -5202,6 +6282,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5227,21 +6352,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -5305,7 +6430,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/6",
@@ -5391,6 +6516,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5416,21 +6586,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -5494,7 +6664,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/7",
@@ -5580,6 +6750,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5605,21 +6820,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -5683,7 +6898,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/8",
@@ -5769,6 +6984,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5794,21 +7054,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -5872,7 +7132,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/9",
@@ -5958,6 +7218,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/9",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5983,21 +7288,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],
@@ -6061,7 +7366,7 @@
           "provider_page": "https://www.themoviedb.org/tv/129552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/129552/season/3/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/129552/3/10",
@@ -6147,6 +7452,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/129552/3/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/129552/3/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/129552/3/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/129552/3/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/129552/3/10",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -6172,21 +7522,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/129552-the-night-agent/watch?locale=US"
                 }
               ],

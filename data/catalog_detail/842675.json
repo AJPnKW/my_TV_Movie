@@ -68,11 +68,11 @@
       "name": "China"
     }
   ],
-  "popularity": 7.5211,
+  "popularity": 11.2639,
   "vote_average": 7.3,
-  "vote_count": 713,
+  "vote_count": 714,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/842675",
@@ -158,6 +158,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/842675",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/842675",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/842675",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/842675",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/842675",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -242,7 +287,7 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "rent",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -251,6 +296,15 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
@@ -259,17 +313,8 @@
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 9,
-          "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
-        },
-        {
-          "provider_id": 2,
-          "provider_name": "Apple TV Store",
-          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
-          "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -278,7 +323,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -287,7 +332,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -296,7 +341,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -305,7 +350,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -314,7 +359,7 @@
           "logo_path": "/wQzSN83BnWVgO7xEh0SeTVqtrFv.jpg",
           "logo_local": "",
           "availability_type": "ads",
-          "display_priority": 27,
+          "display_priority": 26,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -323,7 +368,7 @@
           "logo_path": "/rcBwnERpNfPfWB5DaSTyEMCZbCA.jpg",
           "logo_local": "",
           "availability_type": "free",
-          "display_priority": 34,
+          "display_priority": 33,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -332,7 +377,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -341,7 +386,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -350,7 +395,7 @@
           "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
           "logo_local": "",
           "availability_type": "free",
-          "display_priority": 127,
+          "display_priority": 126,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -359,7 +404,7 @@
           "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
           "logo_local": "",
           "availability_type": "ads",
-          "display_priority": 127,
+          "display_priority": 126,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -368,7 +413,7 @@
           "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 127,
+          "display_priority": 126,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {
@@ -377,7 +422,7 @@
           "logo_path": "/27WMfRN7pQE3j5Khm8fPM7vYyLV.jpg",
           "logo_local": "",
           "availability_type": "free",
-          "display_priority": 130,
+          "display_priority": 129,
           "deep_link": "https://www.themoviedb.org/movie/842675-2/watch?locale=US"
         },
         {

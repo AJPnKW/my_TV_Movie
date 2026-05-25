@@ -76,14 +76,14 @@
     "season_number": 5,
     "show_id": 66732,
     "still_path": "/kP23RWbUWM6vGhT9PxFyP5VT3y4.jpg",
-    "vote_average": 7.004,
-    "vote_count": 232
+    "vote_average": 7.0,
+    "vote_count": 233
   },
-  "popularity": 134.6631,
-  "vote_average": 8.567,
-  "vote_count": 21173,
+  "popularity": 140.6378,
+  "vote_average": 8.566,
+  "vote_count": 21189,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/66732",
@@ -131,21 +131,21 @@
       ],
       "US": [
         {
-          "provider_id": 1796,
-          "provider_name": "Netflix Standard with Ads",
-          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 155,
-          "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-        },
-        {
           "provider_id": 8,
           "provider_name": "Netflix",
           "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
           "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
           "availability_type": "flatrate",
-          "display_priority": 0,
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+        },
+        {
+          "provider_id": 1796,
+          "provider_name": "Netflix Standard with Ads",
+          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 154,
           "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
         }
       ],
@@ -217,7 +217,7 @@
       "provider_page": "https://www.themoviedb.org/tv/66732/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5",
@@ -265,21 +265,21 @@
           ],
           "US": [
             {
-              "provider_id": 1796,
-              "provider_name": "Netflix Standard with Ads",
-              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-              "availability_type": "flatrate",
-              "display_priority": 155,
-              "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-            },
-            {
               "provider_id": 8,
               "provider_name": "Netflix",
               "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
               "availability_type": "flatrate",
-              "display_priority": 0,
+              "display_priority": 2,
+              "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+            },
+            {
+              "provider_id": 1796,
+              "provider_name": "Netflix Standard with Ads",
+              "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 154,
               "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
             }
           ],
@@ -352,7 +352,7 @@
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/1",
@@ -438,6 +438,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -463,21 +508,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],
@@ -545,12 +590,12 @@
           "still_path": "/loM7T7Mwd849wFaWj9KPlNNSHZr.jpg",
           "still_local": "/assets/stills/episodes/loM7T7Mwd849wFaWj9KPlNNSHZr.jpg",
           "overview": "After a vicious attack at the Wheeler home, Mike and Nancy confront the cost of secrecy, while El and Hopper embark on a rescue mission.",
-          "vote_average": 7.607,
+          "vote_average": 7.6,
           "vote_count": 177,
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/2",
@@ -636,6 +681,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -661,21 +751,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],
@@ -748,7 +838,7 @@
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/3",
@@ -834,6 +924,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -859,21 +994,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],
@@ -941,12 +1076,12 @@
           "still_path": "/r0uVKBsPj74lQGNRdC9IM2P5roW.jpg",
           "still_local": "/assets/stills/episodes/r0uVKBsPj74lQGNRdC9IM2P5roW.jpg",
           "overview": "The military tightens its grip on the town. Mike, Lucas and Robin orchestrate a daring escape. El comes face-to-face with the enemy.",
-          "vote_average": 8.357,
+          "vote_average": 8.4,
           "vote_count": 196,
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/4",
@@ -1032,6 +1167,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1057,21 +1237,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],
@@ -1139,12 +1319,12 @@
           "still_path": "/A9gML0mmuyE2m3hGK0eZZA2tRPg.jpg",
           "still_local": "/assets/stills/episodes/A9gML0mmuyE2m3hGK0eZZA2tRPg.jpg",
           "overview": "The gang hatches an electrifying plan to reconnect Will to the hive mind. Tensions flare during a search of the Upside Down's Hawkins Lab.",
-          "vote_average": 7.386,
+          "vote_average": 7.4,
           "vote_count": 162,
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/5",
@@ -1230,6 +1410,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1255,21 +1480,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],
@@ -1337,12 +1562,12 @@
           "still_path": "/zwJuStMjSOT1jaPUkX3dweIciRs.jpg",
           "still_local": "/assets/stills/episodes/zwJuStMjSOT1jaPUkX3dweIciRs.jpg",
           "overview": "As Holly and Max fight to escape Vecna's mind, El must find a way into Will's. Joyce wrestles with guilt. Jonathan and Nancy face a turning point.",
-          "vote_average": 7.071,
+          "vote_average": 7.1,
           "vote_count": 148,
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/6",
@@ -1428,6 +1653,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1453,21 +1723,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],
@@ -1535,12 +1805,12 @@
           "still_path": "/xJv3oJoVQqITux8N9isJfb1Ao6g.jpg",
           "still_local": "/assets/stills/episodes/xJv3oJoVQqITux8N9isJfb1Ao6g.jpg",
           "overview": "On the anniversary of Will's disappearance, the party reunites to prepare for a battle with world-altering implications.",
-          "vote_average": 6.035,
+          "vote_average": 6.0,
           "vote_count": 201,
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/7",
@@ -1626,6 +1896,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1651,21 +1966,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],
@@ -1733,12 +2048,12 @@
           "still_path": "/kP23RWbUWM6vGhT9PxFyP5VT3y4.jpg",
           "still_local": "/assets/stills/episodes/kP23RWbUWM6vGhT9PxFyP5VT3y4.jpg",
           "overview": "As Vecna prepares to destroy the world as we know it, the party must put everything on the line to defeat him once and for all.",
-          "vote_average": 7.004,
-          "vote_count": 232,
+          "vote_average": 7.0,
+          "vote_count": 233,
           "provider_page": "https://www.themoviedb.org/tv/66732/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/66732/season/5/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/66732/5/8",
@@ -1824,6 +2139,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/66732/5/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/66732/5/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/66732/5/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/66732/5/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/66732/5/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1849,21 +2209,21 @@
               ],
               "US": [
                 {
-                  "provider_id": 1796,
-                  "provider_name": "Netflix Standard with Ads",
-                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-                  "availability_type": "flatrate",
-                  "display_priority": 155,
-                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
-                },
-                {
                   "provider_id": 8,
                   "provider_name": "Netflix",
                   "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 0,
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
+                },
+                {
+                  "provider_id": 1796,
+                  "provider_name": "Netflix Standard with Ads",
+                  "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 154,
                   "deep_link": "https://www.themoviedb.org/tv/66732-stranger-things/watch?locale=US"
                 }
               ],

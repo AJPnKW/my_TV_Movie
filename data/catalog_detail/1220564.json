@@ -5,8 +5,8 @@
   "title": "The Secret Agent",
   "original_title": "O Agente Secreto",
   "release_date": "2025-07-23",
-  "poster_path": "/rZqolYhxMEe6TZZTjSmFw9crDTD.jpg",
-  "poster_local": "/assets/posters/movies/rZqolYhxMEe6TZZTjSmFw9crDTD.jpg",
+  "poster_path": "/iLE2YOmeboeTDC7GlOp1dzh1VFo.jpg",
+  "poster_local": "/assets/posters/movies/iLE2YOmeboeTDC7GlOp1dzh1VFo.jpg",
   "backdrop_path": "/eeGRpU64sIrRApjWXvTpK5Lep2K.jpg",
   "backdrop_local": "/assets/backdrops/movies/eeGRpU64sIrRApjWXvTpK5Lep2K.jpg",
   "status": "Released",
@@ -109,11 +109,11 @@
       "name": "Argentina"
     }
   ],
-  "popularity": 8.6467,
-  "vote_average": 7.297,
-  "vote_count": 659,
+  "popularity": 9.5238,
+  "vote_average": 7.302,
+  "vote_count": 666,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1220564",
@@ -199,6 +199,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/1220564",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/1220564",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/1220564",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/1220564",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/1220564",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -283,6 +328,15 @@
           "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "availability_type": "flatrate",
+          "display_priority": 6,
+          "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
           "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
@@ -291,17 +345,8 @@
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
-          "availability_type": "rent",
-          "display_priority": 8,
-          "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
-        },
-        {
-          "provider_id": 10,
-          "provider_name": "Amazon Video",
-          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
-          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
         {
@@ -310,7 +355,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
         {
@@ -319,7 +364,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
         {
@@ -328,7 +373,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
         {
@@ -337,6 +382,15 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
+          "display_priority": 17,
+          "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
+        },
+        {
+          "provider_id": 192,
+          "provider_name": "YouTube",
+          "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
@@ -345,17 +399,8 @@
           "provider_name": "YouTube",
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 19,
-          "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
-        },
-        {
-          "provider_id": 192,
-          "provider_name": "YouTube",
-          "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
-          "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
         {
@@ -364,7 +409,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
         {
@@ -373,7 +418,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         },
         {
@@ -382,7 +427,7 @@
           "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 127,
+          "display_priority": 126,
           "deep_link": "https://www.themoviedb.org/movie/1220564-o-agente-secreto/watch?locale=US"
         }
       ],

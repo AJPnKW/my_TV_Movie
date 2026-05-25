@@ -57,11 +57,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 61.6674,
-  "vote_average": 7.036,
-  "vote_count": 1499,
+  "popularity": 54.3749,
+  "vote_average": 7.05,
+  "vote_count": 1560,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1198994",
@@ -147,6 +147,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/1198994",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/1198994",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/1198994",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/1198994",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/1198994",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -158,6 +203,15 @@
           "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
           "availability_type": "flatrate",
           "display_priority": 3,
+          "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=CA"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 6,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=CA"
         },
         {
@@ -213,7 +267,7 @@
           "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
           "availability_type": "flatrate",
-          "display_priority": 7,
+          "display_priority": 6,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         },
         {
@@ -222,7 +276,7 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "rent",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         },
         {
@@ -231,6 +285,15 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         },
@@ -240,7 +303,16 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
+          "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
+        },
+        {
+          "provider_id": 3,
+          "provider_name": "Google Play Movies",
+          "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         },
         {
@@ -249,6 +321,15 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
+          "display_priority": 17,
+          "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
+        },
+        {
+          "provider_id": 192,
+          "provider_name": "YouTube",
+          "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         },
@@ -258,7 +339,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         },
         {
@@ -267,7 +348,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         },
         {
@@ -276,7 +357,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=US"
         }
       ],
@@ -306,6 +387,15 @@
           "logo_local": "",
           "availability_type": "buy",
           "display_priority": 4,
+          "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=GB"
+        },
+        {
+          "provider_id": 35,
+          "provider_name": "Rakuten TV",
+          "logo_path": "/bZvc9dXrXNly7cA0V4D9pR8yJwm.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 5,
           "deep_link": "https://www.themoviedb.org/movie/1198994-send-help/watch?locale=GB"
         },
         {

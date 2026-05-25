@@ -79,11 +79,11 @@
     "vote_average": 7.333,
     "vote_count": 3
   },
-  "popularity": 5.5803,
+  "popularity": 6.3596,
   "vote_average": 6.3,
   "vote_count": 20,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/155431",
@@ -129,15 +129,6 @@
           "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
         },
         {
-          "provider_id": 546,
-          "provider_name": "WOW Presents Plus",
-          "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-          "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-          "availability_type": "free",
-          "display_priority": 58,
-          "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-        },
-        {
           "provider_id": 2604,
           "provider_name": "Crave Amazon Channel",
           "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -154,7 +145,7 @@
           "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
           "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
           "availability_type": "flatrate",
-          "display_priority": 128,
+          "display_priority": 127,
           "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
         },
         {
@@ -163,7 +154,7 @@
           "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
           "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
           "availability_type": "free",
-          "display_priority": 128,
+          "display_priority": 127,
           "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
         }
       ],
@@ -235,7 +226,7 @@
       "provider_page": "https://www.themoviedb.org/tv/155431/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/155431/season/0",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/155431/0",
@@ -281,15 +272,6 @@
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
             },
             {
-              "provider_id": 546,
-              "provider_name": "WOW Presents Plus",
-              "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "availability_type": "free",
-              "display_priority": 58,
-              "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-            },
-            {
               "provider_id": 2604,
               "provider_name": "Crave Amazon Channel",
               "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -306,7 +288,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "flatrate",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             },
             {
@@ -315,7 +297,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "free",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             }
           ],
@@ -388,7 +370,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/0/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/0/1",
@@ -474,6 +456,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431//1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431//1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431//1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431//1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431//1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -497,15 +524,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -522,7 +540,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -531,7 +549,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -604,7 +622,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/0/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/0/2",
@@ -690,6 +708,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431//2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431//2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431//2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431//2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431//2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -713,15 +776,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -738,7 +792,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -747,7 +801,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -820,7 +874,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/0/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/0/3",
@@ -906,6 +960,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431//3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431//3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431//3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431//3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431//3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -929,15 +1028,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -954,7 +1044,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -963,7 +1053,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -1037,7 +1127,7 @@
       "provider_page": "https://www.themoviedb.org/tv/155431/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/155431/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/155431/1",
@@ -1083,15 +1173,6 @@
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
             },
             {
-              "provider_id": 546,
-              "provider_name": "WOW Presents Plus",
-              "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "availability_type": "free",
-              "display_priority": 58,
-              "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-            },
-            {
               "provider_id": 2604,
               "provider_name": "Crave Amazon Channel",
               "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -1108,7 +1189,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "flatrate",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             },
             {
@@ -1117,7 +1198,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "free",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             }
           ],
@@ -1190,7 +1271,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/1/1",
@@ -1276,6 +1357,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/1/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1299,15 +1425,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -1324,7 +1441,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -1333,7 +1450,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -1406,7 +1523,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/1/2",
@@ -1492,6 +1609,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/1/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1515,15 +1677,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -1540,7 +1693,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -1549,7 +1702,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -1622,7 +1775,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/1/3",
@@ -1708,6 +1861,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/1/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1731,15 +1929,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -1756,7 +1945,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -1765,7 +1954,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -1838,7 +2027,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/1/4",
@@ -1924,6 +2113,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/1/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -1947,15 +2181,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -1972,7 +2197,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -1981,7 +2206,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -2054,7 +2279,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/1/5",
@@ -2140,6 +2365,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/1/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2163,15 +2433,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -2188,7 +2449,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -2197,7 +2458,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -2270,7 +2531,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/1/6",
@@ -2356,6 +2617,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/1/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2379,15 +2685,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -2404,7 +2701,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -2413,7 +2710,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -2487,7 +2784,7 @@
       "provider_page": "https://www.themoviedb.org/tv/155431/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2",
@@ -2533,15 +2830,6 @@
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
             },
             {
-              "provider_id": 546,
-              "provider_name": "WOW Presents Plus",
-              "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "availability_type": "free",
-              "display_priority": 58,
-              "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-            },
-            {
               "provider_id": 2604,
               "provider_name": "Crave Amazon Channel",
               "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -2558,7 +2846,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "flatrate",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             },
             {
@@ -2567,7 +2855,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "free",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             }
           ],
@@ -2640,7 +2928,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/1",
@@ -2726,6 +3014,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2749,15 +3082,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -2774,7 +3098,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -2783,7 +3107,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -2856,7 +3180,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/2",
@@ -2942,6 +3266,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -2965,15 +3334,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -2990,7 +3350,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -2999,7 +3359,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -3072,7 +3432,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/3",
@@ -3158,6 +3518,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3181,15 +3586,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -3206,7 +3602,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -3215,7 +3611,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -3288,7 +3684,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/4",
@@ -3374,6 +3770,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3397,15 +3838,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -3422,7 +3854,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -3431,7 +3863,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -3504,7 +3936,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/5",
@@ -3590,6 +4022,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3613,15 +4090,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -3638,7 +4106,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -3647,7 +4115,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -3720,7 +4188,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/6",
@@ -3806,6 +4274,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -3829,15 +4342,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -3854,7 +4358,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -3863,7 +4367,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -3936,7 +4440,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/7",
@@ -4022,6 +4526,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4045,15 +4594,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -4070,7 +4610,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -4079,7 +4619,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -4152,7 +4692,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/2/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/2/8",
@@ -4238,6 +4778,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/2/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4261,15 +4846,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -4286,7 +4862,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -4295,7 +4871,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -4369,7 +4945,7 @@
       "provider_page": "https://www.themoviedb.org/tv/155431/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-05-20T20:29:58Z",
+      "availability_checked_at": "2026-05-25T01:24:09Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3",
@@ -4415,15 +4991,6 @@
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
             },
             {
-              "provider_id": 546,
-              "provider_name": "WOW Presents Plus",
-              "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-              "availability_type": "free",
-              "display_priority": 58,
-              "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-            },
-            {
               "provider_id": 2604,
               "provider_name": "Crave Amazon Channel",
               "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -4440,7 +5007,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "flatrate",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             },
             {
@@ -4449,7 +5016,7 @@
               "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
               "availability_type": "free",
-              "display_priority": 128,
+              "display_priority": 127,
               "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
             }
           ],
@@ -4522,7 +5089,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/1",
@@ -4608,6 +5175,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/1",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4631,15 +5243,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -4656,7 +5259,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -4665,7 +5268,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -4738,7 +5341,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/2",
@@ -4824,6 +5427,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/2",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -4847,15 +5495,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -4872,7 +5511,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -4881,7 +5520,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -4954,7 +5593,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/3",
@@ -5040,6 +5679,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/3",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5063,15 +5747,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -5088,7 +5763,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -5097,7 +5772,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -5170,7 +5845,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/4",
@@ -5256,6 +5931,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/4",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5279,15 +5999,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -5304,7 +6015,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -5313,7 +6024,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -5386,7 +6097,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/5",
@@ -5472,6 +6183,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/5",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5495,15 +6251,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -5520,7 +6267,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -5529,7 +6276,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -5602,7 +6349,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/6",
@@ -5688,6 +6435,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/6",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5711,15 +6503,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -5736,7 +6519,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -5745,7 +6528,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -5818,7 +6601,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/7",
@@ -5904,6 +6687,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/7",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -5927,15 +6755,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -5952,7 +6771,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -5961,7 +6780,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],
@@ -6034,7 +6853,7 @@
           "provider_page": "https://www.themoviedb.org/tv/155431/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/155431/season/3/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-05-20T20:29:58Z",
+          "availability_checked_at": "2026-05-25T01:24:09Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/155431/3/8",
@@ -6120,6 +6939,51 @@
                 "status": "warn",
                 "style": "query",
                 "priority": 8
+              },
+              {
+                "key": "nunflix",
+                "label": "Nunflix",
+                "href": "https://nunflix.org/embed/tv/155431/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidlink",
+                "label": "VidLink",
+                "href": "https://vidlink.pro/tv/155431/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_me",
+                "label": "VidSrc.me",
+                "href": "https://vidsrc.me/embed/tv/155431/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_to",
+                "label": "VidSrc.to",
+                "href": "https://vidsrc.to/embed/tv/155431/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
+              },
+              {
+                "key": "vidsrc_embed_ru",
+                "label": "vidsrc-embed.ru",
+                "href": "https://vidsrc-embed.ru/embed/tv/155431/3/8",
+                "type": "embed",
+                "status": "candidate",
+                "style": "path",
+                "priority": 9
               }
             ],
             "providers": {
@@ -6143,15 +7007,6 @@
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
                 },
                 {
-                  "provider_id": 546,
-                  "provider_name": "WOW Presents Plus",
-                  "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
-                  "availability_type": "free",
-                  "display_priority": 58,
-                  "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=CA"
-                },
-                {
                   "provider_id": 2604,
                   "provider_name": "Crave Amazon Channel",
                   "logo_path": "/qcKfSyX4xkXESjHrkO8cZLRJkn6.jpg",
@@ -6168,7 +7023,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "flatrate",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 },
                 {
@@ -6177,7 +7032,7 @@
                   "logo_path": "/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "logo_local": "/assets/logos/services/6dET59jNU0ADysghEjl8Unuc7Ca.jpg",
                   "availability_type": "free",
-                  "display_priority": 128,
+                  "display_priority": 127,
                   "deep_link": "https://www.themoviedb.org/tv/155431-rupaul-s-drag-race-uk-vs-the-world/watch?locale=US"
                 }
               ],

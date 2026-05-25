@@ -47,11 +47,11 @@
       "name": "United Kingdom"
     }
   ],
-  "popularity": 2.6191,
-  "vote_average": 6.646,
-  "vote_count": 773,
+  "popularity": 2.6883,
+  "vote_average": 6.642,
+  "vote_count": 775,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/862968",
@@ -137,6 +137,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/862968",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/862968",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/862968",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/862968",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/862968",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -162,21 +207,21 @@
       ],
       "US": [
         {
-          "provider_id": 1796,
-          "provider_name": "Netflix Standard with Ads",
-          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 155,
-          "deep_link": "https://www.themoviedb.org/movie/862968-pain-hustlers/watch?locale=US"
-        },
-        {
           "provider_id": 8,
           "provider_name": "Netflix",
           "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
           "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
           "availability_type": "flatrate",
-          "display_priority": 0,
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/movie/862968-pain-hustlers/watch?locale=US"
+        },
+        {
+          "provider_id": 1796,
+          "provider_name": "Netflix Standard with Ads",
+          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 154,
           "deep_link": "https://www.themoviedb.org/movie/862968-pain-hustlers/watch?locale=US"
         }
       ],

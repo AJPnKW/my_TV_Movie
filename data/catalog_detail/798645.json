@@ -67,11 +67,11 @@
       "name": "United Kingdom"
     }
   ],
-  "popularity": 27.9524,
-  "vote_average": 6.777,
-  "vote_count": 1526,
+  "popularity": 24.6392,
+  "vote_average": 6.776,
+  "vote_count": 1551,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-20T20:29:58Z",
+  "availability_checked_at": "2026-05-25T01:24:09Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/798645",
@@ -157,6 +157,51 @@
         "status": "warn",
         "style": "query",
         "priority": 8
+      },
+      {
+        "key": "nunflix",
+        "label": "Nunflix",
+        "href": "https://nunflix.org/embed/movie/798645",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidlink",
+        "label": "VidLink",
+        "href": "https://vidlink.pro/movie/798645",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_me",
+        "label": "VidSrc.me",
+        "href": "https://vidsrc.me/embed/movie/798645",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_to",
+        "label": "VidSrc.to",
+        "href": "https://vidsrc.to/embed/movie/798645",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
+      },
+      {
+        "key": "vidsrc_embed_ru",
+        "label": "vidsrc-embed.ru",
+        "href": "https://vidsrc-embed.ru/embed/movie/798645",
+        "type": "embed",
+        "status": "candidate",
+        "style": "path",
+        "priority": 9
       }
     ],
     "providers": {
@@ -286,7 +331,7 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "rent",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -295,6 +340,15 @@
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
@@ -303,17 +357,8 @@
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 9,
-          "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
-        },
-        {
-          "provider_id": 2,
-          "provider_name": "Apple TV Store",
-          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
-          "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 9,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -322,7 +367,7 @@
           "logo_path": "/9BgaNQRMDvVlji1JBZi6tcfxpKx.jpg",
           "logo_local": "/assets/logos/services/9BgaNQRMDvVlji1JBZi6tcfxpKx.jpg",
           "availability_type": "flatrate",
-          "display_priority": 11,
+          "display_priority": 9,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -331,7 +376,7 @@
           "logo_path": "/efu1Cqc63XrPBoreYnf2mn0Nizj.jpg",
           "logo_local": "/assets/logos/services/efu1Cqc63XrPBoreYnf2mn0Nizj.jpg",
           "availability_type": "flatrate",
-          "display_priority": 13,
+          "display_priority": 12,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -340,7 +385,7 @@
           "logo_path": "/fts6X10Jn4QT0X6ac3udKEn2tJA.jpg",
           "logo_local": "/assets/logos/services/fts6X10Jn4QT0X6ac3udKEn2tJA.jpg",
           "availability_type": "flatrate",
-          "display_priority": 15,
+          "display_priority": 14,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -349,7 +394,7 @@
           "logo_path": "/5wym1C0jAvJeGirPdgVpcW0CCuy.jpg",
           "logo_local": "/assets/logos/services/5wym1C0jAvJeGirPdgVpcW0CCuy.jpg",
           "availability_type": "flatrate",
-          "display_priority": 16,
+          "display_priority": 15,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -358,7 +403,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -367,7 +412,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 17,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -376,7 +421,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -385,7 +430,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -394,7 +439,7 @@
           "logo_path": "/hExO4PtimLIYn3kBOrzsejNv7cT.jpg",
           "logo_local": "/assets/logos/services/hExO4PtimLIYn3kBOrzsejNv7cT.jpg",
           "availability_type": "flatrate",
-          "display_priority": 24,
+          "display_priority": 23,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -403,7 +448,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -412,7 +457,7 @@
           "logo_path": "/19fkcOz0xeUgCVW8tO85uOYnYK9.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 36,
+          "display_priority": 35,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -421,7 +466,7 @@
           "logo_path": "/g2IaWyo6jCY0rIFjb4qgZ0bSmm3.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 43,
+          "display_priority": 42,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -430,7 +475,7 @@
           "logo_path": "/ctiRpS16dlaTXQBSsiFncMrgWmh.jpg",
           "logo_local": "/assets/logos/services/ctiRpS16dlaTXQBSsiFncMrgWmh.jpg",
           "availability_type": "flatrate",
-          "display_priority": 51,
+          "display_priority": 50,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -439,7 +484,7 @@
           "logo_path": "/ptmbGSttkyzawLbxx9MElmxKuVo.jpg",
           "logo_local": "/assets/logos/services/ptmbGSttkyzawLbxx9MElmxKuVo.jpg",
           "availability_type": "flatrate",
-          "display_priority": 53,
+          "display_priority": 52,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -448,7 +493,7 @@
           "logo_path": "/ywIoxSjoYJGUIbR6BfxUiCHdPi3.jpg",
           "logo_local": "/assets/logos/services/ywIoxSjoYJGUIbR6BfxUiCHdPi3.jpg",
           "availability_type": "flatrate",
-          "display_priority": 65,
+          "display_priority": 64,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -457,7 +502,7 @@
           "logo_path": "/yFGu4sSzwUMfhwmSsZgez8QhaVl.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 96,
+          "display_priority": 95,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
@@ -466,7 +511,7 @@
           "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 127,
+          "display_priority": 126,
           "deep_link": "https://www.themoviedb.org/movie/798645-the-running-man/watch?locale=US"
         },
         {
