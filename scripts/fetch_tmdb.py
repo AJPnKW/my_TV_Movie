@@ -585,6 +585,11 @@ def parse_season_spec(spec: str) -> Optional[List[int]]:
     mode, flt, _mn = parse_season_rule(spec)
     return flt if mode == "filter" else None
 
+
+def is_in_scope_input(item: Any) -> bool:
+    return isinstance(item, dict) and item.get("in_scope") is not False
+
+
 def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Load upstream seeds from data/inputs.json (canonical)."""
     inputs_path = INPUTS_JSON_DEFAULT
@@ -594,13 +599,21 @@ def load_inputs() -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     js = json.loads(read_text_file(inputs_path))
     if "tv" not in js or "movies" not in js:
         raise ValueError("inputs.json must contain canonical keys: { tv: [...], movies: [...] }")
-    tv = js.get("tv") or []
-    mv = js.get("movies") or []
-    if not isinstance(tv, list) or not isinstance(mv, list):
+    tv_raw = js.get("tv") or []
+    mv_raw = js.get("movies") or []
+    if not isinstance(tv_raw, list) or not isinstance(mv_raw, list):
         raise ValueError("inputs.json must contain arrays: { tv: [...], movies: [...] }")
+    tv = [item for item in tv_raw if is_in_scope_input(item)]
+    mv = [item for item in mv_raw if is_in_scope_input(item)]
 
     logging.info("[inputs] inputs_json=%s", inputs_path)
-    logging.info("[inputs] tv=%s movies=%s", len(tv), len(mv))
+    logging.info(
+        "[inputs] tv_active=%s tv_total=%s movies_active=%s movies_total=%s",
+        len(tv),
+        len(tv_raw),
+        len(mv),
+        len(mv_raw),
+    )
     return tv, mv
 # -------------------------
 # External IDs helpers

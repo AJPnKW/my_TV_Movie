@@ -134,6 +134,26 @@ def _missing_inputs(inputs: List[Any], index_rows: List[Any], errors: Any, media
     return missing
 
 
+def _inactive_inputs_present(inputs: List[Any], index_rows: List[Any], media: str) -> List[Dict[str, Any]]:
+    inactive_inputs = [row for row in inputs if isinstance(row, dict) and row.get("in_scope") is False]
+    index_keys = {_index_key(row, media) for row in index_rows if isinstance(row, dict)}
+    present: List[Dict[str, Any]] = []
+    for idx, row in enumerate(inactive_inputs):
+        key = _input_key(row, media)
+        if key not in index_keys:
+            continue
+        present.append(
+            {
+                "input_index": idx,
+                "media": media,
+                "tmdb_id": row.get("tmdb_id"),
+                "title": row.get("title") or row.get("name"),
+                "reason": "inactive input is present in catalog_index",
+            }
+        )
+    return present
+
+
 def main() -> int:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     log_path, logf = _load_log()
@@ -162,6 +182,8 @@ def main() -> int:
         active_movies = [row for row in input_movies if _is_active_input(row)] if isinstance(input_movies, list) else []
         missing_tv = _missing_inputs(input_tv if isinstance(input_tv, list) else [], index_shows if isinstance(index_shows, list) else [], data_errors, "tv")
         missing_movies = _missing_inputs(input_movies if isinstance(input_movies, list) else [], index_movies if isinstance(index_movies, list) else [], data_errors, "movie")
+        inactive_tv_present = _inactive_inputs_present(input_tv if isinstance(input_tv, list) else [], index_shows if isinstance(index_shows, list) else [], "tv")
+        inactive_movies_present = _inactive_inputs_present(input_movies if isinstance(input_movies, list) else [], index_movies if isinstance(index_movies, list) else [], "movie")
 
         _check("inputs_json_exists", INPUTS_JSON.exists(), "data/inputs.json must exist", checks, logf)
         _check("catalog_index_exists", INDEX_JSON.exists(), "data/catalog_index.json must exist", checks, logf)
@@ -176,6 +198,8 @@ def main() -> int:
 
         _check("active_tv_inputs_reconciled", not missing_tv, f"active_tv={len(active_tv)} catalog_index_shows={len(index_shows) if isinstance(index_shows, list) else 0} unresolved_unreported={len(missing_tv)}", checks, logf)
         _check("active_movie_inputs_reconciled", not missing_movies, f"active_movies={len(active_movies)} catalog_index_movies={len(index_movies) if isinstance(index_movies, list) else 0} unresolved_unreported={len(missing_movies)}", checks, logf)
+        _check("inactive_tv_inputs_excluded", not inactive_tv_present, f"inactive_present={len(inactive_tv_present)}", checks, logf)
+        _check("inactive_movie_inputs_excluded", not inactive_movies_present, f"inactive_present={len(inactive_movies_present)}", checks, logf)
         _check("detail_file_count_matches_index", len(detail_files) >= (len(index_shows) if isinstance(index_shows, list) else 0) + (len(index_movies) if isinstance(index_movies, list) else 0), f"detail_files={len(detail_files)} index_total={(len(index_shows) if isinstance(index_shows, list) else 0) + (len(index_movies) if isinstance(index_movies, list) else 0)}", checks, logf)
         _check("calendar_has_days", isinstance(calendar_days, dict) and bool(calendar_days), f"calendar day buckets={len(calendar_days) if isinstance(calendar_days, dict) else 0}", checks, logf)
         _check("monolith_reference_still_builds", isinstance(data_shows, list) and isinstance(data_movies, list), "data/data.json remains available as a non-runtime reference artifact", checks, logf)
@@ -206,6 +230,10 @@ def main() -> int:
                 "tv": missing_tv,
                 "movies": missing_movies,
             },
+            "inactive_inputs_present": {
+                "tv": inactive_tv_present,
+                "movies": inactive_movies_present,
+            },
             "checks": [{"name": name, "passed": passed, "detail": detail} for name, passed, detail in checks],
             "result": "OK" if ok else "FAIL",
         }
@@ -214,6 +242,8 @@ def main() -> int:
         _log(logf, f"[qa_pipeline_integrity] report={report_path}")
         if missing_tv or missing_movies:
             _log(logf, "[qa_pipeline_integrity] unresolved_unreported_inputs follow in report JSON")
+        if inactive_tv_present or inactive_movies_present:
+            _log(logf, "[qa_pipeline_integrity] inactive_inputs_present follow in report JSON")
         return 0 if ok else 3
     finally:
         logf.close()

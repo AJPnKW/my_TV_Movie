@@ -207,7 +207,7 @@ Write-Host '== Python syntax =='
 if (-not (Test-CommandAvailable python)) {
     Add-CheckError 'python is not available for Python syntax checks'
 } else {
-    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_config.py scripts/validate_streaming_episode_cards.py
+    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_config.py scripts/validate_streaming_episode_cards.py scripts/fetch_tmdb.py scripts/qa_pipeline_integrity.py tools/inputs_editor/inputs_editor_server.py
     if ($LASTEXITCODE -ne 0) { Add-CheckError 'Python syntax failed' }
 }
 
@@ -565,6 +565,17 @@ if (-not (Test-Path -LiteralPath 'scripts/trakt_two_way_sync.py')) {
 $serverText = Get-Content -Raw -LiteralPath 'tools/inputs_editor/inputs_editor_server.py'
 foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_queue.json')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing watch-state queue API contract: $needle" }
+}
+foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', 'web_root not in file_path.parents')) {
+    if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing hardened save/scope contract: $needle" }
+}
+$fetchTmdbText = Get-Content -Raw -LiteralPath 'scripts/fetch_tmdb.py'
+foreach ($needle in @('is_in_scope_input', 'tv_active', 'movies_active')) {
+    if ($fetchTmdbText -notlike "*$needle*") { Add-CheckError "fetch_tmdb.py missing in_scope build filtering contract: $needle" }
+}
+$inputsEditorText = Get-Content -Raw -LiteralPath 'web/inputs_editor.html'
+foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refresh-runtime', 'apiFetch')) {
+    if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing hardened save/refresh contract: $needle" }
 }
 foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'ids:', 'show:', 'sync_status')) {
     if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing queue write contract: $needle" }

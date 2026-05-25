@@ -14,6 +14,7 @@ import copy
 import json
 import mimetypes
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -31,10 +32,13 @@ WEB_DIR = REPO_ROOT / "web"
 UI_FILE = WEB_DIR / "inputs_editor.html"
 CONFIG_JSON = WEB_DIR / "config.json"
 BACKUP_DIR = DATA_DIR / "backups"
+MAX_JSON_BODY_BYTES = 5 * 1024 * 1024
 
 TMDB_KEY_ENV = "API_TMDB_KEY"
 TMDB_BASE = "https://api.themoviedb.org/3"
 TMDB_IMG_BASE = "https://image.tmdb.org/t/p/"
+SEASON_TOKEN_RE = re.compile(r"^S?\d+(?:\s*-\s*S?\d+)?$", re.IGNORECASE)
+SEASON_MIN_RE = re.compile(r"^S?\d+\+$", re.IGNORECASE)
 
 
 def _now_utc_iso() -> str:
@@ -68,6 +72,24 @@ def _text(
     handler.send_header("Access-Control-Allow-Origin", "*")
     handler.end_headers()
     handler.wfile.write(data)
+
+
+def _read_request_json(handler: BaseHTTPRequestHandler) -> dict:
+    raw_length = str(handler.headers.get("Content-Length") or "0").strip()
+    try:
+        content_length = int(raw_length)
+    except ValueError as exc:
+        raise ValueError("Invalid Content-Length") from exc
+    if content_length < 0 or content_length > MAX_JSON_BODY_BYTES:
+        raise ValueError(f"JSON payload is too large; limit is {MAX_JSON_BODY_BYTES} bytes")
+    body = handler.rfile.read(content_length).decode("utf-8", errors="replace")
+    try:
+        obj = json.loads(body) if body.strip() else {}
+    except Exception as exc:
+        raise ValueError(f"Invalid JSON: {exc}") from exc
+    if not isinstance(obj, dict):
+        raise ValueError("JSON payload must be an object")
+    return obj
 
 
 def _read_inputs() -> dict:
@@ -198,7 +220,90 @@ def _backup_inputs() -> str | None:
     return str(backup_path)
 
 
+def _coerce_bool(value: object, default: bool) -> bool:
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if text in {"false", "0", "no", "off", "out", "inactive"}:
+            return False
+        if text in {"true", "1", "yes", "on", "in", "active"}:
+            return True
+    return default
+
+
+def _normalize_tags(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        raw_items = value.split(",")
+    elif isinstance(value, list):
+        raw_items = value
+    else:
+        raise ValueError("tags must be a list or comma-separated string")
+    tags: list[str] = []
+    seen: set[str] = set()
+    for item in raw_items:
+        tag = str(item or "").strip()
+        key = tag.casefold()
+        if tag and key not in seen:
+            seen.add(key)
+            tags.append(tag)
+    return tags
+
+
+def _normalize_season_spec(value: object) -> str:
+    spec = str(value or "*").strip()
+    if not spec or spec == "*":
+        return "*"
+    compact = re.sub(r"\s+", "", spec)
+    if SEASON_MIN_RE.match(compact):
+        season_num = int(compact.rstrip("+").lstrip("Ss"))
+        if season_num <= 0:
+            raise ValueError("season_spec minimum must be greater than zero")
+        return f"{season_num}+"
+
+    seasons: set[int] = set()
+    for token in compact.split(","):
+        if not token:
+            continue
+        if not SEASON_TOKEN_RE.match(token):
+            raise ValueError(f"invalid season_spec token '{token}'")
+        token = re.sub(r"[Ss]", "", token)
+        if "-" in token:
+            start_raw, end_raw = token.split("-", 1)
+            start, end = int(start_raw), int(end_raw)
+            if start <= 0 or end <= 0:
+                raise ValueError("season_spec seasons must be greater than zero")
+            if start > end:
+                start, end = end, start
+            seasons.update(range(start, end + 1))
+        else:
+            season_num = int(token)
+            if season_num <= 0:
+                raise ValueError("season_spec seasons must be greater than zero")
+            seasons.add(season_num)
+    if not seasons:
+        return "*"
+    ordered = sorted(seasons)
+    ranges: list[str] = []
+    start = prev = ordered[0]
+    for current in ordered[1:] + [None]:
+        if current == prev + 1:
+            prev = current
+            continue
+        ranges.append(str(start) if start == prev else f"{start}-{prev}")
+        start = prev = current
+    return ",".join(ranges)
+
+
 def _normalize_media_entry(entry: dict, media_type: str) -> dict:
+    if not isinstance(entry, dict):
+        raise ValueError(f"{media_type} entries must be objects")
     normalized = copy.deepcopy(entry)
     normalized["title"] = str(normalized.get("title", "")).strip()
     if not normalized["title"]:
@@ -210,21 +315,50 @@ def _normalize_media_entry(entry: dict, media_type: str) -> dict:
         else:
             raise ValueError(f"{media_type} '{normalized['title']}' requires an integer tmdb_id")
     normalized["tmdb_id"] = tmdb_id
-    normalized["in_scope"] = normalized.get("in_scope", True) is not False
+    if normalized["tmdb_id"] <= 0:
+        raise ValueError(f"{media_type} '{normalized['title']}' requires a positive tmdb_id")
+    normalized["in_scope"] = _coerce_bool(normalized.get("in_scope"), True)
     if media_type == "tv":
-        normalized["season_spec"] = str(normalized.get("season_spec", "*") or "*").strip() or "*"
-        normalized["include_future"] = normalized.get("include_future", True) is not False
-    if "tags" in normalized:
-        tags = normalized.get("tags") or []
-        if not isinstance(tags, list):
-            raise ValueError(f"{media_type} '{normalized['title']}' tags must be a list")
-        normalized["tags"] = [str(tag).strip() for tag in tags if str(tag).strip()]
-    if "notes" in normalized:
-        normalized["notes"] = str(normalized.get("notes", "") or "").strip()
+        try:
+            normalized["season_spec"] = _normalize_season_spec(normalized.get("season_spec", "*"))
+        except ValueError as exc:
+            raise ValueError(f"tv '{normalized['title']}' {exc}") from exc
+        normalized["include_future"] = _coerce_bool(normalized.get("include_future"), True)
+    normalized["tags"] = _normalize_tags(normalized.get("tags"))
+    normalized["notes"] = str(normalized.get("notes", "") or "").strip()
     return normalized
 
 
-def _validate_inputs_payload(obj: dict) -> dict:
+def _dedupe_entries(entries: list[dict], media_type: str, warnings: list[str]) -> list[dict]:
+    by_id: dict[int, dict] = {}
+    order: list[int] = []
+    for raw in entries:
+        entry = _normalize_media_entry(raw, media_type)
+        tmdb_id = int(entry["tmdb_id"])
+        if tmdb_id not in by_id:
+            by_id[tmdb_id] = entry
+            order.append(tmdb_id)
+            continue
+
+        existing = by_id[tmdb_id]
+        warnings.append(f"merged duplicate {media_type} tmdb_id={tmdb_id}")
+        existing["in_scope"] = bool(existing.get("in_scope")) or bool(entry.get("in_scope"))
+        if not existing.get("title") and entry.get("title"):
+            existing["title"] = entry["title"]
+        if media_type == "tv":
+            if existing.get("season_spec") in {"", "*"} or entry.get("season_spec") == "*":
+                existing["season_spec"] = "*"
+            elif existing.get("season_spec") != entry.get("season_spec"):
+                warnings.append(f"kept first season_spec for duplicate tv tmdb_id={tmdb_id}")
+            existing["include_future"] = bool(existing.get("include_future")) or bool(entry.get("include_future"))
+        merged_tags = _normalize_tags([*(existing.get("tags") or []), *(entry.get("tags") or [])])
+        existing["tags"] = merged_tags
+        if not existing.get("notes") and entry.get("notes"):
+            existing["notes"] = entry["notes"]
+    return [by_id[tmdb_id] for tmdb_id in order]
+
+
+def _validate_inputs_payload(obj: dict) -> tuple[dict, list[str]]:
     if not isinstance(obj, dict):
         raise ValueError("inputs payload must be an object")
     tv = obj.get("tv", [])
@@ -232,11 +366,12 @@ def _validate_inputs_payload(obj: dict) -> dict:
     watchlist = obj.get("watchlist", [])
     if not isinstance(tv, list) or not isinstance(movies, list) or not isinstance(watchlist, list):
         raise ValueError("inputs must contain lists: tv, movies, watchlist")
+    warnings: list[str] = []
     validated = copy.deepcopy(obj)
-    validated["tv"] = [_normalize_media_entry(entry, "tv") for entry in tv]
-    validated["movies"] = [_normalize_media_entry(entry, "movie") for entry in movies]
+    validated["tv"] = _dedupe_entries(tv, "tv", warnings)
+    validated["movies"] = _dedupe_entries(movies, "movie", warnings)
     validated["watchlist"] = watchlist
-    return validated
+    return validated, warnings
 
 
 def _run_editor_refresh() -> dict:
@@ -474,6 +609,10 @@ class Handler(BaseHTTPRequestHandler):
 
         if path.startswith("/web/"):
             file_path = (REPO_ROOT / path.lstrip("/")).resolve()
+            web_root = WEB_DIR.resolve()
+            if web_root != file_path and web_root not in file_path.parents:
+                _text(self, 403, "Forbidden")
+                return
             if not file_path.exists() or not file_path.is_file():
                 _text(self, 404, "Not found")
                 return
@@ -513,13 +652,10 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
 
         if parsed.path == "/api/config":
-            body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
-                "utf-8", errors="replace"
-            )
             try:
-                obj = json.loads(body)
-            except Exception as exc:
-                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+                obj = _read_request_json(self)
+            except ValueError as exc:
+                _json(self, 400, {"ok": False, "error": str(exc)})
                 return
             try:
                 CONFIG_JSON.write_text(json.dumps(obj, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
@@ -535,13 +671,10 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if parsed.path == "/api/push-inputs":
-            body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
-                "utf-8", errors="replace"
-            )
             try:
-                obj = json.loads(body) if body.strip() else {}
-            except Exception as exc:
-                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+                obj = _read_request_json(self)
+            except ValueError as exc:
+                _json(self, 400, {"ok": False, "error": str(exc)})
                 return
             result = _push_inputs_to_remote(
                 str(obj.get("remote") or "github"),
@@ -551,13 +684,10 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if parsed.path == "/api/watch-state-queue":
-            body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
-                "utf-8", errors="replace"
-            )
             try:
-                obj = json.loads(body)
-            except Exception as exc:
-                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+                obj = _read_request_json(self)
+            except ValueError as exc:
+                _json(self, 400, {"ok": False, "error": str(exc)})
                 return
             try:
                 if isinstance(obj, dict) and isinstance(obj.get("record"), dict):
@@ -575,13 +705,10 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if parsed.path == "/api/trakt/sync":
-            body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
-                "utf-8", errors="replace"
-            )
             try:
-                obj = json.loads(body) if body.strip() else {}
-            except Exception as exc:
-                _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+                obj = _read_request_json(self)
+            except ValueError as exc:
+                _json(self, 400, {"ok": False, "error": str(exc)})
                 return
             result = _run_trakt_sync(dry_run=obj.get("dry_run", True) is not False)
             _json(self, 200 if result.get("ok") else 500, result)
@@ -591,17 +718,14 @@ class Handler(BaseHTTPRequestHandler):
             _json(self, 404, {"ok": False, "error": "Not found"})
             return
 
-        body = self.rfile.read(int(self.headers.get("Content-Length") or "0")).decode(
-            "utf-8", errors="replace"
-        )
         try:
-            obj = json.loads(body)
-        except Exception as exc:
-            _json(self, 400, {"ok": False, "error": f"Invalid JSON: {exc}"})
+            obj = _read_request_json(self)
+        except ValueError as exc:
+            _json(self, 400, {"ok": False, "error": str(exc)})
             return
 
         try:
-            validated = _validate_inputs_payload(obj)
+            validated, warnings = _validate_inputs_payload(obj)
         except ValueError as exc:
             _json(self, 400, {"ok": False, "error": str(exc)})
             return
@@ -609,7 +733,24 @@ class Handler(BaseHTTPRequestHandler):
         validated["generated_utc"] = _now_utc_iso()
         backup_path = _backup_inputs()
         _atomic_write(INPUTS_JSON, validated)
-        _json(self, 200, {"ok": True, "saved": str(INPUTS_JSON), "backup": backup_path, "utc": validated["generated_utc"]})
+        _json(
+            self,
+            200,
+            {
+                "ok": True,
+                "saved": str(INPUTS_JSON),
+                "backup": backup_path,
+                "utc": validated["generated_utc"],
+                "inputs": validated,
+                "warnings": warnings,
+                "counts": {
+                    "tv": len(validated["tv"]),
+                    "movies": len(validated["movies"]),
+                    "active_tv": sum(1 for item in validated["tv"] if item.get("in_scope") is not False),
+                    "active_movies": sum(1 for item in validated["movies"] if item.get("in_scope") is not False),
+                },
+            },
+        )
 
 
 def main():

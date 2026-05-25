@@ -125,6 +125,7 @@ DATE: 2026-01-20
           <input id="qMine" type="search" placeholder="Filter my list…"/>
           <button id="btnReload">Reload</button>
           <button class="primary" id="btnSave">Save</button>
+          <button id="btnRefreshRuntime">Save + Refresh Runtime</button>
           <button id="btnPushGitHub">Push GitHub</button>
         </div>
         <div class="inputs_editor_row">
@@ -174,8 +175,22 @@ function showBanner(lines){ const b=document.getElementById("banner"); b.style.d
 function escHtml(v){ return (v??"").toString().replace(/[&<>\"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[ch]||ch)); }
 function normalizeTags(val){ return (val||"").split(",").map(x=>x.trim()).filter(Boolean); }
 
-async function apiGet(p){ const r=await fetch(p,{cache:"no-store"}); return await r.json(); }
-async function apiPost(p,o){ const r=await fetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)}); return await r.json(); }
+async function apiFetch(p,options){
+  try{
+    const r=await fetch(p,{cache:"no-store",...(options||{})});
+    const text=await r.text();
+    let data=null;
+    try{ data=text ? JSON.parse(text) : {}; }
+    catch(_){ return {ok:false,error:`Server returned non-JSON response (${r.status})`}; }
+    if(!r.ok && data.ok!==false) data.ok=false;
+    if(!r.ok && !data.error) data.error=`Request failed with HTTP ${r.status}`;
+    return data;
+  }catch(ex){
+    return {ok:false,error:ex?.message||String(ex)||"Request failed"};
+  }
+}
+async function apiGet(p){ return await apiFetch(p); }
+async function apiPost(p,o){ return await apiFetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o||{})}); }
 
 async function loadInputs(){
   const j=await apiGet("/api/inputs"); if(!j.ok) throw new Error(j.error||"load failed");
@@ -337,6 +352,7 @@ function removeSelected(){
 
 async function tmdbSearch(){
   const q=document.getElementById("q").value.trim(); if(!q) return;
+  document.getElementById("tmdbStatus").textContent="TMDB: searching";
   const j=await apiGet("/api/tmdb/search?q="+encodeURIComponent(q));
   if(!j.ok){ document.getElementById("tmdbStatus").textContent="TMDB: disabled"; alert(j.error||"TMDB search failed"); return; }
   imgBase=j.img_base||imgBase; document.getElementById("tmdbStatus").textContent="TMDB: ok";
@@ -661,8 +677,28 @@ async function saveInputs(){
   const msg=document.getElementById("saveMsg"); msg.textContent="";
   const j=await apiPost("/api/inputs",inputs);
   if(!j.ok){ msg.textContent="Save failed: "+(j.error||"unknown"); return false; }
-  msg.textContent="Saved @ "+j.utc; setDirty(false);
+  const warnings=Array.isArray(j.warnings)&&j.warnings.length ? ` (${j.warnings.length} cleanup warning${j.warnings.length===1?"":"s"})` : "";
+  msg.textContent="Saved @ "+j.utc+warnings;
+  if(j.inputs) inputs=j.inputs;
+  setDirty(false);
   return true;
+}
+
+async function saveAndRefreshRuntime(){
+  const msg=document.getElementById("saveMsg");
+  msg.textContent="Saving before runtime refresh...";
+  const saved=await saveInputs();
+  if(!saved) return;
+  msg.textContent="Refreshing generated runtime data...";
+  const j=await apiPost("/api/refresh-runtime",{});
+  if(!j.ok){
+    const tail=(j.stderr||j.stdout||j.error||"runtime refresh failed").toString().slice(-600);
+    msg.textContent="Runtime refresh failed: "+tail;
+    return;
+  }
+  msg.textContent="Runtime refreshed. Reloading inputs...";
+  await loadInputs();
+  msg.textContent="Runtime refreshed @ "+new Date().toLocaleTimeString();
 }
 
 async function pushInputsToGitHub(){
@@ -708,6 +744,7 @@ async function pushInputsToGitHub(){
   document.getElementById("btnQueueClear").onclick=queueClear;
   document.getElementById("btnReload").onclick=loadInputs;
   document.getElementById("btnSave").onclick=()=>{ void saveInputs(); };
+  document.getElementById("btnRefreshRuntime").onclick=()=>{ void saveAndRefreshRuntime(); };
   document.getElementById("btnPushGitHub").onclick=()=>{ void pushInputsToGitHub(); };
   document.getElementById("qMine").addEventListener("input",()=>renderMine());
   document.getElementById("mineType").addEventListener("change",renderMine);
