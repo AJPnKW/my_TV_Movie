@@ -2,6 +2,10 @@
 
 ## 2026-05-25
 
+- Hardened the canonical inputs scope flow so `scripts/fetch_tmdb.py` excludes `in_scope: false` rows before building runtime data, the inputs editor server normalizes/dedupes validated media rows with bounded JSON/error handling, and the editor UI exposes a save plus runtime refresh path.
+- Extended pipeline/runtime validation to fail when inactive inputs remain in `catalog_index.json`; regenerated runtime data removed out-of-scope TMDB show `72590`.
+- Commit: `a56c30619c` harden-inputs-scope-pipeline.
+
 - Changed `build-data` workflow concurrency to cancel older in-progress data builds on `main`, so newer input/config pushes cannot leave stale data generation running behind the current commit.
 - Commit: `30e459d91d` cancel-stale-data-builds.
 
