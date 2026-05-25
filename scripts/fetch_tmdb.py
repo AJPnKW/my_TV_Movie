@@ -151,6 +151,7 @@ def load_config(path: Path) -> Config:
     if not isinstance(raw_providers, list) or not raw_providers:
         raise ValueError("web/config.json streaming.embed_providers must be a non-empty array")
     embed_providers: List[Dict[str, str]] = []
+    inactive_template_statuses = {"blocked", "archived", "disabled"}
     for idx, provider in enumerate(raw_providers):
         if not isinstance(provider, dict):
             raise ValueError(f"streaming.embed_providers[{idx}] must be an object")
@@ -158,8 +159,14 @@ def load_config(path: Path) -> Config:
         name = str(provider.get("name") or key).strip()
         tv_template = str(provider.get("tv_template") or "").strip()
         movie_template = str(provider.get("movie_template") or "").strip()
-        if not key or not tv_template or not movie_template:
-            raise ValueError(f"streaming.embed_providers[{idx}] must define key, tv_template, movie_template")
+        status = str(provider.get("status") or "ok").strip().lower()
+        if not key:
+            raise ValueError(f"streaming.embed_providers[{idx}] must define key")
+        if not tv_template or not movie_template:
+            if status in inactive_template_statuses:
+                logging.info("[config] skipping non-buildable embed provider key=%s status=%s", key, status)
+                continue
+            raise ValueError(f"streaming.embed_providers[{idx}] must define tv_template and movie_template unless status is blocked/archived/disabled")
         embed_providers.append(
             {
                 "key": key,
@@ -167,10 +174,12 @@ def load_config(path: Path) -> Config:
                 "tv_template": tv_template,
                 "movie_template": movie_template,
                 "style": str(provider.get("style") or "path").strip(),
-                "status": str(provider.get("status") or "ok").strip(),
+                "status": status,
             }
         )
     fallback_order = [str(x).strip() for x in (streaming.get("fallback_order") or []) if str(x).strip()]
+    provider_keys = {provider["key"] for provider in embed_providers}
+    fallback_order = [key for key in fallback_order if key in provider_keys]
     if not fallback_order:
         fallback_order = [provider["key"] for provider in embed_providers]
 

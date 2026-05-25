@@ -207,7 +207,7 @@ Write-Host '== Python syntax =='
 if (-not (Test-CommandAvailable python)) {
     Add-CheckError 'python is not available for Python syntax checks'
 } else {
-    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_episode_cards.py
+    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_config.py scripts/validate_streaming_episode_cards.py
     if ($LASTEXITCODE -ne 0) { Add-CheckError 'Python syntax failed' }
 }
 
@@ -215,6 +215,9 @@ Write-Host '== Streaming provider and episode-card baseline =='
 if (-not (Test-CommandAvailable python)) {
     Add-CheckError 'python is not available for streaming provider/card validation'
 } else {
+    $streamingConfigOutput = & python scripts/validate_streaming_config.py 2>&1
+    Write-Host $streamingConfigOutput
+    if ($LASTEXITCODE -ne 0) { Add-CheckError "Streaming config validation failed: $streamingConfigOutput" }
     $providerCardOutput = & python scripts/validate_streaming_episode_cards.py 2>&1
     Write-Host $providerCardOutput
     if ($LASTEXITCODE -ne 0) { Add-CheckError "Streaming provider/card baseline failed: $providerCardOutput" }

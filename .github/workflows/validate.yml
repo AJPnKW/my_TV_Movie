@@ -21,6 +21,8 @@ jobs:
           node-version: "24"
       - name: Python compile
         run: python -m compileall scripts tools/inputs_editor
+      - name: Streaming config validation
+        run: python scripts/validate_streaming_config.py
       - name: Availability validation
         run: |
           python scripts/validate_secret_name_drift.py

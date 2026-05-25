@@ -45,6 +45,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Validate streaming config
+        run: python scripts/validate_streaming_config.py
+
       - name: Run full data pipeline
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
