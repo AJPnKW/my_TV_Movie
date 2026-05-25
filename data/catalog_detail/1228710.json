@@ -55,7 +55,7 @@
   "vote_average": 6.755,
   "vote_count": 196,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-05-25T12:50:23Z",
+  "availability_checked_at": "2026-05-25T15:52:50Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1228710",
@@ -190,7 +190,17 @@
     ],
     "providers": {
       "CA": [],
-      "US": [],
+      "US": [
+        {
+          "provider_id": 257,
+          "provider_name": "fuboTV",
+          "logo_path": "/9BgaNQRMDvVlji1JBZi6tcfxpKx.jpg",
+          "logo_local": "/assets/logos/services/9BgaNQRMDvVlji1JBZi6tcfxpKx.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 9,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        }
+      ],
       "GB": [],
       "AU": []
     }
