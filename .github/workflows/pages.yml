@@ -4,6 +4,18 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
+    paths:
+      - "web/**"
+      - "assets/**"
+      - "data/data.json"
+      - "data/catalog_index.json"
+      - "data/calendar.json"
+      - "data/catalog_detail/**"
+      - "data/discover_registry.json"
+      - "data/provider_registry.json"
+      - "data/watch_sources_index.json"
+      - "docs/**"
+      - ".github/workflows/pages.yml"
 
 permissions:
   contents: read

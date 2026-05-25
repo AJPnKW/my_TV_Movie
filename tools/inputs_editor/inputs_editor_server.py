@@ -240,13 +240,13 @@ def _validate_inputs_payload(obj: dict) -> dict:
 
 
 def _run_editor_refresh() -> dict:
-    command = [sys.executable, str(REPO_ROOT / "scripts" / "run_pipeline_full.py"), "--editor-refresh"]
+    command = [sys.executable, str(REPO_ROOT / "scripts" / "run_pipeline_tmdb_trakt.py")]
     completed = subprocess.run(
         command,
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
-        timeout=900,
+        timeout=1800,
         check=False,
     )
     return {
