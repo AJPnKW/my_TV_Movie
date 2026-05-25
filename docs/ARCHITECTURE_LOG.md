@@ -2,6 +2,9 @@
 
 ## 2026-05-25
 
+- Changed `build-data` workflow concurrency to cancel older in-progress data builds on `main`, so newer input/config pushes cannot leave stale data generation running behind the current commit.
+- Commit: `30e459d91d` cancel-stale-data-builds.
+
 - Hardened the inputs-editor update path so local runtime refresh uses the canonical `scripts/run_pipeline_tmdb_trakt.py` pipeline instead of the narrower asset refresh path.
 - Prevented GitHub Pages from deploying raw `data/inputs.json` pushes before generated runtime artifacts exist by limiting push-triggered Pages deploys to web, asset, generated data, and docs paths; `build-data` remains responsible for dispatching Pages after generated artifacts are committed.
 - Made `build-data` fail when `scripts/qa_pipeline_integrity.py` finds unreconciled active inputs, so “saved in inputs but missing from runtime catalog” is a hard pipeline failure.
