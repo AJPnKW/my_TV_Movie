@@ -1,5 +1,12 @@
 # Architecture Log
 
+## 2026-05-25
+
+- Hardened the inputs-editor update path so local runtime refresh uses the canonical `scripts/run_pipeline_tmdb_trakt.py` pipeline instead of the narrower asset refresh path.
+- Prevented GitHub Pages from deploying raw `data/inputs.json` pushes before generated runtime artifacts exist by limiting push-triggered Pages deploys to web, asset, generated data, and docs paths; `build-data` remains responsible for dispatching Pages after generated artifacts are committed.
+- Made `build-data` fail when `scripts/qa_pipeline_integrity.py` finds unreconciled active inputs, so “saved in inputs but missing from runtime catalog” is a hard pipeline failure.
+- Commit: `8b3a9e0276` harden-input-update-pipeline.
+
 ## 2026-05-20
 
 - Rebased Streaming popup provider buttons on `web/config.json -> streaming.embed_providers[]`, with `ok`/`warn` default-visible, `candidate` hidden unless explicitly enabled, and `blocked` suppressed.
