@@ -62,3 +62,21 @@ videos_local/
 /reports/media_renamer
 /.ai_uploads
 /.ai_backups
+
+# Generated evidence and handoff bundles
+reports/**
+!reports/
+!reports/media_renamer/
+!reports/media_renamer/.gitkeep
+!reports/ui_stabilization/
+!reports/ui_stabilization/asset_optimization.json
+!reports/ui_stabilization/repo_cleanup_decisions.md
+!reports/ui_stabilization/ui_stabilization_report.md
+!reports/ui_stabilization/visual_gap_analysis.md
+codex_prompts/
+overlay_*/
+tools/archieved/
+scripts.md
+scripts/scripts.md
+scripts/*.docx
+web/*.old.html

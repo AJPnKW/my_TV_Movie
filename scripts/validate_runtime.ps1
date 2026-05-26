@@ -273,16 +273,23 @@ $driftPaths = @(
     'overlay',
     'overlay_patch',
     'overlay_ui_contract',
+    'codex_prompts',
+    'tools/archieved',
+    'scripts.md',
+    'scripts/scripts.md',
+    'web/palette_swatch.old.html',
     'README_APPLY.md',
     'README_overlay_apply.txt'
 )
 foreach ($path in $driftPaths) {
     if (Test-Path -LiteralPath $path) { Add-CheckError "Obsolete drift artifact still exists: $path" }
 }
+Get-ChildItem -Force -Directory -Filter 'overlay_*' |
+    ForEach-Object { Add-CheckError "Obsolete overlay bundle still exists: $($_.Name)" }
 $badNames = & git ls-files |
     Where-Object {
         $_ -notmatch '^docs/_archive/' -and
-        $_ -match '(?i)(placeholder|apply_overlay|overlay_patch|ui_fix_patch|fix_images\.js)'
+        $_ -match '(?i)(placeholder|apply_overlay|overlay_patch|ui_fix_patch|fix_images\.js|palette_swatch\.old|scripts/scripts\.md|scripts\.md$)'
     }
 foreach ($path in $badNames) {
     Add-CheckError "Forbidden placeholder/overlay file name: $path"

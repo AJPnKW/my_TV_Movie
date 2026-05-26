@@ -1,21 +1,29 @@
-# Availability Status Codex Handoff Bundle
+# my_TV_Movie
 
-## Purpose
-This bundle is the authoritative design and execution handoff for implementing the availability-status enrichment feature in the `my_TV_Movie` project.
+This repository uses `docs/00_master_contract.html` as the current source of truth. The short Markdown docs in `docs/` are navigation aids for agents and implementation passes.
 
-## Intended use
-1. Add these docs into the repo or keep them beside the repo.
-2. Give the included Codex prompt to Codex together with the current repo.
-3. Require Codex to implement against the current repo state only.
-4. Require grouped implementation, grouped fixes, grouped QA, and artifact outputs.
+## Active Entry Points
 
-## Included documents
-- `docs/design/availability_status_solution_design.md`
-- `docs/architecture/availability_status_baseline_architecture.md`
-- `docs/impact/availability_status_system_impact_matrix.md`
-- `docs/data/availability_status_data_contract.md`
-- `docs/workflows/availability_status_workflow_design.md`
-- `docs/ui/availability_status_ui_integration.md`
-- `docs/testing/availability_status_qa_and_validation.md`
-- `docs/implementation/availability_status_end_to_end_delivery_plan.md`
-- `codex_prompts/availability_status_full_repo_implementation_prompt.md`
+| Area | Path |
+|---|---|
+| Runtime app | `web/index.html` |
+| Shows | `web/shows.html` |
+| Movies | `web/movies.html` |
+| Calendar | `web/calendar.html` |
+| Discover | `web/discover.html` |
+| Watch Me | `web/watch_me.html` |
+| Manage Watch State | `web/manage_watch_state.html` |
+| Canonical inputs editor | `web/inputs_editor.html` |
+| Canonical input data | `data/inputs.json` |
+| Generated runtime data | `data/data.json` |
+
+## Repo Hygiene
+
+Generated reports, overlay handoff bundles, Codex prompt bundles, local virtual environments, caches, logs, and build outputs are not active source files. Keep durable behavior in the canonical docs and runtime modules instead of adding parallel handoff folders.
+
+## Validation
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/validate_runtime.ps1
+python scripts/qa_pipeline_integrity.py
+```
