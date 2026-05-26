@@ -7,6 +7,10 @@
 - Commit: `df57ec829a` harden-inputs-scope-pipeline.
 - Commit: `f9c1a7e708` update-runtime-data-for-input-scope.
 
+- Removed tracked transitional clutter: overlay handoff bundles, Codex prompt handoff files, generated report artifacts, tracked local/build outputs, duplicate script reference docs, misspelled archived tools, and the obsolete palette swatch backup.
+- Added repo-hygiene ignore coverage plus runtime validation guards so overlay/codex handoff folders and obsolete duplicate docs do not return as active tracked artifacts.
+- Commit: `c03a69b2d1` cleanup repo transitional artifacts.
+
 - Changed `build-data` workflow concurrency to cancel older in-progress data builds on `main`, so newer input/config pushes cannot leave stale data generation running behind the current commit.
 - Commit: `30e459d91d` cancel-stale-data-builds.
 
