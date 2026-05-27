@@ -104,14 +104,18 @@ jobs:
         id: commit-artifacts
         if: success()
         run: |
-          if git diff --quiet -- data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets data/watch_state_queue.json; then
+          git add data/data.json data/catalog_index.json data/calendar.json data/catalog_detail data/watch_state_queue.json
+          mapfile -t new_assets < <(git ls-files --others --exclude-standard assets)
+          if [ "${#new_assets[@]}" -gt 0 ]; then
+            printf '%s\0' "${new_assets[@]}" | xargs -0 git add --
+          fi
+          if git diff --cached --quiet; then
             echo "No runtime artifact changes to commit."
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/data.json data/catalog_index.json data/calendar.json data/catalog_detail assets data/watch_state_queue.json
           git commit -m "build: update data artifacts"
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"

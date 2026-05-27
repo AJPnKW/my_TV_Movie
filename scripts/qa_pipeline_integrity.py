@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
@@ -17,6 +18,7 @@ WORKFLOW_YML = REPO_ROOT / ".github" / "workflows" / "build-data.yml"
 PIPELINE_RUNNER = REPO_ROOT / "scripts" / "run_pipeline_tmdb_trakt.py"
 APP_RUNTIME = REPO_ROOT / "web" / "js" / "app_runtime.js"
 WATCH_ME_RUNTIME = REPO_ROOT / "web" / "js" / "watch_me_runtime.js"
+INPUTS_EDITOR_SERVER = REPO_ROOT / "tools" / "inputs_editor" / "inputs_editor_server.py"
 REPORT_DIR = REPO_ROOT / "reports"
 LOG_DIR = REPO_ROOT / "logs"
 
@@ -63,6 +65,11 @@ def _safe_int(value: Any) -> int:
         return int(str(value).strip())
     except Exception:
         return 0
+
+
+def _title_tokens(value: Any) -> set[str]:
+    stop = {"a", "an", "and", "in", "of", "part", "the", "to", "with"}
+    return {token for token in re.findall(r"[a-z0-9]+", _safe_text(value).lower()) if token not in stop and not token.isdigit()}
 
 
 def _is_active_input(row: Any) -> bool:
@@ -154,6 +161,70 @@ def _inactive_inputs_present(inputs: List[Any], index_rows: List[Any], media: st
     return present
 
 
+def _unexpected_index_rows(inputs: List[Any], index_rows: List[Any], media: str) -> List[Dict[str, Any]]:
+    active_keys = {
+        _input_key(row, media)
+        for row in inputs
+        if isinstance(row, dict) and _is_active_input(row)
+    }
+    unexpected: List[Dict[str, Any]] = []
+    for idx, row in enumerate(index_rows):
+        if not isinstance(row, dict):
+            continue
+        key = _index_key(row, media)
+        if key in active_keys:
+            continue
+        unexpected.append(
+            {
+                "index": idx,
+                "media": media,
+                "tmdb_id": row.get("tmdb_id") or row.get("id"),
+                "title": row.get("title") or row.get("name"),
+                "reason": "catalog_index row is not backed by an active input",
+            }
+        )
+    return unexpected
+
+
+def _title_mismatches(inputs: List[Any], index_rows: List[Any], media: str) -> List[Dict[str, Any]]:
+    titles_by_key: Dict[str, str] = {}
+    raw_titles_by_key: Dict[str, str] = {}
+    for row in inputs:
+        if not isinstance(row, dict) or not _is_active_input(row):
+            continue
+        key = _input_key(row, media)
+        title = _safe_text(row.get("title") or row.get("name"))
+        if title:
+            titles_by_key[key] = title.lower()
+            raw_titles_by_key[key] = title
+
+    mismatches: List[Dict[str, Any]] = []
+    for idx, row in enumerate(index_rows):
+        if not isinstance(row, dict):
+            continue
+        key = _index_key(row, media)
+        input_title = titles_by_key.get(key)
+        if not input_title:
+            continue
+        generated_title = _safe_text(row.get("title") or row.get("name"))
+        if (
+            generated_title
+            and generated_title.lower() != input_title
+            and not (_title_tokens(raw_titles_by_key.get(key)) & _title_tokens(generated_title))
+        ):
+            mismatches.append(
+                {
+                    "index": idx,
+                    "media": media,
+                    "tmdb_id": row.get("tmdb_id") or row.get("id"),
+                    "input_title": raw_titles_by_key.get(key),
+                    "generated_title": generated_title,
+                    "reason": "active input title does not match generated TMDB title for the same key",
+                }
+            )
+    return mismatches
+
+
 def main() -> int:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     log_path, logf = _load_log()
@@ -167,6 +238,7 @@ def main() -> int:
         runner_text = _read_text(PIPELINE_RUNNER)
         app_runtime_text = _read_text(APP_RUNTIME)
         watch_me_runtime_text = _read_text(WATCH_ME_RUNTIME) if WATCH_ME_RUNTIME.exists() else app_runtime_text
+        inputs_editor_server_text = _read_text(INPUTS_EDITOR_SERVER)
 
         input_tv = inputs.get("tv") if isinstance(inputs, dict) else []
         input_movies = inputs.get("movies") if isinstance(inputs, dict) else []
@@ -184,6 +256,10 @@ def main() -> int:
         missing_movies = _missing_inputs(input_movies if isinstance(input_movies, list) else [], index_movies if isinstance(index_movies, list) else [], data_errors, "movie")
         inactive_tv_present = _inactive_inputs_present(input_tv if isinstance(input_tv, list) else [], index_shows if isinstance(index_shows, list) else [], "tv")
         inactive_movies_present = _inactive_inputs_present(input_movies if isinstance(input_movies, list) else [], index_movies if isinstance(index_movies, list) else [], "movie")
+        unexpected_tv = _unexpected_index_rows(input_tv if isinstance(input_tv, list) else [], index_shows if isinstance(index_shows, list) else [], "tv")
+        unexpected_movies = _unexpected_index_rows(input_movies if isinstance(input_movies, list) else [], index_movies if isinstance(index_movies, list) else [], "movie")
+        title_mismatch_tv = _title_mismatches(input_tv if isinstance(input_tv, list) else [], index_shows if isinstance(index_shows, list) else [], "tv")
+        title_mismatch_movies = _title_mismatches(input_movies if isinstance(input_movies, list) else [], index_movies if isinstance(index_movies, list) else [], "movie")
 
         _check("inputs_json_exists", INPUTS_JSON.exists(), "data/inputs.json must exist", checks, logf)
         _check("catalog_index_exists", INDEX_JSON.exists(), "data/catalog_index.json must exist", checks, logf)
@@ -195,11 +271,17 @@ def main() -> int:
         _check("runtime_uses_split_index", "catalog_index.json" in app_runtime_text and "catalog_index.json" in watch_me_runtime_text, "app runtime and watch_me must use catalog_index.json", checks, logf)
         _check("runtime_uses_calendar_feed", "calendar.json" in app_runtime_text and "calendar.json" in watch_me_runtime_text, "app runtime and watch_me must use calendar.json", checks, logf)
         _check("no_legacy_input_paths", all(term not in workflow_text + runner_text for term in ("tv_list.txt", "movies_list.txt", "live_tv_list.txt", "inputs_parsed.json")), "active production files must not reference legacy txt/input_parsed paths", checks, logf)
+        _check("inputs_editor_verifies_tmdb_identity", "_validate_tmdb_entry_identity" in inputs_editor_server_text and "resolves to" in inputs_editor_server_text, "inputs editor save path must reject title/TMDB ID mismatches", checks, logf)
 
         _check("active_tv_inputs_reconciled", not missing_tv, f"active_tv={len(active_tv)} catalog_index_shows={len(index_shows) if isinstance(index_shows, list) else 0} unresolved_unreported={len(missing_tv)}", checks, logf)
         _check("active_movie_inputs_reconciled", not missing_movies, f"active_movies={len(active_movies)} catalog_index_movies={len(index_movies) if isinstance(index_movies, list) else 0} unresolved_unreported={len(missing_movies)}", checks, logf)
         _check("inactive_tv_inputs_excluded", not inactive_tv_present, f"inactive_present={len(inactive_tv_present)}", checks, logf)
         _check("inactive_movie_inputs_excluded", not inactive_movies_present, f"inactive_present={len(inactive_movies_present)}", checks, logf)
+        _check("catalog_tv_backed_by_inputs", not unexpected_tv, f"unexpected_index_rows={len(unexpected_tv)}", checks, logf)
+        _check("catalog_movies_backed_by_inputs", not unexpected_movies, f"unexpected_index_rows={len(unexpected_movies)}", checks, logf)
+        _check("tv_input_titles_match_generated_titles", not title_mismatch_tv, f"title_mismatches={len(title_mismatch_tv)}", checks, logf)
+        _check("movie_input_titles_match_generated_titles", not title_mismatch_movies, f"title_mismatches={len(title_mismatch_movies)}", checks, logf)
+        _check("runtime_errors_absent", not data_errors, f"data_errors={len(data_errors) if isinstance(data_errors, list) else 0}", checks, logf)
         _check("detail_file_count_matches_index", len(detail_files) >= (len(index_shows) if isinstance(index_shows, list) else 0) + (len(index_movies) if isinstance(index_movies, list) else 0), f"detail_files={len(detail_files)} index_total={(len(index_shows) if isinstance(index_shows, list) else 0) + (len(index_movies) if isinstance(index_movies, list) else 0)}", checks, logf)
         _check("calendar_has_days", isinstance(calendar_days, dict) and bool(calendar_days), f"calendar day buckets={len(calendar_days) if isinstance(calendar_days, dict) else 0}", checks, logf)
         _check("monolith_reference_still_builds", isinstance(data_shows, list) and isinstance(data_movies, list), "data/data.json remains available as a non-runtime reference artifact", checks, logf)
@@ -234,6 +316,15 @@ def main() -> int:
                 "tv": inactive_tv_present,
                 "movies": inactive_movies_present,
             },
+            "unexpected_index_rows": {
+                "tv": unexpected_tv,
+                "movies": unexpected_movies,
+            },
+            "title_mismatches": {
+                "tv": title_mismatch_tv,
+                "movies": title_mismatch_movies,
+            },
+            "runtime_errors": data_errors if isinstance(data_errors, list) else [],
             "checks": [{"name": name, "passed": passed, "detail": detail} for name, passed, detail in checks],
             "result": "OK" if ok else "FAIL",
         }
@@ -244,6 +335,12 @@ def main() -> int:
             _log(logf, "[qa_pipeline_integrity] unresolved_unreported_inputs follow in report JSON")
         if inactive_tv_present or inactive_movies_present:
             _log(logf, "[qa_pipeline_integrity] inactive_inputs_present follow in report JSON")
+        if unexpected_tv or unexpected_movies:
+            _log(logf, "[qa_pipeline_integrity] unexpected_index_rows follow in report JSON")
+        if title_mismatch_tv or title_mismatch_movies:
+            _log(logf, "[qa_pipeline_integrity] title_mismatches follow in report JSON")
+        if data_errors:
+            _log(logf, "[qa_pipeline_integrity] runtime_errors follow in report JSON")
         return 0 if ok else 3
     finally:
         logf.close()

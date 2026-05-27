@@ -27,6 +27,7 @@ from urllib.parse import parse_qs, quote, urlparse
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
 INPUTS_JSON = DATA_DIR / "inputs.json"
+CATALOG_INDEX_JSON = DATA_DIR / "catalog_index.json"
 WATCH_STATE_QUEUE_JSON = DATA_DIR / "watch_state_queue.json"
 WEB_DIR = REPO_ROOT / "web"
 UI_FILE = WEB_DIR / "inputs_editor.html"
@@ -39,6 +40,7 @@ TMDB_BASE = "https://api.themoviedb.org/3"
 TMDB_IMG_BASE = "https://image.tmdb.org/t/p/"
 SEASON_TOKEN_RE = re.compile(r"^S?\d+(?:\s*-\s*S?\d+)?$", re.IGNORECASE)
 SEASON_MIN_RE = re.compile(r"^S?\d+\+$", re.IGNORECASE)
+TITLE_STOPWORDS = {"a", "an", "and", "in", "of", "part", "the", "to", "with"}
 
 
 def _now_utc_iso() -> str:
@@ -256,6 +258,25 @@ def _normalize_tags(value: object) -> list[str]:
     return tags
 
 
+def _title_tokens(value: object) -> set[str]:
+    text = str(value or "").casefold()
+    return {
+        token
+        for token in re.findall(r"[^\W_]+", text, flags=re.UNICODE)
+        if token not in TITLE_STOPWORDS and not token.isdigit()
+    }
+
+
+def _titles_match(local_title: str, remote_title: str) -> bool:
+    local = str(local_title or "").strip().casefold()
+    remote = str(remote_title or "").strip().casefold()
+    if not local or not remote:
+        return False
+    if local == remote:
+        return True
+    return bool(_title_tokens(local) & _title_tokens(remote))
+
+
 def _normalize_season_spec(value: object) -> str:
     spec = str(value or "*").strip()
     if not spec or spec == "*":
@@ -358,6 +379,85 @@ def _dedupe_entries(entries: list[dict], media_type: str, warnings: list[str]) -
     return [by_id[tmdb_id] for tmdb_id in order]
 
 
+def _catalog_identity_map() -> dict[str, dict[int, str]]:
+    identities: dict[str, dict[int, str]] = {"tv": {}, "movie": {}}
+    if not CATALOG_INDEX_JSON.exists():
+        return identities
+    try:
+        catalog = json.loads(CATALOG_INDEX_JSON.read_text(encoding="utf-8"))
+    except Exception:
+        return identities
+    for media_type, key in (("tv", "shows"), ("movie", "movies")):
+        rows = catalog.get(key) if isinstance(catalog, dict) else []
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            try:
+                tmdb_id = int(row.get("tmdb_id") or row.get("id") or 0)
+            except Exception:
+                tmdb_id = 0
+            title = str(row.get("title") or row.get("name") or "").strip()
+            if tmdb_id > 0 and title:
+                identities[media_type][tmdb_id] = title
+    return identities
+
+
+def _tmdb_entry_title(media_type: str, tmdb_id: int, cache: dict[tuple[str, int], str]) -> str:
+    key = (media_type, int(tmdb_id))
+    if key in cache:
+        return cache[key]
+    path = f"/tv/{int(tmdb_id)}" if media_type == "tv" else f"/movie/{int(tmdb_id)}"
+    result = _tmdb_request_json(path)
+    if not result.get("ok"):
+        raise ValueError(f"{media_type} tmdb_id={tmdb_id} could not be verified: {result.get('error') or 'TMDB lookup failed'}")
+    data = result.get("data") or {}
+    remote_id = int(data.get("id") or 0)
+    raw_title = data.get("name") if media_type == "tv" else data.get("title")
+    remote_title = str(raw_title or "").strip()
+    if remote_id != int(tmdb_id) or not remote_title:
+        raise ValueError(f"{media_type} tmdb_id={tmdb_id} returned incomplete TMDB identity data")
+    cache[key] = remote_title
+    return remote_title
+
+
+def _validate_tmdb_entry_identity(
+    entry: dict,
+    media_type: str,
+    catalog_identities: dict[str, dict[int, str]],
+    tmdb_cache: dict[tuple[str, int], str],
+) -> None:
+    if entry.get("in_scope") is False:
+        return
+    title = str(entry.get("title") or "").strip()
+    tmdb_id = int(entry.get("tmdb_id") or 0)
+    catalog_title = catalog_identities.get(media_type, {}).get(tmdb_id)
+    if catalog_title:
+        if _titles_match(title, catalog_title):
+            return
+        raise ValueError(
+            f"{media_type} '{title}' tmdb_id={tmdb_id} resolves to '{catalog_title}' in the generated catalog; "
+            "choose the correct TMDB search result before saving"
+        )
+
+    remote_title = _tmdb_entry_title(media_type, tmdb_id, tmdb_cache)
+    if not _titles_match(title, remote_title):
+        raise ValueError(
+            f"{media_type} '{title}' tmdb_id={tmdb_id} resolves to '{remote_title}' in TMDB; "
+            "choose the correct TMDB search result before saving"
+        )
+
+
+def _validate_tmdb_identities(validated: dict) -> None:
+    catalog_identities = _catalog_identity_map()
+    tmdb_cache: dict[tuple[str, int], str] = {}
+    for entry in validated.get("tv") or []:
+        _validate_tmdb_entry_identity(entry, "tv", catalog_identities, tmdb_cache)
+    for entry in validated.get("movies") or []:
+        _validate_tmdb_entry_identity(entry, "movie", catalog_identities, tmdb_cache)
+
+
 def _validate_inputs_payload(obj: dict) -> tuple[dict, list[str]]:
     if not isinstance(obj, dict):
         raise ValueError("inputs payload must be an object")
@@ -370,6 +470,7 @@ def _validate_inputs_payload(obj: dict) -> tuple[dict, list[str]]:
     validated = copy.deepcopy(obj)
     validated["tv"] = _dedupe_entries(tv, "tv", warnings)
     validated["movies"] = _dedupe_entries(movies, "movie", warnings)
+    _validate_tmdb_identities(validated)
     validated["watchlist"] = watchlist
     return validated, warnings
 

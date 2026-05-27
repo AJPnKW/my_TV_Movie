@@ -110,6 +110,20 @@ def prepare_runtime_image(img: Image.Image, target: dict[str, Any]) -> Image.Ima
     return img
 
 
+def image_meets_target(path: Path, target: dict[str, Any]) -> bool:
+    try:
+        with Image.open(path) as raw:
+            img = ImageOps.exif_transpose(raw)
+            fit = target.get("fit")
+            size = target.get("size")
+            if fit in {"still_crop", "cover"} and size:
+                return img.size == tuple(size)
+            max_width = int(target.get("max_width") or 0)
+            return max_width <= 0 or img.width <= max_width
+    except Exception:
+        return False
+
+
 def optimize_one(src: Path, dry_run: bool = False) -> dict[str, Any] | None:
     mapped = target_for(src) or target_for_runtime(src)
     if not mapped:
@@ -117,6 +131,17 @@ def optimize_one(src: Path, dry_run: bool = False) -> dict[str, Any] | None:
     dest, target = mapped
     before = src.stat().st_size
     existing = dest.stat().st_size if dest.exists() else 0
+    if dest.exists() and image_meets_target(dest, target):
+        return {
+            "source": str(src.relative_to(REPO_ROOT)),
+            "target": str(dest.relative_to(REPO_ROOT)),
+            "source_bytes": before,
+            "previous_runtime_bytes": existing,
+            "runtime_bytes": existing,
+            "bytes_saved_vs_source": max(0, before - existing),
+            "bytes_saved_vs_previous": 0,
+            "status": "skipped_already_target",
+        }
 
     try:
         with Image.open(src) as raw:
