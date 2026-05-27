@@ -1,5 +1,13 @@
 # Architecture Log
 
+## 2026-05-27
+
+- Root-caused wrong-ID catalog rows to trusted legacy/imported TMDB ID pairs plus editor saves that validated shape but not TMDB identity; active saves now reject title/TMDB ID mismatches before writing `data/inputs.json`.
+- Extended pipeline integrity QA to fail on generated title/input title mismatches, unexpected catalog rows, runtime `data.errors`, and missing editor identity validation.
+- Corrected bad active input IDs, removed the bogus `东方神娃`/`Presumed Innocent` row and the failing `Becoming Our Spider-Man` movie row, regenerated runtime artifacts with `shows=228`, `movies=117`, and `errors=0`.
+- Made runtime asset optimization idempotent for already-sized images and changed `build-data` artifact commits to include generated JSON/detail data plus new asset files without committing mass rewrites of already tracked assets.
+- Commit: `a9b17ed284` fix inputs identity validation and pipeline artifacts.
+
 ## 2026-05-25
 
 - Hardened the canonical inputs scope flow so `scripts/fetch_tmdb.py` excludes `in_scope: false` rows before building runtime data, the inputs editor server normalizes/dedupes validated media rows with bounded JSON/error handling, and the editor UI exposes a save plus runtime refresh path.
