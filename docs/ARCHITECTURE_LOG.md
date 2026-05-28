@@ -2,6 +2,11 @@
 
 ## 2026-05-27
 
+- Closed the remaining active-input identity gap by making the direct TMDB audit fail on active unresolved IDs and title mismatches instead of relying on the previously generated catalog as evidence.
+- Added the direct active-row TMDB identity audit to `build-data` diagnostics so stale generated data cannot mask a TMDB ID that now 404s or resolves to the wrong media title/type.
+- Marked `Spider-Noir - MGM+ Premiere` inactive because TMDB movie id `1703288` now returns 404, regenerated runtime artifacts with `shows=228`, `movies=116`, and `errors=0`, and removed its stale detail split output.
+- Commit: `2cc21f2e62` fix-active-TMDB-identity-validation.
+
 - Root-caused wrong-ID catalog rows to trusted legacy/imported TMDB ID pairs plus editor saves that validated shape but not TMDB identity; active saves now reject title/TMDB ID mismatches before writing `data/inputs.json`.
 - Extended pipeline integrity QA to fail on generated title/input title mismatches, unexpected catalog rows, runtime `data.errors`, and missing editor identity validation.
 - Corrected bad active input IDs, removed the bogus `东方神娃`/`Presumed Innocent` row and the failing `Becoming Our Spider-Man` movie row, regenerated runtime artifacts with `shows=228`, `movies=117`, and `errors=0`.
