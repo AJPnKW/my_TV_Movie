@@ -82,6 +82,7 @@ jobs:
           API_TRAKT_ACCESS_TOKEN: ${{ secrets.API_TRAKT_ACCESS_TOKEN }}
           API_TRAKT_REFRESH_TOKEN: ${{ secrets.API_TRAKT_REFRESH_TOKEN }}
         run: |
+          python scripts/audit_inputs_tmdb_type.py --inputs data/inputs.json --out reports/_audit_inputs_tmdb_type_current.json --sleep-ms 0
           python scripts/qa_pipeline_integrity.py
           python scripts/qa_missing_trakt_ids.py || true
           python scripts/trakt_two_way_sync.py --dry-run || true

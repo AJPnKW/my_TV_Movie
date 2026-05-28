@@ -7,9 +7,10 @@
 #   by querying TMDB's API for BOTH endpoints:
 #     - /3/movie/{id}
 #     - /3/tv/{id}
-#   Then flag:
+#   Then flag active rows for:
 #     - items stored in the wrong list (movies vs tv vs watchlist)
 #     - title mismatches (stored title vs TMDB title/name)
+#     - active IDs that do not resolve on the expected TMDB endpoint
 #
 # Requirements:
 #   - Python 3.10+ (tested with 3.12)
@@ -25,8 +26,8 @@
 #   python .\audit_inputs_tmdb_type.py --inputs .\inputs.json --out .\_audit_tmdb_type.json
 #
 # Exit codes:
-#   0 = OK (no misfiled items)
-#   2 = Misfiled items found
+#   0 = OK (no active blocking issues)
+#   2 = Active misfiled, unresolved, or title-mismatch items found
 #   3 = Auth missing
 #   4 = Network/API failure
 #
@@ -59,9 +60,9 @@ class TmdbHit:
 
 def _norm(s: str) -> str:
     s = s.strip().lower()
+    s = re.sub(r"[^a-z0-9]+", " ", s)
     s = re.sub(r"\s+", " ", s)
-    s = re.sub(r"[^a-z0-9 ]+", "", s)
-    return s
+    return s.strip()
 
 
 def _title_close(a: str, b: str) -> bool:
@@ -71,7 +72,15 @@ def _title_close(a: str, b: str) -> bool:
     if na == nb:
         return True
     # containment check catches subtitles/years/punctuation differences
-    return (na in nb) or (nb in na)
+    if (na in nb) or (nb in na):
+        return True
+    stop = {"a", "an", "and", "in", "of", "part", "the", "to", "with"}
+    tokens_a = {token for token in na.split(" ") if token and token not in stop and not token.isdigit()}
+    tokens_b = {token for token in nb.split(" ") if token and token not in stop and not token.isdigit()}
+    if not tokens_a or not tokens_b:
+        return False
+    overlap = tokens_a & tokens_b
+    return len(overlap) >= min(len(tokens_a), len(tokens_b))
 
 
 def _auth_headers_and_params() -> Tuple[Dict[str, str], Dict[str, str]]:
@@ -131,6 +140,7 @@ def main() -> int:
     ap.add_argument("--inputs", required=True, help="Path to inputs.json")
     ap.add_argument("--out", required=True, help="Path to write audit JSON output")
     ap.add_argument("--sleep-ms", type=int, default=120, help="Delay between TMDB calls (rate-limit friendly)")
+    ap.add_argument("--include-inactive", action="store_true", help="Also audit rows where in_scope is false")
     args = ap.parse_args()
 
     headers, params = _auth_headers_and_params()
@@ -165,13 +175,23 @@ def main() -> int:
     misfiled: List[Dict[str, Any]] = []
     title_mismatch: List[Dict[str, Any]] = []
     unresolved: List[Dict[str, Any]] = []
+    skipped_inactive: List[Dict[str, Any]] = []
 
     total = sum(len(lst) for _, lst, _ in groups)
+    audited = 0
 
     idx = 0
     for group_name, items, expected in groups:
         for item in items:
             idx += 1
+            if isinstance(item, dict) and item.get("in_scope") is False and not args.include_inactive:
+                skipped_inactive.append({
+                    "group": group_name,
+                    "tmdb_id": item.get("tmdb_id"),
+                    "local_title": str(item.get("title", "")).strip(),
+                })
+                continue
+            audited += 1
 
             tmdb_raw = item.get("tmdb_id")
             try:
@@ -197,7 +217,16 @@ def main() -> int:
             actual: str = "unresolved"
             tmdb_title: str = ""
 
-            if movie_hit.status_code == 200 and tv_hit.status_code != 200:
+            expected_hit = movie_hit if expected == "movie" else tv_hit if expected == "tv" else None
+            other_hit = tv_hit if expected == "movie" else movie_hit if expected == "tv" else None
+
+            if expected_hit and expected_hit.status_code == 200:
+                actual = expected
+                tmdb_title = expected_hit.title
+            elif expected_hit and other_hit and expected_hit.status_code != 200 and other_hit.status_code == 200:
+                actual = other_hit.kind
+                tmdb_title = other_hit.title
+            elif movie_hit.status_code == 200 and tv_hit.status_code != 200:
                 actual = "movie"
                 tmdb_title = movie_hit.title
             elif tv_hit.status_code == 200 and movie_hit.status_code != 200:
@@ -252,8 +281,11 @@ def main() -> int:
         "misfiled": misfiled,
         "title_mismatch": title_mismatch,
         "unresolved_or_ambiguous": unresolved,
+        "skipped_inactive": skipped_inactive,
         "summary": {
             "total_items": total,
+            "audited_items": audited,
+            "skipped_inactive_count": len(skipped_inactive),
             "misfiled_count": len(misfiled),
             "title_mismatch_count": len(title_mismatch),
             "unresolved_or_ambiguous_count": len(unresolved),
@@ -264,12 +296,14 @@ def main() -> int:
         json.dump(out, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
-    # Exit code logic unchanged from your 0.1.0 script
-    if misfiled:
-        print(f"Misfiled: {len(misfiled)} (see {args.out})")
+    if misfiled or title_mismatch or unresolved:
+        print(
+            f"FAIL: misfiled={len(misfiled)} title_mismatch={len(title_mismatch)} "
+            f"unresolved_or_ambiguous={len(unresolved)} (see {args.out})"
+        )
         return 2
 
-    print(f"OK: no misfiled items (see {args.out})")
+    print(f"OK: no active TMDB identity issues (see {args.out})")
     return 0
 
 
