@@ -13,6 +13,12 @@
 - Made runtime asset optimization idempotent for already-sized images and changed `build-data` artifact commits to include generated JSON/detail data plus new asset files without committing mass rewrites of already tracked assets.
 - Commit: `a9b17ed284` fix inputs identity validation and pipeline artifacts.
 
+## 2026-05-29
+
+- Hardened the inputs editor GitHub publish path into a complete save, push, generated-artifact wait, local fast-forward, and pipeline-integrity validation flow so adding shows/movies does not leave the local checkout behind or full of stale generated artifacts.
+- Added validation guards so the publish/sync endpoint and UI button are required by runtime and pipeline integrity checks.
+- Commit: `171dc458ba` harden inputs editor publish sync.
+
 ## 2026-05-25
 
 - Hardened the canonical inputs scope flow so `scripts/fetch_tmdb.py` excludes `in_scope: false` rows before building runtime data, the inputs editor server normalizes/dedupes validated media rows with bounded JSON/error handling, and the editor UI exposes a save plus runtime refresh path.
