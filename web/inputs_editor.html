@@ -126,7 +126,7 @@ DATE: 2026-01-20
           <button id="btnReload">Reload</button>
           <button class="primary" id="btnSave">Save</button>
           <button id="btnRefreshRuntime">Save + Refresh Runtime</button>
-          <button id="btnPushGitHub">Push GitHub</button>
+          <button id="btnPushGitHub">Publish + Sync GitHub</button>
         </div>
         <div class="inputs_editor_row">
           <select id="mineType">
@@ -703,15 +703,17 @@ async function saveAndRefreshRuntime(){
 
 async function pushInputsToGitHub(){
   const msg=document.getElementById("saveMsg");
-  msg.textContent="Saving before push…";
+  msg.textContent="Saving before publish...";
   const saved=await saveInputs();
   if(!saved) return;
-  msg.textContent="Pushing data/inputs.json to GitHub…";
-  const j=await apiPost("/api/push-inputs",{remote:"github", branch:"main"});
+  msg.textContent="Publishing inputs and waiting for generated runtime data...";
+  const j=await apiPost("/api/publish-inputs",{remote:"github", branch:"main", wait_seconds:900});
   if(!j.ok){ msg.textContent="Push failed: "+(j.error||"unknown"); return; }
-  msg.textContent=j.pushed
-    ? `Pushed to GitHub @ ${j.remote}/${j.branch} (${j.commit||"HEAD"})`
-    : `No new inputs.json changes to push. Remote ${j.remote}/${j.branch} is already current.`;
+  const sync=j.sync||{};
+  const stashNote=sync.stashed_generated_artifacts ? " Generated local artifacts were stashed before fast-forward." : "";
+  msg.textContent=j.publish_complete
+    ? `Published and synced @ ${j.remote}/${j.branch} (${sync.remote_head||j.commit||"HEAD"}).${stashNote}`
+    : `Published inputs, but generated runtime sync did not complete yet.`;
 }
 
 (async function boot(){

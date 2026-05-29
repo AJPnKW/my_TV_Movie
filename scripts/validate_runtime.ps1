@@ -576,6 +576,9 @@ foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_
 foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', 'web_root not in file_path.parents')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing hardened save/scope contract: $needle" }
 }
+foreach ($needle in @('/api/publish-inputs', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', 'qa_pipeline_integrity.py')) {
+    if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing publish/sync contract: $needle" }
+}
 $fetchTmdbText = Get-Content -Raw -LiteralPath 'scripts/fetch_tmdb.py'
 foreach ($needle in @('is_in_scope_input', 'tv_active', 'movies_active')) {
     if ($fetchTmdbText -notlike "*$needle*") { Add-CheckError "fetch_tmdb.py missing in_scope build filtering contract: $needle" }
@@ -583,6 +586,9 @@ foreach ($needle in @('is_in_scope_input', 'tv_active', 'movies_active')) {
 $inputsEditorText = Get-Content -Raw -LiteralPath 'web/inputs_editor.html'
 foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refresh-runtime', 'apiFetch')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing hardened save/refresh contract: $needle" }
+}
+foreach ($needle in @('Publish + Sync GitHub', '/api/publish-inputs', 'wait_seconds:900', 'Published and synced')) {
+    if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing publish/sync contract: $needle" }
 }
 foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'ids:', 'show:', 'sync_status')) {
     if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing queue write contract: $needle" }

@@ -18,6 +18,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 import urllib.request
 from urllib.error import HTTPError, URLError
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -34,6 +35,16 @@ UI_FILE = WEB_DIR / "inputs_editor.html"
 CONFIG_JSON = WEB_DIR / "config.json"
 BACKUP_DIR = DATA_DIR / "backups"
 MAX_JSON_BODY_BYTES = 5 * 1024 * 1024
+PUBLISH_DEFAULT_WAIT_SECONDS = 15 * 60
+PUBLISH_POLL_SECONDS = 15
+GENERATED_SYNC_PATHS = [
+    "data/data.json",
+    "data/catalog_index.json",
+    "data/calendar.json",
+    "data/catalog_detail",
+    "data/watch_state_queue.json",
+    "assets",
+]
 
 TMDB_KEY_ENV = "API_TMDB_KEY"
 TMDB_BASE = "https://api.themoviedb.org/3"
@@ -504,6 +515,151 @@ def _run_git_command(args: list[str]) -> subprocess.CompletedProcess:
     )
 
 
+def _git_text(args: list[str]) -> str:
+    result = _run_git_command(args)
+    if result.returncode != 0:
+        return ""
+    return (result.stdout or "").strip()
+
+
+def _git_failure(result: subprocess.CompletedProcess, fallback: str) -> str:
+    return (result.stderr or result.stdout or fallback).strip()
+
+
+def _run_pipeline_integrity_validation() -> dict:
+    completed = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts" / "qa_pipeline_integrity.py")],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=240,
+        check=False,
+    )
+    return {
+        "ok": completed.returncode == 0,
+        "returncode": completed.returncode,
+        "stdout": completed.stdout[-4000:],
+        "stderr": completed.stderr[-4000:],
+    }
+
+
+def _stash_generated_artifacts_if_needed() -> dict:
+    status = _run_git_command(["status", "--porcelain", "--", *GENERATED_SYNC_PATHS])
+    if status.returncode != 0:
+        return {"ok": False, "error": _git_failure(status, "git status failed")}
+    if not (status.stdout or "").strip():
+        return {"ok": True, "stashed": False}
+    stash_message = f"inputs-editor generated artifacts before publish sync {_now_utc_iso()}"
+    stash = _run_git_command(["stash", "push", "-u", "-m", stash_message, "--", *GENERATED_SYNC_PATHS])
+    if stash.returncode != 0:
+        return {"ok": False, "error": _git_failure(stash, "git stash failed")}
+    return {"ok": True, "stashed": True, "message": stash_message}
+
+
+def _generated_artifacts_are_dirty() -> bool:
+    status = _run_git_command(["status", "--porcelain", "--", *GENERATED_SYNC_PATHS])
+    return status.returncode == 0 and bool((status.stdout or "").strip())
+
+
+def _fast_forward_remote(remote_name: str, branch_name: str) -> dict:
+    remote_ref = f"{remote_name}/{branch_name}"
+    stash = _stash_generated_artifacts_if_needed()
+    if not stash.get("ok"):
+        return stash
+    merge = _run_git_command(["merge", "--ff-only", remote_ref])
+    if merge.returncode != 0:
+        return {
+            "ok": False,
+            "stashed": stash.get("stashed", False),
+            "error": _git_failure(merge, f"git merge --ff-only {remote_ref} failed"),
+        }
+    return {
+        "ok": True,
+        "stashed": stash.get("stashed", False),
+        "stash_message": stash.get("message", ""),
+        "stdout": merge.stdout[-2000:],
+    }
+
+
+def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_commit: str, wait_seconds: int) -> dict:
+    remote_ref = f"{remote_name}/{branch_name}"
+    deadline = time.monotonic() + max(0, int(wait_seconds))
+    attempts = 0
+    last_remote_head = ""
+    first_validation = _run_pipeline_integrity_validation()
+    if first_validation.get("ok") and not _generated_artifacts_are_dirty():
+        return {
+            "ok": True,
+            "synced": False,
+            "validated": True,
+            "reason": "local runtime artifacts already reconcile with inputs",
+            "validation": first_validation,
+        }
+    if first_validation.get("ok") and _generated_artifacts_are_dirty():
+        stash = _stash_generated_artifacts_if_needed()
+        if not stash.get("ok"):
+            return stash
+        clean_validation = _run_pipeline_integrity_validation()
+        if clean_validation.get("ok"):
+            return {
+                "ok": True,
+                "synced": False,
+                "validated": True,
+                "stashed_generated_artifacts": stash.get("stashed", False),
+                "stash_message": stash.get("message", ""),
+                "reason": "stashed redundant local generated artifacts; committed runtime already reconciles with inputs",
+                "validation": clean_validation,
+            }
+
+    while True:
+        attempts += 1
+        fetch = _run_git_command(["fetch", remote_name, branch_name])
+        if fetch.returncode != 0:
+            return {"ok": False, "error": _git_failure(fetch, "git fetch failed"), "attempts": attempts}
+
+        remote_head = _git_text(["rev-parse", "--verify", remote_ref])
+        last_remote_head = remote_head or last_remote_head
+        if remote_head and remote_head != input_commit:
+            ancestor = _run_git_command(["merge-base", "--is-ancestor", input_commit, remote_ref])
+            if ancestor.returncode == 0:
+                ff = _fast_forward_remote(remote_name, branch_name)
+                if not ff.get("ok"):
+                    ff["attempts"] = attempts
+                    return ff
+                validation = _run_pipeline_integrity_validation()
+                if not validation.get("ok"):
+                    return {
+                        "ok": False,
+                        "synced": True,
+                        "attempts": attempts,
+                        "remote_head": remote_head,
+                        "error": "Generated artifact commit arrived, but local integrity validation failed.",
+                        "validation": validation,
+                    }
+                return {
+                    "ok": True,
+                    "synced": True,
+                    "validated": True,
+                    "attempts": attempts,
+                    "remote_head": remote_head,
+                    "stashed_generated_artifacts": ff.get("stashed", False),
+                    "stash_message": ff.get("stash_message", ""),
+                    "validation": validation,
+                }
+
+        if time.monotonic() >= deadline:
+            return {
+                "ok": False,
+                "synced": False,
+                "validated": False,
+                "attempts": attempts,
+                "remote_head": last_remote_head,
+                "error": "Timed out waiting for GitHub build-data to publish generated runtime artifacts.",
+                "validation": first_validation,
+            }
+        time.sleep(PUBLISH_POLL_SECONDS)
+
+
 def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     remote_name = (remote or "github").strip() or "github"
     branch_name = (branch or "main").strip() or "main"
@@ -533,6 +689,8 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     if rebase_result.returncode != 0:
         _run_git_command(["rebase", "--abort"])
         return {"ok": False, "error": rebase_result.stderr.strip() or rebase_result.stdout.strip() or "git rebase failed"}
+    head_result = _run_git_command(["rev-parse", "--short", "HEAD"])
+    commit_id = (head_result.stdout or "").strip()
 
     push_result = _run_git_command(["push", remote_name, branch_name])
     if push_result.returncode != 0:
@@ -544,6 +702,22 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
         "remote": remote_name,
         "branch": branch_name,
         "commit": commit_id,
+    }
+
+
+def _publish_inputs_to_remote(remote: str, branch: str, wait_seconds: int = PUBLISH_DEFAULT_WAIT_SECONDS) -> dict:
+    push = _push_inputs_to_remote(remote, branch)
+    if not push.get("ok"):
+        return push
+    remote_name = str(push.get("remote") or remote or "github")
+    branch_name = str(push.get("branch") or branch or "main")
+    input_commit = _git_text(["rev-parse", "--verify", "HEAD"])
+    sync = _wait_for_generated_artifacts(remote_name, branch_name, input_commit, wait_seconds)
+    return {
+        **push,
+        "publish_complete": bool(sync.get("ok")),
+        "sync": sync,
+        "ok": bool(sync.get("ok")),
     }
 
 
@@ -780,6 +954,24 @@ class Handler(BaseHTTPRequestHandler):
             result = _push_inputs_to_remote(
                 str(obj.get("remote") or "github"),
                 str(obj.get("branch") or "main"),
+            )
+            _json(self, 200 if result.get("ok") else 500, result)
+            return
+
+        if parsed.path == "/api/publish-inputs":
+            try:
+                obj = _read_request_json(self)
+            except ValueError as exc:
+                _json(self, 400, {"ok": False, "error": str(exc)})
+                return
+            try:
+                wait_seconds = int(obj.get("wait_seconds") or PUBLISH_DEFAULT_WAIT_SECONDS)
+            except Exception:
+                wait_seconds = PUBLISH_DEFAULT_WAIT_SECONDS
+            result = _publish_inputs_to_remote(
+                str(obj.get("remote") or "github"),
+                str(obj.get("branch") or "main"),
+                wait_seconds=wait_seconds,
             )
             _json(self, 200 if result.get("ok") else 500, result)
             return
