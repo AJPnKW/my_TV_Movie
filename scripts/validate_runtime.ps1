@@ -587,7 +587,7 @@ $inputsEditorText = Get-Content -Raw -LiteralPath 'web/inputs_editor.html'
 foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refresh-runtime', 'apiFetch')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing hardened save/refresh contract: $needle" }
 }
-foreach ($needle in @('Publish + Sync GitHub', '/api/publish-inputs', 'wait_seconds:900', 'Published and synced')) {
+foreach ($needle in @('Save Online and Finish Update', '/api/publish-inputs', 'wait_seconds:900', 'Online save finished and this computer is updated')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing publish/sync contract: $needle" }
 }
 foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'ids:', 'show:', 'sync_status')) {

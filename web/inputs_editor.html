@@ -8,7 +8,7 @@ DATE: 2026-01-20
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>my_TV_Movie • Inputs Editor</title>
+  <title>my_TV_Movie • Add Shows and Movies</title>
   <link rel="icon" href="data:," />
   <!-- launched by local server on :8787 -->
   <link rel="stylesheet" href="/web/css/my_tv_hub.css"/>
@@ -67,82 +67,82 @@ DATE: 2026-01-20
   <div class="inputs_editor_wrap">
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
-        <h2>Find on TMDB</h2>
+        <h2>Search Shows and Movies</h2>
         <span class="inputs_editor_meta">v1.0.4</span>
-        <span class="inputs_editor_meta" id="serverStatus">Server: …</span>
-        <span class="inputs_editor_meta" id="tmdbStatus">TMDB: …</span>
+        <span class="inputs_editor_meta" id="serverStatus">Editor: ...</span>
+        <span class="inputs_editor_meta" id="tmdbStatus">Search: ...</span>
         <a class="inputs_editor_link" href="./index.html#inputs-editor">Back to Hub</a>
       </div>
       <div class="inputs_editor_bd">
         <div class="banner" id="banner" style="display:none"></div>
         <div class="inputs_editor_row">
-          <input id="q" type="search" placeholder="Search TMDB (tv + movie) …"/>
+          <input id="q" type="search" placeholder="Search for a show or movie..."/>
           <button class="primary" id="btnSearch">Search</button>
         </div>
         <div class="inputs_editor_row">
           <select id="tmdbType">
-            <option value="">All types</option>
-            <option value="tv">TV</option>
-            <option value="movie">Movie</option>
+            <option value="">Shows and movies</option>
+            <option value="tv">Shows</option>
+            <option value="movie">Movies</option>
           </select>
           <input id="tmdbYearMin" type="text" placeholder="Year from (e.g., 2010)"/>
           <input id="tmdbYearMax" type="text" placeholder="Year to (e.g., 2026)"/>
           <button id="btnTmdbSelectAll">Select all</button>
-          <button id="btnQueueSelected">Queue selected</button>
-          <button class="primary" id="btnAddSelected">Add selected</button>
+          <button id="btnQueueSelected">Save for later</button>
+          <button class="primary" id="btnAddSelected">Add now</button>
         </div>
         <div class="inputs_editor_meta" id="tmdbCount">0 results</div>
-        <div class="inputs_editor_hint">Already-added items are flagged here. Existing shows open the season editor so you can merge, replace, or remove seasons.</div>
+        <div class="inputs_editor_hint">Items already in your list are marked. For shows, you can choose which seasons to add.</div>
         <div class="inputs_editor_list" id="tmdbList"></div>
       </div>
     </section>
 
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
-        <h2>Queue</h2>
+        <h2>Saved for Later</h2>
         <span class="inputs_editor_meta" id="queueCount">0 items</span>
       </div>
       <div class="inputs_editor_bd">
         <div class="inputs_editor_row">
           <button id="btnQueueSelectAll">Select all</button>
-          <button class="primary" id="btnQueueAddSelected">Add queued</button>
+          <button class="primary" id="btnQueueAddSelected">Add selected</button>
           <button class="danger" id="btnQueueRemoveSelected">Remove selected</button>
-          <button class="ghost" id="btnQueueClear">Clear queue</button>
+          <button class="ghost" id="btnQueueClear">Clear saved list</button>
         </div>
-        <div class="inputs_editor_hint">Queue lets you stage items, tweak season rules/tags/notes, then add to inputs.</div>
+        <div class="inputs_editor_hint">Use this area to hold picks while you review seasons, labels, and notes.</div>
         <div class="inputs_editor_list" id="queueList"></div>
       </div>
     </section>
 
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
-        <h2>My List (data/inputs.json)</h2>
-        <span class="inputs_editor_meta" id="counts">TV: 0 • Movies: 0</span>
-        <span class="inputs_editor_meta" id="dirty">Unsaved: no</span>
+        <h2>My Shows and Movies</h2>
+        <span class="inputs_editor_meta" id="counts">Shows: 0 • Movies: 0</span>
+        <span class="inputs_editor_meta" id="dirty">Changes saved: yes</span>
       </div>
       <div class="inputs_editor_bd">
         <div class="inputs_editor_row">
-          <input id="qMine" type="search" placeholder="Filter my list…"/>
+          <input id="qMine" type="search" placeholder="Search my list..."/>
           <button id="btnReload">Reload</button>
           <button class="primary" id="btnSave">Save</button>
-          <button id="btnRefreshRuntime">Save + Refresh Runtime</button>
-          <button id="btnPushGitHub">Publish + Sync GitHub</button>
+          <button id="btnRefreshRuntime">Save and Update App</button>
+          <button id="btnPushGitHub">Save Online and Finish Update</button>
         </div>
         <div class="inputs_editor_row">
           <select id="mineType">
-            <option value="">All types</option>
-            <option value="tv">TV</option>
-            <option value="movie">Movie</option>
+            <option value="">Shows and movies</option>
+            <option value="tv">Shows</option>
+            <option value="movie">Movies</option>
           </select>
           <select id="mineScope">
-            <option value="">All scope</option>
-            <option value="in">In scope</option>
-            <option value="out">Out of scope</option>
+            <option value="">Shown and hidden</option>
+            <option value="in">Shown in app</option>
+            <option value="out">Hidden from app</option>
           </select>
           <select id="mineFuture">
             <option value="">Future episodes</option>
-            <option value="on">Include future</option>
-            <option value="off">Exclude future</option>
+            <option value="on">Add future episodes</option>
+            <option value="off">Do not add future episodes</option>
           </select>
           <button id="btnMineSelectAll">Select all</button>
           <button class="danger" id="btnRemoveSelected">Remove selected</button>
@@ -155,7 +155,7 @@ DATE: 2026-01-20
   <div class="inputs_editor_modal_back" id="seasonModalBack" aria-hidden="true">
     <div class="inputs_editor_modal_card" role="dialog" aria-modal="true" aria-labelledby="seasonModalTitle">
       <div class="inputs_editor_modal_hd">
-        <h2 id="seasonModalTitle" style="margin:0;font-size:18px;">Edit Show Seasons</h2>
+        <h2 id="seasonModalTitle" style="margin:0;font-size:18px;">Choose Show Seasons</h2>
         <button id="seasonModalClose" class="ghost" type="button">Close</button>
       </div>
       <div class="inputs_editor_modal_bd" id="seasonModalBody"></div>
@@ -168,9 +168,9 @@ let tmdbResults=[], tmdbSelected=new Set(), mineSelected=new Set();
 let queueItems=[], queueSelected=new Set();
 const showDetailsCache=new Map();
 
-function setDirty(v){ dirty=v; document.getElementById("dirty").textContent="Unsaved: "+(dirty?"yes":"no"); }
+function setDirty(v){ dirty=v; document.getElementById("dirty").textContent="Changes saved: "+(dirty?"no":"yes"); }
 function norm(s){ return (s||"").toString().toLowerCase().trim(); }
-function counts(){ const tv=(inputs?.tv||[]).length, mv=(inputs?.movies||[]).length; document.getElementById("counts").textContent=`TV: ${tv} • Movies: ${mv}`; }
+function counts(){ const tv=(inputs?.tv||[]).length, mv=(inputs?.movies||[]).length; document.getElementById("counts").textContent=`Shows: ${tv} • Movies: ${mv}`; }
 function showBanner(lines){ const b=document.getElementById("banner"); b.style.display="block"; b.innerHTML=lines.map(x=>`<div class="inputs_editor_meta">${x}</div>`).join(""); }
 function escHtml(v){ return (v??"").toString().replace(/[&<>\"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[ch]||ch)); }
 function normalizeTags(val){ return (val||"").split(",").map(x=>x.trim()).filter(Boolean); }
@@ -217,14 +217,14 @@ function renderMine(){
     const meta=document.createElement("div"); meta.style.flex="1";
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=it.title||"(untitled)";
     const metaTags=document.createElement("div"); metaTags.className="inputs_editor_tags";
-    metaTags.innerHTML=`<span class="inputs_editor_tag">${it._type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>${it._type==="tv"?`<span class="inputs_editor_tag inputs_editor_tag--warn">Seasons ${escHtml(seasonSpecSummary(it.season_spec||"*"))}</span>`:`<span class="inputs_editor_tag inputs_editor_tag--ok">Added</span>`}`;
+    metaTags.innerHTML=`<span class="inputs_editor_tag">${it._type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">Catalog ID ${it.tmdb_id}</span>${it._type==="tv"?`<span class="inputs_editor_tag inputs_editor_tag--warn">Seasons ${escHtml(seasonSpecSummary(it.season_spec||"*"))}</span>`:`<span class="inputs_editor_tag inputs_editor_tag--ok">Added</span>`}`;
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=mineSelected.has(`${it._type}:${it.tmdb_id}`);
     sel.onchange=()=>{ toggleMineSelected(it._type,it.tmdb_id,sel.checked); row.classList.toggle("selected", sel.checked); };
     controls.appendChild(sel);
 
     const scope=document.createElement("select");
-    scope.innerHTML=`<option value="true">In scope</option><option value="false">Out of scope</option>`;
+    scope.innerHTML=`<option value="true">Shown in app</option><option value="false">Hidden from app</option>`;
     scope.value=(it.in_scope===false)?"false":"true";
     scope.onchange=()=>{ setInScope(it._type,it.tmdb_id,scope.value==="true"); setDirty(true); };
     controls.appendChild(scope);
@@ -232,7 +232,7 @@ function renderMine(){
     if(it._type==="tv"){
       const seasonBox=document.createElement("div"); seasonBox.className="inputs_editor_inline";
       const mode=document.createElement("select");
-      mode.innerHTML=`<option value="all">All seasons</option><option value="min">Min season (N+)</option><option value="filter">Filter list</option>`;
+      mode.innerHTML=`<option value="all">All seasons</option><option value="min">From season number</option><option value="filter">Specific seasons</option>`;
       const parsed=parseSeasonSpec(it.season_spec||"*");
       mode.value=parsed.mode;
       const value=document.createElement("input"); value.type="text"; value.className="small";
@@ -246,7 +246,7 @@ function renderMine(){
       seasonBox.appendChild(mode); seasonBox.appendChild(value); seasonBox.appendChild(preview);
       controls.appendChild(seasonBox);
 
-      const editBtn=document.createElement("button"); editBtn.textContent="Season Editor";
+      const editBtn=document.createElement("button"); editBtn.textContent="Choose Seasons";
       editBtn.onclick=()=>{ void addItemFull({ ...it, type:"tv", tags:it.tags||[], notes:it.notes||"" }); };
       controls.appendChild(editBtn);
 
@@ -259,7 +259,7 @@ function renderMine(){
     }
 
     const tagsInput=document.createElement("input"); tagsInput.type="text"; tagsInput.className="small";
-    tagsInput.placeholder="Tags (comma-separated)";
+    tagsInput.placeholder="Labels (comma-separated)";
     tagsInput.value=(it.tags||[]).join(", ");
     tagsInput.onchange=()=>{ setTags(it._type,it.tmdb_id,tagsInput.value); setDirty(true); };
     controls.appendChild(tagsInput);
@@ -352,10 +352,10 @@ function removeSelected(){
 
 async function tmdbSearch(){
   const q=document.getElementById("q").value.trim(); if(!q) return;
-  document.getElementById("tmdbStatus").textContent="TMDB: searching";
+  document.getElementById("tmdbStatus").textContent="Search: searching";
   const j=await apiGet("/api/tmdb/search?q="+encodeURIComponent(q));
-  if(!j.ok){ document.getElementById("tmdbStatus").textContent="TMDB: disabled"; alert(j.error||"TMDB search failed"); return; }
-  imgBase=j.img_base||imgBase; document.getElementById("tmdbStatus").textContent="TMDB: ok";
+  if(!j.ok){ document.getElementById("tmdbStatus").textContent="Search: unavailable"; alert(j.error||"Search failed"); return; }
+  imgBase=j.img_base||imgBase; document.getElementById("tmdbStatus").textContent="Search: ready";
   tmdbResults=j.results||[]; tmdbSelected.clear();
   renderTmdb();
 }
@@ -382,16 +382,16 @@ function renderTmdb(){
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=r.title||"(untitled)";
     const tags=document.createElement("div"); tags.className="inputs_editor_tags";
     const existing=getExistingState(r.type, Number(r.tmdb_id));
-    tags.innerHTML=`<span class="inputs_editor_tag">${r.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${r.tmdb_id}</span>${r.year?`<span class="inputs_editor_tag">${r.year}</span>`:""}${existing?`<span class="inputs_editor_tag ${existing.className}">${escHtml(existing.label)}</span>`:""}`;
+    tags.innerHTML=`<span class="inputs_editor_tag">${r.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">Catalog ID ${r.tmdb_id}</span>${r.year?`<span class="inputs_editor_tag">${r.year}</span>`:""}${existing?`<span class="inputs_editor_tag ${existing.className}">${escHtml(existing.label)}</span>`:""}`;
 
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=tmdbSelected.has(`${r.type}:${r.tmdb_id}`);
     sel.onchange=()=>{ toggleTmdbSelected(r.type,r.tmdb_id,sel.checked); row.classList.toggle("selected", sel.checked); };
     controls.appendChild(sel);
-    const btn=document.createElement("button"); btn.className="primary"; btn.textContent=r.type==="tv" && existing ? "Edit Seasons" : (existing ? "Update" : "Add"); btn.onclick=()=>{ void addItem(r.type,r.tmdb_id,r.title||""); };
+    const btn=document.createElement("button"); btn.className="primary"; btn.textContent=r.type==="tv" && existing ? "Choose Seasons" : (existing ? "Update" : "Add"); btn.onclick=()=>{ void addItem(r.type,r.tmdb_id,r.title||""); };
     controls.appendChild(btn);
     const link=document.createElement("a"); link.href=`https://www.themoviedb.org/${r.type}/${r.tmdb_id}`; link.target="_blank"; link.rel="noopener";
-    link.textContent="Open TMDB"; link.className="inputs_editor_link";
+    link.textContent="Open source page"; link.className="inputs_editor_link";
     controls.appendChild(link);
 
     meta.appendChild(title); meta.appendChild(tags); meta.appendChild(controls);
@@ -458,7 +458,7 @@ function renderQueue(){
     const title=document.createElement("div"); title.className="inputs_editor_title"; title.textContent=it.title||"(untitled)";
     const tags=document.createElement("div"); tags.className="inputs_editor_tags";
     const existing=getExistingState(it.type, Number(it.tmdb_id));
-    tags.innerHTML=`<span class="inputs_editor_tag">${it.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">TMDB ${it.tmdb_id}</span>${it.year?`<span class="inputs_editor_tag">${it.year}</span>`:""}${existing?`<span class="inputs_editor_tag ${existing.className}">${escHtml(existing.label)}</span>`:""}`;
+    tags.innerHTML=`<span class="inputs_editor_tag">${it.type==="tv"?"Show":"Movie"}</span><span class="inputs_editor_tag">Catalog ID ${it.tmdb_id}</span>${it.year?`<span class="inputs_editor_tag">${it.year}</span>`:""}${existing?`<span class="inputs_editor_tag ${existing.className}">${escHtml(existing.label)}</span>`:""}`;
 
     const controls=document.createElement("div"); controls.className="inputs_editor_controls";
     const sel=document.createElement("input"); sel.type="checkbox"; sel.checked=queueSelected.has(key);
@@ -468,7 +468,7 @@ function renderQueue(){
     if(it.type==="tv"){
       const seasonBox=document.createElement("div"); seasonBox.className="inputs_editor_inline";
       const mode=document.createElement("select");
-      mode.innerHTML=`<option value="all">All seasons</option><option value="min">Min season (N+)</option><option value="filter">Filter list</option>`;
+      mode.innerHTML=`<option value="all">All seasons</option><option value="min">From season number</option><option value="filter">Specific seasons</option>`;
       const parsed=parseSeasonSpec(it.season_spec||"*");
       mode.value=parsed.mode;
       const value=document.createElement("input"); value.type="text"; value.className="small";
@@ -489,7 +489,7 @@ function renderQueue(){
     }
 
     const tagsIn=document.createElement("input"); tagsIn.type="text"; tagsIn.className="small";
-    tagsIn.placeholder="Tags (comma-separated)"; tagsIn.value=(it.tags||[]).join(", ");
+    tagsIn.placeholder="Labels (comma-separated)"; tagsIn.value=(it.tags||[]).join(", ");
     tagsIn.onchange=()=>{ it.tags=normalizeTags(tagsIn.value||""); };
     controls.appendChild(tagsIn);
 
@@ -498,7 +498,7 @@ function renderQueue(){
     notesIn.onchange=()=>{ it.notes=(notesIn.value||"").trim(); };
     controls.appendChild(notesIn);
 
-    const addBtn=document.createElement("button"); addBtn.className="primary"; addBtn.textContent=it.type==="tv" && existing ? "Edit / Merge" : (existing ? "Update" : "Add");
+    const addBtn=document.createElement("button"); addBtn.className="primary"; addBtn.textContent=it.type==="tv" && existing ? "Choose Seasons" : (existing ? "Update" : "Add");
     addBtn.onclick=()=>{ void addItemFull(it); };
     controls.appendChild(addBtn);
 
@@ -634,8 +634,8 @@ function openShowSeasonModal(existing,item,details){
     const selected=new Set(missing.length ? missing : added);
     const back=document.getElementById("seasonModalBack");
     const body=document.getElementById("seasonModalBody");
-    document.getElementById("seasonModalTitle").textContent=`Edit Seasons • ${title}`;
-    body.innerHTML=`<div class="inputs_editor_modal_grid"><section class="inputs_editor_panel"><h3>Current Entry</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag inputs_editor_tag--warn">Existing seasons: ${escHtml(seasonSpecSummary(existing?.season_spec||"*", totalSeasons))}</span><span class="inputs_editor_tag">Include future: ${(existing?.include_future!==false)?"on":"off"}</span></div><div class="inputs_editor_hint" style="margin-top:10px;">Already added: ${escHtml(added.length ? compactSeasonRanges(added) : "none")}</div><div class="inputs_editor_hint" style="margin-top:6px;">Not yet added: ${escHtml(missing.length ? compactSeasonRanges(missing) : "none")}</div></section><section class="inputs_editor_panel"><h3>Incoming Edit</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag">TMDB ${escHtml(item?.tmdb_id)}</span><span class="inputs_editor_tag inputs_editor_tag--info">Incoming seasons: ${escHtml(seasonSpecSummary(item?.season_spec||"*", totalSeasons))}</span></div><label class="inputs_editor_toggle" style="margin-top:10px;"><input id="seasonModalFuture" type="checkbox" ${(item?.include_future!==false && existing?.include_future!==false)?"checked":""}/><span>Include future episodes</span></label></section></div><section class="inputs_editor_panel"><h3>Select Seasons</h3><div class="inputs_editor_hint" style="margin-bottom:10px;">Add, replace, or remove the selected seasons from the existing show.</div><div class="inputs_editor_modal_actions" style="margin-bottom:10px;"><button id="seasonModalSelectMissing" type="button">Select missing</button><button id="seasonModalSelectAdded" type="button">Select added</button><button id="seasonModalSelectAll" type="button">Select all</button><button id="seasonModalSelectNone" type="button">Clear selection</button></div><div class="inputs_editor_season_grid" id="seasonModalGrid"></div></section><div class="inputs_editor_modal_actions"><button class="primary" id="seasonModalAdd" type="button">Add Selected Seasons</button><button id="seasonModalReplace" type="button">Replace With Selected</button><button class="danger" id="seasonModalRemove" type="button">Remove Selected Seasons</button><button class="ghost" id="seasonModalCancel" type="button">Cancel</button></div>`;
+    document.getElementById("seasonModalTitle").textContent=`Choose Seasons - ${title}`;
+    body.innerHTML=`<div class="inputs_editor_modal_grid"><section class="inputs_editor_panel"><h3>Already in My List</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag inputs_editor_tag--warn">Seasons now shown: ${escHtml(seasonSpecSummary(existing?.season_spec||"*", totalSeasons))}</span><span class="inputs_editor_tag">Future episodes: ${(existing?.include_future!==false)?"yes":"no"}</span></div><div class="inputs_editor_hint" style="margin-top:10px;">Already added: ${escHtml(added.length ? compactSeasonRanges(added) : "none")}</div><div class="inputs_editor_hint" style="margin-top:6px;">Not added yet: ${escHtml(missing.length ? compactSeasonRanges(missing) : "none")}</div></section><section class="inputs_editor_panel"><h3>New Choice</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag">Catalog ID ${escHtml(item?.tmdb_id)}</span><span class="inputs_editor_tag inputs_editor_tag--info">Selected seasons: ${escHtml(seasonSpecSummary(item?.season_spec||"*", totalSeasons))}</span></div><label class="inputs_editor_toggle" style="margin-top:10px;"><input id="seasonModalFuture" type="checkbox" ${(item?.include_future!==false && existing?.include_future!==false)?"checked":""}/><span>Add future episodes</span></label></section></div><section class="inputs_editor_panel"><h3>Seasons to Change</h3><div class="inputs_editor_hint" style="margin-bottom:10px;">Choose the seasons you want to add, replace, or remove.</div><div class="inputs_editor_modal_actions" style="margin-bottom:10px;"><button id="seasonModalSelectMissing" type="button">Select not added</button><button id="seasonModalSelectAdded" type="button">Select already added</button><button id="seasonModalSelectAll" type="button">Select all</button><button id="seasonModalSelectNone" type="button">Clear selection</button></div><div class="inputs_editor_season_grid" id="seasonModalGrid"></div></section><div class="inputs_editor_modal_actions"><button class="primary" id="seasonModalAdd" type="button">Add Selected Seasons</button><button id="seasonModalReplace" type="button">Use Only Selected Seasons</button><button class="danger" id="seasonModalRemove" type="button">Remove Selected Seasons</button><button class="ghost" id="seasonModalCancel" type="button">Cancel</button></div>`;
     const grid=document.getElementById("seasonModalGrid");
     const renderGrid=()=>{
       grid.innerHTML="";
@@ -677,8 +677,8 @@ async function saveInputs(){
   const msg=document.getElementById("saveMsg"); msg.textContent="";
   const j=await apiPost("/api/inputs",inputs);
   if(!j.ok){ msg.textContent="Save failed: "+(j.error||"unknown"); return false; }
-  const warnings=Array.isArray(j.warnings)&&j.warnings.length ? ` (${j.warnings.length} cleanup warning${j.warnings.length===1?"":"s"})` : "";
-  msg.textContent="Saved @ "+j.utc+warnings;
+  const warnings=Array.isArray(j.warnings)&&j.warnings.length ? ` (${j.warnings.length} item${j.warnings.length===1?"":"s"} cleaned up)` : "";
+  msg.textContent="Saved at "+j.utc+warnings;
   if(j.inputs) inputs=j.inputs;
   setDirty(false);
   return true;
@@ -686,42 +686,42 @@ async function saveInputs(){
 
 async function saveAndRefreshRuntime(){
   const msg=document.getElementById("saveMsg");
-  msg.textContent="Saving before runtime refresh...";
+  msg.textContent="Saving before updating the app...";
   const saved=await saveInputs();
   if(!saved) return;
-  msg.textContent="Refreshing generated runtime data...";
+  msg.textContent="Updating the app data...";
   const j=await apiPost("/api/refresh-runtime",{});
   if(!j.ok){
-    const tail=(j.stderr||j.stdout||j.error||"runtime refresh failed").toString().slice(-600);
-    msg.textContent="Runtime refresh failed: "+tail;
+    const tail=(j.stderr||j.stdout||j.error||"app update failed").toString().slice(-600);
+    msg.textContent="App update failed: "+tail;
     return;
   }
-  msg.textContent="Runtime refreshed. Reloading inputs...";
+  msg.textContent="App data updated. Reloading my list...";
   await loadInputs();
-  msg.textContent="Runtime refreshed @ "+new Date().toLocaleTimeString();
+  msg.textContent="App data updated at "+new Date().toLocaleTimeString();
 }
 
 async function pushInputsToGitHub(){
   const msg=document.getElementById("saveMsg");
-  msg.textContent="Saving before publish...";
+  msg.textContent="Saving before the online update...";
   const saved=await saveInputs();
   if(!saved) return;
-  msg.textContent="Publishing inputs and waiting for generated runtime data...";
+  msg.textContent="Saving online and waiting for the app data to finish...";
   const j=await apiPost("/api/publish-inputs",{remote:"github", branch:"main", wait_seconds:900});
-  if(!j.ok){ msg.textContent="Push failed: "+(j.error||"unknown"); return; }
+  if(!j.ok){ msg.textContent="Online update failed: "+(j.error||"unknown"); return; }
   const sync=j.sync||{};
-  const stashNote=sync.stashed_generated_artifacts ? " Generated local artifacts were stashed before fast-forward." : "";
+  const stashNote=sync.stashed_generated_artifacts ? " Old local generated files were saved aside before updating this computer." : "";
   msg.textContent=j.publish_complete
-    ? `Published and synced @ ${j.remote}/${j.branch} (${sync.remote_head||j.commit||"HEAD"}).${stashNote}`
-    : `Published inputs, but generated runtime sync did not complete yet.`;
+    ? `Online save finished and this computer is updated (${sync.remote_head||j.commit||"latest"}).${stashNote}`
+    : `Saved online, but the app data did not finish updating yet.`;
 }
 
 (async function boot(){
   try{
     const h=await apiGet("/api/health");
-    document.getElementById("serverStatus").textContent=h.ok?"Server: ok":"Server: error";
+    document.getElementById("serverStatus").textContent=h.ok?"Editor: ready":"Editor: problem";
   }catch(_){
-    document.getElementById("serverStatus").textContent="Server: not running";
+    document.getElementById("serverStatus").textContent="Editor: not running";
     showBanner([
       "You opened this from the wrong server (ex: :8000). Save cannot work here.",
       "Run:  run_local_servers.bat",
@@ -769,7 +769,7 @@ async function pushInputsToGitHub(){
   };
   document.getElementById("btnRemoveSelected").onclick=removeSelected;
   document.getElementById("seasonModalClose").onclick=closeSeasonModal;
-  document.getElementById("tmdbStatus").textContent="TMDB: ready";
+  document.getElementById("tmdbStatus").textContent="Search: ready";
   renderTmdb();
   renderQueue();
 })();
