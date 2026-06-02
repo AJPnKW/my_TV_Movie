@@ -55,6 +55,17 @@
 <tr><td>WP4 Media Library server functions</td><td>Later after WP1/WP2</td><td>WD TV Live/local paths, media inventory, ffprobe/ffmpeg status</td><td>server-backed Media Library</td></tr>
 <tr><td>WP5 Production promotion</td><td class="lime">CODEX-LIME</td><td>HP VM deployment, reverse proxy plan, backup/restore</td><td>production runbook</td></tr>
 </table></section>
+<section class="card"><h2>5.1 CODEX-FOREST WP2 server-mode design output</h2>
+<p><strong>Added:</strong> 2026-06-02. Forest Green designed the v1 server-backed application architecture for PostgreSQL, API, watch-state logic, JSON migration/fallback, and WD TV Live Media Library workflows.</p>
+<table><tr><th>Area</th><th>Decision</th><th>Persistent artifact</th></tr>
+<tr><td>Database</td><td>PostgreSQL is the primary writable store in server mode. JSON remains import/export/static fallback. Image and media binaries remain files/assets by default; PostgreSQL stores identifiers, metadata, state, paths, and audit evidence.</td><td><code>deployment/postgres/schema_v1.sql</code></td></tr>
+<tr><td>JSON migration</td><td><code>data/inputs.json</code> remains canonical manual input. Generated runtime JSON remains fallback/export. Migration imports current JSON/config/watch/provider/media evidence into normalized tables without destructive source-file changes.</td><td><code>deployment/postgres/json_to_postgres_migration_plan.md</code></td></tr>
+<tr><td>API</td><td><code>/api/v1</code> owns health, catalog, watch status, watchlist, favourites, Trakt pull/push/reconcile, provider refresh, Media Library inventory/scan/QA/remux, runtime config, sync history, and audit log.</td><td><code>deployment/api/api_contract_v1.md</code></td></tr>
+<tr><td>State logic</td><td>Writes are local-first and queue-backed. Watch status, watchlist, and favourites are independent. Conflicts require audit evidence; no local action can be silently dropped because external sync fails.</td><td><code>deployment/api/watch_state_logic_contract.md</code></td></tr>
+<tr><td>Media Library</td><td>Home network is <code>192.168.1.x</code>; trailer network is <code>192.168.2.x</code>. Inventory records local device/path discovery, expected filename, actual filename, ffprobe/remux state, VLC state, and X-plore state.</td><td><code>deployment/media_library/wd_tv_live_media_library_design.md</code></td></tr>
+</table>
+<p><strong>Risks carried forward:</strong> browser-local state may exist on multiple devices; Trakt mappings do not cover every local state field; network discovery depends on SMB/firewall/device availability; the static UI still needs a later API-client bridge before it consumes these contracts directly.</p>
+</section>
 <section class="card"><h2>6. Documentation persistence rule</h2>
 <p>Every session must update documentation before returning success. Documentation must capture:</p>
 <ul>

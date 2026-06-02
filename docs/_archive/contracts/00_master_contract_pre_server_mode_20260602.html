@@ -11,9 +11,9 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Current version MC-2026-06-02.1. Last updated: 2026-06-02. Latest additive lineage: Server-mode PostgreSQL primary write store, JSON import/export/static fallback, API/state sync contracts, and WD TV Live Media Library database design.</div>
+<div class="small">Only active documentation source of truth. Current version MC-2026-05-20.2. Last updated: 2026-05-20. Latest additive lineage: Streaming provider registry source-of-truth recovery, candidate/blocked provider visibility rules, shared episode-card renderer baseline, and still-image fallback validation.</div>
 <nav class="toc">
-<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#server-mode-20260602">Server Mode</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
+<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
 </nav>
 </header>
 <main>
@@ -41,7 +41,6 @@
 <tr><td>2026-05-19</td><td>MC-2026-05-19.1</td><td>Added exact Watch Source provider strip schema, provider logo hyperlink rule, hidden URL rule, no provider button/card outline rule, exact generated filename copy-string rule, and validation fail rules.</td></tr>
 <tr><td>2026-05-20</td><td>MC-2026-05-20.1</td><td>Made Media Library a static primary-nav shell link, archived retired runtime shims out of active web/js, removed stale Where-to-watch fallback labels, restored required subordinate architecture/UI docs as contract pointers, and hardened validation against legacy provider markup and misplaced/occluded nav links.</td></tr>
 <tr><td>2026-05-20</td><td>MC-2026-05-20.2</td><td>Made <code>web/config.json -> streaming.embed_providers[]</code> the Streaming provider button source of truth; defined <code>ok</code>, <code>warn</code>, <code>candidate</code>, and <code>blocked</code> runtime visibility; baselined <code>buildSharedEpisodeCard</code> and <code>renderEpisodeCardHtml</code> across Calendar, Dashboard Current/Recent, and show-detail episode cards; restored episode still/backdrop/poster fallback validation.</td></tr>
-<tr><td>2026-06-02</td><td>MC-2026-06-02.1</td><td>Added server-mode architecture contract: PostgreSQL is the primary writable store; JSON remains import/export/static fallback; image and media binaries remain files/assets by default; API, watch-state logic, Trakt reconciliation, provider registry, audit logging, and WD TV Live Media Library inventory/QA are database-backed design surfaces.</td></tr>
 </table>
 <p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
 <p>Standalone page: <code>web/manage_watch_state.html</code></p>
@@ -456,54 +455,6 @@ AU  Stan</pre>
 </ul>
 </section>
 <!-- MC-2026-05-20.2-STREAMING-EPISODE-CARD-END -->
-<!-- MC-2026-06-02.1-SERVER-MODE-START -->
-<section id="server-mode-20260602" class="card">
-<h2>MC-2026-06-02.1 Server Mode, API, Database, and Media Library Contract</h2>
-<table><tr><th>Field</th><th>Value</th></tr>
-<tr><td>Added</td><td>MC-2026-06-02.1</td></tr>
-<tr><td>Updated</td><td>Server-backed application architecture for writable watch state, watchlist, favourites, Trakt/commercial sync, provider registry, runtime config, audit logging, Media Library inventory, ffprobe/remux QA, and WD TV Live/local-network workflows.</td></tr>
-<tr><td>Origin</td><td>User assigned CODEX-FOREST ownership of application/API/database/state logic and required PostgreSQL as primary write store, JSON as import/export/static fallback, no image binaries in PostgreSQL by default, and detailed documentation of narrative, interpretation, decisions, validation, and risks.</td></tr>
-<tr><td>Owner</td><td><code>deployment/postgres/schema_v1.sql</code>, <code>deployment/postgres/json_to_postgres_migration_plan.md</code>, <code>deployment/api/api_contract_v1.md</code>, <code>deployment/api/watch_state_logic_contract.md</code>, and <code>deployment/media_library/wd_tv_live_media_library_design.md</code>.</td></tr>
-<tr><td>Validation</td><td>Validation must prove PostgreSQL DDL is non-destructive, JSON fallback remains documented, PostgreSQL is primary for server-mode writes, secrets are not embedded, image/media binaries remain file/path based by default, and Media Library design includes home <code>192.168.1.x</code>, trailer <code>192.168.2.x</code>, expected/actual filenames, ffprobe/remux, VLC, and X-plore status buckets.</td></tr>
-</table>
-
-<h3>Server-mode storage decision</h3>
-<ul>
-<li>PostgreSQL is the primary write store in server mode for media identity, watch status, watchlist, favourites, sync queue/history, provider registry, runtime config, audit log, and Media Library inventory.</li>
-<li>JSON remains required for import, export, generated runtime output, recovery, and static GitHub Pages fallback.</li>
-<li><code>data/inputs.json</code> remains the canonical manual input source. <code>data/data.json</code>, <code>data/catalog_index.json</code>, <code>data/calendar.json</code>, and <code>data/catalog_detail/*.json</code> remain generated/runtime fallback artifacts.</li>
-<li>Images, posters, stills, backdrops, provider logos, trailers, and media binaries are not stored in PostgreSQL by default. PostgreSQL stores metadata, identifiers, status fields, and paths to files/assets.</li>
-<li>Secret values are not stored in schema seed data or API responses. Runtime config may store secret references only.</li>
-</ul>
-
-<h3>Database schema decision</h3>
-<ul>
-<li>The v1 schema includes <code>media_items</code>, <code>shows</code>, <code>seasons</code>, <code>episodes</code>, <code>movies</code>, <code>watch_state</code>, <code>watchlist</code>, <code>favourites</code>, <code>sync_queue</code>, <code>sync_history</code>, <code>media_files</code>, <code>provider_registry</code>, <code>runtime_config</code>, and <code>audit_log</code>.</li>
-<li><code>watch_state</code> stores only watched status/progress: <code>unwatched</code>, <code>partial</code>, and <code>watched</code>.</li>
-<li><code>watchlist</code> and <code>favourites</code> are independent tables. Their values cannot be inferred from watched status or from each other.</li>
-<li><code>sync_queue</code> preserves pending local actions. <code>sync_history</code> records pull, push, reconcile, local-only, failed, blocked, and partial outcomes.</li>
-<li><code>audit_log</code> is required for state writes, migration imports, sync conflict resolution, Media Library scan/remux decisions, and no-silent-loss evidence.</li>
-</ul>
-
-<h3>API decision</h3>
-<ul>
-<li>API base path is <code>/api/v1</code>.</li>
-<li>Required endpoint groups are health, catalog, watch status, watchlist, favourites, Trakt pull/push/reconcile, providers, Media Library inventory/scan/QA/remux, runtime config, sync history/queue, and audit log.</li>
-<li>State-changing API routes persist local PostgreSQL state first, write audit evidence, enqueue external sync work where applicable, and return local state immediately.</li>
-<li>Trakt/commercial sync must not write by title-only matching. Stable IDs such as TMDB, IMDb, TVDB, Trakt ID, or Trakt slug are required for external writes.</li>
-<li><code>partial</code> watched status remains local unless a future explicit progress mapping is implemented. Favourites remain local-only by default unless an explicit external mapping is implemented.</li>
-</ul>
-
-<h3>Media Library decision</h3>
-<ul>
-<li>Media Library server workflow is <code>scan -> identify -> filename match -> ffprobe QA -> classify -> safe remux if needed -> final validation -> report</code>.</li>
-<li>Home network profile is <code>192.168.1.x</code>. Trailer network profile is <code>192.168.2.x</code>. Manual override remains required when network detection is unavailable.</li>
-<li>Inventory stores local device, device address where available, share/root/path, expected filename, actual filename, match state, ffprobe state, remux state, VLC state, X-plore state, and QA JSON.</li>
-<li>Safe remux is stream copy by default. Transcoding requires a future explicit contract.</li>
-<li>Bad/unrepairable files are quarantined and reported, never silently skipped.</li>
-</ul>
-</section>
-<!-- MC-2026-06-02.1-SERVER-MODE-END -->
 </main>
 </body>
 </html>
