@@ -63,7 +63,7 @@
   "vote_average": 7.5,
   "vote_count": 25,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-02T12:57:56Z",
+  "availability_checked_at": "2026-06-02T18:04:02Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1484453",
@@ -199,21 +199,21 @@
     "providers": {
       "CA": [
         {
-          "provider_id": 350,
-          "provider_name": "Apple TV",
-          "logo_path": "/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
-          "logo_local": "/assets/logos/services/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 2,
-          "deep_link": "https://www.themoviedb.org/movie/1484453-snoopy-presents-a-summer-musical/watch?locale=CA"
-        },
-        {
           "provider_id": 2243,
           "provider_name": "Apple TV Amazon Channel",
           "logo_path": "/mHrYMgnZIp6lgW2aXg7ix9zGOnA.jpg",
           "logo_local": "/assets/logos/services/mHrYMgnZIp6lgW2aXg7ix9zGOnA.jpg",
           "availability_type": "flatrate",
           "display_priority": 123,
+          "deep_link": "https://www.themoviedb.org/movie/1484453-snoopy-presents-a-summer-musical/watch?locale=CA"
+        },
+        {
+          "provider_id": 350,
+          "provider_name": "Apple TV",
+          "logo_path": "/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
+          "logo_local": "/assets/logos/services/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 0,
           "deep_link": "https://www.themoviedb.org/movie/1484453-snoopy-presents-a-summer-musical/watch?locale=CA"
         }
       ],
