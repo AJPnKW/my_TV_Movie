@@ -1,5 +1,18 @@
 # Architecture Log
 
+## 2026-06-02
+
+- CODEX-FOREST designed the v1 server-backed application architecture for PostgreSQL primary writes, JSON import/export/static fallback, API routes, local-first watch-state logic, Trakt/commercial sync queue/history, provider registry, runtime config, audit logging, and WD TV Live/local-network Media Library inventory.
+- Added PostgreSQL DDL in `deployment/postgres/schema_v1.sql` for `media_items`, `shows`, `seasons`, `episodes`, `movies`, `watch_state`, `watchlist`, `favourites`, `sync_queue`, `sync_history`, `media_files`, `provider_registry`, `runtime_config`, and `audit_log`; schema stores image/media paths and metadata by default, not binaries.
+- Added JSON-to-PostgreSQL migration mapping for canonical `data/inputs.json`, generated runtime JSON, watch queue, provider/watch-source files, web config, Media Library JSON, and media-renamer QA/config outputs.
+- Added `/api/v1` contract for health, catalog, watch status, watchlist, favourites, Trakt pull/push/reconcile, providers, Media Library inventory/scan/QA/remux, runtime config, sync history/queue, and audit log.
+- Added watch-state logic contract requiring local-first writes, durable queue behavior, explicit conflict resolution, independent watchlist/favourites, local-only defaults for `partial` and favourites where no external mapping exists, and no silent loss of user actions.
+- Added WD TV Live Media Library design for home `192.168.1.x`, trailer `192.168.2.x`, local device/path discovery, expected vs actual filename handling, ffprobe QA, safe stream-copy remux, VLC and X-plore playback buckets, and non-binary database storage.
+- Updated `docs/00_master_contract.html` to MC-2026-06-02.1, archived the prior master contract, updated `docs/mytv_vm_migration_control_plan.html` with WP2 design outputs, and advanced `scripts/validate_runtime.ps1` freshness checks for the new contract lineage.
+- Validation: `git diff --check` passed; `scripts/validate_runtime.ps1` passed; static schema checks found no `DROP` or `TRUNCATE` commands; `psql` was unavailable locally, so live PostgreSQL parser validation was not run.
+- Remaining risks: browser-local state can be fragmented across devices before import; Trakt does not directly map every local state field; WD TV Live/local share discovery depends on SMB/firewall/device availability; static UI API-client bridge remains a later implementation step.
+- Commit: `2744b611d9` design-server-backed-app-architecture.
+
 ## 2026-05-27
 
 - Closed the remaining active-input identity gap by making the direct TMDB audit fail on active unresolved IDs and title mismatches instead of relying on the previously generated catalog as evidence.
