@@ -73,11 +73,11 @@
       "name": "United Kingdom"
     }
   ],
-  "popularity": 7.1542,
+  "popularity": 6.3478,
   "vote_average": 6.264,
   "vote_count": 929,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-01T15:45:14Z",
+  "availability_checked_at": "2026-06-02T12:57:56Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1098006",
@@ -213,21 +213,21 @@
     "providers": {
       "CA": [
         {
-          "provider_id": 350,
-          "provider_name": "Apple TV",
-          "logo_path": "/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
-          "logo_local": "/assets/logos/services/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 2,
-          "deep_link": "https://www.themoviedb.org/movie/1098006-fountain-of-youth/watch?locale=CA"
-        },
-        {
           "provider_id": 2243,
           "provider_name": "Apple TV Amazon Channel",
           "logo_path": "/mHrYMgnZIp6lgW2aXg7ix9zGOnA.jpg",
           "logo_local": "/assets/logos/services/mHrYMgnZIp6lgW2aXg7ix9zGOnA.jpg",
           "availability_type": "flatrate",
           "display_priority": 123,
+          "deep_link": "https://www.themoviedb.org/movie/1098006-fountain-of-youth/watch?locale=CA"
+        },
+        {
+          "provider_id": 350,
+          "provider_name": "Apple TV",
+          "logo_path": "/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
+          "logo_local": "/assets/logos/services/mcbz1LgtErU9p4UdbZ0rG6RTWHX.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 0,
           "deep_link": "https://www.themoviedb.org/movie/1098006-fountain-of-youth/watch?locale=CA"
         }
       ],

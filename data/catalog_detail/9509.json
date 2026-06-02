@@ -93,11 +93,11 @@
       "name": "Mexico"
     }
   ],
-  "popularity": 9.6585,
+  "popularity": 9.4008,
   "vote_average": 7.464,
-  "vote_count": 5682,
+  "vote_count": 5683,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-01T15:45:14Z",
+  "availability_checked_at": "2026-06-02T12:57:56Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/9509",
@@ -238,7 +238,7 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 6,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
         },
         {
@@ -247,15 +247,6 @@
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 6,
-          "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
-        },
-        {
-          "provider_id": 3,
-          "provider_name": "Google Play Movies",
-          "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
-          "logo_local": "",
-          "availability_type": "rent",
           "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
         },
@@ -264,8 +255,17 @@
           "provider_name": "Google Play Movies",
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 8,
+          "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
+        },
+        {
+          "provider_id": 3,
+          "provider_name": "Google Play Movies",
+          "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
+          "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 7,
+          "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
         },
         {
@@ -274,7 +274,7 @@
           "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 18,
+          "display_priority": 19,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
         },
         {
@@ -283,7 +283,7 @@
           "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 18,
+          "display_priority": 19,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
         },
         {
@@ -292,7 +292,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 33,
+          "display_priority": 34,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
         },
         {
@@ -301,7 +301,7 @@
           "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 33,
+          "display_priority": 34,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=CA"
         },
         {
@@ -406,12 +406,39 @@
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=US"
         },
         {
+          "provider_id": 1854,
+          "provider_name": "AMC Plus Apple TV Channel",
+          "logo_path": "/oTQdXIqM9iewlN4MC2nhKB0gHw.jpg",
+          "logo_local": "/assets/logos/services/oTQdXIqM9iewlN4MC2nhKB0gHw.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 21,
+          "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=US"
+        },
+        {
+          "provider_id": 528,
+          "provider_name": "AMC+ Amazon Channel",
+          "logo_path": "/2ino0WmHA4GROB7NYKzT6PGqLcb.jpg",
+          "logo_local": "/assets/logos/services/2ino0WmHA4GROB7NYKzT6PGqLcb.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 25,
+          "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=US"
+        },
+        {
           "provider_id": 635,
           "provider_name": "AMC+ Roku Premium Channel",
           "logo_path": "/gAGrSQCTAisxy2CsWbijVvJEnRo.jpg",
           "logo_local": "/assets/logos/services/gAGrSQCTAisxy2CsWbijVvJEnRo.jpg",
           "availability_type": "flatrate",
           "display_priority": 28,
+          "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=US"
+        },
+        {
+          "provider_id": 526,
+          "provider_name": "AMC+",
+          "logo_path": "/ovmu6uot1XVvsemM2dDySXLiX57.jpg",
+          "logo_local": "/assets/logos/services/ovmu6uot1XVvsemM2dDySXLiX57.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 29,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=US"
         },
         {
@@ -457,15 +484,6 @@
           "logo_local": "/assets/logos/services/ptmbGSttkyzawLbxx9MElmxKuVo.jpg",
           "availability_type": "flatrate",
           "display_priority": 52,
-          "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=US"
-        },
-        {
-          "provider_id": 1794,
-          "provider_name": "Starz Amazon Channel",
-          "logo_path": "/esiLBRzDUwodjfN8gA4qj7l3ZF7.jpg",
-          "logo_local": "/assets/logos/services/esiLBRzDUwodjfN8gA4qj7l3ZF7.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 153,
           "deep_link": "https://www.themoviedb.org/movie/9509-man-on-fire/watch?locale=US"
         }
       ],
