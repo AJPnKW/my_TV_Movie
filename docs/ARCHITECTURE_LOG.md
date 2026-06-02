@@ -2,6 +2,13 @@
 
 ## 2026-06-02
 
+- Re-reviewed CODEX-FOREST server-mode work after pulling the completed Lime Green VM/webserver foundation and the follow-on generated data artifact commit.
+- Determined the generated data update did not change the v1 database/API/state model, because the migration plan already treats generated JSON as fallback/import/export evidence.
+- Added the missing runtime alignment between Forest API/database design and Lime deployment foundation: app root `/opt/mytv_movie`, Nginx static/reverse proxy on `80/tcp` with `443/tcp` reserved, local API upstream `127.0.0.1:8000`, local PostgreSQL on `5432/tcp`, and static JSON fallback still served by Nginx when the API is stopped.
+- Updated `deployment/api/api_contract_v1.md`, `deployment/postgres/json_to_postgres_migration_plan.md`, `docs/00_master_contract.html`, and `docs/mytv_vm_migration_control_plan.html` without editing Lime-owned VM scripts or `deployment/webserver/*`.
+- Validation: `git diff --check` passed; `scripts/validate_runtime.ps1` passed.
+- Commit: `f0d6c7abc4` align-forest-api-with-lab-vm-foundation.
+
 - CODEX-FOREST designed the v1 server-backed application architecture for PostgreSQL primary writes, JSON import/export/static fallback, API routes, local-first watch-state logic, Trakt/commercial sync queue/history, provider registry, runtime config, audit logging, and WD TV Live/local-network Media Library inventory.
 - Added PostgreSQL DDL in `deployment/postgres/schema_v1.sql` for `media_items`, `shows`, `seasons`, `episodes`, `movies`, `watch_state`, `watchlist`, `favourites`, `sync_queue`, `sync_history`, `media_files`, `provider_registry`, `runtime_config`, and `audit_log`; schema stores image/media paths and metadata by default, not binaries.
 - Added JSON-to-PostgreSQL migration mapping for canonical `data/inputs.json`, generated runtime JSON, watch queue, provider/watch-source files, web config, Media Library JSON, and media-renamer QA/config outputs.
