@@ -24,7 +24,7 @@ $Dirs = @(
 )
 foreach ($d in $Dirs) { Ensure-Dir (Join-Path $RepoRoot $d) }
 
-$Evidence = [ordered]@{
+$evidence = [ordered]@{
  run_stamp=$RunStamp
  repo_root=$RepoRoot
  computer_name=$env:COMPUTERNAME
@@ -37,7 +37,8 @@ $Evidence = [ordered]@{
  python_present=[bool](Get-Command python -ErrorAction SilentlyContinue)
  docker_present=[bool](Get-Command docker -ErrorAction SilentlyContinue)
 }
-$Evidence | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $RunRoot "environment_evidence.json") -Encoding UTF8
+$evidence | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath (Join-Path $RunRoot "environment_evidence.json") -Encoding UTF8
+
 try { git status --short | Set-Content -LiteralPath (Join-Path $RunRoot "git_status_short.txt") -Encoding UTF8 } catch {}
 
 @"
@@ -175,7 +176,7 @@ RunRoot:
 $RunRoot
 
 Next:
-1. git add deployment scripts/bootstrap_mytv_vm_migration_lab.ps1
+1. git add deployment docs codex_prompts scripts\bootstrap_mytv_vm_migration_lab.ps1
 2. git commit -m "bootstrap mytv vm migration foundation"
 3. git push origin main
 4. Paste CODEX_LIME prompt into Lime Green Codex
