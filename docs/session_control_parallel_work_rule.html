@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>my_TV_Movie — Parallel Session Control Rule</title>
+<style>
+:root{color-scheme:dark;--bg:#08111f;--panel:#101b2c;--line:#314158;--text:#edf5ff;--muted:#a9bad0}body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif;line-height:1.45}main{max-width:1200px;margin:auto;padding:20px}h1,h2{color:#fff}table{width:100%;border-collapse:collapse;background:var(--panel);margin:12px 0}th,td{border:1px solid var(--line);padding:8px;vertical-align:top}th{background:#14243a;text-align:left}code{background:#050b14;border:1px solid #25364f;border-radius:6px;padding:1px 4px}.red{color:#fb7185}.blue{color:#60a5fa}.green{color:#34d399}.yellow{color:#fbbf24}.purple{color:#c084fc}.cyan{color:#67e8f9}</style>
+</head>
+<body><main>
+<h1>my_TV_Movie — Parallel Session Control Rule</h1>
+<p><strong>Rule ID:</strong> SC-2026-05-20.1<br><strong>Purpose:</strong> Prevent thread/session drift when ChatGPT, Codex, PowerShell, browser tabs, local repo, GitHub Pages, and VMs are used in parallel.</p>
+<h2>1. Naming convention</h2>
+<table><tr><th>Prefix</th><th>Meaning</th><th>Use</th></tr>
+<tr><td><code>TA</code></td><td>Thread A</td><td>Primary ChatGPT control thread.</td></tr>
+<tr><td><code>TB</code></td><td>Thread B</td><td>Secondary ChatGPT architecture/recovery thread.</td></tr>
+<tr><td><code>CA</code></td><td>Codex A</td><td>Primary Codex implementation session.</td></tr>
+<tr><td><code>CB</code></td><td>Codex B</td><td>Parallel Codex implementation session, only when explicitly split.</td></tr>
+<tr><td><code>SA</code></td><td>Shell A</td><td>Primary PowerShell repo/session window.</td></tr>
+<tr><td><code>SB</code></td><td>Shell B</td><td>Secondary PowerShell validation/server window.</td></tr>
+<tr><td><code>BA</code></td><td>Browser A</td><td>Primary GitHub Pages/manual QA browser group.</td></tr>
+<tr><td><code>BB</code></td><td>Browser B</td><td>Secondary GitHub/GitHub Actions/docs browser group.</td></tr>
+</table>
+<h2>2. Colour standard</h2>
+<table><tr><th>Code</th><th>Colour</th><th>Label example</th></tr>
+<tr><td><code>TA</code></td><td class="blue">Blue</td><td><code>TA — ChatGPT Control — my_TV_Movie</code></td></tr>
+<tr><td><code>TB</code></td><td class="purple">Purple</td><td><code>TB — ChatGPT Architecture — my_TV_Movie</code></td></tr>
+<tr><td><code>CA</code></td><td class="green">Green</td><td><code>CA — Codex Runtime Fixes — my_TV_Movie</code></td></tr>
+<tr><td><code>CB</code></td><td class="yellow">Yellow</td><td><code>CB — Codex Docs/Validation — my_TV_Movie</code></td></tr>
+<tr><td><code>SA</code></td><td class="cyan">Cyan</td><td><code>SA — PowerShell Repo — my_TV_Movie</code></td></tr>
+<tr><td><code>SB</code></td><td class="red">Red</td><td><code>SB — PowerShell Server/QA — my_TV_Movie</code></td></tr>
+</table>
+<h2>3. Mandatory session header</h2>
+<p>Every Codex prompt must begin with a session header:</p>
+<pre>SESSION: CA — Codex Runtime Fixes — my_TV_Movie
+COLOUR: Green
+ROLE: Primary implementation session
+REPO: C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie
+DO NOT CROSS INTO: IPTV_Manager_Hybrid, unrelated media renamer-only work, or non-my_TV_Movie threads</pre>
+<h2>4. Parallel work rule</h2>
+<ul>
+<li>Do not run two Codex sessions against the same files unless one is explicitly read-only or documentation-only.</li>
+<li>If parallel sessions are unavoidable, each session must list owned files and forbidden files.</li>
+<li>At completion, every session must return: session code, objective, commits, files changed, validation, remaining blockers, and whether another session must pull/rebase.</li>
+<li>Before applying another Codex output, run <code>git pull origin main</code> in the active shell and confirm clean status.</li>
+</ul>
+<h2>5. Human-visible naming examples</h2>
+<table><tr><th>Tool</th><th>Name to use</th></tr>
+<tr><td>Chrome group</td><td><code>BA — my_TV_Movie QA</code></td></tr>
+<tr><td>Codex tab/session</td><td><code>CA — Runtime Popup/Card Fix</code></td></tr>
+<tr><td>PowerShell tab title</td><td><code>SA — my_TV_Movie Repo</code></td></tr>
+<tr><td>Git commit body</td><td><code>Session: CA — Runtime Popup/Card Fix</code></td></tr>
+</table>
+</main></body></html>
