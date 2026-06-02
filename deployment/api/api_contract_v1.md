@@ -16,6 +16,18 @@ The API is the write boundary between the current web app and PostgreSQL. It mus
 
 Server mode writes to PostgreSQL first and records audit/sync evidence. JSON remains import/export/static fallback. All state-changing routes create `audit_log` rows, and all external sync work creates `sync_queue` and/or `sync_history` rows. API responses must include enough state metadata for the UI to show local, pending, synced, blocked, or conflict status without pretending a write was silently accepted by an external provider.
 
+## Deployment Runtime Alignment
+
+This API contract is designed to run on the Lime Green X1 lab VM foundation without changing Lime-owned provisioning scripts.
+
+- App root: `/opt/mytv_movie`.
+- Static entrypoint/reverse proxy: Nginx on `80/tcp`, with `443/tcp` reserved for later TLS.
+- Local API upstream: `127.0.0.1:8000`, matching the lab VM reserved API port.
+- Public API path: Nginx should route `/api/v1/*` to the local upstream when API implementation begins.
+- PostgreSQL: local VM PostgreSQL service on `5432/tcp`; it should not be exposed beyond the VM/admin network.
+- Media tools: server-side API workers use installed `ffprobe` and `ffmpeg` for Media Library QA/remux.
+- Static fallback: existing `web/`, `assets/`, and generated JSON artifacts remain serveable by Nginx even when the API service is stopped.
+
 ## Common Rules
 
 - Request and response bodies are JSON.

@@ -488,6 +488,8 @@ AU  Stan</pre>
 <h3>API decision</h3>
 <ul>
 <li>API base path is <code>/api/v1</code>.</li>
+<li>In the X1 lab VM deployment path, Nginx owns the static entrypoint and future reverse proxy on <code>80/tcp</code> with <code>443/tcp</code> reserved for TLS. The local API upstream is <code>127.0.0.1:8000</code>, matching the Lime Green reserved API port.</li>
+<li>The server runtime app root is <code>/opt/mytv_movie</code>. PostgreSQL runs as the local VM service on <code>5432/tcp</code> and must not be exposed beyond the VM/admin network.</li>
 <li>Required endpoint groups are health, catalog, watch status, watchlist, favourites, Trakt pull/push/reconcile, providers, Media Library inventory/scan/QA/remux, runtime config, sync history/queue, and audit log.</li>
 <li>State-changing API routes persist local PostgreSQL state first, write audit evidence, enqueue external sync work where applicable, and return local state immediately.</li>
 <li>Trakt/commercial sync must not write by title-only matching. Stable IDs such as TMDB, IMDb, TVDB, Trakt ID, or Trakt slug are required for external writes.</li>

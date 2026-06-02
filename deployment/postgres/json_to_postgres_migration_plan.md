@@ -23,6 +23,14 @@ The migration must be additive and reversible at the data level: no destructive 
 
 Use `deployment/postgres/schema_v1.sql` as the v1 PostgreSQL DDL. Migration tooling should perform read/validate/upsert/export steps rather than direct destructive rewrites.
 
+The migration plan aligns with the Lime Green VM foundation:
+
+- migration/import/export tooling runs from the app root `/opt/mytv_movie` on the X1 lab VM or equivalent local checkout
+- PostgreSQL writes target the local VM PostgreSQL service on `5432/tcp`
+- API-triggered imports use the local API upstream reserved on `127.0.0.1:8000` and exposed through Nginx as `/api/v1/*`
+- Nginx can continue serving static JSON fallback artifacts from `web/`, `assets/`, and generated `data/` files while PostgreSQL/API implementation is being staged
+- VM provisioning scripts remain owned by Lime Green; this plan defines data behavior only
+
 Recommended flow:
 
 1. Read `data/inputs.json` and reject malformed active rows before database writes.
