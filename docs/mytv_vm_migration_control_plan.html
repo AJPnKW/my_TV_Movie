@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>my_TV_Movie — VM Migration Control Plan</title>
+<style>
+:root{color-scheme:dark;--bg:#07111f;--panel:#101b2c;--line:#314158;--text:#edf5ff;--muted:#a9bad0;--lime:#84cc16;--forest:#15803d;--med:#22c55e;--blue:#60a5fa;--warn:#fbbf24;--bad:#fb7185}body{margin:0;background:var(--bg);color:var(--text);font-family:Segoe UI,Arial,sans-serif;line-height:1.45}main{max-width:1400px;margin:auto;padding:20px}h1,h2,h3{color:#fff}table{width:100%;border-collapse:collapse;margin:12px 0;background:var(--panel)}th,td{border:1px solid var(--line);padding:8px;vertical-align:top}th{background:#14243a;text-align:left}code,pre{background:#050b14;border:1px solid #25364f;border-radius:8px}code{padding:1px 4px}pre{padding:10px;white-space:pre-wrap}.lime{color:var(--lime);font-weight:900}.forest{color:var(--forest);font-weight:900}.med{color:var(--med);font-weight:900}.blue{color:var(--blue);font-weight:900}.warn{color:var(--warn);font-weight:900}.bad{color:var(--bad);font-weight:900}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0}.small{color:var(--muted);font-size:13px}</style>
+</head>
+<body><main>
+<h1>my_TV_Movie — VM Migration Control Plan</h1>
+<p class="small"><strong>Plan ID:</strong> MYTV-VM-2026-05-20.1. This document is persistent project memory for moving my_TV_Movie from GitHub Pages/static-only into a local VM lab and later HP production VM with API, PostgreSQL, web server, media/device support, and repeatable deployment.</p>
+<section class="card"><h2>1. Simplified session model</h2>
+<table><tr><th>Human colour / window</th><th>Session code</th><th>What it is</th><th>Role</th><th>Do not use for</th></tr>
+<tr><td class="blue">This ChatGPT thread</td><td><code>CONTROL</code></td><td>Planning / architecture / prompts / documentation coordination</td><td>Owns design, decisions, persistent documentation, and Codex prompts.</td><td>Do not split to more ChatGPT threads.</td></tr>
+<tr><td class="lime">Lime Green Codex</td><td><code>CODEX-LIME</code></td><td>Codex implementation session 1</td><td>VM/deployment/bootstrap/lab/prod structure.</td><td>Do not edit UI popup/card runtime unless explicitly assigned.</td></tr>
+<tr><td class="forest">Forest Green Codex</td><td><code>CODEX-FOREST</code></td><td>Codex implementation session 2</td><td>App/API/database/schema/service architecture.</td><td>Do not change VM scripts owned by Lime without pulling and coordinating.</td></tr>
+<tr><td class="med">Medium Green PowerShell</td><td><code>SHELL-MED</code></td><td>Command execution shell</td><td>Runs pull, scripts, validation, local VM commands, and captures output.</td><td>Do not use for design decisions.</td></tr>
+</table>
+<p><strong>Rule:</strong> one ChatGPT control thread + one PowerShell execution shell + one or two Codex sessions maximum. If two Codex sessions run, they must own different files and must both start with <code>git pull origin main</code>.</p>
+</section>
+<section class="card"><h2>2. Human terminology</h2>
+<table><tr><th>Term</th><th>Meaning</th></tr>
+<tr><td>ChatGPT thread</td><td>This conversation. It manages requirements, decisions, prompts, and documentation.</td></tr>
+<tr><td>Codex session</td><td>A coding agent/work session that edits the repository and returns commits.</td></tr>
+<tr><td>PowerShell session</td><td>Your terminal window where commands are run locally.</td></tr>
+<tr><td>GitHub repo</td><td>Canonical source code and documentation history.</td></tr>
+<tr><td>X1 lab VM</td><td>First local test VM on laptop, used before production.</td></tr>
+<tr><td>HP production VM</td><td>Stable production target on HP server after lab validation.</td></tr>
+</table></section>
+<section class="card"><h2>3. Architecture direction</h2>
+<table><tr><th>Layer</th><th>Target</th><th>Reason</th></tr>
+<tr><td>Source control</td><td>GitHub repo remains source of truth</td><td>Version history, recovery, Codex handoff.</td></tr>
+<tr><td>Static UI</td><td>Existing <code>web/</code> app remains usable</td><td>Preserve current work and GitHub Pages fallback.</td></tr>
+<tr><td>Server runtime</td><td>Linux VM with web server + API service</td><td>Needed for write operations, sync, media inventory, local device integration.</td></tr>
+<tr><td>Database</td><td>PostgreSQL</td><td>Better than JSON for watch state, watchlist, favourites, sync state, audit history, media inventory.</td></tr>
+<tr><td>API</td><td>Local server API behind web app</td><td>Handles watch state, Trakt/commercial API sync, media QA, WD TV Live/local network paths.</td></tr>
+<tr><td>Media QA</td><td>Server-side ffprobe/ffmpeg tooling</td><td>Cannot run correctly from GitHub Pages/browser only.</td></tr>
+<tr><td>Deployment</td><td>X1 lab VM first, then HP production VM</td><td>Safe test path before production.</td></tr>
+</table></section>
+<section class="card"><h2>4. Required capabilities that GitHub Pages cannot properly handle</h2>
+<ul>
+<li>Reliable write/update of watched status, watchlist, and favourites.</li>
+<li>Two-way sync with Trakt/commercial APIs using secrets and token refresh.</li>
+<li>PostgreSQL persistence and audit history.</li>
+<li>Media file inventory and file repair/remux.</li>
+<li>Local WD TV Live/media device path discovery from home/trailer networks.</li>
+<li>Server-side validation, scheduled jobs, and logs.</li>
+</ul>
+</section>
+<section class="card"><h2>5. Target work packages</h2>
+<table><tr><th>Work package</th><th>Owner</th><th>Scope</th><th>Output</th></tr>
+<tr><td>WP1 Deployment structure</td><td class="lime">CODEX-LIME</td><td><code>deployment/</code>, lab/prod docs, bootstrap scripts, env templates</td><td>repeatable X1 lab VM setup package</td></tr>
+<tr><td>WP2 API/database design</td><td class="forest">CODEX-FOREST</td><td>PostgreSQL schema, API endpoint plan, migration path from JSON</td><td>schema + API contract + implementation plan</td></tr>
+<tr><td>WP3 Static-to-server bridge</td><td class="forest">CODEX-FOREST</td><td>web app API client mode + fallback static mode</td><td>configurable runtime mode</td></tr>
+<tr><td>WP4 Media Library server functions</td><td>Later after WP1/WP2</td><td>WD TV Live/local paths, media inventory, ffprobe/ffmpeg status</td><td>server-backed Media Library</td></tr>
+<tr><td>WP5 Production promotion</td><td class="lime">CODEX-LIME</td><td>HP VM deployment, reverse proxy plan, backup/restore</td><td>production runbook</td></tr>
+</table></section>
+<section class="card"><h2>6. Documentation persistence rule</h2>
+<p>Every session must update documentation before returning success. Documentation must capture:</p>
+<ul>
+<li>what user said in narrative form</li><li>what was interpreted as the technical requirement</li><li>architecture decision</li><li>files changed</li><li>validation evidence</li><li>remaining risks</li><li>next owner/session</li></ul>
+<p>Primary persistent docs for this migration:</p>
+<ul><li><code>docs/mytv_vm_migration_control_plan.html</code></li><li><code>docs/00_master_contract.html</code></li><li><code>docs/ARCHITECTURE_LOG.md</code></li><li><code>deployment/docs/*</code> once created</li></ul>
+</section>
+<section class="card"><h2>7. Prompt ownership rule</h2>
+<p>Codex prompts must begin with the exact session header. Codex must not cross ownership boundaries without explicitly reporting why and asking for the next session to pull/rebase.</p>
+<pre>SESSION: CODEX-LIME or CODEX-FOREST
+COLOUR: Lime Green or Forest Green
+ROLE: clear owner role
+REPO: C:\Users\andrew\PROJECTS\GitHub\my_TV_Movie
+OWNED FILES: explicit list
+DO NOT EDIT: explicit list
+REQUIRED OUTPUT: git status, commits, files changed, root causes, docs updated, validation</pre>
+</section>
+</main></body></html>
