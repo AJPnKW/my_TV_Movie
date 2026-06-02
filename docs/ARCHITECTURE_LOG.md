@@ -145,4 +145,4 @@
 - Added the X1 lab VM deployment foundation under `deployment/vm_lab/` with Ubuntu Server LTS sizing, network/port expectations, bootstrap installation, and validation checks for Git, Python, PostgreSQL, Nginx, ffmpeg/ffprobe, `/opt/mytv_movie`, and reserved API port ownership.
 - Chose Nginx as the baseline VM web server for static file serving now and later API reverse proxying, while leaving API/database implementation to the separate application owner.
 - Added the HP production folder as a promotion-plan-only target and a Windows-side lab package helper under `scripts/deployment/` without VM creation or secrets.
-- Commit: `1097188156` add-x1-lab-vm-deployment-foundation.
+- Commit: `433af93294` add-x1-lab-vm-deployment-foundation.
