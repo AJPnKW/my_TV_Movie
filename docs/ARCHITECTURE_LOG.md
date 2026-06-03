@@ -11,6 +11,7 @@
 - Updated `docs/00_master_contract.html` to MC-2026-06-03.1, archived the prior master contract, updated `deployment/api/api_contract_v1.md`, and advanced `scripts/validate_runtime.ps1` freshness checks.
 - Validation: Python syntax compile passed; `deployment/api/validate_server_mode.py` passed; `deployment/postgres/validate_schema.py` passed; `deployment/postgres/apply_schema.py --dry-run` passed; `deployment/postgres/json_migration.py` dry-run found 12,707 candidates; Trakt and Media Library worker dry-runs passed; HTTP checks for `/api/v1/health` and `/api/v1/catalog` passed; `scripts/validate_runtime.ps1` passed.
 - Remaining limitations: live PostgreSQL apply/write tests were not run because no local DSN/driver was configured; Trakt network sync remains a queue-planning scaffold until credential/token handling is implemented; Media Library apply/remux remains dry-run-safe until path roots and write policy are configured.
+- Commit: `47630e2175` implement-server-mode-scaffold.
 
 ## 2026-06-02
 
