@@ -28,6 +28,23 @@ This API contract is designed to run on the Lime Green X1 lab VM foundation with
 - Media tools: server-side API workers use installed `ffprobe` and `ffmpeg` for Media Library QA/remux.
 - Static fallback: existing `web/`, `assets/`, and generated JSON artifacts remain serveable by Nginx even when the API service is stopped.
 
+## Implementation Scaffold
+
+Current server-mode implementation files:
+
+- `deployment/api/server_mode_api.py`: runnable `/api/v1` HTTP scaffold on `127.0.0.1:8000`
+- `deployment/api/server_mode_config.py`: environment/app-root configuration
+- `deployment/api/postgres_client.py`: optional psycopg-backed PostgreSQL boundary
+- `deployment/api/validate_server_mode.py`: focused server-mode validator
+- `deployment/api/mytv-api.service.example`: systemd service example for `/opt/mytv_movie`
+- `deployment/postgres/apply_schema.py`: schema apply/dry-run tool
+- `deployment/postgres/validate_schema.py`: static DDL validator
+- `deployment/postgres/json_migration.py`: JSON migration dry-run/import scaffold
+- `deployment/trakt_sync/trakt_worker.py`: Trakt queue planning scaffold
+- `deployment/media_library/media_library_worker.py`: Media Library scan/QA/remux worker scaffold
+
+The scaffold deliberately returns an unavailable write-path response when PostgreSQL is not configured instead of pretending writes were persisted.
+
 ## Common Rules
 
 - Request and response bodies are JSON.

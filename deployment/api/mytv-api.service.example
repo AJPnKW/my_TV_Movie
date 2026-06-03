@@ -1,0 +1,19 @@
+[Unit]
+Description=my_TV_Movie server-mode API
+After=network-online.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/mytv_movie
+Environment=MYTV_REPO_ROOT=/opt/mytv_movie
+Environment=MYTV_API_HOST=127.0.0.1
+Environment=MYTV_API_PORT=8000
+Environment=MYTV_API_BASE_PATH=/api/v1
+EnvironmentFile=-/opt/mytv_movie/.env
+ExecStart=/usr/bin/python3 /opt/mytv_movie/deployment/api/server_mode_api.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

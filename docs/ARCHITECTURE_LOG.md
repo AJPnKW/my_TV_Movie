@@ -1,5 +1,17 @@
 # Architecture Log
 
+## 2026-06-03
+
+- Implemented the first runnable server-mode scaffold under Forest-owned deployment paths without editing Lime-owned VM scripts, `deployment/webserver/*`, or existing UI runtime.
+- Added `deployment/api/server_mode_api.py`, a dependency-light standard-library HTTP API bound by default to `127.0.0.1:8000` with `/api/v1` routes for health, catalog, watch status, watchlist, favourites, sync queue/history, providers, Media Library inventory, runtime config, and audit log.
+- Added API configuration and PostgreSQL boundary modules: `server_mode_config.py` reads `/opt/mytv_movie`/repo-root and API/DSN environment, while `postgres_client.py` uses optional `psycopg` and reports unavailable write paths instead of pretending writes succeeded.
+- Added PostgreSQL tooling: `apply_schema.py` supports schema dry-run/apply through `MYTV_POSTGRES_DSN`, `validate_schema.py` verifies required v1 tables and destructive-command absence, and `json_migration.py` dry-runs/imports current JSON artifacts into PostgreSQL candidates while preserving JSON fallback.
+- Added worker scaffolds: `deployment/trakt_sync/trakt_worker.py` plans local-first Trakt pull/push/reconcile work without loading secrets, and `deployment/media_library/media_library_worker.py` plans scan/QA/remux work with home `192.168.1.x`, trailer `192.168.2.x`, ffprobe/ffmpeg, and non-binary storage rules.
+- Added `deployment/api/mytv-api.service.example` for the lab VM API service on `/opt/mytv_movie` and `127.0.0.1:8000`, leaving Nginx reverse-proxy/provisioning ownership with Lime Green.
+- Updated `docs/00_master_contract.html` to MC-2026-06-03.1, archived the prior master contract, updated `deployment/api/api_contract_v1.md`, and advanced `scripts/validate_runtime.ps1` freshness checks.
+- Validation: Python syntax compile passed; `deployment/api/validate_server_mode.py` passed; `deployment/postgres/validate_schema.py` passed; `deployment/postgres/apply_schema.py --dry-run` passed; `deployment/postgres/json_migration.py` dry-run found 12,707 candidates; Trakt and Media Library worker dry-runs passed; HTTP checks for `/api/v1/health` and `/api/v1/catalog` passed; `scripts/validate_runtime.ps1` passed.
+- Remaining limitations: live PostgreSQL apply/write tests were not run because no local DSN/driver was configured; Trakt network sync remains a queue-planning scaffold until credential/token handling is implemented; Media Library apply/remux remains dry-run-safe until path roots and write policy are configured.
+
 ## 2026-06-02
 
 - Re-reviewed CODEX-FOREST server-mode work after pulling the completed Lime Green VM/webserver foundation and the follow-on generated data artifact commit.

@@ -11,7 +11,7 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Current version MC-2026-06-03.1. Last updated: 2026-06-03. Latest additive lineage: Runnable server-mode API scaffold, PostgreSQL schema tooling, JSON migration dry-run, Trakt worker scaffold, and Media Library worker scaffold.</div>
+<div class="small">Only active documentation source of truth. Current version MC-2026-06-02.1. Last updated: 2026-06-02. Latest additive lineage: Server-mode PostgreSQL primary write store, JSON import/export/static fallback, API/state sync contracts, and WD TV Live Media Library database design.</div>
 <nav class="toc">
 <a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#server-mode-20260602">Server Mode</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
 </nav>
@@ -42,7 +42,6 @@
 <tr><td>2026-05-20</td><td>MC-2026-05-20.1</td><td>Made Media Library a static primary-nav shell link, archived retired runtime shims out of active web/js, removed stale Where-to-watch fallback labels, restored required subordinate architecture/UI docs as contract pointers, and hardened validation against legacy provider markup and misplaced/occluded nav links.</td></tr>
 <tr><td>2026-05-20</td><td>MC-2026-05-20.2</td><td>Made <code>web/config.json -> streaming.embed_providers[]</code> the Streaming provider button source of truth; defined <code>ok</code>, <code>warn</code>, <code>candidate</code>, and <code>blocked</code> runtime visibility; baselined <code>buildSharedEpisodeCard</code> and <code>renderEpisodeCardHtml</code> across Calendar, Dashboard Current/Recent, and show-detail episode cards; restored episode still/backdrop/poster fallback validation.</td></tr>
 <tr><td>2026-06-02</td><td>MC-2026-06-02.1</td><td>Added server-mode architecture contract: PostgreSQL is the primary writable store; JSON remains import/export/static fallback; image and media binaries remain files/assets by default; API, watch-state logic, Trakt reconciliation, provider registry, audit logging, and WD TV Live Media Library inventory/QA are database-backed design surfaces.</td></tr>
-<tr><td>2026-06-03</td><td>MC-2026-06-03.1</td><td>Added runnable server-mode implementation scaffold: standard-library API on <code>127.0.0.1:8000/api/v1</code>, PostgreSQL client/config boundary, schema apply/static validation tools, JSON migration dry-run/import scaffold, Trakt queue worker scaffold, Media Library scan/QA/remux worker scaffold, and systemd service example.</td></tr>
 </table>
 <p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
 <p>Standalone page: <code>web/manage_watch_state.html</code></p>
@@ -507,26 +506,6 @@ AU  Stan</pre>
 </ul>
 </section>
 <!-- MC-2026-06-02.1-SERVER-MODE-END -->
-<!-- MC-2026-06-03.1-SERVER-MODE-SCAFFOLD-START -->
-<section id="server-mode-scaffold-20260603" class="card">
-<h2>MC-2026-06-03.1 Server Mode Implementation Scaffold</h2>
-<table><tr><th>Field</th><th>Value</th></tr>
-<tr><td>Added</td><td>MC-2026-06-03.1</td></tr>
-<tr><td>Updated</td><td>Server-mode design now has runnable implementation entrypoints for the API, PostgreSQL schema tooling, JSON migration, Trakt sync planning, and Media Library scan/QA planning.</td></tr>
-<tr><td>Origin</td><td>User asked to implement as much of the full server-mode solution as possible without waiting for another extended planning/review cycle.</td></tr>
-<tr><td>Owner</td><td><code>deployment/api/server_mode_api.py</code>, <code>deployment/api/server_mode_config.py</code>, <code>deployment/api/postgres_client.py</code>, <code>deployment/api/validate_server_mode.py</code>, <code>deployment/postgres/apply_schema.py</code>, <code>deployment/postgres/validate_schema.py</code>, <code>deployment/postgres/json_migration.py</code>, <code>deployment/trakt_sync/trakt_worker.py</code>, <code>deployment/media_library/media_library_worker.py</code>, and <code>deployment/api/mytv-api.service.example</code>.</td></tr>
-<tr><td>Validation</td><td>Validation must run Python syntax checks, focused server-mode validation, static schema validation, schema dry-run, JSON migration dry-run, Trakt dry-run, Media Library dry-run, API health HTTP check, API catalog fallback HTTP check, and existing runtime validation.</td></tr>
-</table>
-<ul>
-<li>The API scaffold binds by default to <code>127.0.0.1:8000</code> with base path <code>/api/v1</code>, matching the Lime Green VM foundation.</li>
-<li>The implementation remains dependency-light. It uses the Python standard library for the HTTP scaffold and uses PostgreSQL only when <code>MYTV_POSTGRES_DSN</code> or <code>DATABASE_URL</code> plus <code>psycopg</code> are available.</li>
-<li>Read endpoints provide JSON fallback for health, catalog, providers, and runtime config when PostgreSQL is not configured.</li>
-<li>Write endpoints do not fake success when PostgreSQL is unavailable. They return the missing write-path status instead of silently losing user actions.</li>
-<li>The JSON migration dry-run scans current generated artifacts and reports import candidates without deleting or modifying JSON files.</li>
-<li>The systemd service example is stored under Forest-owned API deployment docs and does not modify Lime-owned VM provisioning or webserver files.</li>
-</ul>
-</section>
-<!-- MC-2026-06-03.1-SERVER-MODE-SCAFFOLD-END -->
 </main>
 </body>
 </html>
