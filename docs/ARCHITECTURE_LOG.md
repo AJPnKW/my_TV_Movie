@@ -12,6 +12,7 @@
 - Validation: both required `bash -n` checks passed; Python compile passed; schema validation and schema dry-run passed; focused server-mode validation passed; full runtime validation passed; no `POSTGRES_PASSWORD` references remain in the live lab config path.
 - Live database proof: temporary PostgreSQL 16.14 container validation passed with expected `mytv_movie` database/user, all required schema tables, test insert, test read, rollback, and confirmed rollback cleanup. The temporary container and validation virtual environment were removed afterward.
 - Remaining external action: run the documented bootstrap and VM validation commands on the actual X1 Ubuntu lab VM to install and prove the peer-authenticated runtime in that VM.
+- Commit: `46be55f186` complete-live-postgres-runtime-validation.
 
 - Implemented the first runnable server-mode scaffold under Forest-owned deployment paths without editing Lime-owned VM scripts, `deployment/webserver/*`, or existing UI runtime.
 - Added `deployment/api/server_mode_api.py`, a dependency-light standard-library HTTP API bound by default to `127.0.0.1:8000` with `/api/v1` routes for health, catalog, watch status, watchlist, favourites, sync queue/history, providers, Media Library inventory, runtime config, and audit log.
