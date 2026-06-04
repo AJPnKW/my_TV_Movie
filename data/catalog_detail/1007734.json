@@ -68,11 +68,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 13.8922,
-  "vote_average": 6.9,
-  "vote_count": 1577,
+  "popularity": 12.7265,
+  "vote_average": 6.933,
+  "vote_count": 1578,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-04T02:45:23Z",
+  "availability_checked_at": "2026-06-04T12:27:23Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1007734",
@@ -282,6 +282,15 @@
       ],
       "US": [
         {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/movie/1007734-nobody-2/watch?locale=US"
+        },
+        {
           "provider_id": 10,
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
@@ -379,15 +388,6 @@
           "availability_type": "flatrate",
           "display_priority": 154,
           "deep_link": "https://www.themoviedb.org/movie/1007734-nobody-2/watch?locale=US"
-        },
-        {
-          "provider_id": 8,
-          "provider_name": "Netflix",
-          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 0,
-          "deep_link": "https://www.themoviedb.org/movie/1007734-nobody-2/watch?locale=US"
         }
       ],
       "GB": [
@@ -447,6 +447,15 @@
         }
       ],
       "AU": [
+        {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/movie/1007734-nobody-2/watch?locale=AU"
+        },
         {
           "provider_id": 134,
           "provider_name": "Foxtel Now",
@@ -508,15 +517,6 @@
           "logo_local": "/assets/logos/services/7QX5OdsQZrXGNBKq9SPzoPV9OYQ.jpg",
           "availability_type": "flatrate",
           "display_priority": 84,
-          "deep_link": "https://www.themoviedb.org/movie/1007734-nobody-2/watch?locale=AU"
-        },
-        {
-          "provider_id": 8,
-          "provider_name": "Netflix",
-          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 0,
           "deep_link": "https://www.themoviedb.org/movie/1007734-nobody-2/watch?locale=AU"
         }
       ]
