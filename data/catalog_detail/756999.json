@@ -60,9 +60,9 @@
   ],
   "popularity": 10.5784,
   "vote_average": 7.521,
-  "vote_count": 5840,
+  "vote_count": 5841,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-03T14:16:04Z",
+  "availability_checked_at": "2026-06-04T02:45:23Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/756999",
@@ -203,6 +203,15 @@
           "logo_path": "/ewOptMVIYcOadMGGJz8DJueH2bH.jpg",
           "logo_local": "/assets/logos/services/ewOptMVIYcOadMGGJz8DJueH2bH.jpg",
           "availability_type": "flatrate",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
           "display_priority": 6,
           "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
         },
@@ -211,17 +220,8 @@
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
           "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 7,
-          "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
-        },
-        {
-          "provider_id": 2,
-          "provider_name": "Apple TV Store",
-          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
-          "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 7,
+          "display_priority": 6,
           "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
         },
         {
@@ -230,7 +230,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
         },
         {
@@ -239,7 +239,7 @@
           "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 8,
+          "display_priority": 7,
           "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
         },
         {
@@ -248,7 +248,7 @@
           "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
           "logo_local": "",
           "availability_type": "rent",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
         },
         {
@@ -257,7 +257,7 @@
           "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
           "logo_local": "",
           "availability_type": "buy",
-          "display_priority": 19,
+          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=CA"
         },
         {
@@ -316,15 +316,6 @@
         }
       ],
       "US": [
-        {
-          "provider_id": 8,
-          "provider_name": "Netflix",
-          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 1,
-          "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=US"
-        },
         {
           "provider_id": 10,
           "provider_name": "Amazon Video",
@@ -440,6 +431,15 @@
           "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
           "availability_type": "flatrate",
           "display_priority": 154,
+          "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=US"
+        },
+        {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 0,
           "deep_link": "https://www.themoviedb.org/movie/756999-the-black-phone/watch?locale=US"
         }
       ],
