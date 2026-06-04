@@ -11,7 +11,7 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Current version MC-2026-06-03.2. Last updated: 2026-06-03. Latest additive lineage: Live PostgreSQL lab runtime installation, peer-authenticated app role/database, psycopg runtime, schema apply, and write/read/rollback validation gate.</div>
+<div class="small">Only active documentation source of truth. Current version MC-2026-06-03.1. Last updated: 2026-06-03. Latest additive lineage: Runnable server-mode API scaffold, PostgreSQL schema tooling, JSON migration dry-run, Trakt worker scaffold, and Media Library worker scaffold.</div>
 <nav class="toc">
 <a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#server-mode-20260602">Server Mode</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
 </nav>
@@ -43,7 +43,6 @@
 <tr><td>2026-05-20</td><td>MC-2026-05-20.2</td><td>Made <code>web/config.json -> streaming.embed_providers[]</code> the Streaming provider button source of truth; defined <code>ok</code>, <code>warn</code>, <code>candidate</code>, and <code>blocked</code> runtime visibility; baselined <code>buildSharedEpisodeCard</code> and <code>renderEpisodeCardHtml</code> across Calendar, Dashboard Current/Recent, and show-detail episode cards; restored episode still/backdrop/poster fallback validation.</td></tr>
 <tr><td>2026-06-02</td><td>MC-2026-06-02.1</td><td>Added server-mode architecture contract: PostgreSQL is the primary writable store; JSON remains import/export/static fallback; image and media binaries remain files/assets by default; API, watch-state logic, Trakt reconciliation, provider registry, audit logging, and WD TV Live Media Library inventory/QA are database-backed design surfaces.</td></tr>
 <tr><td>2026-06-03</td><td>MC-2026-06-03.1</td><td>Added runnable server-mode implementation scaffold: standard-library API on <code>127.0.0.1:8000/api/v1</code>, PostgreSQL client/config boundary, schema apply/static validation tools, JSON migration dry-run/import scaffold, Trakt queue worker scaffold, Media Library scan/QA/remux worker scaffold, and systemd service example.</td></tr>
-<tr><td>2026-06-03</td><td>MC-2026-06-03.2</td><td>Made live PostgreSQL validation mandatory for X1 lab completion: bootstrap creates the local app OS/DB role and database, installs psycopg, documents the peer-auth DSN in <code>.env.example</code>, and validation must prove schema apply plus test insert/read/rollback cleanup.</td></tr>
 </table>
 <p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
 <p>Standalone page: <code>web/manage_watch_state.html</code></p>
@@ -528,25 +527,6 @@ AU  Stan</pre>
 </ul>
 </section>
 <!-- MC-2026-06-03.1-SERVER-MODE-SCAFFOLD-END -->
-<!-- MC-2026-06-03.2-LIVE-POSTGRES-START -->
-<section id="live-postgres-20260603" class="card">
-<h2>MC-2026-06-03.2 Live PostgreSQL Completion Gate</h2>
-<table><tr><th>Field</th><th>Value</th></tr>
-<tr><td>Added</td><td>MC-2026-06-03.2</td></tr>
-<tr><td>Updated</td><td>X1 lab PostgreSQL installation, app role/database creation, psycopg runtime installation, local DSN documentation, schema application, and live transaction validation.</td></tr>
-<tr><td>Origin</td><td>User rejected scaffold-only completion because the prior result did not configure or validate a live PostgreSQL write path.</td></tr>
-<tr><td>Owner</td><td><code>deployment/vm_lab/bootstrap_ubuntu_mytv_lab.sh</code>, <code>deployment/vm_lab/validate_mytv_lab.sh</code>, <code>deployment/vm_lab/.env.example</code>, <code>deployment/postgres/live_validate_postgres.py</code>, and <code>deployment/postgres/README.md</code>.</td></tr>
-<tr><td>Validation</td><td>Static schema validation remains required but is not completion proof. X1 lab completion requires PostgreSQL reachability, expected app database/user, v1 schema apply, temporary insert, read-back, transaction rollback, and confirmation that rollback removed the temporary row.</td></tr>
-</table>
-<ul>
-<li>Scaffold-only, dry-run-only, or static-DDL-only results are incomplete unless the live PostgreSQL validator passes on the X1 lab VM.</li>
-<li>The local lab app/database identity is <code>mytv_movie</code>. The tracked example DSN is <code>postgresql:///mytv_movie?host=/var/run/postgresql</code>.</li>
-<li>The default lab DSN uses local Unix-socket peer authentication. Real passwords and real secrets are not committed.</li>
-<li>The API service runs as the <code>mytv_movie</code> operating-system account so peer authentication matches the PostgreSQL role.</li>
-<li><code>deployment/vm_lab/validate_mytv_lab.sh</code> must fail when live schema/write/read/rollback validation cannot run or does not pass.</li>
-</ul>
-</section>
-<!-- MC-2026-06-03.2-LIVE-POSTGRES-END -->
 </main>
 </body>
 </html>

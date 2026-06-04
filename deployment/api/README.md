@@ -22,7 +22,21 @@ Environment:
 - `MYTV_API_BASE_PATH`: optional base path
 - `MYTV_POSTGRES_DSN` or `DATABASE_URL`: PostgreSQL DSN
 
+X1 lab default DSN from `.env.example`:
+
+```text
+postgresql:///mytv_movie?host=/var/run/postgresql
+```
+
+Run the API as the local `mytv_movie` operating-system account so PostgreSQL peer authentication matches the `mytv_movie` database role.
+
 No secret values are stored in this scaffold. Runtime config secret values must use external secret storage and `secret_ref` only.
+
+Install the tracked server dependency into the VM runtime:
+
+```bash
+/opt/mytv_movie/.venv/bin/python -m pip install -r /opt/mytv_movie/deployment/api/requirements-server.txt
+```
 
 ## Current Behavior
 
@@ -42,6 +56,7 @@ No secret values are stored in this scaffold. Runtime config secret values must 
 python deployment/api/validate_server_mode.py
 python deployment/postgres/validate_schema.py
 python deployment/postgres/apply_schema.py --dry-run
+sudo runuser -u mytv_movie -- env MYTV_POSTGRES_DSN='postgresql:///mytv_movie?host=/var/run/postgresql' /opt/mytv_movie/.venv/bin/python deployment/postgres/live_validate_postgres.py
 python deployment/postgres/json_migration.py
 python deployment/trakt_sync/trakt_worker.py reconcile
 python deployment/media_library/media_library_worker.py scan --profile home

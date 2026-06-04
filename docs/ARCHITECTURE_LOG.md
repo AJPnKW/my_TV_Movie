@@ -2,6 +2,17 @@
 
 ## 2026-06-03
 
+- Completed the live PostgreSQL runtime path for the X1 lab foundation instead of leaving server mode at scaffold/static-validation status.
+- Updated `deployment/vm_lab/bootstrap_ubuntu_mytv_lab.sh` to install PostgreSQL runtime dependencies, create the local `mytv_movie` OS service account, create the matching PostgreSQL login role/database, create `/opt/mytv_movie/.venv`, install tracked psycopg v3 requirements, document the local peer-auth DSN through `.env.example`, verify connectivity, and invoke live schema validation when the repo is present.
+- Updated `deployment/vm_lab/validate_mytv_lab.sh` to fail unless the repo checkout, local DSN documentation, OS app user, PostgreSQL app role/database, psycopg runtime, and live schema/write/read/rollback validation are all available and passing.
+- Added `deployment/postgres/live_validate_postgres.py`, which connects to the expected database/user, applies `schema_v1.sql`, verifies required tables, inserts and reads a temporary runtime-config row, rolls the transaction back, and confirms cleanup.
+- Added `deployment/postgres/README.md`, tracked `deployment/vm_lab/.env.example`, tracked `deployment/api/requirements-server.txt`, and updated API/VM docs plus the systemd example to run as the peer-authenticated `mytv_movie` account.
+- Added `.gitattributes` enforcement for LF shell scripts so required Ubuntu bootstrap/validation scripts remain parseable from Windows checkouts.
+- Updated `docs/00_master_contract.html` to MC-2026-06-03.2: scaffold-only, dry-run-only, or static-DDL-only results are incomplete until live PostgreSQL validation passes.
+- Validation: both required `bash -n` checks passed; Python compile passed; schema validation and schema dry-run passed; focused server-mode validation passed; full runtime validation passed; no `POSTGRES_PASSWORD` references remain in the live lab config path.
+- Live database proof: temporary PostgreSQL 16.14 container validation passed with expected `mytv_movie` database/user, all required schema tables, test insert, test read, rollback, and confirmed rollback cleanup. The temporary container and validation virtual environment were removed afterward.
+- Remaining external action: run the documented bootstrap and VM validation commands on the actual X1 Ubuntu lab VM to install and prove the peer-authenticated runtime in that VM.
+
 - Implemented the first runnable server-mode scaffold under Forest-owned deployment paths without editing Lime-owned VM scripts, `deployment/webserver/*`, or existing UI runtime.
 - Added `deployment/api/server_mode_api.py`, a dependency-light standard-library HTTP API bound by default to `127.0.0.1:8000` with `/api/v1` routes for health, catalog, watch status, watchlist, favourites, sync queue/history, providers, Media Library inventory, runtime config, and audit log.
 - Added API configuration and PostgreSQL boundary modules: `server_mode_config.py` reads `/opt/mytv_movie`/repo-root and API/DSN environment, while `postgres_client.py` uses optional `psycopg` and reports unavailable write paths instead of pretending writes succeeded.

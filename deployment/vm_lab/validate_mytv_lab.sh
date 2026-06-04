@@ -2,6 +2,11 @@
 set -Eeuo pipefail
 
 APP_ROOT="/opt/mytv_movie"
+VENV_ROOT="${APP_ROOT}/.venv"
+APP_USER="mytv_movie"
+POSTGRES_DB="mytv_movie"
+POSTGRES_USER="mytv_movie"
+LOCAL_DSN="postgresql:///mytv_movie?host=/var/run/postgresql"
 FAILURES=0
 
 pass() {
@@ -86,6 +91,7 @@ require_command psql
 require_command nginx
 require_command ffmpeg
 require_command ffprobe
+require_command runuser
 
 require_service_active postgresql
 require_service_active nginx
@@ -95,7 +101,7 @@ if [[ -d "${APP_ROOT}" ]]; then
   if [[ -d "${APP_ROOT}/.git" ]]; then
     pass "repo checkout exists at ${APP_ROOT}"
   else
-    pass "repo path is available for checkout at ${APP_ROOT}"
+    fail "repo checkout is missing at ${APP_ROOT}; live schema validation is impossible"
   fi
 else
   fail "app root is missing: ${APP_ROOT}"
@@ -103,6 +109,11 @@ fi
 
 if [[ -f "${APP_ROOT}/.env.example" ]]; then
   pass ".env.example exists"
+  if grep -Fq "MYTV_POSTGRES_DSN=${LOCAL_DSN}" "${APP_ROOT}/.env.example"; then
+    pass ".env.example documents the local lab DSN"
+  else
+    fail ".env.example does not document MYTV_POSTGRES_DSN=${LOCAL_DSN}"
+  fi
 else
   fail ".env.example is missing"
 fi
@@ -116,6 +127,49 @@ fi
 require_port_listening 80 "Nginx HTTP"
 require_port_listening 5432 "PostgreSQL"
 require_port_free 8000 "Reserved API"
+
+if id "${APP_USER}" >/dev/null 2>&1; then
+  pass "application operating-system user exists: ${APP_USER}"
+else
+  fail "application operating-system user is missing: ${APP_USER}"
+fi
+
+if runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='${POSTGRES_USER}'" | grep -qx 1; then
+  pass "PostgreSQL app role exists: ${POSTGRES_USER}"
+else
+  fail "PostgreSQL app role is missing: ${POSTGRES_USER}"
+fi
+
+if runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_database WHERE datname='${POSTGRES_DB}'" | grep -qx 1; then
+  pass "PostgreSQL app database exists: ${POSTGRES_DB}"
+else
+  fail "PostgreSQL app database is missing: ${POSTGRES_DB}"
+fi
+
+if [[ -x "${VENV_ROOT}/bin/python" ]]; then
+  pass "server-mode Python virtual environment exists"
+  if "${VENV_ROOT}/bin/python" -c "import psycopg" >/dev/null 2>&1; then
+    pass "psycopg runtime is installed"
+  else
+    fail "psycopg runtime is missing from ${VENV_ROOT}"
+  fi
+else
+  fail "server-mode Python virtual environment is missing: ${VENV_ROOT}"
+fi
+
+LIVE_VALIDATOR="${APP_ROOT}/deployment/postgres/live_validate_postgres.py"
+if [[ -f "${LIVE_VALIDATOR}" && -x "${VENV_ROOT}/bin/python" ]] && id "${APP_USER}" >/dev/null 2>&1; then
+  if runuser -u "${APP_USER}" -- env \
+    MYTV_REPO_ROOT="${APP_ROOT}" \
+    MYTV_POSTGRES_DSN="${LOCAL_DSN}" \
+    "${VENV_ROOT}/bin/python" "${LIVE_VALIDATOR}"; then
+    pass "live PostgreSQL schema/write/read/rollback validation passed"
+  else
+    fail "live PostgreSQL schema/write/read/rollback validation failed"
+  fi
+else
+  fail "live PostgreSQL validation is not possible; validator, venv, or app user is missing"
+fi
 
 if [[ "${FAILURES}" -eq 0 ]]; then
   echo "my_TV_Movie X1 lab validation passed."
