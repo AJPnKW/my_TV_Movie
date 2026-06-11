@@ -55,11 +55,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 1.6146,
+  "popularity": 1.5259,
   "vote_average": 6.2,
   "vote_count": 242,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-10T12:43:17Z",
+  "availability_checked_at": "2026-06-11T13:01:02Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/15691",
@@ -196,7 +196,35 @@
       "CA": [],
       "US": [],
       "GB": [],
-      "AU": []
+      "AU": [
+        {
+          "provider_id": 151,
+          "provider_name": "BritBox",
+          "logo_path": "/8oA7IcDNNUtBa9JYB5kQ8hrDz5o.jpg",
+          "logo_local": "/assets/logos/services/8oA7IcDNNUtBa9JYB5kQ8hrDz5o.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 11,
+          "deep_link": "https://www.themoviedb.org/movie/15691-doctor-who/watch?locale=AU"
+        },
+        {
+          "provider_id": 1852,
+          "provider_name": "Britbox Apple TV Channel",
+          "logo_path": "/bzEv2wssRqVgl12IVBfYhCIvvG.jpg",
+          "logo_local": "/assets/logos/services/bzEv2wssRqVgl12IVBfYhCIvvG.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 56,
+          "deep_link": "https://www.themoviedb.org/movie/15691-doctor-who/watch?locale=AU"
+        },
+        {
+          "provider_id": 197,
+          "provider_name": "BritBox Amazon Channel",
+          "logo_path": "/49qepIM2KqtRwENEmfskTGShD7G.jpg",
+          "logo_local": "/assets/logos/services/49qepIM2KqtRwENEmfskTGShD7G.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 74,
+          "deep_link": "https://www.themoviedb.org/movie/15691-doctor-who/watch?locale=AU"
+        }
+      ]
     }
   }
 }
