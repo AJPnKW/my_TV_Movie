@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-06-17
+
+- Hardened the inputs-editor publish completion logic so it waits for actual generated runtime artifact changes after an input commit before reporting success, then fast-forwards and validates local reconciliation.
+- Added pipeline integrity freshness validation requiring generated runtime data to be newer than saved canonical inputs, and added early `build-data` workflow validation before artifact commits.
+- Added `tools/install_local_launcher.ps1` and runtime validation coverage so `run_local_servers.bat` can be registered for command-line use from any PowerShell location.
+- Regenerated the full runtime dataset from canonical `data/inputs.json`; Cape Fear TMDB show `277439` is present in `data/catalog_index.json`, `data/data.json`, and `data/catalog_detail/277439.json`.
+- Validation: full local `scripts/run_pipeline_tmdb_trakt.py` passed; `scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; HTTP-served `catalog_index.json` contains Cape Fear on `127.0.0.1:8000`.
+- Commit: `9d61099562` fix inputs publish pipeline sync.
+
 ## 2026-06-03
 
 - Completed the live PostgreSQL runtime path for the X1 lab foundation instead of leaving server mode at scaffold/static-validation status.
