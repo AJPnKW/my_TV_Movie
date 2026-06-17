@@ -68,6 +68,7 @@ jobs:
           python -m json.tool data/catalog_index.json > /dev/null
           python -m json.tool data/calendar.json > /dev/null
           if [ -f data/watch_state_queue.json ]; then python -m json.tool data/watch_state_queue.json > /dev/null; fi
+          python scripts/qa_pipeline_integrity.py
 
       - name: Run integrity diagnostics
         if: always()

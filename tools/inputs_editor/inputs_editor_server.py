@@ -543,6 +543,27 @@ def _run_pipeline_integrity_validation() -> dict:
     }
 
 
+def _generated_artifact_changes_since(base_ref: str, head_ref: str) -> list[str]:
+    if not base_ref or not head_ref:
+        return []
+    diff = _run_git_command(["diff", "--name-only", f"{base_ref}..{head_ref}", "--", *GENERATED_SYNC_PATHS])
+    if diff.returncode != 0:
+        return []
+    return [line.strip().replace("\\", "/") for line in (diff.stdout or "").splitlines() if line.strip()]
+
+
+def _has_runtime_artifact_update(paths: list[str]) -> bool:
+    required_exact = {
+        "data/data.json",
+        "data/catalog_index.json",
+        "data/calendar.json",
+    }
+    for path in paths:
+        if path in required_exact or path.startswith("data/catalog_detail/"):
+            return True
+    return False
+
+
 def _stash_generated_artifacts_if_needed() -> dict:
     status = _run_git_command(["status", "--porcelain", "--", *GENERATED_SYNC_PATHS])
     if status.returncode != 0:
@@ -622,6 +643,21 @@ def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_comm
         if remote_head and remote_head != input_commit:
             ancestor = _run_git_command(["merge-base", "--is-ancestor", input_commit, remote_ref])
             if ancestor.returncode == 0:
+                generated_changes = _generated_artifact_changes_since(input_commit, remote_head)
+                if not _has_runtime_artifact_update(generated_changes):
+                    if time.monotonic() >= deadline:
+                        return {
+                            "ok": False,
+                            "synced": False,
+                            "validated": False,
+                            "attempts": attempts,
+                            "remote_head": remote_head,
+                            "error": "Remote branch advanced after the input commit, but no generated runtime artifact update was found.",
+                            "generated_changes": generated_changes,
+                            "validation": first_validation,
+                        }
+                    time.sleep(PUBLISH_POLL_SECONDS)
+                    continue
                 ff = _fast_forward_remote(remote_name, branch_name)
                 if not ff.get("ok"):
                     ff["attempts"] = attempts
@@ -642,6 +678,7 @@ def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_comm
                     "validated": True,
                     "attempts": attempts,
                     "remote_head": remote_head,
+                    "generated_changes": generated_changes,
                     "stashed_generated_artifacts": ff.get("stashed", False),
                     "stash_message": ff.get("stash_message", ""),
                     "validation": validation,

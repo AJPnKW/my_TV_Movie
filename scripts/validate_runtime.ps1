@@ -62,6 +62,7 @@ $requiredFiles = @(
     'run_schema.bat',
     'scripts/generate_schema.py',
     'tools/run_local_servers.bat',
+    'tools/install_local_launcher.ps1',
     'tools/start_inputs_editor.cmd',
     'tools/run_smoke_test.ps1',
     'tools/inputs_editor/inputs_editor_server.py',
@@ -137,6 +138,7 @@ Write-Host '== Local launcher contract =='
 $rootLauncher = Get-Content -Raw -LiteralPath 'run_server.bat'
 $canonicalLauncher = Get-Content -Raw -LiteralPath 'run_local_servers.bat'
 $toolsLauncher = Get-Content -Raw -LiteralPath 'tools/run_local_servers.bat'
+$pathInstaller = Get-Content -Raw -LiteralPath 'tools/install_local_launcher.ps1'
 $editorLauncher = Get-Content -Raw -LiteralPath 'tools/start_inputs_editor.cmd'
 $smokeLauncher = Get-Content -Raw -LiteralPath 'tools/run_smoke_test.ps1'
 if ($canonicalLauncher -notlike '*tools\run_smoke_test.ps1*') {
@@ -150,6 +152,15 @@ if ($rootLauncher -match 'app\.py|8811|fetch_tmdb\.py|pip install') {
 }
 if ($toolsLauncher -notlike '*run_local_servers.bat*') {
     Add-CheckError 'tools/run_local_servers.bat must delegate to root run_local_servers.bat.'
+}
+foreach ($needle in @(
+    'run_local_servers.bat',
+    '[Environment]::SetEnvironmentVariable("Path"',
+    'SHELL\bin',
+    'Installed command shim',
+    'Get-Command "run_local_servers.bat"'
+)) {
+    if (-not $pathInstaller.Contains($needle)) { Add-CheckError "tools/install_local_launcher.ps1 missing contract: $needle" }
 }
 if ($editorLauncher -notlike '*run_local_servers.bat*') {
     Add-CheckError 'tools/start_inputs_editor.cmd must delegate to root run_local_servers.bat.'

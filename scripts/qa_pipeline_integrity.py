@@ -5,7 +5,7 @@ import datetime as _dt
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_DIR = REPO_ROOT / "data"
@@ -65,6 +65,21 @@ def _safe_int(value: Any) -> int:
         return int(str(value).strip())
     except Exception:
         return 0
+
+
+def _parse_utc(value: Any) -> Optional[_dt.datetime]:
+    raw = _safe_text(value)
+    if not raw:
+        return None
+    try:
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        parsed = _dt.datetime.fromisoformat(raw)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=_dt.timezone.utc)
+        return parsed.astimezone(_dt.timezone.utc)
+    except Exception:
+        return None
 
 
 def _title_tokens(value: Any) -> set[str]:
@@ -245,6 +260,8 @@ def main() -> int:
         data_shows = data.get("shows") if isinstance(data, dict) else []
         data_movies = data.get("movies") if isinstance(data, dict) else []
         data_errors = data.get("errors") if isinstance(data, dict) else []
+        inputs_generated_at = _parse_utc(inputs.get("generated_utc") if isinstance(inputs, dict) else None)
+        data_generated_at = _parse_utc((data.get("meta") or {}).get("generated_utc") if isinstance(data, dict) else None)
         index_shows = index.get("shows") if isinstance(index, dict) else []
         index_movies = index.get("movies") if isinstance(index, dict) else []
         detail_files = list(DETAIL_DIR.glob("*.json"))
@@ -272,7 +289,8 @@ def main() -> int:
         _check("runtime_uses_calendar_feed", "calendar.json" in app_runtime_text and "calendar.json" in watch_me_runtime_text, "app runtime and watch_me must use calendar.json", checks, logf)
         _check("no_legacy_input_paths", all(term not in workflow_text + runner_text for term in ("tv_list.txt", "movies_list.txt", "live_tv_list.txt", "inputs_parsed.json")), "active production files must not reference legacy txt/input_parsed paths", checks, logf)
         _check("inputs_editor_verifies_tmdb_identity", "_validate_tmdb_entry_identity" in inputs_editor_server_text and "resolves to" in inputs_editor_server_text, "inputs editor save path must reject title/TMDB ID mismatches", checks, logf)
-        _check("inputs_editor_publishes_and_syncs_generated_artifacts", all(term in inputs_editor_server_text for term in ("/api/publish-inputs", "_wait_for_generated_artifacts", "_stash_generated_artifacts_if_needed", "qa_pipeline_integrity.py")), "inputs editor publish path must wait for generated artifacts, fast-forward local checkout, and validate reconciliation", checks, logf)
+        _check("inputs_editor_publishes_and_syncs_generated_artifacts", all(term in inputs_editor_server_text for term in ("/api/publish-inputs", "_wait_for_generated_artifacts", "_stash_generated_artifacts_if_needed", "_generated_artifact_changes_since", "_has_runtime_artifact_update", "qa_pipeline_integrity.py")), "inputs editor publish path must wait for generated runtime artifact changes, fast-forward local checkout, and validate reconciliation", checks, logf)
+        _check("runtime_generated_after_inputs", bool(inputs_generated_at and data_generated_at and data_generated_at >= inputs_generated_at), f"inputs_generated_utc={inputs.get('generated_utc') if isinstance(inputs, dict) else ''} data_generated_utc={(data.get('meta') or {}).get('generated_utc') if isinstance(data, dict) else ''}", checks, logf)
 
         _check("active_tv_inputs_reconciled", not missing_tv, f"active_tv={len(active_tv)} catalog_index_shows={len(index_shows) if isinstance(index_shows, list) else 0} unresolved_unreported={len(missing_tv)}", checks, logf)
         _check("active_movie_inputs_reconciled", not missing_movies, f"active_movies={len(active_movies)} catalog_index_movies={len(index_movies) if isinstance(index_movies, list) else 0} unresolved_unreported={len(missing_movies)}", checks, logf)
@@ -308,6 +326,8 @@ def main() -> int:
                 "index_movies": len(index_movies) if isinstance(index_movies, list) else 0,
                 "detail_files": len(detail_files),
                 "calendar_days": len(calendar_days) if isinstance(calendar_days, dict) else 0,
+                "inputs_generated_utc": inputs.get("generated_utc") if isinstance(inputs, dict) else "",
+                "data_generated_utc": (data.get("meta") or {}).get("generated_utc") if isinstance(data, dict) else "",
             },
             "unresolved_unreported_inputs": {
                 "tv": missing_tv,
