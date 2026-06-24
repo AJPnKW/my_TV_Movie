@@ -2,6 +2,12 @@
 
 ## 2026-06-24
 
+- Added incremental TMDB build caching for push-triggered data builds: unchanged active `data/inputs.json` rows with the same config/schema signature reuse the previous generated show/movie row instead of refetching the full TMDB season/episode tree.
+- Added `--force-full-tmdb`/`--force-full-refresh` so scheduled and manual data builds still do complete TMDB refreshes, preventing long-lived stale show/episode metadata while keeping normal input-editor pushes fast.
+- Added pipeline-integrity coverage requiring scheduled/manual builds to keep the full-refresh path wired when the incremental cache exists.
+- Validation: Python compile passed for the changed pipeline scripts; `scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `git diff --check` passed.
+- Commit: `7cb1cc082c` add-incremental-tmdb-build-cache.
+
 - Added a root `index.html` redirect to the canonical `web/index.html` app shell so the deployed GitHub Pages site root no longer returns 404, and updated Pages staging to include that redirect artifact.
 - Validation: root redirect content check passed; generated JSON parse checks passed; `git diff --check` passed.
 - Commit: `7ad1f67fe8` add-pages-root-redirect.
