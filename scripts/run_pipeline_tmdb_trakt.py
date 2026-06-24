@@ -76,6 +76,12 @@ def _parse_args() -> argparse.Namespace:
         default=os.environ.get("PIPELINE_REFRESH_EXISTING_TRAKT", "").strip().lower() in {"1", "true", "yes"},
         help="Recheck existing Trakt IDs instead of resolving only missing IDs.",
     )
+    parser.add_argument(
+        "--force-full-tmdb",
+        action="store_true",
+        default=os.environ.get("PIPELINE_FORCE_FULL_TMDB", "").strip().lower() in {"1", "true", "yes"},
+        help="Force a full TMDB rebuild instead of reusing unchanged generated rows.",
+    )
     return parser.parse_args()
 
 
@@ -90,7 +96,8 @@ def main() -> int:
         return 2
 
     started = _ts()
-    rc = _run_one("TMDB", FETCH_TMDB)
+    tmdb_args = ("--force-full-refresh",) if args.force_full_tmdb else ()
+    rc = _run_one("TMDB", FETCH_TMDB, *tmdb_args)
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")

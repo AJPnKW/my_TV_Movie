@@ -283,6 +283,7 @@ def main() -> int:
         _check("calendar_json_exists", CALENDAR_JSON.exists(), "data/calendar.json must exist", checks, logf)
         _check("catalog_detail_exists", DETAIL_DIR.exists(), "data/catalog_detail must exist", checks, logf)
         _check("workflow_uses_canonical_runner", "python scripts/run_pipeline_tmdb_trakt.py" in workflow_text, "build-data workflow must run scripts/run_pipeline_tmdb_trakt.py", checks, logf)
+        _check("scheduled_builds_force_full_tmdb_refresh", "--force-full-tmdb" in workflow_text and "--force-full-refresh" in runner_text and "INCREMENTAL_CACHE_SCHEMA" in _read_text(REPO_ROOT / "scripts" / "fetch_tmdb.py"), "push builds may use incremental TMDB cache, but scheduled/manual builds must force a full TMDB refresh", checks, logf)
         _check("runner_builds_split_runtime", "SPLIT_RUNTIME_BUILD" in runner_text and "build_split_runtime.py" in runner_text, "pipeline runner must build split runtime artifacts", checks, logf)
         _check("runtime_no_first_load_data_json", "../data/data.json" not in app_runtime_text and "data/data.json" not in watch_me_runtime_text, "runtime first-load paths must not use data/data.json", checks, logf)
         _check("runtime_uses_split_index", "catalog_index.json" in app_runtime_text and "catalog_index.json" in watch_me_runtime_text, "app runtime and watch_me must use catalog_index.json", checks, logf)

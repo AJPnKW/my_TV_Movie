@@ -24,6 +24,8 @@
 # ==============================================================================
 
 import datetime as _dt
+import argparse
+import copy
 import hashlib
 import json
 import logging
@@ -69,6 +71,8 @@ OUT_DATA_JSON = DATA_DIR / "data.json"
 LOG_DIR = REPO_ROOT / "logs"
 
 CONFIG_JSON = WEB_DIR / "config.json"
+OUTPUT_SCHEMA = "fetch_tmdb.v3"
+INCREMENTAL_CACHE_SCHEMA = 1
 
 # -------------------------
 # Logging
@@ -108,6 +112,85 @@ def write_json_atomic(path: Path, obj: Any) -> None:
 
 def sha1_text(s: str) -> str:
     return hashlib.sha1(s.encode("utf-8", errors="ignore")).hexdigest()
+
+
+def stable_signature(value: Any) -> str:
+    payload = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return sha1_text(payload)
+
+
+def input_signature(media: str, item: Dict[str, Any], config_sha1: str) -> str:
+    return stable_signature(
+        {
+            "media": media,
+            "input": item,
+            "config_sha1": config_sha1,
+            "output_schema": OUTPUT_SCHEMA,
+        }
+    )
+
+
+def load_previous_cache(config_sha1: str, force_full_refresh: bool) -> Dict[str, Dict[int, Dict[str, Any]]]:
+    empty = {"tv": {}, "movie": {}}
+    if force_full_refresh or not OUT_DATA_JSON.exists():
+        return empty
+    try:
+        previous = json.loads(OUT_DATA_JSON.read_text(encoding="utf-8", errors="replace") or "{}")
+    except Exception as ex:
+        logging.warning("[cache] previous data.json unavailable: %s", ex)
+        return empty
+    builder = (previous.get("meta") or {}).get("builder") if isinstance(previous, dict) else {}
+    if not isinstance(builder, dict):
+        return empty
+    if builder.get("config_sha1") != config_sha1:
+        logging.info("[cache] disabled because config changed")
+        return empty
+    if builder.get("output_schema") != OUTPUT_SCHEMA or builder.get("incremental_cache_schema") != INCREMENTAL_CACHE_SCHEMA:
+        logging.info("[cache] disabled until current cache schema is stamped")
+        return empty
+
+    cache = {"tv": {}, "movie": {}}
+    for show in previous.get("shows") or []:
+        if not isinstance(show, dict) or not show.get("_input_signature"):
+            continue
+        try:
+            cache["tv"][int(show.get("tmdb_id") or show.get("id"))] = show
+        except Exception:
+            continue
+    for movie in previous.get("movies") or []:
+        if not isinstance(movie, dict) or not movie.get("_input_signature"):
+            continue
+        try:
+            cache["movie"][int(movie.get("tmdb_id") or movie.get("id"))] = movie
+        except Exception:
+            continue
+    logging.info("[cache] reusable rows available shows=%s movies=%s", len(cache["tv"]), len(cache["movie"]))
+    return cache
+
+
+def cached_entity(
+    cache: Dict[str, Dict[int, Dict[str, Any]]],
+    media: str,
+    tmdb_id: Optional[int],
+    signature: str,
+) -> Optional[Dict[str, Any]]:
+    if not tmdb_id:
+        return None
+    row = cache.get(media, {}).get(int(tmdb_id))
+    if not isinstance(row, dict) or row.get("_input_signature") != signature:
+        return None
+    return copy.deepcopy(row)
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--force-full-refresh",
+        action="store_true",
+        default=os.environ.get("PIPELINE_FORCE_FULL_TMDB", "").strip().lower() in {"1", "true", "yes"},
+        help="Ignore the incremental TMDB cache and rebuild every active input row.",
+    )
+    return parser.parse_args()
 
 
 # -------------------------
@@ -646,6 +729,7 @@ def safe_watch_providers(client: TMDBClient, media: str, tmdb_id: int) -> Dict[s
 # Core build
 # -------------------------
 def main() -> int:
+    args = parse_args()
     setup_logging()
 
     if load_dotenv:
@@ -658,11 +742,13 @@ def main() -> int:
         return 2
 
     cfg = load_config(CONFIG_JSON)
+    config_sha1 = sha1_text(read_text_file(CONFIG_JSON))
 
     client = TMDBClient(api_key_or_token=(tmdb_key or tmdb_token), bearer_token=(tmdb_token or None))
     client.precheck()
 
     tv_list, movies_list = load_inputs()
+    previous_cache = load_previous_cache(config_sha1, bool(args.force_full_refresh))
 
     data: Dict[str, Any] = {
         "meta": {
@@ -670,10 +756,13 @@ def main() -> int:
             "builder": {
                 "script": "scripts/fetch_tmdb.py",
                 "version": "v2.9.0",
+                "output_schema": OUTPUT_SCHEMA,
+                "incremental_cache_schema": INCREMENTAL_CACHE_SCHEMA,
                 "canonical_input": "data/inputs.json",
                 "canonical_output": "data/data.json",
                 "streaming_contract": "streaming.embed_providers",
-                "config_sha1": sha1_text(read_text_file(CONFIG_JSON)),
+                "config_sha1": config_sha1,
+                "force_full_refresh": bool(args.force_full_refresh),
             },
         },
         "shows": [],
@@ -689,6 +778,10 @@ def main() -> int:
 
     shows_ok = 0
     movies_ok = 0
+    reused_shows = 0
+    rebuilt_shows = 0
+    reused_movies = 0
+    rebuilt_movies = 0
 
     # -------------------------
     # TV shows (minimal + rich fields; seasons/episodes deep build not included)
@@ -727,6 +820,14 @@ def main() -> int:
             tmdb_id: Optional[int] = int(tmdb_id_raw) if tmdb_id_raw else None
         except Exception:
             tmdb_id = None
+
+        row_signature = input_signature("tv", item, config_sha1)
+        cached_show = cached_entity(previous_cache, "tv", tmdb_id, row_signature)
+        if cached_show is not None:
+            data["shows"].append(cached_show)
+            shows_ok += 1
+            reused_shows += 1
+            continue
 
         year = item.get("year")
         try:
@@ -799,6 +900,7 @@ def main() -> int:
                 "created_by": show.get("created_by") or [],
                 "networks": show.get("networks") or [],
                 "watch_providers": watch_providers,
+                "_input_signature": row_signature,
             }
 
             # Deep build seasons + episodes (required for UI + Trakt mapping)
@@ -817,6 +919,7 @@ def main() -> int:
 
             data["shows"].append(show_obj)
             shows_ok += 1
+            rebuilt_shows += 1
         except Exception as ex:
             logging.error("[show] error title=%s tmdb_id=%s err=%s", title, tmdb_id_raw, ex)
             data["errors"].append({"type": "tmdb_error", "media": "show", "title": title, "tmdb_id": tmdb_id_raw, "message": str(ex)})
@@ -833,6 +936,14 @@ def main() -> int:
             tmdb_id: Optional[int] = int(tmdb_id_raw) if tmdb_id_raw else None
         except Exception:
             tmdb_id = None
+
+        row_signature = input_signature("movie", item, config_sha1)
+        cached_movie = cached_entity(previous_cache, "movie", tmdb_id, row_signature)
+        if cached_movie is not None:
+            data["movies"].append(cached_movie)
+            movies_ok += 1
+            reused_movies += 1
+            continue
 
         try:
             if tmdb_id:
@@ -892,10 +1003,12 @@ def main() -> int:
                 "production_countries": mv.get("production_countries") or [],
                 "runtime": mv.get("runtime"),
                 "watch_providers": watch_providers,
+                "_input_signature": row_signature,
             }
 
             data["movies"].append(mv_obj)
             movies_ok += 1
+            rebuilt_movies += 1
         except Exception as ex:
             logging.error("[movie] error title=%s tmdb_id=%s err=%s", title, tmdb_id_raw, ex)
             data["errors"].append({"type": "tmdb_error", "media": "movie", "title": title, "tmdb_id": tmdb_id_raw, "message": str(ex)})
@@ -906,6 +1019,13 @@ def main() -> int:
         return 3
 
     data["meta"]["counts"] = {"shows": shows_ok, "movies": movies_ok, "errors": len(data["errors"])}
+    data["meta"]["incremental_cache"] = {
+        "reused_shows": reused_shows,
+        "rebuilt_shows": rebuilt_shows,
+        "reused_movies": reused_movies,
+        "rebuilt_movies": rebuilt_movies,
+        "force_full_refresh": bool(args.force_full_refresh),
+    }
 
 
     # -------------------------
@@ -939,7 +1059,17 @@ def main() -> int:
     except Exception as ex:
         logging.warning("[merge] preserve trakt_id skipped: %s", ex)
     write_json_atomic(OUT_DATA_JSON, data)
-    logging.info("[done] wrote=%s shows=%s movies=%s errors=%s", OUT_DATA_JSON, shows_ok, movies_ok, len(data["errors"]))
+    logging.info(
+        "[done] wrote=%s shows=%s movies=%s errors=%s reused_shows=%s rebuilt_shows=%s reused_movies=%s rebuilt_movies=%s",
+        OUT_DATA_JSON,
+        shows_ok,
+        movies_ok,
+        len(data["errors"]),
+        reused_shows,
+        rebuilt_shows,
+        reused_movies,
+        rebuilt_movies,
+    )
     return 0
 
 

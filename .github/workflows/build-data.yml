@@ -64,7 +64,7 @@ jobs:
           if [ "${{ github.event_name }}" = "push" ]; then
             python scripts/run_pipeline_tmdb_trakt.py
           else
-            python scripts/run_pipeline_tmdb_trakt.py --refresh-existing-trakt
+            python scripts/run_pipeline_tmdb_trakt.py --refresh-existing-trakt --force-full-tmdb
           fi
 
       - name: Validate generated runtime JSON
