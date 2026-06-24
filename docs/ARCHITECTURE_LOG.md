@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-06-24
+
+- Reduced input-update workflow runtime by changing `build-data` from full-history/all-branch checkout to shallow single-ref checkout and suppressing checkout progress noise.
+- Changed push-triggered data builds to resolve only missing Trakt IDs while scheduled/manual builds still use `--refresh-existing-trakt` for the deeper full recheck path.
+- Kept generated runtime JSON validation on every build, while moving the expensive direct active-row TMDB identity diagnostics to scheduled/manual builds where they do not slow normal inputs-editor saves.
+- Reduced Pages deployment upload scope by staging only static runtime/site directories and generated JSON assets under `_site` instead of uploading the whole repository.
+- Validation: Python compile passed for the changed runners; `scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `git diff --check` passed. `scripts/qa_browser_layout_check.mjs` could not run because `puppeteer-core` is not installed in the checkout.
+- Commit: `65f9abb74f` optimize-data-workflow-runtime.
+
 ## 2026-06-17
 
 - Hardened the inputs-editor publish completion logic so it waits for actual generated runtime artifact changes after an input commit before reporting success, then fast-forwards and validates local reconciliation.
