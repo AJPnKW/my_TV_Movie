@@ -10,6 +10,8 @@
 from __future__ import annotations
 
 import datetime as _dt
+import argparse
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -66,7 +68,19 @@ def _run_one(label: str, script_path: Path, *extra_args: str) -> int:
     return int(p.returncode)
 
 
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--refresh-existing-trakt",
+        action="store_true",
+        default=os.environ.get("PIPELINE_REFRESH_EXISTING_TRAKT", "").strip().lower() in {"1", "true", "yes"},
+        help="Recheck existing Trakt IDs instead of resolving only missing IDs.",
+    )
+    return parser.parse_args()
+
+
 def main() -> int:
+    args = _parse_args()
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
     # Required scope file (canonical)
@@ -90,7 +104,8 @@ def main() -> int:
         print(f"finished: {_ts()}")
         return rc
 
-    rc = _run_one("TRAKT", FETCH_TRAKT)
+    trakt_args = ("--refresh-existing",) if args.refresh_existing_trakt else ()
+    rc = _run_one("TRAKT", FETCH_TRAKT, *trakt_args)
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")

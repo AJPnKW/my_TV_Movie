@@ -35,6 +35,7 @@
 from __future__ import annotations
 
 import datetime as _dt
+import argparse
 import hashlib
 import json
 import logging
@@ -176,7 +177,12 @@ def _extract_ids(search_hit: Dict[str, Any], media_type: str) -> Optional[Tuple[
     return trakt_val, tmdb_val
 
 
-def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Tuple[Dict[str, int], bool]:
+def _has_existing_trakt_id(row: Dict[str, Any]) -> bool:
+    value = row.get("trakt_id")
+    return value not in (None, "", 0, "0")
+
+
+def enrich_data_json(existing: Dict[str, Any], trakt_id: str, refresh_existing: bool = False) -> Tuple[Dict[str, int], bool]:
     shows = existing.get("shows")
     movies = existing.get("movies")
     if not isinstance(shows, list):
@@ -186,7 +192,7 @@ def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Tuple[Dict[str,
 
     updated_shows = updated_movies = 0
     already_shows = already_movies = 0
-    looked_up = not_found = 0
+    looked_up = not_found = skipped_existing = 0
     changed = False
 
     for s in shows:
@@ -194,6 +200,10 @@ def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Tuple[Dict[str,
             continue
         tmdb = s.get("tmdb_id")
         if not isinstance(tmdb, int) or tmdb <= 0:
+            continue
+        if _has_existing_trakt_id(s) and not refresh_existing:
+            already_shows += 1
+            skipped_existing += 1
             continue
         looked_up += 1
         try:
@@ -220,6 +230,10 @@ def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Tuple[Dict[str,
             continue
         tmdb = m.get("tmdb_id")
         if not isinstance(tmdb, int) or tmdb <= 0:
+            continue
+        if _has_existing_trakt_id(m) and not refresh_existing:
+            already_movies += 1
+            skipped_existing += 1
             continue
         looked_up += 1
         try:
@@ -248,11 +262,12 @@ def enrich_data_json(existing: Dict[str, Any], trakt_id: str) -> Tuple[Dict[str,
         "updated_movies": updated_movies,
         "already_shows": already_shows,
         "already_movies": already_movies,
+        "skipped_existing": skipped_existing,
     }
     return counts, changed
 
 
-def update_metadata(existing: Dict[str, Any], trakt_id: str, counts: Dict[str, int]) -> bool:
+def update_metadata(existing: Dict[str, Any], trakt_id: str, counts: Dict[str, int], refresh_existing: bool = False) -> bool:
     meta = existing.get("metadata")
     if not isinstance(meta, dict):
         existing["metadata"] = {}
@@ -262,6 +277,7 @@ def update_metadata(existing: Dict[str, Any], trakt_id: str, counts: Dict[str, i
         "timestamp_utc": _utc_iso(),
         "script": "fetch_trakt.py",
         "mode": "public_lookup",
+        "refresh_existing": bool(refresh_existing),
         "counts": counts,
         "client_id_sha256": _sha256_text(trakt_id),
     }
@@ -273,6 +289,14 @@ def update_metadata(existing: Dict[str, Any], trakt_id: str, counts: Dict[str, i
 
 
 def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--refresh-existing",
+        action="store_true",
+        help="Recheck rows that already have trakt_id values. Default resolves only missing IDs.",
+    )
+    args = parser.parse_args()
+
     setup_logging()
 
     try:
@@ -296,18 +320,20 @@ def main() -> int:
 
     before_hash = _sha256_text(_read_text(DATA_JSON_PATH))
 
-    counts, changed_items = enrich_data_json(existing, trakt_id)
-    changed_meta = update_metadata(existing, trakt_id, counts)
+    counts, changed_items = enrich_data_json(existing, trakt_id, refresh_existing=args.refresh_existing)
+    changed_meta = update_metadata(existing, trakt_id, counts, refresh_existing=args.refresh_existing)
     changed = changed_items or changed_meta
 
     logging.info(
-        "[fetch_trakt] DONE looked_up=%s not_found=%s updated_shows=%s updated_movies=%s already_shows=%s already_movies=%s changed=%s",
+        "[fetch_trakt] DONE looked_up=%s not_found=%s updated_shows=%s updated_movies=%s already_shows=%s already_movies=%s skipped_existing=%s refresh_existing=%s changed=%s",
         counts.get("looked_up", 0),
         counts.get("not_found", 0),
         counts.get("updated_shows", 0),
         counts.get("updated_movies", 0),
         counts.get("already_shows", 0),
         counts.get("already_movies", 0),
+        counts.get("skipped_existing", 0),
+        "YES" if args.refresh_existing else "NO",
         "YES" if changed else "NO",
     )
 
