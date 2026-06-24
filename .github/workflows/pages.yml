@@ -15,6 +15,7 @@ on:
       - "data/provider_registry.json"
       - "data/watch_sources_index.json"
       - "docs/**"
+      - "index.html"
       - ".github/workflows/pages.yml"
 
 permissions:
@@ -48,6 +49,7 @@ jobs:
           rm -rf _site
           mkdir -p _site/data
           cp -R web assets docs _site/
+          cp index.html _site/index.html
           cp data/*.json _site/data/
           cp -R data/catalog_detail _site/data/catalog_detail
 
