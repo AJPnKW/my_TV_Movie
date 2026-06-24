@@ -2,6 +2,10 @@
 
 ## 2026-06-24
 
+- Added a root `index.html` redirect to the canonical `web/index.html` app shell so the deployed GitHub Pages site root no longer returns 404, and updated Pages staging to include that redirect artifact.
+- Validation: root redirect content check passed; generated JSON parse checks passed; `git diff --check` passed.
+- Commit: `7ad1f67fe8` add-pages-root-redirect.
+
 - Reduced input-update workflow runtime by changing `build-data` from full-history/all-branch checkout to shallow single-ref checkout and suppressing checkout progress noise.
 - Changed push-triggered data builds to resolve only missing Trakt IDs while scheduled/manual builds still use `--refresh-existing-trakt` for the deeper full recheck path.
 - Kept generated runtime JSON validation on every build, while moving the expensive direct active-row TMDB identity diagnostics to scheduled/manual builds where they do not slow normal inputs-editor saves.
