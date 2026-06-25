@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-06-25
+
+- Promoted the HP media VM path from a placeholder plan into an executable production deployment package under `deployment/vm_prod/`, including Ubuntu package installation, app-root sync to `/opt/mytv_movie`, PostgreSQL role/database setup, Python server venv, schema apply, JSON-to-PostgreSQL migration apply, systemd API service install, and Nginx static/API reverse proxy configuration.
+- Deepened the server-mode JSON migration so `data/data.json` imports shows, seasons, episodes, and movies into the typed PostgreSQL tables instead of only the generic `media_items` table, while preserving JSON fallback and importing future watch-state queue/watchlist/favourite records where present.
+- Corrected server-mode state write queue semantics so watchlist and favourites use schema-allowed operations (`watchlist_add`, `watchlist_remove`, `favourite_set`), added the `/favorites` alias, exposed joined state rows with media identity, and made `/api/v1/catalog/import-json` apply the real migration when PostgreSQL is configured.
+- Extended the PostgreSQL sync queue operation contract to include provider refresh operations that the existing API already exposes.
+- Validation: Python compile passed for changed API/PostgreSQL modules; `deployment/postgres/json_migration.py` dry-run found 12,597 catalog candidates; schema validation passed; schema dry-run passed; server-mode static validation passed; HP bootstrap and validation shell syntax checks passed; API smoke test passed for health, catalog JSON fallback, and migration dry-run; `scripts/validate_runtime.ps1` passed; `git diff --check` passed. Docker PostgreSQL live validation was not run because Docker Desktop's daemon was not available in this local environment; the HP validation script performs live schema/import/API proof on the VM.
+- Commit: `6e7fb7b35f` implement-hp-vm-server-deployment-path.
+
 ## 2026-06-24
 
 - Added incremental TMDB build caching for push-triggered data builds: unchanged active `data/inputs.json` rows with the same config/schema signature reuse the previous generated show/movie row instead of refetching the full TMDB season/episode tree.
