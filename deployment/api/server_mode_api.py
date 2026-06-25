@@ -22,7 +22,7 @@ for path in (API_DIR, POSTGRES_DIR):
     if str(path) not in sys.path:
         sys.path.insert(0, str(path))
 
-from json_migration import migration_summary
+from json_migration import import_to_postgres, migration_summary
 from postgres_client import PostgresClient, PostgresUnavailable
 from server_mode_config import ServerModeConfig
 
@@ -111,7 +111,7 @@ class ServerModeHandler(BaseHTTPRequestHandler):
                 return response(self, 200, self.db_or_empty("watch_state"))
             if parts == ["watchlist"]:
                 return response(self, 200, self.db_or_empty("watchlist"))
-            if parts == ["favourites"]:
+            if parts in (["favourites"], ["favorites"]):
                 return response(self, 200, self.db_or_empty("favourites"))
             if parts == ["sync", "queue"]:
                 return response(self, 200, self.db_or_empty("sync_queue"))
@@ -138,7 +138,7 @@ class ServerModeHandler(BaseHTTPRequestHandler):
         body = read_body(self)
         try:
             if parts == ["catalog", "import-json"]:
-                return response(self, 200, migration_summary(self.config) if body.get("dry_run", True) else self.write_unavailable("catalog_import"))
+                return response(self, 200, import_to_postgres(self.config, dry_run=bool(body.get("dry_run", True))))
             if parts == ["providers", "refresh"]:
                 return response(self, 202, self.queue_operation("provider_registry", "providers_refresh", body))
             if len(parts) == 3 and parts[:2] == ["sync", "trakt"]:
@@ -163,7 +163,7 @@ class ServerModeHandler(BaseHTTPRequestHandler):
                 return response(self, 200, self.write_watch_status(parts[1], body))
             if len(parts) == 2 and parts[0] == "watchlist":
                 return response(self, 200, self.write_boolean_state("watchlist", parts[1], body))
-            if len(parts) == 2 and parts[0] == "favourites":
+            if len(parts) == 2 and parts[0] in {"favourites", "favorites"}:
                 return response(self, 200, self.write_boolean_state("favourites", parts[1], body))
             if len(parts) == 3 and parts[0] == "runtime" and parts[1] == "config":
                 return response(self, 200, self.write_runtime_config(parts[2], body))
@@ -258,6 +258,17 @@ class ServerModeHandler(BaseHTTPRequestHandler):
     def db_or_empty(self, table: str) -> dict:
         if not self.db.ready:
             return {"source": "not_configured", "postgres": self.db.status(), "items": []}
+        if table in {"watch_state", "watchlist", "favourites"}:
+            rows = self.db.fetch_all(
+                f"""
+                SELECT s.*, m.media_type, m.canonical_title, m.tmdb_id, m.parent_media_item_id
+                FROM {table} s
+                JOIN media_items m ON m.media_item_id = s.media_item_id
+                ORDER BY s.updated_at DESC
+                LIMIT 250
+                """
+            )
+            return {"source": "postgres", "items": rows}
         rows = self.db.fetch_all(f"SELECT * FROM {table} ORDER BY 1 DESC LIMIT 250")
         return {"source": "postgres", "items": rows}
 
@@ -316,23 +327,49 @@ class ServerModeHandler(BaseHTTPRequestHandler):
     def write_boolean_state(self, table: str, item_id: str, body: dict) -> dict:
         if not self.db.ready:
             return self.write_unavailable(f"{table}_set")
-        is_active = bool(body.get("is_active", True))
+        raw_active = body.get("is_active", True)
+        if not isinstance(raw_active, bool):
+            return {"error": "is_active must be true or false"}
+        is_active = raw_active
         media_item_id = int(item_id)
+        before = self.db.fetch_one(f"SELECT * FROM {table} WHERE media_item_id = %s", (media_item_id,))
         if table == "watchlist":
             sql = """
-                INSERT INTO watchlist (media_item_id, is_active, pending_sync)
-                VALUES (%s, %s, true)
-                ON CONFLICT (media_item_id) DO UPDATE SET is_active = EXCLUDED.is_active, pending_sync = true
+                INSERT INTO watchlist (media_item_id, is_active, list_source, removed_at, pending_sync)
+                VALUES (%s, %s, 'api_import', CASE WHEN %s THEN NULL ELSE now() END, true)
+                ON CONFLICT (media_item_id) DO UPDATE SET
+                    is_active = EXCLUDED.is_active,
+                    list_source = 'api_import',
+                    removed_at = EXCLUDED.removed_at,
+                    pending_sync = true
             """
+            params = (media_item_id, is_active, is_active)
+            provider = "trakt"
+            operation_type = "watchlist_add" if is_active else "watchlist_remove"
+            audit_event = operation_type
         else:
             sql = """
-                INSERT INTO favourites (media_item_id, is_active, pending_sync)
-                VALUES (%s, %s, true)
-                ON CONFLICT (media_item_id) DO UPDATE SET is_active = EXCLUDED.is_active, pending_sync = true
+                INSERT INTO favourites (media_item_id, is_active, favourite_source, removed_at, pending_sync)
+                VALUES (%s, %s, 'api_import', CASE WHEN %s THEN NULL ELSE now() END, true)
+                ON CONFLICT (media_item_id) DO UPDATE SET
+                    is_active = EXCLUDED.is_active,
+                    favourite_source = 'api_import',
+                    removed_at = EXCLUDED.removed_at,
+                    pending_sync = true
             """
-        self.db.execute(sql, (media_item_id, is_active))
-        self.queue_operation("trakt" if table == "watchlist" else "local", f"{table}_set", {"media_item_id": media_item_id, "is_active": is_active})
-        return {"source": "postgres", table: {"media_item_id": media_item_id, "is_active": is_active, "pending_sync": True}}
+            params = (media_item_id, is_active, is_active)
+            provider = "local"
+            operation_type = "favourite_set"
+            audit_event = operation_type
+        self.db.execute(sql, params)
+        after = self.db.fetch_one(f"SELECT * FROM {table} WHERE media_item_id = %s", (media_item_id,))
+        entity_id = after["watchlist_id"] if table == "watchlist" else after["favourite_id"]
+        self.db.execute(
+            "INSERT INTO audit_log (actor_type, event_type, entity_table, entity_id, media_item_id, before_json, after_json) VALUES ('api', %s, %s, %s, %s, %s::jsonb, %s::jsonb)",
+            (audit_event, table, entity_id, media_item_id, PostgresClient.json_param(before), PostgresClient.json_param(after)),
+        )
+        self.queue_operation(provider, operation_type, {"media_item_id": media_item_id, "is_active": is_active})
+        return {"source": "postgres", table: after, "pending_sync": True}
 
     def write_runtime_config(self, key: str, body: dict) -> dict:
         if body.get("is_secret") and not body.get("secret_ref"):

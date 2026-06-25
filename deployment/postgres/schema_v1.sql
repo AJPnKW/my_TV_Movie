@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS sync_queue (
             'trakt_pull',
             'trakt_push',
             'trakt_reconcile',
+            'providers_refresh',
             'media_inventory_scan',
             'media_file_qa',
             'media_file_remux'

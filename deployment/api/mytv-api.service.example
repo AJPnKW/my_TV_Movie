@@ -12,6 +12,7 @@ Environment=MYTV_REPO_ROOT=/opt/mytv_movie
 Environment=MYTV_API_HOST=127.0.0.1
 Environment=MYTV_API_PORT=8000
 Environment=MYTV_API_BASE_PATH=/api/v1
+Environment=MYTV_POSTGRES_DSN=postgresql:///mytv_movie?host=/var/run/postgresql
 EnvironmentFile=-/opt/mytv_movie/.env
 ExecStart=/opt/mytv_movie/.venv/bin/python /opt/mytv_movie/deployment/api/server_mode_api.py
 Restart=on-failure
