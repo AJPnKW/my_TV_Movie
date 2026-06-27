@@ -7,8 +7,8 @@
 - Hardened the Inputs Editor online publish path so unresolved Git conflicts are detected before committing/rebasing/pushing, and the UI reports the conflicted paths instead of implying a local save completed the online app update.
 - Added `docs/INPUTS_EDITOR_OPERATIONAL_HISTORY.md` to record the Inputs Editor failure history, root causes, fixes, and validation hooks for future maintenance.
 - Verified `Canada's Drag Race: All Stars` TMDB show `314487` is present locally in canonical `data/inputs.json` with `season_spec: "*"`, and in generated runtime data after the full pipeline rebuild.
-- Validation: pending after rebase.
-- Commit: pending after rebase.
+- Validation: full `scripts/run_pipeline_tmdb_trakt.py` passed after rebase with `shows=236`, `movies=118`, `errors=0`, `rebuilt_shows=1`; standalone `scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; Python compile passed for the edited server and QA scripts; local HTTP checks passed for `/api/health`, `/api/inputs`, `data/catalog_index.json`, and `data/catalog_detail/314487.json`; `scripts/qa_browser_layout_check.mjs` passed with no failures and rendered `episode:314487:1:1`.
+- Commit: `67ffba2d8d` fix inputs editor launch and publish recovery; generated runtime rebuild committed separately after validation.
 
 ## 2026-06-25
 
