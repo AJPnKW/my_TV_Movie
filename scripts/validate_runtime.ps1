@@ -194,6 +194,10 @@ foreach ($needle in @(
     '/api/health',
     'AllTabs',
     '$urls = if ($AllTabs)',
+    'Test-InputsEditorHealth',
+    'Wait-InputsEditorHealth',
+    'Port $inputsPort is serving a different process or repo',
+    '& $pythonLiteral',
     'web/watch_me.html',
     'web/discover.html',
     'web/inputs_editor.html'
@@ -589,7 +593,7 @@ foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_
 foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', 'web_root not in file_path.parents')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing hardened save/scope contract: $needle" }
 }
-foreach ($needle in @('/api/publish-inputs', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', '_ensure_publishable_git_state', 'diff-filter=U', 'qa_pipeline_integrity.py')) {
+foreach ($needle in @('/api/publish-inputs', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', '_ensure_publishable_git_state', 'diff-filter=U', 'Git conflict state could not be checked', 'git diff --cached failed', 'unmerged_paths', 'qa_pipeline_integrity.py')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing publish/sync contract: $needle" }
 }
 $fetchTmdbText = Get-Content -Raw -LiteralPath 'scripts/fetch_tmdb.py'

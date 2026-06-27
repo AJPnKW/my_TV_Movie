@@ -60,6 +60,36 @@ Fix:
 - The publish path already waits for generated runtime artifact changes and validates pipeline reconciliation.
 - The publish path now also refuses to continue when Git reports unmerged/conflicted files, returning the exact conflicted paths to the UI.
 
+### Reusing the Wrong Local Process
+
+Symptom:
+
+- `run_local_servers.bat` reports servers are ready, but the editor talks to a stale process or a different checkout on port `8787`.
+
+Cause:
+
+- A plain HTTP 200 from `/api/health` only proves something is listening. It does not prove the server is this repo's Inputs Editor process.
+
+Fix:
+
+- The launcher now validates that `/api/health` returns `ok: true` and a `repo_root` matching the current checkout before reusing port `8787`.
+- If port `8787` is occupied by another process, the launcher stops with an explicit message instead of opening an editor that can save to the wrong checkout.
+
+### Failed Git Conflict Scan
+
+Symptom:
+
+- Online publish reaches later Git commands after the initial conflict check cannot run.
+
+Cause:
+
+- A failed `git diff --diff-filter=U` scan was previously indistinguishable from a clean checkout.
+
+Fix:
+
+- The publish guard now treats a failed conflict-state scan as publish-blocking and returns a dedicated Git error.
+- Rebase failures also return any conflicted paths captured before aborting the rebase.
+
 ## June 27, 2026 Incident
 
 Reported action:

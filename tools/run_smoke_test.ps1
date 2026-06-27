@@ -1,6 +1,6 @@
 <#
 FILE: tools/run_smoke_test.ps1
-VERSION: 1.0.4
+VERSION: 1.0.5
 UPDATED: 2026-06-27T00:00:00Z
 CHANGE NOTES:
 - Start the static site server for the repo on port 8000 when needed.
@@ -9,6 +9,8 @@ CHANGE NOTES:
 - Move the script param block before executable statements so PowerShell can parse it correctly.
 - Treat 404 responses as unavailable so the editor API server is not skipped.
 - Default browser launch to the local Inputs Editor only; use -AllTabs for smoke-test tabs.
+- Verify the editor health endpoint belongs to this repo before reusing port 8787.
+- Use the resolved Python command and wait for servers to become ready after launch.
 #>
 
 param(
@@ -50,6 +52,57 @@ function Test-HttpOk {
     } catch {
         return $false
     }
+}
+
+function ConvertTo-PowerShellSingleQuotedLiteral {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Value
+    )
+
+    return "'" + ($Value -replace "'", "''") + "'"
+}
+
+function Test-InputsEditorHealth {
+    try {
+        $response = Invoke-RestMethod -Uri $inputsHealthUrl -TimeoutSec 2
+        if (-not $response.ok) { return $false }
+        $healthRepoRoot = ""
+        if ($null -ne $response.repo_root) {
+            $healthRepoRoot = [string]$response.repo_root
+        }
+        return ($healthRepoRoot -and ([System.IO.Path]::GetFullPath($healthRepoRoot).TrimEnd('\') -ieq [System.IO.Path]::GetFullPath($repoRoot).TrimEnd('\')))
+    } catch {
+        return $false
+    }
+}
+
+function Wait-HttpOk {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Url,
+        [int]$TimeoutSeconds = 20
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        if (Test-HttpOk -Url $Url) { return $true }
+        Start-Sleep -Milliseconds 500
+    }
+    return $false
+}
+
+function Wait-InputsEditorHealth {
+    param(
+        [int]$TimeoutSeconds = 20
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    while ((Get-Date) -lt $deadline) {
+        if (Test-InputsEditorHealth) { return $true }
+        Start-Sleep -Milliseconds 500
+    }
+    return $false
 }
 
 function Start-ServerWindow {
@@ -105,15 +158,21 @@ if (-not $pythonCommand) {
 if (-not $pythonCommand) {
     throw "Python was not found in PATH."
 }
+$pythonExe = $pythonCommand.Source
+$pythonLiteral = ConvertTo-PowerShellSingleQuotedLiteral -Value $pythonExe
+$repoRootLiteral = ConvertTo-PowerShellSingleQuotedLiteral -Value $repoRoot
 
 $staticHealthUrl = "http://127.0.0.1:$staticPort/web/index.html"
 if (-not (Test-HttpOk -Url $staticHealthUrl)) {
     $staticCommand = @"
-Set-Location '$repoRoot'
+Set-Location $repoRootLiteral
 Write-Host 'Static site server: http://127.0.0.1:$staticPort/web/index.html'
-python -m http.server $staticPort
+& $pythonLiteral -m http.server $staticPort
 "@
     Start-ServerWindow -Title "my_TV_Movie Static Server" -Command $staticCommand -WorkingDirectory $repoRoot
+    if (-not (Wait-HttpOk -Url $staticHealthUrl)) {
+        throw "Static site server did not become ready at $staticHealthUrl."
+    }
 }
 
 $inputsServerPath = Join-Path $repoRoot "tools\inputs_editor\inputs_editor_server.py"
@@ -122,13 +181,20 @@ if (-not (Test-Path $inputsServerPath)) {
 }
 
 $inputsHealthUrl = "http://127.0.0.1:$inputsPort/api/health"
-if (-not (Test-HttpOk -Url $inputsHealthUrl)) {
+$inputsServerLiteral = ConvertTo-PowerShellSingleQuotedLiteral -Value $inputsServerPath
+if (-not (Test-InputsEditorHealth)) {
+    if (Test-HttpOk -Url $inputsHealthUrl) {
+        throw "Port $inputsPort is serving a different process or repo. Stop that process, then run run_local_servers.bat again."
+    }
     $inputsCommand = @"
-Set-Location '$repoRoot'
+Set-Location $repoRootLiteral
 Write-Host 'Inputs editor server: http://127.0.0.1:$inputsPort/web/inputs_editor.html'
-python '$inputsServerPath' --port $inputsPort
+& $pythonLiteral $inputsServerLiteral --port $inputsPort
 "@
     Start-ServerWindow -Title "my_TV_Movie Inputs Editor Server" -Command $inputsCommand -WorkingDirectory $repoRoot
+    if (-not (Wait-InputsEditorHealth)) {
+        throw "Inputs editor server did not become ready at $inputsHealthUrl."
+    }
 }
 
 $urls = if ($AllTabs) { $staticUrls + $inputsUrl } else { @($inputsUrl) }

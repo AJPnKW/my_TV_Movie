@@ -1,12 +1,13 @@
 """
 FILE: tools/inputs_editor/inputs_editor_server.py
-VERSION: 1.0.5
+VERSION: 1.0.6
 UPDATED: 2026-06-27T00:00:00Z
 CHANGE NOTES:
 - Restore live inputs editor server path used by web/inputs_editor.html.
 - Serve the inputs editor UI and supporting /web assets from port 8787.
 - Preserve frontend save/config/TMDB API contract for local testing.
 - Block online publish from unresolved Git conflicts and report the exact recovery reason.
+- Treat failed Git conflict scans as publish-blocking and report rebase conflict paths.
 """
 from __future__ import annotations
 
@@ -527,15 +528,30 @@ def _git_failure(result: subprocess.CompletedProcess, fallback: str) -> str:
     return (result.stderr or result.stdout or fallback).strip()
 
 
-def _git_unmerged_paths() -> list[str]:
+def _git_unmerged_paths() -> dict:
     result = _run_git_command(["diff", "--name-only", "--diff-filter=U"])
     if result.returncode != 0:
-        return []
-    return [line.strip().replace("\\", "/") for line in (result.stdout or "").splitlines() if line.strip()]
+        return {
+            "ok": False,
+            "error": _git_failure(result, "git diff --diff-filter=U failed"),
+            "unmerged_paths": [],
+        }
+    return {
+        "ok": True,
+        "unmerged_paths": [line.strip().replace("\\", "/") for line in (result.stdout or "").splitlines() if line.strip()],
+    }
 
 
 def _ensure_publishable_git_state() -> dict:
-    unmerged = _git_unmerged_paths()
+    unmerged_state = _git_unmerged_paths()
+    if not unmerged_state.get("ok"):
+        return {
+            "ok": False,
+            "error": "Online update is blocked because Git conflict state could not be checked.",
+            "git_error": unmerged_state.get("error", ""),
+            "unmerged_paths": [],
+        }
+    unmerged = unmerged_state.get("unmerged_paths", [])
     if unmerged:
         return {
             "ok": False,
@@ -735,6 +751,8 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     diff_result = _run_git_command(["diff", "--cached", "--quiet", "--", relative_inputs])
     commit_id = ""
     committed = False
+    if diff_result.returncode > 1:
+        return {"ok": False, "error": _git_failure(diff_result, "git diff --cached failed")}
     if diff_result.returncode != 0:
         commit_message = f"Update inputs.json via inputs editor {_now_utc_iso()}"
         commit_result = _run_git_command(["commit", "-m", commit_message, "--", relative_inputs])
@@ -750,8 +768,14 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
 
     rebase_result = _run_git_command(["rebase", "--autostash", f"{remote_name}/{branch_name}"])
     if rebase_result.returncode != 0:
+        rebase_conflicts = _git_unmerged_paths()
         _run_git_command(["rebase", "--abort"])
-        return {"ok": False, "error": rebase_result.stderr.strip() or rebase_result.stdout.strip() or "git rebase failed"}
+        return {
+            "ok": False,
+            "error": rebase_result.stderr.strip() or rebase_result.stdout.strip() or "git rebase failed",
+            "unmerged_paths": rebase_conflicts.get("unmerged_paths", []) if rebase_conflicts.get("ok") else [],
+            "git_error": rebase_conflicts.get("error", "") if not rebase_conflicts.get("ok") else "",
+        }
     head_result = _run_git_command(["rev-parse", "--short", "HEAD"])
     commit_id = (head_result.stdout or "").strip()
 
