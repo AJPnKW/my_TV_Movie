@@ -10,6 +10,8 @@ This file records recurring Inputs Editor failures and the fixes that must not d
 - Local editor server: `tools/inputs_editor/inputs_editor_server.py` on `127.0.0.1:8787`.
 - Launcher: `run_local_servers.bat`; default browser launch opens only `http://127.0.0.1:8787/web/inputs_editor.html`.
 - Full app smoke-test tabs require the explicit `-AllTabs` argument.
+- Program consolidation rule: do not add another Inputs Editor launcher or helper program. `run_local_servers.bat` is the canonical user entrypoint; `run_server.bat`, `tools/run_local_servers.bat`, and `tools/start_inputs_editor.cmd` are compatibility wrappers only and must delegate to the root launcher.
+- Cleanup rule: do not keep stale local generated reports or archived binary/spec workspace changes as incidental working-tree dirt. Regenerate through the existing pipeline when runtime data is needed, or restore stale local artifacts to the committed state.
 
 ## Failure History
 
@@ -110,6 +112,7 @@ Repository-state finding:
 Applied guard:
 
 - Online publish now fails early with a conflict-specific message until unmerged paths are resolved.
+- Follow-up cleanup restored stale local dirt in `reports/ui_stabilization/asset_optimization.json` and the archived spec workspace file instead of preserving unrelated local artifacts as part of the Inputs Editor fix.
 
 ## Validation Hooks
 
