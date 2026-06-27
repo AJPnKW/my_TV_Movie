@@ -1,19 +1,21 @@
 <#
 FILE: tools/run_smoke_test.ps1
-VERSION: 1.0.3
-UPDATED: 2026-04-28T00:00:00Z
+VERSION: 1.0.4
+UPDATED: 2026-06-27T00:00:00Z
 CHANGE NOTES:
 - Start the static site server for the repo on port 8000 when needed.
 - Start the inputs editor server on port 8787 when needed.
 - Open the current app pages in Chrome, with Firefox as the only backup browser.
 - Move the script param block before executable statements so PowerShell can parse it correctly.
 - Treat 404 responses as unavailable so the editor API server is not skipped.
+- Default browser launch to the local Inputs Editor only; use -AllTabs for smoke-test tabs.
 #>
 
 param(
     [ValidateSet("chrome", "firefox")]
     [string]$Browser = "chrome",
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [switch]$AllTabs
 )
 
 Set-StrictMode -Version Latest
@@ -129,7 +131,7 @@ python '$inputsServerPath' --port $inputsPort
     Start-ServerWindow -Title "my_TV_Movie Inputs Editor Server" -Command $inputsCommand -WorkingDirectory $repoRoot
 }
 
-$urls = $staticUrls + $inputsUrl
+$urls = if ($AllTabs) { $staticUrls + $inputsUrl } else { @($inputsUrl) }
 if (-not $NoBrowser) {
     $browserPath = Resolve-BrowserPath -Name $Browser
     Start-Process -FilePath $browserPath -ArgumentList $urls | Out-Null
@@ -137,8 +139,10 @@ if (-not $NoBrowser) {
 
 if ($NoBrowser) {
     Write-Host "Servers are ready. Browser launch skipped."
-} else {
+} elseif ($AllTabs) {
     Write-Host "Opened smoke-test pages in $Browser."
+} else {
+    Write-Host "Opened Inputs Editor in $Browser. Use -AllTabs for the full smoke-test page set."
 }
 Write-Host "Static pages: $staticHealthUrl"
 Write-Host "Inputs editor: $inputsUrl"

@@ -1,11 +1,12 @@
 """
 FILE: tools/inputs_editor/inputs_editor_server.py
-VERSION: 1.0.4
-UPDATED: 2026-03-14T00:00:00Z
+VERSION: 1.0.5
+UPDATED: 2026-06-27T00:00:00Z
 CHANGE NOTES:
 - Restore live inputs editor server path used by web/inputs_editor.html.
 - Serve the inputs editor UI and supporting /web assets from port 8787.
 - Preserve frontend save/config/TMDB API contract for local testing.
+- Block online publish from unresolved Git conflicts and report the exact recovery reason.
 """
 from __future__ import annotations
 
@@ -526,6 +527,27 @@ def _git_failure(result: subprocess.CompletedProcess, fallback: str) -> str:
     return (result.stderr or result.stdout or fallback).strip()
 
 
+def _git_unmerged_paths() -> list[str]:
+    result = _run_git_command(["diff", "--name-only", "--diff-filter=U"])
+    if result.returncode != 0:
+        return []
+    return [line.strip().replace("\\", "/") for line in (result.stdout or "").splitlines() if line.strip()]
+
+
+def _ensure_publishable_git_state() -> dict:
+    unmerged = _git_unmerged_paths()
+    if unmerged:
+        return {
+            "ok": False,
+            "error": (
+                "Online update is blocked because this checkout has unresolved Git conflicts. "
+                "Resolve the conflicted files, then run Save Online and Finish Update again."
+            ),
+            "unmerged_paths": unmerged,
+        }
+    return {"ok": True}
+
+
 def _run_pipeline_integrity_validation() -> dict:
     completed = subprocess.run(
         [sys.executable, str(REPO_ROOT / "scripts" / "qa_pipeline_integrity.py")],
@@ -698,6 +720,10 @@ def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_comm
 
 
 def _push_inputs_to_remote(remote: str, branch: str) -> dict:
+    git_state = _ensure_publishable_git_state()
+    if not git_state.get("ok"):
+        return git_state
+
     remote_name = (remote or "github").strip() or "github"
     branch_name = (branch or "main").strip() or "main"
     relative_inputs = str(INPUTS_JSON.relative_to(REPO_ROOT))

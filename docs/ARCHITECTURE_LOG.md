@@ -1,5 +1,15 @@
 # Architecture Log
 
+## 2026-06-27
+
+- Root-caused the Inputs Editor 404 report to opening `web/inputs_editor.html` from the static `127.0.0.1:8000` server instead of the dedicated local editor API server on `127.0.0.1:8787`; the editor now stops after a failed `/api/health` response and shows the correct local editor URL instead of continuing into a misleading `/api/inputs` 404.
+- Changed the canonical local launcher behavior so `run_local_servers.bat` starts/reuses both required servers but opens only the live Inputs Editor tab by default; the previous full app tab fan-out is preserved for QA through `tools/run_smoke_test.ps1 -AllTabs`.
+- Hardened the Inputs Editor online publish path so unresolved Git conflicts are detected before committing/rebasing/pushing, and the UI reports the conflicted paths instead of implying a local save completed the online app update.
+- Added `docs/INPUTS_EDITOR_OPERATIONAL_HISTORY.md` to record the Inputs Editor failure history, root causes, fixes, and validation hooks for future maintenance.
+- Verified `Canada's Drag Race: All Stars` TMDB show `314487` is present locally in canonical `data/inputs.json` with `season_spec: "*"`, and in generated runtime data after the full pipeline rebuild.
+- Validation: pending after rebase.
+- Commit: pending after rebase.
+
 ## 2026-06-25
 
 - Promoted the HP media VM path from a placeholder plan into an executable production deployment package under `deployment/vm_prod/`, including Ubuntu package installation, app-root sync to `/opt/mytv_movie`, PostgreSQL role/database setup, Python server venv, schema apply, JSON-to-PostgreSQL migration apply, systemd API service install, and Nginx static/API reverse proxy configuration.

@@ -192,6 +192,8 @@ foreach ($needle in @(
     '$inputsPort = 8787',
     'tools\inputs_editor\inputs_editor_server.py',
     '/api/health',
+    'AllTabs',
+    '$urls = if ($AllTabs)',
     'web/watch_me.html',
     'web/discover.html',
     'web/inputs_editor.html'
@@ -587,7 +589,7 @@ foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_
 foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', 'web_root not in file_path.parents')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing hardened save/scope contract: $needle" }
 }
-foreach ($needle in @('/api/publish-inputs', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', 'qa_pipeline_integrity.py')) {
+foreach ($needle in @('/api/publish-inputs', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', '_ensure_publishable_git_state', 'diff-filter=U', 'qa_pipeline_integrity.py')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing publish/sync contract: $needle" }
 }
 $fetchTmdbText = Get-Content -Raw -LiteralPath 'scripts/fetch_tmdb.py'
@@ -598,7 +600,7 @@ $inputsEditorText = Get-Content -Raw -LiteralPath 'web/inputs_editor.html'
 foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refresh-runtime', 'apiFetch')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing hardened save/refresh contract: $needle" }
 }
-foreach ($needle in @('Save Online and Finish Update', '/api/publish-inputs', 'wait_seconds:900', 'Online save finished and this computer is updated')) {
+foreach ($needle in @('Save Online and Finish Update', '/api/publish-inputs', 'wait_seconds:900', 'Online save finished and this computer is updated', 'Editor: wrong server', 'unmerged_paths')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing publish/sync contract: $needle" }
 }
 foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'ids:', 'show:', 'sync_status')) {

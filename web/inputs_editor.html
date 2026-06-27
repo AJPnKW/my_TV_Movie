@@ -1,7 +1,7 @@
 <!--
 FILE: web/inputs_editor.html
-VERSION: 1.0.3
-DATE: 2026-01-20
+VERSION: 1.0.5
+DATE: 2026-06-27
 -->
 <!doctype html>
 <html lang="en">
@@ -68,7 +68,7 @@ DATE: 2026-01-20
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
         <h2>Search Shows and Movies</h2>
-        <span class="inputs_editor_meta">v1.0.4</span>
+        <span class="inputs_editor_meta">v1.0.5</span>
         <span class="inputs_editor_meta" id="serverStatus">Editor: ...</span>
         <span class="inputs_editor_meta" id="tmdbStatus">Search: ...</span>
         <a class="inputs_editor_link" href="./index.html#inputs-editor">Back to Hub</a>
@@ -708,7 +708,11 @@ async function pushInputsToGitHub(){
   if(!saved) return;
   msg.textContent="Saving online and waiting for the app data to finish...";
   const j=await apiPost("/api/publish-inputs",{remote:"github", branch:"main", wait_seconds:900});
-  if(!j.ok){ msg.textContent="Online update failed: "+(j.error||"unknown"); return; }
+  if(!j.ok){
+    const conflictList=Array.isArray(j.unmerged_paths)&&j.unmerged_paths.length ? ` Conflicts: ${j.unmerged_paths.join(", ")}` : "";
+    msg.textContent="Online update failed: "+(j.error||"unknown")+conflictList;
+    return;
+  }
   const sync=j.sync||{};
   const stashNote=sync.stashed_generated_artifacts ? " Old local generated files were saved aside before updating this computer." : "";
   msg.textContent=j.publish_complete
@@ -719,7 +723,16 @@ async function pushInputsToGitHub(){
 (async function boot(){
   try{
     const h=await apiGet("/api/health");
-    document.getElementById("serverStatus").textContent=h.ok?"Editor: ready":"Editor: problem";
+    if(!h.ok){
+      document.getElementById("serverStatus").textContent="Editor: wrong server";
+      showBanner([
+        "The Inputs Editor API is not running at this address.",
+        "Run:  run_local_servers.bat",
+        "Open: http://127.0.0.1:8787/web/inputs_editor.html"
+      ]);
+      return;
+    }
+    document.getElementById("serverStatus").textContent="Editor: ready";
   }catch(_){
     document.getElementById("serverStatus").textContent="Editor: not running";
     showBanner([
