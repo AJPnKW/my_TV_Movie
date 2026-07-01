@@ -58,11 +58,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 14.048,
-  "vote_average": 6.69,
-  "vote_count": 1177,
+  "popularity": 13.6842,
+  "vote_average": 6.7,
+  "vote_count": 1180,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-30T12:01:03Z",
+  "availability_checked_at": "2026-07-01T12:20:56Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1197137",
@@ -272,6 +272,15 @@
       ],
       "US": [
         {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
+        },
+        {
           "provider_id": 10,
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
@@ -351,15 +360,6 @@
           "availability_type": "flatrate",
           "display_priority": 154,
           "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
-        },
-        {
-          "provider_id": 8,
-          "provider_name": "Netflix",
-          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 0,
-          "deep_link": "https://www.themoviedb.org/movie/1197137-black-phone-2/watch?locale=US"
         }
       ],
       "GB": [
@@ -393,7 +393,7 @@
         {
           "provider_id": 29,
           "provider_name": "Sky Go",
-          "logo_path": "/kAZkQcIxMxTmlwdgSB05fqtymp0.jpg",
+          "logo_path": "/vDdk3LyjWkYlfCtkrhkjFKFK1Hg.jpg",
           "logo_local": "",
           "availability_type": "flatrate",
           "display_priority": 13,

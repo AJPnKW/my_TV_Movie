@@ -53,11 +53,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 6.1546,
+  "popularity": 6.5367,
   "vote_average": 6.426,
   "vote_count": 1517,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-06-30T12:01:03Z",
+  "availability_checked_at": "2026-07-01T12:20:56Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/993710",
@@ -207,20 +207,11 @@
           "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
           "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
           "availability_type": "flatrate",
-          "display_priority": 93,
+          "display_priority": 94,
           "deep_link": "https://www.themoviedb.org/movie/993710-back-in-action/watch?locale=CA"
         }
       ],
       "US": [
-        {
-          "provider_id": 8,
-          "provider_name": "Netflix",
-          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
-          "availability_type": "flatrate",
-          "display_priority": 1,
-          "deep_link": "https://www.themoviedb.org/movie/993710-back-in-action/watch?locale=US"
-        },
         {
           "provider_id": 1796,
           "provider_name": "Netflix Standard with Ads",
@@ -228,6 +219,15 @@
           "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
           "availability_type": "flatrate",
           "display_priority": 154,
+          "deep_link": "https://www.themoviedb.org/movie/993710-back-in-action/watch?locale=US"
+        },
+        {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 0,
           "deep_link": "https://www.themoviedb.org/movie/993710-back-in-action/watch?locale=US"
         }
       ],
