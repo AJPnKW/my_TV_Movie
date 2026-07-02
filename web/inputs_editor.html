@@ -43,6 +43,9 @@ DATE: 2026-06-27
     button.primary{background:rgba(120,180,255,.18);border-color:rgba(120,180,255,.40)}
     button.danger{background:rgba(255,90,90,.12);border-color:rgba(255,90,90,.40)}
     button.ghost{background:transparent;border-color:rgba(255,255,255,.18)}
+    .inputs_editor_status_warn{color:#ffd08a}
+    .inputs_editor_status_ok{color:#9ce7b1}
+    .inputs_editor_status_bad{color:#ff9a9a}
     .banner{border:1px solid rgba(255,180,80,.35);background:rgba(255,180,80,.10);padding:10px 12px;border-radius:12px}
     .inputs_editor_kbd{font-family:ui-monospace,Consolas,monospace;font-size:11px;padding:2px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.2);opacity:.8}
     .inputs_editor_link{font-size:12px;opacity:.8}
@@ -68,8 +71,9 @@ DATE: 2026-06-27
     <section class="inputs_editor_card">
       <div class="inputs_editor_hd">
         <h2>Search Shows and Movies</h2>
-        <span class="inputs_editor_meta">v1.0.5</span>
+        <span class="inputs_editor_meta">v1.0.6</span>
         <span class="inputs_editor_meta" id="serverStatus">Editor: ...</span>
+        <span class="inputs_editor_meta" id="publishStatus">Publish: checking...</span>
         <span class="inputs_editor_meta" id="tmdbStatus">Search: ...</span>
         <a class="inputs_editor_link" href="./index.html#inputs-editor">Back to Hub</a>
       </div>
@@ -124,9 +128,9 @@ DATE: 2026-06-27
         <div class="inputs_editor_row">
           <input id="qMine" type="search" placeholder="Search my list..."/>
           <button id="btnReload">Reload</button>
-          <button class="primary" id="btnSave">Save</button>
+          <button class="ghost" id="btnSave">Save Local Only</button>
           <button id="btnRefreshRuntime">Save and Update App</button>
-          <button id="btnPushGitHub">Save Online and Finish Update</button>
+          <button class="primary" id="btnPushGitHub">Save Online and Finish Update</button>
         </div>
         <div class="inputs_editor_row">
           <select id="mineType">
@@ -174,6 +178,12 @@ function counts(){ const tv=(inputs?.tv||[]).length, mv=(inputs?.movies||[]).len
 function showBanner(lines){ const b=document.getElementById("banner"); b.style.display="block"; b.innerHTML=lines.map(x=>`<div class="inputs_editor_meta">${x}</div>`).join(""); }
 function escHtml(v){ return (v??"").toString().replace(/[&<>\"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[ch]||ch)); }
 function normalizeTags(val){ return (val||"").split(",").map(x=>x.trim()).filter(Boolean); }
+function setPublishStatus(text,state){
+  const el=document.getElementById("publishStatus");
+  if(!el) return;
+  el.textContent=text;
+  el.className=`inputs_editor_meta ${state==="ok"?"inputs_editor_status_ok":state==="bad"?"inputs_editor_status_bad":"inputs_editor_status_warn"}`;
+}
 
 async function apiFetch(p,options){
   try{
@@ -192,10 +202,28 @@ async function apiFetch(p,options){
 async function apiGet(p){ return await apiFetch(p); }
 async function apiPost(p,o){ return await apiFetch(p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o||{})}); }
 
+async function refreshPublishStatus(){
+  const j=await apiGet("/api/publish-status");
+  if(!j.ok){
+    setPublishStatus("Publish: status check failed","bad");
+    return j;
+  }
+  const generatedCount=Array.isArray(j.generated_paths) ? j.generated_paths.length : 0;
+  if(j.inputs_dirty || j.generated_dirty){
+    setPublishStatus(`Publish: not online yet (${j.inputs_dirty?"inputs":"data"} changed${generatedCount?`, ${generatedCount} generated paths`:""})`,"warn");
+  }else if(!j.validation_ok){
+    setPublishStatus("Publish: validation failing","bad");
+  }else{
+    setPublishStatus("Publish: complete","ok");
+  }
+  return j;
+}
+
 async function loadInputs(){
   const j=await apiGet("/api/inputs"); if(!j.ok) throw new Error(j.error||"load failed");
   inputs=j.inputs; inputs.tv=inputs.tv||[]; inputs.movies=inputs.movies||[]; inputs.watchlist=inputs.watchlist||[];
   setDirty(false); counts(); renderMine(); renderTmdb(); renderQueue();
+  await refreshPublishStatus();
 }
 
 function renderMine(){
@@ -678,9 +706,10 @@ async function saveInputs(){
   const j=await apiPost("/api/inputs",inputs);
   if(!j.ok){ msg.textContent="Save failed: "+(j.error||"unknown"); return false; }
   const warnings=Array.isArray(j.warnings)&&j.warnings.length ? ` (${j.warnings.length} item${j.warnings.length===1?"":"s"} cleaned up)` : "";
-  msg.textContent="Saved at "+j.utc+warnings;
+  msg.textContent="Saved locally at "+j.utc+warnings+". Use Save Online and Finish Update to update the app everywhere.";
   if(j.inputs) inputs=j.inputs;
   setDirty(false);
+  await refreshPublishStatus();
   return true;
 }
 
@@ -699,6 +728,7 @@ async function saveAndRefreshRuntime(){
   msg.textContent="App data updated. Reloading my list...";
   await loadInputs();
   msg.textContent="App data updated at "+new Date().toLocaleTimeString();
+  await refreshPublishStatus();
 }
 
 async function pushInputsToGitHub(){
@@ -718,6 +748,7 @@ async function pushInputsToGitHub(){
   msg.textContent=j.publish_complete
     ? `Online save finished and this computer is updated (${sync.remote_head||j.commit||"latest"}).${stashNote}`
     : `Saved online, but the app data did not finish updating yet.`;
+  await refreshPublishStatus();
 }
 
 (async function boot(){

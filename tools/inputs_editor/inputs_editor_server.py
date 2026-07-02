@@ -8,6 +8,7 @@ CHANGE NOTES:
 - Preserve frontend save/config/TMDB API contract for local testing.
 - Block online publish from unresolved Git conflicts and report the exact recovery reason.
 - Treat failed Git conflict scans as publish-blocking and report rebase conflict paths.
+- Expose editor publish status so local-only saves cannot look complete.
 """
 from __future__ import annotations
 
@@ -524,6 +525,46 @@ def _git_text(args: list[str]) -> str:
     return (result.stdout or "").strip()
 
 
+def _git_porcelain(paths: list[str] | None = None) -> dict:
+    args = ["status", "--porcelain"]
+    if paths:
+        args.extend(["--", *paths])
+    result = _run_git_command(args)
+    if result.returncode != 0:
+        return {
+            "ok": False,
+            "error": _git_failure(result, "git status failed"),
+            "paths": [],
+        }
+    paths_out: list[str] = []
+    for line in (result.stdout or "").splitlines():
+        if not line.strip():
+            continue
+        raw_path = line[3:] if len(line) > 3 else line
+        paths_out.append(raw_path.strip().replace("\\", "/").strip('"'))
+    return {"ok": True, "paths": paths_out}
+
+
+def _editor_publish_status() -> dict:
+    inputs_status = _git_porcelain([str(INPUTS_JSON.relative_to(REPO_ROOT))])
+    generated_status = _git_porcelain(GENERATED_SYNC_PATHS)
+    repo_status = _git_porcelain()
+    validation = _run_pipeline_integrity_validation()
+    return {
+        "ok": bool(inputs_status.get("ok") and generated_status.get("ok") and repo_status.get("ok")),
+        "utc": _now_utc_iso(),
+        "inputs_dirty": bool(inputs_status.get("paths")),
+        "generated_dirty": bool(generated_status.get("paths")),
+        "repo_dirty": bool(repo_status.get("paths")),
+        "inputs_paths": inputs_status.get("paths", []),
+        "generated_paths": generated_status.get("paths", []),
+        "repo_paths": repo_status.get("paths", []),
+        "validation_ok": bool(validation.get("ok")),
+        "validation": validation,
+        "error": inputs_status.get("error") or generated_status.get("error") or repo_status.get("error") or "",
+    }
+
+
 def _git_failure(result: subprocess.CompletedProcess, fallback: str) -> str:
     return (result.stderr or result.stdout or fallback).strip()
 
@@ -929,6 +970,11 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/inputs":
             _json(self, 200, {"ok": True, "inputs": _read_inputs()})
+            return
+
+        if path == "/api/publish-status":
+            status = _editor_publish_status()
+            _json(self, 200 if status.get("ok") else 500, status)
             return
 
         if path == "/api/watch-state-queue":

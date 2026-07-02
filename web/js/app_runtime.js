@@ -1899,7 +1899,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const statusContext = options.statusContext || {};
     const availabilityStatus = safeText(options.availabilityStatus || "").trim();
     const releaseStatus = /^(not_yet_released|unreleased)$/i.test(availabilityStatus) ? availabilityStatus : "";
-    const tmdbForState = safeText(options.tmdbId ?? options.tmdb_id ?? (kind === "episode" ? "" : id));
+    const episodeTmdbForState = safeText(options.tmdbId ?? options.tmdb_id ?? "");
+    const episodeShowIdForState = safeText(options.showId ?? options.show_id ?? statusContext.showId ?? "");
+    const explicitTmdbForState = safeText(options.tmdbId ?? options.tmdb_id ?? "");
+    const tmdbForState = explicitTmdbForState || (kind === "episode" ? episodeShowIdForState : safeText(id));
     const actionContext = canonicalStateContext(kind, id, options);
     const watchedStatusValue = canonicalStateValue("watched_status", actionContext, options.watchedActive ? "watched" : "unwatched");
     const watchListValue = canonicalStateValue("watch_list", actionContext, (options.watchListActive || options.favoriteActive) ? "on" : "off");
@@ -1914,6 +1917,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       ...(options.traktId != null ? { "data-trakt-id": options.traktId } : {}),
       ...(options.imdbId != null ? { "data-imdb-id": options.imdbId } : {}),
       ...(options.tvdbId != null ? { "data-tvdb-id": options.tvdbId } : {}),
+      ...(kind === "episode" && episodeTmdbForState ? { "data-episode-tmdb-id": episodeTmdbForState } : {}),
       ...(statusContext.showId != null ? { "data-status-show": statusContext.showId, "data-show": statusContext.showId } : {}),
       ...(statusContext.seasonNumber != null ? { "data-status-season": statusContext.seasonNumber, "data-season": statusContext.seasonNumber } : {}),
       ...(statusContext.episodeNumber != null ? { "data-status-episode": statusContext.episodeNumber, "data-episode": statusContext.episodeNumber } : {})
