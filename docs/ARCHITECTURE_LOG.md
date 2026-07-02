@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-07-02
+
+- Verified the 2026-07-02 Inputs Editor additions in canonical `data/inputs.json`: TV rows for `Law & Order: Trial by Jury`, `Law & Order: LA`, `Law & Order: Organized Crime`, `Silent Witness`, and `Bodyguard`; movie rows for `Backrooms`, `Tuner`, `The Death of Robin Hood`, `Stop! That! Train!`, and `Heartstopper Forever`.
+- Rebuilt generated runtime artifacts from the canonical pipeline with `shows=241`, `movies=123`, and `errors=0`; `Bodyguard` TMDB show `80307` is present in `data/catalog_index.json`, `data/data.json`, and `data/catalog_detail/80307.json`.
+- Hardened Inputs Editor publish visibility by adding `/api/publish-status`, local/generated dirty-state checks, a visible publish status badge, and clearer local-only versus online-finish button copy; validation now guards this contract.
+- Corrected Calendar episode action attributes so shared watched/watchlist/favourite actions expose stable TMDB context and pass the cross-view action contract.
+- Validation: full `scripts/run_pipeline_tmdb_trakt.py` passed; `scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `scripts/qa_browser_layout_check.mjs` passed with `failures=[]`; focused Shows browser search returned one `Bodyguard` card for TMDB `80307` with 3 actions; `git diff --check` passed.
+- Commit: `d0b2bdda91` harden inputs publish status and calendar actions.
+
 ## 2026-06-27
 
 - Root-caused the Inputs Editor 404 report to opening `web/inputs_editor.html` from the static `127.0.0.1:8000` server instead of the dedicated local editor API server on `127.0.0.1:8787`; the editor now stops after a failed `/api/health` response and shows the correct local editor URL instead of continuing into a misleading `/api/inputs` 404.
