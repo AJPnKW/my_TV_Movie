@@ -1,5 +1,15 @@
 # Architecture Log
 
+## 2026-07-03
+
+- Simplified the app-shell Inputs Editor page back to a launcher/help surface only: it no longer embeds the editor iframe, shows the copyable `run_local_servers.bat` command, and opens the canonical local editor in its own tab.
+- Converted `web/inputs_editor.html` from three always-visible columns into a three-step tabbed workflow: `Search`, `Saved Picks`, and `My List & Publish`; tab controls bind immediately so navigation still works while health/data loading is pending or failed.
+- Kept the existing canonical editor, local server, API endpoints, and publish flow; no replacement process, alternate editor, or new runtime path was introduced.
+- Hardened validation so the tabbed editor workflow, launcher copy/open contract, and no-iframe app-shell contract are required by `scripts/validate_runtime.ps1`.
+- Corrected Watch Source episode popup TMDB metadata fallback uncovered by rendered QA, so episode popups keep a labelled `TMDB:` proof even when runtime minutes are absent.
+- Validation: `node --check web/js/app_runtime.js` passed; Python compile passed for `tools/inputs_editor/inputs_editor_server.py` and `scripts/qa_pipeline_integrity.py`; `scripts/validate_runtime.ps1` passed; focused browser check passed for editor tabs and launcher contract; `scripts/qa_browser_layout_check.mjs` passed with `failures=[]`; `git diff --check` passed.
+- Commit: `616217f784` simplify inputs editor workflow.
+
 ## 2026-07-02
 
 - Verified the 2026-07-02 Inputs Editor additions in canonical `data/inputs.json`: TV rows for `Law & Order: Trial by Jury`, `Law & Order: LA`, `Law & Order: Organized Crime`, `Silent Witness`, and `Bodyguard`; movie rows for `Backrooms`, `Tuner`, `The Death of Robin Hood`, `Stop! That! Train!`, and `Heartstopper Forever`.
