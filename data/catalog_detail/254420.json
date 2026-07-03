@@ -8,8 +8,8 @@
   "first_air_date": "2026-07-01",
   "poster_path": "/u0Vj7zhVK0HYxsS3VMzkU37Pebp.jpg",
   "poster_local": "/assets/posters/shows/u0Vj7zhVK0HYxsS3VMzkU37Pebp.jpg",
-  "backdrop_path": "/siQzmCYGNqXmZeih4Ml6P90ZtM6.jpg",
-  "backdrop_local": "/assets/backdrops/shows/siQzmCYGNqXmZeih4Ml6P90ZtM6.jpg",
+  "backdrop_path": "/fcdYPWdwbQynogpa79QLw1ukRvN.jpg",
+  "backdrop_local": "/assets/backdrops/shows/fcdYPWdwbQynogpa79QLw1ukRvN.jpg",
   "status": "Returning Series",
   "overview": "Before Elle Woods was a fish-out-of-water at Harvard, we meet her in 1995 in the tumultuous waters of high school where she encounters tricky friendships, forbidden romance, and questionable fashion choices. In this unexpected chapter of her adolescence, we learn about the experiences that shaped Elle into the iconic young woman we've come to know and love.",
   "homepage": "https://www.amazon.com/dp/B0GXC14CMG",
@@ -57,9 +57,9 @@
   ],
   "in_production": true,
   "number_of_seasons": 2,
-  "number_of_episodes": 9,
+  "number_of_episodes": 8,
   "episode_run_time": [],
-  "last_air_date": "",
+  "last_air_date": "2026-07-01",
   "next_episode_to_air": null,
   "last_episode_to_air": {
     "air_date": "2026-07-01",
@@ -74,13 +74,13 @@
     "show_id": 254420,
     "still_path": "/5FA5AEeQpVi7X0q7ExVuKbEQsCa.jpg",
     "vote_average": 10.0,
-    "vote_count": 3
+    "vote_count": 5
   },
-  "popularity": 54.7633,
-  "vote_average": 10.0,
-  "vote_count": 2,
+  "popularity": 78.4458,
+  "vote_average": 7.6,
+  "vote_count": 11,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-02T19:18:03Z",
+  "availability_checked_at": "2026-07-03T11:45:47Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/254420",
@@ -106,10 +106,95 @@
       }
     ],
     "providers": {
-      "CA": [],
-      "US": [],
-      "GB": [],
-      "AU": []
+      "CA": [
+        {
+          "provider_id": 119,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 112,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+        }
+      ],
+      "US": [
+        {
+          "provider_id": 9,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 3,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+        },
+        {
+          "provider_id": 613,
+          "provider_name": "Amazon Prime Video Free with Ads",
+          "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+          "logo_local": "",
+          "availability_type": "ads",
+          "display_priority": 142,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 203,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+        }
+      ],
+      "GB": [
+        {
+          "provider_id": 9,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 98,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+        }
+      ],
+      "AU": [
+        {
+          "provider_id": 119,
+          "provider_name": "Amazon Prime Video",
+          "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 2,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+        },
+        {
+          "provider_id": 2100,
+          "provider_name": "Amazon Prime Video with Ads",
+          "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 93,
+          "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+        }
+      ]
     }
   },
   "seasons": [
@@ -129,7 +214,7 @@
       "provider_page": "https://www.themoviedb.org/tv/254420/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-02T19:18:03Z",
+      "availability_checked_at": "2026-07-03T11:45:47Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1",
@@ -155,10 +240,95 @@
           }
         ],
         "providers": {
-          "CA": [],
-          "US": [],
-          "GB": [],
-          "AU": []
+          "CA": [
+            {
+              "provider_id": 119,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 1,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 112,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+            }
+          ],
+          "US": [
+            {
+              "provider_id": 9,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 3,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+            },
+            {
+              "provider_id": 613,
+              "provider_name": "Amazon Prime Video Free with Ads",
+              "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+              "logo_local": "",
+              "availability_type": "ads",
+              "display_priority": 142,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 203,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+            }
+          ],
+          "GB": [
+            {
+              "provider_id": 9,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 1,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 98,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+            }
+          ],
+          "AU": [
+            {
+              "provider_id": 119,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 2,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 93,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+            }
+          ]
         }
       },
       "episodes": [
@@ -174,12 +344,12 @@
           "still_path": "/ei4z1XJ3cWzFtWsTGgAusBVUNQt.jpg",
           "still_local": "/assets/stills/episodes/ei4z1XJ3cWzFtWsTGgAusBVUNQt.jpg",
           "overview": "It's 1995, and Elle Woods is living a 16-year-old's dream: she has a perfect plan to dominate her junior year in Bel-Air. Her world turns upside down before she gets to put that plan into action when her parents tell her they have to unexpectedly move to... Seattle.",
-          "vote_average": 9.667,
-          "vote_count": 3,
+          "vote_average": 9.8,
+          "vote_count": 5,
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/1",
@@ -313,10 +483,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -332,12 +587,12 @@
           "still_path": "/bAQdclfhnN5kQsx7ecCbVVITg5x.jpg",
           "still_local": "/assets/stills/episodes/bAQdclfhnN5kQsx7ecCbVVITg5x.jpg",
           "overview": "Elle must clean up the mess she's made by bringing justice to the only friend she's made in her new city. But when Elle learns this could lead to unintended consequences, she questions what's more important: saving her reputation or fighting for justice.",
-          "vote_average": 9.667,
-          "vote_count": 3,
+          "vote_average": 9.833,
+          "vote_count": 6,
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/2",
@@ -471,10 +726,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -491,11 +831,11 @@
           "still_local": "/assets/stills/episodes/msFX4fLcalHvZgK00EWnsIaaxwg.jpg",
           "overview": "When the school bully threatens to spread a rumor about Elle's crush, Elle goes to great lengths to hide her true feelings until her attempts to stay under the radar are thwarted by an embarrassing fashion faux pas. Meanwhile, Elle's mom Eva throws a garden party and finds that her Bel-Air social skills don't quite translate in Seattle.",
           "vote_average": 10.0,
-          "vote_count": 3,
+          "vote_count": 4,
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/3",
@@ -629,10 +969,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -653,7 +1078,7 @@
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/4",
@@ -787,10 +1212,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -807,11 +1317,11 @@
           "still_local": "/assets/stills/episodes/jRDQZUPgFYTBPjtcrJ7riCTDESP.jpg",
           "overview": "After a sudden tragedy strikes, Elle throws all of her energy into helping a friend in need when she's waylaid by an unexpected out-of-town visitor. Elle finds herself torn between her past and her present as she tries to cope with complicated, adult feelings she's never encountered before, all while wrestling with the consequences of her romantic actions.",
           "vote_average": 10.0,
-          "vote_count": 2,
+          "vote_count": 3,
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/5",
@@ -945,10 +1455,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -964,12 +1559,12 @@
           "still_path": "/nhGc0dxeEvkaUDiwwemA3Rbjg4c.jpg",
           "still_local": "/assets/stills/episodes/nhGc0dxeEvkaUDiwwemA3Rbjg4c.jpg",
           "overview": "After weeks of suspecting that there's corruption at the school, Elle and her friends get themselves thrown into weekend detention so they can search for proof. The group's close proximity heightens Elle's romantic tensions with her crush and exposes a past relationship that had been kept secret.",
-          "vote_average": 8.667,
-          "vote_count": 3,
+          "vote_average": 8.25,
+          "vote_count": 4,
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/6",
@@ -1103,10 +1698,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -1127,7 +1807,7 @@
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/7",
@@ -1261,10 +1941,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         },
@@ -1281,11 +2046,11 @@
           "still_local": "/assets/stills/episodes/5FA5AEeQpVi7X0q7ExVuKbEQsCa.jpg",
           "overview": "After Elle's reputation is damaged at school, she escapes to the comfort of Bel-Air. She enrolls in her dream internship and meets a personal hero but she realizes she has unfinished business in Seattle and must make a choice between two worlds she cares deeply about.",
           "vote_average": 10.0,
-          "vote_count": 3,
+          "vote_count": 5,
           "provider_page": "https://www.themoviedb.org/tv/254420/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/254420/season/1/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-02T19:18:03Z",
+          "availability_checked_at": "2026-07-03T11:45:47Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/254420/1/8",
@@ -1419,10 +2184,95 @@
               }
             ],
             "providers": {
-              "CA": [],
-              "US": [],
-              "GB": [],
-              "AU": []
+              "CA": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 112,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+                }
+              ],
+              "US": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 3,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 613,
+                  "provider_name": "Amazon Prime Video Free with Ads",
+                  "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+                  "logo_local": "",
+                  "availability_type": "ads",
+                  "display_priority": 142,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 203,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+                }
+              ],
+              "GB": [
+                {
+                  "provider_id": 9,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 1,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 98,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+                }
+              ],
+              "AU": [
+                {
+                  "provider_id": 119,
+                  "provider_name": "Amazon Prime Video",
+                  "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 2,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                },
+                {
+                  "provider_id": 2100,
+                  "provider_name": "Amazon Prime Video with Ads",
+                  "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+                  "availability_type": "flatrate",
+                  "display_priority": 93,
+                  "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+                }
+              ]
             }
           }
         }
@@ -1444,7 +2294,7 @@
       "provider_page": "https://www.themoviedb.org/tv/254420/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/254420/season/2",
       "availability_status": "unknown",
-      "availability_checked_at": "2026-07-02T19:18:03Z",
+      "availability_checked_at": "2026-07-03T11:45:47Z",
       "availability_source": "watch_source_availability.json:child_status",
       "availability_reason": "child availability unavailable",
       "primary_watch_url_tested": "https://player.videasy.net/tv/254420/2",
@@ -1470,10 +2320,95 @@
           }
         ],
         "providers": {
-          "CA": [],
-          "US": [],
-          "GB": [],
-          "AU": []
+          "CA": [
+            {
+              "provider_id": 119,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 1,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 112,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=CA"
+            }
+          ],
+          "US": [
+            {
+              "provider_id": 9,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 3,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+            },
+            {
+              "provider_id": 613,
+              "provider_name": "Amazon Prime Video Free with Ads",
+              "logo_path": "/gZlCYHPx9a0TRUCEeTvHXBf9ibX.jpg",
+              "logo_local": "",
+              "availability_type": "ads",
+              "display_priority": 142,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 203,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=US"
+            }
+          ],
+          "GB": [
+            {
+              "provider_id": 9,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 1,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 98,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=GB"
+            }
+          ],
+          "AU": [
+            {
+              "provider_id": 119,
+              "provider_name": "Amazon Prime Video",
+              "logo_path": "/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "logo_local": "/assets/logos/services/pvske1MyAoymrs5bguRfVqYiM9a.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 2,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+            },
+            {
+              "provider_id": 2100,
+              "provider_name": "Amazon Prime Video with Ads",
+              "logo_path": "/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "logo_local": "/assets/logos/services/8aBqoNeGGr0oSA85iopgNZUOTOc.jpg",
+              "availability_type": "flatrate",
+              "display_priority": 93,
+              "deep_link": "https://www.themoviedb.org/tv/254420-elle/watch?locale=AU"
+            }
+          ]
         }
       },
       "episodes": []
