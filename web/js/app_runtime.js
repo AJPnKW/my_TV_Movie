@@ -448,13 +448,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       <div id="panel-inputs-editor" class="panel hidden">
         <div class="dash">
           <section class="dashblock accent-pink">
-            <div class="dashhead"><h2>Inputs Editor</h2><span class="muted">Canonical editor for data/inputs.json</span></div>
-            <div id="inputsEditorPanel" style="display:grid;gap:12px;">
+            <div class="dashhead"><h2>Inputs Editor</h2><span class="muted">Local tool for data/inputs.json</span></div>
+            <div id="inputsEditorPanel" style="display:grid;gap:14px;max-width:940px;">
               <div id="inputsEditorPanelMeta" class="muted"></div>
-              <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <a id="inputsEditorOpen" class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open local Inputs Editor</a>
+              <div style="display:grid;gap:10px;padding:14px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);">
+                <div class="muted">Start the local servers from this repo, then open the editor in its own tab.</div>
+                <code id="inputsEditorPanelCommand" style="display:block;padding:10px 12px;border-radius:8px;background:rgba(0,0,0,0.28);border:1px solid rgba(255,255,255,0.10);white-space:pre-wrap;">run_local_servers.bat</code>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                  <button id="inputsEditorCopyCommand" class="calbtn" type="button">Copy Start Command</button>
+                  <a id="inputsEditorOpen" class="calbtn" href="http://127.0.0.1:8787/web/inputs_editor.html" target="_blank" rel="noopener">Open Local Editor</a>
+                  <button id="inputsEditorHelp" class="calbtn" type="button">Help</button>
+                </div>
               </div>
-              <iframe id="inputsEditorFrame" title="Inputs Editor" style="width:100%;min-height:78vh;border:1px solid rgba(255,255,255,0.12);border-radius:16px;background:rgba(0,0,0,0.2);"></iframe>
             </div>
           </section>
         </div>
@@ -2258,12 +2263,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const seasonNum = Number(item?.season_number ?? context.seasonNum ?? context.seasonNumber ?? 0) || 0;
       const episodeNum = Number(item?.episode_number ?? context.episodeNum ?? context.episodeNumber ?? 0) || 0;
       const episodeTitle = safeText(item?.title || item?.name || item?.episode_name || `Episode ${episodeNum}`);
-      const tmdb = safeText(show?.tmdb_id ?? show?.id ?? item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "");
+      const episodeTmdb = safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "");
+      const showTmdb = safeText(show?.tmdb_id ?? show?.id ?? item?.show_tmdb_id ?? item?.show_id ?? "");
+      const tmdb = episodeTmdb || showTmdb;
       return `
         <section class="popup-media-detail popup-media-detail--episode watch-source-detail" data-popup-media-detail="episode">
           <div class="popup-media-detail__primary">${escHtml(`${showTitle} - ${seTag(seasonNum, episodeNum)} - ${episodeTitle}`)}</div>
           <div class="popup-media-detail__date">${escHtml(pickAirDate(item) ? fmtDate(pickAirDate(item)) : "")}</div>
-          <div class="popup-media-detail__meta">${escHtml([tmdb, Number.isFinite(Number(item?.runtime)) && Number(item.runtime) > 0 ? `${Number(item.runtime)} min` : ""].filter(Boolean).join(" • "))}</div>
+          <div class="popup-media-detail__meta">${escHtml([tmdb ? `TMDB: ${tmdb}` : "", Number.isFinite(Number(item?.runtime)) && Number(item.runtime) > 0 ? `${Number(item.runtime)} min` : ""].filter(Boolean).join(" • "))}</div>
           <div class="popup-media-detail__overview">${escHtml(safeText(item?.overview || ""))}</div>
           <div class="generated-filename-line"><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
         </section>
@@ -3905,66 +3912,38 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   async function renderInputsEditor(){
-    const frame = $("#inputsEditorFrame");
     const meta = $("#inputsEditorPanelMeta");
     const openBtn = $("#inputsEditorOpen");
+    const copyBtn = $("#inputsEditorCopyCommand");
+    const helpBtn = $("#inputsEditorHelp");
     const localServerUrl = `http://127.0.0.1:8787/web/inputs_editor.html`;
-    if (!frame || !meta || !openBtn) return;
-
-    const frameDoc = `
-      <!doctype html>
-      <html lang="en">
-      <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <style>
-          body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#0b0f14;color:#e8eef7;font:16px/1.5 "Segoe UI",sans-serif}
-          .card{max-width:760px;padding:24px;border-radius:20px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04)}
-          h3{margin:0 0 12px;font-size:28px;line-height:1.1}
-          p{margin:0 0 12px;color:#c3cddd}
-          code{padding:2px 6px;border-radius:8px;background:rgba(255,255,255,.08)}
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          <h3>Local editor server not running</h3>
-          <p>The Inputs Editor only works on your own PC through the dedicated local server at <code>127.0.0.1:8787</code>.</p>
-          <p>Start it with <code>run_local_servers.bat</code>, then reopen this panel or use the button above.</p>
-        </div>
-      </body>
-      </html>
-    `;
+    if (!meta || !openBtn) return;
 
     state.inputsEditorServerAvailable = await checkInputsEditorServerAvailable();
     state.apiAvailable = state.inputsEditorServerAvailable;
 
-    if (state.inputsEditorServerAvailable){
-      frame.removeAttribute("srcdoc");
-      frame.src = localServerUrl;
-      openBtn.href = localServerUrl;
-      openBtn.textContent = "Open local Inputs Editor";
-      openBtn.title = "Open the local Inputs Editor in a new tab";
-      openBtn.tabIndex = 0;
-      openBtn.removeAttribute("aria-disabled");
-      openBtn.classList.remove("disabled");
-      openBtn.onclick = null;
-      meta.textContent = "Inputs Editor server is running on this PC. The live editor is embedded below.";
-      return;
-    }
-
-    frame.removeAttribute("src");
-    frame.srcdoc = frameDoc;
-    openBtn.removeAttribute("href");
-    openBtn.textContent = "How To Start Editor";
-    openBtn.title = "Start run_local_servers.bat from the repo first";
+    openBtn.href = localServerUrl;
+    openBtn.textContent = state.inputsEditorServerAvailable ? "Open Local Editor" : "Open After Start";
+    openBtn.title = state.inputsEditorServerAvailable ? "Open the local Inputs Editor in a new tab" : "Start run_local_servers.bat first, then open the editor";
     openBtn.tabIndex = 0;
     openBtn.setAttribute("aria-disabled", "false");
     openBtn.classList.remove("disabled");
-    openBtn.onclick = (event) => {
-      event.preventDefault();
-      openInputsEditorHelp();
-    };
-    meta.textContent = "Inputs Editor is local-only. Start run_local_servers.bat first, then open http://127.0.0.1:8787/web/inputs_editor.html.";
+    openBtn.onclick = null;
+    meta.textContent = state.inputsEditorServerAvailable
+      ? "Local server is running. Open the editor in its own tab to avoid duplicate shells and failed embedded refreshes."
+      : "Local server is not running. Copy the command below, run it from the repo, then open the editor.";
+    if (copyBtn && !copyBtn.dataset.bound){
+      copyBtn.dataset.bound = "1";
+      copyBtn.addEventListener("click", async () => {
+        const ok = await copyTextToClipboard("run_local_servers.bat");
+        copyBtn.textContent = ok ? "Copied" : "Copy Failed";
+        setTimeout(() => { copyBtn.textContent = "Copy Start Command"; }, 1800);
+      });
+    }
+    if (helpBtn && !helpBtn.dataset.bound){
+      helpBtn.dataset.bound = "1";
+      helpBtn.addEventListener("click", openInputsEditorHelp);
+    }
   }
 
   function wireMoviePopup(movieId){

@@ -607,6 +607,15 @@ foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refres
 foreach ($needle in @('Save Local Only', 'Save Online and Finish Update', '/api/publish-inputs', '/api/publish-status', 'Publish: not online yet', 'wait_seconds:900', 'Online save finished and this computer is updated', 'Editor: wrong server', 'unmerged_paths')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing publish/sync contract: $needle" }
 }
+foreach ($needle in @('data-editor-tab="search"', 'editorTabSearch', 'editorTabSaved', 'editorTabLibrary', 'switchEditorTab')) {
+    if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing tabbed workflow contract: $needle" }
+}
+foreach ($needle in @('inputsEditorCopyCommand', 'Copy Start Command', 'Open Local Editor', 'Local server is not running')) {
+    if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app runtime missing Inputs Editor launcher contract: $needle" }
+}
+if ($appRuntimeText -like '*inputsEditorFrame*') {
+    Add-CheckError 'Inputs Editor must launch in its own local tab, not inside the app shell iframe.'
+}
 foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'ids:', 'show:', 'sync_status')) {
     if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing queue write contract: $needle" }
 }
