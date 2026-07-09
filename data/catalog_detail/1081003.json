@@ -63,11 +63,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 109.8346,
-  "vote_average": 6.2,
-  "vote_count": 399,
+  "popularity": 98.442,
+  "vote_average": 6.223,
+  "vote_count": 408,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-08T11:22:52Z",
+  "availability_checked_at": "2026-07-09T12:20:13Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1081003",
@@ -201,7 +201,26 @@
       }
     ],
     "providers": {
-      "CA": [],
+      "CA": [
+        {
+          "provider_id": 140,
+          "provider_name": "CosmoGo",
+          "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 19,
+          "deep_link": "https://www.themoviedb.org/movie/1081003-supergirl/watch?locale=CA"
+        },
+        {
+          "provider_id": 140,
+          "provider_name": "CosmoGo",
+          "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 19,
+          "deep_link": "https://www.themoviedb.org/movie/1081003-supergirl/watch?locale=CA"
+        }
+      ],
       "US": [],
       "GB": [],
       "AU": []
