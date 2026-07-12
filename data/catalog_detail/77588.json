@@ -60,7 +60,7 @@
   "vote_average": 7.1,
   "vote_count": 10,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-11T23:44:51Z",
+  "availability_checked_at": "2026-07-12T00:03:44Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/77588",
@@ -147,7 +147,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/1",
@@ -235,7 +235,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/1/1",
@@ -305,13 +305,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/1/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=1&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -320,7 +329,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -329,7 +338,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -338,7 +347,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -347,7 +356,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -356,7 +365,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -365,7 +374,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -431,7 +440,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/1/2",
@@ -501,13 +510,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/1/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=1&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -516,7 +534,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -525,7 +543,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -534,7 +552,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -543,7 +561,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -552,7 +570,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -561,7 +579,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -627,7 +645,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/1/3",
@@ -697,13 +715,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/1/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=1&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -712,7 +739,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -721,7 +748,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -730,7 +757,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -739,7 +766,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -748,7 +775,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -757,7 +784,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -823,7 +850,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/1/4",
@@ -893,13 +920,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/1/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=1&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -908,7 +944,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -917,7 +953,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -926,7 +962,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -935,7 +971,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -944,7 +980,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -953,7 +989,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1019,7 +1055,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/1/5",
@@ -1089,13 +1125,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/1/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=1&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1104,7 +1149,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1113,7 +1158,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1122,7 +1167,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1131,7 +1176,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1140,7 +1185,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1149,7 +1194,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1216,7 +1261,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/2",
@@ -1304,7 +1349,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/2/1",
@@ -1374,13 +1419,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/2/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=2&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1389,7 +1443,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1398,7 +1452,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1407,7 +1461,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1416,7 +1470,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1425,7 +1479,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1434,7 +1488,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1500,7 +1554,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/2/2",
@@ -1570,13 +1624,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/2/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=2&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1585,7 +1648,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1594,7 +1657,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1603,7 +1666,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1612,7 +1675,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1621,7 +1684,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1630,7 +1693,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1696,7 +1759,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/2/3",
@@ -1766,13 +1829,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/2/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=2&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1781,7 +1853,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1790,7 +1862,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1799,7 +1871,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1808,7 +1880,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1817,7 +1889,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1826,7 +1898,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1892,7 +1964,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/2/4",
@@ -1962,13 +2034,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/2/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=2&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1977,7 +2058,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1986,7 +2067,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1995,7 +2076,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2004,7 +2085,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2013,7 +2094,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2022,7 +2103,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2088,7 +2169,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/2/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/2/5",
@@ -2158,13 +2239,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/2/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=2&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2173,7 +2263,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2182,7 +2272,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2191,7 +2281,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2200,7 +2290,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2209,7 +2299,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2218,7 +2308,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2285,7 +2375,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/3",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/3",
@@ -2373,7 +2463,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/3/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/3/1",
@@ -2443,13 +2533,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/3/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=3&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2458,7 +2557,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2467,7 +2566,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2476,7 +2575,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2485,7 +2584,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2494,7 +2593,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2503,7 +2602,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2569,7 +2668,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/3/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/3/2",
@@ -2639,13 +2738,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/3/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=3&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2654,7 +2762,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2663,7 +2771,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2672,7 +2780,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2681,7 +2789,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2690,7 +2798,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2699,7 +2807,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2765,7 +2873,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/3/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/3/3",
@@ -2835,13 +2943,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/3/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=3&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2850,7 +2967,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2859,7 +2976,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2868,7 +2985,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2877,7 +2994,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2886,7 +3003,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2895,7 +3012,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2961,7 +3078,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/3/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/3/4",
@@ -3031,13 +3148,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/3/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=3&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3046,7 +3172,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3055,7 +3181,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3064,7 +3190,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3073,7 +3199,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3082,7 +3208,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3091,7 +3217,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3157,7 +3283,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/3/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/3/5",
@@ -3227,13 +3353,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/3/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=3&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3242,7 +3377,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3251,7 +3386,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3260,7 +3395,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3269,7 +3404,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3278,7 +3413,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3287,7 +3422,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3354,7 +3489,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/4",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/4",
@@ -3442,7 +3577,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/4/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/4/1",
@@ -3512,13 +3647,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/4/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=4&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3527,7 +3671,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3536,7 +3680,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3545,7 +3689,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3554,7 +3698,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3563,7 +3707,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3572,7 +3716,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3638,7 +3782,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/4/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/4/2",
@@ -3708,13 +3852,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/4/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=4&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3723,7 +3876,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3732,7 +3885,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3741,7 +3894,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3750,7 +3903,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3759,7 +3912,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3768,7 +3921,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3834,7 +3987,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/4/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/4/3",
@@ -3904,13 +4057,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/4/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=4&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3919,7 +4081,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3928,7 +4090,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3937,7 +4099,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3946,7 +4108,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3955,7 +4117,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3964,7 +4126,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4030,7 +4192,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/4/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/4/4",
@@ -4100,13 +4262,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/4/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=4&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4115,7 +4286,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4124,7 +4295,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4133,7 +4304,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4142,7 +4313,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4151,7 +4322,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4160,7 +4331,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4226,7 +4397,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/4/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/4/5",
@@ -4296,13 +4467,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/4/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=4&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4311,7 +4491,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4320,7 +4500,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4329,7 +4509,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4338,7 +4518,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4347,7 +4527,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4356,7 +4536,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4423,7 +4603,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/5",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/5",
@@ -4511,7 +4691,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/5/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/5/1",
@@ -4581,13 +4761,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/5/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=5&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4596,7 +4785,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4605,7 +4794,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4614,7 +4803,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4623,7 +4812,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4632,7 +4821,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4641,7 +4830,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4707,7 +4896,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/5/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/5/2",
@@ -4777,13 +4966,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/5/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=5&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4792,7 +4990,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4801,7 +4999,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4810,7 +5008,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4819,7 +5017,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4828,7 +5026,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4837,7 +5035,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4903,7 +5101,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/5/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/5/3",
@@ -4973,13 +5171,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/5/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=5&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4988,7 +5195,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4997,7 +5204,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5006,7 +5213,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5015,7 +5222,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5024,7 +5231,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5033,7 +5240,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5099,7 +5306,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/5/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/5/4",
@@ -5169,13 +5376,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/5/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=5&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -5184,7 +5400,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -5193,7 +5409,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5202,7 +5418,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5211,7 +5427,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5220,7 +5436,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5229,7 +5445,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5295,7 +5511,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/5/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/5/5",
@@ -5365,13 +5581,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/5/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=5&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -5380,7 +5605,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -5389,7 +5614,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5398,7 +5623,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5407,7 +5632,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5416,7 +5641,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5425,7 +5650,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5492,7 +5717,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/6",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/6",
@@ -5580,7 +5805,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/6/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/6/1",
@@ -5650,13 +5875,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/6/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=6&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -5665,7 +5899,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -5674,7 +5908,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5683,7 +5917,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5692,7 +5926,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5701,7 +5935,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5710,7 +5944,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5776,7 +6010,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/6/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/6/2",
@@ -5846,13 +6080,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/6/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=6&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -5861,7 +6104,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -5870,7 +6113,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5879,7 +6122,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5888,7 +6131,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5897,7 +6140,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5906,7 +6149,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5972,7 +6215,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/6/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/6/3",
@@ -6042,13 +6285,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/6/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=6&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -6057,7 +6309,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -6066,7 +6318,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -6075,7 +6327,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -6084,7 +6336,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -6093,7 +6345,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -6102,7 +6354,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -6168,7 +6420,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/6/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/6/4",
@@ -6238,13 +6490,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/6/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=6&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -6253,7 +6514,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -6262,7 +6523,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -6271,7 +6532,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -6280,7 +6541,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -6289,7 +6550,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -6298,7 +6559,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -6364,7 +6625,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/6/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/6/5",
@@ -6434,13 +6695,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/6/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=6&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -6449,7 +6719,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -6458,7 +6728,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -6467,7 +6737,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -6476,7 +6746,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -6485,7 +6755,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -6494,7 +6764,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -6561,7 +6831,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/7",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/7",
@@ -6649,7 +6919,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/7/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/7/1",
@@ -6719,13 +6989,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/7/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=7&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -6734,7 +7013,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -6743,7 +7022,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -6752,7 +7031,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -6761,7 +7040,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -6770,7 +7049,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -6779,7 +7058,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -6845,7 +7124,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/7/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/7/2",
@@ -6915,13 +7194,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/7/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=7&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -6930,7 +7218,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -6939,7 +7227,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -6948,7 +7236,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -6957,7 +7245,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -6966,7 +7254,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -6975,7 +7263,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -7041,7 +7329,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/7/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/7/3",
@@ -7111,13 +7399,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/7/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=7&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -7126,7 +7423,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -7135,7 +7432,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -7144,7 +7441,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -7153,7 +7450,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -7162,7 +7459,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -7171,7 +7468,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -7237,7 +7534,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/7/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/7/4",
@@ -7307,13 +7604,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/7/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=7&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -7322,7 +7628,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -7331,7 +7637,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -7340,7 +7646,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -7349,7 +7655,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -7358,7 +7664,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -7367,7 +7673,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -7433,7 +7739,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/7/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/7/5",
@@ -7503,13 +7809,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/7/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=7&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -7518,7 +7833,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -7527,7 +7842,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -7536,7 +7851,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -7545,7 +7860,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -7554,7 +7869,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -7563,7 +7878,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -7630,7 +7945,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/8",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/8",
@@ -7718,7 +8033,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/8/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/8/1",
@@ -7788,13 +8103,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/8/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=8&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -7803,7 +8127,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -7812,7 +8136,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -7821,7 +8145,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -7830,7 +8154,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -7839,7 +8163,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -7848,7 +8172,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -7914,7 +8238,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/8/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/8/2",
@@ -7984,13 +8308,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/8/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=8&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -7999,7 +8332,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -8008,7 +8341,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -8017,7 +8350,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -8026,7 +8359,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -8035,7 +8368,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -8044,7 +8377,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -8110,7 +8443,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/8/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/8/3",
@@ -8180,13 +8513,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/8/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=8&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -8195,7 +8537,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -8204,7 +8546,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -8213,7 +8555,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -8222,7 +8564,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -8231,7 +8573,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -8240,7 +8582,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -8306,7 +8648,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/8/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/8/4",
@@ -8376,13 +8718,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/8/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=8&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -8391,7 +8742,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -8400,7 +8751,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -8409,7 +8760,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -8418,7 +8769,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -8427,7 +8778,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -8436,7 +8787,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -8502,7 +8853,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/8/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/8/5",
@@ -8572,13 +8923,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/8/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=8&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -8587,7 +8947,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -8596,7 +8956,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -8605,7 +8965,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -8614,7 +8974,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -8623,7 +8983,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -8632,7 +8992,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -8699,7 +9059,7 @@
       "provider_page": "https://www.themoviedb.org/tv/77588/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/77588/season/9",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/77588/9",
@@ -8787,7 +9147,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/9/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/9/1",
@@ -8857,13 +9217,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/9/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=9&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -8872,7 +9241,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -8881,7 +9250,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -8890,7 +9259,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -8899,7 +9268,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -8908,7 +9277,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -8917,7 +9286,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -8983,7 +9352,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/9/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/9/2",
@@ -9053,13 +9422,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/9/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=9&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -9068,7 +9446,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -9077,7 +9455,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -9086,7 +9464,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -9095,7 +9473,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -9104,7 +9482,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -9113,7 +9491,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -9179,7 +9557,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/9/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/9/3",
@@ -9249,13 +9627,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/9/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=9&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -9264,7 +9651,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -9273,7 +9660,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -9282,7 +9669,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -9291,7 +9678,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -9300,7 +9687,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -9309,7 +9696,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -9375,7 +9762,7 @@
           "provider_page": "https://www.themoviedb.org/tv/77588/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/77588/season/9/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/77588/9/4",
@@ -9445,13 +9832,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/77588/9/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/77588&s=9&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -9460,7 +9856,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -9469,7 +9865,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -9478,7 +9874,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -9487,7 +9883,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -9496,7 +9892,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -9505,7 +9901,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {

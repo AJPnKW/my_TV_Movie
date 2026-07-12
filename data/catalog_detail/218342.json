@@ -72,10 +72,10 @@
     "vote_count": 5
   },
   "popularity": 18.1906,
-  "vote_average": 7.467,
-  "vote_count": 337,
+  "vote_average": 7.482,
+  "vote_count": 339,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-11T23:44:51Z",
+  "availability_checked_at": "2026-07-12T00:03:44Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/218342",
@@ -272,7 +272,7 @@
       "provider_page": "https://www.themoviedb.org/tv/218342/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/218342/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/218342/1",
@@ -470,7 +470,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/1/1",
@@ -540,13 +540,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/1/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=1&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -555,7 +564,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -564,7 +573,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -573,7 +582,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -582,7 +591,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -591,7 +600,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -600,7 +609,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -776,7 +785,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/1/2",
@@ -846,13 +855,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/1/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=1&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -861,7 +879,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -870,7 +888,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -879,7 +897,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -888,7 +906,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -897,7 +915,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -906,7 +924,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1082,7 +1100,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/1/3",
@@ -1152,13 +1170,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/1/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=1&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1167,7 +1194,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1176,7 +1203,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1185,7 +1212,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1194,7 +1221,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1203,7 +1230,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1212,7 +1239,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1388,7 +1415,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/1/4",
@@ -1458,13 +1485,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/1/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=1&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1473,7 +1509,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1482,7 +1518,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1491,7 +1527,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1500,7 +1536,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1509,7 +1545,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1518,7 +1554,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1694,7 +1730,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/1/5",
@@ -1764,13 +1800,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/1/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=1&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1779,7 +1824,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1788,7 +1833,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1797,7 +1842,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1806,7 +1851,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1815,7 +1860,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1824,7 +1869,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2000,7 +2045,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/1/6",
@@ -2070,13 +2115,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/1/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=1&e=6",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2085,7 +2139,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2094,7 +2148,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2103,7 +2157,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2112,7 +2166,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2121,7 +2175,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2130,7 +2184,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2307,7 +2361,7 @@
       "provider_page": "https://www.themoviedb.org/tv/218342/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/218342/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/218342/2",
@@ -2505,7 +2559,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/2/1",
@@ -2575,13 +2629,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/2/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=2&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2590,7 +2653,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2599,7 +2662,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2608,7 +2671,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2617,7 +2680,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2626,7 +2689,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2635,7 +2698,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2811,7 +2874,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/2/2",
@@ -2881,13 +2944,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/2/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=2&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2896,7 +2968,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2905,7 +2977,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2914,7 +2986,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2923,7 +2995,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2932,7 +3004,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2941,7 +3013,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3117,7 +3189,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/2/3",
@@ -3187,13 +3259,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/2/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=2&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3202,7 +3283,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3211,7 +3292,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3220,7 +3301,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3229,7 +3310,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3238,7 +3319,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3247,7 +3328,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3423,7 +3504,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/2/4",
@@ -3493,13 +3574,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/2/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=2&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3508,7 +3598,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3517,7 +3607,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3526,7 +3616,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3535,7 +3625,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3544,7 +3634,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3553,7 +3643,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3729,7 +3819,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/2/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/2/5",
@@ -3799,13 +3889,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/2/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=2&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3814,7 +3913,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3823,7 +3922,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3832,7 +3931,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3841,7 +3940,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3850,7 +3949,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3859,7 +3958,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4035,7 +4134,7 @@
           "provider_page": "https://www.themoviedb.org/tv/218342/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/218342/season/2/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/218342/2/6",
@@ -4105,13 +4204,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/218342/2/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/218342&s=2&e=6",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4120,7 +4228,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4129,7 +4237,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4138,7 +4246,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4147,7 +4255,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4156,7 +4264,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4165,7 +4273,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4342,7 +4450,7 @@
       "provider_page": "https://www.themoviedb.org/tv/218342/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/218342/season/3",
       "availability_status": "unknown",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:child_status",
       "availability_reason": "child availability unavailable",
       "primary_watch_url_tested": "https://player.videasy.net/tv/218342/3",

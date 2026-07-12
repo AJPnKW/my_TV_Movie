@@ -61,7 +61,7 @@
   "vote_average": 5.3,
   "vote_count": 14,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-11T23:44:51Z",
+  "availability_checked_at": "2026-07-12T00:03:44Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/61913",
@@ -120,7 +120,7 @@
       "provider_page": "https://www.themoviedb.org/tv/61913/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12",
@@ -180,7 +180,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/1",
@@ -250,13 +250,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -265,7 +274,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -274,7 +283,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -283,7 +292,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -292,7 +301,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -301,7 +310,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -310,7 +319,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -348,7 +357,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/2",
@@ -418,13 +427,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -433,7 +451,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -442,7 +460,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -451,7 +469,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -460,7 +478,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -469,7 +487,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -478,7 +496,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -516,7 +534,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/3",
@@ -586,13 +604,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -601,7 +628,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -610,7 +637,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -619,7 +646,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -628,7 +655,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -637,7 +664,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -646,7 +673,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -684,7 +711,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/4",
@@ -754,13 +781,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -769,7 +805,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -778,7 +814,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -787,7 +823,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -796,7 +832,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -805,7 +841,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -814,7 +850,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -852,7 +888,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/5",
@@ -922,13 +958,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -937,7 +982,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -946,7 +991,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -955,7 +1000,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -964,7 +1009,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -973,7 +1018,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -982,7 +1027,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1020,7 +1065,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/6",
@@ -1090,13 +1135,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=6",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1105,7 +1159,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1114,7 +1168,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1123,7 +1177,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1132,7 +1186,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1141,7 +1195,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1150,7 +1204,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1188,7 +1242,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/7",
@@ -1258,13 +1312,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=7",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1273,7 +1336,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1282,7 +1345,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1291,7 +1354,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1300,7 +1363,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1309,7 +1372,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1318,7 +1381,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1356,7 +1419,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/8",
@@ -1426,13 +1489,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=8",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1441,7 +1513,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1450,7 +1522,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1459,7 +1531,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1468,7 +1540,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1477,7 +1549,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1486,7 +1558,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1524,7 +1596,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/9",
@@ -1594,13 +1666,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=9",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1609,7 +1690,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1618,7 +1699,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1627,7 +1708,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1636,7 +1717,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1645,7 +1726,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1654,7 +1735,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1692,7 +1773,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/10",
@@ -1762,13 +1843,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=10",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1777,7 +1867,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1786,7 +1876,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1795,7 +1885,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1804,7 +1894,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1813,7 +1903,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1822,7 +1912,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1860,7 +1950,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/11",
@@ -1930,13 +2020,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=11",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1945,7 +2044,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1954,7 +2053,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1963,7 +2062,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1972,7 +2071,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1981,7 +2080,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1990,7 +2089,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2028,7 +2127,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/12",
@@ -2098,13 +2197,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=12",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2113,7 +2221,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2122,7 +2230,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2131,7 +2239,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2140,7 +2248,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2149,7 +2257,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2158,7 +2266,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2196,7 +2304,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/13",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/13",
@@ -2266,13 +2374,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/13",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=13",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2281,7 +2398,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2290,7 +2407,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2299,7 +2416,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2308,7 +2425,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2317,7 +2434,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2326,7 +2443,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2364,7 +2481,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/14",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/14",
@@ -2434,13 +2551,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/14",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=14",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2449,7 +2575,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2458,7 +2584,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2467,7 +2593,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2476,7 +2602,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2485,7 +2611,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2494,7 +2620,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2532,7 +2658,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/15",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/15",
@@ -2602,13 +2728,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/15",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=15",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2617,7 +2752,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2626,7 +2761,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2635,7 +2770,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2644,7 +2779,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2653,7 +2788,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2662,7 +2797,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2700,7 +2835,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/16",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/16",
@@ -2770,13 +2905,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/16",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=16",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2785,7 +2929,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2794,7 +2938,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2803,7 +2947,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2812,7 +2956,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2821,7 +2965,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2830,7 +2974,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2868,7 +3012,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/17",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/17",
@@ -2938,13 +3082,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/17",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=17",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2953,7 +3106,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2962,7 +3115,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2971,7 +3124,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2980,7 +3133,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2989,7 +3142,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2998,7 +3151,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3036,7 +3189,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/18",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/18",
@@ -3106,13 +3259,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/18",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=18",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3121,7 +3283,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3130,7 +3292,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3139,7 +3301,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3148,7 +3310,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3157,7 +3319,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3166,7 +3328,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3204,7 +3366,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/19",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/19",
@@ -3274,13 +3436,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/19",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=19",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3289,7 +3460,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3298,7 +3469,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3307,7 +3478,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3316,7 +3487,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3325,7 +3496,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3334,7 +3505,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3372,7 +3543,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/20",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/20",
@@ -3442,13 +3613,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/20",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=20",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3457,7 +3637,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3466,7 +3646,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3475,7 +3655,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3484,7 +3664,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3493,7 +3673,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3502,7 +3682,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3540,7 +3720,7 @@
           "provider_page": "https://www.themoviedb.org/tv/61913/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/61913/season/12/episode/21",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/61913/12/21",
@@ -3610,13 +3790,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/61913/12/21",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/61913&s=12&e=21",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3625,7 +3814,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3634,7 +3823,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3643,7 +3832,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3652,7 +3841,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3661,7 +3850,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3670,7 +3859,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {

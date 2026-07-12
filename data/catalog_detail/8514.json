@@ -95,7 +95,7 @@
   "vote_average": 7.5,
   "vote_count": 284,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-11T23:44:51Z",
+  "availability_checked_at": "2026-07-12T00:03:44Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/8514",
@@ -337,7 +337,7 @@
       "provider_page": "https://www.themoviedb.org/tv/8514/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-11T23:44:51Z",
+      "availability_checked_at": "2026-07-12T00:03:44Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18",
@@ -580,7 +580,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/1",
@@ -650,13 +650,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=1",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -665,7 +674,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -674,7 +683,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -683,7 +692,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -692,7 +701,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -701,7 +710,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -710,7 +719,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -931,7 +940,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/2",
@@ -1001,13 +1010,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=2",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1016,7 +1034,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1025,7 +1043,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1034,7 +1052,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1043,7 +1061,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1052,7 +1070,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1061,7 +1079,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1282,7 +1300,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/3",
@@ -1352,13 +1370,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=3",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1367,7 +1394,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1376,7 +1403,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1385,7 +1412,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1394,7 +1421,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1403,7 +1430,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1412,7 +1439,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1633,7 +1660,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/4",
@@ -1703,13 +1730,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=4",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -1718,7 +1754,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -1727,7 +1763,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -1736,7 +1772,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -1745,7 +1781,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -1754,7 +1790,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -1763,7 +1799,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -1984,7 +2020,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/5",
@@ -2054,13 +2090,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=5",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2069,7 +2114,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2078,7 +2123,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2087,7 +2132,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2096,7 +2141,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2105,7 +2150,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2114,7 +2159,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2335,7 +2380,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/6",
@@ -2405,13 +2450,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=6",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2420,7 +2474,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2429,7 +2483,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2438,7 +2492,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2447,7 +2501,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2456,7 +2510,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2465,7 +2519,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -2686,7 +2740,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/7",
@@ -2756,13 +2810,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=7",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -2771,7 +2834,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -2780,7 +2843,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -2789,7 +2852,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -2798,7 +2861,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -2807,7 +2870,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -2816,7 +2879,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3037,7 +3100,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/8",
@@ -3107,13 +3170,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=8",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3122,7 +3194,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3131,7 +3203,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3140,7 +3212,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3149,7 +3221,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3158,7 +3230,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3167,7 +3239,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3388,7 +3460,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/9",
@@ -3458,13 +3530,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=9",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3473,7 +3554,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3482,7 +3563,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3491,7 +3572,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3500,7 +3581,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3509,7 +3590,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3518,7 +3599,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -3739,7 +3820,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/10",
@@ -3809,13 +3890,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=10",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -3824,7 +3914,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -3833,7 +3923,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -3842,7 +3932,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -3851,7 +3941,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -3860,7 +3950,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -3869,7 +3959,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4090,7 +4180,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/11",
@@ -4160,13 +4250,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=11",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4175,7 +4274,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4184,7 +4283,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4193,7 +4292,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4202,7 +4301,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4211,7 +4310,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4220,7 +4319,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4441,7 +4540,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/12",
@@ -4511,13 +4610,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=12",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4526,7 +4634,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4535,7 +4643,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4544,7 +4652,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4553,7 +4661,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4562,7 +4670,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4571,7 +4679,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -4792,7 +4900,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/13",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/13",
@@ -4862,13 +4970,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/13",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=13",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -4877,7 +4994,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -4886,7 +5003,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -4895,7 +5012,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -4904,7 +5021,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -4913,7 +5030,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -4922,7 +5039,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5143,7 +5260,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/14",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/14",
@@ -5213,13 +5330,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/14",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=14",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -5228,7 +5354,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -5237,7 +5363,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5246,7 +5372,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5255,7 +5381,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5264,7 +5390,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5273,7 +5399,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5494,7 +5620,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/15",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/15",
@@ -5564,13 +5690,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/15",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=15",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -5579,7 +5714,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -5588,7 +5723,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5597,7 +5732,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5606,7 +5741,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5615,7 +5750,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5624,7 +5759,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {
@@ -5845,7 +5980,7 @@
           "provider_page": "https://www.themoviedb.org/tv/8514/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/8514/season/18/episode/16",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-11T23:44:51Z",
+          "availability_checked_at": "2026-07-12T00:03:44Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/8514/18/16",
@@ -5915,13 +6050,22 @@
                 "priority": 6
               },
               {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/8514/18/16",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 7
+              },
+              {
                 "key": "2embed_cc",
                 "label": "2Embed CC",
                 "href": "https://www.2embed.cc/embedtv/8514&s=18&e=16",
                 "type": "embed",
                 "status": "warn",
                 "style": "mixed",
-                "priority": 7
+                "priority": 8
               },
               {
                 "key": "2embed_org",
@@ -5930,7 +6074,7 @@
                 "type": "embed",
                 "status": "warn",
                 "style": "query",
-                "priority": 8
+                "priority": 9
               },
               {
                 "key": "nunflix",
@@ -5939,7 +6083,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidlink",
@@ -5948,7 +6092,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_me",
@@ -5957,7 +6101,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_to",
@@ -5966,7 +6110,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               },
               {
                 "key": "vidsrc_embed_ru",
@@ -5975,7 +6119,7 @@
                 "type": "embed",
                 "status": "candidate",
                 "style": "path",
-                "priority": 9
+                "priority": 10
               }
             ],
             "providers": {

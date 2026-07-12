@@ -81,7 +81,7 @@
   "vote_average": 7.012,
   "vote_count": 2648,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-11T23:44:51Z",
+  "availability_checked_at": "2026-07-12T00:03:43Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/467244",
@@ -151,13 +151,22 @@
         "priority": 6
       },
       {
+        "key": "vsembed",
+        "label": "VSEmbed",
+        "href": "https://vsembed.ru/embed/movie/467244",
+        "type": "embed",
+        "status": "ok",
+        "style": "path",
+        "priority": 7
+      },
+      {
         "key": "2embed_cc",
         "label": "2Embed CC",
         "href": "https://www.2embed.cc/embed/467244",
         "type": "embed",
         "status": "warn",
         "style": "mixed",
-        "priority": 7
+        "priority": 8
       },
       {
         "key": "2embed_org",
@@ -166,7 +175,7 @@
         "type": "embed",
         "status": "warn",
         "style": "query",
-        "priority": 8
+        "priority": 9
       },
       {
         "key": "nunflix",
@@ -175,7 +184,7 @@
         "type": "embed",
         "status": "candidate",
         "style": "path",
-        "priority": 9
+        "priority": 10
       },
       {
         "key": "vidlink",
@@ -184,7 +193,7 @@
         "type": "embed",
         "status": "candidate",
         "style": "path",
-        "priority": 9
+        "priority": 10
       },
       {
         "key": "vidsrc_me",
@@ -193,7 +202,7 @@
         "type": "embed",
         "status": "candidate",
         "style": "path",
-        "priority": 9
+        "priority": 10
       },
       {
         "key": "vidsrc_to",
@@ -202,7 +211,7 @@
         "type": "embed",
         "status": "candidate",
         "style": "path",
-        "priority": 9
+        "priority": 10
       },
       {
         "key": "vidsrc_embed_ru",
@@ -211,7 +220,7 @@
         "type": "embed",
         "status": "candidate",
         "style": "path",
-        "priority": 9
+        "priority": 10
       }
     ],
     "providers": {
