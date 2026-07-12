@@ -11,7 +11,7 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Current version MC-2026-07-11.1. Last updated: 2026-07-11. Latest additive lineage: VSEmbed default Streaming popup provider path templates for TV episodes and movies.</div>
+<div class="small">Only active documentation source of truth. Current version MC-2026-06-03.2. Last updated: 2026-06-03. Latest additive lineage: Live PostgreSQL lab runtime installation, peer-authenticated app role/database, psycopg runtime, schema apply, and write/read/rollback validation gate.</div>
 <nav class="toc">
 <a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#server-mode-20260602">Server Mode</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
 </nav>
@@ -44,7 +44,6 @@
 <tr><td>2026-06-02</td><td>MC-2026-06-02.1</td><td>Added server-mode architecture contract: PostgreSQL is the primary writable store; JSON remains import/export/static fallback; image and media binaries remain files/assets by default; API, watch-state logic, Trakt reconciliation, provider registry, audit logging, and WD TV Live Media Library inventory/QA are database-backed design surfaces.</td></tr>
 <tr><td>2026-06-03</td><td>MC-2026-06-03.1</td><td>Added runnable server-mode implementation scaffold: standard-library API on <code>127.0.0.1:8000/api/v1</code>, PostgreSQL client/config boundary, schema apply/static validation tools, JSON migration dry-run/import scaffold, Trakt queue worker scaffold, Media Library scan/QA/remux worker scaffold, and systemd service example.</td></tr>
 <tr><td>2026-06-03</td><td>MC-2026-06-03.2</td><td>Made live PostgreSQL validation mandatory for X1 lab completion: bootstrap creates the local app OS/DB role and database, installs psycopg, documents the peer-auth DSN in <code>.env.example</code>, and validation must prove schema apply plus test insert/read/rollback cleanup.</td></tr>
-<tr><td>2026-07-11</td><td>MC-2026-07-11.1</td><td>Added VSEmbed as a default-visible Streaming popup provider with TMDB path templates for TV episodes and movies, preserving the existing registry-driven provider system.</td></tr>
 </table>
 <p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
 <p>Standalone page: <code>web/manage_watch_state.html</code></p>
@@ -446,7 +445,7 @@ AU  Stan</pre>
 <ul>
 <li>The Streaming popup provider buttons are generated from <code>web/config.json -> streaming.embed_providers[]</code>.</li>
 <li><code>ok</code> and <code>warn</code> providers render by default. <code>candidate</code> providers render only when <code>streaming.show_candidate_providers</code> is true. <code>blocked</code> providers never render.</li>
-<li>Default-visible providers are VidSrc, VidEasy, SuperEmbed, MultiEmbed, SmashyStream, FlixHQ, SFlix, VSEmbed, 2Embed CC, and 2Embed Org.</li>
+<li>Default-visible providers are VidSrc, VidEasy, SuperEmbed, MultiEmbed, SmashyStream, FlixHQ, SFlix, 2Embed CC, and 2Embed Org.</li>
 <li>Requested but hidden candidate providers are VidSrc.me, VidSrc.to, VidLink, Nunflix, and vidsrc-embed.ru.</li>
 <li>Goojara, Cineb, and freeintertv.com remain blocked until a verified TMDB-compatible template exists.</li>
 </ul>
@@ -459,23 +458,6 @@ AU  Stan</pre>
 </ul>
 </section>
 <!-- MC-2026-05-20.2-STREAMING-EPISODE-CARD-END -->
-<!-- MC-2026-07-11.1-VSEMBED-STREAMING-PROVIDER-START -->
-<section id="vsembed-streaming-provider-20260711" class="card">
-<h2>MC-2026-07-11.1 VSEmbed Streaming Provider Addition</h2>
-<table><tr><th>Field</th><th>Value</th></tr>
-<tr><td>Added</td><td>MC-2026-07-11.1</td></tr>
-<tr><td>Updated</td><td>Default-visible Streaming popup provider registry now includes VSEmbed through the existing <code>web/config.json -> streaming.embed_providers[]</code> system.</td></tr>
-<tr><td>Origin</td><td>User requested VSEmbed links be added alongside the existing Streaming source set, with separate TV and movie path formats and no runtime redesign.</td></tr>
-<tr><td>Owner</td><td><code>web/config.json -> streaming.fallback_order</code> and <code>web/config.json -> streaming.embed_providers[]</code>. <code>collectConfiguredWatchSources</code> continues to fill provider templates at render time.</td></tr>
-<tr><td>Validation</td><td><code>scripts/validate_streaming_config.py</code>, <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> must prove VSEmbed remains default-visible, candidates remain hidden, blocked providers remain suppressed, and rendered Streaming popups include the expanded default list.</td></tr>
-</table>
-<ul>
-<li>TV episode template: <code>https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}</code>.</li>
-<li>Movie template: <code>https://vsembed.ru/embed/movie/{tmdb_id}</code>.</li>
-<li>VSEmbed is ordered after SFlix and before the warn-status 2Embed providers.</li>
-</ul>
-</section>
-<!-- MC-2026-07-11.1-VSEMBED-STREAMING-PROVIDER-END -->
 <!-- MC-2026-06-02.1-SERVER-MODE-START -->
 <section id="server-mode-20260602" class="card">
 <h2>MC-2026-06-02.1 Server Mode, API, Database, and Media Library Contract</h2>

@@ -151,7 +151,7 @@ async function inspect(pathname, viewport) {
         const title = modal.querySelector("#providerTitle, #modalTitle")?.textContent?.trim() || "";
         const bodyText = modal.textContent || "";
         const labels = Array.from(modal.querySelectorAll(".watch-source-panel__title")).map(node => node.textContent.trim());
-        const streamingExpected = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
+        const streamingExpected = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","VSEmbed","2Embed CC","2Embed Org"];
         const streamingForbidden = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","Goojara","Cineb","vidsrc-embed.ru","freeintertv.com"];
         const streamingAnchors = Array.from(modal.querySelectorAll(".watch-source-panel--links a.watch-source-row[href]"));
         const streamingProviderNames = streamingAnchors.map(anchor => (anchor.querySelector(".watch-source-row__label")?.textContent || anchor.textContent || "").replace("⚠", "").trim());
@@ -602,7 +602,7 @@ function providerRegistryProof() {
   const config = JSON.parse(readFileSync("web/config.json", "utf8"));
   const providers = Array.isArray(config.streaming?.embed_providers) ? config.streaming.embed_providers : [];
   const byName = Object.fromEntries(providers.map(item => [item.name, item]));
-  const defaultProviders = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
+  const defaultProviders = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","VSEmbed","2Embed CC","2Embed Org"];
   const candidates = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","vidsrc-embed.ru"];
   const blocked = ["Goojara","Cineb","freeintertv.com"];
   const visible = providers.filter(item => {
@@ -633,7 +633,7 @@ try {
   }
   const failures = [];
   const providerProof = providerRegistryProof();
-  if (!providerProof.exists || !providerProof.fields || !providerProof.blocked || !providerProof.active || !providerProof.candidatesHiddenByDefault || providerProof.defaultNames.length !== 9) failures.push("provider registry classification/fields failed");
+  if (!providerProof.exists || !providerProof.fields || !providerProof.blocked || !providerProof.active || !providerProof.candidatesHiddenByDefault || providerProof.defaultNames.length !== 10) failures.push("provider registry classification/fields failed");
   for (const result of results) {
     if (result.errors.length) failures.push(`${result.viewport} ${result.pathname}: console errors`);
     if (result.missing.length) failures.push(`${result.viewport} ${result.pathname}: 404 responses`);

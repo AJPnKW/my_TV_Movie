@@ -25,6 +25,7 @@
       "smashystream",
       "flixhq",
       "sflix",
+      "vsembed",
       "2embed_cc",
       "2embed_org"
     ],
@@ -83,6 +84,14 @@
         "name": "SFlix",
         "tv_template": "https://sflix.to/embed/tv/{tmdb_id}/{season}/{episode}",
         "movie_template": "https://sflix.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok"
+      },
+      {
+        "key": "vsembed",
+        "name": "VSEmbed",
+        "tv_template": "https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vsembed.ru/embed/movie/{tmdb_id}",
         "style": "path",
         "status": "ok"
       },

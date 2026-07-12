@@ -21,6 +21,7 @@ DEFAULT_PROVIDERS = [
     "SmashyStream",
     "FlixHQ",
     "SFlix",
+    "VSEmbed",
     "2Embed CC",
     "2Embed Org",
 ]
@@ -42,6 +43,10 @@ BLOCKED_PROVIDERS = [
 EPISODE_TEST_CASES = [
     {"tmdb_id": "226285", "season": "3", "episode": "17"},
     {"tmdb_id": "289560", "season": "1", "episode": "12"},
+]
+
+MOVIE_TEST_CASES = [
+    {"tmdb_id": "937249"},
 ]
 
 
@@ -147,6 +152,14 @@ def validate_provider_registry(config: dict) -> None:
             href = fill_template(str(provider["tv_template"]), case)
             assert_true(case["tmdb_id"] in href and case["season"] in href and case["episode"] in href, f"provider template failed test case {case}: {provider.get('name')}")
 
+    for case in MOVIE_TEST_CASES:
+        for provider in providers:
+            status = str(provider.get("status") or "ok").lower()
+            if status not in {"ok", "warn"}:
+                continue
+            href = fill_template(str(provider["movie_template"]), case)
+            assert_true(case["tmdb_id"] in href and "{season}" not in href and "{episode}" not in href, f"movie provider template failed test case {case}: {provider.get('name')}")
+
 
 def validate_runtime_source(app_text: str, renderer_text: str, css_text: str) -> None:
     collect_body = function_body(app_text, "collectConfiguredWatchSources")
@@ -224,6 +237,7 @@ def main() -> int:
                 "candidate_hidden_by_default": CANDIDATE_PROVIDERS,
                 "blocked_hidden": BLOCKED_PROVIDERS,
                 "episode_test_cases": EPISODE_TEST_CASES,
+                "movie_test_cases": MOVIE_TEST_CASES,
             },
             indent=2,
         )
