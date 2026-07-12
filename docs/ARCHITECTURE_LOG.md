@@ -1,5 +1,12 @@
 # Architecture Log
 
+## 2026-07-11
+
+- Added VSEmbed as a default-visible Streaming popup provider through the existing `web/config.json -> streaming.embed_providers[]` registry, with TV episode template `https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}` and movie template `https://vsembed.ru/embed/movie/{tmdb_id}`.
+- Updated the streaming provider contract, archived the previous master contract snapshot, and advanced streaming/browser/runtime validators so the ten-provider default list and TV/movie template split stay guarded.
+- Validation: `python scripts/validate_streaming_config.py` passed; `python scripts/validate_streaming_episode_cards.py` passed with movie template coverage; `scripts/validate_runtime.ps1` passed; `scripts/qa_browser_layout_check.mjs` passed with `failures=[]`; `git diff --check` passed.
+- Commit: `7ff5d3b42a` add vsembed streaming provider.
+
 ## 2026-07-03
 
 - Simplified the app-shell Inputs Editor page back to a launcher/help surface only: it no longer embeds the editor iframe, shows the copyable `run_local_servers.bat` command, and opens the canonical local editor in its own tab.
