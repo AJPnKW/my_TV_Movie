@@ -61,11 +61,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 22.9981,
-  "vote_average": 7.2,
-  "vote_count": 170,
+  "popularity": 21.3887,
+  "vote_average": 7.19,
+  "vote_count": 171,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-14T11:01:53Z",
+  "availability_checked_at": "2026-07-15T11:08:42Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1340206",
@@ -340,6 +340,24 @@
       ],
       "GB": [
         {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=GB"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=GB"
+        },
+        {
           "provider_id": 10,
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
@@ -347,9 +365,73 @@
           "availability_type": "rent",
           "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=GB"
+        },
+        {
+          "provider_id": 130,
+          "provider_name": "Sky Store",
+          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 18,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=GB"
+        },
+        {
+          "provider_id": 130,
+          "provider_name": "Sky Store",
+          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 18,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=GB"
         }
       ],
-      "AU": []
+      "AU": [
+        {
+          "provider_id": 2285,
+          "provider_name": "JustWatch TV",
+          "logo_path": "/y2wjCLxPrzPbghH07Sekqw5D1bE.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=AU"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 13,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=AU"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 13,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=AU"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
+          "display_priority": 14,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=AU"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "buy",
+          "display_priority": 14,
+          "deep_link": "https://www.themoviedb.org/movie/1340206-tuner/watch?locale=AU"
+        }
+      ]
     }
   }
 }
