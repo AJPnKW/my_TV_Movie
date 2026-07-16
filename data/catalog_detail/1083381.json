@@ -73,11 +73,11 @@
       "name": "Canada"
     }
   ],
-  "popularity": 451.9754,
-  "vote_average": 6.929,
-  "vote_count": 1177,
+  "popularity": 449.867,
+  "vote_average": 6.953,
+  "vote_count": 1269,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-15T11:08:42Z",
+  "availability_checked_at": "2026-07-16T11:16:44Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1083381",
@@ -222,6 +222,33 @@
     "providers": {
       "CA": [
         {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=CA"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=CA"
+        },
+        {
+          "provider_id": 140,
+          "provider_name": "CosmoGo",
+          "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 19,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=CA"
+        },
+        {
           "provider_id": 140,
           "provider_name": "CosmoGo",
           "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
@@ -229,10 +256,83 @@
           "availability_type": "buy",
           "display_priority": 19,
           "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=CA"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
+          "display_priority": 57,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=CA"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "buy",
+          "display_priority": 57,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=CA"
+        },
+        {
+          "provider_id": 538,
+          "provider_name": "Plex",
+          "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 82,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=CA"
         }
       ],
-      "US": [],
+      "US": [
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
+          "display_priority": 8,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=US"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "buy",
+          "display_priority": 8,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=US"
+        },
+        {
+          "provider_id": 538,
+          "provider_name": "Plex",
+          "logo_path": "/vLZKlXUNDcZR7ilvfY9Wr9k80FZ.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 126,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=US"
+        }
+      ],
       "GB": [
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=GB"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=GB"
+        },
         {
           "provider_id": 10,
           "provider_name": "Amazon Video",
@@ -241,9 +341,46 @@
           "availability_type": "rent",
           "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=GB"
+        },
+        {
+          "provider_id": 130,
+          "provider_name": "Sky Store",
+          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 18,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=GB"
+        },
+        {
+          "provider_id": 130,
+          "provider_name": "Sky Store",
+          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 18,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=GB"
         }
       ],
-      "AU": []
+      "AU": [
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
+          "display_priority": 14,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=AU"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "buy",
+          "display_priority": 14,
+          "deep_link": "https://www.themoviedb.org/movie/1083381-backrooms/watch?locale=AU"
+        }
+      ]
     }
   }
 }
