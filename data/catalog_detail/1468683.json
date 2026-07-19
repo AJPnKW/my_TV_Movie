@@ -7,8 +7,8 @@
   "release_date": "2026-07-14",
   "poster_path": "/r4lVJVO1BeBb11cBcXBdbHc9e9k.jpg",
   "poster_local": "/assets/posters/movies/r4lVJVO1BeBb11cBcXBdbHc9e9k.jpg",
-  "backdrop_path": "/vvE7zc2aie3ozZcy5xYbg5QTFrF.jpg",
-  "backdrop_local": "/assets/backdrops/movies/vvE7zc2aie3ozZcy5xYbg5QTFrF.jpg",
+  "backdrop_path": "/eAURmcYabHQnq2FcWf9rCIGAA23.jpg",
+  "backdrop_local": "/assets/backdrops/movies/eAURmcYabHQnq2FcWf9rCIGAA23.jpg",
   "status": "Released",
   "overview": "It's a new school year for the Truham-Higgs gang. As Nick and Charlie's relationship deepens, their thoughts turn to life after the last bell rings.",
   "tagline": "Love like there's no ending.",
@@ -41,11 +41,11 @@
       "name": "United Kingdom"
     }
   ],
-  "popularity": 38.6958,
-  "vote_average": 5.393,
-  "vote_count": 28,
+  "popularity": 24.8592,
+  "vote_average": 6.562,
+  "vote_count": 73,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-18T10:46:18Z",
+  "availability_checked_at": "2026-07-19T10:50:12Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1468683",
@@ -188,10 +188,86 @@
       }
     ],
     "providers": {
-      "CA": [],
-      "US": [],
-      "GB": [],
-      "AU": []
+      "CA": [
+        {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 3,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=CA"
+        },
+        {
+          "provider_id": 1796,
+          "provider_name": "Netflix Standard with Ads",
+          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 94,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=CA"
+        }
+      ],
+      "US": [
+        {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=US"
+        },
+        {
+          "provider_id": 1796,
+          "provider_name": "Netflix Standard with Ads",
+          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 154,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=US"
+        }
+      ],
+      "GB": [
+        {
+          "provider_id": 1796,
+          "provider_name": "Netflix Standard with Ads",
+          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 86,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=GB"
+        },
+        {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 0,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=GB"
+        }
+      ],
+      "AU": [
+        {
+          "provider_id": 8,
+          "provider_name": "Netflix",
+          "logo_path": "/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "logo_local": "/assets/logos/services/pbpMk2JmcoNnQwx5JGpXngfoWtp.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 1,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=AU"
+        },
+        {
+          "provider_id": 1796,
+          "provider_name": "Netflix Standard with Ads",
+          "logo_path": "/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "logo_local": "/assets/logos/services/dpR8r13zWDeUR0QkzWidrdMxa56.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 50,
+          "deep_link": "https://www.themoviedb.org/movie/1468683-heartstopper-forever/watch?locale=AU"
+        }
+      ]
     }
   }
 }
