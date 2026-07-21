@@ -52,11 +52,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 348.624,
-  "vote_average": 6.0,
-  "vote_count": 600,
+  "popularity": 298.8358,
+  "vote_average": 6.268,
+  "vote_count": 755,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-20T12:03:27Z",
+  "availability_checked_at": "2026-07-21T11:24:03Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1273221",
@@ -212,7 +212,53 @@
       ],
       "US": [],
       "GB": [],
-      "AU": []
+      "AU": [
+        {
+          "provider_id": 2285,
+          "provider_name": "JustWatch TV",
+          "logo_path": "/y2wjCLxPrzPbghH07Sekqw5D1bE.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1273221-scary-movie/watch?locale=AU"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 13,
+          "deep_link": "https://www.themoviedb.org/movie/1273221-scary-movie/watch?locale=AU"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 13,
+          "deep_link": "https://www.themoviedb.org/movie/1273221-scary-movie/watch?locale=AU"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
+          "display_priority": 14,
+          "deep_link": "https://www.themoviedb.org/movie/1273221-scary-movie/watch?locale=AU"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "buy",
+          "display_priority": 14,
+          "deep_link": "https://www.themoviedb.org/movie/1273221-scary-movie/watch?locale=AU"
+        }
+      ]
     }
   }
 }
