@@ -18,16 +18,16 @@
   "runtime": 132,
   "genres": [
     {
-      "id": 14,
-      "name": "Fantasy"
-    },
-    {
       "id": 28,
       "name": "Action"
     },
     {
       "id": 12,
       "name": "Adventure"
+    },
+    {
+      "id": 878,
+      "name": "Science Fiction"
     }
   ],
   "collection": null,
@@ -51,11 +51,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 227.3149,
-  "vote_average": 6.899,
-  "vote_count": 690,
+  "popularity": 245.8769,
+  "vote_average": 7.0,
+  "vote_count": 771,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-22T11:25:06Z",
+  "availability_checked_at": "2026-07-23T11:26:03Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1228710",
@@ -200,6 +200,33 @@
     "providers": {
       "CA": [
         {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=CA"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 7,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=CA"
+        },
+        {
+          "provider_id": 140,
+          "provider_name": "CosmoGo",
+          "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 19,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=CA"
+        },
+        {
           "provider_id": 140,
           "provider_name": "CosmoGo",
           "logo_path": "/4bIKO5tqPgko0135wL9GhMsb1wv.jpg",
@@ -207,10 +234,119 @@
           "availability_type": "buy",
           "display_priority": 19,
           "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=CA"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
+          "display_priority": 57,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=CA"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "buy",
+          "display_priority": 57,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=CA"
         }
       ],
-      "US": [],
+      "US": [
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "rent",
+          "display_priority": 8,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        },
+        {
+          "provider_id": 10,
+          "provider_name": "Amazon Video",
+          "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
+          "availability_type": "buy",
+          "display_priority": 8,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 9,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 9,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        },
+        {
+          "provider_id": 3,
+          "provider_name": "Google Play Movies",
+          "logo_path": "/8z7rC8uIDaTM91X0ZfkRf04ydj2.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 19,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        },
+        {
+          "provider_id": 192,
+          "provider_name": "YouTube",
+          "logo_path": "/pTnn5JwWr4p3pG8H6VrpiQo7Vs0.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 20,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        },
+        {
+          "provider_id": 7,
+          "provider_name": "Fandango At Home",
+          "logo_path": "/oIXE9vJdkilIxCLAtlbtiqewgvn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 38,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        },
+        {
+          "provider_id": 7,
+          "provider_name": "Fandango At Home",
+          "logo_path": "/oIXE9vJdkilIxCLAtlbtiqewgvn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 38,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=US"
+        }
+      ],
       "GB": [
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=GB"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 5,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=GB"
+        },
         {
           "provider_id": 10,
           "provider_name": "Amazon Video",
@@ -219,9 +355,45 @@
           "availability_type": "rent",
           "display_priority": 8,
           "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=GB"
+        },
+        {
+          "provider_id": 130,
+          "provider_name": "Sky Store",
+          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 18,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=GB"
+        },
+        {
+          "provider_id": 130,
+          "provider_name": "Sky Store",
+          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 18,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=GB"
         }
       ],
       "AU": [
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "rent",
+          "display_priority": 13,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=AU"
+        },
+        {
+          "provider_id": 2,
+          "provider_name": "Apple TV Store",
+          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
+          "logo_local": "",
+          "availability_type": "buy",
+          "display_priority": 13,
+          "deep_link": "https://www.themoviedb.org/movie/1228710-the-mandalorian-and-grogu/watch?locale=AU"
+        },
         {
           "provider_id": 10,
           "provider_name": "Amazon Video",
