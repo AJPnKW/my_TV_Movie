@@ -29,7 +29,7 @@
 - Canonical Movies search: `state.search.movies`, rendered as `#searchMovies`
 - Canonical Shows scope/status filter: `state.filters.shows.scope`, rendered as `#filterShowsScope [data-scope]`
 - Canonical Movies scope/status filter: `state.filters.movies.scope`, rendered as `#filterMoviesScope [data-scope]`
-- Current definitions and result filtering: `web/js/app_runtime.js`
+- Current definitions and result filtering: `web/js/app_runtime.js`, using `web/config.json -> browse.current`
 - Responsive filter and genre layout: `web/css/main_app.css`
 
 Phone, tablet, desktop, and TV-style layouts must expose the same Search, filters, sorting, cards, and actions. CSS may change layout only.

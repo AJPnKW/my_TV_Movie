@@ -1,7 +1,7 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.5.2",
+    "version": "v1.5.3",
     "updated_utc": "2026-07-24T00:00:00Z",
     "notes": [
       "JSONC is required for this file. Documentation uses line comments.",
@@ -880,6 +880,13 @@
           "ring-focus": "0 0 0 2px var(--c-accent), 0 0 0 4px rgba(0,0,0,0.72)"
         }
       }
+    }
+  },
+  "browse": {
+    "current": {
+      "show_activity_window_days": 183,
+      "movie_release_window_days": 183,
+      "movie_release_lookahead_days": 30
     }
   },
   "ui_tuning": {

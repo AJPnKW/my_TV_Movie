@@ -6,6 +6,7 @@
 
 - Runtime shell and routing: `web/js/app_runtime.js`
 - Shows/Movies Search state, release/status scope state, Current predicates, filter events, result rendering, active-state rendering, and counts: `web/js/app_runtime.js`
+- Configurable Current windows: `web/config.json -> browse.current`
 - Shared card renderers: `web/js/card_renderer.js`
 - Shared action strip: `web/js/action_bar.js`
 - Watch-state persistence and refresh: `web/js/watch_state_manager.js`

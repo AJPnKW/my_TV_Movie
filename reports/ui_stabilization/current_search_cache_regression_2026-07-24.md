@@ -85,8 +85,9 @@ See `reports/ui_stabilization/modified_file_manifest_2026-07-24.md`.
 - Removed coarse-pointer hiding of primary browse controls.
 - Compacted genre controls in `main_app.css` with a responsive grid and stable touch/focus dimensions.
 - Removed mobile-only script/style references from Shows and Movies.
-- Advanced `web/config.json` `_meta.version` to `v1.5.2`.
-- Versioned active app shell CSS/JS references and `app_runtime.js` module imports with `?v=v1.5.2`.
+- Advanced `web/config.json` `_meta.version` to `v1.5.3`.
+- Versioned active app shell CSS/JS references and `app_runtime.js` module imports with `?v=v1.5.3`.
+- Added configurable Current windows in `web/config.json -> browse.current`.
 - Added validator coverage blocking retired mobile browse files and unversioned active app assets.
 
 ## Current Rules
@@ -95,15 +96,13 @@ Current shows:
 
 - first air date is not in the future;
 - status is not Ended, Canceled, or Cancelled;
-- and one of:
-  - status is Returning Series or In Production;
-  - `next_episode_to_air` exists;
-  - `last_air_date`, `latest_episode_to_air.air_date`, or `last_episode_to_air.air_date` is within `CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = 548`.
+- `last_air_date`, `latest_episode_to_air.air_date`, or `last_episode_to_air.air_date` is within `web/config.json -> browse.current.show_activity_window_days = 183`.
+- status alone and `next_episode_to_air` alone do not make a show Current.
 
 Current movies:
 
-- `release_date` is within `CURRENT_MOVIE_RELEASE_WINDOW_DAYS = 548` ending today;
-- future releases are included only up to `CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS = 30`;
+- `release_date` is within `web/config.json -> browse.current.movie_release_window_days = 183` ending today;
+- future releases are included only up to `web/config.json -> browse.current.movie_release_lookahead_days = 30`;
 - future releases also require existing availability metadata to resolve to `available`.
 
 ## Tests Performed

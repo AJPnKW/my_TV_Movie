@@ -4,7 +4,7 @@
 
 - `web/js/app_runtime.js` - canonical Current scope controls, Current predicates, provider fallback anchor for empty TMDB provider rows, versioned module imports.
 - `web/css/main_app.css` - compact genre grid, phone browse controls remain visible, responsive browse layout cleanup.
-- `web/config.json` - release version advanced to `v1.5.2`.
+- `web/config.json` - release version advanced to `v1.5.3`; configurable Current windows live under `browse.current`.
 
 ## Page Shells
 
@@ -17,7 +17,7 @@
 - `web/watch_me.html`
 - `web/manage_watch_state.html`
 
-These active shells now load shared CSS and JavaScript with deterministic `?v=v1.5.2` query parameters. Shows and Movies no longer load mobile-only Current/Search fixes.
+These active shells now load shared CSS and JavaScript with deterministic `?v=v1.5.3` query parameters. Shows and Movies no longer load mobile-only Current/Search fixes.
 
 ## Removed Duplicate Mobile Implementation
 

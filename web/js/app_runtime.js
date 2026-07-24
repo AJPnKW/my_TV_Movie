@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.2';
-import * as dataLoader from './data_loader.js?v=v1.5.2';
-import * as availabilityUi from './availability_ui.js?v=v1.5.2';
-import * as cardRenderer from './card_renderer.js?v=v1.5.2';
-import * as popupController from './popup_controller.js?v=v1.5.2';
-import * as actionBar from './action_bar.js?v=v1.5.2';
-import './watch_state_manager.js?v=v1.5.2';
-import '../config.js?v=v1.5.2';
+import * as configLoader from './config_loader.js?v=v1.5.3';
+import * as dataLoader from './data_loader.js?v=v1.5.3';
+import * as availabilityUi from './availability_ui.js?v=v1.5.3';
+import * as cardRenderer from './card_renderer.js?v=v1.5.3';
+import * as popupController from './popup_controller.js?v=v1.5.3';
+import * as actionBar from './action_bar.js?v=v1.5.3';
+import './watch_state_manager.js?v=v1.5.3';
+import '../config.js?v=v1.5.3';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -38,9 +38,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   const PAGE = document.body?.dataset?.page || "dashboard";
   const on = (el, evt, fn) => { if (el) el.addEventListener(evt, fn); };
   const DAY_MS = 24 * 60 * 60 * 1000;
-  const CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = 548;
-  const CURRENT_MOVIE_RELEASE_WINDOW_DAYS = 548;
-  const CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS = 30;
+  const DEFAULT_CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = 183;
+  const DEFAULT_CURRENT_MOVIE_RELEASE_WINDOW_DAYS = 183;
+  const DEFAULT_CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS = 30;
 
   const state = {
     cfg: null,
@@ -1291,14 +1291,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return Number.isFinite(parsed) ? parsed : null;
   }
 
+  function currentWindowDays(key, fallback){
+    const raw = state.cfg?.browse?.current?.[key];
+    const value = Number(raw);
+    return Number.isFinite(value) && value > 0 ? value : fallback;
+  }
+
   function isCurrentShow(show, nowMs = Date.now()){
     const firstAir = dateValue(show?.first_air_date);
     if (firstAir !== null && firstAir > nowMs) return false;
     const statusText = safeText(show?.status).trim().toLowerCase();
     if (["ended", "canceled", "cancelled"].includes(statusText)) return false;
-    if (["returning series", "in production"].includes(statusText)) return true;
-    if (show?.next_episode_to_air) return true;
-    const recentCutoff = nowMs - (CURRENT_SHOW_ACTIVITY_WINDOW_DAYS * DAY_MS);
+    const recentCutoff = nowMs - (currentWindowDays("show_activity_window_days", DEFAULT_CURRENT_SHOW_ACTIVITY_WINDOW_DAYS) * DAY_MS);
     const recentActivity = dateValue(
       show?.last_air_date ||
       show?.latest_episode_to_air?.air_date ||
@@ -1310,10 +1314,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function isCurrentMovie(movie, nowMs = Date.now()){
     const release = dateValue(movie?.release_date);
     if (release === null) return false;
-    const recentCutoff = nowMs - (CURRENT_MOVIE_RELEASE_WINDOW_DAYS * DAY_MS);
+    const recentCutoff = nowMs - (currentWindowDays("movie_release_window_days", DEFAULT_CURRENT_MOVIE_RELEASE_WINDOW_DAYS) * DAY_MS);
     if (release < recentCutoff) return false;
     if (release <= nowMs) return true;
-    const lookahead = nowMs + (CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS * DAY_MS);
+    const lookahead = nowMs + (currentWindowDays("movie_release_lookahead_days", DEFAULT_CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS) * DAY_MS);
     return release <= lookahead && availabilityStatusOf(movie) === "available";
   }
 

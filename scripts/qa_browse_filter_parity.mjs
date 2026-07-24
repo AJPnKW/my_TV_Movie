@@ -3,11 +3,7 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 const BASE_URL = (process.env.BASE_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
-const RELEASE_VERSION = "v1.5.2";
 const DAY_MS = 24 * 60 * 60 * 1000;
-const CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = 548;
-const CURRENT_MOVIE_RELEASE_WINDOW_DAYS = 548;
-const CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS = 30;
 const REPORT_PATH = "reports/ui_stabilization/browse_filter_parity_2026-07-24.json";
 const SCREENSHOT_DIR = "reports/ui_stabilization/screenshots";
 
@@ -18,6 +14,12 @@ const VIEWPORTS = [
   { name: "android-tv-1080p", width: 1920, height: 1080, screenshot: true }
 ];
 
+const config = JSON.parse(readFileSync("web/config.json", "utf8"));
+const RELEASE_VERSION = String(config._meta?.version || "v1.5.3");
+const currentConfig = config.browse?.current || {};
+const CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = Number(currentConfig.show_activity_window_days) || 183;
+const CURRENT_MOVIE_RELEASE_WINDOW_DAYS = Number(currentConfig.movie_release_window_days) || 183;
+const CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS = Number(currentConfig.movie_release_lookahead_days) || 30;
 const data = JSON.parse(readFileSync("data/data.json", "utf8"));
 const showsById = new Map((data.shows || []).map(item => [String(item.tmdb_id ?? item.id ?? ""), item]));
 const moviesById = new Map((data.movies || []).map(item => [String(item.tmdb_id ?? item.id ?? ""), item]));
@@ -36,8 +38,6 @@ function isCurrentShow(show, nowMs = Date.now()) {
   if (firstAir !== null && firstAir > nowMs) return false;
   const status = String(show?.status || "").trim().toLowerCase();
   if (["ended", "canceled", "cancelled"].includes(status)) return false;
-  if (["returning series", "in production"].includes(status)) return true;
-  if (show?.next_episode_to_air) return true;
   const recentCutoff = nowMs - (CURRENT_SHOW_ACTIVITY_WINDOW_DAYS * DAY_MS);
   const recentActivity = dateValue(
     show?.last_air_date ||
