@@ -71,7 +71,7 @@
   "vote_average": 7.559,
   "vote_count": 179,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-24T22:39:12Z",
+  "availability_checked_at": "2026-07-24T23:27:38Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/259886",
@@ -157,7 +157,7 @@
       "provider_page": "https://www.themoviedb.org/tv/259886/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:12Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0",
@@ -244,12 +244,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -257,7 +266,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -266,7 +275,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -275,7 +284,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -284,7 +293,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -293,7 +302,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -302,21 +311,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -448,12 +448,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -461,7 +470,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -470,7 +479,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -479,7 +488,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -488,7 +497,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -497,7 +506,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -506,21 +515,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -652,12 +652,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -665,7 +674,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -674,7 +683,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -683,7 +692,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -692,7 +701,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -701,7 +710,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -710,21 +719,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -856,12 +856,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/4",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -869,7 +878,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -878,7 +887,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -887,7 +896,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -896,7 +905,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -905,7 +914,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -914,21 +923,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1060,12 +1060,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/5",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1073,7 +1082,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1082,7 +1091,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1091,7 +1100,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1100,7 +1109,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1109,7 +1118,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1118,21 +1127,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1264,12 +1264,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/6",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1277,7 +1286,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1286,7 +1295,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1295,7 +1304,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1304,7 +1313,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1313,7 +1322,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1322,21 +1331,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1468,12 +1468,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/7",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1481,7 +1490,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1490,7 +1499,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1499,7 +1508,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1508,7 +1517,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1517,7 +1526,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1526,21 +1535,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1672,12 +1672,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/8",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1685,7 +1694,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1694,7 +1703,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1703,7 +1712,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1712,7 +1721,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1721,7 +1730,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1730,21 +1739,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1876,12 +1876,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/9",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/9",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1889,7 +1898,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1898,7 +1907,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1907,7 +1916,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1916,7 +1925,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1925,7 +1934,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1934,21 +1943,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//9",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//9",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2080,12 +2080,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/10",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/10",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2093,7 +2102,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2102,7 +2111,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2111,7 +2120,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2120,7 +2129,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2129,7 +2138,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2138,21 +2147,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//10",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//10",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2284,12 +2284,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/11",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/11",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2297,7 +2306,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2306,7 +2315,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2315,7 +2324,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2324,7 +2333,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2333,7 +2342,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2342,21 +2351,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//11",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//11",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2488,12 +2488,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/12",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/12",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2501,7 +2510,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2510,7 +2519,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2519,7 +2528,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2528,7 +2537,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2537,7 +2546,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2546,21 +2555,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//12",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//12",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2692,12 +2692,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/13",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/13",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//13",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2705,7 +2714,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2714,7 +2723,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2723,7 +2732,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2732,7 +2741,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2741,7 +2750,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2750,21 +2759,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//13",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//13",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2896,12 +2896,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/14",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/14",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//14",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2909,7 +2918,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2918,7 +2927,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2927,7 +2936,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2936,7 +2945,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2945,7 +2954,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2954,21 +2963,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//14",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//14",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3100,12 +3100,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/15",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/15",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//15",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3113,7 +3122,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3122,7 +3131,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3131,7 +3140,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3140,7 +3149,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3149,7 +3158,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3158,21 +3167,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//15",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//15",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3304,12 +3304,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/16",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/16",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//16",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3317,7 +3326,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3326,7 +3335,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3335,7 +3344,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3344,7 +3353,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3353,7 +3362,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3362,21 +3371,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//16",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//16",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3508,12 +3508,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/17",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/17",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//17",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3521,7 +3530,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3530,7 +3539,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3539,7 +3548,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3548,7 +3557,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3557,7 +3566,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3566,21 +3575,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//17",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//17",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3712,12 +3712,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/0/episode/18",
           "availability_status": "unknown",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:unknown",
           "availability_reason": "release date missing",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/0/18",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886//18",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3725,7 +3734,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3734,7 +3743,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3743,7 +3752,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3752,7 +3761,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3761,7 +3770,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3770,21 +3779,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886//18",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886//18",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3917,7 +3917,7 @@
       "provider_page": "https://www.themoviedb.org/tv/259886/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/259886/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:12Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/259886/1",
@@ -4004,12 +4004,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/1/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886/1/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4017,7 +4026,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4026,7 +4035,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4035,7 +4044,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4044,7 +4053,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4053,7 +4062,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4062,21 +4071,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886/1/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4208,12 +4208,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/1/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886/1/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4221,7 +4230,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4230,7 +4239,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4239,7 +4248,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4248,7 +4257,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4257,7 +4266,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4266,21 +4275,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886/1/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4412,12 +4412,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/1/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886/1/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4425,7 +4434,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4434,7 +4443,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4443,7 +4452,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4452,7 +4461,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4461,7 +4470,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4470,21 +4479,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886/1/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4616,12 +4616,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/1/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886/1/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4629,7 +4638,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4638,7 +4647,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4647,7 +4656,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4656,7 +4665,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4665,7 +4674,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4674,21 +4683,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886/1/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4820,12 +4820,21 @@
           "provider_page": "https://www.themoviedb.org/tv/259886/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/259886/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/259886/1/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/259886/1/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4833,7 +4842,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4842,7 +4851,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4851,7 +4860,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4860,7 +4869,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4869,7 +4878,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4878,21 +4887,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/259886/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/259886/1/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",

@@ -73,7 +73,7 @@
   "vote_average": 7.44,
   "vote_count": 109,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-24T22:39:11Z",
+  "availability_checked_at": "2026-07-24T23:27:38Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/72743",
@@ -243,7 +243,7 @@
       "provider_page": "https://www.themoviedb.org/tv/72743/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:11Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1",
@@ -414,12 +414,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -427,7 +436,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -436,7 +445,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -445,7 +454,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -454,7 +463,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -463,7 +472,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -472,21 +481,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -702,12 +702,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -715,7 +724,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -724,7 +733,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -733,7 +742,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -742,7 +751,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -751,7 +760,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -760,21 +769,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -990,12 +990,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1003,7 +1012,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1012,7 +1021,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1021,7 +1030,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1030,7 +1039,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1039,7 +1048,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1048,21 +1057,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1278,12 +1278,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1291,7 +1300,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1300,7 +1309,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1309,7 +1318,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1318,7 +1327,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1327,7 +1336,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1336,21 +1345,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1566,12 +1566,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1579,7 +1588,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1588,7 +1597,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1597,7 +1606,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1606,7 +1615,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1615,7 +1624,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1624,21 +1633,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1854,12 +1854,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1867,7 +1876,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1876,7 +1885,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1885,7 +1894,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1894,7 +1903,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1903,7 +1912,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1912,21 +1921,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2142,12 +2142,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2155,7 +2164,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2164,7 +2173,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2173,7 +2182,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2182,7 +2191,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2191,7 +2200,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2200,21 +2209,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2430,12 +2430,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2443,7 +2452,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2452,7 +2461,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2461,7 +2470,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2470,7 +2479,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2479,7 +2488,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2488,21 +2497,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2718,12 +2718,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/9",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2731,7 +2740,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2740,7 +2749,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2749,7 +2758,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2758,7 +2767,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2767,7 +2776,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2776,21 +2785,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/9",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/9",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3006,12 +3006,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/1/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/1/10",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/1/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3019,7 +3028,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3028,7 +3037,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3037,7 +3046,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3046,7 +3055,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3055,7 +3064,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3064,21 +3073,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/1/10",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/1/10",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3295,7 +3295,7 @@
       "provider_page": "https://www.themoviedb.org/tv/72743/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:11Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2",
@@ -3466,12 +3466,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3479,7 +3488,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3488,7 +3497,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3497,7 +3506,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3506,7 +3515,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3515,7 +3524,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3524,21 +3533,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3754,12 +3754,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3767,7 +3776,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3776,7 +3785,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3785,7 +3794,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3794,7 +3803,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3803,7 +3812,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3812,21 +3821,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4042,12 +4042,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4055,7 +4064,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4064,7 +4073,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4073,7 +4082,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4082,7 +4091,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4091,7 +4100,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4100,21 +4109,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4330,12 +4330,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4343,7 +4352,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4352,7 +4361,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4361,7 +4370,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4370,7 +4379,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4379,7 +4388,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4388,21 +4397,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4618,12 +4618,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4631,7 +4640,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4640,7 +4649,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4649,7 +4658,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4658,7 +4667,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4667,7 +4676,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4676,21 +4685,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4906,12 +4906,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4919,7 +4928,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4928,7 +4937,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4937,7 +4946,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4946,7 +4955,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4955,7 +4964,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4964,21 +4973,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5194,12 +5194,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5207,7 +5216,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5216,7 +5225,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5225,7 +5234,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5234,7 +5243,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5243,7 +5252,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5252,21 +5261,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5482,12 +5482,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/2/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/2/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/2/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5495,7 +5504,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5504,7 +5513,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5513,7 +5522,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5522,7 +5531,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5531,7 +5540,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5540,21 +5549,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/2/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/2/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5771,7 +5771,7 @@
       "provider_page": "https://www.themoviedb.org/tv/72743/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:11Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3",
@@ -5942,12 +5942,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5955,7 +5964,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5964,7 +5973,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5973,7 +5982,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5982,7 +5991,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5991,7 +6000,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6000,21 +6009,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6230,12 +6230,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6243,7 +6252,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6252,7 +6261,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6261,7 +6270,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6270,7 +6279,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6279,7 +6288,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6288,21 +6297,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6518,12 +6518,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6531,7 +6540,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6540,7 +6549,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6549,7 +6558,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6558,7 +6567,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6567,7 +6576,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6576,21 +6585,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6806,12 +6806,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6819,7 +6828,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6828,7 +6837,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6837,7 +6846,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6846,7 +6855,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6855,7 +6864,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6864,21 +6873,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7094,12 +7094,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7107,7 +7116,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7116,7 +7125,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7125,7 +7134,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7134,7 +7143,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7143,7 +7152,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7152,21 +7161,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7382,12 +7382,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7395,7 +7404,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7404,7 +7413,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7413,7 +7422,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7422,7 +7431,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7431,7 +7440,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7440,21 +7449,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7670,12 +7670,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7683,7 +7692,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7692,7 +7701,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7701,7 +7710,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7710,7 +7719,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7719,7 +7728,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7728,21 +7737,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7958,12 +7958,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/3/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/3/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/3/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7971,7 +7980,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7980,7 +7989,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7989,7 +7998,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7998,7 +8007,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8007,7 +8016,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8016,21 +8025,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/3/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/3/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8247,7 +8247,7 @@
       "provider_page": "https://www.themoviedb.org/tv/72743/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:11Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4",
@@ -8418,12 +8418,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8431,7 +8440,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8440,7 +8449,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8449,7 +8458,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -8458,7 +8467,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8467,7 +8476,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8476,21 +8485,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8706,12 +8706,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8719,7 +8728,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8728,7 +8737,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8737,7 +8746,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -8746,7 +8755,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8755,7 +8764,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8764,21 +8773,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8994,12 +8994,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -9007,7 +9016,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -9016,7 +9025,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -9025,7 +9034,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9034,7 +9043,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9043,7 +9052,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9052,21 +9061,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -9282,12 +9282,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -9295,7 +9304,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -9304,7 +9313,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -9313,7 +9322,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9322,7 +9331,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9331,7 +9340,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9340,21 +9349,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -9570,12 +9570,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -9583,7 +9592,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -9592,7 +9601,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -9601,7 +9610,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9610,7 +9619,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9619,7 +9628,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9628,21 +9637,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -9858,12 +9858,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -9871,7 +9880,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -9880,7 +9889,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -9889,7 +9898,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9898,7 +9907,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9907,7 +9916,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9916,21 +9925,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -10146,12 +10146,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -10159,7 +10168,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -10168,7 +10177,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -10177,7 +10186,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -10186,7 +10195,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -10195,7 +10204,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -10204,21 +10213,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -10434,12 +10434,21 @@
           "provider_page": "https://www.themoviedb.org/tv/72743/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/72743/season/4/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:11Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/72743/4/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/72743/4/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -10447,7 +10456,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -10456,7 +10465,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -10465,7 +10474,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -10474,7 +10483,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -10483,7 +10492,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -10492,21 +10501,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/72743/4/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/72743/4/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",

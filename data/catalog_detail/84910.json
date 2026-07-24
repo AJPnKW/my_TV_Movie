@@ -69,7 +69,7 @@
   "vote_average": 7.5,
   "vote_count": 122,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-24T22:39:12Z",
+  "availability_checked_at": "2026-07-24T23:27:38Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/84910",
@@ -211,7 +211,7 @@
       "provider_page": "https://www.themoviedb.org/tv/84910/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:12Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12",
@@ -354,12 +354,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -367,7 +376,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -376,7 +385,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -385,7 +394,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -394,7 +403,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -403,7 +412,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -412,21 +421,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -614,12 +614,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -627,7 +636,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -636,7 +645,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -645,7 +654,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -654,7 +663,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -663,7 +672,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -672,21 +681,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -874,12 +874,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -887,7 +896,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -896,7 +905,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -905,7 +914,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -914,7 +923,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -923,7 +932,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -932,21 +941,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1134,12 +1134,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1147,7 +1156,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1156,7 +1165,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1165,7 +1174,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1174,7 +1183,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1183,7 +1192,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1192,21 +1201,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1394,12 +1394,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1407,7 +1416,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1416,7 +1425,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1425,7 +1434,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1434,7 +1443,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1443,7 +1452,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1452,21 +1461,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1654,12 +1654,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1667,7 +1676,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1676,7 +1685,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1685,7 +1694,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1694,7 +1703,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1703,7 +1712,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1712,21 +1721,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1914,12 +1914,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1927,7 +1936,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1936,7 +1945,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1945,7 +1954,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1954,7 +1963,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1963,7 +1972,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1972,21 +1981,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2174,12 +2174,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2187,7 +2196,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2196,7 +2205,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2205,7 +2214,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2214,7 +2223,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2223,7 +2232,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2232,21 +2241,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2434,12 +2434,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/9",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2447,7 +2456,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2456,7 +2465,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2465,7 +2474,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2474,7 +2483,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2483,7 +2492,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2492,21 +2501,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/9",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/9",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2694,12 +2694,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/10",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2707,7 +2716,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2716,7 +2725,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2725,7 +2734,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2734,7 +2743,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2743,7 +2752,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2752,21 +2761,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/10",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/10",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2954,12 +2954,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/11",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2967,7 +2976,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2976,7 +2985,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2985,7 +2994,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2994,7 +3003,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3003,7 +3012,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3012,21 +3021,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/11",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/11",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3214,12 +3214,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/12/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/12/12",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/12/12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3227,7 +3236,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3236,7 +3245,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3245,7 +3254,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3254,7 +3263,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3263,7 +3272,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3272,21 +3281,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/12/12",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/12/12",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3475,7 +3475,7 @@
       "provider_page": "https://www.themoviedb.org/tv/84910/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:12Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13",
@@ -3618,12 +3618,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3631,7 +3640,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3640,7 +3649,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3649,7 +3658,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3658,7 +3667,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3667,7 +3676,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3676,21 +3685,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3878,12 +3878,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3891,7 +3900,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3900,7 +3909,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3909,7 +3918,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3918,7 +3927,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3927,7 +3936,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3936,21 +3945,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4138,12 +4138,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4151,7 +4160,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4160,7 +4169,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4169,7 +4178,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4178,7 +4187,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4187,7 +4196,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4196,21 +4205,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4398,12 +4398,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4411,7 +4420,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4420,7 +4429,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4429,7 +4438,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4438,7 +4447,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4447,7 +4456,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4456,21 +4465,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4658,12 +4658,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4671,7 +4680,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4680,7 +4689,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4689,7 +4698,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4698,7 +4707,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4707,7 +4716,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4716,21 +4725,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4918,12 +4918,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4931,7 +4940,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4940,7 +4949,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4949,7 +4958,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4958,7 +4967,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4967,7 +4976,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4976,21 +4985,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5178,12 +5178,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5191,7 +5200,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5200,7 +5209,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5209,7 +5218,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5218,7 +5227,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5227,7 +5236,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5236,21 +5245,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5438,12 +5438,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5451,7 +5460,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5460,7 +5469,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5469,7 +5478,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5478,7 +5487,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5487,7 +5496,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5496,21 +5505,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5698,12 +5698,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/9",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5711,7 +5720,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5720,7 +5729,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5729,7 +5738,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5738,7 +5747,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5747,7 +5756,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5756,21 +5765,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/9",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/9",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5958,12 +5958,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/10",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5971,7 +5980,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5980,7 +5989,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5989,7 +5998,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5998,7 +6007,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6007,7 +6016,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6016,21 +6025,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/10",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/10",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6218,12 +6218,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/11",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6231,7 +6240,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6240,7 +6249,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6249,7 +6258,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6258,7 +6267,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6267,7 +6276,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6276,21 +6285,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/11",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/11",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6478,12 +6478,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/12",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6491,7 +6500,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6500,7 +6509,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6509,7 +6518,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6518,7 +6527,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6527,7 +6536,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6536,21 +6545,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/12",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/12",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6738,12 +6738,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/13/episode/13",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/13/13",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/13/13",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6751,7 +6760,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6760,7 +6769,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6769,7 +6778,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6778,7 +6787,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6787,7 +6796,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6796,21 +6805,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/13/13",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/13/13",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6999,7 +6999,7 @@
       "provider_page": "https://www.themoviedb.org/tv/84910/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:12Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14",
@@ -7142,12 +7142,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7155,7 +7164,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7164,7 +7173,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7173,7 +7182,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7182,7 +7191,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7191,7 +7200,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7200,21 +7209,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7402,12 +7402,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7415,7 +7424,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7424,7 +7433,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7433,7 +7442,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7442,7 +7451,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7451,7 +7460,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7460,21 +7469,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7662,12 +7662,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7675,7 +7684,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7684,7 +7693,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7693,7 +7702,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7702,7 +7711,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7711,7 +7720,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7720,21 +7729,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7922,12 +7922,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7935,7 +7944,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7944,7 +7953,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7953,7 +7962,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7962,7 +7971,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7971,7 +7980,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7980,21 +7989,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8182,12 +8182,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8195,7 +8204,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8204,7 +8213,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8213,7 +8222,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -8222,7 +8231,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8231,7 +8240,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8240,21 +8249,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8442,12 +8442,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8455,7 +8464,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8464,7 +8473,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8473,7 +8482,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -8482,7 +8491,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8491,7 +8500,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8500,21 +8509,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8702,12 +8702,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8715,7 +8724,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8724,7 +8733,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8733,7 +8742,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -8742,7 +8751,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8751,7 +8760,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8760,21 +8769,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8962,12 +8962,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8975,7 +8984,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8984,7 +8993,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8993,7 +9002,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9002,7 +9011,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9011,7 +9020,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9020,21 +9029,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -9222,12 +9222,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/9",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -9235,7 +9244,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -9244,7 +9253,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -9253,7 +9262,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9262,7 +9271,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9271,7 +9280,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9280,21 +9289,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/9",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/9",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -9482,12 +9482,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/10",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -9495,7 +9504,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -9504,7 +9513,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -9513,7 +9522,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9522,7 +9531,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9531,7 +9540,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9540,21 +9549,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/10",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/10",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -9742,12 +9742,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/11",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -9755,7 +9764,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -9764,7 +9773,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -9773,7 +9782,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -9782,7 +9791,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -9791,7 +9800,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -9800,21 +9809,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/11",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/11",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -10002,12 +10002,21 @@
           "provider_page": "https://www.themoviedb.org/tv/84910/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/84910/season/14/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/84910/14/12",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/84910/14/12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -10015,7 +10024,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -10024,7 +10033,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -10033,7 +10042,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -10042,7 +10051,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -10051,7 +10060,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -10060,21 +10069,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/84910/14/12",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/84910/14/12",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",

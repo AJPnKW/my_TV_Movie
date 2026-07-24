@@ -95,7 +95,7 @@
   "vote_average": 7.276,
   "vote_count": 125,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-24T22:39:12Z",
+  "availability_checked_at": "2026-07-24T23:27:38Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/tv/67482",
@@ -319,7 +319,7 @@
       "provider_page": "https://www.themoviedb.org/tv/67482/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:12Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10",
@@ -544,12 +544,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -557,7 +566,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -566,7 +575,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -575,7 +584,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -584,7 +593,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -593,7 +602,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -602,21 +611,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -886,12 +886,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -899,7 +908,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -908,7 +917,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -917,7 +926,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -926,7 +935,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -935,7 +944,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -944,21 +953,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1228,12 +1228,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1241,7 +1250,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1250,7 +1259,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1259,7 +1268,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1268,7 +1277,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1277,7 +1286,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1286,21 +1295,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1570,12 +1570,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1583,7 +1592,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1592,7 +1601,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1601,7 +1610,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1610,7 +1619,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1619,7 +1628,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1628,21 +1637,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -1912,12 +1912,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -1925,7 +1934,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -1934,7 +1943,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -1943,7 +1952,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -1952,7 +1961,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -1961,7 +1970,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -1970,21 +1979,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2254,12 +2254,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2267,7 +2276,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2276,7 +2285,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2285,7 +2294,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2294,7 +2303,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2303,7 +2312,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2312,21 +2321,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2596,12 +2596,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2609,7 +2618,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2618,7 +2627,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2627,7 +2636,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2636,7 +2645,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2645,7 +2654,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2654,21 +2663,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -2938,12 +2938,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -2951,7 +2960,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -2960,7 +2969,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -2969,7 +2978,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -2978,7 +2987,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -2987,7 +2996,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -2996,21 +3005,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3280,12 +3280,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/9",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3293,7 +3302,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3302,7 +3311,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3311,7 +3320,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3320,7 +3329,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3329,7 +3338,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3338,21 +3347,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/9",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/9",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3622,12 +3622,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/10",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3635,7 +3644,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3644,7 +3653,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3653,7 +3662,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -3662,7 +3671,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -3671,7 +3680,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -3680,21 +3689,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/10",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/10",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -3964,12 +3964,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/11",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -3977,7 +3986,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -3986,7 +3995,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -3995,7 +4004,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4004,7 +4013,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4013,7 +4022,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4022,21 +4031,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/11",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/11",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4306,12 +4306,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/10/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/10/12",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/10/12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4319,7 +4328,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4328,7 +4337,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4337,7 +4346,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4346,7 +4355,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4355,7 +4364,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4364,21 +4373,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/10/12",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/10/12",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -4649,7 +4649,7 @@
       "provider_page": "https://www.themoviedb.org/tv/67482/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-24T22:39:12Z",
+      "availability_checked_at": "2026-07-24T23:27:38Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
       "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11",
@@ -4874,12 +4874,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/1",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/1",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -4887,7 +4896,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -4896,7 +4905,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -4905,7 +4914,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -4914,7 +4923,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -4923,7 +4932,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -4932,21 +4941,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/1",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5216,12 +5216,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/2",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/2",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5229,7 +5238,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5238,7 +5247,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5247,7 +5256,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5256,7 +5265,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5265,7 +5274,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5274,21 +5283,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/2",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5558,12 +5558,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/3",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/3",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5571,7 +5580,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5580,7 +5589,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5589,7 +5598,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5598,7 +5607,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5607,7 +5616,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5616,21 +5625,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/3",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -5900,12 +5900,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/4",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/4",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -5913,7 +5922,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -5922,7 +5931,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -5931,7 +5940,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -5940,7 +5949,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -5949,7 +5958,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -5958,21 +5967,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/4",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6242,12 +6242,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/5",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/5",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6255,7 +6264,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6264,7 +6273,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6273,7 +6282,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6282,7 +6291,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6291,7 +6300,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6300,21 +6309,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/5",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6584,12 +6584,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/6",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/6",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6597,7 +6606,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6606,7 +6615,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6615,7 +6624,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6624,7 +6633,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6633,7 +6642,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6642,21 +6651,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/6",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -6926,12 +6926,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/7",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/7",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/7",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -6939,7 +6948,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -6948,7 +6957,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -6957,7 +6966,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -6966,7 +6975,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -6975,7 +6984,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -6984,21 +6993,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/7",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/7",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7268,12 +7268,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/8",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/8",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/8",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7281,7 +7290,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7290,7 +7299,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7299,7 +7308,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7308,7 +7317,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7317,7 +7326,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7326,21 +7335,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/8",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/8",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7610,12 +7610,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/9",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/9",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/9",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7623,7 +7632,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7632,7 +7641,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7641,7 +7650,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7650,7 +7659,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -7659,7 +7668,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -7668,21 +7677,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/9",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/9",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -7952,12 +7952,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/10",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/10",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/10",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -7965,7 +7974,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -7974,7 +7983,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -7983,7 +7992,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -7992,7 +8001,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8001,7 +8010,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8010,21 +8019,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/10",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/10",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8294,12 +8294,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/11",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/11",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/11",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8307,7 +8316,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8316,7 +8325,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8325,7 +8334,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -8334,7 +8343,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8343,7 +8352,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8352,21 +8361,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/11",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/11",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
@@ -8636,12 +8636,21 @@
           "provider_page": "https://www.themoviedb.org/tv/67482/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/67482/season/11/episode/12",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-24T22:39:12Z",
+          "availability_checked_at": "2026-07-24T23:27:38Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/67482/11/12",
           "watch": {
             "embed": [
+              {
+                "key": "vsembed",
+                "label": "VSEmbed",
+                "href": "https://vsembed.ru/embed/tv/67482/11/12",
+                "type": "embed",
+                "status": "ok",
+                "style": "path",
+                "priority": 0
+              },
               {
                 "key": "vidsrc_net",
                 "label": "VidSrc",
@@ -8649,7 +8658,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 0
+                "priority": 1
               },
               {
                 "key": "videasy",
@@ -8658,7 +8667,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 1
+                "priority": 2
               },
               {
                 "key": "superembed",
@@ -8667,7 +8676,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 2
+                "priority": 3
               },
               {
                 "key": "multiembed",
@@ -8676,7 +8685,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 3
+                "priority": 4
               },
               {
                 "key": "smashystream",
@@ -8685,7 +8694,7 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 4
+                "priority": 5
               },
               {
                 "key": "flixhq",
@@ -8694,21 +8703,12 @@
                 "type": "embed",
                 "status": "ok",
                 "style": "path",
-                "priority": 5
+                "priority": 6
               },
               {
                 "key": "sflix",
                 "label": "SFlix",
                 "href": "https://sflix.to/embed/tv/67482/11/12",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/67482/11/12",
                 "type": "embed",
                 "status": "ok",
                 "style": "path",

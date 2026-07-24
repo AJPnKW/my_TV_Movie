@@ -74,12 +74,21 @@
   "vote_average": 7.256,
   "vote_count": 3643,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-24T22:39:11Z",
+  "availability_checked_at": "2026-07-24T23:27:38Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1078605",
   "watch": {
     "embed": [
+      {
+        "key": "vsembed",
+        "label": "VSEmbed",
+        "href": "https://vsembed.ru/embed/movie/1078605",
+        "type": "embed",
+        "status": "ok",
+        "style": "path",
+        "priority": 0
+      },
       {
         "key": "vidsrc_net",
         "label": "VidSrc",
@@ -87,7 +96,7 @@
         "type": "embed",
         "status": "ok",
         "style": "path",
-        "priority": 0
+        "priority": 1
       },
       {
         "key": "videasy",
@@ -96,7 +105,7 @@
         "type": "embed",
         "status": "ok",
         "style": "path",
-        "priority": 1
+        "priority": 2
       },
       {
         "key": "superembed",
@@ -105,7 +114,7 @@
         "type": "embed",
         "status": "ok",
         "style": "path",
-        "priority": 2
+        "priority": 3
       },
       {
         "key": "multiembed",
@@ -114,7 +123,7 @@
         "type": "embed",
         "status": "ok",
         "style": "path",
-        "priority": 3
+        "priority": 4
       },
       {
         "key": "smashystream",
@@ -123,7 +132,7 @@
         "type": "embed",
         "status": "ok",
         "style": "path",
-        "priority": 4
+        "priority": 5
       },
       {
         "key": "flixhq",
@@ -132,21 +141,12 @@
         "type": "embed",
         "status": "ok",
         "style": "path",
-        "priority": 5
+        "priority": 6
       },
       {
         "key": "sflix",
         "label": "SFlix",
         "href": "https://sflix.to/embed/movie/1078605",
-        "type": "embed",
-        "status": "ok",
-        "style": "path",
-        "priority": 6
-      },
-      {
-        "key": "vsembed",
-        "label": "VSEmbed",
-        "href": "https://vsembed.ru/embed/movie/1078605",
         "type": "embed",
         "status": "ok",
         "style": "path",
