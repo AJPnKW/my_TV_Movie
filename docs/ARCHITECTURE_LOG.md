@@ -2,11 +2,12 @@
 
 ## 2026-07-24
 
+- Removed duplicate show/movie detail popup hero summaries from the shared runtime so creator, release year, episode count, runtime, and genre facts are rendered once in the structured detail grid; added a validator guard against the `Created by` hero-summary regression.
 - Moved VSEmbed to the first default-visible Streaming provider position in `web/config.json -> streaming.fallback_order` and `streaming.embed_providers[]`, and compacted the shared Watch Source popup into Details, Streaming, and Providers columns with no visible duplicate URL text.
 - Repaired Shows/Movies browse parity by removing the duplicate mobile-only Current implementation and routing Current through the canonical `state.filters.*.scope`, `setSegActive`, `renderShows`, and `renderMovies` path.
 - Tightened the Current definition to configurable six-month defaults in `web/config.json -> browse.current`: shows require episode/activity within 183 days, movies require release within 183 days, and available future movies keep the 30-day lookahead.
 - Restored phone Search by removing the coarse-pointer rule that hid primary browse controls, and compacted genre controls through the canonical `web/css/main_app.css` responsive grid.
-- Advanced the app release version to `v1.5.4`, added deterministic version query parameters to active app shell CSS/JS references and `app_runtime.js` module imports, and documented the cache/release standard.
+- Advanced the app release version to `v1.5.5`, added deterministic version query parameters to active app shell CSS/JS references and `app_runtime.js` module imports, and documented the cache/release standard.
 - Added regression documentation and focused browser QA evidence under `reports/ui_stabilization/`; updated validation to block retired mobile browse scripts/styles and unversioned active app shell assets.
 - Validation: `node --check web/js/app_runtime.js` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browse_filter_parity.mjs` passed with `failures=[]`; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]`; `git diff --stat` confirmed a focused UI/docs/QA change with no generated catalogue or asset churn.
 - Commit: direct-to-main UI parity repair commit; final SHA is recorded in Git history and the completion report.

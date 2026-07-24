@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.4';
-import * as dataLoader from './data_loader.js?v=v1.5.4';
-import * as availabilityUi from './availability_ui.js?v=v1.5.4';
-import * as cardRenderer from './card_renderer.js?v=v1.5.4';
-import * as popupController from './popup_controller.js?v=v1.5.4';
-import * as actionBar from './action_bar.js?v=v1.5.4';
-import './watch_state_manager.js?v=v1.5.4';
-import '../config.js?v=v1.5.4';
+import * as configLoader from './config_loader.js?v=v1.5.5';
+import * as dataLoader from './data_loader.js?v=v1.5.5';
+import * as availabilityUi from './availability_ui.js?v=v1.5.5';
+import * as cardRenderer from './card_renderer.js?v=v1.5.5';
+import * as popupController from './popup_controller.js?v=v1.5.5';
+import * as actionBar from './action_bar.js?v=v1.5.5';
+import './watch_state_manager.js?v=v1.5.5';
+import '../config.js?v=v1.5.5';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -5185,16 +5185,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const studios = studioNames.filter((_, index) => index < 3).join(" • ") || "Unavailable";
     const backdrop = pickImage(movie, "backdrop_local", "backdrop_path");
     const poster = pickImage(movie, "poster_local", "poster_path");
-    const heroSummary = [
-      movie?.release_date ? String(movie.release_date).slice(0, 4) : "",
-      Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "",
-      genres[0] || ""
-    ].filter(Boolean).join(" • ");
     return `
       <div class="popup-shell popup-shell--movie"${backdrop ? ` style="--popup-backdrop-image:url('${escHtml(backdrop).replace(/'/g, "%27")}')"` : ""}>
         <div class="popup-hero-header">
           <h2 class="popup-hero__title">${escHtml(title)}</h2>
-          ${heroSummary ? `<div class="popup-hero__summary">${escHtml(heroSummary)}</div>` : ""}
           ${buildActionBarHtml("movie", movie?.tmdb_id ?? "", {
             title,
             pct: (() => {
@@ -5280,20 +5274,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       seasonPremiered ? `Premiered ${fmtDate(seasonPremiered)}` : "",
       seasonLastAir ? `Last available ${fmtDate(seasonLastAir)}` : ""
     ].filter(Boolean).join(" • ");
-    const heroSummary = [
-      creators.length ? `Created by ${creators.slice(0, 2).join(" • ")}` : "",
-      premiered ? new Date(premiered).getFullYear() : "",
-      Number.isFinite(totalEpisodes) && totalEpisodes > 0 ? `${totalEpisodes} eps.` : "",
-      showRuntime > 0 ? `${showRuntime} min` : "",
-      genres[0] || ""
-    ].filter(Boolean).join(" • ");
     const backdrop = pickImage(show, "backdrop_local", "backdrop_path");
     const poster = pickImage(show, "poster_local", "poster_path");
     return `
       <div class="popup-shell popup-shell--show"${backdrop ? ` style="--popup-backdrop-image:url('${escHtml(backdrop).replace(/'/g, "%27")}')"` : ""}>
         <div class="popup-hero-header">
           <h2 class="popup-hero__title">${escHtml(title)}</h2>
-          ${heroSummary ? `<div class="popup-hero__summary">${escHtml(heroSummary)}</div>` : ""}
           ${buildActionBarHtml("show", show.tmdb_id ?? "", {
             title,
             pct: (() => {

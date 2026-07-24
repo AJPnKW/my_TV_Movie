@@ -773,6 +773,9 @@ foreach ($shim in @('runtime_render_fix.js','trailer_watch_popup_fix.js')) {
 if ($appRuntimeText -like '*__myTvHubTrailerWatchPopupFixLoaded*') {
     Add-CheckError 'app_runtime must own watch-source buttons directly; trailer_watch_popup_fix guard remains.'
 }
+if ($appRuntimeText -like '*Created by ${creators.slice*') {
+    Add-CheckError 'Show detail popup must not duplicate Created by in the hero summary and detail grid.'
+}
 $activeActionOwners = @('web/js/action_bar.js')
 foreach ($jsFile in Get-ChildItem -LiteralPath 'web/js' -Filter '*.js' -File) {
     $text = Get-Content -Raw -LiteralPath $jsFile.FullName
