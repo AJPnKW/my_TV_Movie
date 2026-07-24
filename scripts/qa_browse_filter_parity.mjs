@@ -15,7 +15,7 @@ const VIEWPORTS = [
 ];
 
 const config = JSON.parse(readFileSync("web/config.json", "utf8"));
-const RELEASE_VERSION = String(config._meta?.version || "v1.5.3");
+const RELEASE_VERSION = String(config._meta?.version || "v1.5.4");
 const currentConfig = config.browse?.current || {};
 const CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = Number(currentConfig.show_activity_window_days) || 183;
 const CURRENT_MOVIE_RELEASE_WINDOW_DAYS = Number(currentConfig.movie_release_window_days) || 183;

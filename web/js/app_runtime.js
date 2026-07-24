@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.3';
-import * as dataLoader from './data_loader.js?v=v1.5.3';
-import * as availabilityUi from './availability_ui.js?v=v1.5.3';
-import * as cardRenderer from './card_renderer.js?v=v1.5.3';
-import * as popupController from './popup_controller.js?v=v1.5.3';
-import * as actionBar from './action_bar.js?v=v1.5.3';
-import './watch_state_manager.js?v=v1.5.3';
-import '../config.js?v=v1.5.3';
+import * as configLoader from './config_loader.js?v=v1.5.4';
+import * as dataLoader from './data_loader.js?v=v1.5.4';
+import * as availabilityUi from './availability_ui.js?v=v1.5.4';
+import * as cardRenderer from './card_renderer.js?v=v1.5.4';
+import * as popupController from './popup_controller.js?v=v1.5.4';
+import * as actionBar from './action_bar.js?v=v1.5.4';
+import './watch_state_manager.js?v=v1.5.4';
+import '../config.js?v=v1.5.4';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -2132,13 +2132,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const optionHtml = options.length ? options.map(opt => `
       <a class="watch-source-row watch-source-row--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
         <span class="watch-source-row__label">${escHtml(opt.label)}${safeText(opt.note).toLowerCase() === "degraded" ? " ⚠" : ""}</span>
-        <span class="watch-source-row__href">${escHtml(opt.href)}</span>
       </a>
     `).join("") : `<div class="muted" style="font-size:12px;">No configured direct watch sources for this item yet.</div>`;
     return `
       <div class="watch-source-popup" data-popup="watch-source">
-        ${mediaDetailHtml}
         <div class="watch-source-grid">
+          ${mediaDetailHtml}
           <div class="watch-source-panel watch-source-panel--links">
             <div class="watch-source-panel__title">Streaming</div>
             <div class="watch-source-links">${optionHtml}</div>
@@ -2251,7 +2250,16 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const providers = collectProvidersForRegion(wp, "CA").length
       ? collectProvidersForRegion(wp, "CA")
       : (collectProvidersForRegion(wp, "US").length ? collectProvidersForRegion(wp, "US") : collectProvidersForRegion(wp, "AU"));
-    return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
+    const seen = new Set();
+    const labels = [];
+    providers.forEach(p => {
+      const label = providerDisplayLabel(p?.provider_name || p?.name || "");
+      const key = label.toLowerCase();
+      if (!label || seen.has(key)) return;
+      seen.add(key);
+      labels.push(label);
+    });
+    return labels.join(" • ") || "Unavailable";
   }
 
   function getLastSeasonAirDate(season){
@@ -2301,6 +2309,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function renderWatchSourceMediaDetailHtml(kind, item, context={}){
     const normalizedKind = safeText(kind).toLowerCase();
     const filename = generatedWatchFilename(normalizedKind, item, context);
+    const detailRow = (label, value) => safeText(value)
+      ? `<tr><th>${escHtml(label)}</th><td>${escHtml(value)}</td></tr>`
+      : "";
     if (normalizedKind === "episode"){
       const show = context.show || {};
       const showTitle = safeText(show?.title || show?.name || item?.show_title || "Show");
@@ -2310,12 +2321,20 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const episodeTmdb = safeText(item?.episode_tmdb_id ?? item?.episode_id ?? item?.tmdb_episode_id ?? item?.id ?? "");
       const showTmdb = safeText(show?.tmdb_id ?? show?.id ?? item?.show_tmdb_id ?? item?.show_id ?? "");
       const tmdb = episodeTmdb || showTmdb;
+      const aired = pickAirDate(item) ? fmtDate(pickAirDate(item)) : "";
+      const runtime = Number(item?.runtime);
       return `
-        <section class="popup-media-detail popup-media-detail--episode watch-source-detail" data-popup-media-detail="episode">
-          <div class="popup-media-detail__primary">${escHtml(`${showTitle} - ${seTag(seasonNum, episodeNum)} - ${episodeTitle}`)}</div>
-          <div class="popup-media-detail__date">${escHtml(pickAirDate(item) ? fmtDate(pickAirDate(item)) : "")}</div>
-          <div class="popup-media-detail__meta">${escHtml([tmdb ? `TMDB: ${tmdb}` : "", Number.isFinite(Number(item?.runtime)) && Number(item.runtime) > 0 ? `${Number(item.runtime)} min` : ""].filter(Boolean).join(" • "))}</div>
-          <div class="popup-media-detail__overview">${escHtml(safeText(item?.overview || ""))}</div>
+        <section class="watch-source-panel watch-source-panel--detail popup-media-detail popup-media-detail--episode watch-source-detail" data-popup-media-detail="episode">
+          <div class="watch-source-panel__title">Details</div>
+          <table class="watch-source-detail-table">
+            <tbody>
+              ${detailRow("Show", showTitle)}
+              ${detailRow("Episode", `${seTag(seasonNum, episodeNum)} - ${episodeTitle}`)}
+              ${detailRow("Aired", aired)}
+              ${detailRow("TMDB", tmdb ? `TMDB: ${tmdb}` : "")}
+              ${detailRow("Runtime", Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "")}
+            </tbody>
+          </table>
           <div class="generated-filename-line"><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
         </section>
       `;
@@ -2325,10 +2344,16 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const release = pickAirDate(item) || item?.release_date || "";
     const tmdb = safeText(item?.tmdb_id ?? item?.id ?? "");
     return `
-      <section class="popup-media-detail popup-media-detail--movie watch-source-detail" data-popup-media-detail="movie">
-        <div class="popup-media-detail__primary">${escHtml(title)}</div>
-        <div class="popup-media-detail__meta">${escHtml([Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "", release ? fmtDate(release) : "", tmdb ? `TMDB: ${tmdb}` : ""].filter(Boolean).join(" • "))}</div>
-        <div class="popup-media-detail__overview">${escHtml(safeText(item?.overview || ""))}</div>
+      <section class="watch-source-panel watch-source-panel--detail popup-media-detail popup-media-detail--movie watch-source-detail" data-popup-media-detail="movie">
+        <div class="watch-source-panel__title">Details</div>
+        <table class="watch-source-detail-table">
+          <tbody>
+            ${detailRow("Title", title)}
+            ${detailRow("Released", release ? fmtDate(release) : "")}
+            ${detailRow("Runtime", Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "")}
+            ${detailRow("TMDB", tmdb ? `TMDB: ${tmdb}` : "")}
+          </tbody>
+        </table>
         <div class="generated-filename-line"><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
       </section>
     `;
@@ -5198,13 +5223,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
           <div class="popup-hero__body">
             <div class="popup-detail-grid popup-detail-grid--compact">
               <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(movie))}</strong></div>
-              <div class="popup-detail"><span>Providers</span><strong>${escHtml((() => {
-                const wp = getWatchProviders(movie);
-                const providers = collectProvidersForRegion(wp, "CA").length
-                  ? collectProvidersForRegion(wp, "CA")
-                  : (collectProvidersForRegion(wp, "US").length ? collectProvidersForRegion(wp, "US") : collectProvidersForRegion(wp, "AU"));
-                return providers.map(p => safeText(p?.provider_name || p?.name || "")).filter(Boolean).join(" • ") || "Unavailable";
-              })())}</strong></div>
+              <div class="popup-detail"><span>Providers</span><strong>${escHtml(formatProviderSummary(movie))}</strong></div>
               <div class="popup-detail"><span>Genres</span><strong>${escHtml(genres.join(" • ") || "Unavailable")}</strong></div>
               <div class="popup-detail"><span>Runtime</span><strong>${escHtml(Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "Unavailable")}</strong></div>
               <div class="popup-detail"><span>Studios</span><strong>${escHtml(studios)}</strong></div>

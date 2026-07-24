@@ -151,10 +151,11 @@ async function inspect(pathname, viewport) {
         const title = modal.querySelector("#providerTitle, #modalTitle")?.textContent?.trim() || "";
         const bodyText = modal.textContent || "";
         const labels = Array.from(modal.querySelectorAll(".watch-source-panel__title")).map(node => node.textContent.trim());
-        const streamingExpected = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","VSEmbed","2Embed CC","2Embed Org"];
+        const streamingExpected = ["VSEmbed","VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
         const streamingForbidden = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","Goojara","Cineb","vidsrc-embed.ru","freeintertv.com"];
         const streamingAnchors = Array.from(modal.querySelectorAll(".watch-source-panel--links a.watch-source-row[href]"));
         const streamingProviderNames = streamingAnchors.map(anchor => (anchor.querySelector(".watch-source-row__label")?.textContent || anchor.textContent || "").replace("⚠", "").trim());
+        const duplicateStreamingProviderNames = streamingProviderNames.filter((name, idx) => streamingProviderNames.indexOf(name) !== idx);
         const legacyProviderRows = Array.from(modal.querySelectorAll(".provider-link-row,.watch-option-btn"));
         const providerRows = Array.from(modal.querySelectorAll(".providerrow,.watch-source-row"));
         const providerCountryRows = Array.from(modal.querySelectorAll(".providerrow"));
@@ -210,9 +211,10 @@ async function inspect(pathname, viewport) {
         watchPopupContract = {
           attempted: true,
           titleOk: /^Watch • .+ • .+ • S\d{2}E\d{2}$/.test(title) || /^Watch • .+/.test(title),
-          labelsOk: labels.includes("Streaming") && labels.includes("Providers") && !labels.includes("Watch now") && !labels.includes("Where to watch"),
+          labelsOk: labels.includes("Details") && labels.includes("Streaming") && labels.includes("Providers") && !labels.includes("Watch now") && !labels.includes("Where to watch"),
           streamingProviderNames,
-          streamingDefaultProvidersOk: streamingExpected.every(name => streamingProviderNames.includes(name)),
+          streamingDefaultProvidersOk: JSON.stringify(streamingProviderNames.slice(0, streamingExpected.length)) === JSON.stringify(streamingExpected),
+          duplicateStreamingProviderNames,
           streamingCandidateBlockedHidden: streamingForbidden.every(name => !streamingProviderNames.includes(name)),
           streamingAnchorsOk: streamingAnchors.length >= streamingExpected.length && streamingAnchors.every(anchor => anchor.tagName === "A" && anchor.href),
           noLegacyProviderMarkup: legacyProviderRows.length === 0,
@@ -602,7 +604,7 @@ function providerRegistryProof() {
   const config = JSON.parse(readFileSync("web/config.json", "utf8"));
   const providers = Array.isArray(config.streaming?.embed_providers) ? config.streaming.embed_providers : [];
   const byName = Object.fromEntries(providers.map(item => [item.name, item]));
-  const defaultProviders = ["VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","VSEmbed","2Embed CC","2Embed Org"];
+  const defaultProviders = ["VSEmbed","VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
   const candidates = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","vidsrc-embed.ru"];
   const blocked = ["Goojara","Cineb","freeintertv.com"];
   const visible = providers.filter(item => {
@@ -663,7 +665,7 @@ try {
     if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
     if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
     if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
-    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.streamingDefaultProvidersOk || !result.watchPopupContract.streamingCandidateBlockedHidden || !result.watchPopupContract.streamingAnchorsOk || !result.watchPopupContract.noAdminText || !result.watchPopupContract.noLegacyProviderMarkup || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
+    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.streamingDefaultProvidersOk || result.watchPopupContract.duplicateStreamingProviderNames?.length > 0 || !result.watchPopupContract.streamingCandidateBlockedHidden || !result.watchPopupContract.streamingAnchorsOk || !result.watchPopupContract.noAdminText || !result.watchPopupContract.noLegacyProviderMarkup || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
       failures.push(`${result.viewport} ${result.pathname}: Watch Source popup contract failed`);
     }
     if (["index.html","calendar.html"].includes(result.pathname) && result.episodeCardProof?.length && result.episodeCardProof.some(card => card.renderer !== "buildSharedEpisodeCard" || !["standard","compact"].includes(card.density) || card.resolver !== "episodeStillImageForCard" || !card.hasImageOrFallback)) {

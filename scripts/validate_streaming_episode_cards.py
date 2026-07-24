@@ -14,6 +14,7 @@ MAIN_CSS_PATH = ROOT / "web" / "css" / "main_app.css"
 DATA_PATH = ROOT / "data" / "data.json"
 
 DEFAULT_PROVIDERS = [
+    "VSEmbed",
     "VidSrc",
     "VidEasy",
     "SuperEmbed",
@@ -21,7 +22,6 @@ DEFAULT_PROVIDERS = [
     "SmashyStream",
     "FlixHQ",
     "SFlix",
-    "VSEmbed",
     "2Embed CC",
     "2Embed Org",
 ]

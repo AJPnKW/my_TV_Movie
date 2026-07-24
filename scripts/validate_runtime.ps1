@@ -428,8 +428,10 @@ if ($appRuntimeText -notlike '*renderPopupMediaDetailBlock*' -or $appRuntimeText
 }
 foreach ($needle in @(
     'Watch • ${safeText(show.title || show.name || "Show")} • ${title} • ${seTag(seasonNum, episodeNum)}',
+    'watch-source-panel__title">Details',
     'watch-source-panel__title">Streaming',
     'watch-source-panel__title">Providers',
+    'watch-source-detail-table',
     'data-copy-watch-filename',
     'generated-filename-line',
     'REF: POP-WATCH-SOURCE'
