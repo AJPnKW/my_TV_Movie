@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js';
-import * as dataLoader from './data_loader.js';
-import * as availabilityUi from './availability_ui.js';
-import * as cardRenderer from './card_renderer.js';
-import * as popupController from './popup_controller.js';
-import * as actionBar from './action_bar.js';
-import './watch_state_manager.js';
-import '../config.js';
+import * as configLoader from './config_loader.js?v=v1.5.2';
+import * as dataLoader from './data_loader.js?v=v1.5.2';
+import * as availabilityUi from './availability_ui.js?v=v1.5.2';
+import * as cardRenderer from './card_renderer.js?v=v1.5.2';
+import * as popupController from './popup_controller.js?v=v1.5.2';
+import * as actionBar from './action_bar.js?v=v1.5.2';
+import './watch_state_manager.js?v=v1.5.2';
+import '../config.js?v=v1.5.2';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -37,6 +37,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   const $$ = (sel, el=document) => Array.from(el.querySelectorAll(sel));
   const PAGE = document.body?.dataset?.page || "dashboard";
   const on = (el, evt, fn) => { if (el) el.addEventListener(evt, fn); };
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = 548;
+  const CURRENT_MOVIE_RELEASE_WINDOW_DAYS = 548;
+  const CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS = 30;
 
   const state = {
     cfg: null,
@@ -317,6 +321,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               </div>
               <div id="filterShowsScope" class="control-row control-row--chips">
                 <button class="segbtn active" type="button" data-scope="all">All Shows</button>
+                <button class="segbtn" type="button" data-scope="current">Current</button>
                 <button class="segbtn" type="button" data-scope="upcoming">Upcoming</button>
                 <button class="segbtn" type="button" data-scope="returning">Returning</button>
                 <button class="segbtn" type="button" data-scope="ended">Ended</button>
@@ -381,6 +386,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               </div>
               <div id="filterMoviesScope" class="control-row control-row--chips">
                 <button class="segbtn active" type="button" data-scope="all">All Movies</button>
+                <button class="segbtn" type="button" data-scope="current">Current</button>
                 <button class="segbtn" type="button" data-scope="upcoming">Upcoming</button>
                 <button class="segbtn" type="button" data-scope="released">Released</button>
               </div>
@@ -884,7 +890,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const textClass = hasLogo && logoHtml ? "providertext providertext--fallback" : "providertext providertext--visible";
         return `<a class="provider-anchor${hasLogo ? "" : " no-logo"}" href="${escHtml(href)}" target="_blank" rel="noopener" title="${escHtml(label)}" aria-label="${escHtml(label)}">${logoHtml}<span class="${textClass}">${escHtml(label)}</span></a>`;
       }).join("");
-      const body = chips || `<span class="provider-empty">No providers</span>`;
+      const fallbackHref = regionLink || tmdbWatchUrl(kind, id);
+      const body = chips || (fallbackHref
+        ? `<a class="provider-anchor no-logo" href="${escHtml(fallbackHref)}" target="_blank" rel="noopener" title="TMDB watch page" aria-label="TMDB watch page"><span class="providertext providertext--visible">TMDB watch page</span></a>`
+        : `<span class="provider-empty">No providers</span>`);
       return `
         <div class="providerrow">
           <span class="providerlabel">${region}</span>
@@ -1275,6 +1284,37 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function yearFromDate(d){
     const y = safeText(d).slice(0,4);
     return /^\d{4}$/.test(y) ? y : "";
+  }
+
+  function dateValue(value){
+    const parsed = Date.parse(safeText(value));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function isCurrentShow(show, nowMs = Date.now()){
+    const firstAir = dateValue(show?.first_air_date);
+    if (firstAir !== null && firstAir > nowMs) return false;
+    const statusText = safeText(show?.status).trim().toLowerCase();
+    if (["ended", "canceled", "cancelled"].includes(statusText)) return false;
+    if (["returning series", "in production"].includes(statusText)) return true;
+    if (show?.next_episode_to_air) return true;
+    const recentCutoff = nowMs - (CURRENT_SHOW_ACTIVITY_WINDOW_DAYS * DAY_MS);
+    const recentActivity = dateValue(
+      show?.last_air_date ||
+      show?.latest_episode_to_air?.air_date ||
+      show?.last_episode_to_air?.air_date
+    );
+    return recentActivity !== null && recentActivity >= recentCutoff;
+  }
+
+  function isCurrentMovie(movie, nowMs = Date.now()){
+    const release = dateValue(movie?.release_date);
+    if (release === null) return false;
+    const recentCutoff = nowMs - (CURRENT_MOVIE_RELEASE_WINDOW_DAYS * DAY_MS);
+    if (release < recentCutoff) return false;
+    if (release <= nowMs) return true;
+    const lookahead = nowMs + (CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS * DAY_MS);
+    return release <= lookahead && availabilityStatusOf(movie) === "available";
   }
 
   function uniqueSorted(arr){
@@ -3646,6 +3686,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const firstAirRaw = safeText(s?.first_air_date);
       const firstAirDate = firstAirRaw ? new Date(firstAirRaw) : null;
       const isUpcoming = firstAirDate instanceof Date && !Number.isNaN(firstAirDate.valueOf()) && firstAirDate > new Date();
+      if (scope === "current" && !isCurrentShow(s)) return false;
       if (scope === "upcoming" && !isUpcoming) return false;
       if (scope === "returning" && statusText !== "returning series") return false;
       if (scope === "ended" && statusText !== "ended") return false;
@@ -3755,6 +3796,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       const releaseRaw = safeText(m?.release_date);
       const releaseDate = releaseRaw ? new Date(releaseRaw) : null;
       const isUpcoming = releaseDate instanceof Date && !Number.isNaN(releaseDate.valueOf()) && releaseDate > new Date();
+      if (scope === "current" && !isCurrentMovie(m)) return false;
       if (scope === "upcoming" && !isUpcoming) return false;
       if (scope === "released" && isUpcoming) return false;
       if (wantAvailability !== "all"){

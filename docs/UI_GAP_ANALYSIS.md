@@ -14,4 +14,5 @@ This file tracks active gaps only. Historical discussion belongs in archived doc
 
 - `web/js/app_runtime.js` remains broad and should only be split through existing owner modules when a concrete defect or scoped refactor requires it.
 - Script lifecycle ownership should remain visible in the master contract and validators so old scripts do not become untracked active behavior.
+- Feature-parity regressions in Shows/Movies browse controls are release blockers: Search, Current, filters, sorting, cards, and actions must stay available on phone, tablet, desktop, and TV-style viewports through the single canonical runtime path.
 

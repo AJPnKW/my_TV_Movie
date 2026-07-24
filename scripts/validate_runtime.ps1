@@ -81,6 +81,13 @@ foreach ($path in $requiredFiles) {
 
 Write-Host '== Page shell references =='
 $pageFiles = @('web/index.html','web/calendar.html','web/shows.html','web/movies.html','web/watch_me.html','web/discover.html','web/config.html','web/manage_watch_state.html')
+$releaseVersion = ''
+try {
+    $runtimeConfig = Get-Content -Raw -LiteralPath 'web/config.json' | ConvertFrom-Json
+    $releaseVersion = [string]$runtimeConfig._meta.version
+} catch {
+    Add-CheckError 'web/config.json must parse and expose _meta.version for app-shell cache busting.'
+}
 foreach ($page in $pageFiles) {
     if (-not (Test-Path -LiteralPath $page)) { continue }
     $text = Get-Content -Raw -LiteralPath $page
@@ -92,8 +99,18 @@ foreach ($page in $pageFiles) {
     if ($text -like '*./css/my_tv_hub.css*') {
         Add-CheckError "$page must not load legacy my_tv_hub.css; main_app.css is the sole active UI authority."
     }
+    if ($releaseVersion) {
+        foreach ($versionedAsset in @("./css/main_app.css?v=$releaseVersion","./js/chrometv_focus.js?v=$releaseVersion","./js/app_runtime.js?v=$releaseVersion","./js/provider_popup_guard.js?v=$releaseVersion","./js/media_library_header_button.js?v=$releaseVersion")) {
+            if ($text -notlike "*$versionedAsset*") {
+                Add-CheckError "$page missing release-versioned asset reference: $versionedAsset"
+            }
+        }
+    }
     foreach ($legacy in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js')) {
         if ($text -like "*$legacy*") { Add-CheckError "$page still references removed compatibility layer: $legacy" }
+    }
+    foreach ($retiredBrowse in @('mobile_browse_fixes.css','mobile_current_filters.js')) {
+        if ($text -like "*$retiredBrowse*") { Add-CheckError "$page still references retired mobile browse implementation: $retiredBrowse" }
     }
     $navMatch = [regex]::Match($text, '(?s)<div class="nav" role="tablist" aria-label="Primary">(?<nav>.*?)</div>')
     if (-not $navMatch.Success) {
@@ -284,6 +301,11 @@ foreach ($file in $scanFiles) {
         }
     }
 }
+foreach ($retiredBrowsePath in @('web/css/mobile_browse_fixes.css','web/js/mobile_current_filters.js')) {
+    if (Test-Path -LiteralPath $retiredBrowsePath) {
+        Add-CheckError "Retired mobile browse implementation remains active: $retiredBrowsePath"
+    }
+}
 
 Write-Host '== Placeholder and overlay artifacts =='
 $driftPaths = @(
@@ -352,6 +374,21 @@ $mainCssText = Get-Content -Raw -LiteralPath 'web/css/main_app.css'
 $qaBrowserText = Get-Content -Raw -LiteralPath 'scripts/qa_browser_layout_check.mjs'
 foreach ($legacy in @('web/css/runtime_layout_fix.css','web/css/ui_contract_fix.css','web/js/ui_contract_fix.js')) {
     if (Test-Path -LiteralPath $legacy) { Add-CheckError "Removed compatibility layer returned to active repo: $legacy" }
+}
+foreach ($needle in @(
+    'CURRENT_SHOW_ACTIVITY_WINDOW_DAYS',
+    'CURRENT_MOVIE_RELEASE_WINDOW_DAYS',
+    'CURRENT_MOVIE_RELEASE_LOOKAHEAD_DAYS',
+    'function isCurrentShow',
+    'function isCurrentMovie',
+    'data-scope="current"',
+    'scope === "current" && !isCurrentShow',
+    'scope === "current" && !isCurrentMovie'
+)) {
+    if ($appRuntimeText -notlike "*$needle*") { Add-CheckError "app_runtime.js missing canonical Current filter contract: $needle" }
+}
+if ($mainCssText -match '@media\s*\(pointer:coarse\)[\s\S]{0,160}\.browse-sidebar\s+\.control-row--primary[\s\S]{0,80}display\s*:\s*none') {
+    Add-CheckError 'main_app.css must not hide Shows/Movies primary browse controls on touch/coarse-pointer devices.'
 }
 if ($cardRendererText -match 'media-card__surface-badge') {
     Add-CheckError 'card_renderer.js must not render media-card__surface-badge overlays.'
@@ -622,7 +659,7 @@ foreach ($needle in @('api/watch-state-queue', 'queueRecordFromStateRecord', 'id
 foreach ($needle in @('__myTvHubWatchStateManagerLoaded', 'valueOf')) {
     if ($watchStateText -notlike "*$needle*") { Add-CheckError "watch_state_manager.js missing canonical owner guard/export: $needle" }
 }
-if ($appRuntimeText -notlike "*import './watch_state_manager.js';*") {
+if ($appRuntimeText -notmatch "import\s+'\.\/watch_state_manager\.js(\?v=$([regex]::Escape($releaseVersion)))?';") {
     Add-CheckError 'app_runtime.js must import watch_state_manager.js before rendering action bars.'
 }
 foreach ($needle in @('watchStateQueue', '../data/watch_state_queue.json', 'item?.id ?? ""')) {
@@ -767,14 +804,16 @@ foreach ($needle in @(
     'MC-2026-06-03.1 Server Mode Implementation Scaffold',
     'MC-2026-06-03.2 Live PostgreSQL Completion Gate',
     'MC-2026-07-11.1 VSEmbed Streaming Provider Addition',
-    'Current version MC-2026-07-11.1',
-    'Last updated: 2026-07-11',
+    'MC-2026-07-24.1 Browse Parity, Current Filters, and Release Cache',
+    'Current version MC-2026-07-24.1',
+    'Last updated: 2026-07-24',
     '<tr><td>2026-05-20</td><td>MC-2026-05-20.1</td>',
     '<tr><td>2026-05-20</td><td>MC-2026-05-20.2</td>',
     '<tr><td>2026-06-02</td><td>MC-2026-06-02.1</td>',
     '<tr><td>2026-06-03</td><td>MC-2026-06-03.1</td>',
     '<tr><td>2026-06-03</td><td>MC-2026-06-03.2</td>',
     '<tr><td>2026-07-11</td><td>MC-2026-07-11.1</td>',
+    '<tr><td>2026-07-24</td><td>MC-2026-07-24.1</td>',
     'Freshness rule',
     'Repo inventory, file/folder structure, and runtime ownership map',
     'Watch Source popup schema and provider lifecycle',
@@ -790,6 +829,13 @@ foreach ($needle in @(
     'Streaming provider schema',
     'https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}',
     'https://vsembed.ru/embed/movie/{tmdb_id}',
+    'Feature Parity Standard',
+    'Shared State and Component Standard',
+    'Current Definitions',
+    'Cache and Release Standard',
+    'CURRENT_SHOW_ACTIVITY_WINDOW_DAYS = 548',
+    'CURRENT_MOVIE_RELEASE_WINDOW_DAYS = 548',
+    'web/config.json</code> <code>_meta.version</code>',
     'Episode card baseline schema',
     'Media QA / renamer pipeline',
     '<td>Added</td>',

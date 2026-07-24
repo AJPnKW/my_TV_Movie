@@ -207,9 +207,9 @@ CHANGE NOTES:
       color:var(--muted);
     }
     .control-checks{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(118px, 1fr));
+      gap:6px 8px;
     }
     .dashrow{
       display:grid;
@@ -629,10 +629,11 @@ CHANGE NOTES:
       display:flex;
       align-items:center;
       gap:6px;
+      min-height:32px;
       font-size:11px;
       font-weight:800;
       color:var(--text);
-      white-space:nowrap;
+      line-height:1.2;
     }
     .checkitem input{ accent-color: var(--accent); }
     .seg{
@@ -3361,6 +3362,7 @@ CHANGE NOTES:
   .browse-layout,
   .shell--watchme{
     grid-template-columns:1fr;
+    overflow-x:visible;
   }
   .browse-layout--sidebar-hidden{
     grid-template-columns:1fr;
@@ -3368,6 +3370,37 @@ CHANGE NOTES:
   .browse-sidebar,
   .watchme-sidebar{
     position:static;
+  }
+  .browse-sidebar{
+    width:100%;
+    max-width:none;
+    margin:0 0 12px;
+    padding:12px;
+  }
+  .browse-sidebar .control-panel{
+    gap:10px;
+  }
+  .browse-sidebar .control-row{
+    gap:8px;
+  }
+  .browse-sidebar .control-row--primary{
+    display:grid;
+    grid-template-columns:1fr;
+    align-items:stretch;
+  }
+  .browse-sidebar .control-input,
+  .browse-sidebar .control-select{
+    width:100%;
+    min-width:0;
+    min-height:44px;
+    font-size:16px;
+  }
+  .browse-sidebar .control-checks{
+    grid-template-columns:repeat(auto-fit, minmax(108px, 1fr));
+    gap:4px 8px;
+  }
+  .browse-sidebar .checkitem{
+    min-height:32px;
   }
   .calendar-month-grid{
     grid-template-columns:repeat(7, minmax(0, 1fr));
@@ -3383,12 +3416,6 @@ CHANGE NOTES:
   .watchme-row,
   .calendar-tree-day__items{
     grid-template-columns:1fr;
-  }
-}
-
-@media (pointer:coarse){
-  .browse-sidebar .control-row--primary{
-    display:none;
   }
 }
 
