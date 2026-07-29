@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-07-29
+
+- Root-caused the Inputs Editor online publish miss to a detached/in-progress Git checkout plus the old branch-name push path (`git push github main`), which could create a local `data/inputs.json` commit without pushing that exact commit to GitHub, leaving Actions with no remote change to run.
+- Hardened `tools/inputs_editor/inputs_editor_server.py` and `web/inputs_editor.html` so publish status blocks detached HEAD, in-progress Git operations, wrong-branch state, conflicts, and unrelated dirty files; generated runtime artifacts are stashed before sync, the publish remote is resolved deterministically, and publishing now pushes the current `HEAD` to `refs/heads/main`.
+- Preserved the existing canonical workflow: `data/inputs.json` remains the source input, `data/data.json` remains generated runtime output, `web/inputs_editor.html` remains the canonical editor, and generated streaming-provider URLs remain owned by `web/config.json` instead of duplicated in runtime data.
+- Recovered the local checkout from the broken rebase state with a backup branch and stash, rebuilt the canonical runtime, and verified `Star Trek: Strange New Worlds` TMDB `103516` is present with `shows=254`, `movies=123`, and `errors=0`.
+- Validation: full `python scripts/run_pipeline_tmdb_trakt.py` passed; Python compile passed for the edited scripts/server; JSON parse passed for generated runtime files; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]`; patched editor server `/api/health` and `/api/publish-status` were verified on port `8788`.
+- Commit: `60278180c4` inputs-editor-publish-workflow-and-runtime-update.
+
 ## 2026-07-24
 
 - Removed duplicate show/movie detail popup hero summaries from the shared runtime so creator, release year, episode count, runtime, and genre facts are rendered once in the structured detail grid; added a validator guard against the `Created by` hero-summary regression.
