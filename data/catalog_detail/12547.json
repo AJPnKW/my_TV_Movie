@@ -74,31 +74,12 @@
   "vote_average": 7.0,
   "vote_count": 3,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-29T11:39:32Z",
+  "availability_checked_at": "2026-07-29T16:32:42Z",
   "availability_source": "watch_source_availability.json:child_status",
   "availability_reason": "derived from child availability",
-  "primary_watch_url_tested": "https://player.videasy.net/tv/12547",
+  "primary_watch_url_tested": "https://player.videasy.net/tv/12547//",
   "watch": {
-    "embed": [
-      {
-        "key": "vidsrc_net",
-        "label": "VidSrc",
-        "href": "https://vidsrc.net/embed/tv/12547",
-        "type": "embed",
-        "status": "ok",
-        "style": "path",
-        "priority": 0
-      },
-      {
-        "key": "videasy",
-        "label": "VidEasy",
-        "href": "https://player.videasy.net/tv/12547",
-        "type": "embed",
-        "status": "ok",
-        "style": "path",
-        "priority": 1
-      }
-    ],
+    "embed": [],
     "providers": {
       "CA": [
         {
@@ -151,31 +132,12 @@
       "provider_page": "https://www.themoviedb.org/tv/12547/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/12547/season/57",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:32Z",
+      "availability_checked_at": "2026-07-29T16:32:42Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/12547/57",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/12547/57/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/12547/57",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/12547/57",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -229,148 +191,12 @@
           "provider_page": "https://www.themoviedb.org/tv/12547/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/12547/season/57/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:32Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/12547/57/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/12547&s=57&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=12547&season=57&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/12547/57/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/12547/57/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -424,148 +250,12 @@
           "provider_page": "https://www.themoviedb.org/tv/12547/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/12547/season/57/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:32Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/12547/57/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/12547&s=57&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=12547&season=57&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/12547/57/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/12547/57/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -619,148 +309,12 @@
           "provider_page": "https://www.themoviedb.org/tv/12547/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/12547/season/57/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:32Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/12547/57/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/12547&s=57&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=12547&season=57&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/12547/57/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/12547/57/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {

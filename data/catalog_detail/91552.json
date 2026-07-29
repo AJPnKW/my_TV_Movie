@@ -91,31 +91,12 @@
   "vote_average": 6.47,
   "vote_count": 118,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-29T11:39:31Z",
+  "availability_checked_at": "2026-07-29T16:32:42Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
-  "primary_watch_url_tested": "https://player.videasy.net/tv/91552",
+  "primary_watch_url_tested": "https://player.videasy.net/tv/91552//",
   "watch": {
-    "embed": [
-      {
-        "key": "vidsrc_net",
-        "label": "VidSrc",
-        "href": "https://vidsrc.net/embed/tv/91552",
-        "type": "embed",
-        "status": "ok",
-        "style": "path",
-        "priority": 0
-      },
-      {
-        "key": "videasy",
-        "label": "VidEasy",
-        "href": "https://player.videasy.net/tv/91552",
-        "type": "embed",
-        "status": "ok",
-        "style": "path",
-        "priority": 1
-      }
-    ],
+    "embed": [],
     "providers": {
       "CA": [
         {
@@ -305,31 +286,12 @@
       "provider_page": "https://www.themoviedb.org/tv/91552/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/91552/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:42Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/91552/1",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/91552/1",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -520,148 +482,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=1&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=1&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -852,148 +678,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=1&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=1&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -1184,148 +874,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=1&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=1&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -1516,148 +1070,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/1/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=1&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=1&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/1/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/1/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -1848,148 +1266,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/1/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1/5",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=1&e=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=1&episode=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/1/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/1/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -2180,148 +1462,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/1/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/1/6",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=1&e=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=1&episode=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/1/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/1/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -2513,31 +1659,12 @@
       "provider_page": "https://www.themoviedb.org/tv/91552/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/91552/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:42Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/91552/2",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/91552/2",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -2728,148 +1855,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=2&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=2&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -3060,148 +2051,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=2&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=2&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -3392,148 +2247,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=2&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=2&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -3724,148 +2443,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=2&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=2&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -4056,148 +2639,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/2/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2/5",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=2&e=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=2&episode=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/2/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/2/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -4388,148 +2835,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/2/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/2/6",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=2&e=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=2&episode=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/2/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/2/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -4721,31 +3032,12 @@
       "provider_page": "https://www.themoviedb.org/tv/91552/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/91552/season/3",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:42Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/91552/3",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/91552/3",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -4936,148 +3228,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/3/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=3&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=3&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -5268,148 +3424,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/3/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=3&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=3&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -5600,148 +3620,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/3/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=3&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=3&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -5932,148 +3816,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/3/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=3&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=3&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -6264,148 +4012,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/3/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3/5",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=3&e=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=3&episode=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -6596,148 +4208,12 @@
           "provider_page": "https://www.themoviedb.org/tv/91552/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/91552/season/3/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:42Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/91552/3/6",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/91552&s=3&e=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=91552&season=3&episode=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/91552/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/91552/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {

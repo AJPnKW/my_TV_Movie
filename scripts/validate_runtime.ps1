@@ -632,7 +632,7 @@ foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_
 foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', 'web_root not in file_path.parents')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing hardened save/scope contract: $needle" }
 }
-foreach ($needle in @('/api/publish-inputs', '/api/publish-status', '_editor_publish_status', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', '_ensure_publishable_git_state', 'diff-filter=U', 'Git conflict state could not be checked', 'git diff --cached failed', 'unmerged_paths', 'qa_pipeline_integrity.py')) {
+foreach ($needle in @('/api/publish-inputs', '/api/publish-status', '_editor_publish_status', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', '_ensure_publishable_git_state', '_git_operation_in_progress', '_resolve_publish_remote', 'detached HEAD', 'HEAD:refs/heads', 'diff-filter=U', 'Git conflict state could not be checked', 'git diff --cached failed', 'unmerged_paths', 'qa_pipeline_integrity.py')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing publish/sync contract: $needle" }
 }
 $fetchTmdbText = Get-Content -Raw -LiteralPath 'scripts/fetch_tmdb.py'
@@ -643,7 +643,7 @@ $inputsEditorText = Get-Content -Raw -LiteralPath 'web/inputs_editor.html'
 foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refresh-runtime', 'apiFetch')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing hardened save/refresh contract: $needle" }
 }
-foreach ($needle in @('Save Local Only', 'Save Online and Finish Update', '/api/publish-inputs', '/api/publish-status', 'Publish: not online yet', 'wait_seconds:900', 'Online save finished and this computer is updated', 'Editor: wrong server', 'unmerged_paths')) {
+foreach ($needle in @('Save Local Only', 'Save Online and Finish Update', '/api/publish-inputs', '/api/publish-status', 'Publish: not online yet', 'Publish: blocked', 'detached HEAD', 'wait_seconds:900', 'Online save finished and this computer is updated', 'Editor: wrong server', 'unmerged_paths')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing publish/sync contract: $needle" }
 }
 foreach ($needle in @('data-editor-tab="search"', 'editorTabSearch', 'editorTabSaved', 'editorTabLibrary', 'switchEditorTab')) {

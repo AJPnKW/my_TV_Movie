@@ -1,6 +1,6 @@
 <!--
 FILE: web/inputs_editor.html
-VERSION: 1.0.7
+VERSION: 1.0.8
 DATE: 2026-07-03
 -->
 <!doctype html>
@@ -90,7 +90,7 @@ DATE: 2026-07-03
         <div class="inputs_editor_hint">Search, review, then finish online from one local editor tab.</div>
       </div>
       <div class="inputs_editor_status_strip" aria-live="polite">
-        <span class="inputs_editor_meta">v1.0.7</span>
+        <span class="inputs_editor_meta">v1.0.8</span>
         <span class="inputs_editor_meta" id="serverStatus">Editor: ...</span>
         <span class="inputs_editor_meta" id="publishStatus">Publish: checking...</span>
         <span class="inputs_editor_meta" id="dirty">Changes saved: yes</span>
@@ -267,7 +267,11 @@ async function refreshPublishStatus(){
     return j;
   }
   const generatedCount=Array.isArray(j.generated_paths) ? j.generated_paths.length : 0;
-  if(j.inputs_dirty || j.generated_dirty){
+  const blockedCount=Array.isArray(j.publish_blocked_paths) ? j.publish_blocked_paths.length : 0;
+  if(j.publish_blocked){
+    const reason=j.detached_head ? "detached HEAD" : (Array.isArray(j.git_operations)&&j.git_operations.length ? "Git operation in progress" : `${blockedCount} blocked path${blockedCount===1?"":"s"}`);
+    setPublishStatus(`Publish: blocked (${reason})`,"bad");
+  }else if(j.inputs_dirty || j.generated_dirty){
     setPublishStatus(`Publish: not online yet (${j.inputs_dirty?"inputs":"data"} changed${generatedCount?`, ${generatedCount} generated paths`:""})`,"warn");
   }else if(!j.validation_ok){
     setPublishStatus("Publish: validation failing","bad");
@@ -802,9 +806,10 @@ async function pushInputsToGitHub(){
     return;
   }
   const sync=j.sync||{};
-  const stashNote=sync.stashed_generated_artifacts ? " Old local generated files were saved aside before updating this computer." : "";
+  const stashNote=(sync.stashed_generated_artifacts||j.stashed_generated_artifacts) ? " Old local generated files were saved aside before updating this computer." : "";
+  const remoteNote=j.remote_warning ? ` ${j.remote_warning}.` : "";
   msg.textContent=j.publish_complete
-    ? `Online save finished and this computer is updated (${sync.remote_head||j.commit||"latest"}).${stashNote}`
+    ? `Online save finished and this computer is updated (${sync.remote_head||j.commit||"latest"}).${remoteNote}${stashNote}`
     : `Saved online, but the app data did not finish updating yet.`;
   await refreshPublishStatus();
 }

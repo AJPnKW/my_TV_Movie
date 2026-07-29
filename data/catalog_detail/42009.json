@@ -81,31 +81,12 @@
   "vote_average": 8.289,
   "vote_count": 6350,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-29T11:39:31Z",
+  "availability_checked_at": "2026-07-29T16:32:41Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
-  "primary_watch_url_tested": "https://player.videasy.net/tv/42009",
+  "primary_watch_url_tested": "https://player.videasy.net/tv/42009//",
   "watch": {
-    "embed": [
-      {
-        "key": "vidsrc_net",
-        "label": "VidSrc",
-        "href": "https://vidsrc.net/embed/tv/42009",
-        "type": "embed",
-        "status": "ok",
-        "style": "path",
-        "priority": 0
-      },
-      {
-        "key": "videasy",
-        "label": "VidEasy",
-        "href": "https://player.videasy.net/tv/42009",
-        "type": "embed",
-        "status": "ok",
-        "style": "path",
-        "priority": 1
-      }
-    ],
+    "embed": [],
     "providers": {
       "CA": [
         {
@@ -242,31 +223,12 @@
       "provider_page": "https://www.themoviedb.org/tv/42009/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/42009/season/1",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:41Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/1",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/1/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/42009/1",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/42009/1",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -404,148 +366,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/1/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/1/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=1&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=1&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/1/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -683,148 +509,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/1/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/1/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=1&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=1&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/1/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -962,148 +652,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/1/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/1/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=1&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=1&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/1/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -1242,31 +796,12 @@
       "provider_page": "https://www.themoviedb.org/tv/42009/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/42009/season/2",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:41Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/2",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/2/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/42009/2",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/42009/2",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -1404,148 +939,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/2/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/2/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=2&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=2&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/2/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -1683,148 +1082,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/2/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/2/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=2&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=2&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/2/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -1962,148 +1225,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/2/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/2/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=2&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=2&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/2/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -2241,148 +1368,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/2/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/2/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=2&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=2&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/2/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -2521,31 +1512,12 @@
       "provider_page": "https://www.themoviedb.org/tv/42009/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/42009/season/3",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:41Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/42009/3",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/42009/3",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -2683,148 +1655,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/3/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=3&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=3&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/3/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -2962,148 +1798,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/3/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=3&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=3&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/3/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -3241,148 +1941,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/3/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=3&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=3&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/3/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -3520,148 +2084,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/3/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=3&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=3&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/3/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -3799,148 +2227,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/3/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3/5",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=3&e=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=3&episode=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/3/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -4078,148 +2370,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/3/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/3/6",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=3&e=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=3&episode=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/3/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -4358,31 +2514,12 @@
       "provider_page": "https://www.themoviedb.org/tv/42009/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/42009/season/4",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:41Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/42009/4",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/42009/4",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -4520,148 +2657,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/4/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=4&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=4&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/4/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/4/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -4799,148 +2800,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/4/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=4&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=4&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/4/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/4/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -5078,148 +2943,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/4/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=4&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=4&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/4/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/4/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -5357,148 +3086,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/4/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=4&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=4&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/4/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/4/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -5636,148 +3229,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/4/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4/5",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=4&e=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=4&episode=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/4/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/4/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -5915,148 +3372,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/4/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/4/6",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=4&e=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=4&episode=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/4/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/4/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -6195,31 +3516,12 @@
       "provider_page": "https://www.themoviedb.org/tv/42009/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/42009/season/5",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:41Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/5",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/5/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/42009/5",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/42009/5",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -6357,148 +3659,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/5/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/5/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=5&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=5&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/5/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/5/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -6636,148 +3802,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/5/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/5/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=5&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=5&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/5/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/5/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -6915,148 +3945,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/5/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/5/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=5&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=5&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/5/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/5/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -7195,31 +4089,12 @@
       "provider_page": "https://www.themoviedb.org/tv/42009/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/42009/season/6",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:41Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/6",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/6/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/42009/6",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/42009/6",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -7357,148 +4232,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/6/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/6/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=6&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=6&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/6/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/6/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -7636,148 +4375,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/6/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/6/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=6&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=6&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/6/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/6/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -7915,148 +4518,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/6/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/6/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=6&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=6&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/6/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/6/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -8194,148 +4661,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/6/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/6/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=6&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=6&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/6/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/6/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -8473,148 +4804,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/6/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/6/5",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=6&e=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=6&episode=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/6/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/6/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -8753,31 +4948,12 @@
       "provider_page": "https://www.themoviedb.org/tv/42009/watch",
       "tmdb_url": "https://www.themoviedb.org/tv/42009/season/7",
       "availability_status": "unavailable",
-      "availability_checked_at": "2026-07-29T11:39:31Z",
+      "availability_checked_at": "2026-07-29T16:32:41Z",
       "availability_source": "watch_source_availability.json:derived",
       "availability_reason": "primary watch URL does not match configured videasy base",
-      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7",
+      "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7/",
       "watch": {
-        "embed": [
-          {
-            "key": "vidsrc_net",
-            "label": "VidSrc",
-            "href": "https://vidsrc.net/embed/tv/42009/7",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 0
-          },
-          {
-            "key": "videasy",
-            "label": "VidEasy",
-            "href": "https://player.videasy.net/tv/42009/7",
-            "type": "embed",
-            "status": "ok",
-            "style": "path",
-            "priority": 1
-          }
-        ],
+        "embed": [],
         "providers": {
           "CA": [
             {
@@ -8915,148 +5091,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/7/episode/1",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7/1",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=7&e=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=7&episode=1",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/7/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/7/1",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -9194,148 +5234,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/7/episode/2",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7/2",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=7&e=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=7&episode=2",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/7/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/7/2",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -9473,148 +5377,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/7/episode/3",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7/3",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=7&e=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=7&episode=3",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/7/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/7/3",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -9752,148 +5520,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/7/episode/4",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7/4",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=7&e=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=7&episode=4",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/7/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/7/4",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -10031,148 +5663,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/7/episode/5",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7/5",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=7&e=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=7&episode=5",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/7/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/7/5",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {
@@ -10310,148 +5806,12 @@
           "provider_page": "https://www.themoviedb.org/tv/42009/watch",
           "tmdb_url": "https://www.themoviedb.org/tv/42009/season/7/episode/6",
           "availability_status": "unavailable",
-          "availability_checked_at": "2026-07-29T11:39:31Z",
+          "availability_checked_at": "2026-07-29T16:32:41Z",
           "availability_source": "watch_source_availability.json:derived",
           "availability_reason": "primary watch URL does not match configured videasy base",
           "primary_watch_url_tested": "https://player.videasy.net/tv/42009/7/6",
           "watch": {
-            "embed": [
-              {
-                "key": "vsembed",
-                "label": "VSEmbed",
-                "href": "https://vsembed.ru/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 0
-              },
-              {
-                "key": "vidsrc_net",
-                "label": "VidSrc",
-                "href": "https://vidsrc.net/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 1
-              },
-              {
-                "key": "videasy",
-                "label": "VidEasy",
-                "href": "https://player.videasy.net/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 2
-              },
-              {
-                "key": "superembed",
-                "label": "SuperEmbed",
-                "href": "https://superembed.stream/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 3
-              },
-              {
-                "key": "multiembed",
-                "label": "MultiEmbed",
-                "href": "https://multiembed.mov/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 4
-              },
-              {
-                "key": "smashystream",
-                "label": "SmashyStream",
-                "href": "https://smashystream.com/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 5
-              },
-              {
-                "key": "flixhq",
-                "label": "FlixHQ",
-                "href": "https://flixhq.to/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 6
-              },
-              {
-                "key": "sflix",
-                "label": "SFlix",
-                "href": "https://sflix.to/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "ok",
-                "style": "path",
-                "priority": 7
-              },
-              {
-                "key": "2embed_cc",
-                "label": "2Embed CC",
-                "href": "https://www.2embed.cc/embedtv/42009&s=7&e=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "mixed",
-                "priority": 8
-              },
-              {
-                "key": "2embed_org",
-                "label": "2Embed Org",
-                "href": "https://www.2embed.org/embed/tv?tmdb=42009&season=7&episode=6",
-                "type": "embed",
-                "status": "warn",
-                "style": "query",
-                "priority": 9
-              },
-              {
-                "key": "nunflix",
-                "label": "Nunflix",
-                "href": "https://nunflix.org/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidlink",
-                "label": "VidLink",
-                "href": "https://vidlink.pro/tv/42009/7/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_me",
-                "label": "VidSrc.me",
-                "href": "https://vidsrc.me/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_to",
-                "label": "VidSrc.to",
-                "href": "https://vidsrc.to/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              },
-              {
-                "key": "vidsrc_embed_ru",
-                "label": "vidsrc-embed.ru",
-                "href": "https://vidsrc-embed.ru/embed/tv/42009/7/6",
-                "type": "embed",
-                "status": "candidate",
-                "style": "path",
-                "priority": 10
-              }
-            ],
+            "embed": [],
             "providers": {
               "CA": [
                 {

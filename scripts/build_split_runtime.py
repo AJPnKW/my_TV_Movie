@@ -98,7 +98,6 @@ def _normalize_watch_providers(watch_providers: Any, provider_page: str = "") ->
 
 def _normalize_embed_sources(entity: Dict[str, Any]) -> List[Dict[str, Any]]:
     links = entity.get("links") if isinstance(entity.get("links"), dict) else {}
-    raw_sources = entity.get("watch_sources") if isinstance(entity.get("watch_sources"), list) else []
     out: List[Dict[str, Any]] = []
     seen: set[Tuple[str, str]] = set()
 
@@ -116,29 +115,6 @@ def _normalize_embed_sources(entity: Dict[str, Any]) -> List[Dict[str, Any]]:
             }
         )
         seen.add(("local", local_href))
-
-    for idx, source in enumerate(raw_sources):
-        if not isinstance(source, dict):
-            continue
-        href = _safe_text(source.get("href") or source.get("url") or source.get("link"))
-        key = _safe_text(source.get("key") or source.get("provider") or source.get("source"))
-        if not href or not key:
-            continue
-        dedupe_key = (key, href)
-        if dedupe_key in seen:
-            continue
-        seen.add(dedupe_key)
-        out.append(
-            {
-                "key": key,
-                "label": _safe_text(source.get("label") or source.get("name") or key),
-                "href": href,
-                "type": _safe_text(source.get("type") or source.get("kind") or "embed") or "embed",
-                "status": _safe_text(source.get("status") or "ok") or "ok",
-                "style": _safe_text(source.get("style") or "path") or "path",
-                "priority": _safe_int(source.get("priority"), idx),
-            }
-        )
 
     out.sort(key=lambda row: (_safe_int(row.get("priority"), 999), _safe_text(row.get("label"))))
     return out

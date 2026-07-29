@@ -9,8 +9,8 @@
 #
 # [PATCH GOALS]
 # - Enforce data/inputs.json as the sole production input scope
-# - Compute robust streaming URLs from the canonical streaming config
-# - Emit normalized watch_sources arrays for movie/show/season/episode contexts
+# - Keep streaming URLs centralized in web/config.json instead of duplicating
+#   generated provider hrefs per movie/show/season/episode row
 # - Add core rich TMDB fields (NO translations) to support UI cards:
 #   * movie: imdb_id, poster_path, backdrop_path, overview, status, popularity, vote_average, vote_count, genres, runtime, homepage
 #   * tv: tvdb_id, poster_path, backdrop_path, overview, status, popularity, vote_average, vote_count, genres, networks, created_by,
@@ -73,6 +73,7 @@ LOG_DIR = REPO_ROOT / "logs"
 CONFIG_JSON = WEB_DIR / "config.json"
 OUTPUT_SCHEMA = "fetch_tmdb.v3"
 INCREMENTAL_CACHE_SCHEMA = 1
+GENERATED_STREAMING_LINK_KEYS = {"vidsrc", "videasy"}
 
 # -------------------------
 # Logging
@@ -117,6 +118,24 @@ def sha1_text(s: str) -> str:
 def stable_signature(value: Any) -> str:
     payload = json.dumps(value, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
     return sha1_text(payload)
+
+
+def strip_generated_streaming_links(entity: Any) -> Any:
+    if isinstance(entity, dict):
+        entity.pop("watch_sources", None)
+        entity.pop("source_options", None)
+        links = entity.get("links")
+        if isinstance(links, dict):
+            for key in GENERATED_STREAMING_LINK_KEYS:
+                links.pop(key, None)
+            if not links:
+                entity.pop("links", None)
+        for value in list(entity.values()):
+            strip_generated_streaming_links(value)
+    elif isinstance(entity, list):
+        for value in entity:
+            strip_generated_streaming_links(value)
+    return entity
 
 
 def input_signature(media: str, item: Dict[str, Any], config_sha1: str) -> str:
@@ -179,7 +198,7 @@ def cached_entity(
     row = cache.get(media, {}).get(int(tmdb_id))
     if not isinstance(row, dict) or row.get("_input_signature") != signature:
         return None
-    return copy.deepcopy(row)
+    return strip_generated_streaming_links(copy.deepcopy(row))
 
 
 def parse_args() -> argparse.Namespace:
@@ -325,13 +344,9 @@ def _format_or_join(base: str, **kw: Any) -> str:
 
 
 def build_tv_links(cfg: Config, tmdb_id: int, season: int, episode: int) -> Dict[str, str]:
-    # canonical suffix for these providers is typically /{tmdb_id}/{season}/{episode}
-    suffix = f"{tmdb_id}/{season}/{episode}"
     return {
         "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}/season/{season}/episode/{episode}",
         "provider_page": f"https://www.themoviedb.org/tv/{tmdb_id}/watch",
-        "vidsrc": _format_or_join(cfg.streaming.vidsrc_tv, tmdb_id=tmdb_id, season=season, episode=episode) if "{" in cfg.streaming.vidsrc_tv else _join_url(cfg.streaming.vidsrc_tv, suffix),
-        "videasy": _format_or_join(cfg.streaming.videasy_tv, tmdb_id=tmdb_id, season=season, episode=episode) if "{" in cfg.streaming.videasy_tv else _join_url(cfg.streaming.videasy_tv, suffix),
     }
 
 
@@ -339,8 +354,6 @@ def build_movie_links(cfg: Config, tmdb_id: int) -> Dict[str, str]:
     return {
         "tmdb": f"https://www.themoviedb.org/movie/{tmdb_id}",
         "provider_page": f"https://www.themoviedb.org/movie/{tmdb_id}/watch",
-        "vidsrc": _format_or_join(cfg.streaming.vidsrc_movie, tmdb_id=tmdb_id),
-        "videasy": _format_or_join(cfg.streaming.videasy_movie, tmdb_id=tmdb_id),
     }
 
 
@@ -348,18 +361,13 @@ def build_show_links(cfg: Config, tmdb_id: int) -> Dict[str, str]:
     return {
         "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}",
         "provider_page": f"https://www.themoviedb.org/tv/{tmdb_id}/watch",
-        "vidsrc": _format_or_join(cfg.streaming.vidsrc_tv, tmdb_id=tmdb_id),
-        "videasy": _format_or_join(cfg.streaming.videasy_tv, tmdb_id=tmdb_id),
     }
 
 
 def build_season_links(cfg: Config, tmdb_id: int, season: int) -> Dict[str, str]:
-    suffix = f"{tmdb_id}/{season}"
     return {
         "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}/season/{season}",
         "provider_page": f"https://www.themoviedb.org/tv/{tmdb_id}/watch",
-        "vidsrc": _format_or_join(cfg.streaming.vidsrc_tv, tmdb_id=tmdb_id, season=season) if "{" in cfg.streaming.vidsrc_tv else _join_url(cfg.streaming.vidsrc_tv, suffix),
-        "videasy": _format_or_join(cfg.streaming.videasy_tv, tmdb_id=tmdb_id, season=season) if "{" in cfg.streaming.videasy_tv else _join_url(cfg.streaming.videasy_tv, suffix),
     }
 
 
@@ -577,7 +585,6 @@ def build_tv_seasons_episodes(
             "poster_path": poster_path,
             "poster_local": compute_local_season_poster(cfg, poster_path),
             "links": build_season_links(cfg, int(show_tmdb_id), int(sn)),
-            "watch_sources": build_watch_sources(cfg, "season", int(show_tmdb_id), int(sn)),
             "episodes": [],
         }
 
@@ -606,7 +613,6 @@ def build_tv_seasons_episodes(
                 "vote_average": ep.get("vote_average"),
                 "vote_count": ep.get("vote_count"),
                 "links": build_tv_links(cfg, int(show_tmdb_id), int(season_number), int(ep_num)),
-                "watch_sources": build_watch_sources(cfg, "episode", int(show_tmdb_id), int(season_number), int(ep_num)),
             }
             season_obj["episodes"].append(ep_obj)
 
@@ -868,7 +874,6 @@ def main() -> int:
                 "backdrop_local": backdrop_local,
                 "seasons": [],  # built below
                 "links": build_show_links(cfg, int(tmdb_id)),
-                "watch_sources": build_watch_sources(cfg, "show", int(tmdb_id)),
                 "season_mode": season_mode,
                 "season_filter": seasons,  # None => all
                 "include_future": include_future,
@@ -982,7 +987,6 @@ def main() -> int:
                 "poster_local": poster_local,
                 "backdrop_local": backdrop_local,
                 "links": build_movie_links(cfg, int(tmdb_id)),
-                "watch_sources": build_watch_sources(cfg, "movie", int(tmdb_id)),
 
                 # --- rich TMDB fields (NO translations) ---
                 "id": int(tmdb_id),
@@ -1058,6 +1062,7 @@ def main() -> int:
                     s["trakt_id"] = prev_shows[k]
     except Exception as ex:
         logging.warning("[merge] preserve trakt_id skipped: %s", ex)
+    strip_generated_streaming_links(data)
     write_json_atomic(OUT_DATA_JSON, data)
     logging.info(
         "[done] wrote=%s shows=%s movies=%s errors=%s reused_shows=%s rebuilt_shows=%s reused_movies=%s rebuilt_movies=%s",

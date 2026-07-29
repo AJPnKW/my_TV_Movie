@@ -1,6 +1,6 @@
 """
 FILE: tools/inputs_editor/inputs_editor_server.py
-VERSION: 1.0.6
+VERSION: 1.0.7
 UPDATED: 2026-06-27T00:00:00Z
 CHANGE NOTES:
 - Restore live inputs editor server path used by web/inputs_editor.html.
@@ -9,6 +9,8 @@ CHANGE NOTES:
 - Block online publish from unresolved Git conflicts and report the exact recovery reason.
 - Treat failed Git conflict scans as publish-blocking and report rebase conflict paths.
 - Expose editor publish status so local-only saves cannot look complete.
+- Block detached/in-progress Git states, resolve the publish remote safely, stash generated
+  artifacts before Git reconciliation, and push the actual HEAD commit to the target branch.
 """
 from __future__ import annotations
 
@@ -47,6 +49,22 @@ GENERATED_SYNC_PATHS = [
     "data/catalog_detail",
     "data/watch_state_queue.json",
     "assets",
+]
+LOCAL_GENERATED_STASH_PATHS = [
+    *GENERATED_SYNC_PATHS,
+    "data/omdb_movies.json",
+    "reports/ui_stabilization/asset_optimization.json",
+]
+INPUTS_RELATIVE_PATH = "data/inputs.json"
+GIT_OPERATION_FILES = [
+    "MERGE_HEAD",
+    "CHERRY_PICK_HEAD",
+    "REVERT_HEAD",
+    "BISECT_LOG",
+]
+GIT_OPERATION_DIRS = [
+    "rebase-merge",
+    "rebase-apply",
 ]
 
 TMDB_KEY_ENV = "API_TMDB_KEY"
@@ -525,6 +543,62 @@ def _git_text(args: list[str]) -> str:
     return (result.stdout or "").strip()
 
 
+def _git_dir() -> Path | None:
+    raw = _git_text(["rev-parse", "--git-dir"])
+    if not raw:
+        return None
+    path = Path(raw)
+    if not path.is_absolute():
+        path = REPO_ROOT / path
+    return path
+
+
+def _git_current_branch() -> str:
+    return _git_text(["branch", "--show-current"])
+
+
+def _git_operation_in_progress() -> list[str]:
+    git_dir = _git_dir()
+    if not git_dir:
+        return ["unknown Git directory"]
+    active: list[str] = []
+    for name in GIT_OPERATION_FILES:
+        if (git_dir / name).exists():
+            active.append(name)
+    for name in GIT_OPERATION_DIRS:
+        if (git_dir / name).exists():
+            active.append(name)
+    return active
+
+
+def _remote_exists(remote_name: str) -> bool:
+    if not remote_name:
+        return False
+    result = _run_git_command(["remote", "get-url", remote_name])
+    return result.returncode == 0 and bool((result.stdout or "").strip())
+
+
+def _resolve_publish_remote(requested_remote: str) -> dict:
+    requested = (requested_remote or "").strip()
+    candidates = [requested] if requested else []
+    for fallback in ("github", "origin"):
+        if fallback and fallback not in candidates:
+            candidates.append(fallback)
+    for candidate in candidates:
+        if _remote_exists(candidate):
+            return {
+                "ok": True,
+                "remote": candidate,
+                "requested_remote": requested,
+                "remote_warning": "" if not requested or requested == candidate else f"requested remote '{requested}' was not configured; using '{candidate}'",
+            }
+    return {
+        "ok": False,
+        "error": "Online update is blocked because no Git remote named github or origin is configured.",
+        "requested_remote": requested,
+    }
+
+
 def _git_porcelain(paths: list[str] | None = None) -> dict:
     args = ["status", "--porcelain"]
     if paths:
@@ -545,14 +619,46 @@ def _git_porcelain(paths: list[str] | None = None) -> dict:
     return {"ok": True, "paths": paths_out}
 
 
+def _normalized_path_set(paths: list[str]) -> set[str]:
+    normalized: set[str] = set()
+    for path in paths:
+        normalized.add(str(path or "").strip().replace("\\", "/").strip('"'))
+    return {path for path in normalized if path}
+
+
+def _allowed_publish_dirty_paths() -> set[str]:
+    allowed = {INPUTS_RELATIVE_PATH}
+    for path in LOCAL_GENERATED_STASH_PATHS:
+        clean = path.strip().replace("\\", "/")
+        allowed.add(clean)
+    return allowed
+
+
+def _path_is_allowed_publish_dirty(path: str) -> bool:
+    normalized = path.strip().replace("\\", "/")
+    for allowed in _allowed_publish_dirty_paths():
+        if normalized == allowed or normalized.startswith(f"{allowed}/"):
+            return True
+    return False
+
+
 def _editor_publish_status() -> dict:
     inputs_status = _git_porcelain([str(INPUTS_JSON.relative_to(REPO_ROOT))])
-    generated_status = _git_porcelain(GENERATED_SYNC_PATHS)
+    generated_status = _git_porcelain(LOCAL_GENERATED_STASH_PATHS)
     repo_status = _git_porcelain()
     validation = _run_pipeline_integrity_validation()
+    branch = _git_current_branch()
+    git_operations = _git_operation_in_progress()
+    repo_paths = repo_status.get("paths", [])
+    blocked_paths = [path for path in repo_paths if not _path_is_allowed_publish_dirty(path)]
     return {
         "ok": bool(inputs_status.get("ok") and generated_status.get("ok") and repo_status.get("ok")),
         "utc": _now_utc_iso(),
+        "branch": branch,
+        "detached_head": not bool(branch),
+        "git_operations": git_operations,
+        "publish_blocked": bool((not branch) or git_operations or blocked_paths),
+        "publish_blocked_paths": blocked_paths,
         "inputs_dirty": bool(inputs_status.get("paths")),
         "generated_dirty": bool(generated_status.get("paths")),
         "repo_dirty": bool(repo_status.get("paths")),
@@ -583,7 +689,37 @@ def _git_unmerged_paths() -> dict:
     }
 
 
-def _ensure_publishable_git_state() -> dict:
+def _ensure_publishable_git_state(branch_name: str) -> dict:
+    operations = _git_operation_in_progress()
+    if operations:
+        return {
+            "ok": False,
+            "error": (
+                "Online update is blocked because a Git operation is already in progress "
+                f"({', '.join(operations)}). Finish or abort that Git operation, then run Save Online and Finish Update again."
+            ),
+            "git_operations": operations,
+        }
+    current_branch = _git_current_branch()
+    if not current_branch:
+        return {
+            "ok": False,
+            "error": (
+                "Online update is blocked because this checkout is in detached HEAD. "
+                f"Switch back to branch '{branch_name}', then run Save Online and Finish Update again."
+            ),
+            "detached_head": True,
+        }
+    if current_branch != branch_name:
+        return {
+            "ok": False,
+            "error": (
+                f"Online update is blocked because this checkout is on branch '{current_branch}', "
+                f"but the editor publishes '{branch_name}'. Switch to '{branch_name}' and run Save Online and Finish Update again."
+            ),
+            "branch": current_branch,
+            "expected_branch": branch_name,
+        }
     unmerged_state = _git_unmerged_paths()
     if not unmerged_state.get("ok"):
         return {
@@ -601,6 +737,23 @@ def _ensure_publishable_git_state() -> dict:
                 "Resolve the conflicted files, then run Save Online and Finish Update again."
             ),
             "unmerged_paths": unmerged,
+        }
+    repo_state = _git_porcelain()
+    if not repo_state.get("ok"):
+        return {
+            "ok": False,
+            "error": "Online update is blocked because Git status could not be checked.",
+            "git_error": repo_state.get("error", ""),
+        }
+    blocked_paths = [path for path in repo_state.get("paths", []) if not _path_is_allowed_publish_dirty(path)]
+    if blocked_paths:
+        return {
+            "ok": False,
+            "error": (
+                "Online update is blocked because this checkout has non-publish local changes. "
+                "Only data/inputs.json and generated runtime artifacts may be dirty during Save Online and Finish Update."
+            ),
+            "blocked_paths": blocked_paths,
         }
     return {"ok": True}
 
@@ -644,20 +797,20 @@ def _has_runtime_artifact_update(paths: list[str]) -> bool:
 
 
 def _stash_generated_artifacts_if_needed() -> dict:
-    status = _run_git_command(["status", "--porcelain", "--", *GENERATED_SYNC_PATHS])
+    status = _run_git_command(["status", "--porcelain", "--", *LOCAL_GENERATED_STASH_PATHS])
     if status.returncode != 0:
         return {"ok": False, "error": _git_failure(status, "git status failed")}
     if not (status.stdout or "").strip():
         return {"ok": True, "stashed": False}
     stash_message = f"inputs-editor generated artifacts before publish sync {_now_utc_iso()}"
-    stash = _run_git_command(["stash", "push", "-u", "-m", stash_message, "--", *GENERATED_SYNC_PATHS])
+    stash = _run_git_command(["stash", "push", "-u", "-m", stash_message, "--", *LOCAL_GENERATED_STASH_PATHS])
     if stash.returncode != 0:
         return {"ok": False, "error": _git_failure(stash, "git stash failed")}
     return {"ok": True, "stashed": True, "message": stash_message}
 
 
 def _generated_artifacts_are_dirty() -> bool:
-    status = _run_git_command(["status", "--porcelain", "--", *GENERATED_SYNC_PATHS])
+    status = _run_git_command(["status", "--porcelain", "--", *LOCAL_GENERATED_STASH_PATHS])
     return status.returncode == 0 and bool((status.stdout or "").strip())
 
 
@@ -777,12 +930,16 @@ def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_comm
 
 
 def _push_inputs_to_remote(remote: str, branch: str) -> dict:
-    git_state = _ensure_publishable_git_state()
+    remote_state = _resolve_publish_remote(remote)
+    if not remote_state.get("ok"):
+        return remote_state
+    remote_name = str(remote_state.get("remote") or "github")
+    branch_name = (branch or "main").strip() or "main"
+
+    git_state = _ensure_publishable_git_state(branch_name)
     if not git_state.get("ok"):
         return git_state
 
-    remote_name = (remote or "github").strip() or "github"
-    branch_name = (branch or "main").strip() or "main"
     relative_inputs = str(INPUTS_JSON.relative_to(REPO_ROOT))
 
     add_result = _run_git_command(["add", "--", relative_inputs])
@@ -807,6 +964,10 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     if fetch_result.returncode != 0:
         return {"ok": False, "error": fetch_result.stderr.strip() or fetch_result.stdout.strip() or "git fetch failed"}
 
+    generated_stash = _stash_generated_artifacts_if_needed()
+    if not generated_stash.get("ok"):
+        return generated_stash
+
     rebase_result = _run_git_command(["rebase", "--autostash", f"{remote_name}/{branch_name}"])
     if rebase_result.returncode != 0:
         rebase_conflicts = _git_unmerged_paths()
@@ -820,7 +981,8 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     head_result = _run_git_command(["rev-parse", "--short", "HEAD"])
     commit_id = (head_result.stdout or "").strip()
 
-    push_result = _run_git_command(["push", remote_name, branch_name])
+    push_ref = f"HEAD:refs/heads/{branch_name}"
+    push_result = _run_git_command(["push", remote_name, push_ref])
     if push_result.returncode != 0:
         return {"ok": False, "error": push_result.stderr.strip() or push_result.stdout.strip() or "git push failed"}
     return {
@@ -828,8 +990,12 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
         "pushed": committed,
         "rebased": True,
         "remote": remote_name,
+        "requested_remote": remote_state.get("requested_remote", ""),
+        "remote_warning": remote_state.get("remote_warning", ""),
         "branch": branch_name,
         "commit": commit_id,
+        "stashed_generated_artifacts": generated_stash.get("stashed", False),
+        "stash_message": generated_stash.get("message", ""),
     }
 
 
