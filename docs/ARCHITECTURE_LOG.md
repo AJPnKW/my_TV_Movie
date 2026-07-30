@@ -285,3 +285,10 @@
 - Chose Nginx as the baseline VM web server for static file serving now and later API reverse proxying, while leaving API/database implementation to the separate application owner.
 - Added the HP production folder as a promotion-plan-only target and a Windows-side lab package helper under `scripts/deployment/` without VM creation or secrets.
 - Commit: `433af93294` add-x1-lab-vm-deployment-foundation.
+
+## 2026-07-30
+
+- Completed the Inputs Editor publish recovery by resolving the local generated-data merge state, pushing the actual current `HEAD` to remote `main`, and confirming GitHub Actions triggered from the pushed commit.
+- Confirmed `data/inputs.json` remains the canonical source of truth and reconciles into generated split runtime artifacts: `data/catalog_index.json`, `data/calendar.json`, `data/catalog_detail/*.json`, and reference `data/data.json`.
+- Validated the synced workflow-generated state with pipeline integrity, runtime validation, rendered browser QA, and GitHub `validate`, `build-data`, and `pages` workflow success.
+- Commits: `cdc27e66a4` merge recovery, `2aa8c34fc8` workflow-generated data artifacts.
