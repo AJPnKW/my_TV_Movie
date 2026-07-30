@@ -52,11 +52,11 @@
       "name": "United States of America"
     }
   ],
-  "popularity": 154.3469,
-  "vote_average": 7.163,
-  "vote_count": 1709,
+  "popularity": 153.5867,
+  "vote_average": 7.16,
+  "vote_count": 1739,
   "availability_status": "unavailable",
-  "availability_checked_at": "2026-07-30T22:52:57Z",
+  "availability_checked_at": "2026-07-30T23:01:33Z",
   "availability_source": "watch_source_availability.json:derived",
   "availability_reason": "primary watch URL does not match configured videasy base",
   "primary_watch_url_tested": "https://player.videasy.net/movie/1314481",
@@ -99,16 +99,25 @@
           "availability_type": "buy",
           "display_priority": 19,
           "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=CA"
-        }
-      ],
-      "US": [
+        },
         {
           "provider_id": 10,
           "provider_name": "Amazon Video",
           "logo_path": "/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
-          "availability_type": "rent",
-          "display_priority": 8,
+          "availability_type": "buy",
+          "display_priority": 57,
+          "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=CA"
+        }
+      ],
+      "US": [
+        {
+          "provider_id": 15,
+          "provider_name": "Hulu",
+          "logo_path": "/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+          "logo_local": "/assets/logos/services/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 6,
           "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=US"
         },
         {
@@ -118,15 +127,6 @@
           "logo_local": "/assets/logos/services/qR6FKvnPBx2O37FDg8PNM7efwF3.jpg",
           "availability_type": "buy",
           "display_priority": 8,
-          "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=US"
-        },
-        {
-          "provider_id": 2,
-          "provider_name": "Apple TV Store",
-          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
-          "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 9,
           "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=US"
         },
         {
@@ -177,6 +177,15 @@
       ],
       "GB": [
         {
+          "provider_id": 337,
+          "provider_name": "Disney Plus",
+          "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 3,
+          "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=GB"
+        },
+        {
           "provider_id": 2,
           "provider_name": "Apple TV Store",
           "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
@@ -210,15 +219,6 @@
           "logo_local": "",
           "availability_type": "buy",
           "display_priority": 6,
-          "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=GB"
-        },
-        {
-          "provider_id": 130,
-          "provider_name": "Sky Store",
-          "logo_path": "/59TxOAYcoFaufd6CWm465oPchD.jpg",
-          "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 18,
           "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=GB"
         },
         {
@@ -233,12 +233,12 @@
       ],
       "AU": [
         {
-          "provider_id": 2,
-          "provider_name": "Apple TV Store",
-          "logo_path": "/SPnB1qiCkYfirS2it3hZORwGVn.jpg",
-          "logo_local": "",
-          "availability_type": "rent",
-          "display_priority": 13,
+          "provider_id": 337,
+          "provider_name": "Disney Plus",
+          "logo_path": "/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "logo_local": "/assets/logos/services/97yvRBw1GzX7fXprcF80er19ot.jpg",
+          "availability_type": "flatrate",
+          "display_priority": 4,
           "deep_link": "https://www.themoviedb.org/movie/1314481-the-devil-wears-prada-2/watch?locale=AU"
         },
         {
