@@ -52,8 +52,6 @@ GENERATED_SYNC_PATHS = [
 ]
 LOCAL_GENERATED_STASH_PATHS = [
     *GENERATED_SYNC_PATHS,
-    "data/omdb_movies.json",
-    "reports/ui_stabilization/asset_optimization.json",
 ]
 INPUTS_RELATIVE_PATH = "data/inputs.json"
 GIT_OPERATION_FILES = [

@@ -105,7 +105,6 @@ jobs:
             reports/**/*.json
             reports/**/*.md
             data/errors*.json
-            data/*queue*.json
 
       - name: Commit regenerated data artifacts
         id: commit-artifacts

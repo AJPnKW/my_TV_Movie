@@ -43,7 +43,6 @@ $requiredFiles = @(
     'data/calendar.json',
     'data/discover_registry.json',
     'data/provider_registry.json',
-    'data/watch_sources_index.json',
     'web/index.html',
     'web/calendar.html',
     'web/shows.html',
@@ -332,9 +331,13 @@ foreach ($path in $badNames) {
 $trackedAnalysisArtifacts = & git ls-files |
     Where-Object {
         $_ -match '^(logs|out|reports)/' -or
+        $_ -match '^docs/(_audit|_extraction)/' -or
+        $_ -match '^docs/_archive/(20260321_191334|documentation_consolidation_20260428_231356|pre_master_contract_20260429_173237|pre_master_contract_20260429_222319)/' -or
         $_ -match '^data/backups/' -or
         $_ -eq 'data/inputs.cleaned.json' -or
-        $_ -match '(?i)(^|/)(fix_inputs|qa_inputs_parsed_missing_trakt|qa_fix_duplicate_show_objects_in_data_json)\.(py|bak)$'
+        $_ -match '^data/(asset_refresh_summary|omdb_movies|requested_tv_lookup_report|requested_tv_titles|service_logos_sources|watch_sources_index)\.json$' -or
+        $_ -match '^\.github/workflows/add-requested-tv-titles\.yml$' -or
+        $_ -match '(?i)(^|/)(fix_inputs|qa_inputs_parsed_missing_trakt|qa_fix_duplicate_show_objects_in_data_json|add_requested_tv_titles|fetch_omdb|export_service_logos_sources|run_pipeline_full|qa_pipeline_authority)\.(py|bak|ps1)$'
     }
 foreach ($path in $trackedAnalysisArtifacts) {
     Add-CheckError "Tracked analysis/drift artifact must not be restored: $path"

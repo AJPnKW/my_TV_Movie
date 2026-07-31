@@ -21,7 +21,8 @@
 - Generated reference catalog: `data/data.json`
 - Generated first-load runtime catalog: `data/catalog_index.json`, `data/calendar.json`, and `data/catalog_detail/*.json`
 - Streaming embed provider templates are owned only by `web/config.json -> streaming.embed_providers[]`; generated data must not duplicate full embed URLs for every row.
-- Reports, logs, backup snapshots, cleaned-input previews, screenshots, and one-off analysis outputs are local evidence only. They must stay ignored and must not be tracked as active architecture or runtime inputs.
+- Pages deploys only the explicit runtime JSON set above plus `data/discover_registry.json`, `data/provider_registry.json`, and `data/watch_state_queue.json`; helper/report JSON under `data/` must not be deployed by wildcard.
+- Reports, logs, backup snapshots, cleaned-input previews, screenshots, old requested-title queues/reports, OMDb sidecars, service-logo export reports, asset-refresh summaries, retired watch-source indexes, and one-off analysis outputs are local evidence only. They must stay ignored and must not be tracked as active architecture or runtime inputs.
 
 ## Page Shells
 

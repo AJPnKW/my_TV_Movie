@@ -54,9 +54,7 @@ Recommended flow:
 | `data/watch_state_queue.json` | `sync_queue`, `watch_state`, `watchlist`, `favourites`, `audit_log` | Existing local-first queue becomes pending queue records. Payloads map to state/watchlist/favourite rows without dropping unprocessed actions. |
 | Browser local watch state/exported state artifacts, when present | `watch_state`, `watchlist`, `favourites` | Import as local source with `pending_sync` preserved when not confirmed by sync history. Watchlist and favourites remain independent from watched status. |
 | `data/provider_registry.json` | `provider_registry` | Provider key/name/status/health/template/logo path. Blocked/candidate/degraded states are preserved; public UI must not expose private admin notes. |
-| `data/watch_sources_index.json` | `provider_registry`, `runtime_config` | Watch-source lookup/index data. Store provider metadata and source configuration; URLs/templates remain metadata, not public raw text in UI. |
 | `data/watch_source_availability.json` | `provider_registry.health_json`, `sync_history` | Availability/health evidence. Preserve blocked/degraded reasons as private health metadata. |
-| `data/service_logos_sources.json` | `provider_registry.logo_path` | Logo source/path metadata only. Image files remain under assets or configured paths. |
 | `web/config.json` | `runtime_config`, `provider_registry` | Runtime config, streaming embed provider registry, candidate/blocked flags, Full/Light settings, and API mode defaults. Secret values must remain environment/secret references, not literal database values. |
 | `web/Media_Library.json` | `media_files`, `runtime_config` | Static Media Library page data and summary buckets become inventory rows and display config. |
 | `tools/media_renamer/media_reference.json` | `media_items`, `media_files` | Catalog-to-file matching reference. Use expected filenames and media identity links. |

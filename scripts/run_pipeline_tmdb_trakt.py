@@ -21,7 +21,6 @@ SCRIPTS_DIR = REPO_ROOT / "scripts"
 LOGS_DIR = REPO_ROOT / "logs"
 
 FETCH_TMDB = SCRIPTS_DIR / "fetch_tmdb.py"
-FETCH_OMDB = SCRIPTS_DIR / "fetch_omdb.py"
 FETCH_TRAKT = SCRIPTS_DIR / "fetch_trakt.py"
 FETCH_TMDB_ASSETS = SCRIPTS_DIR / "fetch_tmdb_assets.py"
 SELF_HEAL_ASSET_METADATA = SCRIPTS_DIR / "self_heal_asset_metadata.py"
@@ -98,13 +97,6 @@ def main() -> int:
     started = _ts()
     tmdb_args = ("--force-full-refresh",) if args.force_full_tmdb else ()
     rc = _run_one("TMDB", FETCH_TMDB, *tmdb_args)
-    if rc != 0:
-        print("\n--- SUMMARY ---")
-        print(f"started : {started}")
-        print(f"finished: {_ts()}")
-        return rc
-
-    rc = _run_one("OMDB", FETCH_OMDB)
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")

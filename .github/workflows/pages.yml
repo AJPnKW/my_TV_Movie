@@ -13,7 +13,6 @@ on:
       - "data/catalog_detail/**"
       - "data/discover_registry.json"
       - "data/provider_registry.json"
-      - "data/watch_sources_index.json"
       - "docs/**"
       - "index.html"
       - ".github/workflows/pages.yml"
@@ -50,7 +49,12 @@ jobs:
           mkdir -p _site/data
           cp -R web assets docs _site/
           cp index.html _site/index.html
-          cp data/*.json _site/data/
+          cp data/data.json _site/data/data.json
+          cp data/catalog_index.json _site/data/catalog_index.json
+          cp data/calendar.json _site/data/calendar.json
+          cp data/discover_registry.json _site/data/discover_registry.json
+          cp data/provider_registry.json _site/data/provider_registry.json
+          cp data/watch_state_queue.json _site/data/watch_state_queue.json
           cp -R data/catalog_detail _site/data/catalog_detail
 
       - name: Upload static site artifact
