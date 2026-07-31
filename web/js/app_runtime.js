@@ -2745,7 +2745,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       state.showById = new Map(state.data.shows.map(item => [String(item?.tmdb_id ?? item?.id ?? ""), item]).filter(([key]) => !!key));
       state.movieById = new Map(state.data.movies.map(item => [String(item?.tmdb_id ?? item?.id ?? ""), item]).filter(([key]) => !!key));
       state.calendarData.days = state.calendarData.days && typeof state.calendarData.days === "object" ? state.calendarData.days : {};
-      state.inputs = await window.MyTVHubSharedModules.dataLoader.loadInputsFirst(["../data/inputs.json", "../inputs.json"]);
+      state.inputs = await window.MyTVHubSharedModules.dataLoader.loadInputsFirst(["../data/inputs.json"]);
 
       // Local editor probes are deferred to the editor view to avoid noisy failed
       // localhost requests during normal static browsing.

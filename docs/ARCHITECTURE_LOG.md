@@ -306,3 +306,8 @@
 - Updated validation and ignore rules so deleted helper/report JSON, old requested-title workflow paths, removed sidecar scripts, and retired analysis archive folders cannot return as tracked production files.
 - Validation: Python compile passed for the active pipeline/runtime scripts; `python scripts/validate_streaming_config.py` passed; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]`.
 - Commit: `9cdcd9e8b5` clean-production-file-surface.
+
+- Root-caused the deployed app `../inputs.json: HTTP 404` and blank Calendar report to the production-file cleanup narrowing Pages from `data/*.json` to explicit runtime JSON without including canonical `data/inputs.json`; shared runtime initialization still required inputs before rendering Calendar, so the missing input file could abort all page rendering.
+- Restored `data/inputs.json` to the explicit Pages artifact, removed the stale retired root `../inputs.json` fallback from the shared input loader/runtime call, and added runtime validation that blocks either regression: missing Pages input deployment or root-input fallback.
+- Related issue check: `data/calendar.json` was present and parseable with generated entries; the Calendar failure was a shared initialization abort, not a missing calendar artifact or separate Calendar renderer defect.
+- Commit: runtime-inputs-pages-fix commit to be recorded after commit.

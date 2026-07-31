@@ -49,6 +49,7 @@ jobs:
           mkdir -p _site/data
           cp -R web assets docs _site/
           cp index.html _site/index.html
+          cp data/inputs.json _site/data/inputs.json
           cp data/data.json _site/data/data.json
           cp data/catalog_index.json _site/data/catalog_index.json
           cp data/calendar.json _site/data/calendar.json

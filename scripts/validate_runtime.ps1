@@ -940,6 +940,8 @@ print(json.dumps({"oversized_runtime_assets": oversized[:25], "count": len(overs
 
 Write-Host '== Loader contract =='
 $focusText = Get-Content -Raw -LiteralPath 'web/js/chrometv_focus.js'
+$dataLoaderText = Get-Content -Raw -LiteralPath 'web/js/data_loader.js'
+$pagesWorkflowText = Get-Content -Raw -LiteralPath '.github/workflows/pages.yml'
 foreach ($needle in @(
     "loadScript('./js/watch_state_manager.js');",
     "window.MyTVHubFocus"
@@ -948,6 +950,29 @@ foreach ($needle in @(
 }
 foreach ($needle in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contract_fix.js','runtime_render_fix.js','trailer_watch_popup_fix.js')) {
     if ($focusText -like "*$needle*") { Add-CheckError "Focus bootstrap still loads removed compatibility layer: $needle" }
+}
+if ($dataLoaderText -notlike '*loadInputsFirst*' -or $dataLoaderText -notlike '*../data/inputs.json*') {
+    Add-CheckError 'data_loader.js must load canonical data/inputs.json.'
+}
+if ($dataLoaderText -like '*../inputs.json*' -or $appRuntimeText -like '*../inputs.json*') {
+    Add-CheckError 'Runtime must not fall back to retired root inputs.json; data/inputs.json is the canonical input path.'
+}
+foreach ($requiredDeployJson in @(
+    'cp data/inputs.json _site/data/inputs.json',
+    'cp data/data.json _site/data/data.json',
+    'cp data/catalog_index.json _site/data/catalog_index.json',
+    'cp data/calendar.json _site/data/calendar.json',
+    'cp data/discover_registry.json _site/data/discover_registry.json',
+    'cp data/provider_registry.json _site/data/provider_registry.json',
+    'cp data/watch_state_queue.json _site/data/watch_state_queue.json',
+    'cp -R data/catalog_detail _site/data/catalog_detail'
+)) {
+    if ($pagesWorkflowText -notlike "*$requiredDeployJson*") {
+        Add-CheckError "Pages workflow missing runtime JSON deployment: $requiredDeployJson"
+    }
+}
+if ($pagesWorkflowText.Contains('cp data/*.json')) {
+    Add-CheckError 'Pages workflow must deploy explicit runtime JSON files, not data/*.json.'
 }
 
 Write-Host '== Rendered nav/logo/watch-state contract =='

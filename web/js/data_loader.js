@@ -199,7 +199,7 @@ export async function loadCatalogDetailFirst(id, urls){
   return detailPromises.get(key);
 }
 
-export async function loadInputsFirst(urls = ['../data/inputs.json', '../inputs.json']){
+export async function loadInputsFirst(urls = ['../data/inputs.json']){
   if (!inputsPromise) inputsPromise = loadJsonFirst(urls);
   return inputsPromise;
 }
