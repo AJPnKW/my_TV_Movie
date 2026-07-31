@@ -318,3 +318,11 @@
 - Updated existing validators to enforce the corrected episode still/description behavior rather than adding new scripts or parallel checks.
 - Validation: `node --check web/js/app_runtime.js` passed; `node --check scripts/qa_browser_layout_check.mjs` passed; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]` and `summariesVisible=true`.
 - Commit: `05966c9372` normalize-show-detail-popup.
+
+- Root-caused the Inputs Editor reliability gap to publish completion being tied only to a follow-up generated-artifact commit. Valid `data/inputs.json` edits can produce no generated runtime diff, which left the editor waiting/failing even though the input commit and workflow path were valid.
+- Hardened `tools/inputs_editor/inputs_editor_server.py` so online publish now waits for the GitHub `build-data.yml` run for the pushed input commit, fails fast on failed workflow conclusions, and treats successful input-only builds as complete only after pipeline integrity reconciles.
+- Updated `.github/workflows/build-data.yml` so successful push-triggered builds dispatch Pages even when no generated runtime artifact commit is needed, ensuring deployed `data/inputs.json` is refreshed for input-only edits.
+- Simplified the editor completion UI in `web/inputs_editor.html`: the primary action is now `Save Online, Build Data, Deploy`, local-only actions are labelled as draft/preview paths, and publish failures report blocked paths or workflow URLs when available.
+- Corrected the local Inputs Editor server to serve read-only shared `/data/` and `/assets/` files through the same containment helper as `/web/`, fixing the editor-page `data/provider_registry.json` 404 exposed by browser validation.
+- Validation: Python compile passed for `tools/inputs_editor/inputs_editor_server.py` and `scripts/qa_pipeline_integrity.py`; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; focused editor browser check passed with no console errors or missing resources; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]`.
+- Commit: `8a57a900fd` harden-inputs-editor-publish-completion.
