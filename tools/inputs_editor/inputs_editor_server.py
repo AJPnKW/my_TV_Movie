@@ -13,6 +13,7 @@ CHANGE NOTES:
   artifacts before Git reconciliation, and push the actual HEAD commit to the target branch.
 - Wait for the GitHub build-data workflow result, and complete input-only publishes when
   the workflow succeeds without producing generated runtime artifact changes.
+- Treat data/data.json as the only generated runtime catalog synchronized after publish.
 """
 from __future__ import annotations
 
@@ -36,7 +37,7 @@ from urllib.parse import parse_qs, quote, urlparse
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = REPO_ROOT / "data"
 INPUTS_JSON = DATA_DIR / "inputs.json"
-CATALOG_INDEX_JSON = DATA_DIR / "catalog_index.json"
+DATA_JSON = DATA_DIR / "data.json"
 WATCH_STATE_QUEUE_JSON = DATA_DIR / "watch_state_queue.json"
 WEB_DIR = REPO_ROOT / "web"
 ASSETS_DIR = REPO_ROOT / "assets"
@@ -49,9 +50,6 @@ PUBLISH_POLL_SECONDS = 15
 BUILD_DATA_WORKFLOW = "build-data.yml"
 GENERATED_SYNC_PATHS = [
     "data/data.json",
-    "data/catalog_index.json",
-    "data/calendar.json",
-    "data/catalog_detail",
     "data/watch_state_queue.json",
     "assets",
 ]
@@ -455,10 +453,10 @@ def _dedupe_entries(entries: list[dict], media_type: str, warnings: list[str]) -
 
 def _catalog_identity_map() -> dict[str, dict[int, str]]:
     identities: dict[str, dict[int, str]] = {"tv": {}, "movie": {}}
-    if not CATALOG_INDEX_JSON.exists():
+    if not DATA_JSON.exists():
         return identities
     try:
-        catalog = json.loads(CATALOG_INDEX_JSON.read_text(encoding="utf-8"))
+        catalog = json.loads(DATA_JSON.read_text(encoding="utf-8"))
     except Exception:
         return identities
     for media_type, key in (("tv", "shows"), ("movie", "movies")):
@@ -885,13 +883,9 @@ def _generated_artifact_changes_since(base_ref: str, head_ref: str) -> list[str]
 
 
 def _has_runtime_artifact_update(paths: list[str]) -> bool:
-    required_exact = {
-        "data/data.json",
-        "data/catalog_index.json",
-        "data/calendar.json",
-    }
+    required_exact = {"data/data.json"}
     for path in paths:
-        if path in required_exact or path.startswith("data/catalog_detail/"):
+        if path in required_exact:
             return True
     return False
 

@@ -8,9 +8,6 @@ on:
       - "web/**"
       - "assets/**"
       - "data/data.json"
-      - "data/catalog_index.json"
-      - "data/calendar.json"
-      - "data/catalog_detail/**"
       - "data/discover_registry.json"
       - "data/provider_registry.json"
       - "docs/**"
@@ -51,12 +48,9 @@ jobs:
           cp index.html _site/index.html
           cp data/inputs.json _site/data/inputs.json
           cp data/data.json _site/data/data.json
-          cp data/catalog_index.json _site/data/catalog_index.json
-          cp data/calendar.json _site/data/calendar.json
           cp data/discover_registry.json _site/data/discover_registry.json
           cp data/provider_registry.json _site/data/provider_registry.json
           cp data/watch_state_queue.json _site/data/watch_state_queue.json
-          cp -R data/catalog_detail _site/data/catalog_detail
 
       - name: Upload static site artifact
         uses: actions/upload-pages-artifact@v5

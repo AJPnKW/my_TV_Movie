@@ -96,6 +96,22 @@ def load_json(path: Path) -> dict:
         return {}
 
 
+def catalog_by_id(repo_root: Path, key: str) -> dict[int, dict]:
+    data = load_json(repo_root / "data" / "data.json")
+    rows = data.get(key) if isinstance(data, dict) else []
+    result: dict[int, dict] = {}
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, dict):
+            continue
+        try:
+            tmdb_id = int(row.get("tmdb_id") or row.get("id") or 0)
+        except (TypeError, ValueError):
+            tmdb_id = 0
+        if tmdb_id > 0:
+            result[tmdb_id] = row
+    return result
+
+
 def parse_date(value: str) -> date | None:
     if not value:
         return None
@@ -156,7 +172,7 @@ def load_episode_lookup(detail: dict) -> dict[tuple[int, int], dict]:
 
 def scan_shows(repo_root: Path, media_root: Path, http_base: str) -> list[ShowItem]:
     tv_root = media_root / "TV"
-    detail_dir = repo_root / "data" / "catalog_detail"
+    show_details = catalog_by_id(repo_root, "shows")
     shows: list[ShowItem] = []
     today = date.today()
     week_ago = today - timedelta(days=7)
@@ -171,7 +187,7 @@ def scan_shows(repo_root: Path, media_root: Path, http_base: str) -> list[ShowIt
             continue
         title = match.group("title").strip()
         tmdb_id = int(match.group("id"))
-        detail = load_json(detail_dir / f"{tmdb_id}.json")
+        detail = show_details.get(tmdb_id, {})
         episode_lookup = load_episode_lookup(detail)
         seasons: list[SeasonItem] = []
         episode_total = 0
@@ -224,7 +240,7 @@ def scan_shows(repo_root: Path, media_root: Path, http_base: str) -> list[ShowIt
 
 def scan_movies(repo_root: Path, media_root: Path, http_base: str) -> list[MovieItem]:
     movies_root = media_root / "Movies"
-    detail_dir = repo_root / "data" / "catalog_detail"
+    movie_details = catalog_by_id(repo_root, "movies")
     movies: list[MovieItem] = []
     if not movies_root.exists():
         return movies
@@ -234,7 +250,7 @@ def scan_movies(repo_root: Path, media_root: Path, http_base: str) -> list[Movie
             continue
         title = match.group("title").strip()
         tmdb_id = int(match.group("id"))
-        detail = load_json(detail_dir / f"{tmdb_id}.json")
+        detail = movie_details.get(tmdb_id, {})
         media_files = [p for p in movie_dir.iterdir() if p.is_file() and p.suffix.lower() in MEDIA_EXTENSIONS]
         for media_file in sorted(media_files, key=lambda p: p.name.lower()):
             movies.append(MovieItem(

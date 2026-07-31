@@ -30,15 +30,11 @@ try {
   $urlWorkflow = "$baseRaw/.github/workflows/build-data.yml"
   $urlConfig   = "$baseRaw/web/config.json"
   $urlData     = "$baseRaw/data/data.json"
-  $urlIndex    = "$baseRaw/data/catalog_index.json"
-  $urlCalendar = "$baseRaw/data/calendar.json"
 
   Write-Host "=== REMOTE URLS ==="
   Write-Host $urlWorkflow
   Write-Host $urlConfig
   Write-Host $urlData
-  Write-Host $urlIndex
-  Write-Host $urlCalendar
   Write-Host ""
 
   function Get-RemoteText([string]$url) {
@@ -49,22 +45,15 @@ try {
   $remoteWorkflow = Get-RemoteText $urlWorkflow
   $remoteConfig   = Get-RemoteText $urlConfig
   $remoteData     = Get-RemoteText $urlData
-  $remoteIndex    = Get-RemoteText $urlIndex
-  $remoteCalendar = Get-RemoteText $urlCalendar
-  Write-Host "OK: downloaded workflow/config/runtime artifacts from GitHub raw"
+  Write-Host "OK: downloaded workflow/config/single runtime catalog from GitHub raw"
   Write-Host ""
 
   $cfg = $remoteConfig | ConvertFrom-Json
   $data = $remoteData | ConvertFrom-Json
-  $index = $remoteIndex | ConvertFrom-Json
-  $calendar = $remoteCalendar | ConvertFrom-Json
 
   Write-Host "=== QA 1: WORKFLOW USES CANONICAL PIPELINE RUNNER ==="
   $hasCanonicalRunner = ($remoteWorkflow -match "run:\s+python scripts/run_pipeline_tmdb_trakt\.py")
-  $commitsRuntimeArtifacts = (
-    ($remoteWorkflow -match "git diff --quiet -- data/data\.json data/catalog_index\.json data/calendar\.json data/catalog_detail assets") -and
-    ($remoteWorkflow -match "git add data/data\.json data/catalog_index\.json data/calendar\.json data/catalog_detail assets")
-  )
+  $commitsRuntimeArtifacts = ($remoteWorkflow -match "git add data/data\.json data/watch_state_queue\.json")
   if ($hasCanonicalRunner) {
     Write-Host "build-data.yml runs scripts/run_pipeline_tmdb_trakt.py: YES"
   } else {
@@ -72,10 +61,10 @@ try {
     Write-Host "FAIL: build-data.yml must run the canonical production pipeline runner"
   }
   if ($commitsRuntimeArtifacts) {
-    Write-Host "build-data.yml commits split runtime artifacts and assets: YES"
+    Write-Host "build-data.yml commits single runtime catalog artifacts: YES"
   } else {
-    Write-Host "build-data.yml commits split runtime artifacts and assets: NO"
-    Write-Host "FAIL: build-data.yml must diff/add data/data.json, catalog_index.json, calendar.json, catalog_detail, and assets"
+    Write-Host "build-data.yml commits single runtime catalog artifacts: NO"
+    Write-Host "FAIL: build-data.yml must add data/data.json and data/watch_state_queue.json"
   }
   Write-Host ""
 
@@ -99,8 +88,6 @@ try {
   Write-Host ("data.meta.generated_utc = " + $data.meta.generated_utc)
   Write-Host ("data.meta.builder.script = " + $data.meta.builder.script)
   Write-Host ("data.meta.builder.version = " + $data.meta.builder.version)
-  Write-Host ("catalog_index.meta.schema = " + $index.meta.schema)
-  Write-Host ("calendar.meta.schema = " + $calendar.meta.schema)
 
   $hasLegacyPaths = ($remoteData -match "/assets/images/tmdb/")
   if ($hasLegacyPaths) {
@@ -115,9 +102,8 @@ try {
   } else {
     Write-Host 'data.json contains canonical "/assets/(posters|backdrops|stills)/": NO'
   }
-  Write-Host ("catalog_index shows = " + (($index.shows | Measure-Object).Count))
-  Write-Host ("catalog_index movies = " + (($index.movies | Measure-Object).Count))
-  Write-Host ("calendar day buckets = " + (($calendar.days.PSObject.Properties | Measure-Object).Count))
+  Write-Host ("data.json shows = " + (($data.shows | Measure-Object).Count))
+  Write-Host ("data.json movies = " + (($data.movies | Measure-Object).Count))
   Write-Host ""
 
   Write-Host "=== QA 4: LOCAL VS REMOTE HASH (config/workflow) ==="

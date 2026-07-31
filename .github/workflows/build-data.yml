@@ -71,8 +71,6 @@ jobs:
         if: always()
         run: |
           python -m json.tool data/data.json > /dev/null
-          python -m json.tool data/catalog_index.json > /dev/null
-          python -m json.tool data/calendar.json > /dev/null
           if [ -f data/watch_state_queue.json ]; then python -m json.tool data/watch_state_queue.json > /dev/null; fi
 
       - name: Run integrity diagnostics
@@ -110,7 +108,7 @@ jobs:
         id: commit-artifacts
         if: success()
         run: |
-          git add data/data.json data/catalog_index.json data/calendar.json data/catalog_detail data/watch_state_queue.json
+          git add data/data.json data/watch_state_queue.json
           mapfile -t new_assets < <(git ls-files --others --exclude-standard assets)
           if [ "${#new_assets[@]}" -gt 0 ]; then
             printf '%s\0' "${new_assets[@]}" | xargs -0 git add --

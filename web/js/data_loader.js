@@ -1,20 +1,20 @@
 /*
 FILE: web/js/data_loader.js
 VERSION: v1.1.0
-UPDATED: 2026-04-24T00:00:00Z
+UPDATED: 2026-07-31T00:00:00Z
 CHANGE NOTES:
 - Centralized shared catalog and inputs loading for the normalized main app runtime.
 - Added in-memory caching to reduce repeated parse/load work across rebased views.
-- Added fallback calendar derivation from data/data.json when data/calendar.json is empty.
+- Load the single generated runtime catalog from data/data.json.
+- Derive calendar and detail views from the shared runtime catalog.
 */
 
 import { loadJsonFirst } from './config_loader.js';
 
-let catalogIndexPromise = null;
+let catalogDataPromise = null;
 let calendarPromise = null;
 let discoverRegistryPromise = null;
 let inputsPromise = null;
-const detailPromises = new Map();
 
 function safeText(value){
   return (value == null ? '' : String(value)).trim();
@@ -23,16 +23,6 @@ function safeText(value){
 function safeInt(value, fallback = 0){
   const parsed = Number.parseInt(String(value ?? '').trim(), 10);
   return Number.isFinite(parsed) ? parsed : fallback;
-}
-
-function hasCalendarDays(calendar){
-  return !!(
-    calendar &&
-    typeof calendar === 'object' &&
-    calendar.days &&
-    typeof calendar.days === 'object' &&
-    Object.keys(calendar.days).length > 0
-  );
 }
 
 function firstNetwork(show){
@@ -148,18 +138,10 @@ function deriveCalendarFromData(data){
     meta: {
       generated_utc: new Date().toISOString(),
       schema: 'calendar.v1',
-      source: 'runtime fallback from data/data.json',
-      detail_dir: '/data/catalog_detail'
+      source: 'data/data.json'
     },
     days: Object.fromEntries(Object.entries(days).sort(([a], [b]) => a.localeCompare(b)))
   };
-}
-
-async function loadCalendarWithFallback(urls){
-  const calendar = await loadJsonFirst(urls);
-  if (hasCalendarDays(calendar)) return calendar;
-  const fullData = await loadJsonFirst(['../data/data.json']);
-  return deriveCalendarFromData(fullData);
 }
 
 function emptyDiscoverRegistry(){
@@ -173,13 +155,13 @@ function emptyDiscoverRegistry(){
   };
 }
 
-export async function loadCatalogIndexFirst(urls = ['../data/catalog_index.json']){
-  if (!catalogIndexPromise) catalogIndexPromise = loadJsonFirst(urls);
-  return catalogIndexPromise;
+export async function loadCatalogDataFirst(urls = ['../data/data.json']){
+  if (!catalogDataPromise) catalogDataPromise = loadJsonFirst(urls);
+  return catalogDataPromise;
 }
 
-export async function loadCalendarFirst(urls = ['../data/calendar.json']){
-  if (!calendarPromise) calendarPromise = loadCalendarWithFallback(urls);
+export async function loadCalendarFirst(urls = ['../data/data.json']){
+  if (!calendarPromise) calendarPromise = loadCatalogDataFirst(urls).then(deriveCalendarFromData);
   return calendarPromise;
 }
 
@@ -190,13 +172,15 @@ export async function loadDiscoverRegistryFirst(urls = ['../data/discover_regist
   return discoverRegistryPromise;
 }
 
-export async function loadCatalogDetailFirst(id, urls){
+export async function loadCatalogDetailFirst(id){
   const key = String(id ?? '').trim();
   if (!key) throw new Error('Catalog detail id is required');
-  if (!detailPromises.has(key)){
-    detailPromises.set(key, loadJsonFirst(Array.isArray(urls) && urls.length ? urls : [`../data/catalog_detail/${key}.json`]));
-  }
-  return detailPromises.get(key);
+  const data = await loadCatalogDataFirst();
+  const shows = Array.isArray(data && data.shows) ? data.shows : [];
+  const movies = Array.isArray(data && data.movies) ? data.movies : [];
+  const detail = [...shows, ...movies].find(item => String(item?.tmdb_id ?? item?.id ?? '').trim() === key);
+  if (!detail) throw new Error(`Catalog detail not found: ${key}`);
+  return detail;
 }
 
 export async function loadInputsFirst(urls = ['../data/inputs.json']){
@@ -205,9 +189,8 @@ export async function loadInputsFirst(urls = ['../data/inputs.json']){
 }
 
 export function clearDataLoaderCache(){
-  catalogIndexPromise = null;
+  catalogDataPromise = null;
   calendarPromise = null;
   discoverRegistryPromise = null;
   inputsPromise = null;
-  detailPromises.clear();
 }

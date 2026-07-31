@@ -27,7 +27,6 @@ SELF_HEAL_ASSET_METADATA = SCRIPTS_DIR / "self_heal_asset_metadata.py"
 OPTIMIZE_RUNTIME_ASSETS = SCRIPTS_DIR / "optimize_runtime_assets.py"
 VALIDATE_AVAILABILITY = SCRIPTS_DIR / "validate_availability_overlay.py"
 ENRICH_AVAILABILITY = SCRIPTS_DIR / "enrich_data_with_availability.py"
-BUILD_SPLIT_RUNTIME = SCRIPTS_DIR / "build_split_runtime.py"
 QA_AVAILABILITY = SCRIPTS_DIR / "qa_availability_status.py"
 QA_AVAILABILITY_PHASE2 = SCRIPTS_DIR / "qa_availability_phase2.py"
 VALIDATE_SECRET_DRIFT = SCRIPTS_DIR / "validate_secret_name_drift.py"
@@ -147,13 +146,6 @@ def main() -> int:
         return rc
 
     rc = _run_one("AVAILABILITY_ENRICH", ENRICH_AVAILABILITY)
-    if rc != 0:
-        print("\n--- SUMMARY ---")
-        print(f"started : {started}")
-        print(f"finished: {_ts()}")
-        return rc
-
-    rc = _run_one("SPLIT_RUNTIME_BUILD", BUILD_SPLIT_RUNTIME)
     if rc != 0:
         print("\n--- SUMMARY ---")
         print(f"started : {started}")

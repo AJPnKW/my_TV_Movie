@@ -106,35 +106,24 @@ def _add_title_tokens(tokens: set[str], *values: str) -> None:
             tokens.add(norm)
             tokens.add(normalize_key(re.sub(r"\bthe\b", "", clean, flags=re.IGNORECASE)))
 
-def _load_detail(repo: Path, detail_path: str, tmdb_id: int) -> dict[str, Any]:
-    candidates = []
-    if detail_path:
-        candidates.append(repo / detail_path.strip("/"))
-    candidates.append(repo / "data" / "catalog_detail" / f"{tmdb_id}.json")
-    for candidate in candidates:
-        if candidate.exists():
-            return json.loads(candidate.read_text(encoding="utf-8"))
-    return {}
-
 def build_reference(repo: Path) -> MediaReference:
-    index_path = repo / "data" / "catalog_index.json"
-    if not index_path.exists():
-        raise FileNotFoundError(f"Missing catalog index: {index_path}")
-    index = json.loads(index_path.read_text(encoding="utf-8"))
+    data_path = repo / "data" / "data.json"
+    if not data_path.exists():
+        raise FileNotFoundError(f"Missing runtime catalog: {data_path}")
+    data = json.loads(data_path.read_text(encoding="utf-8"))
     shows: dict[int, ShowRef] = {}
     movies: dict[int, MovieRef] = {}
 
-    for item in index.get("shows", []):
+    for item in data.get("shows", []):
         tmdb_id = int(item.get("tmdb_id") or item.get("id") or 0)
         if tmdb_id <= 0:
             continue
         title = str(item.get("title") or item.get("name") or "").strip()
         if not title:
             continue
-        detail = _load_detail(repo, str(item.get("detail_path") or ""), tmdb_id)
-        show = ShowRef(tmdb_id=tmdb_id, title=clean_title(str(detail.get("title") or detail.get("name") or title)), year=_year_from_item(item))
+        show = ShowRef(tmdb_id=tmdb_id, title=clean_title(str(item.get("title") or item.get("name") or title)), year=_year_from_item(item))
         _add_title_tokens(show.tokens, title, str(item.get("name") or ""), str(item.get("original_name") or ""), show.title)
-        for season_data in detail.get("seasons", []):
+        for season_data in item.get("seasons", []):
             season_number = int(season_data.get("season_number") or 0)
             season_name = clean_title(str(season_data.get("name") or f"Season {season_number:02d}"))
             season = SeasonRef(season_number=season_number, name=season_name)
@@ -152,7 +141,7 @@ def build_reference(repo: Path) -> MediaReference:
             show.seasons[season_number] = season
         shows[tmdb_id] = show
 
-    for item in index.get("movies", []):
+    for item in data.get("movies", []):
         tmdb_id = int(item.get("tmdb_id") or item.get("id") or 0)
         if tmdb_id <= 0:
             continue

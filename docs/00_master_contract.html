@@ -510,7 +510,7 @@ AU  Stan</pre>
 <ul>
 <li>PostgreSQL is the primary write store in server mode for media identity, watch status, watchlist, favourites, sync queue/history, provider registry, runtime config, audit log, and Media Library inventory.</li>
 <li>JSON remains required for import, export, generated runtime output, recovery, and static GitHub Pages fallback.</li>
-<li><code>data/inputs.json</code> remains the canonical manual input source. <code>data/data.json</code>, <code>data/catalog_index.json</code>, <code>data/calendar.json</code>, and <code>data/catalog_detail/*.json</code> remain generated/runtime fallback artifacts.</li>
+<li><code>data/inputs.json</code> remains the canonical manual input source. <code>data/data.json</code> is the single generated web runtime catalog. Calendar entries, show/movie details, seasons, and episodes are derived from <code>data/data.json</code>; production runtime must not require parallel generated catalog/detail JSON.</li>
 <li>Images, posters, stills, backdrops, provider logos, trailers, and media binaries are not stored in PostgreSQL by default. PostgreSQL stores metadata, identifiers, status fields, and paths to files/assets.</li>
 <li>Secret values are not stored in schema seed data or API responses. Runtime config may store secret references only.</li>
 </ul>

@@ -39,8 +39,6 @@ $requiredFiles = @(
     'docs/UI_GAP_ANALYSIS.md',
     'data/inputs.json',
     'data/data.json',
-    'data/catalog_index.json',
-    'data/calendar.json',
     'data/discover_registry.json',
     'data/provider_registry.json',
     'web/index.html',
@@ -236,7 +234,7 @@ Write-Host '== Python syntax =='
 if (-not (Test-CommandAvailable python)) {
     Add-CheckError 'python is not available for Python syntax checks'
 } else {
-    & python -m py_compile scripts/build_split_runtime.py scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_config.py scripts/validate_streaming_episode_cards.py scripts/fetch_tmdb.py scripts/qa_pipeline_integrity.py tools/inputs_editor/inputs_editor_server.py
+    & python -m py_compile scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_config.py scripts/validate_streaming_episode_cards.py scripts/fetch_tmdb.py scripts/qa_pipeline_integrity.py scripts/validate_runtime_catalog_integrity.py tools/inputs_editor/inputs_editor_server.py
     if ($LASTEXITCODE -ne 0) { Add-CheckError 'Python syntax failed' }
 }
 
@@ -961,18 +959,23 @@ foreach ($needle in @('runtime_layout_fix.css','ui_contract_fix.css','ui_contrac
 if ($dataLoaderText -notlike '*loadInputsFirst*' -or $dataLoaderText -notlike '*../data/inputs.json*') {
     Add-CheckError 'data_loader.js must load canonical data/inputs.json.'
 }
+if ($dataLoaderText -notlike '*loadCatalogDataFirst*' -or $dataLoaderText -notlike '*../data/data.json*') {
+    Add-CheckError 'data_loader.js must load generated runtime data/data.json.'
+}
 if ($dataLoaderText -like '*../inputs.json*' -or $appRuntimeText -like '*../inputs.json*') {
     Add-CheckError 'Runtime must not fall back to retired root inputs.json; data/inputs.json is the canonical input path.'
+}
+foreach ($retiredRuntimePath in @('catalog_index.json','calendar.json','catalog_detail')) {
+    if ($dataLoaderText -like "*$retiredRuntimePath*" -or $appRuntimeText -like "*$retiredRuntimePath*") {
+        Add-CheckError "Active runtime must not reference retired split runtime path: $retiredRuntimePath"
+    }
 }
 foreach ($requiredDeployJson in @(
     'cp data/inputs.json _site/data/inputs.json',
     'cp data/data.json _site/data/data.json',
-    'cp data/catalog_index.json _site/data/catalog_index.json',
-    'cp data/calendar.json _site/data/calendar.json',
     'cp data/discover_registry.json _site/data/discover_registry.json',
     'cp data/provider_registry.json _site/data/provider_registry.json',
-    'cp data/watch_state_queue.json _site/data/watch_state_queue.json',
-    'cp -R data/catalog_detail _site/data/catalog_detail'
+    'cp data/watch_state_queue.json _site/data/watch_state_queue.json'
 )) {
     if ($pagesWorkflowText -notlike "*$requiredDeployJson*") {
         Add-CheckError "Pages workflow missing runtime JSON deployment: $requiredDeployJson"

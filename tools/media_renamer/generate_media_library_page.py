@@ -84,6 +84,22 @@ def load_json(path: Path) -> dict[str, Any]:
         return json.load(handle)
 
 
+def catalog_by_id(repo_root: Path, key: str) -> dict[int, dict[str, Any]]:
+    data = load_json(repo_root / "data" / "data.json")
+    rows = data.get(key) if isinstance(data, dict) else []
+    result: dict[int, dict[str, Any]] = {}
+    for row in rows if isinstance(rows, list) else []:
+        if not isinstance(row, dict):
+            continue
+        try:
+            tmdb_id = int(row.get("tmdb_id") or row.get("id") or 0)
+        except (TypeError, ValueError):
+            tmdb_id = 0
+        if tmdb_id > 0:
+            result[tmdb_id] = row
+    return result
+
+
 def safe_text(value: Any) -> str:
     return str(value or "").strip()
 
@@ -155,7 +171,7 @@ def episode_detail(detail: dict[str, Any], season_number: int, episode_number: i
 
 def scan_shows(repo_root: Path, media_root: Path, host: str, share: str, port: int) -> list[ShowRow]:
     shows_root = media_root / "TV"
-    detail_root = repo_root / "data" / "catalog_detail"
+    show_details = catalog_by_id(repo_root, "shows")
     if not shows_root.exists():
         return []
     today = date.today()
@@ -168,7 +184,7 @@ def scan_shows(repo_root: Path, media_root: Path, host: str, share: str, port: i
         tmdb_id = tmdb_id_from_name(show_dir.name)
         if not tmdb_id:
             continue
-        detail = load_json(detail_root / f"{tmdb_id}.json")
+        detail = show_details.get(tmdb_id, {})
         title = safe_text(detail.get("title") or detail.get("name") or TMDB_RE.sub("", show_dir.name).strip())
         show = ShowRow(title=title, tmdb_id=tmdb_id, genres=genre_text(detail))
         season_map: dict[int, SeasonRow] = {}
@@ -210,7 +226,7 @@ def scan_shows(repo_root: Path, media_root: Path, host: str, share: str, port: i
 
 def scan_movies(repo_root: Path, media_root: Path, host: str, share: str, port: int) -> list[MovieRow]:
     movies_root = media_root / "Movies"
-    detail_root = repo_root / "data" / "catalog_detail"
+    movie_details = catalog_by_id(repo_root, "movies")
     if not movies_root.exists():
         return []
     movies: list[MovieRow] = []
@@ -218,7 +234,7 @@ def scan_movies(repo_root: Path, media_root: Path, host: str, share: str, port: 
         tmdb_id = tmdb_id_from_name(movie_dir.name)
         if not tmdb_id:
             continue
-        detail = load_json(detail_root / f"{tmdb_id}.json")
+        detail = movie_details.get(tmdb_id, {})
         title = safe_text(detail.get("title") or TMDB_RE.sub("", movie_dir.name).strip())
         files = [p for p in movie_dir.iterdir() if p.is_file() and p.suffix.lower() in MEDIA_EXTENSIONS]
         for file in sorted(files, key=lambda p: p.name.lower()):

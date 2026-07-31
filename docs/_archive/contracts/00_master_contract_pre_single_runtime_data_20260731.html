@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>my_TV_Movie — Master Contract</title>
+<style>
+:root{color-scheme:dark;--bg:#0b111a;--panel:#111a26;--panel2:#162232;--text:#e5eefb;--muted:#9fb0c8;--line:#314158;--accent:#60a5fa;--warn:#fbbf24;--bad:#fb7185;--good:#34d399}*{box-sizing:border-box}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.45}header{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#0b111a,#0b111ae8);border-bottom:1px solid var(--line);padding:14px 22px}main{max-width:1280px;margin:0 auto;padding:22px}h1,h2,h3{color:#f8fbff}h1{margin:0 0 6px;font-size:26px}h2{margin-top:34px;border-bottom:1px solid var(--line);padding-bottom:8px}a{color:#93c5fd}.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0}table{width:100%;border-collapse:collapse;margin:12px 0;background:var(--panel);border:1px solid var(--line)}th,td{padding:9px 10px;border:1px solid var(--line);vertical-align:top}th{background:var(--panel2);text-align:left}code,pre{background:#07101c;border:1px solid #243044;border-radius:8px}code{padding:1px 5px}pre{padding:12px;overflow:auto}.good{color:var(--good);font-weight:700}.warn{color:var(--warn);font-weight:700}.bad{color:var(--bad);font-weight:700}.small{color:var(--muted);font-size:13px}nav.toc a{display:inline-block;margin:4px 10px 4px 0;padding:5px 9px;border:1px solid var(--line);border-radius:999px;text-decoration:none}
+</style>
+</head>
+<body>
+<header>
+<h1>my_TV_Movie — Master Contract</h1>
+<div class="small">Only active documentation source of truth. Current version MC-2026-07-24.1. Last updated: 2026-07-24. Latest additive lineage: UI parity, canonical Current filters, and deterministic app-shell cache busting.</div>
+<nav class="toc">
+<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#browse-parity-20260724">Browse Parity</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#server-mode-20260602">Server Mode</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
+</nav>
+</header>
+<main>
+<section id="governance" class="card">
+<h2>1. Documentation Governance</h2>
+<p><strong>This file is the only active source of truth.</strong> Older docs are evidence only after their useful details are migrated here.</p>
+<table><tr><th>Rule</th><th>Contract</th></tr>
+<tr><td>Active source</td><td><code>docs/00_master_contract.html</code></td></tr>
+<tr><td>ChatGPT role</td><td>Maintain this contract and audit drift before writing Codex prompts.</td></tr>
+<tr><td>Codex role</td><td>Implement code against this contract. No vague scope, no deferrals, no generalized placeholders.</td></tr>
+<tr><td>Detail fidelity</td><td>Requirements, user-provided examples, dimensions, visual targets, state names, and acceptance rules must not be simplified, collapsed, or dropped.</td></tr>
+<tr><td>Examples</td><td>User examples are acceptance tests, not optional inspiration.</td></tr>
+<tr><td>Visual proof</td><td>A feature name is not proof. If the user asks for a carousel, popup, sticky header, table, or navigation control, rendered QA must prove the required visual structure and behavior.</td></tr>
+</table>
+<h3>1.1 Version History</h3>
+<table><tr><th>Date</th><th>Version</th><th>Change</th></tr>
+<tr><td>2026-04-29</td><td>MC-2026-04-29</td><td>Initial consolidated master contract.</td></tr>
+<tr><td>2026-04-30</td><td>MC-2026-04-30.4</td><td>Calendar alignment, popup detail, tri-state watched status, D-pad, explicit media dimensions.</td></tr>
+<tr><td>2026-05-05</td><td>MC-2026-05-05.1</td><td>Two-way Trakt sync: queue file, endpoints, dry-run payloads, local-first click persistence.</td></tr>
+<tr><td>2026-05-05</td><td>MC-2026-05-05.2</td><td>Repository secret inventory, CI/CD workflow topology, card action click defects, true episode carousel requirements, Manage Watch State table UX, Trakt value consistency across views.</td></tr>
+<tr><td>2026-05-05</td><td>MC-2026-05-05.3</td><td>Added visual acceptance gate, anti-generalization control rule, provider URL health/safety contract, and explicit carousel widget proof requirements.</td></tr>
+<tr><td>2026-05-07</td><td>MC-2026-05-07.1</td><td>Calendar equal-cell containment, required episode-carousel DOM shell, watch_state_manager canonical state ownership, provider health registry classifications, floating navigation proof, and screenshot-visible rendered QA hardening.</td></tr>
+<tr><td>2026-05-18</td><td>MC-2026-05-18.1</td><td>Recovered Watch Source popup, Media Library, Full/Light runtime mode, and media QA pipeline requirements from user screenshot/runtime drift.</td></tr>
+<tr><td>2026-05-18</td><td>MC-2026-05-18.2</td><td>Added runtime ownership map, popup schema, card renderer ownership, provider lifecycle, Media Library page ownership, Full/Light mode ownership, media QA pipeline, and validation matrix lineage.</td></tr>
+<tr><td>2026-05-19</td><td>MC-2026-05-19.1</td><td>Added exact Watch Source provider strip schema, provider logo hyperlink rule, hidden URL rule, no provider button/card outline rule, exact generated filename copy-string rule, and validation fail rules.</td></tr>
+<tr><td>2026-05-20</td><td>MC-2026-05-20.1</td><td>Made Media Library a static primary-nav shell link, archived retired runtime shims out of active web/js, removed stale Where-to-watch fallback labels, restored required subordinate architecture/UI docs as contract pointers, and hardened validation against legacy provider markup and misplaced/occluded nav links.</td></tr>
+<tr><td>2026-05-20</td><td>MC-2026-05-20.2</td><td>Made <code>web/config.json -> streaming.embed_providers[]</code> the Streaming provider button source of truth; defined <code>ok</code>, <code>warn</code>, <code>candidate</code>, and <code>blocked</code> runtime visibility; baselined <code>buildSharedEpisodeCard</code> and <code>renderEpisodeCardHtml</code> across Calendar, Dashboard Current/Recent, and show-detail episode cards; restored episode still/backdrop/poster fallback validation.</td></tr>
+<tr><td>2026-06-02</td><td>MC-2026-06-02.1</td><td>Added server-mode architecture contract: PostgreSQL is the primary writable store; JSON remains import/export/static fallback; image and media binaries remain files/assets by default; API, watch-state logic, Trakt reconciliation, provider registry, audit logging, and WD TV Live Media Library inventory/QA are database-backed design surfaces.</td></tr>
+<tr><td>2026-06-03</td><td>MC-2026-06-03.1</td><td>Added runnable server-mode implementation scaffold: standard-library API on <code>127.0.0.1:8000/api/v1</code>, PostgreSQL client/config boundary, schema apply/static validation tools, JSON migration dry-run/import scaffold, Trakt queue worker scaffold, Media Library scan/QA/remux worker scaffold, and systemd service example.</td></tr>
+<tr><td>2026-06-03</td><td>MC-2026-06-03.2</td><td>Made live PostgreSQL validation mandatory for X1 lab completion: bootstrap creates the local app OS/DB role and database, installs psycopg, documents the peer-auth DSN in <code>.env.example</code>, and validation must prove schema apply plus test insert/read/rollback cleanup.</td></tr>
+<tr><td>2026-07-11</td><td>MC-2026-07-11.1</td><td>Added VSEmbed as a default-visible Streaming popup provider with TMDB path templates for TV episodes and movies, preserving the existing registry-driven provider system.</td></tr>
+<tr><td>2026-07-24</td><td>MC-2026-07-24.1</td><td>Added browse feature parity, one canonical Search/scope state, deterministic Current show/movie definitions, compact responsive genre controls, and central-version cache-busted active app shell assets.</td></tr>
+</table>
+<p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
+<p>Standalone page: <code>web/manage_watch_state.html</code></p>
+</section>
+<section id="pages" class="card">
+<h2>2. Page / Route Contract</h2>
+<table><tr><th>Route</th><th>Status</th><th>Purpose</th><th>Hard rules</th></tr>
+<tr><td><code>web/index.html</code></td><td class="good">Active</td><td>Dashboard</td><td>Sticky app nav, sticky section headers, no duplicate cards per day/section, compact dashboard recommendations.</td></tr>
+<tr><td><code>web/shows.html</code></td><td class="good">Active</td><td>Show library</td><td>Shared show card renderer, poster Half 171x257, working card action controls, show popup uses true episode carousel.</td></tr>
+<tr><td><code>web/movies.html</code></td><td class="good">Active</td><td>Movie library</td><td>Shared movie card renderer, poster Half 171x257, working card action controls.</td></tr>
+<tr><td><code>web/calendar.html</code></td><td class="good">Active</td><td>Calendar</td><td>Seven-column desktop/tablet grid, one weekday/date header, aligned first row, weekend shading, episode stills not posters, card actions work.</td></tr>
+<tr><td><code>web/manage_watch_state.html</code></td><td class="good">Active</td><td>Watch state data manager</td><td>Excel-like sortable/filterable editable table/tree; must allow search, pagination, per-column sorting, row edits, and value changes.</td></tr>
+<tr><td><code>web/config.html</code></td><td class="good">Active</td><td>Settings only</td><td>Must not embed Manage Watch State.</td></tr>
+<tr><td><code>web/discover.html</code></td><td class="good">Active</td><td>External discovery</td><td>Separate discovery registry/feed; not dashboard duplicate.</td></tr>
+<tr><td><code>web/watch_me.html</code></td><td class="warn">Compatibility</td><td>Simple list view</td><td>Must not become watch-state manager.</td></tr>
+</table>
+</section>
+<section id="ui" class="card">
+<h2>3. UI, Navigation, Cards, and Media Sizes</h2>
+<ul><li>Full app header/top navigation is sticky on every runtime page, not just this documentation page.</li><li>Major section headers are sticky and hand off naturally to the next section header.</li><li>Primary nav icons are standalone Unicode/web icons, not boxed buttons.</li><li>Boys logo must preserve aspect ratio and cannot stretch into a banner.</li><li>Card action row is below media/text and never overlays image or metadata.</li><li>Show/movie posters in grids, Shows, Movies, and Dashboard Recommendations use <strong>poster Half <code>171x257</code></strong>.</li><li>Episode stills use <strong>narrow still Half <code>240x135</code></strong>; episode source still <code>320x180</code> is the source/optimized still target before crop.</li><li>Calendar episode cards use episode stills only, never show/movie posters.</li><li>Calendar header and body must use exact seven equal columns: <code>repeat(7, minmax(0, 1fr))</code>. Empty and populated days must remain equal width.</li><li>Every calendar day cell and every card/action/more row inside it must use <code>min-width:0</code>, be constrained to the day cell, and must not use transform or margin hacks to fake alignment.</li><li>Header cell left/right bounds must align exactly with matching calendar day columns.</li></ul>
+</section>
+<section id="browse-parity-20260724" class="card">
+<h2>MC-2026-07-24.1 Browse Parity, Current Filters, and Release Cache</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-07-24.1</td></tr>
+<tr><td>Updated</td><td>Shows/Movies Search visibility, release/status scope filters, genre control layout, page-shell asset versioning, stale mobile filter retirement.</td></tr>
+<tr><td>Origin</td><td>User phone screenshots and testing showed a visible but non-functional Current control, missing phone Search, sparse genre spacing, and stale UI on normal navigation until refresh.</td></tr>
+<tr><td>Owner</td><td><code>web/js/app_runtime.js</code> owns Search state, scope state, Current predicates, filtering, active-state rendering, result counts, and result rendering. <code>web/css/main_app.css</code> owns responsive layout only. Active page shells own versioned asset references.</td></tr>
+<tr><td>Validation</td><td>Rendered QA must prove Shows and Movies expose the same Search, filters, sorting, cards, and actions on phone, tablet, desktop, Android TV, Google TV, Chromecast, and NVIDIA Shield style viewports. Feature-parity regressions are release blockers.</td></tr>
+</table>
+<h3>Feature Parity Standard</h3>
+<ul><li>Phone, tablet, desktop, Android TV, Google TV, Chromecast, and NVIDIA Shield expose the same functionality and content.</li><li>Responsive design may resize, wrap, collapse, or reposition controls; it must not hide, remove, replace, or fork Search, filters, sorting, cards, or actions.</li><li>Device type must not determine available controls, available filters, available content, Search availability, actions, result logic, or result counts.</li><li>Input-method adaptation for mouse, keyboard, touch, and D-pad/remote is allowed only when it preserves the same capability and state path.</li></ul>
+<h3>Shared State and Component Standard</h3>
+<ul><li>Shows and Movies have one canonical Search state: <code>state.search.shows</code> and <code>state.search.movies</code>.</li><li>Shows and Movies have one canonical release/status scope state: <code>state.filters.shows.scope</code> and <code>state.filters.movies.scope</code>.</li><li>The canonical scope controls are <code>#filterShowsScope [data-scope]</code> and <code>#filterMoviesScope [data-scope]</code>. They own <code>active</code> and <code>aria-pressed</code> through <code>setSegActive</code>.</li><li>There is one filter event path, one predicate path in <code>renderShows</code>/<code>renderMovies</code>, one result renderer, one active-state renderer, and one result-count calculation.</li><li>Device-specific scripts must not inject duplicate controls, maintain parallel filter state, apply separate card-hiding predicates, or update counts outside the canonical renderer.</li></ul>
+<h3>Current Definitions</h3>
+<ul><li><strong>Current shows:</strong> first air date is not in the future; status is not Ended, Canceled, or Cancelled; and recent activity from <code>last_air_date</code>, <code>latest_episode_to_air.air_date</code>, or <code>last_episode_to_air.air_date</code> is inside <code>web/config.json -> browse.current.show_activity_window_days = 183</code> by default. Status alone and <code>next_episode_to_air</code> alone do not make a show Current.</li><li><strong>Current movies:</strong> release date is inside <code>web/config.json -> browse.current.movie_release_window_days = 183</code> ending today by default; future releases are included only up to <code>browse.current.movie_release_lookahead_days = 30</code> and only when existing availability metadata resolves to <code>available</code>.</li><li>The Current rules live only in <code>web/js/app_runtime.js</code> and read the configurable windows from <code>web/config.json</code>. They must not be duplicated in mobile scripts, CSS-hidden card filters, QA scripts without config reads, or page-shell inline code.</li></ul>
+<h3>Cache and Release Standard</h3>
+<ul><li>The central runtime release version is <code>web/config.json</code> <code>_meta.version</code>.</li><li>Active app shells must reference shared CSS and JavaScript with deterministic query parameters matching the release version, for example <code>./css/main_app.css?v=v1.5.5</code> and <code>./js/app_runtime.js?v=v1.5.5</code>.</li><li><code>app_runtime.js</code> must version its static module imports with the same release value so imported modules cannot remain stale under old unversioned URLs.</li><li>Generated runtime data is fetched with controlled revalidation/no-store through the existing loaders and must not be cache-busted with per-load random timestamps.</li><li>No service worker is registered by the active runtime. If a service worker is introduced later, its cache name must include the same release version and its update/removal path must be tested on normal navigation without hard refresh.</li><li>Deployment QA must load a previously deployed page, deploy or serve the new version, navigate normally without hard refresh, reload normally, navigate away and back, and prove the old UI does not return.</li></ul>
+</section>
+<section id="actions" class="card">
+<h2>4. Card Action Controls — Required Behavior</h2>
+<pre>🍿 ⌚ 🎫 💕 76%</pre>
+<table><tr><th>Control</th><th>Meaning</th><th>Required click result</th><th>Required state result</th></tr>
+<tr><td>🍿</td><td>Watch-source/provider popup</td><td>Open popup with media detail block and compact provider buttons.</td><td>No state write unless provider/action chosen.</td></tr>
+<tr><td>⌚</td><td>watched_status</td><td>Cycle <code>unwatched → partial → watched → unwatched</code>.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row.</td></tr>
+<tr><td>🎫</td><td>watch_list</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row.</td></tr>
+<tr><td>💕</td><td>favourite</td><td>Toggle off/on.</td><td>Update UI immediately, update local state, create/update local queue event, update Manage Watch State row. If Trakt mapping is local-only, status must say local_only, not pretend synced.</td></tr>
+<tr><td>76%</td><td>rating</td><td>Display only unless future rating editing is explicitly designed.</td><td>Always includes percent sign.</td></tr>
+</table>
+<h3>4.1 Forbidden active icons</h3>
+<ul><li>Watched status must not use a play triangle or clapperboard.</li><li>Watch list must not use a ruler icon.</li><li>Favourite must not use a yellow single-heart icon.</li><li>Rating must not use a star icon; rating remains compact percent text.</li></ul>
+<h3>4.2 Cross-view Consistency</h3>
+<ul><li>The same media item must show the same watch_list, favourite, and watched_status in Dashboard, Shows, Movies, Calendar, Discover, Watch Me, and Manage Watch State.</li><li>State cannot be view-local. One canonical state key must drive all views.</li><li>When a user clicks an action icon in one view, every matching card/row in every active view must render the same state after refresh/rerender.</li><li>Action visual state must be both readable and functional: if it lights up, the underlying state must exist; if state changes, the icon must change.</li><li>Validation must click ⌚/🎫/💕 on a Dashboard card and Calendar card, confirm visual state changes, confirm queue/local state changes, then open Manage Watch State and confirm the same media row changed.</li></ul>
+<h3>4.3 Mandatory Popup Detail Example</h3>
+<pre>Abbott Elementary
+Team Building
+S05E01 • 22 min
+Oct 1, 2025
+The teachers prepare for the upcoming school year with new faces and big changes on the horizon.</pre>
+</section>
+<section id="carousel" class="card">
+<h2>5. Episode Carousel Contract</h2>
+<p>Episode rows are not acceptable as plain horizontal overflow rows. They must be true carousels with controls, focus management, and retained context.</p>
+<pre>.episode-carousel
+  .episode-carousel-header
+  .episode-carousel-controls
+  .episode-carousel-viewport
+    .episode-carousel-track
+      .episode-card</pre>
+<table><tr><th>Requirement</th><th>Contract</th></tr>
+<tr><td>Container</td><td>Each show/season episode strip is a named carousel region with accessible label containing show and season context.</td></tr>
+<tr><td>Navigation</td><td>Visible previous/next controls; keyboard left/right; Android TV D-pad left/right; optional page dots/count.</td></tr>
+<tr><td>Context retention</td><td>Show title and season title/header remain visible while moving through carousel items. Horizontal scrolling must not make the user lose the show/season context.</td></tr>
+<tr><td>Card layout</td><td>Episode cards use Narrow Still Half 240x135, episode title, SxxExx, runtime/date, and action row.</td></tr>
+<tr><td>Focus</td><td>Focus stays inside the carousel while navigating cards and controls; D-pad up/down moves predictably to previous/next section.</td></tr>
+<tr><td>Scroll behavior</td><td>Carousel can use scroll-snap but must also expose real controls. A plain overflowing row without carousel controls fails validation.</td></tr>
+<tr><td>Proof</td><td>Rendered QA must click next/previous and verify scroll/transform position changes, context remains visible, and the viewport clips the track.</td></tr>
+</table>
+<p><strong>Fail condition:</strong> a row of episode data or plain horizontal scroll without carousel controls is not a carousel.</p>
+</section>
+<section id="watch-state" class="card">
+<h2>6. Manage Watch State — Exact UX Contract</h2>
+<p>This page is a data-management table/tree, closer to Excel than a media gallery.</p>
+<table><tr><th>Area</th><th>Required behavior</th></tr>
+<tr><td>Search</td><td>Search box filters title/show/movie/season/episode immediately.</td></tr>
+<tr><td>Type filter</td><td>Must allow selecting Shows only, Movies only, Episodes only, or All.</td></tr>
+<tr><td>Rows per page</td><td>User can select larger page sizes, including at least 50, 100, and 250 where performance allows.</td></tr>
+<tr><td>Pagination</td><td>First, Previous, Next, Last controls must work and update disabled/enabled states correctly.</td></tr>
+<tr><td>Sorting</td><td>Column headers sort like Excel; not only a separate dropdown. Sortable fields include title, type, watch_list, watched_status, favourite, Trakt status, mismatch, queued, validation issue.</td></tr>
+<tr><td>Single-line rows</td><td>Default table rows must stay compact and single-line where practical; expanded details are optional, not the default.</td></tr>
+<tr><td>Editing</td><td>watch_list, favourite, and watched_status cells are editable controls. They must change values, persist local state, and create queue events.</td></tr>
+<tr><td>Tree</td><td>Show → season → episode hierarchy is preserved without turning rows into large cards.</td></tr>
+<tr><td>Status columns</td><td><code>Trakt status</code>, <code>Mismatch</code>, <code>Queued</code>, and <code>Validation issue</code> are computed values, not static labels.</td></tr>
+</table>
+</section>
+<section id="trakt" class="card">
+<h2>7. Trakt Sync Contract</h2>
+<pre>device auth → pull → normalize → compare → local queue → push → confirmation pull → reconcile → report</pre>
+<ul><li>Trakt two-way sync is required and not optional.</li><li>UI writes are local-first and queue-backed. Live network response is not required for immediate UI change.</li><li>Local queue file is <code>data/watch_state_queue.json</code>.</li><li>Primary match key is ID-based: Trakt, TMDB, IMDB, TVDB, slug where available. Title-only writes are forbidden.</li><li>Required pull endpoints: <code>GET /sync/watchlist</code>, <code>GET /sync/history/movies</code>, <code>GET /sync/history/episodes</code>.</li><li>Required push endpoints: <code>POST /sync/watchlist</code>, <code>POST /sync/watchlist/remove</code>, <code>POST /sync/history</code>, <code>POST /sync/history/remove</code>.</li><li><code>partial</code> watched_status is local-only unless a specific Trakt playback/progress mapping is intentionally implemented.</li><li><code>favourite</code> is local-only unless explicitly mapped to Trakt ratings or another Trakt-supported construct. If local-only, the UI must say local_only.</li><li>The same state value must display consistently across all pages.</li></ul>
+<p>Canonical state owner: <code>web/js/watch_state_manager.js</code>. All cards, calendar cells, popups, and Manage Watch State rows must read the same resolver and queue writer. Action state cannot be duplicated in view-specific local logic.</p>
+<h3>7.1 Required Repository Secrets</h3>
+<table><tr><th>Secret</th><th>Purpose</th><th>Required in workflows</th></tr>
+<tr><td><code>API_OMDB_KEY</code></td><td>OMDB metadata enrichment.</td><td>build-data, validate where metadata validation requires it.</td></tr>
+<tr><td><code>API_TMDB_KEY</code></td><td>TMDB API key.</td><td>build-data, validate asset/self-heal checks.</td></tr>
+<tr><td><code>API_TVMAZE_KEY</code></td><td>TVMaze enrichment if used.</td><td>build-data if TVMaze scripts are active.</td></tr>
+<tr><td><code>API_TRAKT_ID</code></td><td>Trakt client ID / API key equivalent.</td><td>build-data, validate, Trakt diagnostics.</td></tr>
+<tr><td><code>API_TRAKT_KEY</code></td><td>Existing Trakt key name used by older scripts.</td><td>Must be supported or normalized; no secret-name drift.</td></tr>
+<tr><td><code>API_TRAKT_SECRET</code></td><td>Trakt client secret.</td><td>build-data, validate, token refresh/live sync.</td></tr>
+<tr><td><code>API_TRAKT_ACCESS_TOKEN</code></td><td>Trakt OAuth access token.</td><td>build-data, validate, live sync/dry-run auth checks.</td></tr>
+<tr><td><code>API_TRAKT_REFRESH_TOKEN</code></td><td>Trakt OAuth refresh token.</td><td>build-data, validate, token refresh path.</td></tr>
+<tr><td><code>API_TRAKT_REDIRECT_URL</code></td><td>Trakt OAuth redirect URI.</td><td>build-data, validate, auth/device/token path.</td></tr>
+<tr><td><code>LOGGING_TOKEN</code></td><td>Optional diagnostic/logging integration.</td><td>Only where logging scripts require it.</td></tr>
+</table>
+</section>
+<section id="provider-health" class="card">
+<h2>8. Provider Health Registry</h2>
+<p>Provider links are treated as external health-checked targets. The app must not keep broken, unsafe, or redirect-abusive providers active.</p>
+<p>Direct watch-source links must be filtered through <code>data/provider_registry.json</code> before rendering. Broken TLS, spam redirects, blank-tab launches, and inactive DNS are blocked states, not warnings.</p>
+<table><tr><th>Status</th><th>Meaning</th><th>Runtime behavior</th></tr>
+<tr><td><code>active</code></td><td>Domain opens over modern HTTPS, does not redirect to unrelated advertising/security-risk domains, and creates a usable provider page.</td><td>May show in popup.</td></tr>
+<tr><td><code>degraded</code></td><td>Intermittent, slow, or partial failures.</td><td>May show behind warning or lower priority.</td></tr>
+<tr><td><code>blocked</code></td><td>DNS failure, unsupported SSL/TLS, empty tab/no URL, known spam redirect, browser security failure, or user-reported unsafe behavior.</td><td>Must not appear as normal provider option.</td></tr>
+<tr><td><code>archived</code></td><td>Previously used provider retained only for audit/history.</td><td>Not active.</td></tr>
+</table>
+<table><tr><th>Domain</th><th>Required classification</th></tr>
+<tr><td><code>smashystream.com</code></td><td><code>blocked</code></td></tr>
+<tr><td><code>2embed.org</code></td><td><code>blocked</code></td></tr>
+<tr><td><code>superembed.stream</code></td><td><code>degraded</code> or <code>blocked</code> after validation; blocked until proven safe.</td></tr>
+<tr><td><code>multiembed.mov</code></td><td><code>degraded</code> or <code>blocked</code> after validation; blocked until proven safe.</td></tr>
+<tr><td><code>vidsrc.net</code></td><td><code>active</code> candidate.</td></tr>
+<tr><td><code>2embed.cc</code></td><td><code>active</code> candidate.</td></tr>
+</table>
+<ul><li>Provider QA must record domain, generated URL pattern, media type, TMDB ID, season/episode, status code/error class, redirect final domain if safe to capture, test timestamp, and disposition.</li><li>Provider QA must classify browser messages like <code>ERR_SSL_VERSION_OR_CIPHER_MISMATCH</code> as provider-side TLS/SSL failure unless evidence proves local browser issue.</li><li>Provider links that open a blank tab with no URL or no target must be classified as broken generation logic.</li><li>Provider links that redirect to unrelated advertising or unsafe domains must be blocked/archived.</li><li>The app must not auto-discover or add unknown replacement providers without explicit review and health classification.</li></ul>
+</section>
+<section id="ci" class="card">
+<h2>9. CI/CD and Workflow Contract</h2>
+<table><tr><th>Workflow</th><th>Required behavior</th></tr>
+<tr><td><code>.github/workflows/validate.yml</code></td><td>Runs syntax, availability validation, asset validation, runtime catalog integrity, JS checks, rendered/browser QA, provider health QA, and Trakt dry-run. Must use Node 24 action majors and Python 3.12.</td></tr>
+<tr><td><code>.github/workflows/build-data.yml</code></td><td>Runs full data pipeline, validates JSON, uploads diagnostics on success/failure, commits generated artifacts, then dispatches Pages after artifact commits.</td></tr>
+<tr><td><code>.github/workflows/pages.yml</code></td><td>Deploys GitHub Pages using workflow deployment so bot-generated data commits publish.</td></tr>
+</table>
+<ul><li>Every script referenced by workflows must exist in repo and be syntax validated.</li><li>Workflow steps must not reference retired files.</li><li>Node 20 warnings are not accepted as harmless drift; workflow actions must be updated to supported Node 24 action majors.</li><li>Failure logs and reports must be uploaded as artifacts even when the main pipeline fails.</li><li>Credential existence is not enough. Workflows must pass all required secrets into the exact steps that use them.</li></ul>
+</section>
+<section id="qa" class="card">
+<h2>10. Validation Acceptance Tests</h2>
+<ul><li>Click ⌚/🎫/💕 on Dashboard, Calendar, Shows, and Movies cards → visual state changes → queue/local state changes → Manage Watch State row matches.</li><li>Verify same media item has same watch_list, favourite, and watched_status across Dashboard, Shows, Movies, Calendar, Discover, Watch Me, Manage Watch State.</li><li>Calendar QA fails on unequal day widths, card crossing day boundaries, +X more escaping its cell, page-level overflow outside intended calendar scroller, or screenshot-visible containment issues.</li><li>Episode carousel test: required DOM shell exists, show/season header remains visible, next/previous controls work, keyboard and D-pad navigation work, viewport clips track, rendered card movement is proven, and a plain overflowing row fails.</li><li>D-pad/Android TV validation must prove focus order, popup trapping, and Back/Escape close behavior.</li><li>Manage Watch State test: search works, type filter works, rows-per-page changes, first/previous/next/last work, column-header sorting works, inline state edits persist and queue.</li><li>Provider health QA fails if a blocked provider renders as an active link or launches blank/unsafe redirect behavior.</li><li>Provider health test: broken TLS, DNS failure, blank URL generation, and unsafe redirect domains are blocked or archived and not shown as normal active options.</li><li>Trakt dry-run test: queued records generate endpoint-specific payloads or explicit local_only/missing_id/validation_issue status.</li><li>CI test: validate, build-data, and pages workflows pass; workflow diagnostics artifacts exist when failure occurs.</li></ul>
+</section>
+<section id="drift" class="card"><h2>11. Control Thread Drift Prevention</h2>
+<table><tr><th>Failure mode</th><th>Required correction</th></tr>
+<tr><td>Assistant accepts a label such as “carousel” without rendered proof.</td><td>Reject as unproven. Require visible shell, viewport, track, prev/next controls, movement, retained context, and D-pad/keyboard QA.</td></tr>
+<tr><td>Detailed user example becomes a vague requirement.</td><td>Preserve the example verbatim or convert it into a measurable acceptance test.</td></tr>
+<tr><td>Codex reports success but user screenshot contradicts it.</td><td>User screenshot wins. Reclassify as failed validation and fix root cause.</td></tr>
+<tr><td>Feature works on one page but not another.</td><td>Classify as cross-view state or renderer ownership drift. Fix shared owner, not one page.</td></tr>
+<tr><td>Provider URL works/fails inconsistently.</td><td>Classify by health state and generated URL pattern; do not keep unsafe or broken providers active.</td></tr>
+</table>
+<ul><li>No deferrals for items above.</li><li>Do not report success unless behavior is proven in rendered/browser QA or deterministic script output.</li><li>Do not generalize user feedback into broad labels; preserve operational details.</li><li>User screenshots override prior claimed success. Screenshot-visible failures must be converted into rendered QA assertions.</li><li>If behavior is not implemented, classify as failed validation or blocked by a concrete external dependency.</li></ul>
+</section>
+<section id="accountability" class="card"><h2>12. Accountability</h2><ul><li>Implementation must prefer shared runtime/modules over parallel systems.</li><li>New local data registries must be validated before use.</li></ul></section>
+<section id="codex" class="card"><h2>13. Next Codex Batch</h2><ol><li>Keep card action controls working so ⌚/🎫/💕 work in every card view and update canonical state + queue + Manage Watch State.</li><li>Preserve true episode carousel DOM shell with controls, D-pad/keyboard support, clipped viewport, and retained show/season context.</li><li>Maintain Manage Watch State as a compact sortable/filterable/paginated editable table/tree.</li><li>Fix any future Trakt icon/state consistency drift across all views.</li><li>Harden validation for all acceptance tests in Section 10.</li><li>Preserve workflow/secret/CI contract in Section 9 and Provider Health contract in Section 8.</li></ol></section>
+<!-- MC-2026-05-18.1-RECOVERY-START -->
+<section id="recovery-20260518" class="card">
+<h2>MC-2026-05-18.1 Recovery Contract — Popup, Media Library, Trailer Mode, and Media QA</h2>
+<table><tr><th>Metadata</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.1</td></tr>
+<tr><td>Updated</td><td>MC-2026-05-18.1</td></tr>
+<tr><td>Origin</td><td>User screenshot and console evidence showed the watch popup collapsed into a provider-only list, Media Library navigation rendered in the wrong location, popup/form reference labels were missing, TMDB ID was missing from episode cards, trailer/light runtime behavior was not defined, and media file QA was not enforced as one pipeline.</td></tr>
+<tr><td>Status</td><td>Authoritative until replaced by a later explicitly versioned section.</td></tr>
+</table>
+
+<h3>R1. Contract update rules</h3>
+<ul>
+<li>The contract must be edited additively. It must not be regenerated from scratch.</li>
+<li>Before major contract edits, archive the current file under <code>docs/_archive/contracts/</code>.</li>
+<li>Every major section must show Added, Updated, and Origin metadata.</li>
+<li>User screenshots and concrete examples are acceptance evidence and must become QA assertions.</li>
+<li>Do not remove legacy provider URLs or historical design elements unless explicitly classified and archived.</li>
+</ul>
+
+<h3>R2. Repo inventory and ownership required</h3>
+<table><tr><th>Inventory area</th><th>Required documentation</th></tr>
+<tr><td>Page files</td><td>Every active page under <code>web/</code>, including Dashboard, Shows, Movies, Calendar, Discover, Config, Manage Watch State, Watch Me compatibility, Inputs Editor, and Media Library.</td></tr>
+<tr><td>Runtime files</td><td>Every active JS owner and its scope: app runtime, card renderer, action bar, watch state manager, focus/D-pad manager, provider popup guard or replacement.</td></tr>
+<tr><td>CSS ownership</td><td>Primary layout owner, compatibility/shim status, card layout owner, popup layout owner, calendar layout owner, carousel layout owner.</td></tr>
+<tr><td>Data files</td><td>Catalog data, detail data, calendar data, provider registry, watch state queue, config, generated media reference.</td></tr>
+<tr><td>Scripts</td><td>Build, validation, media cleanup, media QA, Trakt sync, asset optimization, and GitHub workflow scripts.</td></tr>
+<tr><td>Reports/logs</td><td>Expected report names, log names, archive policy, and which outputs are tracked versus local-only.</td></tr>
+</table>
+
+<h3>R3. Watch Source popup schema</h3>
+<p>The watch popup must never be replaced by a minimal provider-only list. Any guard or compatibility file may clean unsafe/admin text only; it must preserve the full popup structure.</p>
+<table><tr><th>Popup area</th><th>Required content</th></tr>
+<tr><td>Left media detail panel</td><td>Still/poster in Full mode; no image in Light mode; title; episode/movie title; action row; rating; metadata; TMDB ID; date; description; generated filename copy line.</td></tr>
+<tr><td>Metadata row</td><td>Episodes: <code>S11E01 • 68 min • May 8, 2026 • TMDB: 67482</code>. Movies: <code>Runtime • Release date • TMDB: id</code>.</td></tr>
+<tr><td>Generated filename line</td><td>Plain selectable text after one blank line below description. Example: <code>RuPaul's Drag Race All Stars - S11E01 - Break Dancin' 2 - Electric Rugaloo [05-05-26] [67482]</code>.</td></tr>
+<tr><td>Streaming</td><td>Rendered on the left side as compact rows. Provider name plus eye icon plus status icon. No raw admin notes.</td></tr>
+<tr><td>Providers</td><td>Country and provider icons aligned on the same row. Compact spacing. No outline boxes around provider icons or streaming service buttons unless required for focus state.</td></tr>
+<tr><td>Exit</td><td>Sticky Exit button inside the popup shell. All popup exits must remain visible while scrolling.</td></tr>
+<tr><td>Reference label</td><td>Small bottom-right label such as <code>REF: POP-WATCH-SOURCE</code>.</td></tr>
+</table>
+
+<h3>R4. Provider lifecycle and rendering</h3>
+<table><tr><th>Provider state</th><th>Rendering rule</th></tr>
+<tr><td>active</td><td>Visible in Watch Now with eye icon and green check when verified working.</td></tr>
+<tr><td>degraded</td><td>Visible with eye icon and warning/yield icon.</td></tr>
+<tr><td>legacy</td><td>Retained in registry and visible only in a separate legacy section if enabled; not deleted.</td></tr>
+<tr><td>blocked</td><td>Hidden from public popup but retained in registry/reporting with reason.</td></tr>
+<tr><td>archived</td><td>Retained for audit/history only.</td></tr>
+</table>
+<ul>
+<li>Known verified working from user testing: <code>VidEasy</code> and <code>2Embed CC</code> use eye + green check.</li>
+<li>VidSrc remains retained and may be active/degraded based on health result, not deleted.</li>
+<li>SuperEmbed, MultiEmbed, SmashyStream, FlixHQ, and other historical entries must not be silently removed; classify them.</li>
+<li>Forbidden public text: <code>ACTIVE CANDIDATE FROM USER FINDINGS</code>, raw <code>ACTIVE</code>, raw <code>DEGRADED</code>, raw <code>BLOCKED</code>, raw notes/comments.</li>
+</ul>
+
+<h3>R5. Episode card metadata</h3>
+<p>Episode cards across Dashboard, Calendar, Shows, popups, and carousels must include the TMDB ID in the detail block where space allows.</p>
+<pre>CIA
+Broken Glass
+S01E12 • 43 min • TMDB: 123456</pre>
+<pre>FROM
+What a Long Strange Trip It's Been
+S04E05 • 52 min • TMDB: 987654</pre>
+
+<h3>R6. Media Library page and navigation</h3>
+<ul>
+<li>Add <code>web/Media_Library.html</code>.</li>
+<li>Add a library/books icon to the standard view icon header.</li>
+<li>The icon must render within the normal nav group, not under the logo and not behind the left filter rail.</li>
+<li>The icon opens <code>Media_Library.html</code> in a separate tab.</li>
+<li>The page includes <code>REF: PAGE-MEDIA-LIBRARY</code>.</li>
+<li>The page summarizes media QA pipeline results: OK, repaired, needs review, quarantined, duplicate, unsupported.</li>
+</ul>
+
+<h3>R7. Trailer / Light mode</h3>
+<ul>
+<li>Add a Full/Light slider under the Ready/version area.</li>
+<li>Default is Full except when the browser/session can identify the trailer network as <code>192.168.2.x</code>; if browser privacy prevents IP detection, provide manual session override.</li>
+<li>Light mode must not create <code>img src</code> for posters, stills, backdrops, or large logos.</li>
+<li>Light mode still renders text, metadata, actions, ratings, provider buttons, carousels, popups, and watch-state controls.</li>
+<li>User override persists for the current browser session.</li>
+</ul>
+
+<h3>R8. Media file QA pipeline</h3>
+<p>Media cleanup is not only renaming. The single pipeline is:</p>
+<pre>scan → identify → filename match → ffprobe QA → classify → safe remux if needed → rename/move → final validation → report</pre>
+<table><tr><th>Requirement</th><th>Rule</th></tr>
+<tr><td>All files</td><td>Every media file in scope must be checked, not only examples.</td></tr>
+<tr><td>ffprobe</td><td>Validate container readability, duration, video stream, audio stream, codec, file size, truncation/error status, and extension/container mismatch where detectable.</td></tr>
+<tr><td>ffmpeg repair</td><td>When safe, remux with stream copy: <code>ffmpeg -i input -map 0 -c copy output</code>. Do not transcode unless explicitly required.</td></tr>
+<tr><td>Compatibility</td><td>Target playback compatibility is VLC and X-plore.</td></tr>
+<tr><td>Failure</td><td>Bad/unrepairable files are quarantined and reported; never silently skipped.</td></tr>
+<tr><td>Reports</td><td><code>media_file_qa.csv</code>, <code>media_file_qa.json</code>, <code>repair_actions.log.txt</code>, <code>unrepaired_files.csv</code>, <code>final_summary.html</code>.</td></tr>
+</table>
+
+<h3>R9. Popup/form reference labels</h3>
+<ul>
+<li>Every popup, form, modal, major page shell, and major panel must show a small bottom-right reference label.</li>
+<li>Examples: <code>REF: POP-WATCH-SOURCE</code>, <code>REF: POP-SHOW-DETAIL</code>, <code>REF: POP-MOVIE-DETAIL</code>, <code>REF: PAGE-MEDIA-LIBRARY</code>.</li>
+<li>Do not put reference labels on media cards.</li>
+</ul>
+
+<h3>R10. Validation requirements</h3>
+<ul>
+<li>Fail if Watch Source popup renders only provider names or loses title/metadata/description/generated filename.</li>
+<li>Fail if popup guard replaces full popup markup instead of post-processing it.</li>
+<li>Fail if provider admin notes/status text appears in public popup.</li>
+<li>Fail if legacy providers are deleted instead of classified.</li>
+<li>Fail if Media Library nav icon renders outside the nav group or overlaps the left filter rail.</li>
+<li>Fail if episode cards omit TMDB ID where required.</li>
+<li>Fail if Light mode still loads hidden images.</li>
+<li>Fail if media validator does not call/reference ffprobe and repair logic does not call/reference ffmpeg.</li>
+</ul>
+</section>
+<!-- MC-2026-05-18.1-RECOVERY-END -->
+<!-- MC-2026-05-18.2-RUNTIME-RECOVERY-START -->
+<section id="runtime-recovery-20260518" class="card">
+<h2>MC-2026-05-18.2 Runtime Recovery Lineage</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
+<tr><td>Updated</td><td>Watch Source popup, card renderer ownership, Media Library navigation, Full/Light runtime mode, media QA pipeline, validation matrix.</td></tr>
+<tr><td>Origin</td><td>User runtime recovery request requiring popup mockup parity, single-source cards, primary-nav Media Library placement, image-suppressed Light mode, and enforced media-health QA.</td></tr>
+<tr><td>Owner</td><td><code>web/js/app_runtime.js</code>, <code>web/js/card_renderer.js</code>, <code>web/css/main_app.css</code>, <code>web/js/media_library_header_button.js</code>, <code>tools/media_renamer/media_file_qa.py</code>, validators.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_runtime.ps1</code>, <code>scripts/qa_browser_layout_check.mjs</code>, <code>scripts/validate_media_renamer.py</code>.</td></tr>
+</table>
+
+<h3>R11. Repo inventory, file/folder structure, and runtime ownership map</h3>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
+<tr><td>Updated</td><td>Runtime ownership inventory.</td></tr>
+<tr><td>Origin</td><td>Recovery pass required exact canonical owners instead of replacement frameworks.</td></tr>
+<tr><td>Owner</td><td><code>web/js/app_runtime.js</code> owns route rendering, popup opening, runtime mode, and Dashboard/Calendar call sites; <code>web/js/card_renderer.js</code> owns canonical card markup; <code>web/css/main_app.css</code> owns layout; <code>data/inputs.json</code> remains canonical input; <code>data/data.json</code> remains generated runtime output; <code>assets/</code> remains canonical asset root.</td></tr>
+<tr><td>Validation</td><td>Runtime validator checks shared ownership, nav placement, and contract lineage markers.</td></tr>
+</table>
+<ul><li>Active pages: Dashboard, Shows, Movies, Calendar, Discover, Config, Manage Watch State, Watch Me, Inputs Editor, and Media Library.</li><li>Retired page: <code>web/library_editor.html</code> remains redirect-only/retired.</li><li>Calendar remains full-width without a left sidebar; Shows and Movies retain left-sidebar filters.</li></ul>
+
+<h3>R12. Watch Source popup schema and provider lifecycle</h3>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
+<tr><td>Updated</td><td>Popup schema replaces ambiguous Watch Now/Where to Watch wording with Streaming/Providers.</td></tr>
+<tr><td>Origin</td><td>User supplied exact episode title/detail/filename requirements and forbade public admin provider notes.</td></tr>
+<tr><td>Owner</td><td><code>renderWatchSourceChooserHtml</code>, <code>renderWatchSourceMediaDetailHtml</code>, <code>renderWatchProvidersHtml</code>, and <code>provider_popup_guard.js</code> as passive cleaner only.</td></tr>
+<tr><td>Validation</td><td>Browser QA fails on wrong title, labels, admin/status text, outlined rows, missing generated filename copy, missing sticky Exit, missing ref label, or missing episode TMDB ID.</td></tr>
+</table>
+<pre>Watch • RuPaul's Drag Race All Stars • Shop Til U Drop • S11E03</pre>
+<pre>RuPaul's Drag Race All Stars - S11E03 - Shop Til U Drop  [copy_full_name_button]
+May 15, 2026
+67482 • 62 min</pre>
+<p>Generated filename example: <code>RuPaul's Drag Race All Stars - S11E03 - Shop Til U Drop [05-15-26] [67482]</code>. Description text renders directly below metadata. Streaming rows are plain provider-name plus URL hyperlink rows. Provider rows keep country and providers on the same compact line. Active/degraded states may use icon-only indicators, never raw admin/status words. Legacy providers remain in registry/history and are not deleted.</p>
+
+<h3>R13. Card renderer ownership</h3>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
+<tr><td>Updated</td><td>One canonical renderer per object: episode, show, season, movie.</td></tr>
+<tr><td>Origin</td><td>Dashboard and Calendar episode-card drift.</td></tr>
+<tr><td>Owner</td><td><code>web/js/card_renderer.js</code> exports canonical renderers; <code>buildSharedEpisodeCard</code> is the Dashboard/Calendar episode call path.</td></tr>
+<tr><td>Validation</td><td>Runtime validation fails if Dashboard and Calendar diverge or episode cards omit <code>TMDB: id</code>.</td></tr>
+</table>
+
+<h3>R14. Media Library page</h3>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
+<tr><td>Updated</td><td>Media Library icon placement is primary nav only. As of MC-2026-05-20.1 the link must be present in each active app page shell, not only injected later by JavaScript.</td></tr>
+<tr><td>Origin</td><td>User reported icon rendering outside the view icon row/under overlay.</td></tr>
+<tr><td>Owner</td><td>Active app page shells own the static link. <code>web/js/media_library_header_button.js</code> only normalizes/moves the existing link into the primary nav if a shell or cached page is missing it.</td></tr>
+<tr><td>Validation</td><td>Browser QA fails if <code>#mediaLibraryHeaderButton</code> is outside <code>.top &gt; .nav[role="tablist"][aria-label="Primary"]</code>, does not open a new tab, lacks the library/books icon, is visually occluded by page content, or is absent from active page-shell nav markup.</td></tr>
+</table>
+
+<h3>R15. Full/Light runtime mode</h3>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
+<tr><td>Updated</td><td>Ready/version area includes Full/Light selector.</td></tr>
+<tr><td>Origin</td><td>Trailer/light network needs text-first runtime without image loading.</td></tr>
+<tr><td>Owner</td><td><code>requestedRuntimeMode</code>, <code>applyRuntimeMode</code>, <code>ensureRuntimeModeControl</code>, <code>pickImage</code>, <code>normalizeImageSrc</code>, card renderer image gate.</td></tr>
+<tr><td>Validation</td><td>Browser QA fails if Light mode leaves non-logo <code>img[src]</code> elements.</td></tr>
+</table>
+<p>Default is Full. <code>?mode=light</code>, <code>?mode=trailer</code>, or stored Light setting activates Light mode. Light mode suppresses poster, still, backdrop, provider logo, and large-logo image sources without deleting image data.</p>
+
+<h3>R16. Media QA / renamer pipeline</h3>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-18.2</td></tr>
+<tr><td>Updated</td><td>Renamer pipeline now includes mandatory media-health QA.</td></tr>
+<tr><td>Origin</td><td>User required scan to final report as one no-silent-skip pipeline.</td></tr>
+<tr><td>Owner</td><td><code>tools/media_renamer/media_file_qa.py</code>, <code>media_renamer_engine.py</code>, <code>media_cleanup_pipeline.py</code>.</td></tr>
+<tr><td>Validation</td><td><code>validate_media_renamer.py</code> fails without ffprobe, stream-copy ffmpeg remux, required report names, and VLC/X-plore target text.</td></tr>
+</table>
+<pre>scan → identify → filename match → ffprobe QA → classify → safe remux/repair if needed → rename/move → final ffprobe validation → report</pre>
+</section>
+<!-- MC-2026-05-18.2-RUNTIME-RECOVERY-END -->
+<!-- MC-2026-05-19.1-WATCH-SOURCE-PROVIDER-COPY-START -->
+<section id="watch-source-provider-copy-20260519" class="card">
+<h2>MC-2026-05-19.1 Watch Source Provider Strip and Filename Copy Schema</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-19.1</td></tr>
+<tr><td>Updated</td><td>Watch Source Providers section rendering and generated filename copy control.</td></tr>
+<tr><td>Origin</td><td>User reported rendered drift where provider URLs appeared as public text, provider rows stacked vertically as text output, and filename copy rendered as a separate generic Copy control instead of the full filename string.</td></tr>
+<tr><td>Owner</td><td><code>renderWatchProvidersHtml</code> renders the Providers section. <code>renderWatchSourceMediaDetailHtml</code> renders the generated filename copy control, using <code>generatedWatchFilename</code> for the exact copied value. <code>openProviderModal</code> binds copy behavior without changing the visible filename label.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_runtime.ps1</code> and <code>scripts/qa_browser_layout_check.mjs</code> fail on visible provider URLs, stacked country/provider rows, provider anchors styled as buttons/cards, missing provider logos when logo data exists, filename copy text missing date or TMDB ID, or copied value differing from the displayed filename.</td></tr>
+</table>
+<h3>Provider section schema</h3>
+<ul>
+<li>The section title is exactly <code>Providers</code>.</li>
+<li>The Providers section renders one compact row per country.</li>
+<li>The country code is left-aligned and provider logo/text anchors render on the same row.</li>
+<li>Provider URL is allowed only in <code>href</code>. Provider URL must not be visible text.</li>
+<li>Provider anchors are hyperlinks, not buttons, and must not render button/card outline styling.</li>
+<li>If provider logo data exists, render the provider logo image in Full mode. If logo data is missing, render a compact text pill. Both logo and fallback text are inside hyperlink anchors.</li>
+</ul>
+<pre>CA  Crave • WOW Presents Plus • OUTtv • Netflix • Apple TV
+US  Amazon • Apple TV • fuboTV • Paramount Plus • Google Play • Paramount+
+GB  WOW Presents Plus
+AU  Stan</pre>
+<h3>Generated filename copy schema</h3>
+<ul>
+<li>The visible primary copy control text is exactly the full generated filename string.</li>
+<li>Clicking the visible filename control copies exactly the same string in <code>data-copy-watch-filename</code>.</li>
+<li>Episode example: <code>RuPaul's Drag Race All Stars - S11E03 - Shop Til U Drop [05-15-26] [67482]</code>.</li>
+<li>A secondary generic Copy button may exist only as secondary UI and must not replace, shorten, or mutate the visible full filename label.</li>
+</ul>
+</section>
+<!-- MC-2026-05-19.1-WATCH-SOURCE-PROVIDER-COPY-END -->
+<!-- MC-2026-05-20.1-NAV-LEGACY-DRIFT-START -->
+<section id="nav-legacy-drift-20260520" class="card">
+<h2>MC-2026-05-20.1 Navigation and Legacy Runtime Drift Recovery</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-20.1</td></tr>
+<tr><td>Updated</td><td>Media Library navigation, retired runtime shim handling, stale Watch Source fallback labels, provider CSS drift controls, and subordinate documentation inventory.</td></tr>
+<tr><td>Origin</td><td>User reported the Media Library icon rendering behind current-view content and raised concern that documentation/code drift was being simplified or missed.</td></tr>
+<tr><td>Owner</td><td>Active page shells own static primary navigation. <code>web/js/media_library_header_button.js</code> is a normalizer only. <code>web/css/main_app.css</code> owns active provider/watch-source styling. Retired shims are archived under <code>docs/_archive/runtime_shims/</code>.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_runtime.ps1</code> fails if active shells omit the static Media Library nav link, stale <code>Where to watch</code> modal fallback text returns, retired shims exist under <code>web/js/</code>, retired provider/watch-option CSS selectors return, required subordinate docs are missing, or the contract metadata is stale. <code>scripts/qa_browser_layout_check.mjs</code> fails if the Media Library link is outside the primary nav, does not open a new tab, or is occluded by rendered content.</td></tr>
+</table>
+<h3>Media Library nav schema</h3>
+<ul>
+<li>Every active app shell includes <code>#mediaLibraryHeaderButton</code> directly inside <code>.top &gt; .nav[role="tablist"][aria-label="Primary"]</code>.</li>
+<li>The link uses the library/books icon <code>📚</code>, standard <code>tab media-library-view-icon</code> styling, <code>href="./Media_Library.html"</code>, <code>target="_blank"</code>, and <code>rel="noopener"</code>.</li>
+<li>No fallback may append the icon to <code>body</code>, header logo, content areas, overlays, or filter/sidebar regions.</li>
+</ul>
+<h3>Legacy runtime/CSS schema</h3>
+<ul>
+<li><code>web/js/runtime_render_fix.js</code> and <code>web/js/trailer_watch_popup_fix.js</code> are archived, not active runtime files.</li>
+<li>Active CSS must not retain retired <code>.provider-link-row</code> or <code>.watch-option-btn</code> selectors.</li>
+<li>Static popup shells use <code>Providers</code> as the fallback title; <code>Where to watch</code> is not an active fallback label.</li>
+</ul>
+</section>
+<!-- MC-2026-05-20.1-NAV-LEGACY-DRIFT-END -->
+<!-- MC-2026-05-20.2-STREAMING-EPISODE-CARD-START -->
+<section id="streaming-episode-card-20260520" class="card">
+<h2>MC-2026-05-20.2 Streaming Provider Registry and Episode Card Baseline</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-05-20.2</td></tr>
+<tr><td>Updated</td><td>Streaming provider registry source of truth, candidate/blocked visibility rules, shared episode-card rendering, density handling, and still-image fallback order.</td></tr>
+<tr><td>Origin</td><td>User reported deployed Streaming buttons showing only VidSrc, VidEasy, FlixHQ, SFlix, and 2Embed CC, plus visible drift between Calendar episode cards and Dashboard Current/Recent episode cards.</td></tr>
+<tr><td>Owner</td><td><code>web/config.json -> streaming.embed_providers[]</code> owns provider data. <code>collectConfiguredWatchSources</code> owns Streaming link generation. <code>buildSharedEpisodeCard</code> owns normalized episode-card assembly. <code>renderEpisodeCardHtml</code> owns canonical episode-card markup. <code>episodeStillImageForCard</code> owns still/backdrop/poster fallback.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> fail on provider registry drift, default-provider omissions, candidate/blocked visibility leaks, direct Calendar/Dashboard card renderer forks, missing shared renderer markers, or broken episode image fallback.</td></tr>
+</table>
+<h3>Streaming provider schema</h3>
+<ul>
+<li>The Streaming popup provider buttons are generated from <code>web/config.json -> streaming.embed_providers[]</code>.</li>
+<li><code>ok</code> and <code>warn</code> providers render by default. <code>candidate</code> providers render only when <code>streaming.show_candidate_providers</code> is true. <code>blocked</code> providers never render.</li>
+<li>Default-visible providers are VSEmbed, VidSrc, VidEasy, SuperEmbed, MultiEmbed, SmashyStream, FlixHQ, SFlix, 2Embed CC, and 2Embed Org.</li>
+<li>Requested but hidden candidate providers are VidSrc.me, VidSrc.to, VidLink, Nunflix, and vidsrc-embed.ru.</li>
+<li>Goojara, Cineb, and freeintertv.com remain blocked until a verified TMDB-compatible template exists.</li>
+</ul>
+<h3>Episode card baseline schema</h3>
+<ul>
+<li>Calendar, Dashboard Current/Recent, and show-detail episode cards call <code>buildSharedEpisodeCard</code>; view code must not define independent episode-card markup.</li>
+<li>Density is a parameter/class: <code>standard</code> for Dashboard/show-detail cards, <code>compact</code> for Calendar cards.</li>
+<li>Rendered cards carry <code>data-episode-card-renderer="buildSharedEpisodeCard"</code>, <code>data-episode-card-density</code>, and <code>data-image-resolver="episodeStillImageForCard"</code>.</li>
+<li>Image fallback order is episode still local/TMDB, episode still/thumb aliases, show backdrop local/TMDB, show poster local/TMDB, deterministic no-still placeholder.</li>
+</ul>
+</section>
+<!-- MC-2026-05-20.2-STREAMING-EPISODE-CARD-END -->
+<!-- MC-2026-07-11.1-VSEMBED-STREAMING-PROVIDER-START -->
+<section id="vsembed-streaming-provider-20260711" class="card">
+<h2>MC-2026-07-11.1 VSEmbed Streaming Provider Addition</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-07-11.1</td></tr>
+<tr><td>Updated</td><td>Default-visible Streaming popup provider registry now includes VSEmbed through the existing <code>web/config.json -> streaming.embed_providers[]</code> system.</td></tr>
+<tr><td>Origin</td><td>User requested VSEmbed links be added alongside the existing Streaming source set, with separate TV and movie path formats and no runtime redesign.</td></tr>
+<tr><td>Owner</td><td><code>web/config.json -> streaming.fallback_order</code> and <code>web/config.json -> streaming.embed_providers[]</code>. <code>collectConfiguredWatchSources</code> continues to fill provider templates at render time.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_streaming_config.py</code>, <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> must prove VSEmbed remains default-visible, candidates remain hidden, blocked providers remain suppressed, and rendered Streaming popups include the expanded default list.</td></tr>
+</table>
+<ul>
+<li>TV episode template: <code>https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}</code>.</li>
+<li>Movie template: <code>https://vsembed.ru/embed/movie/{tmdb_id}</code>.</li>
+<li>VSEmbed is ordered first in the default-visible Streaming list for forms, screens, and watch-source popups.</li>
+</ul>
+</section>
+<!-- MC-2026-07-11.1-VSEMBED-STREAMING-PROVIDER-END -->
+<!-- MC-2026-06-02.1-SERVER-MODE-START -->
+<section id="server-mode-20260602" class="card">
+<h2>MC-2026-06-02.1 Server Mode, API, Database, and Media Library Contract</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-06-02.1</td></tr>
+<tr><td>Updated</td><td>Server-backed application architecture for writable watch state, watchlist, favourites, Trakt/commercial sync, provider registry, runtime config, audit logging, Media Library inventory, ffprobe/remux QA, and WD TV Live/local-network workflows.</td></tr>
+<tr><td>Origin</td><td>User assigned CODEX-FOREST ownership of application/API/database/state logic and required PostgreSQL as primary write store, JSON as import/export/static fallback, no image binaries in PostgreSQL by default, and detailed documentation of narrative, interpretation, decisions, validation, and risks.</td></tr>
+<tr><td>Owner</td><td><code>deployment/postgres/schema_v1.sql</code>, <code>deployment/postgres/json_to_postgres_migration_plan.md</code>, <code>deployment/api/api_contract_v1.md</code>, <code>deployment/api/watch_state_logic_contract.md</code>, and <code>deployment/media_library/wd_tv_live_media_library_design.md</code>.</td></tr>
+<tr><td>Validation</td><td>Validation must prove PostgreSQL DDL is non-destructive, JSON fallback remains documented, PostgreSQL is primary for server-mode writes, secrets are not embedded, image/media binaries remain file/path based by default, and Media Library design includes home <code>192.168.1.x</code>, trailer <code>192.168.2.x</code>, expected/actual filenames, ffprobe/remux, VLC, and X-plore status buckets.</td></tr>
+</table>
+
+<h3>Server-mode storage decision</h3>
+<ul>
+<li>PostgreSQL is the primary write store in server mode for media identity, watch status, watchlist, favourites, sync queue/history, provider registry, runtime config, audit log, and Media Library inventory.</li>
+<li>JSON remains required for import, export, generated runtime output, recovery, and static GitHub Pages fallback.</li>
+<li><code>data/inputs.json</code> remains the canonical manual input source. <code>data/data.json</code>, <code>data/catalog_index.json</code>, <code>data/calendar.json</code>, and <code>data/catalog_detail/*.json</code> remain generated/runtime fallback artifacts.</li>
+<li>Images, posters, stills, backdrops, provider logos, trailers, and media binaries are not stored in PostgreSQL by default. PostgreSQL stores metadata, identifiers, status fields, and paths to files/assets.</li>
+<li>Secret values are not stored in schema seed data or API responses. Runtime config may store secret references only.</li>
+</ul>
+
+<h3>Database schema decision</h3>
+<ul>
+<li>The v1 schema includes <code>media_items</code>, <code>shows</code>, <code>seasons</code>, <code>episodes</code>, <code>movies</code>, <code>watch_state</code>, <code>watchlist</code>, <code>favourites</code>, <code>sync_queue</code>, <code>sync_history</code>, <code>media_files</code>, <code>provider_registry</code>, <code>runtime_config</code>, and <code>audit_log</code>.</li>
+<li><code>watch_state</code> stores only watched status/progress: <code>unwatched</code>, <code>partial</code>, and <code>watched</code>.</li>
+<li><code>watchlist</code> and <code>favourites</code> are independent tables. Their values cannot be inferred from watched status or from each other.</li>
+<li><code>sync_queue</code> preserves pending local actions. <code>sync_history</code> records pull, push, reconcile, local-only, failed, blocked, and partial outcomes.</li>
+<li><code>audit_log</code> is required for state writes, migration imports, sync conflict resolution, Media Library scan/remux decisions, and no-silent-loss evidence.</li>
+</ul>
+
+<h3>API decision</h3>
+<ul>
+<li>API base path is <code>/api/v1</code>.</li>
+<li>In the X1 lab VM deployment path, Nginx owns the static entrypoint and future reverse proxy on <code>80/tcp</code> with <code>443/tcp</code> reserved for TLS. The local API upstream is <code>127.0.0.1:8000</code>, matching the Lime Green reserved API port.</li>
+<li>The server runtime app root is <code>/opt/mytv_movie</code>. PostgreSQL runs as the local VM service on <code>5432/tcp</code> and must not be exposed beyond the VM/admin network.</li>
+<li>Required endpoint groups are health, catalog, watch status, watchlist, favourites, Trakt pull/push/reconcile, providers, Media Library inventory/scan/QA/remux, runtime config, sync history/queue, and audit log.</li>
+<li>State-changing API routes persist local PostgreSQL state first, write audit evidence, enqueue external sync work where applicable, and return local state immediately.</li>
+<li>Trakt/commercial sync must not write by title-only matching. Stable IDs such as TMDB, IMDb, TVDB, Trakt ID, or Trakt slug are required for external writes.</li>
+<li><code>partial</code> watched status remains local unless a future explicit progress mapping is implemented. Favourites remain local-only by default unless an explicit external mapping is implemented.</li>
+</ul>
+
+<h3>Media Library decision</h3>
+<ul>
+<li>Media Library server workflow is <code>scan -> identify -> filename match -> ffprobe QA -> classify -> safe remux if needed -> final validation -> report</code>.</li>
+<li>Home network profile is <code>192.168.1.x</code>. Trailer network profile is <code>192.168.2.x</code>. Manual override remains required when network detection is unavailable.</li>
+<li>Inventory stores local device, device address where available, share/root/path, expected filename, actual filename, match state, ffprobe state, remux state, VLC state, X-plore state, and QA JSON.</li>
+<li>Safe remux is stream copy by default. Transcoding requires a future explicit contract.</li>
+<li>Bad/unrepairable files are quarantined and reported, never silently skipped.</li>
+</ul>
+</section>
+<!-- MC-2026-06-02.1-SERVER-MODE-END -->
+<!-- MC-2026-06-03.1-SERVER-MODE-SCAFFOLD-START -->
+<section id="server-mode-scaffold-20260603" class="card">
+<h2>MC-2026-06-03.1 Server Mode Implementation Scaffold</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-06-03.1</td></tr>
+<tr><td>Updated</td><td>Server-mode design now has runnable implementation entrypoints for the API, PostgreSQL schema tooling, JSON migration, Trakt sync planning, and Media Library scan/QA planning.</td></tr>
+<tr><td>Origin</td><td>User asked to implement as much of the full server-mode solution as possible without waiting for another extended planning/review cycle.</td></tr>
+<tr><td>Owner</td><td><code>deployment/api/server_mode_api.py</code>, <code>deployment/api/server_mode_config.py</code>, <code>deployment/api/postgres_client.py</code>, <code>deployment/api/validate_server_mode.py</code>, <code>deployment/postgres/apply_schema.py</code>, <code>deployment/postgres/validate_schema.py</code>, <code>deployment/postgres/json_migration.py</code>, <code>deployment/trakt_sync/trakt_worker.py</code>, <code>deployment/media_library/media_library_worker.py</code>, and <code>deployment/api/mytv-api.service.example</code>.</td></tr>
+<tr><td>Validation</td><td>Validation must run Python syntax checks, focused server-mode validation, static schema validation, schema dry-run, JSON migration dry-run, Trakt dry-run, Media Library dry-run, API health HTTP check, API catalog fallback HTTP check, and existing runtime validation.</td></tr>
+</table>
+<ul>
+<li>The API scaffold binds by default to <code>127.0.0.1:8000</code> with base path <code>/api/v1</code>, matching the Lime Green VM foundation.</li>
+<li>The implementation remains dependency-light. It uses the Python standard library for the HTTP scaffold and uses PostgreSQL only when <code>MYTV_POSTGRES_DSN</code> or <code>DATABASE_URL</code> plus <code>psycopg</code> are available.</li>
+<li>Read endpoints provide JSON fallback for health, catalog, providers, and runtime config when PostgreSQL is not configured.</li>
+<li>Write endpoints do not fake success when PostgreSQL is unavailable. They return the missing write-path status instead of silently losing user actions.</li>
+<li>The JSON migration dry-run scans current generated artifacts and reports import candidates without deleting or modifying JSON files.</li>
+<li>The systemd service example is stored under Forest-owned API deployment docs and does not modify Lime-owned VM provisioning or webserver files.</li>
+</ul>
+</section>
+<!-- MC-2026-06-03.1-SERVER-MODE-SCAFFOLD-END -->
+<!-- MC-2026-06-03.2-LIVE-POSTGRES-START -->
+<section id="live-postgres-20260603" class="card">
+<h2>MC-2026-06-03.2 Live PostgreSQL Completion Gate</h2>
+<table><tr><th>Field</th><th>Value</th></tr>
+<tr><td>Added</td><td>MC-2026-06-03.2</td></tr>
+<tr><td>Updated</td><td>X1 lab PostgreSQL installation, app role/database creation, psycopg runtime installation, local DSN documentation, schema application, and live transaction validation.</td></tr>
+<tr><td>Origin</td><td>User rejected scaffold-only completion because the prior result did not configure or validate a live PostgreSQL write path.</td></tr>
+<tr><td>Owner</td><td><code>deployment/vm_lab/bootstrap_ubuntu_mytv_lab.sh</code>, <code>deployment/vm_lab/validate_mytv_lab.sh</code>, <code>deployment/vm_lab/.env.example</code>, <code>deployment/postgres/live_validate_postgres.py</code>, and <code>deployment/postgres/README.md</code>.</td></tr>
+<tr><td>Validation</td><td>Static schema validation remains required but is not completion proof. X1 lab completion requires PostgreSQL reachability, expected app database/user, v1 schema apply, temporary insert, read-back, transaction rollback, and confirmation that rollback removed the temporary row.</td></tr>
+</table>
+<ul>
+<li>Scaffold-only, dry-run-only, or static-DDL-only results are incomplete unless the live PostgreSQL validator passes on the X1 lab VM.</li>
+<li>The local lab app/database identity is <code>mytv_movie</code>. The tracked example DSN is <code>postgresql:///mytv_movie?host=/var/run/postgresql</code>.</li>
+<li>The default lab DSN uses local Unix-socket peer authentication. Real passwords and real secrets are not committed.</li>
+<li>The API service runs as the <code>mytv_movie</code> operating-system account so peer authentication matches the PostgreSQL role.</li>
+<li><code>deployment/vm_lab/validate_mytv_lab.sh</code> must fail when live schema/write/read/rollback validation cannot run or does not pass.</li>
+</ul>
+</section>
+<!-- MC-2026-06-03.2-LIVE-POSTGRES-END -->
+</main>
+</body>
+</html>

@@ -2733,14 +2733,14 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       }catch(_){/* noop */}
 
 
-      state.data = await window.MyTVHubSharedModules.dataLoader.loadCatalogIndexFirst(["../data/catalog_index.json"]);
-      state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/calendar.json"]);
+      state.data = await window.MyTVHubSharedModules.dataLoader.loadCatalogDataFirst(["../data/data.json"]);
+      state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/data.json"]);
       state.discoverRegistry = await window.MyTVHubSharedModules.dataLoader.loadDiscoverRegistryFirst(["../data/discover_registry.json"]);
       state.watchStateQueue = await window.MyTVHubSharedModules.configLoader.loadJsonFirst(["../data/watch_state_queue.json"]).catch(() => ({ items: [] }));
       state.providerRegistry = await window.MyTVHubSharedModules.configLoader.loadJsonFirst(["../data/provider_registry.json"]).catch(() => ({ providers: [] }));
 
-      if (!state.data || typeof state.data !== "object") throw new Error("catalog_index.json not loaded");
-      if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar.json not loaded");
+      if (!state.data || typeof state.data !== "object") throw new Error("data.json not loaded");
+      if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar could not be derived from data.json");
 
       // Enforce contract shape (graceful defaults)
       state.data.movies = Array.isArray(state.data.movies) ? state.data.movies : [];
@@ -2926,15 +2926,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     return isMovie && !!(item?.tmdb_id || item?.id) && hasVisibleProvider("movie_template");
   }
 
-  function detailUrlCandidates(id){
-    const safeId = Number(id) || 0;
-    return safeId ? [`../data/catalog_detail/${safeId}.json`] : [];
-  }
-
   async function getCatalogDetailById(id){
     const safeId = Number(id) || 0;
     if (!safeId) return null;
-    return await window.MyTVHubSharedModules.dataLoader.loadCatalogDetailFirst(safeId, detailUrlCandidates(safeId));
+    return await window.MyTVHubSharedModules.dataLoader.loadCatalogDetailFirst(safeId);
   }
 
   async function getShowDetailById(id){
