@@ -638,11 +638,18 @@ $serverText = Get-Content -Raw -LiteralPath 'tools/inputs_editor/inputs_editor_s
 foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_queue.json')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing watch-state queue API contract: $needle" }
 }
-foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', 'web_root not in file_path.parents')) {
+foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', '_serve_static_repo_file')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing hardened save/scope contract: $needle" }
 }
-foreach ($needle in @('/api/publish-inputs', '/api/publish-status', '_editor_publish_status', '_wait_for_generated_artifacts', '_stash_generated_artifacts_if_needed', '_ensure_publishable_git_state', '_git_operation_in_progress', '_resolve_publish_remote', 'detached HEAD', 'HEAD:refs/heads', 'diff-filter=U', 'Git conflict state could not be checked', 'git diff --cached failed', 'unmerged_paths', 'qa_pipeline_integrity.py')) {
+foreach ($needle in @('/api/publish-inputs', '/api/publish-status', '_editor_publish_status', '_wait_for_generated_artifacts', '_build_data_workflow_run', 'BUILD_DATA_WORKFLOW', 'GitHub build-data succeeded; no generated runtime artifact commit was needed', '_stash_generated_artifacts_if_needed', '_ensure_publishable_git_state', '_git_operation_in_progress', '_resolve_publish_remote', 'detached HEAD', 'HEAD:refs/heads', 'diff-filter=U', 'Git conflict state could not be checked', 'git diff --cached failed', 'unmerged_paths', 'qa_pipeline_integrity.py')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing publish/sync contract: $needle" }
+}
+foreach ($needle in @('_serve_static_repo_file', 'path.startswith("/data/")', 'path.startswith("/assets/")', 'ASSETS_DIR')) {
+    if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing shared data/assets serving contract: $needle" }
+}
+$buildDataWorkflowText = Get-Content -Raw -LiteralPath '.github/workflows/build-data.yml'
+foreach ($needle in @("steps.commit-artifacts.outputs.changed == 'true' || github.event_name == 'push'", 'gh workflow run pages.yml --ref main')) {
+    if ($buildDataWorkflowText -notlike "*$needle*") { Add-CheckError "build-data workflow missing input-only Pages trigger contract: $needle" }
 }
 $fetchTmdbText = Get-Content -Raw -LiteralPath 'scripts/fetch_tmdb.py'
 foreach ($needle in @('is_in_scope_input', 'tv_active', 'movies_active')) {
@@ -652,7 +659,7 @@ $inputsEditorText = Get-Content -Raw -LiteralPath 'web/inputs_editor.html'
 foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refresh-runtime', 'apiFetch')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing hardened save/refresh contract: $needle" }
 }
-foreach ($needle in @('Save Local Only', 'Save Online and Finish Update', '/api/publish-inputs', '/api/publish-status', 'Publish: not online yet', 'Publish: blocked', 'detached HEAD', 'wait_seconds:900', 'Online save finished and this computer is updated', 'Editor: wrong server', 'unmerged_paths')) {
+foreach ($needle in @('Save Draft Only', 'Save Online, Build Data, Deploy', '/api/publish-inputs', '/api/publish-status', 'Publish: not online yet', 'Publish: blocked', 'detached HEAD', 'wait_seconds:900', 'build-data completed', 'Pages was triggered', 'Editor: wrong server', 'unmerged_paths')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing publish/sync contract: $needle" }
 }
 foreach ($needle in @('data-editor-tab="search"', 'editorTabSearch', 'editorTabSaved', 'editorTabLibrary', 'switchEditorTab')) {

@@ -1,7 +1,7 @@
 """
 FILE: tools/inputs_editor/inputs_editor_server.py
-VERSION: 1.0.7
-UPDATED: 2026-06-27T00:00:00Z
+VERSION: 1.0.8
+UPDATED: 2026-07-31T00:00:00Z
 CHANGE NOTES:
 - Restore live inputs editor server path used by web/inputs_editor.html.
 - Serve the inputs editor UI and supporting /web assets from port 8787.
@@ -11,6 +11,8 @@ CHANGE NOTES:
 - Expose editor publish status so local-only saves cannot look complete.
 - Block detached/in-progress Git states, resolve the publish remote safely, stash generated
   artifacts before Git reconciliation, and push the actual HEAD commit to the target branch.
+- Wait for the GitHub build-data workflow result, and complete input-only publishes when
+  the workflow succeeds without producing generated runtime artifact changes.
 """
 from __future__ import annotations
 
@@ -20,6 +22,7 @@ import json
 import mimetypes
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -36,12 +39,14 @@ INPUTS_JSON = DATA_DIR / "inputs.json"
 CATALOG_INDEX_JSON = DATA_DIR / "catalog_index.json"
 WATCH_STATE_QUEUE_JSON = DATA_DIR / "watch_state_queue.json"
 WEB_DIR = REPO_ROOT / "web"
+ASSETS_DIR = REPO_ROOT / "assets"
 UI_FILE = WEB_DIR / "inputs_editor.html"
 CONFIG_JSON = WEB_DIR / "config.json"
 BACKUP_DIR = DATA_DIR / "backups"
 MAX_JSON_BODY_BYTES = 5 * 1024 * 1024
 PUBLISH_DEFAULT_WAIT_SECONDS = 15 * 60
 PUBLISH_POLL_SECONDS = 15
+BUILD_DATA_WORKFLOW = "build-data.yml"
 GENERATED_SYNC_PATHS = [
     "data/data.json",
     "data/catalog_index.json",
@@ -102,6 +107,45 @@ def _text(
     handler.send_header("Content-Length", str(len(data)))
     handler.send_header("Cache-Control", "no-store")
     handler.send_header("Access-Control-Allow-Origin", "*")
+    handler.end_headers()
+    handler.wfile.write(data)
+
+
+def _serve_static_repo_file(handler: BaseHTTPRequestHandler, file_path: Path, allowed_root: Path):
+    file_path = file_path.resolve()
+    root = allowed_root.resolve()
+    if root != file_path and root not in file_path.parents:
+        _text(handler, 403, "Forbidden")
+        return
+    if not file_path.exists() or not file_path.is_file():
+        _text(handler, 404, "Not found")
+        return
+    suffix = file_path.suffix.lower()
+    if suffix in {".html", ".htm"}:
+        _text(handler, 200, file_path.read_text(encoding="utf-8", errors="replace"), "text/html; charset=utf-8")
+        return
+    if suffix == ".css":
+        _text(handler, 200, file_path.read_text(encoding="utf-8", errors="replace"), "text/css; charset=utf-8")
+        return
+    if suffix == ".js":
+        _text(
+            handler,
+            200,
+            file_path.read_text(encoding="utf-8", errors="replace"),
+            "application/javascript; charset=utf-8",
+        )
+        return
+    if suffix == ".json":
+        _text(handler, 200, file_path.read_text(encoding="utf-8", errors="replace"), "application/json; charset=utf-8")
+        return
+    data = file_path.read_bytes()
+    content_type, _ = mimetypes.guess_type(str(file_path))
+    if not content_type:
+        content_type = "application/octet-stream"
+    handler.send_response(200)
+    handler.send_header("Content-Type", content_type)
+    handler.send_header("Content-Length", str(len(data)))
+    handler.send_header("Cache-Control", "no-store")
     handler.end_headers()
     handler.wfile.write(data)
 
@@ -541,6 +585,64 @@ def _git_text(args: list[str]) -> str:
     return (result.stdout or "").strip()
 
 
+def _run_gh_command(args: list[str], timeout: int = 60) -> dict:
+    gh = shutil.which("gh")
+    if not gh:
+        return {"ok": False, "available": False, "error": "GitHub CLI is not available in PATH."}
+    completed = subprocess.run(
+        [gh, *args],
+        cwd=str(REPO_ROOT),
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        check=False,
+    )
+    return {
+        "ok": completed.returncode == 0,
+        "available": True,
+        "returncode": completed.returncode,
+        "stdout": completed.stdout,
+        "stderr": completed.stderr,
+        "error": _git_failure(completed, "gh command failed") if completed.returncode != 0 else "",
+    }
+
+
+def _build_data_workflow_run(branch_name: str, input_commit: str) -> dict:
+    commit = str(input_commit or "").strip().lower()
+    if not commit:
+        return {"ok": False, "available": True, "found": False, "error": "Missing input commit for workflow lookup."}
+    result = _run_gh_command(
+        [
+            "run",
+            "list",
+            "--workflow",
+            BUILD_DATA_WORKFLOW,
+            "--branch",
+            branch_name,
+            "--json",
+            "databaseId,status,conclusion,headSha,url,event,createdAt",
+            "--limit",
+            "30",
+        ],
+        timeout=60,
+    )
+    if not result.get("ok"):
+        return {**result, "found": False}
+    try:
+        runs = json.loads(result.get("stdout") or "[]")
+    except Exception as exc:
+        return {"ok": False, "available": True, "found": False, "error": f"Could not parse GitHub workflow runs: {exc}"}
+    if not isinstance(runs, list):
+        runs = []
+    for run in runs:
+        if not isinstance(run, dict):
+            continue
+        head_sha = str(run.get("headSha") or "").strip().lower()
+        if head_sha and (head_sha == commit or head_sha.startswith(commit) or commit.startswith(head_sha)):
+            return {"ok": True, "available": True, "found": True, "run": run}
+    return {"ok": True, "available": True, "found": False}
+
+
 def _git_dir() -> Path | None:
     raw = _git_text(["rev-parse", "--git-dir"])
     if not raw:
@@ -832,21 +934,28 @@ def _fast_forward_remote(remote_name: str, branch_name: str) -> dict:
     }
 
 
-def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_commit: str, wait_seconds: int) -> dict:
+def _wait_for_generated_artifacts(
+    remote_name: str,
+    branch_name: str,
+    input_commit: str,
+    wait_seconds: int,
+    require_workflow: bool = True,
+) -> dict:
     remote_ref = f"{remote_name}/{branch_name}"
     deadline = time.monotonic() + max(0, int(wait_seconds))
     attempts = 0
     last_remote_head = ""
+    workflow_state: dict = {"available": bool(shutil.which("gh")), "found": False}
     first_validation = _run_pipeline_integrity_validation()
-    if first_validation.get("ok") and not _generated_artifacts_are_dirty():
+    if first_validation.get("ok") and not _generated_artifacts_are_dirty() and not require_workflow:
         return {
             "ok": True,
             "synced": False,
             "validated": True,
-            "reason": "local runtime artifacts already reconcile with inputs",
+            "reason": "no input changes were pending; local runtime artifacts already reconcile with inputs",
             "validation": first_validation,
         }
-    if first_validation.get("ok") and _generated_artifacts_are_dirty():
+    if first_validation.get("ok") and _generated_artifacts_are_dirty() and not require_workflow:
         stash = _stash_generated_artifacts_if_needed()
         if not stash.get("ok"):
             return stash
@@ -864,6 +973,22 @@ def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_comm
 
     while True:
         attempts += 1
+        if require_workflow:
+            workflow_state = _build_data_workflow_run(branch_name, input_commit)
+            if workflow_state.get("available") and workflow_state.get("ok") and workflow_state.get("found"):
+                run = workflow_state.get("run") or {}
+                if run.get("status") == "completed" and run.get("conclusion") != "success":
+                    return {
+                        "ok": False,
+                        "synced": False,
+                        "validated": False,
+                        "attempts": attempts,
+                        "remote_head": last_remote_head,
+                        "error": f"GitHub build-data completed with conclusion '{run.get('conclusion') or 'unknown'}'.",
+                        "workflow": run,
+                        "validation": first_validation,
+                    }
+
         fetch = _run_git_command(["fetch", remote_name, branch_name])
         if fetch.returncode != 0:
             return {"ok": False, "error": _git_failure(fetch, "git fetch failed"), "attempts": attempts}
@@ -914,6 +1039,49 @@ def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_comm
                     "validation": validation,
                 }
 
+        if require_workflow and workflow_state.get("available") and workflow_state.get("ok") and workflow_state.get("found"):
+            run = workflow_state.get("run") or {}
+            if run.get("status") == "completed" and run.get("conclusion") == "success":
+                validation = _run_pipeline_integrity_validation()
+                if validation.get("ok") and _generated_artifacts_are_dirty():
+                    stash = _stash_generated_artifacts_if_needed()
+                    if not stash.get("ok"):
+                        return stash
+                    validation = _run_pipeline_integrity_validation()
+                if validation.get("ok"):
+                    return {
+                        "ok": True,
+                        "synced": False,
+                        "validated": True,
+                        "attempts": attempts,
+                        "remote_head": remote_head,
+                        "workflow": run,
+                        "reason": "GitHub build-data succeeded; no generated runtime artifact commit was needed",
+                        "validation": validation,
+                    }
+                return {
+                    "ok": False,
+                    "synced": False,
+                    "validated": False,
+                    "attempts": attempts,
+                    "remote_head": remote_head,
+                    "workflow": run,
+                    "error": "GitHub build-data succeeded, but generated runtime data still does not reconcile with inputs.",
+                    "validation": validation,
+                }
+
+        if require_workflow and not workflow_state.get("available") and first_validation.get("ok") and not _generated_artifacts_are_dirty():
+            return {
+                "ok": True,
+                "synced": False,
+                "validated": True,
+                "attempts": attempts,
+                "remote_head": remote_head,
+                "workflow": workflow_state,
+                "reason": "GitHub CLI was unavailable, but local runtime artifacts already reconcile with inputs",
+                "validation": first_validation,
+            }
+
         if time.monotonic() >= deadline:
             return {
                 "ok": False,
@@ -921,7 +1089,8 @@ def _wait_for_generated_artifacts(remote_name: str, branch_name: str, input_comm
                 "validated": False,
                 "attempts": attempts,
                 "remote_head": last_remote_head,
-                "error": "Timed out waiting for GitHub build-data to publish generated runtime artifacts.",
+                "error": "Timed out waiting for GitHub build-data to finish and publish generated runtime artifacts.",
+                "workflow": workflow_state,
                 "validation": first_validation,
             }
         time.sleep(PUBLISH_POLL_SECONDS)
@@ -1004,7 +1173,13 @@ def _publish_inputs_to_remote(remote: str, branch: str, wait_seconds: int = PUBL
     remote_name = str(push.get("remote") or remote or "github")
     branch_name = str(push.get("branch") or branch or "main")
     input_commit = _git_text(["rev-parse", "--verify", "HEAD"])
-    sync = _wait_for_generated_artifacts(remote_name, branch_name, input_commit, wait_seconds)
+    sync = _wait_for_generated_artifacts(
+        remote_name,
+        branch_name,
+        input_commit,
+        wait_seconds,
+        require_workflow=bool(push.get("pushed")),
+    )
     return {
         **push,
         "publish_complete": bool(sync.get("ok")),
@@ -1180,42 +1355,15 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if path.startswith("/web/"):
-            file_path = (REPO_ROOT / path.lstrip("/")).resolve()
-            web_root = WEB_DIR.resolve()
-            if web_root != file_path and web_root not in file_path.parents:
-                _text(self, 403, "Forbidden")
-                return
-            if not file_path.exists() or not file_path.is_file():
-                _text(self, 404, "Not found")
-                return
-            suffix = file_path.suffix.lower()
-            if suffix in {".html", ".htm"}:
-                _text(self, 200, file_path.read_text(encoding="utf-8", errors="replace"), "text/html; charset=utf-8")
-                return
-            if suffix == ".css":
-                _text(self, 200, file_path.read_text(encoding="utf-8", errors="replace"), "text/css; charset=utf-8")
-                return
-            if suffix == ".js":
-                _text(
-                    self,
-                    200,
-                    file_path.read_text(encoding="utf-8", errors="replace"),
-                    "application/javascript; charset=utf-8",
-                )
-                return
-            if suffix == ".json":
-                _text(self, 200, file_path.read_text(encoding="utf-8", errors="replace"), "application/json; charset=utf-8")
-                return
-            data = file_path.read_bytes()
-            content_type, _ = mimetypes.guess_type(str(file_path))
-            if not content_type:
-                content_type = "application/octet-stream"
-            self.send_response(200)
-            self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(len(data)))
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            self.wfile.write(data)
+            _serve_static_repo_file(self, REPO_ROOT / path.lstrip("/"), WEB_DIR)
+            return
+
+        if path.startswith("/data/"):
+            _serve_static_repo_file(self, REPO_ROOT / path.lstrip("/"), DATA_DIR)
+            return
+
+        if path.startswith("/assets/"):
+            _serve_static_repo_file(self, REPO_ROOT / path.lstrip("/"), ASSETS_DIR)
             return
 
         _text(self, 404, "Not found")

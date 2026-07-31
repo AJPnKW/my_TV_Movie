@@ -1,7 +1,7 @@
 <!--
 FILE: web/inputs_editor.html
-VERSION: 1.0.8
-DATE: 2026-07-03
+VERSION: 1.0.9
+DATE: 2026-07-31
 -->
 <!doctype html>
 <html lang="en">
@@ -90,7 +90,7 @@ DATE: 2026-07-03
         <div class="inputs_editor_hint">Search, review, then finish online from one local editor tab.</div>
       </div>
       <div class="inputs_editor_status_strip" aria-live="polite">
-        <span class="inputs_editor_meta">v1.0.8</span>
+        <span class="inputs_editor_meta">v1.0.9</span>
         <span class="inputs_editor_meta" id="serverStatus">Editor: ...</span>
         <span class="inputs_editor_meta" id="publishStatus">Publish: checking...</span>
         <span class="inputs_editor_meta" id="dirty">Changes saved: yes</span>
@@ -185,9 +185,9 @@ DATE: 2026-07-03
         </div>
         <div class="inputs_editor_row">
           <button id="btnReload">Reload</button>
-          <button class="ghost" id="btnSave">Save Local Only</button>
-          <button id="btnRefreshRuntime">Save and Update App</button>
-          <button class="primary" id="btnPushGitHub">Save Online and Finish Update</button>
+          <button class="ghost" id="btnSave">Save Draft Only</button>
+          <button id="btnRefreshRuntime">Update Local Preview</button>
+          <button class="primary" id="btnPushGitHub">Save Online, Build Data, Deploy</button>
         </div>
         <div class="inputs_editor_meta" id="saveMsg"></div>
         <div class="inputs_editor_list" id="mineList"></div>
@@ -242,6 +242,12 @@ function setPublishStatus(text,state){
   el.textContent=text;
   el.className=`inputs_editor_meta ${state==="ok"?"inputs_editor_status_ok":state==="bad"?"inputs_editor_status_bad":"inputs_editor_status_warn"}`;
 }
+function setEditorBusy(isBusy){
+  for(const id of ["btnSave","btnRefreshRuntime","btnPushGitHub","btnReload","btnRemoveSelected"]){
+    const btn=document.getElementById(id);
+    if(btn) btn.disabled=!!isBusy;
+  }
+}
 
 async function apiFetch(p,options){
   try{
@@ -271,12 +277,16 @@ async function refreshPublishStatus(){
   if(j.publish_blocked){
     const reason=j.detached_head ? "detached HEAD" : (Array.isArray(j.git_operations)&&j.git_operations.length ? "Git operation in progress" : `${blockedCount} blocked path${blockedCount===1?"":"s"}`);
     setPublishStatus(`Publish: blocked (${reason})`,"bad");
+    if(blockedCount) document.getElementById("publishStatus").title=`Blocked paths: ${j.publish_blocked_paths.join(", ")}`;
   }else if(j.inputs_dirty || j.generated_dirty){
     setPublishStatus(`Publish: not online yet (${j.inputs_dirty?"inputs":"data"} changed${generatedCount?`, ${generatedCount} generated paths`:""})`,"warn");
+    document.getElementById("publishStatus").title="";
   }else if(!j.validation_ok){
     setPublishStatus("Publish: validation failing","bad");
+    document.getElementById("publishStatus").title="Pipeline integrity validation is failing.";
   }else{
     setPublishStatus("Publish: complete","ok");
+    document.getElementById("publishStatus").title="";
   }
   return j;
 }
@@ -768,7 +778,7 @@ async function saveInputs(){
   const j=await apiPost("/api/inputs",inputs);
   if(!j.ok){ msg.textContent="Save failed: "+(j.error||"unknown"); return false; }
   const warnings=Array.isArray(j.warnings)&&j.warnings.length ? ` (${j.warnings.length} item${j.warnings.length===1?"":"s"} cleaned up)` : "";
-  msg.textContent="Saved locally at "+j.utc+warnings+". Use Save Online and Finish Update to update the app everywhere.";
+  msg.textContent="Saved as a local draft at "+j.utc+warnings+". Use Save Online, Build Data, Deploy to update GitHub and the app.";
   if(j.inputs) inputs=j.inputs;
   setDirty(false);
   await refreshPublishStatus();
@@ -777,41 +787,65 @@ async function saveInputs(){
 
 async function saveAndRefreshRuntime(){
   const msg=document.getElementById("saveMsg");
+  setEditorBusy(true);
   msg.textContent="Saving before updating the app...";
-  const saved=await saveInputs();
-  if(!saved) return;
-  msg.textContent="Updating the app data...";
-  const j=await apiPost("/api/refresh-runtime",{});
-  if(!j.ok){
-    const tail=(j.stderr||j.stdout||j.error||"app update failed").toString().slice(-600);
-    msg.textContent="App update failed: "+tail;
-    return;
+  try{
+    const saved=await saveInputs();
+    if(!saved) return;
+    msg.textContent="Updating the local preview data...";
+    const j=await apiPost("/api/refresh-runtime",{});
+    if(!j.ok){
+      const tail=(j.stderr||j.stdout||j.error||"app update failed").toString().slice(-600);
+      msg.textContent="Local preview update failed: "+tail;
+      return;
+    }
+    msg.textContent="Local preview data updated. Reloading my list...";
+    await loadInputs();
+    msg.textContent="Local preview data updated at "+new Date().toLocaleTimeString()+". Use Save Online, Build Data, Deploy to update GitHub.";
+    await refreshPublishStatus();
+  }finally{
+    setEditorBusy(false);
   }
-  msg.textContent="App data updated. Reloading my list...";
-  await loadInputs();
-  msg.textContent="App data updated at "+new Date().toLocaleTimeString();
-  await refreshPublishStatus();
+}
+
+function publishFailureMessage(j){
+  const conflictList=Array.isArray(j.unmerged_paths)&&j.unmerged_paths.length ? ` Conflicts: ${j.unmerged_paths.join(", ")}` : "";
+  const blockedList=Array.isArray(j.blocked_paths)&&j.blocked_paths.length ? ` Blocked paths: ${j.blocked_paths.join(", ")}` : "";
+  const workflow=j.workflow||j.sync?.workflow||{};
+  const workflowNote=workflow.url ? ` Workflow: ${workflow.url}` : "";
+  return "Online update failed: "+(j.error||j.sync?.error||"unknown")+conflictList+blockedList+workflowNote;
+}
+
+function publishSuccessMessage(j){
+  const sync=j.sync||{};
+  const workflow=sync.workflow||{};
+  const stashNote=(sync.stashed_generated_artifacts||j.stashed_generated_artifacts) ? " Old local generated files were saved aside before updating this computer." : "";
+  const remoteNote=j.remote_warning ? ` ${j.remote_warning}.` : "";
+  const reason=sync.reason ? ` ${sync.reason}.` : "";
+  const workflowNote=workflow.url ? ` Workflow: ${workflow.url}` : "";
+  return j.publish_complete
+    ? `Online save finished: inputs.json is on GitHub, build-data completed, generated data is reconciled, and Pages was triggered (${sync.remote_head||j.commit||"latest"}).${reason}${remoteNote}${stashNote}${workflowNote}`
+    : `Saved online, but the app data did not finish updating yet.${workflowNote}`;
 }
 
 async function pushInputsToGitHub(){
   const msg=document.getElementById("saveMsg");
+  setEditorBusy(true);
   msg.textContent="Saving before the online update...";
-  const saved=await saveInputs();
-  if(!saved) return;
-  msg.textContent="Saving online and waiting for the app data to finish...";
-  const j=await apiPost("/api/publish-inputs",{remote:"github", branch:"main", wait_seconds:900});
-  if(!j.ok){
-    const conflictList=Array.isArray(j.unmerged_paths)&&j.unmerged_paths.length ? ` Conflicts: ${j.unmerged_paths.join(", ")}` : "";
-    msg.textContent="Online update failed: "+(j.error||"unknown")+conflictList;
-    return;
+  try{
+    const saved=await saveInputs();
+    if(!saved) return;
+    msg.textContent="Saving online, waiting for GitHub build-data, reconciling generated data, and triggering Pages...";
+    const j=await apiPost("/api/publish-inputs",{remote:"github", branch:"main", wait_seconds:900});
+    if(!j.ok){
+      msg.textContent=publishFailureMessage(j);
+      return;
+    }
+    msg.textContent=publishSuccessMessage(j);
+    await refreshPublishStatus();
+  }finally{
+    setEditorBusy(false);
   }
-  const sync=j.sync||{};
-  const stashNote=(sync.stashed_generated_artifacts||j.stashed_generated_artifacts) ? " Old local generated files were saved aside before updating this computer." : "";
-  const remoteNote=j.remote_warning ? ` ${j.remote_warning}.` : "";
-  msg.textContent=j.publish_complete
-    ? `Online save finished and this computer is updated (${sync.remote_head||j.commit||"latest"}).${remoteNote}${stashNote}`
-    : `Saved online, but the app data did not finish updating yet.`;
-  await refreshPublishStatus();
 }
 
 (async function boot(){
