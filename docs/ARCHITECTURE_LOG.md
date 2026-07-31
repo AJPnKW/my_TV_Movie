@@ -311,3 +311,10 @@
 - Restored `data/inputs.json` to the explicit Pages artifact, removed the stale retired root `../inputs.json` fallback from the shared input loader/runtime call, and added runtime validation that blocks either regression: missing Pages input deployment or root-input fallback.
 - Related issue check: `data/calendar.json` was present and parseable with generated entries; the Calendar failure was a shared initialization abort, not a missing calendar artifact or separate Calendar renderer defect.
 - Commit: `7539a3f14d` fix-pages-runtime-inputs-load.
+
+- Root-caused the show-detail popup drift to older popup markup still rendering a wide card-style detail grid, an obsolete selected-season description panel, header-level show actions, stale raw `availability_status` precedence, and an episode image resolver/validator that allowed show artwork to substitute for missing stills.
+- Reworked the canonical shared runtime path only: show facts now render as compact label/value rows with provider names instead of counts, show actions sit below the reduced show poster, the redundant selected-season panel is removed, season cells carry the shared watched/watch-list/favourite action strip, and episode carousel cards show concise episode descriptions.
+- Corrected runtime availability display so real air/release dates take precedence over stale generated `unavailable` flags, and corrected episode image handling so episode cards use still-specific fields first and a still placeholder otherwise instead of showing show/season artwork as if it were an episode still.
+- Updated existing validators to enforce the corrected episode still/description behavior rather than adding new scripts or parallel checks.
+- Validation: `node --check web/js/app_runtime.js` passed; `node --check scripts/qa_browser_layout_check.mjs` passed; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]` and `summariesVisible=true`.
+- Commit: pending show-detail-popup-normalization.

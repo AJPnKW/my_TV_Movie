@@ -695,7 +695,7 @@ try {
     if (!result.manage?.inlineEditWorks) failures.push(`${result.viewport} interaction: Manage Watch State inline edit failed`);
     if (!result.carousel?.opened || !result.carousel?.shell || !result.carousel?.prevNext || !result.carousel?.viewport || !result.carousel?.track || !result.carousel?.retainedContext) failures.push(`${result.viewport} interaction: episode carousel shell/controls/context failed`);
     if (result.carousel?.opened && (!result.carousel?.widgetFrame || !result.carousel?.viewportFrame || !result.carousel?.viewportClipsTrack)) failures.push(`${result.viewport} interaction: episode carousel is not rendered as a framed clipped widget`);
-    if (result.carousel?.opened && result.carousel?.summariesVisible) failures.push(`${result.viewport} interaction: episode carousel still shows long row-style summaries`);
+    if (result.carousel?.opened && !result.carousel?.summariesVisible) failures.push(`${result.viewport} interaction: episode carousel descriptions are not visible`);
     if (result.carousel?.opened && result.carousel?.visibleCardCount > 4) failures.push(`${result.viewport} interaction: episode carousel exposes too many cards like a plain row`);
     if (result.carousel?.opened && result.carousel?.cardWidths?.some(width => Math.abs(width - 240) > 2)) failures.push(`${result.viewport} interaction: episode carousel cards are not narrow-still 240px cards`);
     if (result.carousel?.opened && (!result.carousel?.movedByClick || !result.carousel?.movedByDpad)) failures.push(`${result.viewport} interaction: episode carousel manual/D-pad navigation failed`);

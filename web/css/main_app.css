@@ -5535,3 +5535,151 @@ body,
   filter:saturate(1.02) contrast(1.02) !important;
   opacity:1 !important;
 }
+
+/* 2026-07-31 show detail normalization: compact facts, poster actions, season-cell shared actions. */
+.popup-shell--show .popup-hero{
+  grid-template-columns:minmax(120px, 150px) minmax(0, 1fr) !important;
+  gap:12px !important;
+}
+
+.popup-hero__media{
+  display:grid;
+  gap:8px;
+  align-content:start;
+  justify-items:start;
+  min-width:0;
+}
+
+.popup-shell--show .popup-hero__poster,
+.popup-shell--show .popup-hero__poster--show{
+  width:clamp(104px, 14vw, 140px) !important;
+  max-width:140px !important;
+  min-height:0 !important;
+  justify-self:start;
+}
+
+.popup-hero__poster-actions{
+  width:clamp(104px, 14vw, 140px);
+  max-width:140px;
+}
+
+.popup-hero__poster-actions .actionbar{
+  --ui_action_box:24px;
+  gap:3px;
+}
+
+.popup-detail-list{
+  display:grid;
+  gap:2px;
+  padding-block:4px;
+  border-top:1px solid rgba(255,255,255,0.08);
+  border-bottom:1px solid rgba(255,255,255,0.08);
+}
+
+.popup-detail-line{
+  display:grid;
+  grid-template-columns:max-content minmax(0, 1fr);
+  gap:6px;
+  align-items:baseline;
+  min-width:0;
+  padding:1px 0;
+  color:var(--text);
+  font-size:13px;
+  line-height:1.22;
+}
+
+.popup-detail-line span{
+  color:var(--muted);
+  font-weight:900;
+}
+
+.popup-detail-line strong{
+  min-width:0;
+  font-weight:750;
+  overflow-wrap:anywhere;
+}
+
+.popup-detail-description{
+  margin-top:6px;
+  color:#d9e4f5;
+  font-size:13px;
+  line-height:1.35;
+}
+
+.seasonlist--carousel .seasonopt{
+  display:grid;
+  gap:8px;
+  padding:10px;
+}
+
+.seasonopt__pick{
+  display:grid;
+  width:100%;
+  padding:0;
+  border:0;
+  background:transparent;
+  color:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+
+.seasonopt__pick:focus-visible{
+  outline:2px solid rgba(147,197,253,.75);
+  outline-offset:3px;
+  border-radius:6px;
+}
+
+.seasonopt__actions{
+  display:block;
+  width:100%;
+}
+
+.seasonopt__actions .actionbar{
+  --ui_action_box:22px;
+  gap:3px;
+}
+
+.seasonopt__actions .actionbar-btn{
+  font-size:14px;
+}
+
+.episode-carousel .popup-episode-card .media-card__summary{
+  display:-webkit-box !important;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden !important;
+  min-height:0;
+  color:#d9e4f5;
+  font-size:12px !important;
+  line-height:1.28 !important;
+}
+
+.copy-inline-btn--icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+  min-width:24px;
+  padding:0;
+  font-size:14px;
+  line-height:1;
+}
+
+@media (max-width:700px){
+  .popup-shell--show .popup-hero{
+    grid-template-columns:minmax(96px, 126px) minmax(0, 1fr) !important;
+  }
+
+  .popup-shell--show .popup-hero__poster,
+  .popup-shell--show .popup-hero__poster--show,
+  .popup-hero__poster-actions{
+    width:clamp(96px, 28vw, 126px) !important;
+    max-width:126px !important;
+  }
+
+  .popup-detail-line{
+    grid-template-columns:1fr;
+    gap:0;
+  }
+}

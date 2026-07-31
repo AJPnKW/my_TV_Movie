@@ -989,10 +989,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function availabilityStatusOf(item){
     const raw = safeText(item?.availability_status).toLowerCase();
-    if (raw === "available" || raw === "unavailable" || raw === "not_yet_released" || raw === "unknown") return raw;
     const release = pickAirDate(item);
-    if (!release) return "unknown";
-    return isDateAvailable(release) ? "available" : "not_yet_released";
+    if (release) return isDateAvailable(release) ? "available" : "not_yet_released";
+    if (raw === "available" || raw === "unavailable" || raw === "not_yet_released" || raw === "unknown") return raw;
+    return "unknown";
   }
 
   function availabilityLabelOf(item){
@@ -2335,7 +2335,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
               ${detailRow("Runtime", Number.isFinite(runtime) && runtime > 0 ? `${runtime} min` : "")}
             </tbody>
           </table>
-          <div class="generated-filename-line"><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
+          <div class="generated-filename-line"><button class="copy-inline-btn copy-inline-btn--icon" type="button" data-copy-watch-filename-icon="${escHtml(filename)}" aria-label="Copy filename" title="Copy filename">⧉</button><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
         </section>
       `;
     }
@@ -2354,7 +2354,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             ${detailRow("TMDB", tmdb ? `TMDB: ${tmdb}` : "")}
           </tbody>
         </table>
-        <div class="generated-filename-line"><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
+        <div class="generated-filename-line"><button class="copy-inline-btn copy-inline-btn--icon" type="button" data-copy-watch-filename-icon="${escHtml(filename)}" aria-label="Copy filename" title="Copy filename">⧉</button><button class="generated-filename-copy" type="button" data-copy-watch-filename="${escHtml(filename)}" data-copy-preserve-label="1">${escHtml(filename)}</button></div>
       </section>
     `;
   }
@@ -2457,6 +2457,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         } else {
           btn.textContent = ok ? "Copied" : "Copy Failed";
         }
+      });
+    });
+    $$("[data-copy-watch-filename-icon]", $("#providerBody")).forEach(btn => {
+      btn.addEventListener("click", async () => {
+        const ok = await copyTextToClipboard(btn.getAttribute("data-copy-watch-filename-icon") || "");
+        btn.setAttribute("data-copy-result", ok ? "copied" : "failed");
+        btn.setAttribute("title", ok ? "Copied" : "Copy failed");
       });
     });
     const card = $("#providerCard");
@@ -3207,7 +3214,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function episodeStillImageForCard(item, context = {}){
     if (isLightMode()) return "";
-    const ctx = context && typeof context === "object" ? context : {};
     const still = normalizeImageSrc(pickImage(
       item,
       "still_local",
@@ -3218,20 +3224,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       "thumb"
     ));
     if (still && !/poster/i.test(still)) return still;
-    const showId = safeText(item?.show_tmdb_id ?? item?.show_id ?? ctx.showId ?? ctx.show?.tmdb_id ?? "").trim();
-    const show = ctx.show || (showId ? getShowById(showId) : null);
-    const showFallback = normalizeImageSrc(pickImage(
-      show || item,
-      "backdrop_local",
-      "backdrop_path",
-      "poster_local",
-      "poster_path",
-      "show_backdrop_local",
-      "show_backdrop_path",
-      "show_poster_local",
-      "show_poster_path"
-    ));
-    return showFallback || EPISODE_STILL_PLACEHOLDER;
+    return EPISODE_STILL_PLACEHOLDER;
   }
 
   function buildSharedEpisodeCard(item, options = {}){
@@ -5258,66 +5251,76 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
     const networks = Array.isArray(show.networks) ? show.networks.map(n => n?.name).filter(Boolean) : [];
     const genres = Array.isArray(show?.genres) ? show.genres.map(g => g?.name).filter(Boolean) : [];
-    const creators = getCreatorNames(show.created_by);
     const totalEpisodes = Number(show?.number_of_episodes ?? episodes.length) || episodes.length;
     const premiered = pickAirDate(show);
     const lastAir = safeText(show?.last_air_date || "").trim();
-    const seasonPremiered = pickAirDate(season);
-    const seasonLastAir = getLastSeasonAirDate(season);
     const seasonEpisodeCount = episodes.length;
-    const showRuntime = Number(Array.isArray(show?.episode_run_time) ? show.episode_run_time[0] : (show?.runtime ?? 0));
-    const seasonWatched = season ? isSeasonWatched(show.tmdb_id, selected?.n, seasonEpisodeCount) : false;
-    const seasonToggle = season ? watchToggleHtml("season", { "data-watch-season": selected?.n, "data-show": show.tmdb_id ?? "", "data-season": selected?.n }, seasonWatched) : "";
     const seasonLabel = safeText(season?.name || (selected ? `Season ${selected.n}` : "Season"));
-    const seasonSummary = [
-      Number.isFinite(seasonEpisodeCount) && seasonEpisodeCount > 0 ? `${seasonEpisodeCount} episodes` : "",
-      seasonPremiered ? `Premiered ${fmtDate(seasonPremiered)}` : "",
-      seasonLastAir ? `Last available ${fmtDate(seasonLastAir)}` : ""
-    ].filter(Boolean).join(" • ");
     const backdrop = pickImage(show, "backdrop_local", "backdrop_path");
     const poster = pickImage(show, "poster_local", "poster_path");
+    const showPct = (() => {
+      let v = progressPercent(show);
+      if (v == null){
+        const raw = Number(show?.vote_average ?? show?.rating ?? 0);
+        if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
+      }
+      return v;
+    })();
+    const showActionBar = buildActionBarHtml("show", show.tmdb_id ?? "", {
+      title,
+      pct: showPct,
+      favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
+      watchedActive: isShowWatched(show),
+      showWatchedAction: true,
+      showStatusAction: true,
+      availabilityStatus: availabilityStatusOf(show),
+      available: isShowAvailable(show)
+    });
+    const detailLine = (label, value) => `<div class="popup-detail-line"><span>${escHtml(label)}:</span><strong>${escHtml(value || "Unavailable")}</strong></div>`;
+    const showDetailHtml = [
+      detailLine("Availability", availabilityLabelOf(show)),
+      detailLine("Providers", formatProviderSummary(show)),
+      detailLine("Status", safeText(show?.status || "Unavailable")),
+      detailLine("Network(s)", networks.join(" • ") || "Unavailable"),
+      detailLine("Seasons", seasonItems.length ? `${seasonItems.length} seasons` : "Unavailable"),
+      detailLine("Episodes", totalEpisodes ? `${totalEpisodes}` : "Unavailable"),
+      detailLine("Premiered", premiered ? fmtDate(premiered) : "Unavailable"),
+      detailLine("Last aired", lastAir ? fmtDate(lastAir) : "Unavailable"),
+      detailLine("Genres", genres.join(" • ") || "Unavailable"),
+      detailLine("TMDB Score", show?.vote_average != null ? `${show.vote_average}${show?.vote_count != null ? ` (${show.vote_count})` : ""}` : "Unavailable")
+    ].join("");
+    const seasonActionBarHtml = it => {
+      const seasonEpisodes = Array.isArray(it.s?.episodes) ? it.s.episodes : [];
+      const seasonWatched = isSeasonWatched(show.tmdb_id, it.n, seasonEpisodes.length);
+      return buildActionBarHtml("season", it.n, {
+        title: safeText(it.s?.name || `Season ${it.n}`),
+        compact: true,
+        watchedActive: seasonWatched,
+        showWatchedAction: true,
+        showStatusAction: true,
+        statusContext: { showId: show.tmdb_id ?? "", seasonNumber: it.n },
+        watchedAttrs: { "data-show": show.tmdb_id ?? "", "data-season": it.n },
+        availabilityStatus: availabilityStatusOf(it.s),
+        available: isSeasonAvailable(it.s)
+      });
+    };
     return `
       <div class="popup-shell popup-shell--show"${backdrop ? ` style="--popup-backdrop-image:url('${escHtml(backdrop).replace(/'/g, "%27")}')"` : ""}>
         <div class="popup-hero-header">
           <h2 class="popup-hero__title">${escHtml(title)}</h2>
-          ${buildActionBarHtml("show", show.tmdb_id ?? "", {
-            title,
-            pct: (() => {
-              let v = progressPercent(show);
-              if (v == null){
-                const raw = Number(show?.vote_average ?? show?.rating ?? 0);
-                if (Number.isFinite(raw) && raw > 0) v = Math.round(raw * 10);
-              }
-              return v;
-            })(),
-            favoriteActive: getWatchlistSet().has(String(show.tmdb_id ?? "")),
-            watchedToggleHtml: watchToggleHtml("show", { "data-watch-show": show.tmdb_id ?? "" }, isShowWatched(show)),
-            watchedActive: isShowWatched(show),
-            showWatchedAction: true,
-            showStatusAction: true,
-            available: isShowAvailable(show)
-          })}
         </div>
         <div class="popup-hero popup-hero--dense">
-          <div class="popup-hero__poster">
-            ${poster ? `<img loading="lazy" decoding="async" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+          <div class="popup-hero__media">
+            <div class="popup-hero__poster popup-hero__poster--show">
+              ${poster ? `<img loading="lazy" decoding="async" src="${escHtml(poster)}" alt="" />` : `<div class="posterFallback">No Poster</div>`}
+            </div>
+            <div class="popup-hero__poster-actions">${showActionBar}</div>
           </div>
           <div class="popup-hero__body">
-            <div class="popup-detail-grid popup-detail-grid--compact popup-detail-grid--plain">
-              <div class="popup-detail"><span>Availability</span><strong>${escHtml(availabilityLabelOf(show))}</strong></div>
-              <div class="popup-detail"><span>Providers</span><strong>${escHtml(formatProviderSummary(show))}</strong></div>
-              <div class="popup-detail"><span>Status</span><strong>${escHtml(safeText(show?.status || "Unavailable"))}</strong></div>
-              <div class="popup-detail"><span>Network</span><strong>${escHtml(networks.join(" • ") || "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Seasons</span><strong>${escHtml(seasonItems.length ? `${seasonItems.length} seasons` : "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Episodes</span><strong>${escHtml(totalEpisodes ? `${totalEpisodes}` : "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Runtime</span><strong>${escHtml(showRuntime > 0 ? `${showRuntime} min` : "Series")}</strong></div>
-              <div class="popup-detail"><span>TMDB Score</span><strong>${escHtml(show?.vote_average != null ? `${show.vote_average}${show?.vote_count != null ? ` (${show.vote_count})` : ""}` : "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Premiered</span><strong>${escHtml(premiered ? fmtDate(premiered) : "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Last aired</span><strong>${escHtml(lastAir ? fmtDate(lastAir) : "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Genres</span><strong>${escHtml(genres.join(" • ") || "Unavailable")}</strong></div>
-              <div class="popup-detail"><span>Created by</span><strong>${escHtml(creators.join(" • ") || "Unavailable")}</strong></div>
+            <div class="popup-detail-list popup-detail-list--show">
+              ${showDetailHtml}
+              <div class="popup-detail-description">${compactOverviewHtml(show?.overview || "", 520)}</div>
             </div>
-            <div class="popup-description popup-description--show">${compactOverviewHtml(show?.overview || "", 420)}</div>
             <div class="showactions">${linkOrDisabled("meta_rt_critics", getRtLink(show), "Rotten Tomatoes")}</div>
           </div>
         </div>
@@ -5331,24 +5334,16 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             </div>
             <div class="seasonlist seasonlist--carousel" data-season-track>
               ${seasonItems.map(it => `
-                <button class="seasonopt${Number(it.n) === Number(selected?.n) ? " is-active" : ""}" type="button" data-season-pick="${escHtml(it.n)}">
-                  <span class="labelrow">
-                    <span class="label">${escHtml(it.s?.name || `Season ${it.n}`)}</span>
-                    <span class="seasonopt__meta">${escHtml([Array.isArray(it.s?.episodes) ? `${it.s.episodes.length} eps` : "", pickAirDate(it.s) ? fmtDate(pickAirDate(it.s)) : ""].filter(Boolean).join(" • "))}</span>
-                  </span>
-                  <span class="seasonopt__availability">${availabilityBadgeHtml(it.s, { compact: true })}</span>
-                </button>
+                <div class="seasonopt${Number(it.n) === Number(selected?.n) ? " is-active" : ""}">
+                  <button class="seasonopt__pick" type="button" data-season-pick="${escHtml(it.n)}">
+                    <span class="labelrow">
+                      <span class="label">${escHtml(it.s?.name || `Season ${it.n}`)}</span>
+                      <span class="seasonopt__meta">${escHtml([Array.isArray(it.s?.episodes) ? `${it.s.episodes.length} eps` : "", pickAirDate(it.s) ? fmtDate(pickAirDate(it.s)) : ""].filter(Boolean).join(" • "))}</span>
+                    </span>
+                  </button>
+                  <span class="seasonopt__actions" data-season-action-cell="1">${seasonActionBarHtml(it)}</span>
+                </div>
               `).join("") || `<div class="muted">No seasons available.</div>`}
-            </div>
-          </div>
-          <div class="seasondetails"${pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path") ? ` style="background-image:url('${escHtml(pickImage(season, "backdrop_local", "backdrop_path", "poster_local", "poster_path"))}');"` : ""}>
-            <div class="seasonmeta">
-              <div class="seasonname">${escHtml(seasonLabel)}</div>
-              ${seasonSummary ? `<div class="seasonair">${escHtml(seasonSummary)}</div>` : `<div class="seasonair">Season details unavailable</div>`}
-              <div class="seasonstatusrow">
-                ${seasonToggle}
-              </div>
-              ${season?.overview ? `<div class="seasonov">${escHtml(season.overview)}</div>` : `<div class="seasonov seasonov--muted">No season description available.</div>`}
             </div>
           </div>
         </div>

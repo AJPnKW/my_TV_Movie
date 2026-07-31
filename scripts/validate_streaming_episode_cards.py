@@ -171,9 +171,11 @@ def validate_runtime_source(app_text: str, renderer_text: str, css_text: str) ->
 
     assert_true("function pickImage(obj, ...keys)" in app_text, "pickImage must accept ordered fallback keys")
     assert_true("function episodeStillImageForCard" in app_text, "episodeStillImageForCard resolver missing")
-    assert_true("still_local" in function_body(app_text, "episodeStillImageForCard"), "episode image resolver must try still_local first")
-    assert_true("backdrop_local" in function_body(app_text, "episodeStillImageForCard"), "episode image resolver must fall back to show backdrop")
-    assert_true("poster_local" in function_body(app_text, "episodeStillImageForCard"), "episode image resolver must fall back to show poster")
+    episode_image_body = function_body(app_text, "episodeStillImageForCard")
+    assert_true("still_local" in episode_image_body, "episode image resolver must try still_local first")
+    assert_true("episode_still_local" in episode_image_body, "episode image resolver must try episode_still_local")
+    assert_true("EPISODE_STILL_PLACEHOLDER" in episode_image_body, "episode image resolver must use a still placeholder when still art is unavailable")
+    assert_true("showFallback" not in episode_image_body, "episode image resolver must not substitute show artwork for episode stills")
 
     shared_body = function_body(app_text, "buildSharedEpisodeCard")
     assert_true("renderEpisodeCardHtml" in shared_body, "buildSharedEpisodeCard must call canonical renderEpisodeCardHtml")
