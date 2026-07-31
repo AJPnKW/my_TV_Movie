@@ -317,4 +317,4 @@
 - Corrected runtime availability display so real air/release dates take precedence over stale generated `unavailable` flags, and corrected episode image handling so episode cards use still-specific fields first and a still placeholder otherwise instead of showing show/season artwork as if it were an episode still.
 - Updated existing validators to enforce the corrected episode still/description behavior rather than adding new scripts or parallel checks.
 - Validation: `node --check web/js/app_runtime.js` passed; `node --check scripts/qa_browser_layout_check.mjs` passed; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]` and `summariesVisible=true`.
-- Commit: pending show-detail-popup-normalization.
+- Commit: `05966c9372` normalize-show-detail-popup.
