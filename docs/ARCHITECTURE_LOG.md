@@ -305,4 +305,4 @@
 - Narrowed GitHub Pages staging from `data/*.json` to the explicit runtime JSON contract: `data/data.json`, `data/catalog_index.json`, `data/calendar.json`, `data/discover_registry.json`, `data/provider_registry.json`, `data/watch_state_queue.json`, and `data/catalog_detail/**`.
 - Updated validation and ignore rules so deleted helper/report JSON, old requested-title workflow paths, removed sidecar scripts, and retired analysis archive folders cannot return as tracked production files.
 - Validation: Python compile passed for the active pipeline/runtime scripts; `python scripts/validate_streaming_config.py` passed; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]`.
-- Commit: cleanup commit to be recorded after commit.
+- Commit: `9cdcd9e8b5` clean-production-file-surface.
