@@ -276,12 +276,7 @@ def load_streaming_config(config_path: Path = CONFIG_JSON) -> Dict[str, str]:
     streaming = cfg.get("streaming") or {}
     if not isinstance(streaming, dict):
         streaming = {}
-    out = {
-        "vidsrc_tv": safe_text(streaming.get("vidsrc_tv")),
-        "vidsrc_movie": safe_text(streaming.get("vidsrc_movie")),
-        "videasy_tv": safe_text(streaming.get("videasy_tv")),
-        "videasy_movie": safe_text(streaming.get("videasy_movie")),
-    }
+    out: Dict[str, str] = {}
     providers = streaming.get("embed_providers")
     if isinstance(providers, list):
         for provider in providers:
@@ -293,6 +288,11 @@ def load_streaming_config(config_path: Path = CONFIG_JSON) -> Dict[str, str]:
             out[f"{key}_tv"] = safe_text(provider.get("tv_template"))
             out[f"{key}_movie"] = safe_text(provider.get("movie_template"))
     return out
+
+
+def provider_template_url(streaming: Dict[str, str], provider_key: str, media: str, *parts: Any) -> str:
+    template_key = f"{provider_key}_{'movie' if media == 'movie' else 'tv'}"
+    return build_url_from_base(streaming.get(template_key, ""), *parts)
 
 
 def entity_candidates(entity_type: str, entity: Dict[str, Any], context: Dict[str, Any], streaming: Dict[str, str]) -> Dict[str, str]:
@@ -318,17 +318,17 @@ def entity_candidates(entity_type: str, entity: Dict[str, Any], context: Dict[st
         if key and href:
             candidates[key] = href
     if entity_type == "movie":
-        candidates["videasy"] = safe_text(links.get("videasy")) or build_url_from_base(streaming.get("videasy_movie", ""), tmdb_id)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or build_url_from_base(streaming.get("vidsrc_movie", ""), tmdb_id)
+        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "movie", tmdb_id)
+        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "movie", tmdb_id)
     elif entity_type == "show":
-        candidates["videasy"] = safe_text(links.get("videasy")) or build_url_from_base(streaming.get("videasy_tv", ""), tmdb_id)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or build_url_from_base(streaming.get("vidsrc_tv", ""), tmdb_id)
+        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "tv", tmdb_id)
+        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "tv", tmdb_id)
     elif entity_type == "season":
-        candidates["videasy"] = safe_text(links.get("videasy")) or build_url_from_base(streaming.get("videasy_tv", ""), show_id, season_number)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or build_url_from_base(streaming.get("vidsrc_tv", ""), show_id, season_number)
+        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "tv", show_id, season_number)
+        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "tv", show_id, season_number)
     elif entity_type == "episode":
-        candidates["videasy"] = safe_text(links.get("videasy")) or build_url_from_base(streaming.get("videasy_tv", ""), show_id, season_number, episode_number)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or build_url_from_base(streaming.get("vidsrc_tv", ""), show_id, season_number, episode_number)
+        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "tv", show_id, season_number, episode_number)
+        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "tv", show_id, season_number, episode_number)
     return {key: value for key, value in candidates.items() if safe_text(value)}
 
 

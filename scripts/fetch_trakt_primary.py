@@ -221,13 +221,22 @@ def build_stream_links(cfg: Dict[str, Any], kind: str, tmdb_id: Any) -> Dict[str
     if not tmdb:
         return {}
     streaming = cfg.get("streaming") if isinstance(cfg, dict) else {}
-    vidsrc_base = streaming.get("vidsrc_tv") if kind == "episode" else streaming.get("vidsrc_movie")
-    videasy_base = streaming.get("videasy_tv") if kind == "episode" else streaming.get("videasy_movie")
     out: Dict[str, str] = {}
-    if vidsrc_base:
-        out["vidsrc"] = f"{vidsrc_base}{tmdb}"
-    if videasy_base:
-        out["videasy"] = f"{videasy_base}{tmdb}"
+    providers = streaming.get("embed_providers") if isinstance(streaming, dict) else []
+    template_field = "tv_template" if kind == "episode" else "movie_template"
+    for provider in providers if isinstance(providers, list) else []:
+        if not isinstance(provider, dict):
+            continue
+        key = str(provider.get("key") or "").strip()
+        template = str(provider.get(template_field) or "").strip()
+        if key not in {"vidsrc_net", "videasy"} or not template:
+            continue
+        try:
+            href = template.format(tmdb_id=tmdb, season="", episode="")
+        except Exception:
+            href = ""
+        if href:
+            out["vidsrc" if key == "vidsrc_net" else key] = href
     return out
 
 

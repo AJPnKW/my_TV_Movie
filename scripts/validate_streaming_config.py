@@ -26,11 +26,6 @@ def main() -> int:
         issues.append("web/config.json must contain streaming object")
         streaming = {}
 
-    for key in ("vidsrc_tv", "vidsrc_movie", "videasy_tv", "videasy_movie"):
-        value = _safe_text(streaming.get(key))
-        if not value.startswith("https://"):
-            issues.append(f"streaming.{key} must be an https URL/template")
-
     providers = streaming.get("embed_providers")
     if not isinstance(providers, list) or not providers:
         issues.append("streaming.embed_providers must be a non-empty array")
@@ -69,6 +64,9 @@ def main() -> int:
     for key in fallback_order:
         if key not in buildable_keys:
             issues.append(f"streaming.fallback_order references non-buildable or missing provider key={key}")
+    for key in ("vidsrc_net", "videasy"):
+        if key not in buildable_keys:
+            issues.append(f"streaming.embed_providers must define buildable provider key={key}")
 
     if issues:
         for issue in issues:

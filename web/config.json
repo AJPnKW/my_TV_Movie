@@ -13,10 +13,6 @@
     ]
   },
   "streaming": {
-    "vidsrc_tv": "https://vidsrc.net/embed/tv/",
-    "vidsrc_movie": "https://vidsrc.net/embed/movie/",
-    "videasy_tv": "https://player.videasy.net/tv/",
-    "videasy_movie": "https://player.videasy.net/movie/",
     "fallback_order": [
       "vsembed",
       "vidsrc_net",
@@ -384,14 +380,14 @@
       "name": "VidSrc",
       "purpose": "VidSrc stream link",
       "functionType": "link",
-      "target": "streaming.vidsrc_* + tmdb_id"
+      "target": "streaming.embed_providers[vidsrc_net]"
     },
     "media_videasy": {
       "icon": "\u25b6\ufe0f",
       "name": "VidEasy",
       "purpose": "VidEasy stream link",
       "functionType": "link",
-      "target": "streaming.videasy_* + tmdb_id"
+      "target": "streaming.embed_providers[videasy]"
     },
     "media_local_file": {
       "icon": "\ud83d\udcbe",

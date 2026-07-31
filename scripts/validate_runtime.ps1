@@ -65,11 +65,7 @@ $requiredFiles = @(
     'tools/install_local_launcher.ps1',
     'tools/start_inputs_editor.cmd',
     'tools/run_smoke_test.ps1',
-    'tools/inputs_editor/inputs_editor_server.py',
-    'reports/ui_stabilization/asset_optimization.json',
-    'reports/ui_stabilization/repo_cleanup_decisions.md',
-    'reports/ui_stabilization/ui_stabilization_report.md',
-    'reports/ui_stabilization/visual_gap_analysis.md'
+    'tools/inputs_editor/inputs_editor_server.py'
 )
 
 Write-Host '== Required files =='
@@ -332,6 +328,16 @@ $badNames = & git ls-files |
     }
 foreach ($path in $badNames) {
     Add-CheckError "Forbidden placeholder/overlay file name: $path"
+}
+$trackedAnalysisArtifacts = & git ls-files |
+    Where-Object {
+        $_ -match '^(logs|out|reports)/' -or
+        $_ -match '^data/backups/' -or
+        $_ -eq 'data/inputs.cleaned.json' -or
+        $_ -match '(?i)(^|/)(fix_inputs|qa_inputs_parsed_missing_trakt|qa_fix_duplicate_show_objects_in_data_json)\.(py|bak)$'
+    }
+foreach ($path in $trackedAnalysisArtifacts) {
+    Add-CheckError "Tracked analysis/drift artifact must not be restored: $path"
 }
 
 Write-Host '== Icon contract =='

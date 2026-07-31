@@ -292,3 +292,8 @@
 - Confirmed `data/inputs.json` remains the canonical source of truth and reconciles into generated split runtime artifacts: `data/catalog_index.json`, `data/calendar.json`, `data/catalog_detail/*.json`, and reference `data/data.json`.
 - Validated the synced workflow-generated state with pipeline integrity, runtime validation, rendered browser QA, and GitHub `validate`, `build-data`, and `pages` workflow success.
 - Commits: `cdc27e66a4` merge recovery, `2aa8c34fc8` workflow-generated data artifacts.
+
+- Removed tracked analysis/drift artifacts from active source control: old input backup snapshots, cleaned-input previews, one-off fix scripts, retired analysis QA scripts, and tracked report/screenshot evidence.
+- Consolidated streaming provider ownership around `web/config.json -> streaming.embed_providers[]` and removed duplicate top-level VidSrc/VidEasy base URL fields plus stale helper code that could rebuild parallel stream links.
+- Updated validation to reject tracked reports, logs, input backups, cleaned previews, and one-off fix scripts as drift if they return.
+- Commit: `0898bd668d` clean-architecture-drift-artifacts.

@@ -217,10 +217,6 @@ def parse_args() -> argparse.Namespace:
 # -------------------------
 @dataclass
 class StreamingConfig:
-    vidsrc_tv: str
-    vidsrc_movie: str
-    videasy_tv: str
-    videasy_movie: str
     fallback_order: List[str]
     embed_providers: List[Dict[str, str]]
 
@@ -245,10 +241,6 @@ def load_config(path: Path) -> Config:
     streaming = cfg.get("streaming")
     if not isinstance(streaming, dict):
         raise ValueError("web/config.json must contain a streaming object")
-    for key in ("vidsrc_tv", "vidsrc_movie", "videasy_tv", "videasy_movie"):
-        if not str(streaming.get(key, "")).strip():
-            raise ValueError(f"web/config.json missing required streaming.{key}")
-
     raw_providers = streaming.get("embed_providers")
     if not isinstance(raw_providers, list) or not raw_providers:
         raise ValueError("web/config.json streaming.embed_providers must be a non-empty array")
@@ -291,10 +283,6 @@ def load_config(path: Path) -> Config:
 
     return Config(
         streaming=StreamingConfig(
-            vidsrc_tv=str(streaming.get("vidsrc_tv", "")),
-            vidsrc_movie=str(streaming.get("vidsrc_movie", "")),
-            videasy_tv=str(streaming.get("videasy_tv", "")),
-            videasy_movie=str(streaming.get("videasy_movie", "")),
             fallback_order=fallback_order,
             embed_providers=embed_providers,
         ),
@@ -303,44 +291,6 @@ def load_config(path: Path) -> Config:
             folders={str(k): str(v) for k, v in folders.items()},
         ),
     )
-
-
-# -------------------------
-# URL builders (robust)
-# -------------------------
-def _norm_base(base: str) -> str:
-    base = (base or "").strip()
-    return base
-
-
-def _join_url(base: str, suffix: str) -> str:
-    base = _norm_base(base)
-    suffix = (suffix or "").lstrip("/")
-    if not base:
-        return suffix  # will at least be deterministic, but should not happen once config is correct
-    if base.endswith("/"):
-        return base + suffix
-    return base + "/" + suffix
-
-
-def _format_or_join(base: str, **kw: Any) -> str:
-    """
-    Supports:
-    - base containing placeholders: {tmdb_id}, {season}, {episode}
-    - otherwise, caller supplies suffix and we join
-    """
-    base = _norm_base(base)
-    if not base:
-        return ""
-    if "{" in base and "}" in base:
-        try:
-            return base.format(**kw)
-        except Exception:
-            # fall back to joining the tmdb_id if formatting fails
-            pass
-    # default join with tmdb_id
-    tmdb_id = str(kw.get("tmdb_id", "")).strip()
-    return _join_url(base, tmdb_id)
 
 
 def build_tv_links(cfg: Config, tmdb_id: int, season: int, episode: int) -> Dict[str, str]:
@@ -369,45 +319,6 @@ def build_season_links(cfg: Config, tmdb_id: int, season: int) -> Dict[str, str]
         "tmdb": f"https://www.themoviedb.org/tv/{tmdb_id}/season/{season}",
         "provider_page": f"https://www.themoviedb.org/tv/{tmdb_id}/watch",
     }
-
-
-def build_watch_sources(cfg: Config, media: str, tmdb_id: int, season: Optional[int] = None, episode: Optional[int] = None) -> List[Dict[str, Any]]:
-    if media not in {"movie", "show", "season", "episode"}:
-        return []
-    if media == "show":
-        links = build_show_links(cfg, tmdb_id)
-        return [
-            {"key": "vidsrc_net", "label": "VidSrc", "href": links["vidsrc"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 0},
-            {"key": "videasy", "label": "VidEasy", "href": links["videasy"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 1},
-        ]
-    if media == "season":
-        links = build_season_links(cfg, tmdb_id, int(season or 0))
-        return [
-            {"key": "vidsrc_net", "label": "VidSrc", "href": links["vidsrc"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 0},
-            {"key": "videasy", "label": "VidEasy", "href": links["videasy"], "type": "embed", "provider_family": "embed", "style": "path", "status": "ok", "priority": 1},
-        ]
-    media_key = "movie" if media == "movie" else "tv"
-    priorities = {key: idx for idx, key in enumerate(cfg.streaming.fallback_order)}
-    results: List[Dict[str, Any]] = []
-    for provider in cfg.streaming.embed_providers:
-        template = provider["movie_template"] if media_key == "movie" else provider["tv_template"]
-        href = _format_or_join(template, tmdb_id=tmdb_id, season=season or "", episode=episode or "")
-        if not href:
-            continue
-        results.append(
-            {
-                "key": provider["key"],
-                "label": provider["name"],
-                "href": href,
-                "type": "embed",
-                "provider_family": "embed",
-                "style": provider["style"],
-                "status": provider["status"],
-                "priority": priorities.get(provider["key"], len(priorities)),
-            }
-        )
-    results.sort(key=lambda row: (int(row.get("priority", 999)), str(row.get("label", "")).lower()))
-    return results
 
 
 # -------------------------
