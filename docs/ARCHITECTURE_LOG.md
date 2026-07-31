@@ -296,4 +296,4 @@
 - Removed tracked analysis/drift artifacts from active source control: old input backup snapshots, cleaned-input previews, one-off fix scripts, retired analysis QA scripts, and tracked report/screenshot evidence.
 - Consolidated streaming provider ownership around `web/config.json -> streaming.embed_providers[]` and removed duplicate top-level VidSrc/VidEasy base URL fields plus stale helper code that could rebuild parallel stream links.
 - Updated validation to reject tracked reports, logs, input backups, cleaned previews, and one-off fix scripts as drift if they return.
-- Commit: `0898bd668d` clean-architecture-drift-artifacts.
+- Commit: `db0da55aaf` clean-architecture-drift-artifacts.
