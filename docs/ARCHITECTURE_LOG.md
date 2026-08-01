@@ -332,3 +332,10 @@
 - Updated `docs/00_master_contract.html` and `docs/ARCHITECTURE.md` so `data/inputs.json` is the editable source and `data/data.json` is the only generated web runtime catalog; archived the prior master contract snapshot at `docs/_archive/contracts/00_master_contract_pre_single_runtime_data_20260731.html`.
 - Validation: JSON parse passed for `data/data.json` and `data/inputs.json`; Python compile passed for active pipeline/runtime/editor/media-helper scripts; JS syntax passed for `web/js/*.js`; `python scripts/validate_runtime_catalog_integrity.py` passed; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; full `python scripts/run_pipeline_tmdb_trakt.py` passed. Browser QA loaded the single-catalog runtime and rendered calendar items, but still failed existing Watch Source popup, Manage Watch State row reflection, and episode carousel UI contracts.
 - Commit: `bf23b38e5f` refactor-single-runtime-data-catalog.
+
+## 2026-08-01
+
+- Root-caused the post single-catalog regression to two issues: app-shell cache version stayed at `v1.5.5`, allowing browsers to keep stale JS that still requested retired `../inputs.json` and split detail paths, and popup detail lookup still tested `data/data.json` rows for `type === "tv"` or `type === "movie"` even though current show rows use TMDB category values such as `Scripted` and movie rows do not carry that media-kind field.
+- Fixed the existing shared runtime only: show/movie detail lookups now resolve from `state.showById` and `state.movieById`, and active page shells plus `app_runtime.js` module imports were advanced to `v1.5.6` from `web/config.json`.
+- Validation: `node --check web/js/app_runtime.js` passed; focused browser validation against a local static server proved index loads without `../inputs.json`, Calendar renders 81 items, show popup leaves loading and renders details, and movie popup renders details; `python scripts/qa_pipeline_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `git diff --check` passed.
+- Commit: `e17e651dff` fix-single-catalog-runtime-popups.
