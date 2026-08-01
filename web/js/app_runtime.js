@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.5';
-import * as dataLoader from './data_loader.js?v=v1.5.5';
-import * as availabilityUi from './availability_ui.js?v=v1.5.5';
-import * as cardRenderer from './card_renderer.js?v=v1.5.5';
-import * as popupController from './popup_controller.js?v=v1.5.5';
-import * as actionBar from './action_bar.js?v=v1.5.5';
-import './watch_state_manager.js?v=v1.5.5';
-import '../config.js?v=v1.5.5';
+import * as configLoader from './config_loader.js?v=v1.5.6';
+import * as dataLoader from './data_loader.js?v=v1.5.6';
+import * as availabilityUi from './availability_ui.js?v=v1.5.6';
+import * as cardRenderer from './card_renderer.js?v=v1.5.6';
+import * as popupController from './popup_controller.js?v=v1.5.6';
+import * as actionBar from './action_bar.js?v=v1.5.6';
+import './watch_state_manager.js?v=v1.5.6';
+import '../config.js?v=v1.5.6';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -2933,13 +2933,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   async function getShowDetailById(id){
-    const detail = await getCatalogDetailById(id);
-    return detail && safeText(detail.type).toLowerCase() === "tv" ? detail : null;
+    const key = String(Number(id) || 0);
+    return key && state.showById?.get(key) ? state.showById.get(key) : null;
   }
 
   async function getMovieDetailById(id){
-    const detail = await getCatalogDetailById(id);
-    return detail && safeText(detail.type).toLowerCase() === "movie" ? detail : null;
+    const key = String(Number(id) || 0);
+    return key && state.movieById?.get(key) ? state.movieById.get(key) : null;
   }
 
   function buildCalendarEventsForMonth(monthDate){
