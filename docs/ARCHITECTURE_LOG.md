@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-08-11
+
+- Centralized streaming provider authority in `web/config.json -> streaming.embed_providers[]` and `streaming.fallback_order`; retired `data/provider_registry.json` so there is no second provider registry to maintain or deploy.
+- Rebuilt the default streaming fallback chain around the current TMDB-ID provider set: VidCore, Vidfast, Vidlink, Vidsrc.pm/.to/.cc, 2embed.skin, nontongo.win, moviesapi.to, smashystream, autoembed.co, frembed, VSEmbed, VidEasy, SuperEmbed, and MultiEmbed; unstable and legacy providers remain only as disabled/archived/blocked config records.
+- Removed legacy generated VidSrc/VidEasy link helpers from runtime and build scripts, updated popup filtering to read inactive providers from `web/config.json`, and changed server-mode `/providers` to expose sanitized config providers.
+- Updated streaming docs, master contract, deployment references, and validators so provider order, enablement, templates, and inactive-provider hiding are guarded against future drift.
+- Validation: Python compile passed for edited scripts/API; JS syntax checks passed for runtime/QA modules; `python scripts/validate_streaming_config.py` passed; `python scripts/validate_streaming_episode_cards.py` passed; `python scripts/qa_availability_phase2.py` passed; `python scripts/qa_assets_urls.py` passed with `streaming_url_leaks=0`; `python scripts/qa_pipeline_integrity.py` passed; `python scripts/validate_runtime_catalog_integrity.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]`; `git diff --check` passed with only Git line-ending warnings.
+- Commit: `65bd0f2140` centralize streaming provider config.
+
 ## 2026-07-29
 
 - Root-caused the Inputs Editor online publish miss to a detached/in-progress Git checkout plus the old branch-name push path (`git push github main`), which could create a local `data/inputs.json` commit without pushing that exact commit to GitHub, leaving Actions with no remote change to run.
