@@ -1,14 +1,14 @@
 /*
 FILE: web/js/provider_popup_guard.js
 VERSION: v1.1.0
-UPDATED: 2026-05-18
+UPDATED: 2026-08-11
 CHANGE NOTES:
 - Converts the provider popup guard from an active popup replacement into a passive DOM cleaner.
 - Restores popup ownership to app_runtime.js / canonical runtime renderer.
 - Does not intercept popcorn/watch-source clicks.
 - Does not stop propagation.
 - Does not generate fallback provider-only popup HTML.
-- Removes only forbidden admin/status text and blocked/archived provider links from an already-rendered popup.
+- Removes only forbidden admin/status text and config-disabled provider links from an already-rendered popup.
 */
 (function(){
   'use strict';
@@ -16,8 +16,8 @@ CHANGE NOTES:
   if (window.__myTvMovieProviderPopupGuardLoaded) return;
   window.__myTvMovieProviderPopupGuardLoaded = true;
 
-  const PROVIDER_REGISTRY_URL = '../data/provider_registry.json';
-  const BLOCKED_STATUSES = new Set(['blocked', 'archived']);
+  const CONFIG_URL = './config.json';
+  const BLOCKED_STATUSES = new Set(['blocked', 'archived', 'disabled']);
   const FORBIDDEN_TEXTS = new Set([
     'active candidate from user findings',
     'active',
@@ -37,7 +37,7 @@ CHANGE NOTES:
     '[data-health-note]'
   ].join(',');
 
-  let providerRegistry = null;
+  let streamingConfig = null;
 
   function text(value){
     return value == null ? '' : String(value).trim();
@@ -58,30 +58,39 @@ CHANGE NOTES:
     }
   }
 
-  function registryItems(registry){
-    if (!registry) return [];
-    if (Array.isArray(registry)) return registry;
-    if (Array.isArray(registry.providers)) return registry.providers;
-    if (Array.isArray(registry.items)) return registry.items;
-    if (registry.providers && typeof registry.providers === 'object') return Object.values(registry.providers);
-    return [];
+  function providerDomain(value){
+    const raw = text(value);
+    if (!raw) return '';
+    const template = raw
+      .replaceAll('{tmdb_id}', '1')
+      .replaceAll('{season}', '1')
+      .replaceAll('{episode}', '1');
+    return normalizeDomain(template);
+  }
+
+  function providerItems(){
+    const providers = streamingConfig && Array.isArray(streamingConfig.embed_providers)
+      ? streamingConfig.embed_providers
+      : [];
+    return providers.filter(item => item && typeof item === 'object');
+  }
+
+  function providerInactive(item){
+    const status = lower(item && item.status);
+    return item && (item.enabled === false || BLOCKED_STATUSES.has(status));
   }
 
   function providerStatusForUrl(href){
     const domain = normalizeDomain(href);
     if (!domain) return '';
-    const item = registryItems(providerRegistry).find(candidate => {
-      const candidateDomain = normalizeDomain(
-        candidate.domain ||
-        candidate.provider_domain ||
-        candidate.url ||
-        candidate.href ||
-        candidate.url_pattern ||
-        candidate.provider_id
-      );
+    const item = providerItems().find(candidate => {
+      const candidateDomain =
+        providerDomain(candidate.base_url) ||
+        providerDomain(candidate.movie_template) ||
+        providerDomain(candidate.tv_template);
       return candidateDomain && (domain === candidateDomain || domain.endsWith('.' + candidateDomain));
     });
-    return lower(item && item.status);
+    return providerInactive(item) ? 'disabled' : lower(item && item.status);
   }
 
   function removeAdminText(root){
@@ -126,15 +135,19 @@ CHANGE NOTES:
     observer.observe(document.documentElement, { childList: true, subtree: true, characterData: true });
   }
 
-  function loadRegistry(){
-    return fetch(PROVIDER_REGISTRY_URL, { cache: 'no-cache' })
+  function loadConfig(){
+    return fetch(CONFIG_URL, { cache: 'no-cache' })
       .then(response => response.ok ? response.json() : null)
-      .then(payload => { providerRegistry = payload; })
-      .catch(() => { providerRegistry = null; });
+      .then(payload => {
+        streamingConfig = payload && payload.streaming && typeof payload.streaming === 'object'
+          ? payload.streaming
+          : null;
+      })
+      .catch(() => { streamingConfig = null; });
   }
 
   function install(){
-    loadRegistry().finally(cleanProviderPopup);
+    loadConfig().finally(cleanProviderPopup);
     installObserver();
     document.addEventListener('click', () => setTimeout(cleanProviderPopup, 0), false);
     document.addEventListener('keyup', event => {

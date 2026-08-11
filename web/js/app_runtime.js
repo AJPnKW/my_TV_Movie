@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.6';
-import * as dataLoader from './data_loader.js?v=v1.5.6';
-import * as availabilityUi from './availability_ui.js?v=v1.5.6';
-import * as cardRenderer from './card_renderer.js?v=v1.5.6';
-import * as popupController from './popup_controller.js?v=v1.5.6';
-import * as actionBar from './action_bar.js?v=v1.5.6';
-import './watch_state_manager.js?v=v1.5.6';
-import '../config.js?v=v1.5.6';
+import * as configLoader from './config_loader.js?v=v1.5.7';
+import * as dataLoader from './data_loader.js?v=v1.5.7';
+import * as availabilityUi from './availability_ui.js?v=v1.5.7';
+import * as cardRenderer from './card_renderer.js?v=v1.5.7';
+import * as popupController from './popup_controller.js?v=v1.5.7';
+import * as actionBar from './action_bar.js?v=v1.5.7';
+import './watch_state_manager.js?v=v1.5.7';
+import '../config.js?v=v1.5.7';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -47,7 +47,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     data: null,
     calendarData: null,
     watchStateQueue: null,
-    providerRegistry: null,
     discoverRegistry: null,
     inputs: null,
     tab: PAGE,
@@ -864,9 +863,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   }
 
   function renderWatchProvidersHtml(item, kind){
-    const wp = getWatchProviders(item);
     const id = item?.id ?? item?.tmdb_id;
-    if (!wp || !id) return "";
+    if (!id) return "";
+    const wp = getWatchProviders(item) || {};
     const regions = ["CA", "US", "GB", "AU"];
     const rows = regions.map(region => {
       const providers = collectProvidersForRegion(wp, region);
@@ -2025,20 +2024,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     if (changed) await saveInputs();
   }
 
-  function buildMediaLinks(kind, id, links){
-    const src = links && typeof links === "object" ? links : {};
-    const item = (src && typeof src === "object" && src.watch) ? src : null;
-    const embed = Array.isArray(item?.watch?.embed) ? item.watch.embed : [];
-    const lookupEmbed = (key) => {
-      const hit = embed.find(entry => safeText(entry?.key).trim().toLowerCase() === key && safeText(entry?.href).trim());
-      return hit ? safeText(hit.href).trim() : "";
-    };
-    const vidsrc = lookupEmbed("vidsrc_net") || lookupEmbed("vidsrc");
-    const videasy = lookupEmbed("videasy");
-    const local = lookupEmbed("local");
-    return { vidsrc, videasy, local };
-  }
-
   function watchSourceButtonHtml(kind, attrs, label="Watch"){
     const pairs = Object.entries(attrs || {})
       .filter(([, value]) => value != null && value !== "")
@@ -2076,7 +2061,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       if (!entry || typeof entry !== "object") return null;
       const key = safeText(entry.key).trim().toLowerCase();
       const status = safeText(entry.status || "ok").trim().toLowerCase();
-      if (status === "blocked") return null;
+      if (entry.enabled === false) return null;
+      if (["blocked", "archived", "disabled"].includes(status)) return null;
       if (status === "candidate" && !showCandidates) return null;
       if (!["ok", "warn", "candidate"].includes(status)) return null;
       const template = kind === "movie" ? entry.movie_template : entry.tv_template;
@@ -2203,36 +2189,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       obj.rt ||
       ""
     ).trim();
-  }
-
-  function providerRegistryRecords(){
-    const registry = state.providerRegistry && typeof state.providerRegistry === "object" ? state.providerRegistry : {};
-    return Array.isArray(registry.providers) ? registry.providers : (Array.isArray(registry.items) ? registry.items : []);
-  }
-
-  function providerDomainFromUrl(href){
-    try {
-      return new URL(safeText(href)).hostname.toLowerCase().replace(/^www\./, "");
-    } catch (_) {
-      return "";
-    }
-  }
-
-  function providerHealthForSource(key, href){
-    const sourceKey = safeText(key).toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
-    const domain = providerDomainFromUrl(href);
-    const record = providerRegistryRecords().find(item => {
-      const providerId = safeText(item?.provider_id).toLowerCase();
-      const itemDomain = safeText(item?.domain).toLowerCase().replace(/^www\./, "");
-      return (sourceKey && providerId === sourceKey) || (domain && itemDomain === domain);
-    });
-    const status = safeText(record?.status || "active").toLowerCase();
-    return {
-      blocked: status === "blocked" || status === "archived",
-      status,
-      provider_id: safeText(record?.provider_id || sourceKey),
-      note: safeText(record?.notes || "")
-    };
   }
 
   function getCompanyNames(list){
@@ -2737,8 +2693,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       state.calendarData = await window.MyTVHubSharedModules.dataLoader.loadCalendarFirst(["../data/data.json"]);
       state.discoverRegistry = await window.MyTVHubSharedModules.dataLoader.loadDiscoverRegistryFirst(["../data/discover_registry.json"]);
       state.watchStateQueue = await window.MyTVHubSharedModules.configLoader.loadJsonFirst(["../data/watch_state_queue.json"]).catch(() => ({ items: [] }));
-      state.providerRegistry = await window.MyTVHubSharedModules.configLoader.loadJsonFirst(["../data/provider_registry.json"]).catch(() => ({ providers: [] }));
-
       if (!state.data || typeof state.data !== "object") throw new Error("data.json not loaded");
       if (!state.calendarData || typeof state.calendarData !== "object") throw new Error("calendar could not be derived from data.json");
 
@@ -2908,13 +2862,13 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
 
   function hasDirectWatchSources(item){
     if (!item || typeof item !== "object") return false;
-    if (Array.isArray(item?.watch?.embed) && item.watch.embed.length > 0) return true;
     if (Number(item?.watch_embed_count || item?.embed_count || 0) > 0 || !!item?.has_watch_sources) return true;
     const providers = Array.isArray(state.cfg?.streaming?.embed_providers) ? state.cfg.streaming.embed_providers : [];
     const showCandidates = state.cfg?.streaming?.show_candidate_providers === true;
     const hasVisibleProvider = (templateKey) => providers.some(provider => {
       const status = safeText(provider?.status || "ok").toLowerCase();
-      if (status === "blocked") return false;
+      if (provider?.enabled === false) return false;
+      if (["blocked", "archived", "disabled"].includes(status)) return false;
       if (status === "candidate" && !showCandidates) return false;
       return !!safeText(provider?.[templateKey]).trim();
     });

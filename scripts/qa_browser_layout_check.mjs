@@ -137,7 +137,7 @@ async function inspect(pathname, viewport) {
     const queueAfterItems = Array.isArray(queueAfter) ? queueAfter : (Array.isArray(queueAfter?.items) ? queueAfter.items : []);
     const popupButton = document.querySelector("[data-watch-source-open]");
     let popupFocus = { attempted: false, opened: false, focusInside: false, closedByBack: false };
-    let providerBlockedLinks = [];
+    let inactiveProviderLinks = [];
     let watchPopupContract = { attempted: false };
     if (popupButton) {
       popupButton.click();
@@ -151,8 +151,8 @@ async function inspect(pathname, viewport) {
         const title = modal.querySelector("#providerTitle, #modalTitle")?.textContent?.trim() || "";
         const bodyText = modal.textContent || "";
         const labels = Array.from(modal.querySelectorAll(".watch-source-panel__title")).map(node => node.textContent.trim());
-        const streamingExpected = ["VSEmbed","VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
-        const streamingForbidden = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","Goojara","Cineb","vidsrc-embed.ru","freeintertv.com"];
+        const streamingExpected = ["VidCore","Vidfast","Vidlink","Vidsrc.pm","Vidsrc.to","Vidsrc.cc","2embed.skin","nontongo.win","moviesapi.to","smashystream","autoembed.co","frembed","VSEmbed","VidEasy","SuperEmbed","MultiEmbed"];
+        const streamingForbidden = ["FlixHQ","SFlix","2Embed CC","2Embed Org","VidSrc (RU)","VidSrc.net","VidSrc.me","Nunflix","Goojara","Cineb","vidsrc-embed.ru","freeintertv.com"];
         const streamingAnchors = Array.from(modal.querySelectorAll(".watch-source-panel--links a.watch-source-row[href]"));
         const streamingProviderNames = streamingAnchors.map(anchor => (anchor.querySelector(".watch-source-row__label")?.textContent || anchor.textContent || "").replace("⚠", "").trim());
         const duplicateStreamingProviderNames = streamingProviderNames.filter((name, idx) => streamingProviderNames.indexOf(name) !== idx);
@@ -234,9 +234,9 @@ async function inspect(pathname, viewport) {
           refOk: /REF: POP-WATCH-SOURCE/.test(bodyText),
           episodeTmdbOk: /TMDB:\s*\d+|\d+\s*•\s*\d+\s*min/.test(bodyText)
         };
-        providerBlockedLinks = Array.from(modal.querySelectorAll("a[href]"))
+        inactiveProviderLinks = Array.from(modal.querySelectorAll("a[href]"))
           .map(link => link.href)
-          .filter(href => /vidsrc\.me|vidsrc\.to|vidlink\.pro|nunflix\.org|vidsrc-embed\.ru|goojara|cineb|freeintertv/i.test(href));
+          .filter(href => /flixhq\.to|sflix\.to|2embed\.cc|2embed\.org|vidsrc\.su|vidsrc\.net|vidsrc\.me|nunflix\.org|vidsrc-embed\.ru|goojara|cineb|freeintertv/i.test(href));
         document.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
         await new Promise(resolve => requestAnimationFrame(resolve));
         const focusInside = modal.contains(document.activeElement);
@@ -316,7 +316,7 @@ async function inspect(pathname, viewport) {
       watchQueueAfter: queueAfterItems.length,
       watchQueueHasQueuedRecord: queueAfterItems.some(item => item && item.sync_status === "queued" && (item.item_key || item.id || item.state_key) && item.previous_value != null && item.new_value != null && item.ids && (item.ids.tmdb || item.ids.trakt || item.ids.tvdb || item.ids.imdb)),
       popupDetailOk: /Abbott Elementary/.test(popupDetailSample) && /Team Building/.test(popupDetailSample) && /S05E01 • 22 min/.test(popupDetailSample) && /Oct 1, 2025/.test(popupDetailSample) && /The teachers prepare/.test(popupDetailSample),
-      providerBlockedLinks,
+      inactiveProviderLinks,
       popupFocus,
       watchPopupContract,
       mediaLibraryNavOk,
@@ -440,7 +440,7 @@ async function inspectInteractionCompliance(viewport) {
     }
     const search = document.querySelector("[data-manage-watch-search]");
     if (search) {
-      search.value = (proof.title || proof.tmdbId || "movie").slice(0, 6);
+      search.value = proof.tmdbId || (proof.title || "movie").slice(0, 6);
       search.dispatchEvent(new Event("input", { bubbles: true }));
       await waitFrame();
       out.searchWorks = !!document.querySelector("[data-manage-watch-search]") && document.querySelectorAll(".watch-state-matrix tbody tr").length > 0;
@@ -600,25 +600,24 @@ async function inspectInteractionCompliance(viewport) {
   return { pathname: "interaction-contract", viewport: viewport.name, errors, missing, click, crossView, actionViews, manage, carousel };
 }
 
-function providerRegistryProof() {
+function streamingConfigProof() {
   const config = JSON.parse(readFileSync("web/config.json", "utf8"));
   const providers = Array.isArray(config.streaming?.embed_providers) ? config.streaming.embed_providers : [];
   const byName = Object.fromEntries(providers.map(item => [item.name, item]));
-  const defaultProviders = ["VSEmbed","VidSrc","VidEasy","SuperEmbed","MultiEmbed","SmashyStream","FlixHQ","SFlix","2Embed CC","2Embed Org"];
-  const candidates = ["VidSrc.me","VidSrc.to","VidLink","Nunflix","vidsrc-embed.ru"];
-  const blocked = ["Goojara","Cineb","freeintertv.com"];
+  const defaultProviders = ["VidCore","Vidfast","Vidlink","Vidsrc.pm","Vidsrc.to","Vidsrc.cc","2embed.skin","nontongo.win","moviesapi.to","smashystream","autoembed.co","frembed","VSEmbed","VidEasy","SuperEmbed","MultiEmbed"];
+  const inactive = ["FlixHQ","SFlix","2Embed CC","2Embed Org","VidSrc (RU)","VidSrc.net","VidSrc.me","Nunflix","vidsrc-embed.ru","Goojara","Cineb","freeintertv.com"];
   const visible = providers.filter(item => {
     const status = String(item.status || "ok").toLowerCase();
-    return status !== "blocked" && status !== "candidate" && item.tv_template && item.movie_template;
+    return item.enabled !== false && !["blocked","archived","disabled","candidate"].includes(status) && item.tv_template && item.movie_template;
   }).map(item => item.name);
   return {
     exists: true,
     count: providers.length,
-    blocked: blocked.every(name => String(byName[name]?.status || "").toLowerCase() === "blocked"),
-    active: defaultProviders.every(name => ["ok","warn"].includes(String(byName[name]?.status || "").toLowerCase())),
-    candidatesHiddenByDefault: config.streaming?.show_candidate_providers === false && candidates.every(name => String(byName[name]?.status || "").toLowerCase() === "candidate" && !visible.includes(name)),
+    inactive: inactive.every(name => byName[name]?.enabled === false && ["blocked","archived","disabled"].includes(String(byName[name]?.status || "").toLowerCase())),
+    active: defaultProviders.every(name => byName[name]?.enabled !== false && ["ok","warn"].includes(String(byName[name]?.status || "").toLowerCase())),
+    candidatesHiddenByDefault: config.streaming?.show_candidate_providers === false,
     defaultNames: visible,
-    fields: providers.every(item => ["key","name","tv_template","movie_template","style","status"].every(field => Object.prototype.hasOwnProperty.call(item, field)))
+    fields: providers.every(item => ["key","name","tv_template","movie_template","style","status","tier","tmdb_format","enabled"].every(field => Object.prototype.hasOwnProperty.call(item, field)))
   };
 }
 
@@ -634,8 +633,8 @@ try {
     }
   }
   const failures = [];
-  const providerProof = providerRegistryProof();
-  if (!providerProof.exists || !providerProof.fields || !providerProof.blocked || !providerProof.active || !providerProof.candidatesHiddenByDefault || providerProof.defaultNames.length !== 10) failures.push("provider registry classification/fields failed");
+  const providerProof = streamingConfigProof();
+  if (!providerProof.exists || !providerProof.fields || !providerProof.inactive || !providerProof.active || !providerProof.candidatesHiddenByDefault || providerProof.defaultNames.length !== 16) failures.push("streaming config classification/fields failed");
   for (const result of results) {
     if (result.errors.length) failures.push(`${result.viewport} ${result.pathname}: console errors`);
     if (result.missing.length) failures.push(`${result.viewport} ${result.pathname}: 404 responses`);
@@ -671,7 +670,7 @@ try {
     if (["index.html","calendar.html"].includes(result.pathname) && result.episodeCardProof?.length && result.episodeCardProof.some(card => card.renderer !== "buildSharedEpisodeCard" || !["standard","compact"].includes(card.density) || card.resolver !== "episodeStillImageForCard" || !card.hasImageOrFallback)) {
       failures.push(`${result.viewport} ${result.pathname}: episode cards are not using the shared renderer/image resolver baseline`);
     }
-    if (result.providerBlockedLinks?.length) failures.push(`${result.viewport} ${result.pathname}: blocked provider visible as active`);
+    if (result.inactiveProviderLinks?.length) failures.push(`${result.viewport} ${result.pathname}: inactive provider visible as active`);
     if (!result.mediaLibraryNavOk) failures.push(`${result.viewport} ${result.pathname}: Media Library icon outside primary nav or not new-tab`);
     if (result.lightModeImages?.length) failures.push(`${result.viewport} ${result.pathname}: Light mode still has image src values`);
     if (result.viewport === "android-tv-1080p" && result.pathname === "index.html" && result.popupFocus.attempted && (!result.popupFocus.opened || !result.popupFocus.focusInside || !result.popupFocus.closedByBack)) {

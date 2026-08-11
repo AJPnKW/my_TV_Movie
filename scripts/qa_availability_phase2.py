@@ -95,7 +95,7 @@ def main() -> int:
         {"show_tmdb_id": show.get("tmdb_id"), "season_number": season.get("season_number"), "episode_number": None},
         source["defaults"],
         streaming,
-        {"entity_type": "season", "entity_key": f"show:{show.get('tmdb_id')}:season:{season.get('season_number')}", "preferred_source": "vidsrc", "primary_watch_url": "https://example.invalid/season"},
+        {"entity_type": "season", "entity_key": f"show:{show.get('tmdb_id')}:season:{season.get('season_number')}", "preferred_source": "vidcore", "primary_watch_url": "https://example.invalid/season"},
     )
     _assert(season_result["availability_status"] == "unavailable", "season invalid provider URL must be unavailable", issues)
 
@@ -116,7 +116,7 @@ def main() -> int:
         {"show_tmdb_id": None, "season_number": None, "episode_number": None},
         streaming,
         source["defaults"],
-        source_key="videasy",
+        source_key="vidcore",
     )
     _assert(provider_validation["url_test_result"] == "fail", "provider-aware validation must fail mismatched bases", issues)
 

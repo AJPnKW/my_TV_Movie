@@ -73,7 +73,7 @@ LOG_DIR = REPO_ROOT / "logs"
 CONFIG_JSON = WEB_DIR / "config.json"
 OUTPUT_SCHEMA = "fetch_tmdb.v3"
 INCREMENTAL_CACHE_SCHEMA = 1
-GENERATED_STREAMING_LINK_KEYS = {"vidsrc", "videasy"}
+LEGACY_GENERATED_STREAMING_LINK_KEYS = {"vidsrc", "videasy"}
 
 # -------------------------
 # Logging
@@ -120,21 +120,22 @@ def stable_signature(value: Any) -> str:
     return sha1_text(payload)
 
 
-def strip_generated_streaming_links(entity: Any) -> Any:
+def strip_generated_streaming_links(entity: Any, streaming_link_keys: Optional[set[str]] = None) -> Any:
+    link_keys = set(streaming_link_keys or set()) | LEGACY_GENERATED_STREAMING_LINK_KEYS
     if isinstance(entity, dict):
         entity.pop("watch_sources", None)
         entity.pop("source_options", None)
         links = entity.get("links")
         if isinstance(links, dict):
-            for key in GENERATED_STREAMING_LINK_KEYS:
+            for key in link_keys:
                 links.pop(key, None)
             if not links:
                 entity.pop("links", None)
         for value in list(entity.values()):
-            strip_generated_streaming_links(value)
+            strip_generated_streaming_links(value, link_keys)
     elif isinstance(entity, list):
         for value in entity:
-            strip_generated_streaming_links(value)
+            strip_generated_streaming_links(value, link_keys)
     return entity
 
 
@@ -192,13 +193,14 @@ def cached_entity(
     media: str,
     tmdb_id: Optional[int],
     signature: str,
+    streaming_link_keys: set[str],
 ) -> Optional[Dict[str, Any]]:
     if not tmdb_id:
         return None
     row = cache.get(media, {}).get(int(tmdb_id))
     if not isinstance(row, dict) or row.get("_input_signature") != signature:
         return None
-    return strip_generated_streaming_links(copy.deepcopy(row))
+    return strip_generated_streaming_links(copy.deepcopy(row), streaming_link_keys)
 
 
 def parse_args() -> argparse.Namespace:
@@ -660,6 +662,7 @@ def main() -> int:
 
     cfg = load_config(CONFIG_JSON)
     config_sha1 = sha1_text(read_text_file(CONFIG_JSON))
+    streaming_link_keys = {provider["key"] for provider in cfg.streaming.embed_providers}
 
     client = TMDBClient(api_key_or_token=(tmdb_key or tmdb_token), bearer_token=(tmdb_token or None))
     client.precheck()
@@ -739,7 +742,7 @@ def main() -> int:
             tmdb_id = None
 
         row_signature = input_signature("tv", item, config_sha1)
-        cached_show = cached_entity(previous_cache, "tv", tmdb_id, row_signature)
+        cached_show = cached_entity(previous_cache, "tv", tmdb_id, row_signature, streaming_link_keys)
         if cached_show is not None:
             data["shows"].append(cached_show)
             shows_ok += 1
@@ -854,7 +857,7 @@ def main() -> int:
             tmdb_id = None
 
         row_signature = input_signature("movie", item, config_sha1)
-        cached_movie = cached_entity(previous_cache, "movie", tmdb_id, row_signature)
+        cached_movie = cached_entity(previous_cache, "movie", tmdb_id, row_signature, streaming_link_keys)
         if cached_movie is not None:
             data["movies"].append(cached_movie)
             movies_ok += 1
@@ -973,7 +976,7 @@ def main() -> int:
                     s["trakt_id"] = prev_shows[k]
     except Exception as ex:
         logging.warning("[merge] preserve trakt_id skipped: %s", ex)
-    strip_generated_streaming_links(data)
+    strip_generated_streaming_links(data, streaming_link_keys)
     write_json_atomic(OUT_DATA_JSON, data)
     logging.info(
         "[done] wrote=%s shows=%s movies=%s errors=%s reused_shows=%s rebuilt_shows=%s reused_movies=%s rebuilt_movies=%s",

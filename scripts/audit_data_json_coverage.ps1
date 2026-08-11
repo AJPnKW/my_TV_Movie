@@ -94,7 +94,7 @@ $reqMovie = @(
   "poster_local","backdrop_local",
   "links"
 )
-$reqMovieLinks = @("tmdb","vidsrc","videasy")
+$reqMovieLinks = @("tmdb")
 
 $reqShow = @(
   "tmdb_id","name","poster_path","backdrop_path",
@@ -102,7 +102,7 @@ $reqShow = @(
   "number_of_seasons","number_of_episodes",
   "seasons","links"
 )
-$reqShowLinks = @("tmdb","vidsrc","videasy")
+$reqShowLinks = @("tmdb")
 
 $reqSeason = @(
   "tmdb_season_id","season_number","name","episode_count",
@@ -116,7 +116,7 @@ $reqEpisode = @(
   "still_path","still_local",
   "links"
 )
-$reqEpisodeLinks = @("tmdb","vidsrc","videasy")
+$reqEpisodeLinks = @("tmdb")
 
 # ---- Collectors ----
 $missingMovies = New-Object System.Collections.Generic.List[object]

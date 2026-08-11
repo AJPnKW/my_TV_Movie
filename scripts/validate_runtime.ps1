@@ -40,7 +40,6 @@ $requiredFiles = @(
     'data/inputs.json',
     'data/data.json',
     'data/discover_registry.json',
-    'data/provider_registry.json',
     'web/index.html',
     'web/calendar.html',
     'web/shows.html',
@@ -358,6 +357,12 @@ if ($actionText -match "rating:\s*'[^']+'") {
 if ($actionText -like "*watch_list: '🎟️'*") {
     Add-CheckError 'Action bar must use the master-contract watch_list icon.'
 }
+if ($actionText -notmatch "ACTION_BAR_ORDER[\s\S]*'watch_source'[\s\S]*'watched_status'[\s\S]*'favourite'[\s\S]*'watch_list'[\s\S]*'rating'") {
+    Add-CheckError 'Action bar order must be watch_source, watched_status, favourite, watch_list, rating.'
+}
+if ($actionText -notmatch "(?s)if \(options\.status\).*?if \(options\.favourite\).*?if \(options\.watched\)") {
+    Add-CheckError 'Action bar renderer must place favourite before watch_list in the rendered center action strip.'
+}
 if ($actionText -notmatch "WATCHED_STATUS_VALUES[\s\S]*'unwatched'[\s\S]*'partial'[\s\S]*'watched'") {
     Add-CheckError 'action_bar.js must expose watched_status tri-state values: unwatched, partial, watched.'
 }
@@ -379,6 +384,7 @@ $appRuntimeText = Get-Content -Raw -LiteralPath 'web/js/app_runtime.js'
 $popupControllerText = Get-Content -Raw -LiteralPath 'web/js/popup_controller.js'
 $mainCssText = Get-Content -Raw -LiteralPath 'web/css/main_app.css'
 $qaBrowserText = Get-Content -Raw -LiteralPath 'scripts/qa_browser_layout_check.mjs'
+$providerPopupGuardText = Get-Content -Raw -LiteralPath 'web/js/provider_popup_guard.js'
 foreach ($legacy in @('web/css/runtime_layout_fix.css','web/css/ui_contract_fix.css','web/js/ui_contract_fix.js')) {
     if (Test-Path -LiteralPath $legacy) { Add-CheckError "Removed compatibility layer returned to active repo: $legacy" }
 }
@@ -599,7 +605,7 @@ foreach ($needle in @(
     'viewportClipsTrack',
     'actionViews',
     'providerProof',
-    'providerBlockedLinks',
+    'inactiveProviderLinks',
     'floating'
 )) {
     if ($qaBrowserText -notlike "*$needle*") { Add-CheckError "qa_browser_layout_check.mjs missing rendered interaction proof: $needle" }
@@ -749,29 +755,45 @@ foreach ($needle in @(
     if ($mainCssText -notlike "*$needle*") { Add-CheckError "main_app.css missing framed episode carousel widget contract: $needle" }
 }
 
-Write-Host '== Provider health registry =='
-$providerRegistryText = Get-Content -Raw -LiteralPath 'data/provider_registry.json'
+Write-Host '== Streaming provider config authority =='
+if (Test-Path -LiteralPath 'data/provider_registry.json') {
+    Add-CheckError 'data/provider_registry.json must not exist as an active runtime provider source; use web/config.json -> streaming.embed_providers[].'
+}
 try {
-    $providerRegistry = $providerRegistryText | ConvertFrom-Json
-    $providers = @($providerRegistry.providers)
-    foreach ($field in @('provider_id','domain','url_pattern','status','last_tested','tls_status','redirect_status','final_domain','notes')) {
-        if (@($providers | Where-Object { -not $_.PSObject.Properties[$field] }).Count -gt 0) {
-            Add-CheckError "provider_registry.json missing required provider field: $field"
+    $streamingProviders = @($runtimeConfig.streaming.embed_providers)
+    $visibleProviderNames = @($streamingProviders | Where-Object {
+        $_.enabled -ne $false -and
+        @('ok','warn') -contains ([string]$_.status).ToLowerInvariant() -and
+        [string]$_.tv_template -and
+        [string]$_.movie_template
+    } | ForEach-Object { [string]$_.name })
+    $expectedVisible = @('VidCore','Vidfast','Vidlink','Vidsrc.pm','Vidsrc.to','Vidsrc.cc','2embed.skin','nontongo.win','moviesapi.to','smashystream','autoembed.co','frembed','VSEmbed','VidEasy','SuperEmbed','MultiEmbed')
+    if (($visibleProviderNames -join '|') -ne ($expectedVisible -join '|')) {
+        Add-CheckError "Streaming visible provider order drifted: $($visibleProviderNames -join ', ')"
+    }
+    foreach ($name in @('FlixHQ','SFlix','2Embed CC','2Embed Org','VidSrc (RU)','VidSrc.net','VidSrc.me','Nunflix','vidsrc-embed.ru','Goojara','Cineb','freeintertv.com')) {
+        $record = $streamingProviders | Where-Object { $_.name -eq $name } | Select-Object -First 1
+        if (-not $record -or $record.enabled -ne $false -or @('blocked','archived','disabled') -notcontains ([string]$record.status).ToLowerInvariant()) {
+            Add-CheckError "Streaming inactive provider must be disabled in web/config.json: $name"
         }
     }
-    foreach ($domain in @('smashystream.com','2embed.org','superembed.stream','multiembed.mov')) {
-        $record = $providers | Where-Object { $_.domain -eq $domain } | Select-Object -First 1
-        if (-not $record -or $record.status -ne 'blocked') { Add-CheckError "provider_registry.json must classify blocked provider: $domain" }
-    }
-    foreach ($domain in @('vidsrc.net','2embed.cc')) {
-        $record = $providers | Where-Object { $_.domain -eq $domain } | Select-Object -First 1
-        if (-not $record -or $record.status -ne 'active') { Add-CheckError "provider_registry.json must classify active candidate: $domain" }
+    foreach ($provider in $streamingProviders) {
+        foreach ($field in @('key','name','tv_template','movie_template','style','status','tier','tmdb_format','enabled')) {
+            if (-not $provider.PSObject.Properties[$field]) {
+                Add-CheckError "streaming.embed_providers entry missing field $field"
+            }
+        }
     }
 } catch {
-    Add-CheckError 'provider_registry.json is not parseable JSON.'
+    Add-CheckError 'web/config.json streaming provider config is not parseable through runtimeConfig.'
 }
-foreach ($needle in @('../data/provider_registry.json','providerHealthForSource','streaming.embed_providers','show_candidate_providers','status === "blocked"','providerBlockedLinks')) {
-    if (($appRuntimeText + $qaBrowserText) -notlike "*$needle*") { Add-CheckError "provider health filtering/QA missing: $needle" }
+foreach ($forbiddenProviderAuthority in @('../data/provider_registry.json','providerHealthForSource','providerRegistryRecords','buildMediaLinks','item?.watch?.embed')) {
+    if (($appRuntimeText + $qaBrowserText + $providerPopupGuardText) -like "*$forbiddenProviderAuthority*") {
+        Add-CheckError "Retired provider authority/helper remains active: $forbiddenProviderAuthority"
+    }
+}
+foreach ($needle in @('streaming.embed_providers','show_candidate_providers','["blocked", "archived", "disabled"].includes(status)','entry.enabled === false','inactiveProviderLinks')) {
+    if (($appRuntimeText + $qaBrowserText) -notlike "*$needle*") { Add-CheckError "streaming config filtering/QA missing: $needle" }
 }
 
 Write-Host '== Duplicate action/popup handlers =='
@@ -824,8 +846,9 @@ foreach ($needle in @(
     'MC-2026-06-03.2 Live PostgreSQL Completion Gate',
     'MC-2026-07-11.1 VSEmbed Streaming Provider Addition',
     'MC-2026-07-24.1 Browse Parity, Current Filters, and Release Cache',
-    'Current version MC-2026-07-24.1',
-    'Last updated: 2026-07-24',
+    'MC-2026-08-11.1 Streaming Provider Config Single Source',
+    'Current version MC-2026-08-11.1',
+    'Last updated: 2026-08-11',
     '<tr><td>2026-05-20</td><td>MC-2026-05-20.1</td>',
     '<tr><td>2026-05-20</td><td>MC-2026-05-20.2</td>',
     '<tr><td>2026-06-02</td><td>MC-2026-06-02.1</td>',
@@ -833,6 +856,7 @@ foreach ($needle in @(
     '<tr><td>2026-06-03</td><td>MC-2026-06-03.2</td>',
     '<tr><td>2026-07-11</td><td>MC-2026-07-11.1</td>',
     '<tr><td>2026-07-24</td><td>MC-2026-07-24.1</td>',
+    '<tr><td>2026-08-11</td><td>MC-2026-08-11.1</td>',
     'Freshness rule',
     'Repo inventory, file/folder structure, and runtime ownership map',
     'Watch Source popup schema and provider lifecycle',
@@ -846,8 +870,8 @@ foreach ($needle in @(
     'Media Library page',
     'Full/Light runtime mode',
     'Streaming provider schema',
-    'https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}',
-    'https://vsembed.ru/embed/movie/{tmdb_id}',
+    'https://vsem.pro/embed/tv/{tmdb_id}/{season}/{episode}',
+    'https://vsem.pro/embed/{tmdb_id}',
     'Feature Parity Standard',
     'Shared State and Component Standard',
     'Current Definitions',
@@ -974,7 +998,6 @@ foreach ($requiredDeployJson in @(
     'cp data/inputs.json _site/data/inputs.json',
     'cp data/data.json _site/data/data.json',
     'cp data/discover_registry.json _site/data/discover_registry.json',
-    'cp data/provider_registry.json _site/data/provider_registry.json',
     'cp data/watch_state_queue.json _site/data/watch_state_queue.json'
 )) {
     if ($pagesWorkflowText -notlike "*$requiredDeployJson*") {
@@ -983,6 +1006,9 @@ foreach ($requiredDeployJson in @(
 }
 if ($pagesWorkflowText.Contains('cp data/*.json')) {
     Add-CheckError 'Pages workflow must deploy explicit runtime JSON files, not data/*.json.'
+}
+if ($pagesWorkflowText.Contains('data/provider_registry.json')) {
+    Add-CheckError 'Pages workflow must not deploy retired data/provider_registry.json.'
 }
 
 Write-Host '== Rendered nav/logo/watch-state contract =='

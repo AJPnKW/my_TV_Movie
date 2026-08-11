@@ -1,9 +1,9 @@
 /*
 FILE: web/js/action_bar.js
-VERSION: v1.5.0
-UPDATED: 2026-04-30T00:00:00Z
+VERSION: v1.5.1
+UPDATED: 2026-08-11T00:00:00Z
 CHANGE NOTES:
-- Standardized action order: popcorn, watched_status, watch_list, favourite, rating.
+- Standardized action order: popcorn, watched_status, favourite, watch_list, rating.
 - Uses Unicode text icons so buttons resize with card density and TV/browser font scaling.
 - Popcorn/watch-source buttons now carry a normalized deterministic data payload where available.
 - Popcorn click contract: open popup first, resolve watch-source data second.
@@ -12,8 +12,8 @@ CHANGE NOTES:
 export const ACTION_BAR_ORDER = Object.freeze([
   'watch_source',
   'watched_status',
-  'watch_list',
   'favourite',
+  'watch_list',
   'rating'
 ]);
 
@@ -146,16 +146,6 @@ export function renderActionBarHtml(options = {}){
     }));
   }
 
-  if (options.watched){
-    const watchedLink = splitAttrs(options.watched.attrs || {});
-    center.push(renderAnchor(`watch-list${options.watched.active ? ' active' : ''}`, watchedLink.href, 'Toggle watch list', 'Watch list', CONTRACT_ICONS.watch_list, {
-      'data-watch-state-action': 'toggle-watch-list',
-      'data-action': 'toggle-watch-list',
-      'aria-pressed': options.watched.active ? 'true' : 'false',
-      ...watchedLink.attrs
-    }));
-  }
-
   if (options.favourite){
     const favouriteLink = splitAttrs(options.favourite.attrs || {});
     center.push(renderAnchor(`favourite favorite${options.favourite.active ? ' active' : ''}`, favouriteLink.href, 'Favourite', 'Favourite', CONTRACT_ICONS.favourite, {
@@ -164,6 +154,16 @@ export function renderActionBarHtml(options = {}){
       'data-no-default': '1',
       'aria-pressed': options.favourite.active ? 'true' : 'false',
       ...favouriteLink.attrs
+    }));
+  }
+
+  if (options.watched){
+    const watchedLink = splitAttrs(options.watched.attrs || {});
+    center.push(renderAnchor(`watch-list${options.watched.active ? ' active' : ''}`, watchedLink.href, 'Toggle watch list', 'Watch list', CONTRACT_ICONS.watch_list, {
+      'data-watch-state-action': 'toggle-watch-list',
+      'data-action': 'toggle-watch-list',
+      'aria-pressed': options.watched.active ? 'true' : 'false',
+      ...watchedLink.attrs
     }));
   }
 

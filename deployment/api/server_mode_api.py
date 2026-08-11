@@ -241,10 +241,11 @@ class ServerModeHandler(BaseHTTPRequestHandler):
         return {"error": "not_found", "media_item_id": item_id}
 
     def providers(self) -> dict:
-        payload = load_json(self.config.data_path("provider_registry.json"), [])
-        rows = payload.values() if isinstance(payload, dict) else payload
+        payload = load_json(self.config.web_path("config.json"), {})
+        streaming = payload.get("streaming") if isinstance(payload, dict) else {}
+        rows = streaming.get("embed_providers") if isinstance(streaming, dict) else []
         public = [public_provider(row) for row in rows if isinstance(row, dict)]
-        return {"source": "json_fallback", "providers": public}
+        return {"source": "web_config", "providers": public}
 
     def runtime_config(self) -> dict:
         config_json = load_json(self.config.web_path("config.json"), {})

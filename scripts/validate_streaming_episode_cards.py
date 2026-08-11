@@ -14,27 +14,37 @@ MAIN_CSS_PATH = ROOT / "web" / "css" / "main_app.css"
 DATA_PATH = ROOT / "data" / "data.json"
 
 DEFAULT_PROVIDERS = [
+    "VidCore",
+    "Vidfast",
+    "Vidlink",
+    "Vidsrc.pm",
+    "Vidsrc.to",
+    "Vidsrc.cc",
+    "2embed.skin",
+    "nontongo.win",
+    "moviesapi.to",
+    "smashystream",
+    "autoembed.co",
+    "frembed",
     "VSEmbed",
-    "VidSrc",
     "VidEasy",
     "SuperEmbed",
     "MultiEmbed",
-    "SmashyStream",
+]
+
+CANDIDATE_PROVIDERS = [
+]
+
+BLOCKED_PROVIDERS = [
     "FlixHQ",
     "SFlix",
     "2Embed CC",
     "2Embed Org",
-]
-
-CANDIDATE_PROVIDERS = [
+    "VidSrc (RU)",
+    "VidSrc.net",
     "VidSrc.me",
-    "VidSrc.to",
-    "VidLink",
     "Nunflix",
     "vidsrc-embed.ru",
-]
-
-BLOCKED_PROVIDERS = [
     "Goojara",
     "Cineb",
     "freeintertv.com",
@@ -78,7 +88,9 @@ def visible_provider_names(config: dict, *, include_candidates: bool = False) ->
     names: list[str] = []
     for provider in config["streaming"]["embed_providers"]:
         status = str(provider.get("status") or "ok").lower()
-        if status == "blocked":
+        if provider.get("enabled") is False:
+            continue
+        if status in {"blocked", "archived", "disabled"}:
             continue
         if status == "candidate" and not include_candidates:
             continue
@@ -122,8 +134,11 @@ def validate_provider_registry(config: dict) -> None:
     for name in DEFAULT_PROVIDERS:
         provider = by_name.get(name)
         assert_true(provider is not None, f"default provider missing from config: {name}")
+        assert_true(provider.get("enabled") is not False, f"default provider must be enabled: {name}")
         assert_true(str(provider.get("status")).lower() in {"ok", "warn"}, f"default provider must be ok/warn: {name}")
         assert_true(bool(provider.get("tv_template")) and bool(provider.get("movie_template")), f"default provider missing templates: {name}")
+        for field in ("base_url", "tier", "tmdb_format", "capabilities", "notes"):
+            assert_true(field in provider, f"default provider missing metadata field {field}: {name}")
 
     for name in CANDIDATE_PROVIDERS:
         provider = by_name.get(name)
@@ -134,7 +149,8 @@ def validate_provider_registry(config: dict) -> None:
     for name in BLOCKED_PROVIDERS:
         provider = by_name.get(name)
         assert_true(provider is not None, f"blocked provider missing from config: {name}")
-        assert_true(str(provider.get("status")).lower() == "blocked", f"blocked provider has wrong status: {name}")
+        assert_true(provider.get("enabled") is False, f"blocked/inactive provider must be disabled: {name}")
+        assert_true(str(provider.get("status")).lower() in {"blocked", "archived", "disabled"}, f"blocked provider has wrong status: {name}")
 
     assert_true(visible_provider_names(config) == DEFAULT_PROVIDERS, "default visible provider names/order drifted")
     visible_with_candidates = visible_provider_names(config, include_candidates=True)
@@ -166,7 +182,8 @@ def validate_runtime_source(app_text: str, renderer_text: str, css_text: str) ->
     assert_true("state.cfg?.streaming?.embed_providers" in app_text and "function collectConfiguredWatchSources(kind, item, context = {})" in app_text, "collectConfiguredWatchSources must read config streaming.embed_providers")
     assert_true("item?.watch?.embed" not in collect_body, "collectConfiguredWatchSources must not source provider buttons from per-item watch.embed")
     assert_true("show_candidate_providers" in collect_body, "candidate provider flag missing from collectConfiguredWatchSources")
-    assert_true("status === \"blocked\"" in collect_body, "blocked providers must be filtered")
+    assert_true("[\"blocked\", \"archived\", \"disabled\"].includes(status)" in collect_body, "inactive providers must be filtered")
+    assert_true("entry.enabled === false" in collect_body, "disabled providers must be filtered")
     assert_true("status === \"candidate\" && !showCandidates" in collect_body, "candidate providers must be hidden unless enabled")
 
     assert_true("function pickImage(obj, ...keys)" in app_text, "pickImage must accept ordered fallback keys")

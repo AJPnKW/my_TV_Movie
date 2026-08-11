@@ -97,6 +97,30 @@ def count_link_key_fuzzy(objs: Iterable[Dict[str, Any]], needle: str) -> int:
     return c
 
 
+def configured_streaming_keys() -> set[str]:
+    config_path = REPO_ROOT / "web" / "config.json"
+    keys = {"vidsrc", "videasy"}
+    try:
+        config = json.loads(config_path.read_text(encoding="utf-8", errors="replace"))
+        providers = config.get("streaming", {}).get("embed_providers", [])
+        iterable = providers if isinstance(providers, list) else []
+        for provider in iterable:
+            if isinstance(provider, dict) and provider.get("key"):
+                keys.add(str(provider.get("key")))
+    except Exception:
+        pass
+    return keys
+
+
+def count_streaming_link_leaks(objs: Iterable[Dict[str, Any]], streaming_keys: set[str]) -> int:
+    c = 0
+    for o in objs:
+        links = get_dict(o, "links")
+        if any(key in streaming_keys and is_nonempty(value) for key, value in links.items()):
+            c += 1
+    return c
+
+
 def safe_len(x: Any) -> int:
     if isinstance(x, list):
         return len(x)
@@ -147,6 +171,7 @@ def main() -> int:
 
     raw = DATA_JSON.read_text(encoding="utf-8", errors="replace")
     data = json.loads(raw)
+    streaming_keys = configured_streaming_keys()
 
     shows = data.get("shows") or []
     movies = data.get("movies") or []
@@ -165,8 +190,7 @@ def main() -> int:
     movie_links_any = count_links_present(movies)
     movie_tmdb_links = count_link_key(movies, "tmdb") + count_link_key_fuzzy(movies, "themoviedb")
     movie_rt_links = count_link_key_fuzzy(movies, "rotten")
-    movie_vidsrc_links = count_link_key(movies, "vidsrc")
-    movie_videasy_links = count_link_key(movies, "videasy")
+    movie_streaming_link_leaks = count_streaming_link_leaks(movies, streaming_keys)
 
     # ---- shows ----
     show_count = len(shows)
@@ -212,8 +236,7 @@ def main() -> int:
     ep_still_path = count_present(episodes, "still_path")
     ep_links_any = count_links_present(episodes)
     ep_tmdb_links = count_link_key(episodes, "tmdb") + count_link_key_fuzzy(episodes, "themoviedb")
-    ep_vidsrc_links = count_link_key(episodes, "vidsrc")
-    ep_videasy_links = count_link_key(episodes, "videasy")
+    ep_streaming_link_leaks = count_streaming_link_leaks(episodes, streaming_keys)
 
     # ---- assets folder counts ----
     assets_targets = [
@@ -250,8 +273,7 @@ def main() -> int:
     lines.append(f"  links_any_present={movie_links_any}")
     lines.append(f"  links_tmdb_present={movie_tmdb_links}")
     lines.append(f"  links_rotten_present={movie_rt_links}")
-    lines.append(f"  links_vidsrc_present={movie_vidsrc_links}")
-    lines.append(f"  links_videasy_present={movie_videasy_links}")
+    lines.append(f"  streaming_link_leaks={movie_streaming_link_leaks}")
     lines.append("")
 
     lines.append("TV SHOWS")
@@ -286,8 +308,7 @@ def main() -> int:
     lines.append(f"  still_path_present={ep_still_path}")
     lines.append(f"  links_any_present={ep_links_any}")
     lines.append(f"  links_tmdb_present={ep_tmdb_links}")
-    lines.append(f"  links_vidsrc_present={ep_vidsrc_links}")
-    lines.append(f"  links_videasy_present={ep_videasy_links}")
+    lines.append(f"  streaming_link_leaks={ep_streaming_link_leaks}")
     lines.append("")
 
     lines.append("ASSETS FILE COUNTS (recursive)")

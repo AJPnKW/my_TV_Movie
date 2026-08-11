@@ -11,9 +11,9 @@
 <body>
 <header>
 <h1>my_TV_Movie — Master Contract</h1>
-<div class="small">Only active documentation source of truth. Current version MC-2026-08-11.1. Last updated: 2026-08-11. Latest additive lineage: streaming provider config is the single provider source of truth.</div>
+<div class="small">Only active documentation source of truth. Current version MC-2026-07-24.1. Last updated: 2026-07-24. Latest additive lineage: UI parity, canonical Current filters, and deterministic app-shell cache busting.</div>
 <nav class="toc">
-<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#browse-parity-20260724">Browse Parity</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Streaming Providers</a><a href="#server-mode-20260602">Server Mode</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
+<a href="#governance">Governance</a><a href="#pages">Pages</a><a href="#ui">UI</a><a href="#browse-parity-20260724">Browse Parity</a><a href="#actions">Actions</a><a href="#carousel">Carousels</a><a href="#watch-state">Watch State</a><a href="#trakt">Trakt</a><a href="#provider-health">Provider Health</a><a href="#server-mode-20260602">Server Mode</a><a href="#ci">CI/CD</a><a href="#qa">QA</a><a href="#drift">Drift Prevention</a><a href="#codex">Codex</a>
 </nav>
 </header>
 <main>
@@ -46,7 +46,6 @@
 <tr><td>2026-06-03</td><td>MC-2026-06-03.2</td><td>Made live PostgreSQL validation mandatory for X1 lab completion: bootstrap creates the local app OS/DB role and database, installs psycopg, documents the peer-auth DSN in <code>.env.example</code>, and validation must prove schema apply plus test insert/read/rollback cleanup.</td></tr>
 <tr><td>2026-07-11</td><td>MC-2026-07-11.1</td><td>Added VSEmbed as a default-visible Streaming popup provider with TMDB path templates for TV episodes and movies, preserving the existing registry-driven provider system.</td></tr>
 <tr><td>2026-07-24</td><td>MC-2026-07-24.1</td><td>Added browse feature parity, one canonical Search/scope state, deterministic Current show/movie definitions, compact responsive genre controls, and central-version cache-busted active app shell assets.</td></tr>
-<tr><td>2026-08-11</td><td>MC-2026-08-11.1</td><td>Retired active <code>data/provider_registry.json</code>, made <code>web/config.json -> streaming.embed_providers[]</code> the single provider source of truth for ordering, status, visibility, metadata, and URL templates, and removed VidSrc/VidEasy-only generated-link helpers.</td></tr>
 </table>
 <p><strong>Freshness rule:</strong> the header current version, last updated date, and version-history latest row must be advanced in the same commit as any additive contract lineage section. Validation must fail if these visible metadata fields lag behind the latest additive lineage.</p>
 <p>Standalone page: <code>web/manage_watch_state.html</code></p>
@@ -162,16 +161,24 @@ The teachers prepare for the upcoming school year with new faces and big changes
 </table>
 </section>
 <section id="provider-health" class="card">
-<h2>8. Streaming Provider Config Authority</h2>
-<p>Streaming provider links are treated as external health-checked targets. The app must not keep broken, unsafe, slug-only, redirect-abusive, or non-TMDB providers active.</p>
-<p><code>web/config.json -> streaming.embed_providers[]</code> is the only active provider source of truth. It owns URL templates, base domains, order, status, enabled/hidden state, tier, capability metadata, and retained inactive records. <code>data/provider_registry.json</code> is retired and must not exist, deploy, or be read by active runtime code.</p>
+<h2>8. Provider Health Registry</h2>
+<p>Provider links are treated as external health-checked targets. The app must not keep broken, unsafe, or redirect-abusive providers active.</p>
+<p>Direct watch-source links must be filtered through <code>data/provider_registry.json</code> before rendering. Broken TLS, spam redirects, blank-tab launches, and inactive DNS are blocked states, not warnings.</p>
 <table><tr><th>Status</th><th>Meaning</th><th>Runtime behavior</th></tr>
-<tr><td><code>ok</code></td><td>Default-visible TMDB-ID provider.</td><td>Shown in configured fallback order.</td></tr>
-<tr><td><code>warn</code></td><td>Default-visible fallback with weaker stability.</td><td>Shown after core/extras providers with warning-only decoration.</td></tr>
-<tr><td><code>candidate</code></td><td>Config-retained but not default-visible.</td><td>Shown only when <code>streaming.show_candidate_providers</code> is true.</td></tr>
-<tr><td><code>disabled</code>, <code>archived</code>, or <code>blocked</code></td><td>Slug-only, unstable, legacy, unsafe, or retired provider.</td><td>Never rendered while <code>enabled</code> is false.</td></tr>
+<tr><td><code>active</code></td><td>Domain opens over modern HTTPS, does not redirect to unrelated advertising/security-risk domains, and creates a usable provider page.</td><td>May show in popup.</td></tr>
+<tr><td><code>degraded</code></td><td>Intermittent, slow, or partial failures.</td><td>May show behind warning or lower priority.</td></tr>
+<tr><td><code>blocked</code></td><td>DNS failure, unsupported SSL/TLS, empty tab/no URL, known spam redirect, browser security failure, or user-reported unsafe behavior.</td><td>Must not appear as normal provider option.</td></tr>
+<tr><td><code>archived</code></td><td>Previously used provider retained only for audit/history.</td><td>Not active.</td></tr>
 </table>
-<ul><li>Provider QA must record domain, generated URL pattern, media type, TMDB ID, season/episode, status code/error class, redirect final domain if safe to capture, test timestamp, and disposition in config notes or external reports, not a second runtime JSON file.</li><li>Provider QA must classify browser messages like <code>ERR_SSL_VERSION_OR_CIPHER_MISMATCH</code> as provider-side TLS/SSL failure unless evidence proves local browser issue.</li><li>Provider links that open a blank tab with no URL or no target must be classified as broken generation logic.</li><li>Provider links that redirect to unrelated advertising or unsafe domains must be disabled, blocked, or archived in <code>web/config.json</code>.</li><li>The app must not auto-discover or add unknown replacement providers without explicit review and config classification.</li></ul>
+<table><tr><th>Domain</th><th>Required classification</th></tr>
+<tr><td><code>smashystream.com</code></td><td><code>blocked</code></td></tr>
+<tr><td><code>2embed.org</code></td><td><code>blocked</code></td></tr>
+<tr><td><code>superembed.stream</code></td><td><code>degraded</code> or <code>blocked</code> after validation; blocked until proven safe.</td></tr>
+<tr><td><code>multiembed.mov</code></td><td><code>degraded</code> or <code>blocked</code> after validation; blocked until proven safe.</td></tr>
+<tr><td><code>vidsrc.net</code></td><td><code>active</code> candidate.</td></tr>
+<tr><td><code>2embed.cc</code></td><td><code>active</code> candidate.</td></tr>
+</table>
+<ul><li>Provider QA must record domain, generated URL pattern, media type, TMDB ID, season/episode, status code/error class, redirect final domain if safe to capture, test timestamp, and disposition.</li><li>Provider QA must classify browser messages like <code>ERR_SSL_VERSION_OR_CIPHER_MISMATCH</code> as provider-side TLS/SSL failure unless evidence proves local browser issue.</li><li>Provider links that open a blank tab with no URL or no target must be classified as broken generation logic.</li><li>Provider links that redirect to unrelated advertising or unsafe domains must be blocked/archived.</li><li>The app must not auto-discover or add unknown replacement providers without explicit review and health classification.</li></ul>
 </section>
 <section id="ci" class="card">
 <h2>9. CI/CD and Workflow Contract</h2>
@@ -241,15 +248,16 @@ The teachers prepare for the upcoming school year with new faces and big changes
 
 <h3>R4. Provider lifecycle and rendering</h3>
 <table><tr><th>Provider state</th><th>Rendering rule</th></tr>
-<tr><td><code>ok</code></td><td>Visible in the Streaming column according to <code>streaming.fallback_order</code>.</td></tr>
-<tr><td><code>warn</code></td><td>Visible after core/extras providers with warning-only decoration.</td></tr>
-<tr><td><code>candidate</code></td><td>Hidden unless <code>streaming.show_candidate_providers</code> is true.</td></tr>
-<tr><td><code>disabled</code>, <code>archived</code>, or <code>blocked</code></td><td>Hidden from public popup while retained in <code>web/config.json</code> with reason.</td></tr>
+<tr><td>active</td><td>Visible in Watch Now with eye icon and green check when verified working.</td></tr>
+<tr><td>degraded</td><td>Visible with eye icon and warning/yield icon.</td></tr>
+<tr><td>legacy</td><td>Retained in registry and visible only in a separate legacy section if enabled; not deleted.</td></tr>
+<tr><td>blocked</td><td>Hidden from public popup but retained in registry/reporting with reason.</td></tr>
+<tr><td>archived</td><td>Retained for audit/history only.</td></tr>
 </table>
 <ul>
-<li>Core/default providers render from <code>web/config.json</code>; no generated row embed list or provider JSON file may override that order.</li>
-<li>VidSrc-family entries are explicit: Vidsrc.pm/to/cc may render; VidSrc (RU), VidSrc.net, VidSrc.me, and vidsrc-embed.ru are inactive config records unless deliberately reclassified.</li>
-<li>SuperEmbed, MultiEmbed, smashystream, FlixHQ, and other historical entries must not be silently removed; classify them in config.</li>
+<li>Known verified working from user testing: <code>VidEasy</code> and <code>2Embed CC</code> use eye + green check.</li>
+<li>VidSrc remains retained and may be active/degraded based on health result, not deleted.</li>
+<li>SuperEmbed, MultiEmbed, SmashyStream, FlixHQ, and other historical entries must not be silently removed; classify them.</li>
 <li>Forbidden public text: <code>ACTIVE CANDIDATE FROM USER FINDINGS</code>, raw <code>ACTIVE</code>, raw <code>DEGRADED</code>, raw <code>BLOCKED</code>, raw notes/comments.</li>
 </ul>
 
@@ -448,18 +456,18 @@ AU  Stan</pre>
 <h2>MC-2026-05-20.2 Streaming Provider Registry and Episode Card Baseline</h2>
 <table><tr><th>Field</th><th>Value</th></tr>
 <tr><td>Added</td><td>MC-2026-05-20.2</td></tr>
-<tr><td>Updated</td><td>Streaming provider config source of truth, fallback order, metadata schema, inactive-provider visibility rules, shared episode-card rendering, density handling, and still-image fallback order.</td></tr>
-<tr><td>Origin</td><td>User reported deployed Streaming buttons showing only legacy providers, later provided updated provider research showing core/extras TMDB-ID providers should replace unstable/slug/zombie sources.</td></tr>
-<tr><td>Owner</td><td><code>web/config.json -> streaming.fallback_order</code> and <code>web/config.json -> streaming.embed_providers[]</code> own all streaming provider data. <code>collectConfiguredWatchSources</code> owns Streaming link generation. <code>buildSharedEpisodeCard</code> owns normalized episode-card assembly. <code>renderEpisodeCardHtml</code> owns canonical episode-card markup. <code>episodeStillImageForCard</code> owns still/backdrop/poster fallback.</td></tr>
-<tr><td>Validation</td><td><code>scripts/validate_streaming_config.py</code>, <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> fail on config drift, default-provider omissions, inactive visibility leaks, retired provider JSON usage, direct Calendar/Dashboard card renderer forks, missing shared renderer markers, or broken episode image fallback.</td></tr>
+<tr><td>Updated</td><td>Streaming provider registry source of truth, candidate/blocked visibility rules, shared episode-card rendering, density handling, and still-image fallback order.</td></tr>
+<tr><td>Origin</td><td>User reported deployed Streaming buttons showing only VidSrc, VidEasy, FlixHQ, SFlix, and 2Embed CC, plus visible drift between Calendar episode cards and Dashboard Current/Recent episode cards.</td></tr>
+<tr><td>Owner</td><td><code>web/config.json -> streaming.embed_providers[]</code> owns provider data. <code>collectConfiguredWatchSources</code> owns Streaming link generation. <code>buildSharedEpisodeCard</code> owns normalized episode-card assembly. <code>renderEpisodeCardHtml</code> owns canonical episode-card markup. <code>episodeStillImageForCard</code> owns still/backdrop/poster fallback.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> fail on provider registry drift, default-provider omissions, candidate/blocked visibility leaks, direct Calendar/Dashboard card renderer forks, missing shared renderer markers, or broken episode image fallback.</td></tr>
 </table>
 <h3>Streaming provider schema</h3>
 <ul>
 <li>The Streaming popup provider buttons are generated from <code>web/config.json -> streaming.embed_providers[]</code>.</li>
-<li><code>ok</code> and <code>warn</code> providers render by default. <code>candidate</code> providers render only when <code>streaming.show_candidate_providers</code> is true. <code>disabled</code>, <code>archived</code>, and <code>blocked</code> providers never render while <code>enabled</code> is false.</li>
-<li>Default-visible providers are VidCore, Vidfast, Vidlink, Vidsrc.pm, Vidsrc.to, Vidsrc.cc, 2embed.skin, nontongo.win, moviesapi.to, smashystream, autoembed.co, frembed, VSEmbed, VidEasy, SuperEmbed, and MultiEmbed.</li>
-<li>FlixHQ, SFlix, 2Embed CC, 2Embed Org, VidSrc (RU), VidSrc.net, VidSrc.me, Nunflix, vidsrc-embed.ru, Goojara, Cineb, and freeintertv.com remain retained as inactive config records only.</li>
-<li><code>data/provider_registry.json</code> must not be restored; provider lifecycle metadata belongs in <code>web/config.json</code>.</li>
+<li><code>ok</code> and <code>warn</code> providers render by default. <code>candidate</code> providers render only when <code>streaming.show_candidate_providers</code> is true. <code>blocked</code> providers never render.</li>
+<li>Default-visible providers are VSEmbed, VidSrc, VidEasy, SuperEmbed, MultiEmbed, SmashyStream, FlixHQ, SFlix, 2Embed CC, and 2Embed Org.</li>
+<li>Requested but hidden candidate providers are VidSrc.me, VidSrc.to, VidLink, Nunflix, and vidsrc-embed.ru.</li>
+<li>Goojara, Cineb, and freeintertv.com remain blocked until a verified TMDB-compatible template exists.</li>
 </ul>
 <h3>Episode card baseline schema</h3>
 <ul>
@@ -475,35 +483,19 @@ AU  Stan</pre>
 <h2>MC-2026-07-11.1 VSEmbed Streaming Provider Addition</h2>
 <table><tr><th>Field</th><th>Value</th></tr>
 <tr><td>Added</td><td>MC-2026-07-11.1</td></tr>
-<tr><td>Updated</td><td>Default-visible Streaming popup provider config includes VSEmbed through the existing <code>web/config.json -> streaming.embed_providers[]</code> system.</td></tr>
+<tr><td>Updated</td><td>Default-visible Streaming popup provider registry now includes VSEmbed through the existing <code>web/config.json -> streaming.embed_providers[]</code> system.</td></tr>
 <tr><td>Origin</td><td>User requested VSEmbed links be added alongside the existing Streaming source set, with separate TV and movie path formats and no runtime redesign.</td></tr>
 <tr><td>Owner</td><td><code>web/config.json -> streaming.fallback_order</code> and <code>web/config.json -> streaming.embed_providers[]</code>. <code>collectConfiguredWatchSources</code> continues to fill provider templates at render time.</td></tr>
 <tr><td>Validation</td><td><code>scripts/validate_streaming_config.py</code>, <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> must prove VSEmbed remains default-visible, candidates remain hidden, blocked providers remain suppressed, and rendered Streaming popups include the expanded default list.</td></tr>
 </table>
 <ul>
-<li>TV episode template: <code>https://vsem.pro/embed/tv/{tmdb_id}/{season}/{episode}</code>.</li>
-<li>Movie template: <code>https://vsem.pro/embed/{tmdb_id}</code>.</li>
-<li>VSEmbed remains visible as a medium-stability fallback after core and extras providers.</li>
+<li>TV episode template: <code>https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}</code>.</li>
+<li>Movie template: <code>https://vsembed.ru/embed/movie/{tmdb_id}</code>.</li>
+<li>VSEmbed is ordered first in the default-visible Streaming list for forms, screens, and watch-source popups.</li>
 </ul>
 </section>
 <!-- MC-2026-07-11.1-VSEMBED-STREAMING-PROVIDER-END -->
 <!-- MC-2026-06-02.1-SERVER-MODE-START -->
-<section id="streaming-config-single-source-20260811" class="card">
-<h2>MC-2026-08-11.1 Streaming Provider Config Single Source</h2>
-<table><tr><th>Field</th><th>Value</th></tr>
-<tr><td>Added</td><td>MC-2026-08-11.1</td></tr>
-<tr><td>Updated</td><td>Streaming provider ownership, provider lifecycle metadata, generated streaming-link cleanup, static deploy surface, browser QA expectations, and server-mode provider endpoint fallback.</td></tr>
-<tr><td>Origin</td><td>User requested cleanup of multiple provider data sources and removal of legacy VidSrc/VidEasy-only helpers after supplying updated streaming provider research.</td></tr>
-<tr><td>Owner</td><td><code>web/config.json -> streaming.fallback_order</code> and <code>web/config.json -> streaming.embed_providers[]</code> are the only active streaming provider source of truth.</td></tr>
-<tr><td>Validation</td><td><code>scripts/validate_streaming_config.py</code>, <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> must prove the visible provider order, inactive-provider suppression, absence of <code>data/provider_registry.json</code>, absence of VidSrc/VidEasy-only helpers, and no generated streaming URL duplication in runtime data.</td></tr>
-</table>
-<ul>
-<li>Core provider order is VidCore, Vidfast, Vidlink, Vidsrc.pm, Vidsrc.to, Vidsrc.cc, and 2embed.skin.</li>
-<li>Extras fallback order is nontongo.win, moviesapi.to, smashystream, autoembed.co, and frembed.</li>
-<li>Medium fallback order is VSEmbed, VidEasy, SuperEmbed, and MultiEmbed.</li>
-<li>Unstable, slug-only, zombie, unsafe, and legacy providers stay as inactive config records only.</li>
-</ul>
-</section>
 <section id="server-mode-20260602" class="card">
 <h2>MC-2026-06-02.1 Server Mode, API, Database, and Media Library Contract</h2>
 <table><tr><th>Field</th><th>Value</th></tr>

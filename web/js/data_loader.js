@@ -32,9 +32,7 @@ function firstNetwork(show){
 
 function hasWatchSources(entity){
   const sources = Array.isArray(entity && entity.watch_sources) ? entity.watch_sources : [];
-  const watch = entity && typeof entity.watch === 'object' ? entity.watch : null;
-  const embeds = Array.isArray(watch && watch.embed) ? watch.embed : [];
-  return sources.length > 0 || embeds.length > 0;
+  return sources.length > 0;
 }
 
 function episodeEntry(show, season, episode){

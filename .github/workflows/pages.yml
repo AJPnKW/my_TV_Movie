@@ -9,7 +9,6 @@ on:
       - "assets/**"
       - "data/data.json"
       - "data/discover_registry.json"
-      - "data/provider_registry.json"
       - "docs/**"
       - "index.html"
       - ".github/workflows/pages.yml"
@@ -49,7 +48,6 @@ jobs:
           cp data/inputs.json _site/data/inputs.json
           cp data/data.json _site/data/data.json
           cp data/discover_registry.json _site/data/discover_registry.json
-          cp data/provider_registry.json _site/data/provider_registry.json
           cp data/watch_state_queue.json _site/data/watch_state_queue.json
 
       - name: Upload static site artifact

@@ -12,6 +12,24 @@ CONFIG_PATH = ROOT / "web" / "config.json"
 BUILDABLE_STATUSES = {"ok", "warn", "candidate"}
 INACTIVE_STATUSES = {"blocked", "archived", "disabled"}
 VALID_STATUSES = BUILDABLE_STATUSES | INACTIVE_STATUSES
+REQUIRED_VISIBLE_KEYS = [
+    "vidcore",
+    "vidfast",
+    "vidlink",
+    "vidsrc_pm",
+    "vidsrc_to",
+    "vidsrc_cc",
+    "2embed_skin",
+    "nontongo",
+    "moviesapi",
+    "smashystream",
+    "autoembed",
+    "frembed",
+    "vsem",
+    "videasy",
+    "superembed",
+    "multiembed",
+]
 
 
 def _safe_text(value: Any) -> str:
@@ -40,6 +58,7 @@ def main() -> int:
         key = _safe_text(provider.get("key"))
         name = _safe_text(provider.get("name")) or key
         status = _safe_text(provider.get("status")).lower() or "ok"
+        enabled = provider.get("enabled", True) is not False
         tv_template = _safe_text(provider.get("tv_template"))
         movie_template = _safe_text(provider.get("movie_template"))
         if not key:
@@ -50,7 +69,10 @@ def main() -> int:
         seen_keys.add(key)
         if status not in VALID_STATUSES:
             issues.append(f"streaming.embed_providers[{idx}] {name} has invalid status={status!r}")
-        if status in BUILDABLE_STATUSES:
+        for field in ("style", "tier", "tmdb_format"):
+            if field not in provider:
+                issues.append(f"streaming.embed_providers[{idx}] {name} missing metadata field={field}")
+        if enabled and status in BUILDABLE_STATUSES:
             buildable_keys.add(key)
             if not tv_template or not movie_template:
                 issues.append(f"streaming.embed_providers[{idx}] {name} is buildable and must define tv_template and movie_template")
@@ -59,12 +81,16 @@ def main() -> int:
                     issues.append(f"streaming.embed_providers[{idx}] {name}.{field} must be an https template")
         elif status in INACTIVE_STATUSES and (tv_template or movie_template) and not (tv_template and movie_template):
             issues.append(f"streaming.embed_providers[{idx}] {name} inactive templates must be both blank or both defined")
+        elif enabled and status in INACTIVE_STATUSES:
+            issues.append(f"streaming.embed_providers[{idx}] {name} cannot be enabled with inactive status={status}")
 
     fallback_order = [_safe_text(value) for value in (streaming.get("fallback_order") or []) if _safe_text(value)]
+    if fallback_order != REQUIRED_VISIBLE_KEYS:
+        issues.append("streaming.fallback_order must match the configured visible provider fallback chain")
     for key in fallback_order:
         if key not in buildable_keys:
             issues.append(f"streaming.fallback_order references non-buildable or missing provider key={key}")
-    for key in ("vidsrc_net", "videasy"):
+    for key in REQUIRED_VISIBLE_KEYS:
         if key not in buildable_keys:
             issues.append(f"streaming.embed_providers must define buildable provider key={key}")
 

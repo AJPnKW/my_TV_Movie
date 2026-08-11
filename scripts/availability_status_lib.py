@@ -32,12 +32,22 @@ ALLOWED_ENTITY_TYPES = ("movie", "show", "season", "episode")
 ALLOWED_AVAILABILITY = ("not_yet_released", "available", "unavailable", "unknown")
 ALLOWED_URL_TEST = ("pass", "fail", "skip", "unknown")
 ALLOWED_SOURCES = (
+    "vidcore",
+    "vidfast",
+    "vidlink",
+    "vidsrc_pm",
+    "vidsrc_to",
+    "vidsrc_cc",
+    "2embed_skin",
+    "nontongo",
+    "moviesapi",
+    "smashystream",
+    "autoembed",
+    "frembed",
+    "vsem",
     "videasy",
-    "vidsrc",
-    "vidsrc_net",
     "superembed",
     "multiembed",
-    "smashystream",
     "flixhq",
     "sflix",
     "2embed_cc",
@@ -177,10 +187,10 @@ def canonical_defaults() -> Dict[str, Any]:
             "cache_file": str(NETWORK_CACHE_JSON.relative_to(REPO_ROOT)).replace("\\", "/"),
         },
         "entities": {
-            "movie": {"requires_url": True, "preferred_sources": ["videasy", "vidsrc", "local"]},
-            "show": {"requires_url": True, "preferred_sources": ["videasy", "vidsrc"]},
-            "season": {"requires_url": True, "preferred_sources": ["videasy", "vidsrc"]},
-            "episode": {"requires_url": True, "preferred_sources": ["videasy", "vidsrc", "local"]},
+            "movie": {"requires_url": True, "preferred_sources": ["vidcore", "vidfast", "vidlink", "local"]},
+            "show": {"requires_url": True, "preferred_sources": ["vidcore", "vidfast", "vidlink"]},
+            "season": {"requires_url": True, "preferred_sources": ["vidcore", "vidfast", "vidlink"]},
+            "episode": {"requires_url": True, "preferred_sources": ["vidcore", "vidfast", "vidlink", "local"]},
         },
     }
 
@@ -278,6 +288,8 @@ def load_streaming_config(config_path: Path = CONFIG_JSON) -> Dict[str, str]:
         streaming = {}
     out: Dict[str, str] = {}
     providers = streaming.get("embed_providers")
+    fallback_order = [safe_text(item) for item in streaming.get("fallback_order", []) if safe_text(item)] if isinstance(streaming.get("fallback_order"), list) else []
+    active_keys: List[str] = []
     if isinstance(providers, list):
         for provider in providers:
             if not isinstance(provider, dict):
@@ -285,8 +297,18 @@ def load_streaming_config(config_path: Path = CONFIG_JSON) -> Dict[str, str]:
             key = safe_text(provider.get("key"))
             if not key:
                 continue
-            out[f"{key}_tv"] = safe_text(provider.get("tv_template"))
-            out[f"{key}_movie"] = safe_text(provider.get("movie_template"))
+            status = safe_text(provider.get("status") or "ok").lower()
+            if provider.get("enabled") is False or status not in {"ok", "warn", "candidate"}:
+                continue
+            tv_template = safe_text(provider.get("tv_template"))
+            movie_template = safe_text(provider.get("movie_template"))
+            if not tv_template or not movie_template:
+                continue
+            out[f"{key}_tv"] = tv_template
+            out[f"{key}_movie"] = movie_template
+            active_keys.append(key)
+    ordered_keys = [key for key in fallback_order if key in active_keys] or active_keys
+    out["_fallback_order"] = "|".join(ordered_keys)
     return out
 
 
@@ -317,18 +339,16 @@ def entity_candidates(entity_type: str, entity: Dict[str, Any], context: Dict[st
         href = safe_text(entry.get("href") or entry.get("url") or entry.get("link"))
         if key and href:
             candidates[key] = href
-    if entity_type == "movie":
-        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "movie", tmdb_id)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "movie", tmdb_id)
-    elif entity_type == "show":
-        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "tv", tmdb_id)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "tv", tmdb_id)
-    elif entity_type == "season":
-        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "tv", show_id, season_number)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "tv", show_id, season_number)
-    elif entity_type == "episode":
-        candidates["videasy"] = safe_text(links.get("videasy")) or provider_template_url(streaming, "videasy", "tv", show_id, season_number, episode_number)
-        candidates["vidsrc"] = safe_text(links.get("vidsrc")) or provider_template_url(streaming, "vidsrc_net", "tv", show_id, season_number, episode_number)
+    provider_keys = [key for key in safe_text(streaming.get("_fallback_order")).split("|") if key]
+    for provider_key in provider_keys:
+        if entity_type == "movie":
+            candidates[provider_key] = safe_text(links.get(provider_key)) or provider_template_url(streaming, provider_key, "movie", tmdb_id)
+        elif entity_type == "show":
+            candidates[provider_key] = safe_text(links.get(provider_key)) or provider_template_url(streaming, provider_key, "tv", tmdb_id)
+        elif entity_type == "season":
+            candidates[provider_key] = safe_text(links.get(provider_key)) or provider_template_url(streaming, provider_key, "tv", show_id, season_number)
+        elif entity_type == "episode":
+            candidates[provider_key] = safe_text(links.get(provider_key)) or provider_template_url(streaming, provider_key, "tv", show_id, season_number, episode_number)
     return {key: value for key, value in candidates.items() if safe_text(value)}
 
 
@@ -351,7 +371,8 @@ def choose_primary_watch_url(
     order = []
     if explicit_source:
         order.append(explicit_source)
-    order.extend(list(preferred) if isinstance(preferred, list) and preferred else ["videasy", "vidsrc", "local"])
+    fallback_order = [key for key in safe_text(streaming.get("_fallback_order")).split("|") if key]
+    order.extend(list(preferred) if isinstance(preferred, list) and preferred else [*fallback_order, "local"])
     seen: set[str] = set()
     for key in order:
         source_key = normalize_source(key)
@@ -386,6 +407,8 @@ def detect_provider_kind(url: str, streaming: Dict[str, str]) -> str:
     parsed = urlparse(value)
     host = parsed.netloc.lower()
     for key, base in streaming.items():
+        if key.startswith("_"):
+            continue
         parsed_base = urlparse(safe_text(base))
         if parsed_base.netloc and parsed_base.netloc.lower() == host:
             source = key[:-6] if key.endswith("_movie") else key[:-3] if key.endswith("_tv") else key
@@ -498,8 +521,6 @@ def _expected_base_for_source(source_key: str, entity_type: str, streaming: Dict
     if source_key == "local":
         return ""
     suffix = "movie" if entity_type == "movie" else "tv"
-    if source_key == "vidsrc":
-        return safe_text(streaming.get(f"vidsrc_{suffix}") or streaming.get(f"vidsrc_net_{suffix}"))
     return safe_text(streaming.get(f"{source_key}_{suffix}"))
 
 

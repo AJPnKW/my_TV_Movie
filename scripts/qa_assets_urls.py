@@ -2,7 +2,7 @@
 # ==============================================================================
 # [FILE]    scripts/qa_assets_urls.py
 # [PROJECT] my_TV_Movie
-# [ROLE]    QA: verify local assets exist + streaming URLs present in data/data.json
+# [ROLE]    QA: verify local assets exist + generated streaming URLs are absent from data/data.json
 # [VERSION] v1.0.0
 # [UPDATED] 2026-01-16
 # [BUILD]   14.01.16
@@ -34,7 +34,13 @@ def main() -> int:
     d = json.loads(DATA_JSON.read_text(encoding="utf-8", errors="replace"))
 
     missing_assets: List[Tuple[str, Any, str, str]] = []
-    missing_urls: List[Tuple[str, Any, str, str]] = []
+    streaming_url_leaks: List[Tuple[str, Any, str, str]] = []
+    streaming_keys = set()
+    config = json.loads((REPO_ROOT / "web" / "config.json").read_text(encoding="utf-8", errors="replace"))
+    for provider in config.get("streaming", {}).get("embed_providers", []) or []:
+        if isinstance(provider, dict) and provider.get("key"):
+            streaming_keys.add(str(provider.get("key")))
+    streaming_keys.update({"vidsrc", "videasy"})
 
     def chk_asset(kind: str, tmdb_id: Any, title: str, site_path: Any) -> None:
         if not isinstance(site_path, str) or not site_path:
@@ -45,12 +51,11 @@ def main() -> int:
 
     def chk_urls(kind: str, tmdb_id: Any, title: str, links: Any) -> None:
         if not isinstance(links, dict) or not links:
-            missing_urls.append((kind, tmdb_id, title, "links missing/empty"))
             return
-        for k in ("vidsrc", "videasy"):
-            v = links.get(k)
-            if not isinstance(v, str) or not v.strip():
-                missing_urls.append((kind, tmdb_id, title, f"{k} missing"))
+        for key in streaming_keys:
+            value = links.get(key)
+            if isinstance(value, str) and value.strip():
+                streaming_url_leaks.append((kind, tmdb_id, title, key))
 
     for s in d.get("shows", []) or []:
         sid = s.get("tmdb_id")
@@ -77,12 +82,12 @@ def main() -> int:
         f.write(f"missing_assets={len(missing_assets)}\n")
         for r in missing_assets[:300]:
             f.write("MISSING_ASSET | " + " | ".join(map(str, r)) + "\n")
-        f.write(f"missing_urls={len(missing_urls)}\n")
-        for r in missing_urls[:300]:
-            f.write("MISSING_URL | " + " | ".join(map(str, r)) + "\n")
+        f.write(f"streaming_url_leaks={len(streaming_url_leaks)}\n")
+        for r in streaming_url_leaks[:300]:
+            f.write("STREAMING_URL_LEAK | " + " | ".join(map(str, r)) + "\n")
 
     print("missing_assets=", len(missing_assets))
-    print("missing_urls=", len(missing_urls))
+    print("streaming_url_leaks=", len(streaming_url_leaks))
     print("logfile=", str(out))
     return 0
 

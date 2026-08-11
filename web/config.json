@@ -1,8 +1,8 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.5.6",
-    "updated_utc": "2026-08-01T00:00:00Z",
+    "version": "v1.5.7",
+    "updated_utc": "2026-08-11T00:00:00Z",
     "notes": [
       "JSONC is required for this file. Documentation uses line comments.",
       "Palette system is a registry: ui_palette.palettes[ui_palette.active] is applied at runtime.",
@@ -14,169 +14,483 @@
   },
   "streaming": {
     "fallback_order": [
-      "vsembed",
-      "vidsrc_net",
+      "vidcore",
+      "vidfast",
+      "vidlink",
+      "vidsrc_pm",
+      "vidsrc_to",
+      "vidsrc_cc",
+      "2embed_skin",
+      "nontongo",
+      "moviesapi",
+      "smashystream",
+      "autoembed",
+      "frembed",
+      "vsem",
       "videasy",
       "superembed",
-      "multiembed",
-      "smashystream",
-      "flixhq",
-      "sflix",
-      "2embed_cc",
-      "2embed_org"
+      "multiembed"
     ],
     "show_candidate_providers": false,
     "embed_providers": [
       {
-        "key": "vsembed",
-        "name": "VSEmbed",
-        "tv_template": "https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://vsembed.ru/embed/movie/{tmdb_id}",
+        "key": "vidcore",
+        "name": "VidCore",
+        "base_url": "https://vidcore.tv",
+        "tv_template": "https://vidcore.tv/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidcore.tv/movie/{tmdb_id}",
         "style": "path",
-        "status": "ok"
+        "status": "ok",
+        "tier": "core",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "yes",
+          "anime": "yes"
+        },
+        "enabled": true,
+        "notes": "Primary TMDB-ID provider."
       },
       {
-        "key": "vidsrc_net",
-        "name": "VidSrc",
-        "tv_template": "https://vidsrc.net/embed/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://vidsrc.net/embed/movie/{tmdb_id}",
+        "key": "vidfast",
+        "name": "Vidfast",
+        "base_url": "https://vidfast.net",
+        "tv_template": "https://vidfast.net/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidfast.net/embed/movie/{tmdb_id}",
         "style": "path",
-        "status": "ok"
+        "status": "ok",
+        "tier": "core",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "yes",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Core TMDB-ID provider."
+      },
+      {
+        "key": "vidlink",
+        "name": "Vidlink",
+        "base_url": "https://vidlink.pro",
+        "tv_template": "https://vidlink.pro/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidlink.pro/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "core",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "yes",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Core TMDB-ID provider."
+      },
+      {
+        "key": "vidsrc_pm",
+        "name": "Vidsrc.pm",
+        "base_url": "https://vidsrc.pm",
+        "tv_template": "https://vidsrc.pm/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.pm/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "core",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "yes",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Core Vidsrc-family TMDB-ID provider; distinct from disabled Russian-linked VidSrc entries."
+      },
+      {
+        "key": "vidsrc_to",
+        "name": "Vidsrc.to",
+        "base_url": "https://vidsrc.to",
+        "tv_template": "https://vidsrc.to/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "core",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "yes",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Core Vidsrc-family TMDB-ID provider."
+      },
+      {
+        "key": "vidsrc_cc",
+        "name": "Vidsrc.cc",
+        "base_url": "https://vidsrc.cc",
+        "tv_template": "https://vidsrc.cc/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.cc/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "core",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "yes",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Core Vidsrc-family TMDB-ID provider."
+      },
+      {
+        "key": "2embed_skin",
+        "name": "2embed.skin",
+        "base_url": "https://2embed.skin",
+        "tv_template": "https://2embed.skin/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://2embed.skin/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "core",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Core 2Embed variant; distinct from disabled 2Embed CC/Org entries."
+      },
+      {
+        "key": "nontongo",
+        "name": "nontongo.win",
+        "base_url": "https://nontongo.win",
+        "tv_template": "https://nontongo.win/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://nontongo.win/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "extras",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "strong"
+        },
+        "enabled": true,
+        "notes": "Asian-content fallback."
+      },
+      {
+        "key": "moviesapi",
+        "name": "moviesapi.to",
+        "base_url": "https://moviesapi.to",
+        "tv_template": "https://moviesapi.to/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://moviesapi.to/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "extras",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Extras fallback."
+      },
+      {
+        "key": "smashystream",
+        "name": "smashystream",
+        "base_url": "https://smashystream.com",
+        "tv_template": "https://smashystream.com/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://smashystream.com/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "extras",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "strong"
+        },
+        "enabled": true,
+        "notes": "Extras fallback with stronger anime/K-drama coverage."
+      },
+      {
+        "key": "autoembed",
+        "name": "autoembed.co",
+        "base_url": "https://autoembed.co",
+        "tv_template": "https://autoembed.co/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://autoembed.co/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "extras",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Extras fallback."
+      },
+      {
+        "key": "frembed",
+        "name": "frembed",
+        "base_url": "https://frembed.com",
+        "tv_template": "https://frembed.com/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://frembed.com/movie/{tmdb_id}",
+        "style": "path",
+        "status": "ok",
+        "tier": "extras",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "yes",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Extras fallback."
+      },
+      {
+        "key": "vsem",
+        "name": "VSEmbed",
+        "base_url": "https://vsem.pro",
+        "tv_template": "https://vsem.pro/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vsem.pro/embed/{tmdb_id}",
+        "style": "path",
+        "status": "warn",
+        "tier": "medium",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "partial",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Medium-stability fallback."
       },
       {
         "key": "videasy",
         "name": "VidEasy",
-        "tv_template": "https://player.videasy.net/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://player.videasy.net/movie/{tmdb_id}",
+        "base_url": "https://videasy.org",
+        "tv_template": "https://videasy.org/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://videasy.org/embed/movie/{tmdb_id}",
         "style": "path",
-        "status": "ok"
+        "status": "warn",
+        "tier": "medium",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "partial",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Medium-stability fallback."
       },
       {
         "key": "superembed",
         "name": "SuperEmbed",
-        "tv_template": "https://superembed.stream/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://superembed.stream/movie/{tmdb_id}",
+        "base_url": "https://superembed.org",
+        "tv_template": "https://superembed.org/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://superembed.org/movie/{tmdb_id}",
         "style": "path",
-        "status": "ok"
+        "status": "warn",
+        "tier": "medium",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "partial",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Medium-stability fallback."
       },
       {
         "key": "multiembed",
         "name": "MultiEmbed",
-        "tv_template": "https://multiembed.mov/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://multiembed.mov/movie/{tmdb_id}",
+        "base_url": "https://multiembed.org",
+        "tv_template": "https://multiembed.org/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://multiembed.org/movie/{tmdb_id}",
         "style": "path",
-        "status": "ok"
-      },
-      {
-        "key": "smashystream",
-        "name": "SmashyStream",
-        "tv_template": "https://smashystream.com/embed/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://smashystream.com/embed/movie/{tmdb_id}",
-        "style": "path",
-        "status": "ok"
+        "status": "warn",
+        "tier": "medium",
+        "tmdb_format": "numeric",
+        "capabilities": {
+          "hls": "partial",
+          "subtitles": "yes",
+          "multi_server": "partial",
+          "anime": "partial"
+        },
+        "enabled": true,
+        "notes": "Medium-stability fallback."
       },
       {
         "key": "flixhq",
         "name": "FlixHQ",
-        "tv_template": "https://flixhq.to/embed/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://flixhq.to/embed/movie/{tmdb_id}",
-        "style": "path",
-        "status": "ok"
+        "base_url": "https://flixhq.to",
+        "tv_template": "",
+        "movie_template": "",
+        "style": "slug",
+        "status": "disabled",
+        "tier": "unstable",
+        "tmdb_format": "slug",
+        "enabled": false,
+        "notes": "Slug-based zombie/unstable provider; not TMDB-automation friendly."
       },
       {
         "key": "sflix",
         "name": "SFlix",
-        "tv_template": "https://sflix.to/embed/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://sflix.to/embed/movie/{tmdb_id}",
-        "style": "path",
-        "status": "ok"
+        "base_url": "https://sflix.to",
+        "tv_template": "",
+        "movie_template": "",
+        "style": "slug",
+        "status": "disabled",
+        "tier": "unstable",
+        "tmdb_format": "slug",
+        "enabled": false,
+        "notes": "Slug-based zombie/unstable provider; not TMDB-automation friendly."
       },
       {
         "key": "2embed_cc",
         "name": "2Embed CC",
+        "base_url": "https://2embed.cc",
         "tv_template": "https://www.2embed.cc/embedtv/{tmdb_id}&s={season}&e={episode}",
         "movie_template": "https://www.2embed.cc/embed/{tmdb_id}",
         "style": "mixed",
-        "status": "warn"
+        "status": "disabled",
+        "tier": "unstable",
+        "tmdb_format": "numeric",
+        "enabled": false,
+        "notes": "Disabled zombie 2Embed brand; use 2embed.skin instead."
       },
       {
         "key": "2embed_org",
         "name": "2Embed Org",
+        "base_url": "https://2embed.org",
         "tv_template": "https://www.2embed.org/embed/tv?tmdb={tmdb_id}&season={season}&episode={episode}",
         "movie_template": "https://www.2embed.org/embed/movie?tmdb={tmdb_id}",
         "style": "query",
-        "status": "warn"
+        "status": "disabled",
+        "tier": "unstable",
+        "tmdb_format": "numeric",
+        "enabled": false,
+        "notes": "Disabled zombie 2Embed brand; use 2embed.skin instead."
+      },
+      {
+        "key": "vidsrc_su",
+        "name": "VidSrc (RU)",
+        "base_url": "https://vidsrc.su",
+        "tv_template": "https://vidsrc.su/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.su/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "blocked",
+        "tier": "unstable",
+        "tmdb_format": "numeric",
+        "enabled": false,
+        "notes": "Blocked Russian-linked VidSrc entry; use Vidsrc.pm/to/cc instead."
+      },
+      {
+        "key": "vidsrc_net",
+        "name": "VidSrc.net",
+        "base_url": "https://vidsrc.net",
+        "tv_template": "https://vidsrc.net/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vidsrc.net/embed/movie/{tmdb_id}",
+        "style": "path",
+        "status": "archived",
+        "tier": "legacy",
+        "tmdb_format": "numeric",
+        "enabled": false,
+        "notes": "Retired legacy default; retained only for migration reference."
       },
       {
         "key": "vidsrc_me",
         "name": "VidSrc.me",
+        "base_url": "https://vidsrc.me",
         "tv_template": "https://vidsrc.me/embed/tv/{tmdb_id}/{season}/{episode}",
         "movie_template": "https://vidsrc.me/embed/movie/{tmdb_id}",
         "style": "path",
-        "status": "candidate",
-        "notes": "Hidden by default until streaming.show_candidate_providers is true."
-      },
-      {
-        "key": "vidsrc_to",
-        "name": "VidSrc.to",
-        "tv_template": "https://vidsrc.to/embed/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://vidsrc.to/embed/movie/{tmdb_id}",
-        "style": "path",
-        "status": "candidate",
-        "notes": "Hidden by default until streaming.show_candidate_providers is true."
-      },
-      {
-        "key": "vidlink",
-        "name": "VidLink",
-        "tv_template": "https://vidlink.pro/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://vidlink.pro/movie/{tmdb_id}",
-        "style": "path",
-        "status": "candidate",
-        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+        "status": "archived",
+        "tier": "legacy",
+        "tmdb_format": "numeric",
+        "enabled": false,
+        "notes": "Retired legacy candidate; not default-visible."
       },
       {
         "key": "nunflix",
         "name": "Nunflix",
+        "base_url": "https://nunflix.org",
         "tv_template": "https://nunflix.org/embed/tv/{tmdb_id}/{season}/{episode}",
         "movie_template": "https://nunflix.org/embed/movie/{tmdb_id}",
         "style": "path",
-        "status": "candidate",
-        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+        "status": "archived",
+        "tier": "legacy",
+        "tmdb_format": "numeric",
+        "enabled": false,
+        "notes": "Retired legacy candidate; not default-visible."
       },
       {
         "key": "vidsrc_embed_ru",
         "name": "vidsrc-embed.ru",
+        "base_url": "https://vidsrc-embed.ru",
         "tv_template": "https://vidsrc-embed.ru/embed/tv/{tmdb_id}/{season}/{episode}",
         "movie_template": "https://vidsrc-embed.ru/embed/movie/{tmdb_id}",
         "style": "path",
-        "status": "candidate",
-        "notes": "Hidden by default until streaming.show_candidate_providers is true."
+        "status": "blocked",
+        "tier": "legacy",
+        "tmdb_format": "numeric",
+        "enabled": false,
+        "notes": "Blocked retired provider."
       },
       {
         "key": "goojara",
         "name": "Goojara",
+        "base_url": "",
         "tv_template": "",
         "movie_template": "",
         "style": "unverified",
         "status": "blocked",
+        "tier": "legacy",
+        "tmdb_format": "unverified",
+        "enabled": false,
         "notes": "No verified TMDB-compatible embed template."
       },
       {
         "key": "cineb",
         "name": "Cineb",
+        "base_url": "",
         "tv_template": "",
         "movie_template": "",
         "style": "unverified",
         "status": "blocked",
+        "tier": "legacy",
+        "tmdb_format": "unverified",
+        "enabled": false,
         "notes": "No verified TMDB-compatible embed template."
       },
       {
         "key": "freeintertv",
         "name": "freeintertv.com",
+        "base_url": "",
         "tv_template": "",
         "movie_template": "",
         "style": "unverified",
         "status": "blocked",
+        "tier": "legacy",
+        "tmdb_format": "unverified",
+        "enabled": false,
         "notes": "No verified TMDB-compatible embed template."
       }
     ]
@@ -377,10 +691,10 @@
     },
     "media_vidrsc": {
       "icon": "\ud83c\udf7f",
-      "name": "VidSrc",
-      "purpose": "VidSrc stream link",
+      "name": "Vidsrc.pm",
+      "purpose": "Vidsrc.pm stream link",
       "functionType": "link",
-      "target": "streaming.embed_providers[vidsrc_net]"
+      "target": "streaming.embed_providers[vidsrc_pm]"
     },
     "media_videasy": {
       "icon": "\u25b6\ufe0f",

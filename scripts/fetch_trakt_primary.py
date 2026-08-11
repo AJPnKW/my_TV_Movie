@@ -41,7 +41,6 @@ DATA_DIR = REPO_ROOT / "data"
 INPUTS_JSON = DATA_DIR / "inputs.json"
 DATA_JSON = DATA_DIR / "data.json"
 TOK_FILE = DATA_DIR / "trakt.json"
-CONFIG_JSON = REPO_ROOT / "web" / "config.json"
 
 TRAKT_API_BASE = "https://api.trakt.tv"
 DEFAULT_TIMEOUT = 45
@@ -63,54 +62,6 @@ def to_int(val: Any) -> Optional[int]:
         return int(s)
     except Exception:
         return None
-
-
-def read_text(path: Path) -> str:
-    return path.read_text(encoding="utf-8", errors="replace")
-
-
-def strip_jsonc(s: str) -> str:
-    lines = []
-    for line in s.splitlines():
-        stripped = line.lstrip()
-        if stripped.startswith("//"):
-            continue
-        out = []
-        in_str = False
-        esc = False
-        i = 0
-        while i < len(line):
-            ch = line[i]
-            if in_str:
-                out.append(ch)
-                if esc:
-                    esc = False
-                elif ch == "\\":
-                    esc = True
-                elif ch == "\"":
-                    in_str = False
-                i += 1
-                continue
-            if ch == "\"":
-                in_str = True
-                out.append(ch)
-                i += 1
-                continue
-            if ch == "/" and i + 1 < len(line) and line[i + 1] == "/":
-                break
-            out.append(ch)
-            i += 1
-        lines.append("".join(out).rstrip())
-    cleaned = "\n".join(lines)
-    if not cleaned.lstrip().startswith("{"):
-        brace = cleaned.find("{")
-        if brace != -1:
-            cleaned = cleaned[brace:]
-    return cleaned
-
-
-def load_jsonc(path: Path) -> Dict[str, Any]:
-    return json.loads(strip_jsonc(read_text(path)))
 
 
 def load_tokens_file() -> Dict[str, Any]:
@@ -216,30 +167,6 @@ def trakt_slug_link(kind: str, ids: Dict[str, Any]) -> str:
     return f"https://trakt.tv/{base}/{slug}"
 
 
-def build_stream_links(cfg: Dict[str, Any], kind: str, tmdb_id: Any) -> Dict[str, str]:
-    tmdb = str(tmdb_id or "").strip()
-    if not tmdb:
-        return {}
-    streaming = cfg.get("streaming") if isinstance(cfg, dict) else {}
-    out: Dict[str, str] = {}
-    providers = streaming.get("embed_providers") if isinstance(streaming, dict) else []
-    template_field = "tv_template" if kind == "episode" else "movie_template"
-    for provider in providers if isinstance(providers, list) else []:
-        if not isinstance(provider, dict):
-            continue
-        key = str(provider.get("key") or "").strip()
-        template = str(provider.get(template_field) or "").strip()
-        if key not in {"vidsrc_net", "videasy"} or not template:
-            continue
-        try:
-            href = template.format(tmdb_id=tmdb, season="", episode="")
-        except Exception:
-            href = ""
-        if href:
-            out["vidsrc" if key == "vidsrc_net" else key] = href
-    return out
-
-
 def normalize_show(obj: Dict[str, Any], season_mode: str, season_filter: Optional[List[int]], season_min: Optional[int]) -> Dict[str, Any]:
     ids = obj.get("ids") or {}
     return {
@@ -336,7 +263,6 @@ def main() -> int:
         return 3
 
     tv_list, movie_list = load_inputs()
-    cfg = load_jsonc(CONFIG_JSON)
 
     data: Dict[str, Any] = {
         "meta": {
@@ -565,18 +491,10 @@ def main() -> int:
             stats["drops"]["missing_ids"] += 1
             continue
         show_obj = normalize_show(show, season_mode, season_filter, season_min)
-        links = show_obj.get("links") if isinstance(show_obj.get("links"), dict) else {}
-        links.update(build_stream_links(cfg, "episode", tmdb_id))
-        show_obj["links"] = links
         try:
             show_obj["seasons"] = pull_show_seasons(str(ids.get("trakt")), client_id, access_token, season_mode, season_filter, season_min)
         except Exception as ex:
             errors.append({"type": "trakt_seasons", "trakt_id": ids.get("trakt"), "message": str(ex)[:300], "utc": _utc()})
-        for season in show_obj.get("seasons") or []:
-            for ep in season.get("episodes") or []:
-                links = ep.get("links") if isinstance(ep.get("links"), dict) else {}
-                links.update(build_stream_links(cfg, "episode", tmdb_id))
-                ep["links"] = links
         data["shows"].append(show_obj)
         stats["resolved"]["shows"] += 1
 
@@ -599,9 +517,6 @@ def main() -> int:
             stats["drops"]["missing_ids"] += 1
             continue
         movie_obj = normalize_movie(movie)
-        links = movie_obj.get("links") if isinstance(movie_obj.get("links"), dict) else {}
-        links.update(build_stream_links(cfg, "movie", tmdb_id))
-        movie_obj["links"] = links
         data["movies"].append(movie_obj)
         stats["resolved"]["movies"] += 1
 
