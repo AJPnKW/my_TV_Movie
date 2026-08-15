@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.7';
-import * as dataLoader from './data_loader.js?v=v1.5.7';
-import * as availabilityUi from './availability_ui.js?v=v1.5.7';
-import * as cardRenderer from './card_renderer.js?v=v1.5.7';
-import * as popupController from './popup_controller.js?v=v1.5.7';
-import * as actionBar from './action_bar.js?v=v1.5.7';
-import './watch_state_manager.js?v=v1.5.7';
-import '../config.js?v=v1.5.7';
+import * as configLoader from './config_loader.js?v=v1.5.8';
+import * as dataLoader from './data_loader.js?v=v1.5.8';
+import * as availabilityUi from './availability_ui.js?v=v1.5.8';
+import * as cardRenderer from './card_renderer.js?v=v1.5.8';
+import * as popupController from './popup_controller.js?v=v1.5.8';
+import * as actionBar from './action_bar.js?v=v1.5.8';
+import './watch_state_manager.js?v=v1.5.8';
+import '../config.js?v=v1.5.8';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -2116,8 +2116,9 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const mediaDetailHtml = renderWatchSourceMediaDetailHtml(kind, item, context) || renderPopupMediaDetailBlock(kind, item, context);
     const providerPageHref = safeText(providerItem?.links?.provider_page || item?.links?.provider_page || tmdbWatchUrl(providerKind, providerItem?.tmdb_id ?? providerItem?.id ?? item?.tmdb_id ?? item?.id ?? ""));
     const tmdbWatchPageHtml = providerPageHref ? `
-      <a class="watch-source-tmdb-link" href="${escHtml(providerPageHref)}" target="_blank" rel="noopener" title="TMDB watch page" aria-label="TMDB watch page" data-function-type="${escHtml(iconType("media_provider_page", "link"))}">
+      <a class="watch-source-tmdb-link" href="${escHtml(providerPageHref)}" target="_blank" rel="noopener" title="TMDB Watch Page" aria-label="TMDB Watch Page" data-function-type="${escHtml(iconType("media_provider_page", "link"))}">
         <span class="watch-source-tmdb-link__icon" aria-hidden="true">${escHtml(iconChar("media_provider_page", "🔗"))}</span>
+        <span class="watch-source-tmdb-link__label">TMDB Watch Page</span>
       </a>
     ` : "";
     const optionHtml = options.length ? options.map(opt => `

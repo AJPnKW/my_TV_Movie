@@ -219,7 +219,7 @@ async function inspect(pathname, viewport) {
           duplicateStreamingProviderNames,
           streamingCandidateBlockedHidden: streamingForbidden.every(name => !streamingProviderNames.includes(name)),
           streamingAnchorsOk: streamingAnchors.length >= streamingExpected.length && streamingAnchors.every(anchor => anchor.tagName === "A" && anchor.href),
-          tmdbWatchPageLinkOk: !!tmdbWatchPageLink && /themoviedb\.org\/(tv|movie)\/\d+\/watch/i.test(tmdbWatchPageLink.href) && !tmdbWatchPageLink.classList.contains("watch-source-row"),
+          tmdbWatchPageLinkOk: !!tmdbWatchPageLink && /themoviedb\.org\/(tv|movie)\/\d+\/watch/i.test(tmdbWatchPageLink.href) && /TMDB Watch Page/i.test(tmdbWatchPageLink.textContent || tmdbWatchPageLink.getAttribute("aria-label") || "") && !tmdbWatchPageLink.classList.contains("watch-source-row"),
           noLegacyProviderMarkup: legacyProviderRows.length === 0,
           noAdminText: !/(ACTIVE CANDIDATE FROM USER FINDINGS|\bACTIVE\b|\bDEGRADED\b|\bBLOCKED\b|\bARCHIVED\b)/i.test(bodyText),
           outlinedRows,

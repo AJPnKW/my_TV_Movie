@@ -496,7 +496,7 @@ AU  Stan</pre>
 <tr><td>Updated</td><td>Restored the VSEmbed baseline URL templates and corrected Watch Source popup separation between configured Streaming sources, TMDB watch page, and TMDB provider rows.</td></tr>
 <tr><td>Origin</td><td>User reported that <code>https://vsembed.ru/embed/tv/108978/4/3</code> was not generated, that TMDB watch page links were incorrectly rendered as provider rows, and that provider URL formatting needed guardrails.</td></tr>
 <tr><td>Owner</td><td><code>web/config.json -> streaming.embed_providers[vsem]</code>, <code>collectConfiguredWatchSources</code>, <code>renderWatchSourceChooserHtml</code>, and <code>renderWatchProvidersHtml</code>.</td></tr>
-<tr><td>Validation</td><td><code>scripts/validate_streaming_config.py</code>, <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> must prove the VSEmbed sample URL, the separate <code>watch-source-tmdb-link</code> icon action, and <code>providerTmdbFallbackCount</code> equal to zero inside Providers rows.</td></tr>
+<tr><td>Validation</td><td><code>scripts/validate_streaming_config.py</code>, <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code> must prove the VSEmbed sample URL, the separate visible <code>watch-source-tmdb-link</code> action labelled <code>TMDB Watch Page</code>, and <code>providerTmdbFallbackCount</code> equal to zero inside Providers rows.</td></tr>
 </table>
 <ul>
 <li>TMDB watch page belongs to a separate icon action in the Streaming panel, not to the Providers section.</li>

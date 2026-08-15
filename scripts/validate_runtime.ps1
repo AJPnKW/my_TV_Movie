@@ -875,6 +875,7 @@ foreach ($needle in @(
     'https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}',
     'https://vsembed.ru/embed/movie/{tmdb_id}',
     'watch-source-tmdb-link',
+    'TMDB Watch Page',
     'providerTmdbFallbackCount',
     'Feature Parity Standard',
     'Shared State and Component Standard',

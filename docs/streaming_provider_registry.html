@@ -44,7 +44,7 @@
 
   <h2>URL Template Rules</h2>
   <p>Templates use <code>{tmdb_id}</code>, <code>{season}</code>, and <code>{episode}</code> for TV episodes, and <code>{tmdb_id}</code> for movies. The runtime fills templates in <code>collectConfiguredWatchSources</code>. Missing IDs suppress the affected link rather than rendering a broken URL.</p>
-  <p>The Watch Source popup must keep configured Streaming links, the TMDB watch-page icon action, and regional Providers rows separate. Providers rows must not display <code>TMDB watch page</code> as a fabricated provider.</p>
+  <p>The Watch Source popup must keep configured Streaming links, the visible <code>TMDB Watch Page</code> action, and regional Providers rows separate. Providers rows must not display <code>TMDB watch page</code> as a fabricated provider.</p>
 
   <h2>Validation Fail Rules</h2>
   <p>Validation fails if provider buttons are sourced from per-item <code>watch.embed</code>, <code>data/provider_registry.json</code> returns as an active input, default providers are missing, inactive providers render, provider buttons are hard-coded in Calendar or Dashboard views, generated runtime data duplicates streaming URLs, VSEmbed sample generation drifts, TMDB watch page is rendered as a provider row, or the browser popup does not show the expected default provider set.</p>
