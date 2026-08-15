@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-08-14
+
+- Restored VSEmbed to the user baseline in `web/config.json`: `https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}` and `https://vsembed.ru/embed/movie/{tmdb_id}`. The guarded sample now generates `https://vsembed.ru/embed/tv/108978/4/3`.
+- Corrected the Watch Source popup so TMDB watch page is a separate icon action in the Streaming panel, not a fabricated Providers row.
+- Removed TMDB fallback hrefs/text from `renderWatchProvidersHtml`; Providers rows now render actual TMDB provider entries when present and otherwise show empty regional rows without linking to TMDB.
+- Updated the master contract, streaming registry doc, architecture note, and validators so VSEmbed template drift and TMDB-as-provider fallback drift fail validation.
+- Validation: `python -m py_compile` passed for streaming validators; `node --check` passed for `web/js/app_runtime.js` and `scripts/qa_browser_layout_check.mjs`; `python scripts/validate_streaming_config.py` passed; `python scripts/validate_streaming_episode_cards.py` passed; `scripts/validate_runtime.ps1` passed; `node scripts/qa_browser_layout_check.mjs` passed with `failures=[]`; `git diff --check` passed with only Git line-ending warnings.
+- Commit: `f2af839b2b` restore vsembed baseline and provider popup separation.
+
 ## 2026-08-11
 
 - Centralized streaming provider authority in `web/config.json -> streaming.embed_providers[]` and `streaming.fallback_order`; retired `data/provider_registry.json` so there is no second provider registry to maintain or deploy.
