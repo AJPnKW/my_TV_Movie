@@ -2,6 +2,12 @@
 
 ## 2026-08-14
 
+- Made the separate Streaming-panel TMDB action visible as `TMDB Watch Page` instead of leaving it as an easy-to-miss icon-only link, while keeping it outside the Providers rows.
+- Advanced active app shell/runtime cache keys and `web/config.json` metadata to `v1.5.8` so GitHub Pages clients request fresh CSS/JS after the Watch Source popup correction.
+- Tightened runtime and browser QA validation so the rendered popup must show the labelled TMDB action, must keep `providerTmdbFallbackCount` at zero, and must load the expected Streaming providers from `web/config.json`.
+- Validation: `node --check web/js/app_runtime.js` passed; `node --check scripts/qa_browser_layout_check.mjs` passed; `python scripts/validate_streaming_config.py` passed with `buildable_provider_count=16`; `python scripts/validate_streaming_episode_cards.py` passed; `scripts/validate_runtime.ps1` passed; browser QA report `reports/ui_stabilization/qa_browser_layout_check_20260814_v158_rebased.json` passed with `failures=[]`, `tmdbWatchPageLinkOk=true`, `providerTmdbFallbackCount=0`, and `streamingDefaultProvidersOk=true`; `git diff --check` passed with only Git line-ending warnings.
+- Commit: `f67d3d7b39` make tmdb watch action visible and bump cache.
+
 - Restored VSEmbed to the user baseline in `web/config.json`: `https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}` and `https://vsembed.ru/embed/movie/{tmdb_id}`. The guarded sample now generates `https://vsembed.ru/embed/tv/108978/4/3`.
 - Corrected the Watch Source popup so TMDB watch page is a separate icon action in the Streaming panel, not a fabricated Providers row.
 - Removed TMDB fallback hrefs/text from `renderWatchProvidersHtml`; Providers rows now render actual TMDB provider entries when present and otherwise show empty regional rows without linking to TMDB.
