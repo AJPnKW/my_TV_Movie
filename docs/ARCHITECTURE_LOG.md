@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-08-15
+
+- Promoted the Streaming popup order in `web/config.json -> streaming.fallback_order` so VSEmbed is first and Vidsrc.pm is second, with no duplicate VSEmbed provider record.
+- Removed public warning glyph rendering from Streaming provider labels while preserving internal provider `status`, `tier`, and notes metadata in config.
+- Advanced active app shell/runtime cache keys and `web/config.json` metadata to `v1.5.9` so GitHub Pages clients request the updated runtime.
+- Updated the master contract, streaming registry doc, and validators so fallback order is read from `streaming.fallback_order`, the visible list starts with VSEmbed then Vidsrc.pm, and rendered Streaming labels fail QA if a warning glyph appears.
+- Validation: `node --check web/js/app_runtime.js` passed; `node --check scripts/qa_browser_layout_check.mjs` passed; `python scripts/validate_streaming_config.py` passed with `buildable_provider_count=16`; `python scripts/validate_streaming_episode_cards.py` passed with default providers starting `VSEmbed`, `Vidsrc.pm`; `scripts/validate_runtime.ps1` passed; browser QA report `reports/ui_stabilization/qa_browser_layout_check_20260815_v159_streaming_order.json` passed with `failures=[]`, `streamingDefaultProvidersOk=true`, `duplicateStreamingProviderNames=[]`, and `streamingWarningGlyphCount=0`; `git diff --check` passed with only Git line-ending warnings.
+- Commit: `e103a59052` promote-vsembed-streaming-order.
+
 ## 2026-08-14
 
 - Made the separate Streaming-panel TMDB action visible as `TMDB Watch Page` instead of leaving it as an easy-to-miss icon-only link, while keeping it outside the Providers rows.
