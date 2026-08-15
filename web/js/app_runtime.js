@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.8';
-import * as dataLoader from './data_loader.js?v=v1.5.8';
-import * as availabilityUi from './availability_ui.js?v=v1.5.8';
-import * as cardRenderer from './card_renderer.js?v=v1.5.8';
-import * as popupController from './popup_controller.js?v=v1.5.8';
-import * as actionBar from './action_bar.js?v=v1.5.8';
-import './watch_state_manager.js?v=v1.5.8';
-import '../config.js?v=v1.5.8';
+import * as configLoader from './config_loader.js?v=v1.5.9';
+import * as dataLoader from './data_loader.js?v=v1.5.9';
+import * as availabilityUi from './availability_ui.js?v=v1.5.9';
+import * as cardRenderer from './card_renderer.js?v=v1.5.9';
+import * as popupController from './popup_controller.js?v=v1.5.9';
+import * as actionBar from './action_bar.js?v=v1.5.9';
+import './watch_state_manager.js?v=v1.5.9';
+import '../config.js?v=v1.5.9';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -2123,7 +2123,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     ` : "";
     const optionHtml = options.length ? options.map(opt => `
       <a class="watch-source-row watch-source-row--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
-        <span class="watch-source-row__label">${escHtml(opt.label)}${safeText(opt.note).toLowerCase() === "degraded" ? " ⚠" : ""}</span>
+        <span class="watch-source-row__label">${escHtml(opt.label)}</span>
       </a>
     `).join("") : `<div class="muted" style="font-size:12px;">No configured direct watch sources for this item yet.</div>`;
     return `

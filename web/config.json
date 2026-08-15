@@ -1,8 +1,8 @@
 {
   "_meta": {
     "file": "web/config.json",
-    "version": "v1.5.8",
-    "updated_utc": "2026-08-14T00:00:00Z",
+    "version": "v1.5.9",
+    "updated_utc": "2026-08-15T00:00:00Z",
     "notes": [
       "JSONC is required for this file. Documentation uses line comments.",
       "Palette system is a registry: ui_palette.palettes[ui_palette.active] is applied at runtime.",
@@ -14,10 +14,11 @@
   },
   "streaming": {
     "fallback_order": [
+      "vsem",
+      "vidsrc_pm",
       "vidcore",
       "vidfast",
       "vidlink",
-      "vidsrc_pm",
       "vidsrc_to",
       "vidsrc_cc",
       "2embed_skin",
@@ -26,7 +27,6 @@
       "smashystream",
       "autoembed",
       "frembed",
-      "vsem",
       "videasy",
       "superembed",
       "multiembed"

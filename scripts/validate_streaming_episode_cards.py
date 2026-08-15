@@ -14,10 +14,11 @@ MAIN_CSS_PATH = ROOT / "web" / "css" / "main_app.css"
 DATA_PATH = ROOT / "data" / "data.json"
 
 DEFAULT_PROVIDERS = [
+    "VSEmbed",
+    "Vidsrc.pm",
     "VidCore",
     "Vidfast",
     "Vidlink",
-    "Vidsrc.pm",
     "Vidsrc.to",
     "Vidsrc.cc",
     "2embed.skin",
@@ -26,7 +27,6 @@ DEFAULT_PROVIDERS = [
     "smashystream",
     "autoembed.co",
     "frembed",
-    "VSEmbed",
     "VidEasy",
     "SuperEmbed",
     "MultiEmbed",
@@ -85,8 +85,16 @@ def fill_template(template: str, values: dict[str, str]) -> str:
 
 
 def visible_provider_names(config: dict, *, include_candidates: bool = False) -> list[str]:
+    streaming = config["streaming"]
+    providers = [provider for provider in streaming["embed_providers"] if isinstance(provider, dict)]
+    by_key = {str(provider.get("key") or "").strip().lower(): provider for provider in providers}
+    fallback_order = [str(key).strip().lower() for key in streaming.get("fallback_order") or [] if str(key).strip()]
+    ordered_providers = [by_key[key] for key in fallback_order if key in by_key]
+    if include_candidates:
+        ordered_keys = {str(provider.get("key") or "").strip().lower() for provider in ordered_providers}
+        ordered_providers.extend(provider for provider in providers if str(provider.get("key") or "").strip().lower() not in ordered_keys)
     names: list[str] = []
-    for provider in config["streaming"]["embed_providers"]:
+    for provider in ordered_providers:
         status = str(provider.get("status") or "ok").lower()
         if provider.get("enabled") is False:
             continue

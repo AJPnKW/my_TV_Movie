@@ -761,13 +761,27 @@ if (Test-Path -LiteralPath 'data/provider_registry.json') {
 }
 try {
     $streamingProviders = @($runtimeConfig.streaming.embed_providers)
-    $visibleProviderNames = @($streamingProviders | Where-Object {
-        $_.enabled -ne $false -and
-        @('ok','warn') -contains ([string]$_.status).ToLowerInvariant() -and
-        [string]$_.tv_template -and
-        [string]$_.movie_template
-    } | ForEach-Object { [string]$_.name })
-    $expectedVisible = @('VidCore','Vidfast','Vidlink','Vidsrc.pm','Vidsrc.to','Vidsrc.cc','2embed.skin','nontongo.win','moviesapi.to','smashystream','autoembed.co','frembed','VSEmbed','VidEasy','SuperEmbed','MultiEmbed')
+    $expectedVisible = @('VSEmbed','Vidsrc.pm','VidCore','Vidfast','Vidlink','Vidsrc.to','Vidsrc.cc','2embed.skin','nontongo.win','moviesapi.to','smashystream','autoembed.co','frembed','VidEasy','SuperEmbed','MultiEmbed')
+    $providersByKey = @{}
+    foreach ($provider in $streamingProviders) {
+        $key = ([string]$provider.key).Trim().ToLowerInvariant()
+        if ($key) { $providersByKey[$key] = $provider }
+    }
+    $visibleProviderNames = @()
+    foreach ($keyRaw in @($runtimeConfig.streaming.fallback_order)) {
+        $key = ([string]$keyRaw).Trim().ToLowerInvariant()
+        if (-not $providersByKey.ContainsKey($key)) { continue }
+        $provider = $providersByKey[$key]
+        $status = ([string]$provider.status).ToLowerInvariant()
+        if (
+            $provider.enabled -ne $false -and
+            @('ok','warn') -contains $status -and
+            [string]$provider.tv_template -and
+            [string]$provider.movie_template
+        ) {
+            $visibleProviderNames += [string]$provider.name
+        }
+    }
     if (($visibleProviderNames -join '|') -ne ($expectedVisible -join '|')) {
         Add-CheckError "Streaming visible provider order drifted: $($visibleProviderNames -join ', ')"
     }
@@ -848,8 +862,9 @@ foreach ($needle in @(
     'MC-2026-07-24.1 Browse Parity, Current Filters, and Release Cache',
     'MC-2026-08-11.1 Streaming Provider Config Single Source',
     'MC-2026-08-14.1 VSEmbed Baseline and Provider Popup Repair',
-    'Current version MC-2026-08-14.1',
-    'Last updated: 2026-08-14',
+    'MC-2026-08-15.1 Streaming Provider Order and Public Label Cleanup',
+    'Current version MC-2026-08-15.1',
+    'Last updated: 2026-08-15',
     '<tr><td>2026-05-20</td><td>MC-2026-05-20.1</td>',
     '<tr><td>2026-05-20</td><td>MC-2026-05-20.2</td>',
     '<tr><td>2026-06-02</td><td>MC-2026-06-02.1</td>',
@@ -859,6 +874,7 @@ foreach ($needle in @(
     '<tr><td>2026-07-24</td><td>MC-2026-07-24.1</td>',
     '<tr><td>2026-08-11</td><td>MC-2026-08-11.1</td>',
     '<tr><td>2026-08-14</td><td>MC-2026-08-14.1</td>',
+    '<tr><td>2026-08-15</td><td>MC-2026-08-15.1</td>',
     'Freshness rule',
     'Repo inventory, file/folder structure, and runtime ownership map',
     'Watch Source popup schema and provider lifecycle',

@@ -13,10 +13,11 @@ BUILDABLE_STATUSES = {"ok", "warn", "candidate"}
 INACTIVE_STATUSES = {"blocked", "archived", "disabled"}
 VALID_STATUSES = BUILDABLE_STATUSES | INACTIVE_STATUSES
 REQUIRED_VISIBLE_KEYS = [
+    "vsem",
+    "vidsrc_pm",
     "vidcore",
     "vidfast",
     "vidlink",
-    "vidsrc_pm",
     "vidsrc_to",
     "vidsrc_cc",
     "2embed_skin",
@@ -25,7 +26,6 @@ REQUIRED_VISIBLE_KEYS = [
     "smashystream",
     "autoembed",
     "frembed",
-    "vsem",
     "videasy",
     "superembed",
     "multiembed",
