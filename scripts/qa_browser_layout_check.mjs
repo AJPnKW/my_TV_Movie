@@ -154,6 +154,7 @@ async function inspect(pathname, viewport) {
         const streamingExpected = ["VidCore","Vidfast","Vidlink","Vidsrc.pm","Vidsrc.to","Vidsrc.cc","2embed.skin","nontongo.win","moviesapi.to","smashystream","autoembed.co","frembed","VSEmbed","VidEasy","SuperEmbed","MultiEmbed"];
         const streamingForbidden = ["FlixHQ","SFlix","2Embed CC","2Embed Org","VidSrc (RU)","VidSrc.net","VidSrc.me","Nunflix","Goojara","Cineb","vidsrc-embed.ru","freeintertv.com"];
         const streamingAnchors = Array.from(modal.querySelectorAll(".watch-source-panel--links a.watch-source-row[href]"));
+        const tmdbWatchPageLink = modal.querySelector(".watch-source-panel--links a.watch-source-tmdb-link[href]");
         const streamingProviderNames = streamingAnchors.map(anchor => (anchor.querySelector(".watch-source-row__label")?.textContent || anchor.textContent || "").replace("⚠", "").trim());
         const duplicateStreamingProviderNames = streamingProviderNames.filter((name, idx) => streamingProviderNames.indexOf(name) !== idx);
         const legacyProviderRows = Array.from(modal.querySelectorAll(".provider-link-row,.watch-option-btn"));
@@ -175,6 +176,7 @@ async function inspect(pathname, viewport) {
             text: anchors.map(anchor => anchor.textContent.trim()).filter(Boolean),
             hrefs: anchors.map(anchor => anchor.href).filter(Boolean),
             visibleUrls: anchors.map(anchor => anchor.textContent.trim()).filter(text => /^https?:\/\//i.test(text) || /themoviedb\.org|image\.tmdb\.org/i.test(text)),
+            tmdbFallbacks: anchors.filter(anchor => /themoviedb\.org/i.test(anchor.href) || /TMDB watch page/i.test(anchor.textContent || anchor.getAttribute("aria-label") || "")).length,
             stacked: !!(labelRect && chipsRect && chipsRect.top > labelRect.bottom + 2),
             buttonLikeAnchors: anchors.filter(anchor => {
               const anchorStyle = getComputedStyle(anchor);
@@ -217,15 +219,17 @@ async function inspect(pathname, viewport) {
           duplicateStreamingProviderNames,
           streamingCandidateBlockedHidden: streamingForbidden.every(name => !streamingProviderNames.includes(name)),
           streamingAnchorsOk: streamingAnchors.length >= streamingExpected.length && streamingAnchors.every(anchor => anchor.tagName === "A" && anchor.href),
+          tmdbWatchPageLinkOk: !!tmdbWatchPageLink && /themoviedb\.org\/(tv|movie)\/\d+\/watch/i.test(tmdbWatchPageLink.href) && !tmdbWatchPageLink.classList.contains("watch-source-row"),
           noLegacyProviderMarkup: legacyProviderRows.length === 0,
           noAdminText: !/(ACTIVE CANDIDATE FROM USER FINDINGS|\bACTIVE\b|\bDEGRADED\b|\bBLOCKED\b|\bARCHIVED\b)/i.test(bodyText),
           outlinedRows,
           providerRows: providerRowProof,
           providerVisibleUrlCount: providerRowProof.reduce((sum, row) => sum + row.visibleUrls.length, 0),
+          providerTmdbFallbackCount: providerRowProof.reduce((sum, row) => sum + row.tmdbFallbacks, 0),
           providerStackedRowCount: providerRowProof.filter(row => row.stacked).length,
           providerButtonLikeAnchorCount: providerRowProof.reduce((sum, row) => sum + row.buttonLikeAnchors.length, 0),
           providerMissingLogoCount: providerRowProof.reduce((sum, row) => sum + row.missingLogoAnchors.length, 0),
-          providerHasCountryRows: providerRowProof.filter(row => row.country && row.anchorCount > 0).length >= 1,
+          providerHasCountryRows: providerRowProof.filter(row => row.country).length >= 4,
           filenameDisplayed,
           filenameCopyValue,
           copiedFilename,
@@ -249,7 +253,7 @@ async function inspect(pathname, viewport) {
         popupFocus = { attempted: true, opened: true, focusInside, closedByBack: !stillOpen };
       } else {
         popupFocus = { attempted: true, opened: false, focusInside: false, closedByBack: false };
-        watchPopupContract = { attempted: true, titleOk: false, labelsOk: false, noAdminText: false, outlinedRows: 0, filenameOk: false, stickyExitOk: false, refOk: false, episodeTmdbOk: false };
+        watchPopupContract = { attempted: true, titleOk: false, labelsOk: false, noAdminText: false, outlinedRows: 0, tmdbWatchPageLinkOk: false, filenameOk: false, stickyExitOk: false, refOk: false, episodeTmdbOk: false };
       }
     }
     const mediaLibraryIcon = document.querySelector("#mediaLibraryHeaderButton");
@@ -664,7 +668,7 @@ try {
     if (result.pathname === "index.html" && !result.watchedStatusValues.includes("partial")) failures.push(`${result.viewport} index.html: watched_status missing partial`);
     if (result.pathname === "index.html" && !result.watchQueueHasQueuedRecord) failures.push(`${result.viewport} index.html: watch-state click did not create/update queued event`);
     if (result.pathname === "index.html" && !result.popupDetailOk) failures.push(`${result.viewport} index.html: Abbott-style popup detail sample missing required fields`);
-    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.streamingDefaultProvidersOk || result.watchPopupContract.duplicateStreamingProviderNames?.length > 0 || !result.watchPopupContract.streamingCandidateBlockedHidden || !result.watchPopupContract.streamingAnchorsOk || !result.watchPopupContract.noAdminText || !result.watchPopupContract.noLegacyProviderMarkup || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
+    if (result.watchPopupContract?.attempted && (!result.watchPopupContract.titleOk || !result.watchPopupContract.labelsOk || !result.watchPopupContract.streamingDefaultProvidersOk || result.watchPopupContract.duplicateStreamingProviderNames?.length > 0 || !result.watchPopupContract.streamingCandidateBlockedHidden || !result.watchPopupContract.streamingAnchorsOk || !result.watchPopupContract.tmdbWatchPageLinkOk || !result.watchPopupContract.noAdminText || !result.watchPopupContract.noLegacyProviderMarkup || result.watchPopupContract.outlinedRows > 0 || result.watchPopupContract.providerVisibleUrlCount > 0 || result.watchPopupContract.providerTmdbFallbackCount > 0 || result.watchPopupContract.providerStackedRowCount > 0 || result.watchPopupContract.providerButtonLikeAnchorCount > 0 || result.watchPopupContract.providerMissingLogoCount > 0 || !result.watchPopupContract.providerHasCountryRows || !result.watchPopupContract.filenameOk || !result.watchPopupContract.stickyExitOk || !result.watchPopupContract.refOk || !result.watchPopupContract.episodeTmdbOk)) {
       failures.push(`${result.viewport} ${result.pathname}: Watch Source popup contract failed`);
     }
     if (["index.html","calendar.html"].includes(result.pathname) && result.episodeCardProof?.length && result.episodeCardProof.some(card => card.renderer !== "buildSharedEpisodeCard" || !["standard","compact"].includes(card.density) || card.resolver !== "episodeStillImageForCard" || !card.hasImageOrFallback)) {

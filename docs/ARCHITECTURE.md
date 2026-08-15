@@ -21,6 +21,7 @@
 - Single generated web runtime catalog: `data/data.json`
 - Calendar entries, show/movie detail views, seasons, and episodes are derived from `data/data.json` in the shared runtime loader. Do not add parallel generated catalog/detail JSON for production runtime.
 - Streaming embed provider templates, ordering, enabled/disabled state, tier, capability metadata, and inactive-provider records are owned only by `web/config.json -> streaming.embed_providers[]`; generated data must not duplicate full embed URLs for every row.
+- The Watch Source popup keeps configured Streaming sources, the TMDB watch-page icon action, and TMDB regional Providers rows separate. TMDB watch page must not render as a Providers row fallback.
 - Pages deploys only the explicit runtime JSON set above plus canonical `data/inputs.json`, `data/discover_registry.json`, and `data/watch_state_queue.json`; helper/report JSON and retired provider registry JSON under `data/` must not be deployed by wildcard.
 - Reports, logs, backup snapshots, cleaned-input previews, screenshots, old requested-title queues/reports, OMDb sidecars, service-logo export reports, asset-refresh summaries, retired watch-source indexes, and one-off analysis outputs are local evidence only. They must stay ignored and must not be tracked as active architecture or runtime inputs.
 

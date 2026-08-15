@@ -869,7 +869,6 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const regions = ["CA", "US", "GB", "AU"];
     const rows = regions.map(region => {
       const providers = collectProvidersForRegion(wp, region);
-      const regionLink = safeText(wp?.[region]?.link || "");
       const canonicalProviders = [];
       const seenLabels = new Set();
       providers.forEach(p => {
@@ -881,18 +880,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       });
       const chips = canonicalProviders.slice(0, 6).map(entry => {
         const p = entry.provider;
-        const href = safeText(p?.deep_link) || regionLink || tmdbWatchUrl(kind, id);
+        const href = safeText(p?.deep_link);
         const label = entry.label;
         const logo = { ...providerLogoUrl(p), name: label };
         const hasLogo = !!safeText(logo?.local || logo?.tmdb || "").trim();
         const logoHtml = providerLogoImgHtml(logo, "providerlogo providerlogo--popup");
         const textClass = hasLogo && logoHtml ? "providertext providertext--fallback" : "providertext providertext--visible";
-        return `<a class="provider-anchor${hasLogo ? "" : " no-logo"}" href="${escHtml(href)}" target="_blank" rel="noopener" title="${escHtml(label)}" aria-label="${escHtml(label)}">${logoHtml}<span class="${textClass}">${escHtml(label)}</span></a>`;
+        const inner = `${logoHtml}<span class="${textClass}">${escHtml(label)}</span>`;
+        return href
+          ? `<a class="provider-anchor${hasLogo ? "" : " no-logo"}" href="${escHtml(href)}" target="_blank" rel="noopener" title="${escHtml(label)}" aria-label="${escHtml(label)}">${inner}</a>`
+          : `<span class="provider-anchor provider-anchor--static${hasLogo ? "" : " no-logo"}" title="${escHtml(label)}" aria-label="${escHtml(label)}">${inner}</span>`;
       }).join("");
-      const fallbackHref = regionLink || tmdbWatchUrl(kind, id);
-      const body = chips || (fallbackHref
-        ? `<a class="provider-anchor no-logo" href="${escHtml(fallbackHref)}" target="_blank" rel="noopener" title="TMDB watch page" aria-label="TMDB watch page"><span class="providertext providertext--visible">TMDB watch page</span></a>`
-        : `<span class="provider-empty">No providers</span>`);
+      const body = chips || `<span class="provider-empty">No providers</span>`;
       return `
         <div class="providerrow">
           <span class="providerlabel">${region}</span>
@@ -2115,6 +2114,12 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     const providerKind = (kind === "movie") ? "movie" : "tv";
     const providerHtml = renderWatchProvidersHtml(providerItem, providerKind);
     const mediaDetailHtml = renderWatchSourceMediaDetailHtml(kind, item, context) || renderPopupMediaDetailBlock(kind, item, context);
+    const providerPageHref = safeText(providerItem?.links?.provider_page || item?.links?.provider_page || tmdbWatchUrl(providerKind, providerItem?.tmdb_id ?? providerItem?.id ?? item?.tmdb_id ?? item?.id ?? ""));
+    const tmdbWatchPageHtml = providerPageHref ? `
+      <a class="watch-source-tmdb-link" href="${escHtml(providerPageHref)}" target="_blank" rel="noopener" title="TMDB watch page" aria-label="TMDB watch page" data-function-type="${escHtml(iconType("media_provider_page", "link"))}">
+        <span class="watch-source-tmdb-link__icon" aria-hidden="true">${escHtml(iconChar("media_provider_page", "🔗"))}</span>
+      </a>
+    ` : "";
     const optionHtml = options.length ? options.map(opt => `
       <a class="watch-source-row watch-source-row--${escHtml(safeText(opt.label).toLowerCase().replace(/[^a-z0-9]+/g, "-"))}" href="${escHtml(opt.href)}" target="_blank" rel="noopener" data-watch-source-type="${escHtml(opt.type)}">
         <span class="watch-source-row__label">${escHtml(opt.label)}${safeText(opt.note).toLowerCase() === "degraded" ? " ⚠" : ""}</span>
@@ -2125,7 +2130,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         <div class="watch-source-grid">
           ${mediaDetailHtml}
           <div class="watch-source-panel watch-source-panel--links">
-            <div class="watch-source-panel__title">Streaming</div>
+            <div class="watch-source-panel__titlebar"><div class="watch-source-panel__title">Streaming</div>${tmdbWatchPageHtml}</div>
             <div class="watch-source-links">${optionHtml}</div>
           </div>
           <div class="watch-source-panel watch-source-panel--providers">

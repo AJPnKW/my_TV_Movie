@@ -264,9 +264,9 @@
       {
         "key": "vsem",
         "name": "VSEmbed",
-        "base_url": "https://vsem.pro",
-        "tv_template": "https://vsem.pro/embed/tv/{tmdb_id}/{season}/{episode}",
-        "movie_template": "https://vsem.pro/embed/{tmdb_id}",
+        "base_url": "https://vsembed.ru",
+        "tv_template": "https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vsembed.ru/embed/movie/{tmdb_id}",
         "style": "path",
         "status": "warn",
         "tier": "medium",
@@ -278,7 +278,7 @@
           "anime": "partial"
         },
         "enabled": true,
-        "notes": "Medium-stability fallback."
+        "notes": "Medium-stability fallback; primary user baseline."
       },
       {
         "key": "videasy",

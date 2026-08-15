@@ -30,6 +30,15 @@ REQUIRED_VISIBLE_KEYS = [
     "superembed",
     "multiembed",
 ]
+EXPECTED_PROVIDER_TEMPLATES = {
+    "vsem": {
+        "base_url": "https://vsembed.ru",
+        "tv_template": "https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}",
+        "movie_template": "https://vsembed.ru/embed/movie/{tmdb_id}",
+        "sample_tv": "https://vsembed.ru/embed/tv/108978/4/3",
+        "sample_movie": "https://vsembed.ru/embed/movie/937249",
+    }
+}
 
 
 def _safe_text(value: Any) -> str:
@@ -51,6 +60,7 @@ def main() -> int:
 
     seen_keys: set[str] = set()
     buildable_keys: set[str] = set()
+    providers_by_key: dict[str, dict[str, Any]] = {}
     for idx, provider in enumerate(providers):
         if not isinstance(provider, dict):
             issues.append(f"streaming.embed_providers[{idx}] must be an object")
@@ -67,6 +77,7 @@ def main() -> int:
         if key in seen_keys:
             issues.append(f"streaming.embed_providers[{idx}] duplicate key={key}")
         seen_keys.add(key)
+        providers_by_key[key] = provider
         if status not in VALID_STATUSES:
             issues.append(f"streaming.embed_providers[{idx}] {name} has invalid status={status!r}")
         for field in ("style", "tier", "tmdb_format"):
@@ -93,6 +104,21 @@ def main() -> int:
     for key in REQUIRED_VISIBLE_KEYS:
         if key not in buildable_keys:
             issues.append(f"streaming.embed_providers must define buildable provider key={key}")
+
+    for key, expected in EXPECTED_PROVIDER_TEMPLATES.items():
+        provider = providers_by_key.get(key)
+        if not provider:
+            issues.append(f"streaming.embed_providers missing expected provider key={key}")
+            continue
+        for field in ("base_url", "tv_template", "movie_template"):
+            if _safe_text(provider.get(field)) != expected[field]:
+                issues.append(f"streaming.embed_providers[{key}] {field} drifted from baseline")
+        sample_tv = _safe_text(provider.get("tv_template")).replace("{tmdb_id}", "108978").replace("{season}", "4").replace("{episode}", "3")
+        sample_movie = _safe_text(provider.get("movie_template")).replace("{tmdb_id}", "937249")
+        if sample_tv != expected["sample_tv"]:
+            issues.append(f"streaming.embed_providers[{key}] sample TV URL drifted: {sample_tv}")
+        if sample_movie != expected["sample_movie"]:
+            issues.append(f"streaming.embed_providers[{key}] sample movie URL drifted: {sample_movie}")
 
     if issues:
         for issue in issues:

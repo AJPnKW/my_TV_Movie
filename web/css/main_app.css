@@ -4819,6 +4819,36 @@ body.app-modal-open{
   font-weight:800;
   line-height:1.1;
 }
+.watch-source-panel__titlebar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.watch-source-tmdb-link{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:24px;
+  height:24px;
+  border-radius:999px;
+  color:var(--text);
+  text-decoration:none;
+  background:rgba(255,255,255,.08);
+  flex:0 0 auto;
+}
+.watch-source-tmdb-link:focus-visible{
+  outline:2px solid rgba(96,165,250,.75);
+  outline-offset:2px;
+}
+.watch-source-tmdb-link__icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:1em;
+  height:1em;
+  line-height:1;
+}
 .providerchip{
   gap:4px !important;
   padding:4px 7px !important;

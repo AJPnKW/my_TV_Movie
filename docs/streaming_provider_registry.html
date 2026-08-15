@@ -13,9 +13,9 @@
 </head>
 <body>
   <h1>Streaming Provider Registry</h1>
-  <p><strong>Version:</strong> 2026-08-11 streaming-provider-config-single-source</p>
+  <p><strong>Version:</strong> 2026-08-14 vsembed-baseline-provider-popup-fix</p>
   <p><strong>Added:</strong> Config-owned Streaming popup buttons, ordered fallback chain, inactive-provider retention, and metadata fields.</p>
-  <p><strong>Updated:</strong> Runtime ownership moved from per-item <code>watch.embed</code> rendering and retired <code>data/provider_registry.json</code> references to <code>web/config.json -> streaming.embed_providers[]</code>.</p>
+  <p><strong>Updated:</strong> Runtime ownership moved from per-item <code>watch.embed</code> rendering and retired <code>data/provider_registry.json</code> references to <code>web/config.json -> streaming.embed_providers[]</code>. VSEmbed uses the restored <code>vsembed.ru</code> baseline, and TMDB watch page is a separate icon action rather than a Providers row fallback.</p>
   <p><strong>Origin:</strong> Runtime drift where the UI showed legacy providers despite newer research favouring TMDB-ID core/extras providers and config-only maintenance.</p>
   <p><strong>Owner:</strong> <code>web/config.json</code> owns provider data; <code>web/js/app_runtime.js::collectConfiguredWatchSources</code> owns rendering selection and URL generation.</p>
   <p><strong>Validation:</strong> <code>scripts/validate_streaming_episode_cards.py</code>, <code>scripts/validate_runtime.ps1</code>, and <code>scripts/qa_browser_layout_check.mjs</code>.</p>
@@ -36,6 +36,7 @@
 
   <h2>Default Visible Providers</h2>
   <p>Default-visible providers are: VidCore, Vidfast, Vidlink, Vidsrc.pm, Vidsrc.to, Vidsrc.cc, 2embed.skin, nontongo.win, moviesapi.to, smashystream, autoembed.co, frembed, VSEmbed, VidEasy, SuperEmbed, and MultiEmbed.</p>
+  <p>Required VSEmbed sample: <code>https://vsembed.ru/embed/tv/108978/4/3</code>.</p>
 
   <h2>Candidate And Blocked Providers</h2>
   <p>Inactive providers retained in config only: FlixHQ, SFlix, 2Embed CC, 2Embed Org, VidSrc (RU), VidSrc.net, VidSrc.me, Nunflix, vidsrc-embed.ru, Goojara, Cineb, and freeintertv.com.</p>
@@ -43,8 +44,9 @@
 
   <h2>URL Template Rules</h2>
   <p>Templates use <code>{tmdb_id}</code>, <code>{season}</code>, and <code>{episode}</code> for TV episodes, and <code>{tmdb_id}</code> for movies. The runtime fills templates in <code>collectConfiguredWatchSources</code>. Missing IDs suppress the affected link rather than rendering a broken URL.</p>
+  <p>The Watch Source popup must keep configured Streaming links, the TMDB watch-page icon action, and regional Providers rows separate. Providers rows must not display <code>TMDB watch page</code> as a fabricated provider.</p>
 
   <h2>Validation Fail Rules</h2>
-  <p>Validation fails if provider buttons are sourced from per-item <code>watch.embed</code>, <code>data/provider_registry.json</code> returns as an active input, default providers are missing, inactive providers render, provider buttons are hard-coded in Calendar or Dashboard views, generated runtime data duplicates streaming URLs, or the browser popup does not show the expected default provider set.</p>
+  <p>Validation fails if provider buttons are sourced from per-item <code>watch.embed</code>, <code>data/provider_registry.json</code> returns as an active input, default providers are missing, inactive providers render, provider buttons are hard-coded in Calendar or Dashboard views, generated runtime data duplicates streaming URLs, VSEmbed sample generation drifts, TMDB watch page is rendered as a provider row, or the browser popup does not show the expected default provider set.</p>
 </body>
 </html>

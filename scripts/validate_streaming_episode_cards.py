@@ -140,6 +140,15 @@ def validate_provider_registry(config: dict) -> None:
         for field in ("base_url", "tier", "tmdb_format", "capabilities", "notes"):
             assert_true(field in provider, f"default provider missing metadata field {field}: {name}")
 
+    vsembed = by_name.get("VSEmbed") or {}
+    assert_true(vsembed.get("base_url") == "https://vsembed.ru", "VSEmbed base URL must remain on the user baseline")
+    assert_true(vsembed.get("tv_template") == "https://vsembed.ru/embed/tv/{tmdb_id}/{season}/{episode}", "VSEmbed TV template drifted")
+    assert_true(vsembed.get("movie_template") == "https://vsembed.ru/embed/movie/{tmdb_id}", "VSEmbed movie template drifted")
+    assert_true(
+        fill_template(str(vsembed.get("tv_template") or ""), {"tmdb_id": "108978", "season": "4", "episode": "3"}) == "https://vsembed.ru/embed/tv/108978/4/3",
+        "VSEmbed must generate the requested episode URL",
+    )
+
     for name in CANDIDATE_PROVIDERS:
         provider = by_name.get(name)
         assert_true(provider is not None, f"candidate provider missing from config: {name}")
