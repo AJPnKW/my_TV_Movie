@@ -820,11 +820,12 @@ function publishSuccessMessage(j){
   const sync=j.sync||{};
   const workflow=sync.workflow||{};
   const stashNote=(sync.stashed_generated_artifacts||j.stashed_generated_artifacts) ? " Old local generated files were saved aside before updating this computer." : "";
+  const baseNote=j.base_synced ? " This computer was first caught up to the latest GitHub-generated data." : "";
   const remoteNote=j.remote_warning ? ` ${j.remote_warning}.` : "";
   const reason=sync.reason ? ` ${sync.reason}.` : "";
   const workflowNote=workflow.url ? ` Workflow: ${workflow.url}` : "";
   return j.publish_complete
-    ? `Online save finished: inputs.json is on GitHub, build-data completed, generated data is reconciled, and Pages was triggered (${sync.remote_head||j.commit||"latest"}).${reason}${remoteNote}${stashNote}${workflowNote}`
+    ? `Online save finished: inputs.json is on GitHub, build-data completed, generated data is reconciled, and Pages was triggered (${sync.remote_head||j.commit||"latest"}).${reason}${remoteNote}${baseNote}${stashNote}${workflowNote}`
     : `Saved online, but the app data did not finish updating yet.${workflowNote}`;
 }
 

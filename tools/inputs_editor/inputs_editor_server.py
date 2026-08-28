@@ -928,6 +928,50 @@ def _fast_forward_remote(remote_name: str, branch_name: str) -> dict:
     }
 
 
+def _sync_remote_base_before_publish(remote_name: str, branch_name: str) -> dict:
+    remote_ref = f"{remote_name}/{branch_name}"
+    remote_head = _git_text(["rev-parse", "--verify", remote_ref])
+    local_head = _git_text(["rev-parse", "--verify", "HEAD"])
+    if not remote_head:
+        return {
+            "ok": False,
+            "error": f"Online update is blocked because {remote_ref} could not be resolved after fetch.",
+        }
+    if not local_head or local_head == remote_head:
+        return {"ok": True, "synced": False, "remote_head": remote_head}
+
+    remote_contains_local = _run_git_command(["merge-base", "--is-ancestor", "HEAD", remote_ref])
+    if remote_contains_local.returncode == 0:
+        ff = _fast_forward_remote(remote_name, branch_name)
+        if not ff.get("ok"):
+            return {
+                **ff,
+                "error": (
+                    "Online update is blocked because the local checkout is behind GitHub and could not be "
+                    f"fast-forwarded to {remote_ref}. {ff.get('error') or ''}"
+                ).strip(),
+            }
+        return {
+            **ff,
+            "ok": True,
+            "synced": True,
+            "remote_head": remote_head,
+        }
+
+    local_contains_remote = _run_git_command(["merge-base", "--is-ancestor", remote_ref, "HEAD"])
+    if local_contains_remote.returncode == 0:
+        return {"ok": True, "synced": False, "remote_head": remote_head}
+
+    return {
+        "ok": False,
+        "error": (
+            f"Online update is blocked because local HEAD and {remote_ref} have diverged. "
+            "Reconcile the branch manually before publishing from the inputs editor."
+        ),
+        "remote_head": remote_head,
+    }
+
+
 def _wait_for_generated_artifacts(
     remote_name: str,
     branch_name: str,
@@ -1103,6 +1147,14 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
 
     relative_inputs = str(INPUTS_JSON.relative_to(REPO_ROOT))
 
+    fetch_result = _run_git_command(["fetch", remote_name, branch_name])
+    if fetch_result.returncode != 0:
+        return {"ok": False, "error": fetch_result.stderr.strip() or fetch_result.stdout.strip() or "git fetch failed"}
+
+    base_sync = _sync_remote_base_before_publish(remote_name, branch_name)
+    if not base_sync.get("ok"):
+        return base_sync
+
     add_result = _run_git_command(["add", "--", relative_inputs])
     if add_result.returncode != 0:
         return {"ok": False, "error": add_result.stderr.strip() or add_result.stdout.strip() or "git add failed"}
@@ -1155,6 +1207,8 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
         "remote_warning": remote_state.get("remote_warning", ""),
         "branch": branch_name,
         "commit": commit_id,
+        "base_synced": base_sync.get("synced", False),
+        "base_sync": base_sync,
         "stashed_generated_artifacts": generated_stash.get("stashed", False),
         "stash_message": generated_stash.get("message", ""),
     }
