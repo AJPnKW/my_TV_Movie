@@ -1,7 +1,39 @@
 {
-  "generated_utc": "2026-08-27T19:56:40Z",
+  "generated_utc": "2026-09-02T21:38:14Z",
   "schema": "watch_state_queue.v1",
-  "items": [],
+  "items": [
+    {
+      "id": "watched_status:show:287620",
+      "media_type": "show",
+      "state_type": "watched_status",
+      "previous_value": "unwatched",
+      "new_value": "partial",
+      "ids": {
+        "trakt": "",
+        "tmdb": "287620",
+        "imdb": "",
+        "tvdb": ""
+      },
+      "show": {
+        "season": "",
+        "episode": ""
+      },
+      "changed_at": "2026-09-02T21:38:14.425Z",
+      "sync_status": "queued",
+      "validation_status": "ok",
+      "error": "",
+      "item_key": "watched_status:show:287620",
+      "item_type": "show",
+      "tmdb_id": "287620",
+      "trakt_id": "",
+      "show_id": "287620",
+      "season_number": "",
+      "episode_number": "",
+      "key": "watched_status:show:287620",
+      "state_key": "watched_status:show:287620",
+      "queue_status": "pending"
+    }
+  ],
   "dry_run_payload": {
     "GET /sync/watchlist": {},
     "GET /sync/history/movies": {},
