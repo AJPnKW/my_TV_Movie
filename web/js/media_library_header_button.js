@@ -1,12 +1,11 @@
 /*
 FILE: web/js/media_library_header_button.js
-VERSION: v0.7.1
-UPDATED: 2026-05-20
+VERSION: v0.8.0
+UPDATED: 2026-09-10
 CHANGE NOTES:
-- Places the Media Library icon only inside the primary .nav view-icon row.
-- Removes broad fallback placement that could append the icon into the logo/header/body area.
-- Clears inline styles so the icon inherits the same nav styling as the other view icons.
-- Normalizes the static shell link instead of relying on deferred injection for visible placement.
+- Keeps the Media Library icon inside the primary navigation row.
+- Adds the Release Calendar as a canonical primary-nav view immediately after Movies.
+- Normalizes both links at runtime so active app shells stay navigation-consistent.
 */
 (function(){
   'use strict';
@@ -16,6 +15,25 @@ CHANGE NOTES:
   function install(){
     const nav = document.querySelector('.top > .nav[role="tablist"][aria-label="Primary"]');
     if (!nav) return;
+
+    let releaseLink = nav.querySelector('[data-tab="release-calendar"]');
+    if (!releaseLink) {
+      releaseLink = document.createElement('a');
+      const calendarTab = nav.querySelector('[data-tab="calendar"]');
+      nav.insertBefore(releaseLink, calendarTab || null);
+    }
+    releaseLink.className = 'tab release-calendar-view-icon';
+    releaseLink.textContent = '🗓️';
+    releaseLink.href = './release_calendar.html';
+    releaseLink.title = 'Release Calendar';
+    releaseLink.setAttribute('aria-label', 'Release Calendar');
+    releaseLink.setAttribute('data-label', 'Release Calendar');
+    releaseLink.setAttribute('data-tab', 'release-calendar');
+    releaseLink.setAttribute('role', 'tab');
+    const isReleaseCalendar = document.body?.dataset?.page === 'release-calendar';
+    releaseLink.classList.toggle('active', isReleaseCalendar);
+    releaseLink.setAttribute('aria-selected', isReleaseCalendar ? 'true' : 'false');
+    releaseLink.removeAttribute('style');
 
     let link = document.getElementById('mediaLibraryHeaderButton');
     if (!link) {
