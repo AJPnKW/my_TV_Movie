@@ -31,6 +31,12 @@
 - Image rule for TV series premieres: prefer the show `poster_local`; otherwise resolve the show `poster_path` through TMDB.
 - Image rule for season premieres: prefer the season's own `poster_local`, then the season's `poster_path`; only fall back to the parent show poster if the season has no usable poster.
 - TMDB `poster_path` values beginning with `/` are TMDB API paths, not site-root URLs. They must be prefixed with the TMDB image host rather than requested directly from the GitHub Pages site root.
+- Every rendered release entry is interactive. Mouse/touch click and keyboard Enter/Space open a modal rather than silently navigating away.
+- Movie release entries open a Movie detail popup using the movie poster, title, release date, runtime when present, genres when present, TMDB ID, and overview.
+- Series premiere entries open a Show detail popup using the show poster, title, premiere date, status when present, genres when present, TMDB ID, and overview.
+- Season premiere entries open a Season detail popup using the season poster first, the show poster only as fallback, show + season name, premiere date, episode count when present, show TMDB ID, and season overview with show overview fallback.
+- Release detail popups use the existing `.app-modal-*` shell classes from `main_app.css` so popup presentation remains consistent with the app family.
+- Popup close behavior: Close button, clicking the backdrop outside the card, or Escape. The clicked release entry must expose `role="button"`, `tabindex="0"`, and an accessible label.
 
 ## Watch Source Popup
 
@@ -55,4 +61,4 @@
 - Current definitions and result filtering: `web/js/app_runtime.js`, using `web/config.json -> browse.current`
 - Responsive filter and genre layout: `web/css/main_app.css`
 
-Phone, tablet, desktop, and TV-style layouts must expose the same Search, filters, sorting, cards, actions, navigation views, and Release Calendar event content. CSS may change layout only.
+Phone, tablet, desktop, and TV-style layouts must expose the same Search, filters, sorting, cards, actions, navigation views, Release Calendar event content, and release-entry popup interactions. CSS may change layout only.
