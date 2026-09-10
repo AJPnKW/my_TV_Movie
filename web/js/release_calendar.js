@@ -33,11 +33,29 @@
     return movie?.title || movie?.name || movie?.original_title || 'Untitled movie';
   }
 
+  function normalizeLocalImagePath(path){
+    const value = String(path || '').trim();
+    if (!value) return '';
+    if (/^https?:\/\//i.test(value)) return value;
+    if (value.startsWith('../') || value.startsWith('./')) return value;
+    if (value.startsWith('/assets/')) return `..${value}`;
+    if (value.startsWith('assets/')) return `../${value}`;
+    return value;
+  }
+
   function posterUrl(item){
-    const path = item?.poster_path || item?.poster || '';
-    if (!path) return '';
-    if (/^(https?:|\.\.\/|\.\/|\/)/.test(path)) return path;
-    return `https://image.tmdb.org/t/p/w185${path.startsWith('/') ? '' : '/'}${path}`;
+    const local = normalizeLocalImagePath(item?.poster_local || item?.poster || '');
+    if (local) return local;
+
+    const remote = String(item?.poster_path || '').trim();
+    if (!remote) return '';
+    if (/^https?:\/\//i.test(remote)) return remote;
+    if (remote.startsWith('/assets/')) return `..${remote}`;
+    if (remote.startsWith('assets/')) return `../${remote}`;
+
+    // TMDB poster_path values normally begin with '/'. They are API paths,
+    // not site-root URLs, so always resolve them through the TMDB image host.
+    return `https://image.tmdb.org/t/p/w185${remote.startsWith('/') ? '' : '/'}${remote}`;
   }
 
   function buildEvents(data){
