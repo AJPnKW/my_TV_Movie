@@ -9,6 +9,7 @@
 - Required Release Calendar link: `[data-tab="release-calendar"]` -> `./release_calendar.html`
 - Required Media Library link: `#mediaLibraryHeaderButton`
 - Required Release Calendar behavior: opens the release-focused calendar in the same app tab and remains visible in the normal icon row between Movies and Calendar.
+- Release Calendar icon: `🆕`, intentionally distinct from the existing schedule Calendar icon `📅` so the two calendar concepts are visually differentiable.
 - Required Media Library behavior: opens `./Media_Library.html` in a new tab and remains visible within the normal icon row.
 
 ## Release Calendar
@@ -26,6 +27,10 @@
 - Month controls: Today, Prev, Next.
 - Desktop/tablet: seven-column month grid.
 - Phone: one-column day list using the same underlying event set and filters.
+- Image rule for movies: prefer `poster_local`; otherwise resolve `poster_path` through the TMDB image host.
+- Image rule for TV series premieres: prefer the show `poster_local`; otherwise resolve the show `poster_path` through TMDB.
+- Image rule for season premieres: prefer the season's own `poster_local`, then the season's `poster_path`; only fall back to the parent show poster if the season has no usable poster.
+- TMDB `poster_path` values beginning with `/` are TMDB API paths, not site-root URLs. They must be prefixed with the TMDB image host rather than requested directly from the GitHub Pages site root.
 
 ## Watch Source Popup
 
