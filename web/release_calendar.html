@@ -7,7 +7,7 @@
   <title>My TV Hub - Release Calendar</title>
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="./css/main_app.css?v=v1.5.9" />
-  <link rel="stylesheet" href="./css/release_calendar.css?v=2" />
+  <link rel="stylesheet" href="./css/release_calendar.css?v=3" />
 </head>
 <body data-app-family="main" data-page="release-calendar" data-focus-global="off">
   <div class="app">
@@ -57,7 +57,17 @@
     </div>
   </div>
 
-  <script src="./js/release_calendar.js?v=2"></script>
+  <div id="modalBack" class="app-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div id="modalCard" class="app-modal-card" tabindex="-1">
+      <div class="app-modal-header">
+        <div id="modalTitle" class="app-modal-title">Details</div>
+        <button id="modalClose" class="calbtn" type="button">Close</button>
+      </div>
+      <div id="modalBody" class="app-modal-body"></div>
+    </div>
+  </div>
+
+  <script src="./js/release_calendar.js?v=3"></script>
   <script src="./js/media_library_header_button.js?v=2" defer></script>
 </body>
 </html>
