@@ -26,6 +26,9 @@
 - Release Calendar movie events use `movies[].release_date`.
 - Release Calendar TV events use `shows[].first_air_date` plus `shows[].seasons[].air_date` for season premieres. Season 0 / specials are excluded from the release calendar.
 - When Season 1 has the same date as `first_air_date`, the view renders one combined `Series Premiere • Season 1` event instead of duplicate events.
+- Release Calendar visual identity: the primary-navigation icon is `🆕`; the existing schedule Calendar keeps `📅`. The two views must not use visually interchangeable calendar icons.
+- Release Calendar image selection is media-specific: movies use the movie poster; series premieres use the show poster; season premieres use the season poster first and fall back to the parent show poster only when the season poster is unavailable.
+- Local poster assets (`poster_local`) are preferred. TMDB `poster_path` values are remote API paths and must be resolved through the TMDB image host rather than treated as GitHub Pages root-relative URLs.
 - Streaming embed provider templates, ordering, enabled/disabled state, tier, capability metadata, and inactive-provider records are owned only by `web/config.json -> streaming.embed_providers[]`; generated data must not duplicate full embed URLs for every row.
 - The Watch Source popup keeps configured Streaming sources, the visible TMDB Watch Page action, and TMDB regional Providers rows separate. TMDB watch page must not render as a Providers row fallback.
 - Pages deploys only the explicit runtime JSON set above plus canonical `data/inputs.json`, `data/discover_registry.json`, and `data/watch_state_queue.json`; helper/report JSON and retired provider registry JSON under `data/` must not be deployed by wildcard.
@@ -42,7 +45,7 @@ The existing Calendar and the Release Calendar are intentionally separate views:
 - `web/calendar.html` remains the schedule/episode calendar.
 - `web/release_calendar.html` shows only movie releases, TV series premieres, and TV season premiere dates.
 
-Active app shells must load shared CSS and JavaScript through deterministic release-version query parameters matching `web/config.json` `_meta.version`.
+Active app shells must load shared CSS and JavaScript through deterministic release-version query parameters matching `web/config.json` `_meta.version`; page-specific Release Calendar assets may use their own deterministic revision token when changed independently.
 
 ## Release Calendar View Contract
 
@@ -58,6 +61,7 @@ Active app shells must load shared CSS and JavaScript through deterministic rele
 - Phone: one-column day list while preserving the same event content and filters.
 - Feature parity: phone, tablet, desktop, and TV layouts must expose the same release events and controls; only layout may change.
 - Missing-date rule: an item without a valid release/air date is omitted rather than assigned an inferred date.
+- Poster rule: movie release = movie poster; series premiere = show poster; season premiere = season poster, then show-poster fallback.
 
 ## Retired Runtime Code
 
