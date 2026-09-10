@@ -13,9 +13,9 @@
 - Popup media-detail schema: `web/js/popup_controller.js`
 - Primary-nav normalizer for Media Library and Release Calendar: `web/js/media_library_header_button.js`
 - Release Calendar page: `web/release_calendar.html`
-- Release Calendar runtime: `web/js/release_calendar.js`
-- Release Calendar responsive styling: `web/css/release_calendar.css`
-- Active app styling: `web/css/main_app.css`
+- Release Calendar runtime, event derivation, image resolution, and release-entry popup behavior: `web/js/release_calendar.js`
+- Release Calendar responsive styling and popup-specific presentation: `web/css/release_calendar.css`
+- Active app styling and shared modal shell classes: `web/css/main_app.css`
 - Responsive layout may reposition Shows/Movies Search and filters through `web/css/main_app.css`, but must not hide, replace, or fork functionality by device type.
 
 ## Data And Generated Artifacts
@@ -29,6 +29,7 @@
 - Release Calendar visual identity: the primary-navigation icon is `🆕`; the existing schedule Calendar keeps `📅`. The two views must not use visually interchangeable calendar icons.
 - Release Calendar image selection is media-specific: movies use the movie poster; series premieres use the show poster; season premieres use the season poster first and fall back to the parent show poster only when the season poster is unavailable.
 - Local poster assets (`poster_local`) are preferred. TMDB `poster_path` values are remote API paths and must be resolved through the TMDB image host rather than treated as GitHub Pages root-relative URLs.
+- Release Calendar popup content is derived from the same movie/show/season objects already attached to each derived release event. Do not create popup-only duplicate JSON or fetch a second metadata source.
 - Streaming embed provider templates, ordering, enabled/disabled state, tier, capability metadata, and inactive-provider records are owned only by `web/config.json -> streaming.embed_providers[]`; generated data must not duplicate full embed URLs for every row.
 - The Watch Source popup keeps configured Streaming sources, the visible TMDB Watch Page action, and TMDB regional Providers rows separate. TMDB watch page must not render as a Providers row fallback.
 - Pages deploys only the explicit runtime JSON set above plus canonical `data/inputs.json`, `data/discover_registry.json`, and `data/watch_state_queue.json`; helper/report JSON and retired provider registry JSON under `data/` must not be deployed by wildcard.
@@ -59,9 +60,17 @@ Active app shells must load shared CSS and JavaScript through deterministic rele
 - Navigation: Today, previous month, next month.
 - Desktop/tablet: seven-column calendar grid.
 - Phone: one-column day list while preserving the same event content and filters.
-- Feature parity: phone, tablet, desktop, and TV layouts must expose the same release events and controls; only layout may change.
+- Feature parity: phone, tablet, desktop, and TV layouts must expose the same release events, controls, and popup-opening behavior; only layout may change.
 - Missing-date rule: an item without a valid release/air date is omitted rather than assigned an inferred date.
 - Poster rule: movie release = movie poster; series premiere = show poster; season premiere = season poster, then show-poster fallback.
+- Interaction rule: every release entry is focusable/clickable and opens a modal on mouse/touch click or keyboard Enter/Space.
+- Popup type rule: movie release opens Movie details; series premiere opens Show details; season premiere opens Season details.
+- Movie popup details: title, movie poster, release date, runtime when available, genres when available, TMDB ID, and overview.
+- Show popup details: title, show poster, premiere date, status when available, genres when available, TMDB ID, and overview.
+- Season popup details: show + season name, season poster first with show-poster fallback, season premiere date, episode count when available, show TMDB ID, and season overview with show-overview fallback.
+- Popup shell rule: reuse the existing `.app-modal-backdrop`, `.app-modal-card`, `.app-modal-header`, and `.app-modal-body` visual contract from `main_app.css`; Release Calendar may provide only release-specific inner-content styling.
+- Popup close rule: Close button, backdrop click outside the modal card, and Escape must close the popup.
+- Accessibility rule: rendered release entries expose `role="button"`, `tabindex="0"`, and an accessible label describing the release and title.
 
 ## Retired Runtime Code
 
