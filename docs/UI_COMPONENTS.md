@@ -6,8 +6,26 @@
 
 - Owner: active HTML page shells plus `web/js/media_library_header_button.js`
 - Selector: `.top > .nav[role="tablist"][aria-label="Primary"]`
+- Required Release Calendar link: `[data-tab="release-calendar"]` -> `./release_calendar.html`
 - Required Media Library link: `#mediaLibraryHeaderButton`
-- Required behavior: opens `./Media_Library.html` in a new tab and remains visible within the normal icon row.
+- Required Release Calendar behavior: opens the release-focused calendar in the same app tab and remains visible in the normal icon row between Movies and Calendar.
+- Required Media Library behavior: opens `./Media_Library.html` in a new tab and remains visible within the normal icon row.
+
+## Release Calendar
+
+- Page shell: `web/release_calendar.html`
+- Runtime: `web/js/release_calendar.js`
+- Styling: `web/css/release_calendar.css`, layered on `web/css/main_app.css`
+- Data source: canonical `data/data.json`
+- Movie source field: `movies[].release_date`
+- TV source fields: `shows[].first_air_date` and `shows[].seasons[].air_date`
+- Season 0 / Specials are excluded.
+- Same-date series premiere and Season 1 are rendered once as `Series Premiere • Season 1`.
+- Normal episode air dates are deliberately excluded; those remain in the existing `web/calendar.html` schedule calendar.
+- Filters: All, TV & Seasons, Movies.
+- Month controls: Today, Prev, Next.
+- Desktop/tablet: seven-column month grid.
+- Phone: one-column day list using the same underlying event set and filters.
 
 ## Watch Source Popup
 
@@ -32,5 +50,4 @@
 - Current definitions and result filtering: `web/js/app_runtime.js`, using `web/config.json -> browse.current`
 - Responsive filter and genre layout: `web/css/main_app.css`
 
-Phone, tablet, desktop, and TV-style layouts must expose the same Search, filters, sorting, cards, and actions. CSS may change layout only.
-
+Phone, tablet, desktop, and TV-style layouts must expose the same Search, filters, sorting, cards, actions, navigation views, and Release Calendar event content. CSS may change layout only.
