@@ -1,10 +1,11 @@
 /*
 FILE: web/js/media_library_header_button.js
-VERSION: v0.8.0
+VERSION: v0.8.1
 UPDATED: 2026-09-10
 CHANGE NOTES:
 - Keeps the Media Library icon inside the primary navigation row.
-- Adds the Release Calendar as a canonical primary-nav view immediately after Movies.
+- Keeps the Release Calendar as a canonical primary-nav view immediately after Movies.
+- Uses a distinct New Releases icon so Release Calendar is visually different from the schedule Calendar.
 - Normalizes both links at runtime so active app shells stay navigation-consistent.
 */
 (function(){
@@ -23,7 +24,7 @@ CHANGE NOTES:
       nav.insertBefore(releaseLink, calendarTab || null);
     }
     releaseLink.className = 'tab release-calendar-view-icon';
-    releaseLink.textContent = '🗓️';
+    releaseLink.textContent = '🆕';
     releaseLink.href = './release_calendar.html';
     releaseLink.title = 'Release Calendar';
     releaseLink.setAttribute('aria-label', 'Release Calendar');
