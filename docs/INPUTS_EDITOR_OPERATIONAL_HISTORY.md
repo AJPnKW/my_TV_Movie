@@ -5,11 +5,14 @@ This file records recurring Inputs Editor failures and the fixes that must not d
 ## Current Contract
 
 - Canonical input file: `data/inputs.json`.
-- Generated runtime files: `data/data.json`, `data/catalog_index.json`, `data/calendar.json`, `data/catalog_detail/*.json`, and runtime assets.
+- Generated runtime catalog: `data/data.json`. Retired split artifacts such as `data/catalog_index.json`, `data/calendar.json`, and `data/catalog_detail/*.json` are not active runtime outputs.
 - Canonical editor UI: `web/inputs_editor.html`.
 - Local editor server: `tools/inputs_editor/inputs_editor_server.py` on `127.0.0.1:8787`.
 - Launcher: `run_local_servers.bat`; default browser launch opens only `http://127.0.0.1:8787/web/inputs_editor.html`.
 - Full app smoke-test tabs require the explicit `-AllTabs` argument.
+- Canonical publish remote: the configured upstream of local `main`, normally `origin/main`. A redundant `github` alias may exist, but the editor must not use a requested secondary remote silently when it differs from the upstream repository.
+- Editor operations are separate: `Save Local Input` only writes `data/inputs.json`; `Refresh Full Local Runtime` runs the full local pipeline and is local-only; `Save Online, Build Data, Deploy` reconciles canonical input, pushes an input-only commit, waits for GitHub build-data, fast-forwards the local checkout to the generated artifact commit, and verifies deployed Pages runtime data.
+- Source reconciliation for `data/inputs.json` uses stable identity `media_type + tmdb_id`. Local-only and remote-only records are preserved; unchanged local records accept remote edits; unchanged remote records accept local edits; genuine same-field conflicts block with field-level details.
 - Program consolidation rule: do not add another Inputs Editor launcher or helper program. `run_local_servers.bat` is the canonical user entrypoint; `run_server.bat`, `tools/run_local_servers.bat`, and `tools/start_inputs_editor.cmd` are compatibility wrappers only and must delegate to the root launcher.
 - Cleanup rule: do not keep stale local generated reports or archived binary/spec workspace changes as incidental working-tree dirt. Regenerate through the existing pipeline when runtime data is needed, or restore stale local artifacts to the committed state.
 
@@ -61,6 +64,27 @@ Fix:
 
 - The publish path already waits for generated runtime artifact changes and validates pipeline reconciliation.
 - The publish path now also refuses to continue when Git reports unmerged/conflicted files, returning the exact conflicted paths to the UI.
+- The editor must not label local membership as online success. Search results distinguish `In local input`, `Local only - not published`, `Published input - build pending`, `Online - local runtime stale`, `Online`, and `Hidden from app`.
+
+### Yaga / Local More Complete Than GitHub Incident
+
+Symptom:
+
+- The local editor reported the TV show `YAGA` as present, and the local Shows page rendered it.
+- GitHub `data/inputs.json`, GitHub `data/data.json`, and the deployed Pages runtime did not contain the same show.
+- Local runtime and GitHub runtime had matching movie counts but different TV completeness; timestamp recency was misleading because the GitHub runtime was newer but less complete.
+
+Forensic finding:
+
+- The local Yaga entry was `tmdb_id: 314360`, `season_spec: "*"`, `include_future: true`, `in_scope: true`, `tags: []`, `notes: ""`.
+- The local input contained nine TV rows absent from canonical remote input: `Apple Tree Yard` `69773`, `Cooper & Fry` `296520`, `Deadwater Fell` `95442`, `Drag Race Down Under vs The World` `299268`, `Harry Wild` `156993`, `Number 10` `307974`, `The Chelsea Detective` `156240`, `Tommy & Tuppence` `318312`, and `YAGA` `314360`.
+
+Architecture guard:
+
+- `Save Online, Build Data, Deploy` now semantically merges local and remote inputs before committing.
+- Generated local preview files are disposable and may be stashed during publish; only `data/inputs.json` may enter the user's input commit.
+- Final success requires changed IDs to exist in canonical remote input, remote generated `data/data.json`, local generated `data/data.json`, and deployed Pages `data/data.json`.
+- `scripts/qa_inputs_editor_workflow.py`, `scripts/qa_pipeline_integrity.py`, and `scripts/validate_runtime.ps1` guard the workflow state labels, canonical remote handling, semantic merge rules, input-only commits, and deployed-runtime verification hooks.
 
 ### Reusing the Wrong Local Process
 

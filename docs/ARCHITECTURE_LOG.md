@@ -1,5 +1,14 @@
 # Architecture Log
 
+## 2026-09-15
+
+- Root-caused the Inputs Editor Yaga incident to local canonical input/runtime being more complete than GitHub while local `main` had an input-only commit and remote `main` had newer generated artifact commits. Timestamp recency was not a valid completeness signal.
+- Identified nine legitimate local-only TV inputs that required preservation: `Apple Tree Yard` `69773`, `Cooper & Fry` `296520`, `Deadwater Fell` `95442`, `Drag Race Down Under vs The World` `299268`, `Harry Wild` `156993`, `Number 10` `307974`, `The Chelsea Detective` `156240`, `Tommy & Tuppence` `318312`, and `YAGA` `314360`.
+- Split the Inputs Editor workflow into `Save Local Input`, `Refresh Full Local Runtime`, and `Save Online, Build Data, Deploy`; removed the frontend hardcoded `github` remote and routed publishing through the configured upstream of `main`.
+- Added semantic `data/inputs.json` reconciliation by `media_type + tmdb_id`, expected generated-commit divergence handling, input-only publish commits, final remote/local/Pages runtime ID verification, and refresh-stage timing/error proof.
+- Updated the editor UI state model so search results distinguish local input, local-only unpublished, published input build pending, online with stale local runtime, online, and hidden-from-app states instead of saying only `Already added`.
+- Validation added: `scripts/qa_inputs_editor_workflow.py` covers semantic merge, generated artifact handling, input-only commits, workflow association, stale secondary remote blocking, runtime verification, duplicate TMDB cleanup, and local input preservation; `scripts/qa_pipeline_integrity.py` and `scripts/validate_runtime.ps1` guard the new contract.
+
 ## 2026-08-15
 
 - Promoted the Streaming popup order in `web/config.json -> streaming.fallback_order` so VSEmbed is first and Vidsrc.pm is second, with no duplicate VSEmbed provider record.

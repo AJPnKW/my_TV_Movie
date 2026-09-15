@@ -23,6 +23,14 @@
 - Canonical curated input: `data/inputs.json`
 - Single generated web runtime catalog: `data/data.json`
 - Calendar entries, show/movie detail views, seasons, episodes, and Release Calendar events are derived from `data/data.json`. Do not add a parallel generated release-calendar JSON file.
+- Canonical authored catalog input: `data/inputs.json`.
+- Inputs Editor operations are intentionally separated:
+  - `Save Local Input` writes only `data/inputs.json` and does not rebuild runtime data.
+  - `Refresh Full Local Runtime` runs the full local `scripts/run_pipeline_tmdb_trakt.py` maintenance pipeline and is explicitly local-only.
+  - `Save Online, Build Data, Deploy` publishes only reconciled `data/inputs.json`; GitHub Actions owns authoritative generated `data/data.json` and Pages deployment.
+- The publish remote is the configured upstream of `main`, normally `origin/main`. Redundant aliases such as `github` must not override upstream authority and must be blocked if they point elsewhere.
+- `data/inputs.json` reconciliation is semantic by `media_type + tmdb_id`, preserving local-only and remote-only rows and blocking only genuine same-field conflicts.
+- GitHub Actions generated commits on `main` are expected architecture. Local generated preview changes under `data/data.json`, `data/watch_state_queue.json`, and `assets/` are disposable during publish and must not enter the input commit.
 - Release Calendar movie events use `movies[].release_date`.
 - Release Calendar TV events use `shows[].first_air_date` plus `shows[].seasons[].air_date` for season premieres. Season 0 / specials are excluded from the release calendar.
 - When Season 1 has the same date as `first_air_date`, the view renders one combined `Series Premiere • Season 1` event instead of duplicate events.

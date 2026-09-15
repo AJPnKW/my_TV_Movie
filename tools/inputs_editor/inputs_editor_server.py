@@ -48,6 +48,7 @@ MAX_JSON_BODY_BYTES = 5 * 1024 * 1024
 PUBLISH_DEFAULT_WAIT_SECONDS = 15 * 60
 PUBLISH_POLL_SECONDS = 15
 BUILD_DATA_WORKFLOW = "build-data.yml"
+PAGES_DATA_URL = "https://ajpnkw.github.io/my_TV_Movie/data/data.json"
 GENERATED_SYNC_PATHS = [
     "data/data.json",
     "data/watch_state_queue.json",
@@ -74,6 +75,7 @@ TMDB_IMG_BASE = "https://image.tmdb.org/t/p/"
 SEASON_TOKEN_RE = re.compile(r"^S?\d+(?:\s*-\s*S?\d+)?$", re.IGNORECASE)
 SEASON_MIN_RE = re.compile(r"^S?\d+\+$", re.IGNORECASE)
 TITLE_STOPWORDS = {"a", "an", "and", "in", "of", "part", "the", "to", "with"}
+INPUT_LIST_KEYS = ("tv", "movies")
 
 
 def _now_utc_iso() -> str:
@@ -176,6 +178,111 @@ def _read_inputs() -> dict:
             "generated_utc": "",
         }
     return json.loads(INPUTS_JSON.read_text(encoding="utf-8"))
+
+
+def _entry_tmdb_id(entry: dict) -> int | None:
+    try:
+        value = entry.get("tmdb_id")
+        if value is None or value == "":
+            return None
+        return int(value)
+    except Exception:
+        return None
+
+
+def _entry_title(entry: dict) -> str:
+    return str(entry.get("title") or entry.get("name") or "").strip()
+
+
+def _identity_key(media_type: str, entry: dict) -> tuple[str, int] | None:
+    tmdb_id = _entry_tmdb_id(entry)
+    if tmdb_id is None:
+        return None
+    return (media_type, tmdb_id)
+
+
+def _identity_maps(inputs: dict, media_type: str) -> dict[tuple[str, int], dict]:
+    source_key = "tv" if media_type == "tv" else "movies"
+    out: dict[tuple[str, int], dict] = {}
+    for entry in inputs.get(source_key) or []:
+        if isinstance(entry, dict):
+            key = _identity_key(media_type, entry)
+            if key:
+                out[key] = entry
+    return out
+
+
+def _input_identity_list(inputs: dict) -> list[dict]:
+    identities: list[dict] = []
+    for media_type in ("tv", "movie"):
+        source_key = "tv" if media_type == "tv" else "movies"
+        for entry in inputs.get(source_key) or []:
+            key = _identity_key(media_type, entry) if isinstance(entry, dict) else None
+            if not key:
+                continue
+            identities.append(
+                {
+                    "media_type": media_type,
+                    "tmdb_id": key[1],
+                    "title": _entry_title(entry),
+                    "in_scope": entry.get("in_scope") is not False,
+                }
+            )
+    return identities
+
+
+def _runtime_items(data: dict, media_type: str) -> list[dict]:
+    if not isinstance(data, dict):
+        return []
+    candidates = ("shows", "tv") if media_type == "tv" else ("movies",)
+    for key in candidates:
+        value = data.get(key)
+        if isinstance(value, list):
+            return [item for item in value if isinstance(item, dict)]
+    return []
+
+
+def _runtime_identity_set(data: dict, media_type: str) -> set[int]:
+    out: set[int] = set()
+    for entry in _runtime_items(data, media_type):
+        tmdb_id = _entry_tmdb_id(entry)
+        if tmdb_id is not None:
+            out.add(tmdb_id)
+    return out
+
+
+def _runtime_summary(data: dict) -> dict:
+    meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
+    return {
+        "shows": len(_runtime_items(data, "tv")),
+        "movies": len(_runtime_items(data, "movie")),
+        "generated_utc": meta.get("generated_utc") or data.get("generated_utc") or "",
+        "errors": len(data.get("errors") or []) if isinstance(data.get("errors"), list) else 0,
+        "tv_ids": sorted(_runtime_identity_set(data, "tv")),
+        "movie_ids": sorted(_runtime_identity_set(data, "movie")),
+    }
+
+
+def _read_runtime_json() -> dict:
+    if not DATA_JSON.exists():
+        return {}
+    return json.loads(DATA_JSON.read_text(encoding="utf-8"))
+
+
+def _git_show_json(ref_path: str) -> dict:
+    result = _run_git_command(["show", ref_path])
+    if result.returncode != 0:
+        raise RuntimeError(_git_failure(result, f"git show {ref_path} failed"))
+    return json.loads(result.stdout)
+
+
+def _json_identity_count(inputs: dict, media_type: str, tmdb_id: int) -> int:
+    source_key = "tv" if media_type == "tv" else "movies"
+    count = 0
+    for entry in inputs.get(source_key) or []:
+        if isinstance(entry, dict) and _entry_tmdb_id(entry) == int(tmdb_id):
+            count += 1
+    return count
 
 
 def _atomic_write(path: Path, obj: dict):
@@ -547,7 +654,43 @@ def _validate_inputs_payload(obj: dict) -> tuple[dict, list[str]]:
     return validated, warnings
 
 
-def _run_editor_refresh() -> dict:
+def _parse_stage_timings(stdout: str) -> list[dict]:
+    match = re.search(r"stage_timings_json:\s*(\[.*\])", stdout or "")
+    if not match:
+        return []
+    try:
+        data = json.loads(match.group(1))
+    except Exception:
+        return []
+    return data if isinstance(data, list) else []
+
+
+def _normalize_expected_identities(raw: object) -> list[dict]:
+    if not isinstance(raw, list):
+        return []
+    out: list[dict] = []
+    for item in raw:
+        if not isinstance(item, dict):
+            continue
+        media_type = str(item.get("media_type") or item.get("type") or "").strip()
+        if media_type not in {"tv", "movie"}:
+            continue
+        try:
+            tmdb_id = int(item.get("tmdb_id"))
+        except Exception:
+            continue
+        out.append(
+            {
+                "media_type": media_type,
+                "tmdb_id": tmdb_id,
+                "title": str(item.get("title") or ""),
+                "in_scope": item.get("in_scope") is not False,
+            }
+        )
+    return out
+
+
+def _run_editor_refresh(expected_identities: list[dict] | None = None) -> dict:
     command = [sys.executable, str(REPO_ROOT / "scripts" / "run_pipeline_tmdb_trakt.py")]
     completed = subprocess.run(
         command,
@@ -557,11 +700,35 @@ def _run_editor_refresh() -> dict:
         timeout=1800,
         check=False,
     )
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    stage_timings = _parse_stage_timings(stdout)
+    runtime_summary: dict = {}
+    missing_runtime: list[dict] = []
+    validation = {"ok": False}
+    if completed.returncode == 0:
+        try:
+            runtime_data = _read_runtime_json()
+            runtime_summary = _runtime_summary(runtime_data)
+            missing_runtime = _verify_identities_in_runtime(runtime_data, expected_identities or [])
+            validation = _run_pipeline_integrity_validation()
+        except Exception as exc:
+            validation = {"ok": False, "error": str(exc)}
+    ok = completed.returncode == 0 and not missing_runtime and bool(validation.get("ok"))
     return {
-        "ok": completed.returncode == 0,
+        "ok": ok,
         "returncode": completed.returncode,
-        "stdout": completed.stdout[-8000:],
-        "stderr": completed.stderr[-8000:],
+        "stdout": stdout[-8000:],
+        "stderr": stderr[-8000:],
+        "stage_timings": stage_timings,
+        "runtime": runtime_summary,
+        "missing_runtime": missing_runtime,
+        "validation": validation,
+        "error": "" if ok else (
+            "Local runtime refresh finished but validation or expected-ID verification failed."
+            if completed.returncode == 0
+            else "Local runtime refresh command failed."
+        ),
     }
 
 
@@ -676,23 +843,63 @@ def _remote_exists(remote_name: str) -> bool:
     return result.returncode == 0 and bool((result.stdout or "").strip())
 
 
+def _remote_url(remote_name: str) -> str:
+    result = _run_git_command(["remote", "get-url", remote_name])
+    if result.returncode != 0:
+        return ""
+    return (result.stdout or "").strip()
+
+
+def _normalize_remote_url(url: str) -> str:
+    text = str(url or "").strip()
+    text = re.sub(r"\.git$", "", text)
+    return text.rstrip("/").casefold()
+
+
+def _branch_upstream_remote(branch_name: str) -> str:
+    result = _run_git_command(["config", "--get", f"branch.{branch_name}.remote"])
+    if result.returncode != 0:
+        return ""
+    return (result.stdout or "").strip()
+
+
 def _resolve_publish_remote(requested_remote: str) -> dict:
     requested = (requested_remote or "").strip()
-    candidates = [requested] if requested else []
-    for fallback in ("github", "origin"):
-        if fallback and fallback not in candidates:
-            candidates.append(fallback)
-    for candidate in candidates:
-        if _remote_exists(candidate):
-            return {
-                "ok": True,
-                "remote": candidate,
-                "requested_remote": requested,
-                "remote_warning": "" if not requested or requested == candidate else f"requested remote '{requested}' was not configured; using '{candidate}'",
-            }
+    branch_name = _git_current_branch() or "main"
+    upstream = _branch_upstream_remote(branch_name)
+    canonical = upstream if upstream and _remote_exists(upstream) else ""
+    if not canonical:
+        for fallback in ("origin", "github"):
+            if _remote_exists(fallback):
+                canonical = fallback
+                break
+    if canonical:
+        warning = ""
+        if requested and requested != canonical:
+            requested_url = _normalize_remote_url(_remote_url(requested))
+            canonical_url = _normalize_remote_url(_remote_url(canonical))
+            if requested_url and canonical_url and requested_url != canonical_url:
+                return {
+                    "ok": False,
+                    "error": (
+                        f"Online update is blocked because requested remote '{requested}' points to a different "
+                        f"repository than canonical upstream '{canonical}'."
+                    ),
+                    "requested_remote": requested,
+                    "canonical_remote": canonical,
+                }
+            warning = f"requested remote '{requested}' is an alias; using canonical upstream '{canonical}'"
+        return {
+            "ok": True,
+            "remote": canonical,
+            "requested_remote": requested,
+            "canonical_remote": canonical,
+            "remote_warning": warning,
+            "remote_url": _remote_url(canonical),
+        }
     return {
         "ok": False,
-        "error": "Online update is blocked because no Git remote named github or origin is configured.",
+        "error": "Online update is blocked because no canonical Git publish remote is configured for this branch.",
         "requested_remote": requested,
     }
 
@@ -749,10 +956,66 @@ def _editor_publish_status() -> dict:
     git_operations = _git_operation_in_progress()
     repo_paths = repo_status.get("paths", [])
     blocked_paths = [path for path in repo_paths if not _path_is_allowed_publish_dirty(path)]
+    local_inputs = _read_inputs()
+    local_runtime = {}
+    local_runtime_summary = {}
+    try:
+        local_runtime = _read_runtime_json()
+        local_runtime_summary = _runtime_summary(local_runtime)
+    except Exception:
+        local_runtime_summary = {}
+    remote_state = _resolve_publish_remote("")
+    remote_inputs_summary: dict = {}
+    remote_runtime_summary: dict = {}
+    remote_input_ids: dict[str, list[int]] = {"tv": [], "movie": []}
+    remote_runtime_ids: dict[str, list[int]] = {"tv": [], "movie": []}
+    local_only: list[dict] = []
+    if remote_state.get("ok") and branch:
+        remote_name = str(remote_state.get("remote") or "")
+        remote_ref = f"{remote_name}/{branch}"
+        try:
+            remote_inputs = _git_show_json(f"{remote_ref}:{INPUTS_RELATIVE_PATH}")
+            remote_runtime = _git_show_json(f"{remote_ref}:data/data.json")
+            remote_inputs_summary = {
+                "tv": len(remote_inputs.get("tv") or []),
+                "movies": len(remote_inputs.get("movies") or []),
+                "generated_utc": remote_inputs.get("generated_utc") or "",
+            }
+            remote_runtime_summary = _runtime_summary(remote_runtime)
+            remote_input_ids = {
+                "tv": sorted(key[1] for key in _identity_maps(remote_inputs, "tv")),
+                "movie": sorted(key[1] for key in _identity_maps(remote_inputs, "movie")),
+            }
+            remote_runtime_ids = {
+                "tv": sorted(_runtime_identity_set(remote_runtime, "tv")),
+                "movie": sorted(_runtime_identity_set(remote_runtime, "movie")),
+            }
+            for identity in _input_identity_list(local_inputs):
+                media_type = identity["media_type"]
+                if identity["tmdb_id"] not in set(remote_input_ids[media_type]):
+                    local_only.append(identity)
+        except Exception as exc:
+            remote_state = {**remote_state, "status_error": str(exc)}
     return {
         "ok": bool(inputs_status.get("ok") and generated_status.get("ok") and repo_status.get("ok")),
         "utc": _now_utc_iso(),
         "branch": branch,
+        "canonical_remote": remote_state,
+        "local_input": {
+            "tv": len(local_inputs.get("tv") or []),
+            "movies": len(local_inputs.get("movies") or []),
+            "generated_utc": local_inputs.get("generated_utc") or "",
+        },
+        "local_runtime": local_runtime_summary,
+        "remote_input": remote_inputs_summary,
+        "remote_runtime": remote_runtime_summary,
+        "remote_input_ids": remote_input_ids,
+        "remote_runtime_ids": remote_runtime_ids,
+        "local_runtime_ids": {
+            "tv": sorted(_runtime_identity_set(local_runtime, "tv")) if local_runtime else [],
+            "movie": sorted(_runtime_identity_set(local_runtime, "movie")) if local_runtime else [],
+        },
+        "local_only_inputs": local_only,
         "detached_head": not bool(branch),
         "git_operations": git_operations,
         "publish_blocked": bool((not branch) or git_operations or blocked_paths),
@@ -890,6 +1153,175 @@ def _has_runtime_artifact_update(paths: list[str]) -> bool:
     return False
 
 
+def _path_is_generated(path: str) -> bool:
+    normalized = path.strip().replace("\\", "/")
+    for allowed in GENERATED_SYNC_PATHS:
+        clean = allowed.strip().replace("\\", "/")
+        if normalized == clean or normalized.startswith(f"{clean}/"):
+            return True
+    return False
+
+
+def _unique_changed_paths(base_ref: str, head_ref: str) -> list[str]:
+    result = _run_git_command(["diff", "--name-only", f"{base_ref}..{head_ref}"])
+    if result.returncode != 0:
+        return []
+    return [line.strip().replace("\\", "/") for line in (result.stdout or "").splitlines() if line.strip()]
+
+
+def _merge_base(remote_ref: str) -> str:
+    result = _run_git_command(["merge-base", "HEAD", remote_ref])
+    if result.returncode != 0:
+        return ""
+    return (result.stdout or "").strip()
+
+
+def _merge_entries(
+    media_type: str,
+    key: tuple[str, int],
+    local_entry: dict,
+    remote_entry: dict,
+    base_entry: dict | None,
+) -> tuple[dict | None, list[dict]]:
+    if local_entry == remote_entry:
+        return copy.deepcopy(local_entry), []
+    if base_entry is not None and local_entry == base_entry:
+        return copy.deepcopy(remote_entry), []
+    if base_entry is not None and remote_entry == base_entry:
+        return copy.deepcopy(local_entry), []
+    if base_entry is None:
+        conflicts = []
+        fields = sorted(set(local_entry) | set(remote_entry))
+        for field in fields:
+            if local_entry.get(field) != remote_entry.get(field):
+                conflicts.append(
+                    {
+                        "media_type": media_type,
+                        "tmdb_id": key[1],
+                        "title": _entry_title(local_entry) or _entry_title(remote_entry),
+                        "field": field,
+                        "local": local_entry.get(field),
+                        "remote": remote_entry.get(field),
+                    }
+                )
+        return None, conflicts
+
+    merged: dict = {}
+    conflicts: list[dict] = []
+    fields = sorted(set(base_entry) | set(local_entry) | set(remote_entry))
+    for field in fields:
+        base_value = base_entry.get(field)
+        local_value = local_entry.get(field)
+        remote_value = remote_entry.get(field)
+        local_changed = local_value != base_value
+        remote_changed = remote_value != base_value
+        if local_value == remote_value:
+            merged[field] = copy.deepcopy(local_value)
+        elif local_changed and not remote_changed:
+            merged[field] = copy.deepcopy(local_value)
+        elif remote_changed and not local_changed:
+            merged[field] = copy.deepcopy(remote_value)
+        else:
+            conflicts.append(
+                {
+                    "media_type": media_type,
+                    "tmdb_id": key[1],
+                    "title": _entry_title(local_entry) or _entry_title(remote_entry),
+                    "field": field,
+                    "local": local_value,
+                    "remote": remote_value,
+                }
+            )
+    if conflicts:
+        return None, conflicts
+    return merged, []
+
+
+def _semantic_reconcile_inputs(local_inputs: dict, remote_inputs: dict, base_inputs: dict | None) -> dict:
+    result = copy.deepcopy(remote_inputs) if isinstance(remote_inputs, dict) else {}
+    result.setdefault("watchlist", copy.deepcopy(local_inputs.get("watchlist", [])))
+    conflicts: list[dict] = []
+    changed_identities: list[dict] = []
+
+    for media_type, list_key in (("tv", "tv"), ("movie", "movies")):
+        local_map = _identity_maps(local_inputs, media_type)
+        remote_map = _identity_maps(remote_inputs, media_type)
+        base_map = _identity_maps(base_inputs or {}, media_type)
+        ordered_keys: list[tuple[str, int]] = []
+        for entry in remote_inputs.get(list_key) or []:
+            if isinstance(entry, dict):
+                key = _identity_key(media_type, entry)
+                if key and key not in ordered_keys:
+                    ordered_keys.append(key)
+        for entry in local_inputs.get(list_key) or []:
+            if isinstance(entry, dict):
+                key = _identity_key(media_type, entry)
+                if key and key not in ordered_keys:
+                    ordered_keys.append(key)
+
+        merged_entries: list[dict] = []
+        for key in ordered_keys:
+            local_entry = local_map.get(key)
+            remote_entry = remote_map.get(key)
+            base_entry = base_map.get(key)
+            if local_entry is not None and remote_entry is not None:
+                merged, entry_conflicts = _merge_entries(media_type, key, local_entry, remote_entry, base_entry)
+                conflicts.extend(entry_conflicts)
+                if merged is not None:
+                    merged_entries.append(merged)
+                    if merged != remote_entry:
+                        changed_identities.append(
+                            {"media_type": media_type, "tmdb_id": key[1], "title": _entry_title(merged), "in_scope": merged.get("in_scope") is not False}
+                        )
+            elif local_entry is not None:
+                merged_entries.append(copy.deepcopy(local_entry))
+                changed_identities.append(
+                    {"media_type": media_type, "tmdb_id": key[1], "title": _entry_title(local_entry), "in_scope": local_entry.get("in_scope") is not False}
+                )
+            elif remote_entry is not None:
+                merged_entries.append(copy.deepcopy(remote_entry))
+
+        result[list_key] = merged_entries
+
+    if conflicts:
+        return {"ok": False, "conflicts": conflicts}
+
+    result["generated_utc"] = _now_utc_iso()
+    warnings: list[str] = []
+    result["tv"] = _dedupe_entries(result.get("tv") or [], "tv", warnings)
+    result["movies"] = _dedupe_entries(result.get("movies") or [], "movie", warnings)
+    return {"ok": True, "inputs": result, "changed_identities": changed_identities, "warnings": warnings}
+
+
+def _reconcile_inputs_with_remote(remote_name: str, branch_name: str) -> dict:
+    remote_ref = f"{remote_name}/{branch_name}"
+    local_inputs = _read_inputs()
+    try:
+        remote_inputs = _git_show_json(f"{remote_ref}:{INPUTS_RELATIVE_PATH}")
+    except Exception as exc:
+        return {"ok": False, "error": f"Could not read remote {INPUTS_RELATIVE_PATH}: {exc}"}
+    base_inputs = None
+    base_ref = _merge_base(remote_ref)
+    if base_ref:
+        try:
+            base_inputs = _git_show_json(f"{base_ref}:{INPUTS_RELATIVE_PATH}")
+        except Exception:
+            base_inputs = None
+    merged = _semantic_reconcile_inputs(local_inputs, remote_inputs, base_inputs)
+    if not merged.get("ok"):
+        return {
+            "ok": False,
+            "error": "Online update is blocked by a real data/inputs.json source conflict.",
+            "source_conflicts": merged.get("conflicts", []),
+        }
+    _atomic_write(INPUTS_JSON, merged["inputs"])
+    return {
+        "ok": True,
+        "changed_identities": merged.get("changed_identities", []),
+        "warnings": merged.get("warnings", []),
+    }
+
+
 def _stash_generated_artifacts_if_needed() -> dict:
     status = _run_git_command(["status", "--porcelain", "--", *LOCAL_GENERATED_STASH_PATHS])
     if status.returncode != 0:
@@ -962,13 +1394,31 @@ def _sync_remote_base_before_publish(remote_name: str, branch_name: str) -> dict
     if local_contains_remote.returncode == 0:
         return {"ok": True, "synced": False, "remote_head": remote_head}
 
+    base_ref = _merge_base(remote_ref)
+    local_unique_paths = _unique_changed_paths(base_ref, "HEAD") if base_ref else []
+    remote_unique_paths = _unique_changed_paths(base_ref, remote_ref) if base_ref else []
+    local_input_only = bool(local_unique_paths) and all(path == INPUTS_RELATIVE_PATH for path in local_unique_paths)
+    remote_generated_only = bool(remote_unique_paths) and all(_path_is_generated(path) for path in remote_unique_paths)
+    if local_input_only and remote_generated_only:
+        return {
+            "ok": True,
+            "synced": False,
+            "remote_head": remote_head,
+            "expected_divergence": True,
+            "local_unique_paths": local_unique_paths,
+            "remote_unique_paths": remote_unique_paths,
+            "reason": "local branch has input-only intent while remote advanced through generated artifacts",
+        }
+
     return {
         "ok": False,
         "error": (
             f"Online update is blocked because local HEAD and {remote_ref} have diverged. "
-            "Reconcile the branch manually before publishing from the inputs editor."
+            "The editor could not prove that the divergence is limited to local inputs and remote generated artifacts."
         ),
         "remote_head": remote_head,
+        "local_unique_paths": local_unique_paths,
+        "remote_unique_paths": remote_unique_paths,
     }
 
 
@@ -1134,6 +1584,99 @@ def _wait_for_generated_artifacts(
         time.sleep(PUBLISH_POLL_SECONDS)
 
 
+def _verify_identities_in_inputs(inputs: dict, identities: list[dict]) -> list[dict]:
+    missing: list[dict] = []
+    for item in identities:
+        media_type = str(item.get("media_type") or "")
+        tmdb_id = int(item.get("tmdb_id") or 0)
+        if _json_identity_count(inputs, media_type, tmdb_id) != 1:
+            missing.append({**item, "count": _json_identity_count(inputs, media_type, tmdb_id)})
+    return missing
+
+
+def _verify_identities_in_runtime(data: dict, identities: list[dict]) -> list[dict]:
+    missing: list[dict] = []
+    for item in identities:
+        if item.get("in_scope") is False:
+            continue
+        media_type = str(item.get("media_type") or "")
+        tmdb_id = int(item.get("tmdb_id") or 0)
+        ids = _runtime_identity_set(data, media_type)
+        if tmdb_id not in ids:
+            missing.append(item)
+    return missing
+
+
+def _fetch_pages_runtime() -> dict:
+    request = urllib.request.Request(
+        PAGES_DATA_URL,
+        headers={
+            "Accept": "application/json",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+        },
+    )
+    with urllib.request.urlopen(request, timeout=30) as response:
+        raw = response.read().decode("utf-8", errors="replace")
+    return json.loads(raw)
+
+
+def _verify_publish_outputs(remote_name: str, branch_name: str, identities: list[dict], wait_seconds: int) -> dict:
+    active_identities = [item for item in identities if item.get("in_scope") is not False]
+    remote_ref = f"{remote_name}/{branch_name}"
+    if not identities:
+        return {"ok": True, "skipped": True, "reason": "no changed input identities"}
+    fetch = _run_git_command(["fetch", remote_name, branch_name])
+    if fetch.returncode != 0:
+        return {"ok": False, "error": _git_failure(fetch, "git fetch failed")}
+    try:
+        remote_inputs = _git_show_json(f"{remote_ref}:{INPUTS_RELATIVE_PATH}")
+        remote_runtime = _git_show_json(f"{remote_ref}:data/data.json")
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+    missing_remote_inputs = _verify_identities_in_inputs(remote_inputs, identities)
+    missing_remote_runtime = _verify_identities_in_runtime(remote_runtime, active_identities)
+    local_runtime = _read_runtime_json()
+    missing_local_runtime = _verify_identities_in_runtime(local_runtime, active_identities)
+    if missing_remote_inputs or missing_remote_runtime or missing_local_runtime:
+        return {
+            "ok": False,
+            "missing_remote_inputs": missing_remote_inputs,
+            "missing_remote_runtime": missing_remote_runtime,
+            "missing_local_runtime": missing_local_runtime,
+            "remote_runtime": _runtime_summary(remote_runtime),
+            "local_runtime": _runtime_summary(local_runtime),
+        }
+
+    pages_deadline = time.monotonic() + min(max(int(wait_seconds), 0), 300)
+    pages_error = ""
+    pages_runtime: dict = {}
+    while True:
+        try:
+            pages_runtime = _fetch_pages_runtime()
+            missing_pages_runtime = _verify_identities_in_runtime(pages_runtime, active_identities)
+            if not missing_pages_runtime:
+                return {
+                    "ok": True,
+                    "remote_runtime": _runtime_summary(remote_runtime),
+                    "local_runtime": _runtime_summary(local_runtime),
+                    "pages_runtime": _runtime_summary(pages_runtime),
+                }
+            pages_error = f"Pages runtime missing: {missing_pages_runtime}"
+        except Exception as exc:
+            pages_error = str(exc)
+        if time.monotonic() >= pages_deadline:
+            return {
+                "ok": False,
+                "error": "Timed out waiting for deployed Pages runtime to contain the changed input identities.",
+                "pages_error": pages_error,
+                "remote_runtime": _runtime_summary(remote_runtime),
+                "local_runtime": _runtime_summary(local_runtime),
+                "pages_runtime": _runtime_summary(pages_runtime) if pages_runtime else {},
+            }
+        time.sleep(PUBLISH_POLL_SECONDS)
+
+
 def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     remote_state = _resolve_publish_remote(remote)
     if not remote_state.get("ok"):
@@ -1150,6 +1693,10 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
     fetch_result = _run_git_command(["fetch", remote_name, branch_name])
     if fetch_result.returncode != 0:
         return {"ok": False, "error": fetch_result.stderr.strip() or fetch_result.stdout.strip() or "git fetch failed"}
+
+    reconcile = _reconcile_inputs_with_remote(remote_name, branch_name)
+    if not reconcile.get("ok"):
+        return reconcile
 
     base_sync = _sync_remote_base_before_publish(remote_name, branch_name)
     if not base_sync.get("ok"):
@@ -1209,6 +1756,8 @@ def _push_inputs_to_remote(remote: str, branch: str) -> dict:
         "commit": commit_id,
         "base_synced": base_sync.get("synced", False),
         "base_sync": base_sync,
+        "semantic_reconcile": reconcile,
+        "changed_identities": reconcile.get("changed_identities", []),
         "stashed_generated_artifacts": generated_stash.get("stashed", False),
         "stash_message": generated_stash.get("message", ""),
     }
@@ -1228,11 +1777,21 @@ def _publish_inputs_to_remote(remote: str, branch: str, wait_seconds: int = PUBL
         wait_seconds,
         require_workflow=bool(push.get("pushed")),
     )
+    verification = {}
+    if sync.get("ok"):
+        verification = _verify_publish_outputs(
+            remote_name,
+            branch_name,
+            push.get("changed_identities", []),
+            wait_seconds,
+        )
     return {
         **push,
-        "publish_complete": bool(sync.get("ok")),
+        "publish_complete": bool(sync.get("ok") and verification.get("ok", True)),
         "sync": sync,
-        "ok": bool(sync.get("ok")),
+        "verification": verification,
+        "ok": bool(sync.get("ok") and verification.get("ok", True)),
+        "error": "" if bool(sync.get("ok") and verification.get("ok", True)) else verification.get("error", ""),
     }
 
 
@@ -1434,7 +1993,11 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if parsed.path == "/api/refresh-runtime":
-            result = _run_editor_refresh()
+            try:
+                obj = _read_request_json(self)
+            except ValueError:
+                obj = {}
+            result = _run_editor_refresh(_normalize_expected_identities(obj.get("expected_identities")))
             _json(self, 200 if result["ok"] else 500, result)
             return
 

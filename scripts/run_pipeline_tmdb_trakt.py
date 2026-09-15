@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import datetime as _dt
 import argparse
+import json
 import os
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -55,14 +57,21 @@ def _latest_log(glob_pat: str) -> Path | None:
         return None
 
 
+STAGE_TIMINGS: list[dict[str, object]] = []
+
+
 def _run_one(label: str, script_path: Path, *extra_args: str) -> int:
     py = Path(sys.executable)
     print(f"\n[{label}] RUN {script_path}")
     if not script_path.exists():
         print(f"[{label}] ERROR missing: {script_path}")
         return 2
+    started = time.perf_counter()
     p = subprocess.run([str(py), str(script_path), *extra_args], cwd=str(REPO_ROOT))
+    elapsed = time.perf_counter() - started
+    STAGE_TIMINGS.append({"stage": label, "returncode": int(p.returncode), "elapsed_seconds": round(elapsed, 3)})
     print(f"[{label}] exit_code={p.returncode}")
+    print(f"[{label}] elapsed_seconds={elapsed:.3f}")
     return int(p.returncode)
 
 
@@ -195,6 +204,7 @@ def main() -> int:
     print(f"finished: {finished}")
     print(f"tmdb_log : {tmdb_log}" if tmdb_log else "tmdb_log : (not found)")
     print(f"trakt_log: {trakt_log}" if trakt_log else "trakt_log: (not found)")
+    print("stage_timings_json: " + json.dumps(STAGE_TIMINGS, sort_keys=True))
 
     if tmdb_log:
         print("\n--- TMDB LOG (tail) ---")

@@ -4,6 +4,7 @@ VERSION: v0.8.1
 UPDATED: 2026-09-10
 CHANGE NOTES:
 - Keeps the Media Library icon inside the primary navigation row.
+- Normalizes the static shell link so active app shells keep the primary-nav Media Library entry.
 - Keeps the Release Calendar as a canonical primary-nav view immediately after Movies.
 - Uses a distinct New Releases icon so Release Calendar is visually different from the schedule Calendar.
 - Normalizes both links at runtime so active app shells stay navigation-consistent.

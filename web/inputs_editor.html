@@ -61,6 +61,10 @@ DATE: 2026-07-31
     .inputs_editor_kbd{font-family:ui-monospace,Consolas,monospace;font-size:11px;padding:2px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.2);opacity:.8}
     .inputs_editor_link{font-size:12px;opacity:.8}
     .inputs_editor_hint{font-size:11px;opacity:.75}
+    .inputs_editor_state_grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+    .inputs_editor_state_cell{border:1px solid rgba(255,255,255,.10);border-radius:8px;padding:8px;background:rgba(255,255,255,.03);min-width:0}
+    .inputs_editor_state_cell strong{display:block;font-size:11px;opacity:.78;margin-bottom:4px}
+    .inputs_editor_state_cell span{display:block;font-family:ui-monospace,Consolas,monospace;font-size:11px;white-space:normal;overflow-wrap:anywhere}
     .inputs_editor_tag--ok{border-color:rgba(120,220,160,.35);background:rgba(120,220,160,.12)}
     .inputs_editor_tag--warn{border-color:rgba(255,210,90,.35);background:rgba(255,210,90,.12)}
     .inputs_editor_tag--info{border-color:rgba(120,180,255,.35);background:rgba(120,180,255,.12)}
@@ -79,6 +83,7 @@ DATE: 2026-07-31
       .inputs_editor_topbar{grid-template-columns:1fr}
       .inputs_editor_status_strip{justify-content:flex-start}
       .inputs_editor_tabs{grid-template-columns:1fr}
+      .inputs_editor_state_grid{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -90,7 +95,7 @@ DATE: 2026-07-31
         <div class="inputs_editor_hint">Search, review, then finish online from one local editor tab.</div>
       </div>
       <div class="inputs_editor_status_strip" aria-live="polite">
-        <span class="inputs_editor_meta">v1.0.9</span>
+        <span class="inputs_editor_meta">v1.1.0</span>
         <span class="inputs_editor_meta" id="serverStatus">Editor: ...</span>
         <span class="inputs_editor_meta" id="publishStatus">Publish: checking...</span>
         <span class="inputs_editor_meta" id="dirty">Changes saved: yes</span>
@@ -131,7 +136,7 @@ DATE: 2026-07-31
           <button id="btnQueueSelected">Save for later</button>
           <button class="primary" id="btnAddSelected">Add now</button>
         </div>
-        <div class="inputs_editor_hint">Items already in your list are marked. For shows, you can choose which seasons to add.</div>
+        <div class="inputs_editor_hint">Items in local input, remote input, and runtime are marked separately. For shows, you can choose which seasons to add.</div>
         <div class="inputs_editor_list" id="tmdbList"></div>
       </div>
     </section>
@@ -185,9 +190,16 @@ DATE: 2026-07-31
         </div>
         <div class="inputs_editor_row">
           <button id="btnReload">Reload</button>
-          <button class="ghost" id="btnSave">Save Draft Only</button>
-          <button id="btnRefreshRuntime">Update Local Preview</button>
+          <button class="ghost" id="btnSave">Save Local Input</button>
+          <button id="btnRefreshRuntime">Refresh Full Local Runtime</button>
           <button class="primary" id="btnPushGitHub">Save Online, Build Data, Deploy</button>
+        </div>
+        <div class="inputs_editor_state_grid" id="workflowStateGrid" aria-live="polite">
+          <div class="inputs_editor_state_cell"><strong>Local Input</strong><span id="stateLocalInput">...</span></div>
+          <div class="inputs_editor_state_cell"><strong>Local Runtime</strong><span id="stateLocalRuntime">...</span></div>
+          <div class="inputs_editor_state_cell"><strong>GitHub Input</strong><span id="stateGitHubInput">...</span></div>
+          <div class="inputs_editor_state_cell"><strong>GitHub Runtime</strong><span id="stateGitHubRuntime">...</span></div>
+          <div class="inputs_editor_state_cell"><strong>Pages</strong><span id="statePages">verified after publish</span></div>
         </div>
         <div class="inputs_editor_meta" id="saveMsg"></div>
         <div class="inputs_editor_list" id="mineList"></div>
@@ -205,12 +217,12 @@ DATE: 2026-07-31
   </div>
 
 <script>
-let inputs=null, imgBase="https://image.tmdb.org/t/p/", dirty=false;
+let inputs=null, imgBase="https://image.tmdb.org/t/p/", dirty=false, publishSnapshot=null;
 let tmdbResults=[], tmdbSelected=new Set(), mineSelected=new Set();
 let queueItems=[], queueSelected=new Set();
 const showDetailsCache=new Map();
 
-function setDirty(v){ dirty=v; document.getElementById("dirty").textContent="Changes saved: "+(dirty?"no":"yes"); }
+function setDirty(v){ dirty=v; document.getElementById("dirty").textContent="Changes saved: "+(dirty?"no":"yes"); updateWorkflowState(publishSnapshot); }
 function norm(s){ return (s||"").toString().toLowerCase().trim(); }
 function counts(){ const tv=(inputs?.tv||[]).length, mv=(inputs?.movies||[]).length; document.getElementById("counts").textContent=`Shows: ${tv} • Movies: ${mv}`; }
 function showBanner(lines){ const b=document.getElementById("banner"); b.style.display="block"; b.innerHTML=lines.map(x=>`<div class="inputs_editor_meta">${x}</div>`).join(""); }
@@ -248,6 +260,27 @@ function setEditorBusy(isBusy){
     if(btn) btn.disabled=!!isBusy;
   }
 }
+function setStateText(id,text,state){
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.textContent=text;
+  el.className=state==="ok"?"inputs_editor_status_ok":state==="bad"?"inputs_editor_status_bad":"inputs_editor_status_warn";
+}
+function fmtRuntime(rt){
+  if(!rt || typeof rt!=="object" || rt.shows===undefined) return "unknown";
+  return `${rt.shows} shows, ${rt.movies} movies${rt.generated_utc?`, generated ${rt.generated_utc}`:""}`;
+}
+function updateWorkflowState(j){
+  publishSnapshot=j||publishSnapshot;
+  if(!publishSnapshot) return;
+  const localOnly=Array.isArray(publishSnapshot.local_only_inputs) ? publishSnapshot.local_only_inputs.length : 0;
+  const li=publishSnapshot.local_input||{};
+  const ri=publishSnapshot.remote_input||{};
+  setStateText("stateLocalInput",`${li.tv||0} shows, ${li.movies||0} movies${dirty?" (unsaved edits)":" saved"}`, dirty?"warn":"ok");
+  setStateText("stateLocalRuntime",fmtRuntime(publishSnapshot.local_runtime), publishSnapshot.generated_dirty?"warn":"ok");
+  setStateText("stateGitHubInput", ri.tv===undefined ? "unknown" : `${ri.tv||0} shows, ${ri.movies||0} movies${localOnly?`, ${localOnly} local only`:""}`, localOnly?"warn":"ok");
+  setStateText("stateGitHubRuntime", fmtRuntime(publishSnapshot.remote_runtime), localOnly?"warn":"ok");
+}
 
 async function apiFetch(p,options){
   try{
@@ -272,6 +305,8 @@ async function refreshPublishStatus(){
     setPublishStatus("Publish: status check failed","bad");
     return j;
   }
+  publishSnapshot=j;
+  updateWorkflowState(j);
   const generatedCount=Array.isArray(j.generated_paths) ? j.generated_paths.length : 0;
   const blockedCount=Array.isArray(j.publish_blocked_paths) ? j.publish_blocked_paths.length : 0;
   if(j.publish_blocked){
@@ -703,8 +738,25 @@ function getExistingEntry(type,id){ return type==="tv" ? (inputs?.tv||[]).find(x
 function getExistingState(type,id){
   const existing=getExistingEntry(type,id);
   if(!existing) return null;
-  if(type==="tv") return { label:`Already added • Seasons ${seasonSpecSummary(existing.season_spec||"*")}`, className:"inputs_editor_tag--warn" };
-  return { label:"Already added", className:"inputs_editor_tag--ok" };
+  if(existing.in_scope===false) return { label:"Hidden from app", className:"inputs_editor_tag--warn" };
+  const mediaKey=type==="tv"?"tv":"movie";
+  const remoteInputIds=new Set((publishSnapshot?.remote_input_ids?.[mediaKey]||[]).map(Number));
+  const remoteRuntimeIds=new Set((publishSnapshot?.remote_runtime_ids?.[mediaKey]||[]).map(Number));
+  const localRuntimeIds=new Set((publishSnapshot?.local_runtime_ids?.[mediaKey]||[]).map(Number));
+  let label="In local input";
+  let className="inputs_editor_tag--warn";
+  if(!remoteInputIds.has(Number(id))){
+    label="Local only - not published";
+  }else if(!remoteRuntimeIds.has(Number(id))){
+    label="Published input - build pending";
+  }else if(!localRuntimeIds.has(Number(id))){
+    label="Online - local runtime stale";
+  }else{
+    label="Online";
+    className="inputs_editor_tag--ok";
+  }
+  if(type==="tv") label+=` • Seasons ${seasonSpecSummary(existing.season_spec||"*")}`;
+  return { label, className };
 }
 async function fetchShowDetails(id){
   const key=Number(id);
@@ -735,7 +787,7 @@ function openShowSeasonModal(existing,item,details){
     const back=document.getElementById("seasonModalBack");
     const body=document.getElementById("seasonModalBody");
     document.getElementById("seasonModalTitle").textContent=`Choose Seasons - ${title}`;
-    body.innerHTML=`<div class="inputs_editor_modal_grid"><section class="inputs_editor_panel"><h3>Already in My List</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag inputs_editor_tag--warn">Seasons now shown: ${escHtml(seasonSpecSummary(existing?.season_spec||"*", totalSeasons))}</span><span class="inputs_editor_tag">Future episodes: ${(existing?.include_future!==false)?"yes":"no"}</span></div><div class="inputs_editor_hint" style="margin-top:10px;">Already added: ${escHtml(added.length ? compactSeasonRanges(added) : "none")}</div><div class="inputs_editor_hint" style="margin-top:6px;">Not added yet: ${escHtml(missing.length ? compactSeasonRanges(missing) : "none")}</div></section><section class="inputs_editor_panel"><h3>New Choice</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag">Catalog ID ${escHtml(item?.tmdb_id)}</span><span class="inputs_editor_tag inputs_editor_tag--info">Selected seasons: ${escHtml(seasonSpecSummary(item?.season_spec||"*", totalSeasons))}</span></div><label class="inputs_editor_toggle" style="margin-top:10px;"><input id="seasonModalFuture" type="checkbox" ${(item?.include_future!==false && existing?.include_future!==false)?"checked":""}/><span>Add future episodes</span></label></section></div><section class="inputs_editor_panel"><h3>Seasons to Change</h3><div class="inputs_editor_hint" style="margin-bottom:10px;">Choose the seasons you want to add, replace, or remove.</div><div class="inputs_editor_modal_actions" style="margin-bottom:10px;"><button id="seasonModalSelectMissing" type="button">Select not added</button><button id="seasonModalSelectAdded" type="button">Select already added</button><button id="seasonModalSelectAll" type="button">Select all</button><button id="seasonModalSelectNone" type="button">Clear selection</button></div><div class="inputs_editor_season_grid" id="seasonModalGrid"></div></section><div class="inputs_editor_modal_actions"><button class="primary" id="seasonModalAdd" type="button">Add Selected Seasons</button><button id="seasonModalReplace" type="button">Use Only Selected Seasons</button><button class="danger" id="seasonModalRemove" type="button">Remove Selected Seasons</button><button class="ghost" id="seasonModalCancel" type="button">Cancel</button></div>`;
+    body.innerHTML=`<div class="inputs_editor_modal_grid"><section class="inputs_editor_panel"><h3>In Local Input</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag inputs_editor_tag--warn">Seasons now shown: ${escHtml(seasonSpecSummary(existing?.season_spec||"*", totalSeasons))}</span><span class="inputs_editor_tag">Future episodes: ${(existing?.include_future!==false)?"yes":"no"}</span></div><div class="inputs_editor_hint" style="margin-top:10px;">In local input: ${escHtml(added.length ? compactSeasonRanges(added) : "none")}</div><div class="inputs_editor_hint" style="margin-top:6px;">Not selected: ${escHtml(missing.length ? compactSeasonRanges(missing) : "none")}</div></section><section class="inputs_editor_panel"><h3>New Choice</h3><div class="inputs_editor_tags"><span class="inputs_editor_tag">Catalog ID ${escHtml(item?.tmdb_id)}</span><span class="inputs_editor_tag inputs_editor_tag--info">Selected seasons: ${escHtml(seasonSpecSummary(item?.season_spec||"*", totalSeasons))}</span></div><label class="inputs_editor_toggle" style="margin-top:10px;"><input id="seasonModalFuture" type="checkbox" ${(item?.include_future!==false && existing?.include_future!==false)?"checked":""}/><span>Add future episodes</span></label></section></div><section class="inputs_editor_panel"><h3>Seasons to Change</h3><div class="inputs_editor_hint" style="margin-bottom:10px;">Choose the seasons you want to add, replace, or remove.</div><div class="inputs_editor_modal_actions" style="margin-bottom:10px;"><button id="seasonModalSelectMissing" type="button">Select not selected</button><button id="seasonModalSelectAdded" type="button">Select local input</button><button id="seasonModalSelectAll" type="button">Select all</button><button id="seasonModalSelectNone" type="button">Clear selection</button></div><div class="inputs_editor_season_grid" id="seasonModalGrid"></div></section><div class="inputs_editor_modal_actions"><button class="primary" id="seasonModalAdd" type="button">Add Selected Seasons</button><button id="seasonModalReplace" type="button">Use Only Selected Seasons</button><button class="danger" id="seasonModalRemove" type="button">Remove Selected Seasons</button><button class="ghost" id="seasonModalCancel" type="button">Cancel</button></div>`;
     const grid=document.getElementById("seasonModalGrid");
     const renderGrid=()=>{
       grid.innerHTML="";
@@ -837,7 +889,7 @@ async function pushInputsToGitHub(){
     const saved=await saveInputs();
     if(!saved) return;
     msg.textContent="Saving online, waiting for GitHub build-data, reconciling generated data, and triggering Pages...";
-    const j=await apiPost("/api/publish-inputs",{remote:"github", branch:"main", wait_seconds:900});
+    const j=await apiPost("/api/publish-inputs",{branch:"main", wait_seconds:900});
     if(!j.ok){
       msg.textContent=publishFailureMessage(j);
       return;

@@ -233,7 +233,7 @@ Write-Host '== Python syntax =='
 if (-not (Test-CommandAvailable python)) {
     Add-CheckError 'python is not available for Python syntax checks'
 } else {
-    & python -m py_compile scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_config.py scripts/validate_streaming_episode_cards.py scripts/fetch_tmdb.py scripts/qa_pipeline_integrity.py scripts/validate_runtime_catalog_integrity.py tools/inputs_editor/inputs_editor_server.py
+    & python -m py_compile scripts/optimize_runtime_assets.py scripts/generate_schema.py scripts/validate_streaming_config.py scripts/validate_streaming_episode_cards.py scripts/fetch_tmdb.py scripts/qa_pipeline_integrity.py scripts/qa_inputs_editor_workflow.py scripts/validate_runtime_catalog_integrity.py tools/inputs_editor/inputs_editor_server.py
     if ($LASTEXITCODE -ne 0) { Add-CheckError 'Python syntax failed' }
 }
 
@@ -642,6 +642,8 @@ $serverText = Get-Content -Raw -LiteralPath 'tools/inputs_editor/inputs_editor_s
 foreach ($needle in @('/api/watch-state-queue', '/api/trakt/sync', 'watch_state_queue.json')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing watch-state queue API contract: $needle" }
 }
+& python scripts/qa_inputs_editor_workflow.py | Out-Host
+if ($LASTEXITCODE -ne 0) { Add-CheckError 'inputs editor workflow QA failed' }
 foreach ($needle in @('_normalize_season_spec', '_dedupe_entries', 'MAX_JSON_BODY_BYTES', '_serve_static_repo_file')) {
     if ($serverText -notlike "*$needle*") { Add-CheckError "inputs editor server missing hardened save/scope contract: $needle" }
 }
@@ -663,8 +665,14 @@ $inputsEditorText = Get-Content -Raw -LiteralPath 'web/inputs_editor.html'
 foreach ($needle in @('btnRefreshRuntime', 'saveAndRefreshRuntime', '/api/refresh-runtime', 'apiFetch')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing hardened save/refresh contract: $needle" }
 }
-foreach ($needle in @('Save Draft Only', 'Save Online, Build Data, Deploy', '/api/publish-inputs', '/api/publish-status', 'Publish: not online yet', 'Publish: blocked', 'detached HEAD', 'wait_seconds:900', 'build-data completed', 'Pages was triggered', 'Editor: wrong server', 'unmerged_paths')) {
+foreach ($needle in @('Save Local Input', 'Refresh Full Local Runtime', 'Save Online, Build Data, Deploy', '/api/publish-inputs', '/api/publish-status', 'Local only - not published', 'Published input - build pending', 'Online - local runtime stale', 'Publish: not online yet', 'Publish: blocked', 'detached HEAD', 'wait_seconds:900', 'build-data completed', 'verified after publish', 'Editor: wrong server', 'unmerged_paths')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing publish/sync contract: $needle" }
+}
+if ($inputsEditorText -like '*Already added*') {
+    Add-CheckError 'inputs editor UI must not collapse local/online state into "Already added".'
+}
+if ($inputsEditorText -like '*remote:"github"*') {
+    Add-CheckError 'inputs editor UI must not hardcode github as the publish remote; use canonical upstream resolution.'
 }
 foreach ($needle in @('data-editor-tab="search"', 'editorTabSearch', 'editorTabSaved', 'editorTabLibrary', 'switchEditorTab')) {
     if ($inputsEditorText -notlike "*$needle*") { Add-CheckError "inputs editor UI missing tabbed workflow contract: $needle" }
