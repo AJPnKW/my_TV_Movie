@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.9';
-import * as dataLoader from './data_loader.js?v=v1.5.9';
-import * as availabilityUi from './availability_ui.js?v=v1.5.9';
-import * as cardRenderer from './card_renderer.js?v=v1.5.9';
-import * as popupController from './popup_controller.js?v=v1.5.9';
-import * as actionBar from './action_bar.js?v=v1.5.9';
-import './watch_state_manager.js?v=v1.5.9';
-import '../config.js?v=v1.5.9';
+import * as configLoader from './config_loader.js?v=v1.5.10';
+import * as dataLoader from './data_loader.js?v=v1.5.10';
+import * as availabilityUi from './availability_ui.js?v=v1.5.10';
+import * as cardRenderer from './card_renderer.js?v=v1.5.10';
+import * as popupController from './popup_controller.js?v=v1.5.10';
+import * as actionBar from './action_bar.js?v=v1.5.10';
+import './watch_state_manager.js?v=v1.5.10';
+import '../config.js?v=v1.5.10';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
@@ -98,6 +98,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
     show: {
       tmdb_id: null,
       selectedSeasonNumber: null,
+      selectedSeasonShowId: null,
     }
   };
   let lastFocusEl = null;
@@ -2822,6 +2823,8 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         location.hash = state.lastNonShowHash || "#calendar";
         return;
       }
+      state.show.selectedSeasonNumber = null;
+      state.show.selectedSeasonShowId = null;
       state.show.tmdb_id = id;
       openShowModal(id);
       const available = getAvailableTabs();
@@ -4001,6 +4004,10 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
       openModal("Show", `<div>Show not found: ${escHtml(showId)}</div>`);
       return;
     }
+    if (String(state.show.tmdb_id ?? "") !== String(showId ?? "")) {
+      state.show.selectedSeasonNumber = null;
+      state.show.selectedSeasonShowId = null;
+    }
     state.show.tmdb_id = showId;
     openModal("Show", `<div class="muted">Loading show details…</div>`);
     const show = await getShowDetailById(showId);
@@ -4021,6 +4028,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
         const v = Number(btn.getAttribute("data-season-pick") || "0");
         if (!Number.isFinite(v)) return;
         state.show.selectedSeasonNumber = v;
+        state.show.selectedSeasonShowId = showId;
         $("#modalBody").innerHTML = buildShowPopupHtml(show);
         wireShowPopup(showId, show);
       });
@@ -5199,11 +5207,18 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
   function buildShowPopupHtml(show){
     const title = safeText(show.title || show.name || "(Untitled)");
     const seasons = Array.isArray(show.seasons) ? show.seasons : [];
-    const seasonItems = seasons.map((season, idx) => ({ n: Number(season?.season_number ?? season?.season ?? season?.number ?? (idx + 1)), s: season }));
-    let selected = seasonItems.find(it => Number(it.n) === Number(state.show.selectedSeasonNumber)) || seasonItems.find(it => Array.isArray(it.s?.episodes) && it.s.episodes.length) || seasonItems[0] || null;
+    const seasonItems = seasons
+      .map((season, idx) => ({ n: Number(season?.season_number ?? season?.season ?? season?.number ?? (idx + 1)), s: season }))
+      .sort((a, b) => Number(b.n || 0) - Number(a.n || 0));
+    const selectedSeasonApplies = String(state.show.selectedSeasonShowId ?? "") === String(show.tmdb_id ?? "");
+    let selected = (selectedSeasonApplies ? seasonItems.find(it => Number(it.n) === Number(state.show.selectedSeasonNumber)) : null) || seasonItems.find(it => Array.isArray(it.s?.episodes) && it.s.episodes.length) || seasonItems[0] || null;
     if (selected) state.show.selectedSeasonNumber = selected.n;
     const season = selected?.s || null;
     const episodes = Array.isArray(season?.episodes) ? season.episodes : [];
+    const episodeItems = episodes
+      .map((ep, idx) => ({ n: Number(ep?.episode_number ?? ep?.number ?? (idx + 1)), ep }))
+      .sort((a, b) => Number(b.n || 0) - Number(a.n || 0))
+      .map(it => it.ep);
     const networks = Array.isArray(show.networks) ? show.networks.map(n => n?.name).filter(Boolean) : [];
     const genres = Array.isArray(show?.genres) ? show.genres.map(g => g?.name).filter(Boolean) : [];
     const totalEpisodes = Number(show?.number_of_episodes ?? episodes.length) || episodes.length;
@@ -5316,7 +5331,7 @@ if (document.body) document.body.setAttribute('data-runtime-family', 'normalized
             </div>
             <div class="episode-carousel-viewport carousel-viewport" tabindex="0" data-carousel-viewport>
               <div class="episode-carousel-track carousel-track" role="list" data-carousel-track>
-                ${episodes.map(ep => {
+                ${episodeItems.map(ep => {
                   const seasonNum = Number(ep?.season_number ?? season?.season_number ?? selected?.n ?? 0) || 0;
                   const episodeNum = Number(ep?.episode_number ?? ep?.number ?? 0) || 0;
                   const epPct = (() => {

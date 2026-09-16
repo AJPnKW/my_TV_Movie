@@ -1,5 +1,10 @@
 # Architecture Log
 
+## 2026-09-16
+
+- Reversed the show-popup season rail and selected-season episode carousel display order so the newest season and newest episode numbers appear first, using `Drag Race Down Under vs The World` TMDB `299268` as the focused regression target. The change is renderer-only; `data/inputs.json` and `data/data.json` ordering are not rewritten.
+- Advanced active app shell/runtime cache keys and `web/config.json` metadata to `v1.5.10` so GitHub Pages clients request the updated popup renderer.
+
 ## 2026-09-15
 
 - Root-caused the Inputs Editor Yaga incident to local canonical input/runtime being more complete than GitHub while local `main` had an input-only commit and remote `main` had newer generated artifact commits. Timestamp recency was not a valid completeness signal.
