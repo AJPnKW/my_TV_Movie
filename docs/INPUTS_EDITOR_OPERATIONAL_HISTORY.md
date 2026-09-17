@@ -18,6 +18,26 @@ This file records recurring Inputs Editor failures and the fixes that must not d
 
 ## Failure History
 
+### September 16 2026 Version-Control Publish Verification
+
+Symptom:
+
+- After adding a batch of shows in the Inputs Editor, local and GitHub browser views appeared to disagree about the visible app version and generated runtime timestamp.
+- Representative titles included `The Newsreader`, `Black Snow`, and `Kin`.
+
+Forensic finding:
+
+- The editor produced input commit `9a93d762fd` against `data/inputs.json`.
+- GitHub `build-data` succeeded and produced generated artifact commit `e20833765b`.
+- Pages deployment run `35048099402` succeeded for the generated commit.
+- The publish added 23 TV inputs, including `The Newsreader` `130842`, `Black Snow` `210178`, and `Kin` `112693`; all 23 were present in local runtime, canonical remote runtime, and deployed Pages runtime.
+- The final verified runtime counts were `316` shows and `134` movies with generated timestamp `2026-09-16T02:27:22Z`.
+
+Architecture guard:
+
+- Browser-visible app version and active shell cache keys must be advanced through `web/config.json -> _meta.version`, active HTML asset query strings, and `web/js/app_runtime.js` static module imports when a release-control pass is made.
+- Documentation must capture the input commit, generated commit, workflow/Pages proof, runtime counts, and representative title IDs so version/control evidence is not only in chat history.
+
 ### Wrong Server 404
 
 Symptom:

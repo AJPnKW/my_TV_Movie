@@ -56,6 +56,14 @@ The existing Calendar and the Release Calendar are intentionally separate views:
 
 Active app shells must load shared CSS and JavaScript through deterministic release-version query parameters matching `web/config.json` `_meta.version`; page-specific Release Calendar assets may use their own deterministic revision token when changed independently.
 
+## Release And Version Control
+
+- The visible app release version is `web/config.json -> _meta.version`.
+- Active app shell asset query strings and `web/js/app_runtime.js` static module imports must be advanced to the same release value whenever a release-control change is made.
+- A data-only Inputs Editor publish still records its source-control proof through the input commit, generated artifact commit, GitHub Actions build-data run, Pages run, and runtime generated timestamp.
+- Documentation for a verified editor publish must record the affected title set or representative titles, canonical input/runtime counts, generated timestamp, and whether the deployed Pages runtime was verified.
+- Generated data commits from GitHub Actions are normal release lineage and must be fast-forwarded locally after publish validation.
+
 ## Release Calendar View Contract
 
 - Purpose: a release-focused monthly calendar that excludes normal episode-by-episode airings.

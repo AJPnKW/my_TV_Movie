@@ -2,6 +2,8 @@
 
 ## 2026-09-16
 
+- Verified the Inputs Editor online publish that added 23 TV inputs, including `The Newsreader` `130842`, `Black Snow` `210178`, and `Kin` `112693`: input commit `9a93d762fd`, generated artifact commit `e20833765b`, Pages run `35048099402`, and local/remote/Pages runtime counts all at `316` shows and `134` movies with generated timestamp `2026-09-16T02:27:22Z`.
+- Advanced active app shell/runtime cache keys and `web/config.json` metadata to `v1.5.11` as the release-control marker for the verified editor publish and documentation update; active shell asset query strings and `app_runtime.js` static module imports must remain aligned with `web/config.json -> _meta.version`.
 - Reversed the show-popup season rail and selected-season episode carousel display order so the newest season and newest episode numbers appear first, using `Drag Race Down Under vs The World` TMDB `299268` as the focused regression target. The change is renderer-only; `data/inputs.json` and `data/data.json` ordering are not rewritten.
 - Advanced active app shell/runtime cache keys and `web/config.json` metadata to `v1.5.10` so GitHub Pages clients request the updated popup renderer.
 

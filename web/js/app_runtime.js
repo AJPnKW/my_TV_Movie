@@ -8,14 +8,14 @@ CHANGE NOTES:
 - Centralized config/data loading through shared runtime modules.
 */
 
-import * as configLoader from './config_loader.js?v=v1.5.10';
-import * as dataLoader from './data_loader.js?v=v1.5.10';
-import * as availabilityUi from './availability_ui.js?v=v1.5.10';
-import * as cardRenderer from './card_renderer.js?v=v1.5.10';
-import * as popupController from './popup_controller.js?v=v1.5.10';
-import * as actionBar from './action_bar.js?v=v1.5.10';
-import './watch_state_manager.js?v=v1.5.10';
-import '../config.js?v=v1.5.10';
+import * as configLoader from './config_loader.js?v=v1.5.11';
+import * as dataLoader from './data_loader.js?v=v1.5.11';
+import * as availabilityUi from './availability_ui.js?v=v1.5.11';
+import * as cardRenderer from './card_renderer.js?v=v1.5.11';
+import * as popupController from './popup_controller.js?v=v1.5.11';
+import * as actionBar from './action_bar.js?v=v1.5.11';
+import './watch_state_manager.js?v=v1.5.11';
+import '../config.js?v=v1.5.11';
 
 window.MyTVHubSharedModules = Object.freeze({
   configLoader,
