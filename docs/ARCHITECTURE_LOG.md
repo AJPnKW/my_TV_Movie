@@ -1,5 +1,12 @@
 # Architecture Log
 
+## 2026-11-05
+
+- Hardened build-data data-quality handling after the `Animals` / `Animales` TMDB identity incident for TMDB `1599993`. The shared severity model now classifies findings as `info`, `warning`, `recoverable_error`, or `fatal_error`; stable TMDB identity is authoritative, title mismatches are reported and corrected in generated runtime output, and authored `data/inputs.json` is not silently rewritten.
+- Isolated record-level generation/enrichment failures so valid records continue, while malformed canonical input, unusable generated JSON, missing required configuration/authentication, zero valid output, irreconcilable duplicate identities, and write/push/deployment failures remain fatal. Integrity/audit scripts return nonzero only when fatal findings exist; diagnostics are structured, uploaded, and summarized in GitHub Actions.
+- Added deterministic regression coverage for Animals/Animales canonical-title selection, optional metadata warnings, isolated enrichment/invalid-record handling, malformed input/output, zero records, and duplicate identities. The runtime validator and pipeline integrity checks passed locally; the live build-data run also reported `audit=0 integrity=0 missing_trakt_ids=0 trakt_sync=0`.
+- Live validation: source commit `4ef23aaa22`; build-data run `41981284536` succeeded; diagnostics artifact `build-data-diagnostics` was uploaded (artifact ID `13393583456`); generated artifact commit `8b7cf366d0`; Pages deployment run `41981513095` succeeded. The resulting `origin/main` and deployed Pages runtime were verified after the generated commit.
+
 ## 2026-11-04
 
 - Root-caused the VisionQuest `213375` stale episode-date incident: unchanged TV inputs were treated as fresh by the incremental TMDB cache, so successful push builds reused old seasons/episodes while scheduled full-refresh builds failed before publishing. Direct TMDB data confirmed Season 1 dates and names for all eight episodes; TVmaze corroborated the dates but was not used as a production source.
