@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import datetime as _dt
+import copy
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -20,6 +22,10 @@ WATCH_ME_RUNTIME = REPO_ROOT / "web" / "js" / "watch_me_runtime.js"
 INPUTS_EDITOR_SERVER = REPO_ROOT / "tools" / "inputs_editor" / "inputs_editor_server.py"
 REPORT_DIR = REPO_ROOT / "reports"
 LOG_DIR = REPO_ROOT / "logs"
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from scripts import fetch_tmdb as _fetch_tmdb  # noqa: E402
 
 
 def _utc_ts() -> str:
@@ -239,6 +245,86 @@ def _title_mismatches(inputs: List[Any], catalog_rows: List[Any], media: str) ->
     return mismatches
 
 
+def _cache_freshness_regression_cases() -> List[Tuple[str, bool, str]]:
+    now = _dt.datetime(2026, 11, 5, 0, 0, tzinfo=_dt.timezone.utc)
+    input_row = {
+        "title": "VisionQuest",
+        "tmdb_id": 213375,
+        "season_spec": "*",
+        "include_future": True,
+        "in_scope": True,
+    }
+    config_sha1 = "test-config"
+    signature = _fetch_tmdb.input_signature("tv", input_row, config_sha1)
+    active_row = {
+        "tmdb_id": 213375,
+        "status": "Returning Series",
+        "in_production": True,
+        "next_episode_to_air": {"air_date": "2026-11-10"},
+        "seasons": [{"season_number": 1, "episodes": [{"episode_number": 1, "air_date": "2026-11-10"}]}],
+        "_input_signature": signature,
+    }
+    fresh_active = copy.deepcopy(active_row)
+    fresh_active["_fetched_utc"] = "2026-11-04T12:00:00Z"
+    stale_active = copy.deepcopy(active_row)
+    stale_active["_fetched_utc"] = "2026-11-03T22:00:00Z"
+    stable_ended = {
+        "tmdb_id": 9001,
+        "status": "Ended",
+        "last_air_date": "2026-08-01",
+        "_fetched_utc": "2026-10-10T00:00:00Z",
+        "_input_signature": "stable-signature",
+    }
+    cache = {"tv": {213375: fresh_active}, "movie": {}}
+    stale_cache = {"tv": {213375: stale_active}, "movie": {}}
+    stable_cache = {"tv": {9001: stable_ended}, "movie": {}}
+
+    fresh_reused = _fetch_tmdb.cached_entity(cache, "tv", 213375, signature, set(), now=now)
+    stale_reused = _fetch_tmdb.cached_entity(stale_cache, "tv", 213375, signature, set(), now=now)
+    stable_reused = _fetch_tmdb.cached_entity(stable_cache, "tv", 9001, "stable-signature", set(), now=now)
+    stale_input_signature = _fetch_tmdb.input_signature("tv", input_row, config_sha1)
+
+    class _StubTMDB:
+        def get_json(self, path: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+            if path == "/tv/213375":
+                return {"seasons": [{"season_number": 1}]}
+            return {
+                "id": 314452,
+                "name": "Season 1",
+                "season_number": 1,
+                "air_date": "2026-10-13",
+                "episodes": [
+                    {"id": 5215021, "season_number": 1, "episode_number": 1, "name": "No Strings", "air_date": "2026-10-13"},
+                    {"id": 7063227, "season_number": 1, "episode_number": 8, "name": "Forever", "air_date": "2026-11-10"},
+                ],
+            }
+
+    built_future = _fetch_tmdb.build_tv_seasons_episodes(
+        _StubTMDB(),
+        _fetch_tmdb.Config(
+            streaming=_fetch_tmdb.StreamingConfig(fallback_order=[], embed_providers=[]),
+            image_cache=_fetch_tmdb.ImageCacheConfig(base_dir="", folders={}),
+        ),
+        213375,
+        "all",
+        None,
+        None,
+        True,
+    )
+    built_episodes = [ep for season in built_future for ep in season.get("episodes", [])]
+
+    return [
+        ("fresh_active_tv_reused", fresh_reused is not None, "fresh active row remains reusable"),
+        ("expired_active_tv_rebuilt", stale_reused is None, "active row older than 24 hours is not reused"),
+        ("stable_ended_tv_cached", stable_reused is not None, "stable ended row remains reusable inside 30-day TTL"),
+        ("force_full_refresh_bypasses_cache", _fetch_tmdb.load_previous_cache("test-config", True) == {"tv": {}, "movie": {}}, "force-full mode returns an empty cache"),
+        ("rebuilt_show_preserves_seasons", len(built_future) == 1 and built_future[0].get("season_number") == 1, "TV rebuild keeps the Season 1 hierarchy"),
+        ("rebuilt_episode_air_date_retained", any(ep.get("air_date") == "2026-10-13" for ep in built_episodes), "TMDB episode air_date survives the rebuild"),
+        ("include_future_retains_future_episode", any(ep.get("episode_number") == 8 for ep in built_episodes), "include_future=true keeps the future episode"),
+        ("cache_metadata_not_in_input_signature", signature == stale_input_signature, "fetched timestamp is output metadata and does not alter input signature"),
+    ]
+
+
 def main() -> int:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     log_path, logf = _load_log()
@@ -274,6 +360,25 @@ def main() -> int:
         title_mismatch_movies = _title_mismatches(input_movies if isinstance(input_movies, list) else [], data_movies if isinstance(data_movies, list) else [], "movie")
         active_runtime_text = "\n".join([app_runtime_text, data_loader_text, watch_me_runtime_text])
         active_pipeline_text = "\n".join([workflow_text, pages_text, runner_text, inputs_editor_server_text])
+        cache_cases = _cache_freshness_regression_cases()
+        visionquest = next((row for row in data_shows if isinstance(row, dict) and _safe_int(row.get("tmdb_id") or row.get("id")) == 213375), None)
+        visionquest_season = next((season for season in (visionquest or {}).get("seasons", []) if _safe_int(season.get("season_number")) == 1), None)
+        visionquest_episodes = (visionquest_season or {}).get("episodes", [])
+        visionquest_expected = [
+            (1, "No Strings", "2026-10-13"),
+            (2, "Theseus", "2026-10-13"),
+            (3, "Reboot", "2026-10-20"),
+            (4, "Malware", "2026-10-20"),
+            (5, "Firewall", "2026-10-27"),
+            (6, "Deadlock", "2026-10-27"),
+            (7, "Immolation", "2026-11-03"),
+            (8, "Forever", "2026-11-10"),
+        ]
+        visionquest_actual = [
+            (_safe_int(ep.get("episode_number")), _safe_text(ep.get("name")), _safe_text(ep.get("air_date")))
+            for ep in visionquest_episodes
+            if isinstance(ep, dict)
+        ]
 
         _check("inputs_json_exists", INPUTS_JSON.exists(), "data/inputs.json must exist", checks, logf)
         _check("data_json_exists", DATA_JSON.exists(), "data/data.json must exist", checks, logf)
@@ -288,6 +393,24 @@ def main() -> int:
         _check("inputs_editor_serves_shared_runtime_assets", all(term in inputs_editor_server_text for term in ("_serve_static_repo_file", 'path.startswith("/data/")', 'path.startswith("/assets/")', "ASSETS_DIR")), "inputs editor local server must serve shared read-only data/assets used by editor-loaded scripts", checks, logf)
         _check("input_only_pushes_trigger_pages", "steps.commit-artifacts.outputs.changed == 'true' || github.event_name == 'push'" in workflow_text and "gh workflow run pages.yml --ref main" in workflow_text, "build-data must trigger Pages for successful input-only pushes even when generated runtime artifacts do not change", checks, logf)
         _check("runtime_generated_after_inputs", bool(inputs_generated_at and data_generated_at and data_generated_at >= inputs_generated_at), f"inputs_generated_utc={inputs.get('generated_utc') if isinstance(inputs, dict) else ''} data_generated_utc={(data.get('meta') or {}).get('generated_utc') if isinstance(data, dict) else ''}", checks, logf)
+
+        for name, passed, detail in cache_cases:
+            _check(name, passed, detail, checks, logf)
+
+        _check(
+            "visionquest_upcoming_episode_dates_present",
+            visionquest_actual == visionquest_expected,
+            f"actual={visionquest_actual}",
+            checks,
+            logf,
+        )
+        _check(
+            "visionquest_runtime_row_has_freshness_metadata",
+            bool(visionquest and visionquest.get("_fetched_utc") and (data.get("meta") or {}).get("incremental_cache", {}).get("tv_freshness")),
+            "active TV rows must carry fetched timestamp and policy metadata",
+            checks,
+            logf,
+        )
 
         _check("active_tv_inputs_reconciled", not missing_tv, f"active_tv={len(active_tv)} data_shows={len(data_shows) if isinstance(data_shows, list) else 0} unresolved_unreported={len(missing_tv)}", checks, logf)
         _check("active_movie_inputs_reconciled", not missing_movies, f"active_movies={len(active_movies)} data_movies={len(data_movies) if isinstance(data_movies, list) else 0} unresolved_unreported={len(missing_movies)}", checks, logf)

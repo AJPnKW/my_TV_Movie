@@ -43,6 +43,14 @@
 - Pages deploys only the explicit runtime JSON set above plus canonical `data/inputs.json`, `data/discover_registry.json`, and `data/watch_state_queue.json`; helper/report JSON and retired provider registry JSON under `data/` must not be deployed by wildcard.
 - Reports, logs, backup snapshots, cleaned-input previews, screenshots, old requested-title queues/reports, OMDb sidecars, service-logo export reports, asset-refresh summaries, retired watch-source indexes, and one-off analysis outputs are local evidence only. They must stay ignored and must not be tracked as active architecture or runtime inputs.
 
+### TMDB metadata freshness
+
+- `data/inputs.json` input signatures identify authored scope, but they do not prove that external TMDB metadata is current.
+- Rebuilt TV rows carry `_fetched_utc`. Incremental reuse applies a deterministic freshness policy: active/current shows are reusable for 24 hours, recently ended shows for 7 days, and stable ended shows for 30 days. Missing or invalid TV freshness metadata is stale and rebuilds.
+- Movies retain signature-based incremental reuse. `--force-full-refresh` bypasses all cache reuse.
+- `data/meta.incremental_cache.tv_freshness` records the field and TTL policy used for the generation. `_fetched_utc` is generated metadata and is not part of the input signature.
+- Scheduled/manual `build-data` runs retain full TMDB refresh behavior; push builds use the freshness-aware incremental policy. Pipeline stage failures are reported with a `FAILED_STAGE` marker and GitHub error annotation, while diagnostics artifacts remain uploaded.
+
 ## Page Shells
 
 The active app shells are `web/index.html`, `web/shows.html`, `web/movies.html`, `web/calendar.html`, `web/release_calendar.html`, `web/discover.html`, `web/config.html`, `web/watch_me.html`, and `web/manage_watch_state.html`.

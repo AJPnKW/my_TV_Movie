@@ -162,3 +162,27 @@ Applied guard:
 
 - `scripts/validate_runtime.ps1` checks the launcher contract, editor publish contract, wrong-server UI guard, and conflict-guard terms.
 - `scripts/qa_pipeline_integrity.py` checks that active inputs reconcile into generated runtime artifacts and that the editor publish path waits for generated artifact sync.
+
+## November 4, 2026 — VisionQuest freshness and scheduled build incident
+
+Symptom:
+
+- VisionQuest (`tmdb_id: 213375`) appeared in the app, but its popup carried stale Season 1 episode names/dates and omitted current upcoming dates.
+- Local `data/data.json`, GitHub `main`, and Pages all matched the same stale generated row.
+- Scheduled `build-data` runs failed from October 23 through November 4 while inputs-editor push runs succeeded.
+
+Forensic finding:
+
+- Direct TMDB `/tv/213375` and `/tv/213375/season/1` returned `No Strings`, `Theseus`, `Reboot`, `Malware`, `Firewall`, `Deadlock`, `Immolation`, and `Forever` dated October 13 through November 10, 2026.
+- The incremental cache reused VisionQuest solely because its input signature was unchanged. A controlled normal build reused all 368 TV rows; an isolated forced build rebuilt all 368 and produced the current TMDB dates.
+- Scheduled/manual builds already force a full TMDB refresh, but they failed in the final integrity/identity validation before generated artifacts were committed. The exact blocking identity mismatch was movie `1599993`: input title `Animals`, TMDB title `Animales`. The canonical input was corrected.
+
+Applied architecture:
+
+- TV cache reuse now requires `_fetched_utc` freshness: active/current 24 hours, recently ended 7 days, stable ended 30 days. Old rows without freshness metadata are stale. Movies retain signature caching, and force-full refresh remains an explicit bypass.
+- The pipeline emits `FAILED_STAGE=<stage>` and a GitHub error annotation so TMDB, Trakt, assets, self-heal, optimization, availability, and validation failures are actionable in one workflow log.
+- `scripts/qa_pipeline_integrity.py` now exercises the freshness policy and verifies VisionQuest-like future episode retention and current runtime dates.
+
+Operational verification requirement:
+
+- A green build is not sufficient. Confirm the VisionQuest row in local `data/data.json`, `origin/main:data/data.json`, deployed Pages `data/data.json`, and the rendered Shows popup. Record the input commit, generated artifact commit, build-data run, Pages run, generated timestamp, and final `main` synchronization state.

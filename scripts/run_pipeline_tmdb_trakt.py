@@ -3,7 +3,7 @@
 # [FILE]    scripts/run_pipeline_tmdb_trakt.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    One-command local runner: TMDB build -> Trakt enrich
-# [VERSION] v1.5.0
+# [VERSION] v1.5.1
 # [UPDATED] 2026-03-29_00-00-00
 # [BUILD]   15.00.00
 # ==============================================================================
@@ -72,6 +72,9 @@ def _run_one(label: str, script_path: Path, *extra_args: str) -> int:
     STAGE_TIMINGS.append({"stage": label, "returncode": int(p.returncode), "elapsed_seconds": round(elapsed, 3)})
     print(f"[{label}] exit_code={p.returncode}")
     print(f"[{label}] elapsed_seconds={elapsed:.3f}")
+    if p.returncode != 0:
+        print(f"[PIPELINE] FAILED_STAGE={label} exit_code={p.returncode}")
+        print(f"::error title=Pipeline stage failed::{label} exited with code {p.returncode}")
     return int(p.returncode)
 
 

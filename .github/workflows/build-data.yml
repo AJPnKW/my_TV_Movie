@@ -49,7 +49,7 @@ jobs:
       - name: Validate streaming config
         run: python scripts/validate_streaming_config.py
 
-      - name: Run full data pipeline
+      - name: Run staged TMDB/Trakt data pipeline
         env:
           API_TMDB_KEY: ${{ secrets.API_TMDB_KEY }}
           API_TMDB_TOKEN: ${{ secrets.API_TMDB_TOKEN }}

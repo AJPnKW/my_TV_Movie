@@ -3,7 +3,7 @@
 # [FILE]    scripts/fetch_tmdb.py
 # [PROJECT] my_TV_Movie
 # [ROLE]    Build static dataset (data/data.json) from TMDB + web/config.json
-# [VERSION] v2.9.0
+# [VERSION] v2.10.0
 # [UPDATED] 2026-01-24
 # [BUILD]   24.01.01
 #
@@ -71,8 +71,13 @@ OUT_DATA_JSON = DATA_DIR / "data.json"
 LOG_DIR = REPO_ROOT / "logs"
 
 CONFIG_JSON = WEB_DIR / "config.json"
-OUTPUT_SCHEMA = "fetch_tmdb.v3"
-INCREMENTAL_CACHE_SCHEMA = 1
+OUTPUT_SCHEMA = "fetch_tmdb.v4"
+INCREMENTAL_CACHE_SCHEMA = 2
+TV_ACTIVE_CACHE_TTL_HOURS = 24
+TV_RECENT_ENDED_CACHE_TTL_HOURS = 7 * 24
+TV_STABLE_ENDED_CACHE_TTL_HOURS = 30 * 24
+TV_RECENT_ENDED_DAYS = 30
+TV_ACTIVE_STATUSES = {"returning series", "in production", "planned", "pilot"}
 LEGACY_GENERATED_STREAMING_LINK_KEYS = {"vidsrc", "videasy"}
 
 # -------------------------
@@ -150,6 +155,74 @@ def input_signature(media: str, item: Dict[str, Any], config_sha1: str) -> str:
     )
 
 
+def parse_utc_timestamp(value: Any) -> Optional[_dt.datetime]:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        if raw.endswith("Z"):
+            raw = raw[:-1] + "+00:00"
+        parsed = _dt.datetime.fromisoformat(raw)
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=_dt.timezone.utc)
+        return parsed.astimezone(_dt.timezone.utc)
+    except Exception:
+        return None
+
+
+def _date_value(value: Any) -> Optional[_dt.date]:
+    raw = str(value or "").strip()
+    if not raw:
+        return None
+    try:
+        return _dt.date.fromisoformat(raw[:10])
+    except Exception:
+        return None
+
+
+def tv_cache_policy(row: Dict[str, Any], now: Optional[_dt.datetime] = None) -> Tuple[str, int]:
+    """Return the deterministic TV metadata freshness bucket and TTL."""
+    now = now or _dt.datetime.now(_dt.UTC)
+    status = str(row.get("status") or "").strip().lower()
+    next_episode = row.get("next_episode_to_air")
+    future_episode = any(
+        _date_value(episode.get("air_date")) and _date_value(episode.get("air_date")) > now.date()
+        for season in (row.get("seasons") or [])
+        if isinstance(season, dict)
+        for episode in (season.get("episodes") or [])
+        if isinstance(episode, dict)
+    )
+    if (
+        row.get("in_production") is True
+        or status in TV_ACTIVE_STATUSES
+        or isinstance(next_episode, dict)
+        or future_episode
+    ):
+        return "active", TV_ACTIVE_CACHE_TTL_HOURS
+
+    last_air_date = _date_value(row.get("last_air_date"))
+    if last_air_date and (now.date() - last_air_date).days <= TV_RECENT_ENDED_DAYS:
+        return "recent-ended", TV_RECENT_ENDED_CACHE_TTL_HOURS
+    return "stable-ended", TV_STABLE_ENDED_CACHE_TTL_HOURS
+
+
+def is_cached_entity_fresh(
+    row: Dict[str, Any],
+    media: str,
+    now: Optional[_dt.datetime] = None,
+) -> bool:
+    """Input signatures identify rows; this timestamp decides whether metadata is fresh."""
+    if media != "tv":
+        return True
+    fetched = parse_utc_timestamp(row.get("_fetched_utc"))
+    if fetched is None:
+        return False
+    now = now or _dt.datetime.now(_dt.UTC)
+    _bucket, ttl_hours = tv_cache_policy(row, now)
+    age_seconds = max(0.0, (now - fetched).total_seconds())
+    return age_seconds < ttl_hours * 3600
+
+
 def load_previous_cache(config_sha1: str, force_full_refresh: bool) -> Dict[str, Dict[int, Dict[str, Any]]]:
     empty = {"tv": {}, "movie": {}}
     if force_full_refresh or not OUT_DATA_JSON.exists():
@@ -194,11 +267,16 @@ def cached_entity(
     tmdb_id: Optional[int],
     signature: str,
     streaming_link_keys: set[str],
+    now: Optional[_dt.datetime] = None,
 ) -> Optional[Dict[str, Any]]:
     if not tmdb_id:
         return None
     row = cache.get(media, {}).get(int(tmdb_id))
     if not isinstance(row, dict) or row.get("_input_signature") != signature:
+        return None
+    if not is_cached_entity_fresh(row, media, now):
+        bucket, ttl_hours = tv_cache_policy(row, now)
+        logging.info("[cache] stale media=%s tmdb_id=%s bucket=%s ttl_hours=%s", media, tmdb_id, bucket, ttl_hours)
         return None
     return strip_generated_streaming_links(copy.deepcopy(row), streaming_link_keys)
 
@@ -670,12 +748,13 @@ def main() -> int:
     tv_list, movies_list = load_inputs()
     previous_cache = load_previous_cache(config_sha1, bool(args.force_full_refresh))
 
+    generation_utc = _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     data: Dict[str, Any] = {
         "meta": {
-            "generated_utc": _dt.datetime.now(_dt.UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "generated_utc": generation_utc,
             "builder": {
                 "script": "scripts/fetch_tmdb.py",
-                "version": "v2.9.0",
+                "version": "v2.10.0",
                 "output_schema": OUTPUT_SCHEMA,
                 "incremental_cache_schema": INCREMENTAL_CACHE_SCHEMA,
                 "canonical_input": "data/inputs.json",
@@ -819,6 +898,7 @@ def main() -> int:
                 "created_by": show.get("created_by") or [],
                 "networks": show.get("networks") or [],
                 "watch_providers": watch_providers,
+                "_fetched_utc": generation_utc,
                 "_input_signature": row_signature,
             }
 
@@ -921,6 +1001,7 @@ def main() -> int:
                 "production_countries": mv.get("production_countries") or [],
                 "runtime": mv.get("runtime"),
                 "watch_providers": watch_providers,
+                "_fetched_utc": generation_utc,
                 "_input_signature": row_signature,
             }
 
@@ -943,6 +1024,12 @@ def main() -> int:
         "reused_movies": reused_movies,
         "rebuilt_movies": rebuilt_movies,
         "force_full_refresh": bool(args.force_full_refresh),
+        "tv_freshness": {
+            "fetched_utc_field": "_fetched_utc",
+            "active_ttl_hours": TV_ACTIVE_CACHE_TTL_HOURS,
+            "recent_ended_ttl_hours": TV_RECENT_ENDED_CACHE_TTL_HOURS,
+            "stable_ended_ttl_hours": TV_STABLE_ENDED_CACHE_TTL_HOURS,
+        },
     }
 
 
