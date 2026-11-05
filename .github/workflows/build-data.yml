@@ -113,6 +113,7 @@ jobs:
           if-no-files-found: ignore
           path: |
             logs/*.log.txt
+            logs/asset_fetch_*/*.json
             reports/*.json
             reports/**/*.json
             reports/**/*.md

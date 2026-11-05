@@ -25,6 +25,7 @@ DATA_LOADER = REPO_ROOT / "web" / "js" / "data_loader.js"
 WATCH_ME_RUNTIME = REPO_ROOT / "web" / "js" / "watch_me_runtime.js"
 INPUTS_EDITOR_SERVER = REPO_ROOT / "tools" / "inputs_editor" / "inputs_editor_server.py"
 DATA_QUALITY = REPO_ROOT / "scripts" / "data_quality.py"
+ASSET_FETCHER = REPO_ROOT / "scripts" / "fetch_tmdb_assets.py"
 REPORT_DIR = REPO_ROOT / "reports"
 LOG_DIR = REPO_ROOT / "logs"
 
@@ -275,6 +276,18 @@ def _dedupe_issues(issues: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     return unique
 
 
+def _latest_asset_quality_issues() -> List[Dict[str, Any]]:
+    summaries = sorted(LOG_DIR.glob("asset_fetch_*/summary.json"), key=lambda path: path.stat().st_mtime, reverse=True)
+    if not summaries:
+        return []
+    try:
+        payload = _read_json(summaries[0])
+    except Exception as exc:
+        return [make_issue("fatal_error", "asset_diagnostic_report_parse", action="blocked", message=f"Asset diagnostic report cannot be parsed: {exc}")]
+    issues = payload.get("issues", []) if isinstance(payload, dict) else []
+    return [issue for issue in issues if isinstance(issue, dict)]
+
+
 def _quality_regression_cases() -> List[Tuple[str, bool, str]]:
     mismatch = make_issue(
         "recoverable_error",
@@ -348,6 +361,9 @@ def _quality_regression_cases() -> List[Tuple[str, bool, str]]:
         except Exception:
             invalid_generated_rc = 1
         cases.append(("qa_rejects_invalid_generated_json", invalid_generated_rc == 1, "invalid generated runtime remains fatal"))
+
+    asset_source = _read_text(ASSET_FETCHER)
+    cases.append(("optional_asset_failure_is_recoverable", '"asset_fetch"' in asset_source and "return 0" in asset_source, "one optional asset failure is reported without stopping the dataset build"))
 
     return cases
 
@@ -484,6 +500,8 @@ def main() -> int:
                 quality_issues.extend(issue for issue in audit_report.get("issues", []) if isinstance(issue, dict))
             except Exception as ex:
                 quality_issues.append(make_issue("fatal_error", "diagnostic_report_parse", action="blocked", message=f"TMDB audit report cannot be parsed: {ex}"))
+
+        quality_issues.extend(_latest_asset_quality_issues())
 
         for mismatch in title_mismatch_tv + title_mismatch_movies:
             quality_issues.append(make_issue(

@@ -12,6 +12,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from data_quality import make_issue, summarize
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_JSON = REPO_ROOT / "data" / "data.json"
 WEB_CONFIG = REPO_ROOT / "web" / "config.json"
@@ -183,11 +185,17 @@ def main() -> int:
     repo_root = Path(args.repo_root).resolve()
     data_json = Path(args.data_json).resolve()
     if not data_json.exists():
-        print(f"ERROR: missing data file {data_json}")
+        print(f"FATAL_ERROR: missing data file {data_json}")
         return 1
 
-    data = load_json(data_json)
-    image_sizes = load_image_sizes(repo_root)
+    try:
+        data = load_json(data_json)
+        if not isinstance(data, dict):
+            raise ValueError("runtime data must be a JSON object")
+        image_sizes = load_image_sizes(repo_root)
+    except Exception as exc:
+        print(f"FATAL_ERROR: unable to load runtime data/config: {exc}")
+        return 1
     refs = iter_asset_refs(data)
     print("[START] fetch_tmdb_assets")
     print(f"[INFO] unique referenced assets with remote paths: {len(refs)}")
@@ -196,26 +204,59 @@ def main() -> int:
     results: list[dict[str, Any]] = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, args.max_workers)) as pool:
         futures = [pool.submit(download_asset, args.image_base, repo_root, ref, args.timeout, args.retries, image_sizes) for ref in refs]
+        future_refs = dict(zip(futures, refs))
         for future in concurrent.futures.as_completed(futures):
-            results.append(future.result())
+            ref = future_refs[future]
+            try:
+                results.append(future.result())
+            except Exception as exc:
+                results.append({
+                    **ref,
+                    "status": "failed",
+                    "error": f"asset worker failed: {exc}",
+                })
 
     results.sort(key=lambda item: item["local_path"])
     counts = Counter(item["status"] for item in results)
     by_type = Counter((item["asset_type"], item["status"]) for item in results)
+    issues = [
+        make_issue(
+            "recoverable_error",
+            "asset_fetch",
+            media_type="tv" if item.get("entity") in {"show", "season", "episode"} else "movie",
+            tmdb_id=item.get("tmdb_id"),
+            title=item.get("title"),
+            field="local_path",
+            input_value=item.get("local_path"),
+            source_value=item.get("source_url") or item.get("remote_path"),
+            action="reported",
+            message=f"Optional asset could not be downloaded: {item.get('error') or 'unknown error'}",
+        )
+        for item in results
+        if item.get("status") == "failed"
+    ]
+    quality_summary = summarize(issues)
 
     out_dir = repo_root / "logs" / f"asset_fetch_{now_stamp()}"
     out_dir.mkdir(parents=True, exist_ok=True)
     write_json(out_dir / "asset_fetch_results.json", results)
     write_json(out_dir / "summary.json", {
+        "schema": "build-data-quality.v1",
         "data_json": str(data_json),
         "total": len(results),
         "status_counts": dict(counts),
         "by_type_status": {f"{asset_type}::{status}": value for (asset_type, status), value in by_type.items()},
+        "issues": issues,
+        "quality_summary": quality_summary,
     })
 
     print(f"[DONE] assets checked={len(results)} matched={counts.get('matched', 0)} downloaded={counts.get('downloaded', 0)} failed={counts.get('failed', 0)}")
+    print("DATA QUALITY: " + ", ".join(f"{key}={value}" for key, value in quality_summary.items()))
     print(f"[LOG] {out_dir}")
-    return 1 if counts.get("failed", 0) else 0
+    # Asset files are optional enrichment. The generated runtime remains valid
+    # when one or more downloads fail; the structured report preserves each
+    # affected record for diagnosis. Input/runtime corruption is handled above.
+    return 0
 
 
 if __name__ == "__main__":
