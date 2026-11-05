@@ -16,6 +16,21 @@ This file records recurring Inputs Editor failures and the fixes that must not d
 - Program consolidation rule: do not add another Inputs Editor launcher or helper program. `run_local_servers.bat` is the canonical user entrypoint; `run_server.bat`, `tools/run_local_servers.bat`, and `tools/start_inputs_editor.cmd` are compatibility wrappers only and must delegate to the root launcher.
 - Cleanup rule: do not keep stale local generated reports or archived binary/spec workspace changes as incidental working-tree dirt. Regenerate through the existing pipeline when runtime data is needed, or restore stale local artifacts to the committed state.
 
+## November 5 2026 Build-data Severity Hardening
+
+The October-November scheduled-build incident established that a valid runtime can be blocked by one record-level metadata discrepancy. TMDB ID `1599993` had authored title `Animals` while TMDB's canonical title was `Animales`. TMDB generation completed and the rest of the catalog was usable, but the identity audit previously returned a failing exit code.
+
+The build-data contract now classifies findings as `info`, `warning`, `recoverable_error`, or `fatal_error`:
+
+- Stable TMDB-ID title differences are reported as recoverable and generated runtime uses the current TMDB title. The editor-authored `data/inputs.json` is not silently rewritten.
+- Affected records that cannot be safely enriched or resolved are reported and quarantined/omitted while valid records continue.
+- Missing optional metadata is a warning; it is included in the structured diagnostics report and GitHub Actions summary.
+- Invalid canonical input JSON, invalid generated runtime JSON, missing required configuration/authentication, zero valid output, unusable structure, write failure, and unresolved duplicate stable identities remain fatal and block artifact publication.
+
+`scripts/data_quality.py` defines the shared issue shape and severity counts. `scripts/audit_inputs_tmdb_type.py` and `scripts/qa_pipeline_integrity.py` preserve JSON evidence, write `reports/build_data_quality_summary.json`, and return nonzero only when fatal conditions exist. Diagnostics upload on every workflow outcome; artifact commit and Pages dispatch require successful generation, structural validation, and zero fatal diagnostics.
+
+The deterministic regression fixture uses `Animals`/`Animales` with TMDB ID `1599993` and proves canonical runtime selection, structured reporting, zero fatal errors, and exit code `0`. Separate fixtures preserve fatal behavior for malformed input/runtime JSON, zero usable output, and duplicate identity ambiguity.
+
 ## Failure History
 
 ### September 16 2026 Version-Control Publish Verification

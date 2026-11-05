@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # =============================================================================
 # audit_inputs_tmdb_type.py
-# Version: 0.1.1
+# Version: 0.2.0
 # Purpose:
 #   Deterministically validate whether each TMDB ID in inputs.json is a MOVIE or TV
 #   by querying TMDB's API for BOTH endpoints:
@@ -26,10 +26,8 @@
 #   python .\audit_inputs_tmdb_type.py --inputs .\inputs.json --out .\_audit_tmdb_type.json
 #
 # Exit codes:
-#   0 = OK (no active blocking issues)
-#   2 = Active misfiled, unresolved, or title-mismatch items found
-#   3 = Auth missing
-#   4 = Network/API failure
+#   0 = no fatal issues (record-level findings are reported in JSON)
+#   1 = fatal input/auth/API availability issue
 #
 # =============================================================================
 
@@ -45,6 +43,11 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
+
+try:
+    from data_quality import fatal_count, make_issue, summarize
+except ImportError:  # pragma: no cover - supports package-style invocation
+    from scripts.data_quality import fatal_count, make_issue, summarize
 
 
 TMDB_BASE = "https://api.themoviedb.org/3"
@@ -131,6 +134,22 @@ def load_inputs(path: str) -> Dict[str, Any]:
         return json.load(f)
 
 
+def _write_quality_report(path: str, issues: List[Dict[str, Any]], **extra: Any) -> None:
+    payload = {
+        "schema": "build-data-quality.v1",
+        "stage": "audit_inputs_tmdb_type",
+        "issues": issues,
+        "summary": summarize(issues),
+        "quality_summary": summarize(issues),
+        **extra,
+    }
+    out_path = os.path.abspath(path)
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+
 def _as_list(x: Any) -> List[Any]:
     return x if isinstance(x, list) else []
 
@@ -146,9 +165,27 @@ def main() -> int:
     headers, params = _auth_headers_and_params()
     if not headers and "api_key" not in params:
         print("ERROR: Missing TMDB auth. Set API_TMDB_TOKEN or API_TMDB_KEY.", file=sys.stderr)
-        return 3
+        issue = make_issue(
+            "fatal_error",
+            "tmdb_authentication",
+            action="blocked",
+            message="TMDB credentials are unavailable.",
+        )
+        _write_quality_report(args.out, [issue], inputs_path=os.path.abspath(args.inputs))
+        return 1
 
-    doc = load_inputs(args.inputs)
+    try:
+        doc = load_inputs(args.inputs)
+    except Exception as ex:
+        print(f"FATAL: cannot parse inputs JSON: {ex}", file=sys.stderr)
+        issue = make_issue(
+            "fatal_error",
+            "input_parse",
+            action="blocked",
+            message=f"data/inputs.json cannot be parsed: {ex}",
+        )
+        _write_quality_report(args.out, [issue], inputs_path=os.path.abspath(args.inputs))
+        return 1
 
     # Support both watchlist shapes:
     # 1) list:  "watchlist": [ ... ]
@@ -176,6 +213,7 @@ def main() -> int:
     title_mismatch: List[Dict[str, Any]] = []
     unresolved: List[Dict[str, Any]] = []
     skipped_inactive: List[Dict[str, Any]] = []
+    probe_statuses: List[int] = []
 
     total = sum(len(lst) for _, lst, _ in groups)
     audited = 0
@@ -209,6 +247,7 @@ def main() -> int:
             local_title = str(item.get("title", "")).strip()
 
             movie_hit, tv_hit = tmdb_probe(tmdb_id, headers, params)
+            probe_statuses.extend([movie_hit.status_code, tv_hit.status_code])
 
             # Determine actual kind:
             # - If one endpoint 200 and the other not 200 => definitive
@@ -276,7 +315,66 @@ def main() -> int:
 
     print(" " * 80, end="\r")
 
+    issues: List[Dict[str, Any]] = []
+    for row in misfiled:
+        issues.append(make_issue(
+            "recoverable_error",
+            "metadata_identity",
+            media_type=row.get("actual"),
+            tmdb_id=row.get("tmdb_id"),
+            title=row.get("local_title"),
+            field="media_type",
+            input_value=row.get("expected"),
+            source_value=row.get("actual"),
+            action="quarantined",
+            message="The TMDB record resolves to a different media type than the authored input group.",
+        ))
+    for row in title_mismatch:
+        issues.append(make_issue(
+            "recoverable_error",
+            "metadata_identity",
+            media_type=row.get("actual"),
+            tmdb_id=row.get("tmdb_id"),
+            title=row.get("local_title"),
+            field="title",
+            input_value=row.get("local_title"),
+            source_value=row.get("tmdb_title"),
+            action="corrected_in_generated_runtime",
+            message="TMDB ID is stable; generated runtime uses the current TMDB canonical title while authored input remains unchanged.",
+        ))
+    for row in unresolved:
+        issues.append(make_issue(
+            "recoverable_error",
+            "record_resolution",
+            media_type=None,
+            tmdb_id=row.get("tmdb_id"),
+            title=row.get("local_title"),
+            field="tmdb_id",
+            input_value=row.get("tmdb_id"),
+            action="quarantined",
+            message="This record could not be resolved unambiguously; it was reported without stopping other records.",
+        ))
+
+    if audited and probe_statuses and not any(code == 200 for code in probe_statuses):
+        if all(code in {401, 403} for code in probe_statuses):
+            issues.append(make_issue(
+                "fatal_error",
+                "tmdb_authentication",
+                action="blocked",
+                message="Every TMDB probe was rejected as unauthorized/forbidden.",
+            ))
+        elif all(code == 0 or code >= 500 or code == 429 for code in probe_statuses):
+            issues.append(make_issue(
+                "fatal_error",
+                "tmdb_availability",
+                action="blocked",
+                message="No TMDB probe succeeded and the API was unavailable for every request.",
+            ))
+
+    quality_summary = summarize(issues)
     out = {
+        "schema": "build-data-quality.v1",
+        "stage": "audit_inputs_tmdb_type",
         "inputs_path": os.path.abspath(args.inputs),
         "misfiled": misfiled,
         "title_mismatch": title_mismatch,
@@ -290,21 +388,20 @@ def main() -> int:
             "title_mismatch_count": len(title_mismatch),
             "unresolved_or_ambiguous_count": len(unresolved),
         },
+        "issues": issues,
+        "quality_summary": quality_summary,
     }
 
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(out, f, indent=2, ensure_ascii=False)
         f.write("\n")
 
-    if misfiled or title_mismatch or unresolved:
-        print(
-            f"FAIL: misfiled={len(misfiled)} title_mismatch={len(title_mismatch)} "
-            f"unresolved_or_ambiguous={len(unresolved)} (see {args.out})"
-        )
-        return 2
-
-    print(f"OK: no active TMDB identity issues (see {args.out})")
-    return 0
+    print(
+        f"DATA QUALITY: info={quality_summary['info']} warnings={quality_summary['warning']} "
+        f"recoverable_errors={quality_summary['recoverable_error']} "
+        f"fatal_errors={quality_summary['fatal_error']} (see {args.out})"
+    )
+    return 1 if fatal_count(quality_summary) else 0
 
 
 if __name__ == "__main__":

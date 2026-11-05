@@ -56,6 +56,11 @@ try:
 except Exception:
     load_dotenv = None  # noqa
 
+try:
+    from data_quality import canonical_runtime_value, make_issue  # type: ignore
+except ImportError:  # pragma: no cover - supports package-style invocation
+    from scripts.data_quality import canonical_runtime_value, make_issue  # type: ignore
+
 # -------------------------
 # Paths
 # -------------------------
@@ -736,6 +741,7 @@ def main() -> int:
     tmdb_token = (os.getenv("API_TMDB_TOKEN") or "").strip()
     if not tmdb_key and not tmdb_token:
         logging.error("Missing TMDB creds. Set API_TMDB_KEY or API_TMDB_TOKEN.")
+        logging.error("FATAL_ERROR category=tmdb_authentication action=blocked")
         return 2
 
     cfg = load_config(CONFIG_JSON)
@@ -843,7 +849,10 @@ def main() -> int:
                 results = (sr or {}).get("results") or []
                 if not results:
                     logging.warning("[show] not found: %s|%s (%s)", title, tmdb_id_raw, year)
-                    data["errors"].append({"type": "tmdb_not_found", "media": "show", "title": title, "tmdb_id": tmdb_id_raw, "year": year})
+                    data["errors"].append({
+                        **make_issue("recoverable_error", "record_resolution", media_type="tv", tmdb_id=tmdb_id_raw, title=title, action="quarantined", message="TMDB returned no show for this input."),
+                        "type": "tmdb_not_found", "media": "show", "year": year,
+                    })
                     continue
                 show = results[0]
                 tmdb_id = int(show.get("id"))
@@ -861,7 +870,7 @@ def main() -> int:
                 # --- core / legacy ---
                 "tmdb_id": int(tmdb_id),
                 "trakt_id": None,
-                "title": show.get("name") or title,
+                "title": canonical_runtime_value(title, show.get("name")),
                 "first_air_date": show.get("first_air_date"),
                 "poster_local": poster_local,
                 "backdrop_local": backdrop_local,
@@ -915,13 +924,20 @@ def main() -> int:
                 )
             except Exception as _ex_deep:
                 logging.warning("[show] deep build failed tmdb_id=%s err=%s", tmdb_id, _ex_deep)
+                data["errors"].append({
+                    **make_issue("recoverable_error", "record_enrichment", media_type="tv", tmdb_id=tmdb_id, title=title, action="generated_core_only", message=f"Season/episode enrichment failed; core show metadata was retained: {_ex_deep}"),
+                    "type": "tmdb_enrichment_error", "media": "show",
+                })
 
             data["shows"].append(show_obj)
             shows_ok += 1
             rebuilt_shows += 1
         except Exception as ex:
             logging.error("[show] error title=%s tmdb_id=%s err=%s", title, tmdb_id_raw, ex)
-            data["errors"].append({"type": "tmdb_error", "media": "show", "title": title, "tmdb_id": tmdb_id_raw, "message": str(ex)})
+            data["errors"].append({
+                **make_issue("recoverable_error", "record_generation", media_type="tv", tmdb_id=tmdb_id_raw, title=title, action="quarantined", message=str(ex)),
+                "type": "tmdb_error", "media": "show",
+            })
 
     # -------------------------
     # Movies (minimal + rich fields)
@@ -958,7 +974,10 @@ def main() -> int:
                 results = (sr or {}).get("results") or []
                 if not results:
                     logging.warning("[movie] not found: %s|%s (%s)", title, tmdb_id_raw, year)
-                    data["errors"].append({"type": "tmdb_not_found", "media": "movie", "title": title, "tmdb_id": tmdb_id_raw, "year": year})
+                    data["errors"].append({
+                        **make_issue("recoverable_error", "record_resolution", media_type="movie", tmdb_id=tmdb_id_raw, title=title, action="quarantined", message="TMDB returned no movie for this input."),
+                        "type": "tmdb_not_found", "media": "movie", "year": year,
+                    })
                     continue
                 mv = results[0]
                 tmdb_id = int(mv.get("id"))
@@ -976,7 +995,7 @@ def main() -> int:
                 # --- core / legacy ---
                 "tmdb_id": int(tmdb_id),
                 "trakt_id": None,
-                "title": mv.get("title") or title,
+                "title": canonical_runtime_value(title, mv.get("title")),
                 "release_date": mv.get("release_date"),
                 "poster_local": poster_local,
                 "backdrop_local": backdrop_local,
@@ -1010,11 +1029,15 @@ def main() -> int:
             rebuilt_movies += 1
         except Exception as ex:
             logging.error("[movie] error title=%s tmdb_id=%s err=%s", title, tmdb_id_raw, ex)
-            data["errors"].append({"type": "tmdb_error", "media": "movie", "title": title, "tmdb_id": tmdb_id_raw, "message": str(ex)})
+            data["errors"].append({
+                **make_issue("recoverable_error", "record_generation", media_type="movie", tmdb_id=tmdb_id_raw, title=title, action="quarantined", message=str(ex)),
+                "type": "tmdb_error", "media": "movie",
+            })
 
     # hard refusal guard (preserve your existing safety)
     if shows_ok == 0 and movies_ok == 0:
         logging.error("No shows or movies built. Refusing to overwrite output.")
+        logging.error("FATAL_ERROR category=zero_valid_records action=blocked")
         return 3
 
     data["meta"]["counts"] = {"shows": shows_ok, "movies": movies_ok, "errors": len(data["errors"])}

@@ -51,6 +51,15 @@
 - `data/meta.incremental_cache.tv_freshness` records the field and TTL policy used for the generation. `_fetched_utc` is generated metadata and is not part of the input signature.
 - Scheduled/manual `build-data` runs retain full TMDB refresh behavior; push builds use the freshness-aware incremental policy. Pipeline stage failures are reported with a `FAILED_STAGE` marker and GitHub error annotation, while diagnostics artifacts remain uploaded.
 
+### Build-data data-quality severity
+
+- `scripts/data_quality.py` is the shared structured issue contract. Each issue uses one of `info`, `warning`, `recoverable_error`, or `fatal_error` and records category, media type, TMDB ID, title, field, input/source values, action, and message.
+- A valid TMDB ID is the stable identity. If the same-type TMDB record has a changed canonical title, the generated runtime uses TMDB's current title, the authored `data/inputs.json` value remains untouched, and the mismatch is reported as `recoverable_error` with `action=corrected_in_generated_runtime`.
+- Record-level resolution, enrichment, optional-metadata, and asset problems are reported and isolated as warnings/recoverable errors. Affected records may be quarantined or emitted with valid core metadata; other records continue.
+- Malformed canonical input, malformed generated runtime JSON, missing required configuration/authentication, zero valid records, unusable generated structure, write failure, or unresolved duplicate stable identities are `fatal_error` and block artifact commit/deployment.
+- `scripts/audit_inputs_tmdb_type.py` and `scripts/qa_pipeline_integrity.py` write the structured reports and `reports/build_data_quality_summary.json`. The latter writes the concise GitHub Actions summary when `$GITHUB_STEP_SUMMARY` is available. The workflow captures diagnostic exit codes explicitly; it does not mask failures with blanket `|| true`.
+- Diagnostics artifacts upload with `if: always()`. Generated artifacts commit only after pipeline generation, structural JSON validation, and data-quality diagnostics complete without fatal errors.
+
 ## Page Shells
 
 The active app shells are `web/index.html`, `web/shows.html`, `web/movies.html`, `web/calendar.html`, `web/release_calendar.html`, `web/discover.html`, `web/config.html`, `web/watch_me.html`, and `web/manage_watch_state.html`.

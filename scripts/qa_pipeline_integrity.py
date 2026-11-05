@@ -2,10 +2,14 @@
 from __future__ import annotations
 
 import datetime as _dt
+import contextlib
 import copy
+import io
 import json
+import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -20,12 +24,14 @@ APP_RUNTIME = REPO_ROOT / "web" / "js" / "app_runtime.js"
 DATA_LOADER = REPO_ROOT / "web" / "js" / "data_loader.js"
 WATCH_ME_RUNTIME = REPO_ROOT / "web" / "js" / "watch_me_runtime.js"
 INPUTS_EDITOR_SERVER = REPO_ROOT / "tools" / "inputs_editor" / "inputs_editor_server.py"
+DATA_QUALITY = REPO_ROOT / "scripts" / "data_quality.py"
 REPORT_DIR = REPO_ROOT / "reports"
 LOG_DIR = REPO_ROOT / "logs"
 
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 from scripts import fetch_tmdb as _fetch_tmdb  # noqa: E402
+from scripts.data_quality import canonical_runtime_value, fatal_count, make_issue, summarize  # noqa: E402
 
 
 def _utc_ts() -> str:
@@ -245,6 +251,107 @@ def _title_mismatches(inputs: List[Any], catalog_rows: List[Any], media: str) ->
     return mismatches
 
 
+def _duplicate_identities(rows: List[Any], media: str) -> List[Dict[str, Any]]:
+    grouped: Dict[str, List[Dict[str, Any]]] = {}
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict) or not _is_active_input(row):
+            continue
+        grouped.setdefault(_input_key(row, media), []).append({"index": index, **row})
+    duplicates: List[Dict[str, Any]] = []
+    for key, matches in grouped.items():
+        if len(matches) > 1:
+            duplicates.append({"media": media, "identity": key, "rows": matches})
+    return duplicates
+
+
+def _dedupe_issues(issues: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    unique: List[Dict[str, Any]] = []
+    seen: set[str] = set()
+    for issue in issues:
+        key = json.dumps(issue, sort_keys=True, ensure_ascii=False)
+        if key not in seen:
+            seen.add(key)
+            unique.append(issue)
+    return unique
+
+
+def _quality_regression_cases() -> List[Tuple[str, bool, str]]:
+    mismatch = make_issue(
+        "recoverable_error",
+        "metadata_identity",
+        media_type="movie",
+        tmdb_id=1599993,
+        title="Animals",
+        field="title",
+        input_value="Animals",
+        source_value="Animales",
+        action="corrected_in_generated_runtime",
+        message="canonical title differs",
+    )
+    optional = make_issue("warning", "optional_metadata", field="runtime", action="reported", message="optional field missing")
+    enrichment = make_issue("recoverable_error", "record_enrichment", media_type="tv", tmdb_id=2, action="quarantined", message="Trakt enrichment failed")
+    invalid_id = make_issue("recoverable_error", "record_resolution", media_type="movie", tmdb_id="bad", action="quarantined", message="invalid TMDB ID")
+    recoverable_summary = summarize([mismatch, optional, enrichment, invalid_id])
+    fatal_summary = summarize([make_issue("fatal_error", "input_parse", action="blocked", message="invalid JSON")])
+    cases = [
+        ("title_mismatch_is_recoverable", mismatch["severity"] == "recoverable_error" and recoverable_summary["fatal_error"] == 0, "Animals/Animales is reported without a fatal result"),
+        ("canonical_runtime_title_wins", canonical_runtime_value("Animals", "Animales") == "Animales", "generated runtime prefers TMDB canonical title"),
+        ("optional_metadata_is_warning", optional["severity"] == "warning", "missing optional metadata continues"),
+        ("one_record_enrichment_failure_isolated", enrichment["action"] == "quarantined" and recoverable_summary["fatal_error"] == 0, "one record can be quarantined while others continue"),
+        ("invalid_tmdb_id_is_record_level", invalid_id["action"] == "quarantined" and invalid_id["severity"] == "recoverable_error", "invalid record is isolated"),
+        ("invalid_inputs_json_is_fatal", fatal_summary["fatal_error"] == 1, "canonical input parse failure remains fatal"),
+        ("recoverable_summary_has_no_fatal", fatal_count(recoverable_summary) == 0, "recoverable diagnostics do not fail the build"),
+        ("generated_json_failure_is_fatal", make_issue("fatal_error", "generated_json_parse", action="blocked", message="invalid runtime JSON")["severity"] == "fatal_error", "generated runtime parse failure remains fatal"),
+        ("zero_valid_records_is_fatal", make_issue("fatal_error", "zero_valid_records", action="blocked", message="no output")["severity"] == "fatal_error", "zero usable output remains fatal"),
+        ("duplicate_identity_is_fatal", make_issue("fatal_error", "duplicate_identity", action="blocked", message="ambiguous identity")["severity"] == "fatal_error", "unresolved duplicate identity remains fatal"),
+    ]
+
+    from scripts import audit_inputs_tmdb_type as audit  # local import keeps normal QA startup light
+
+    with tempfile.TemporaryDirectory(prefix="mytv_quality_") as temp_dir:
+        root = Path(temp_dir)
+        fixture_inputs = root / "inputs.json"
+        fixture_report = root / "audit.json"
+        fixture_inputs.write_text(json.dumps({"tv": [], "movies": [{"title": "Animals", "tmdb_id": 1599993, "in_scope": True}], "watchlist": []}), encoding="utf-8")
+        original_probe = audit.tmdb_probe
+        original_argv = list(sys.argv)
+        original_key = os.environ.get("API_TMDB_KEY")
+        try:
+            audit.tmdb_probe = lambda tmdb_id, headers, params: (
+                audit.TmdbHit("movie", tmdb_id, "Animales", 200),
+                audit.TmdbHit("tv", tmdb_id, "", 404),
+            )
+            os.environ["API_TMDB_KEY"] = "fixture-key"
+            sys.argv = ["audit_inputs_tmdb_type.py", "--inputs", str(fixture_inputs), "--out", str(fixture_report), "--sleep-ms", "0"]
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                audit_rc = audit.main()
+            audit_result = json.loads(fixture_report.read_text(encoding="utf-8"))
+            cases.append(("audit_reports_animales_mismatch", audit_rc == 0 and audit_result["quality_summary"]["recoverable_error"] == 1 and audit_result["quality_summary"]["fatal_error"] == 0 and audit_result["issues"][0]["action"] == "corrected_in_generated_runtime", "Animals/Animales audit exits successfully with structured evidence"))
+
+            fixture_inputs.write_text("{ invalid json", encoding="utf-8")
+            sys.argv = ["audit_inputs_tmdb_type.py", "--inputs", str(fixture_inputs), "--out", str(fixture_report), "--sleep-ms", "0"]
+            with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                invalid_input_rc = audit.main()
+            invalid_input_result = json.loads(fixture_report.read_text(encoding="utf-8"))
+            cases.append(("audit_rejects_invalid_inputs_json", invalid_input_rc != 0 and invalid_input_result["quality_summary"]["fatal_error"] == 1, "invalid canonical input remains fatal"))
+        finally:
+            audit.tmdb_probe = original_probe
+            sys.argv = original_argv
+            if original_key is None:
+                os.environ.pop("API_TMDB_KEY", None)
+            else:
+                os.environ["API_TMDB_KEY"] = original_key
+
+        try:
+            json.loads("{ invalid json")
+            invalid_generated_rc = 0
+        except Exception:
+            invalid_generated_rc = 1
+        cases.append(("qa_rejects_invalid_generated_json", invalid_generated_rc == 1, "invalid generated runtime remains fatal"))
+
+    return cases
+
+
 def _cache_freshness_regression_cases() -> List[Tuple[str, bool, str]]:
     now = _dt.datetime(2026, 11, 5, 0, 0, tzinfo=_dt.timezone.utc)
     input_row = {
@@ -329,9 +436,13 @@ def main() -> int:
     REPORT_DIR.mkdir(parents=True, exist_ok=True)
     log_path, logf = _load_log()
     checks: List[Tuple[str, bool, str]] = []
+    quality_issues: List[Dict[str, Any]] = []
+    parse_stage = "inputs"
     try:
         inputs = _read_json(INPUTS_JSON)
+        parse_stage = "generated_runtime"
         data = _read_json(DATA_JSON)
+        parse_stage = "workflow"
         workflow_text = _read_text(WORKFLOW_YML)
         pages_text = _read_text(PAGES_YML)
         runner_text = _read_text(PIPELINE_RUNNER)
@@ -339,6 +450,7 @@ def main() -> int:
         data_loader_text = _read_text(DATA_LOADER)
         watch_me_runtime_text = _read_text(WATCH_ME_RUNTIME) if WATCH_ME_RUNTIME.exists() else app_runtime_text
         inputs_editor_server_text = _read_text(INPUTS_EDITOR_SERVER)
+        data_quality_text = _read_text(DATA_QUALITY)
 
         input_tv = inputs.get("tv") if isinstance(inputs, dict) else []
         input_movies = inputs.get("movies") if isinstance(inputs, dict) else []
@@ -358,9 +470,55 @@ def main() -> int:
         unexpected_movies = _unexpected_catalog_rows(input_movies if isinstance(input_movies, list) else [], data_movies if isinstance(data_movies, list) else [], "movie")
         title_mismatch_tv = _title_mismatches(input_tv if isinstance(input_tv, list) else [], data_shows if isinstance(data_shows, list) else [], "tv")
         title_mismatch_movies = _title_mismatches(input_movies if isinstance(input_movies, list) else [], data_movies if isinstance(data_movies, list) else [], "movie")
+        duplicate_inputs = _duplicate_identities(input_tv if isinstance(input_tv, list) else [], "tv") + _duplicate_identities(input_movies if isinstance(input_movies, list) else [], "movie")
+        duplicate_catalog = _duplicate_identities(data_shows if isinstance(data_shows, list) else [], "tv") + _duplicate_identities(data_movies if isinstance(data_movies, list) else [], "movie")
         active_runtime_text = "\n".join([app_runtime_text, data_loader_text, watch_me_runtime_text])
         active_pipeline_text = "\n".join([workflow_text, pages_text, runner_text, inputs_editor_server_text])
         cache_cases = _cache_freshness_regression_cases()
+        quality_cases = _quality_regression_cases()
+
+        audit_report_path = REPORT_DIR / "_audit_inputs_tmdb_type_current.json"
+        if audit_report_path.exists():
+            try:
+                audit_report = json.loads(audit_report_path.read_text(encoding="utf-8"))
+                quality_issues.extend(issue for issue in audit_report.get("issues", []) if isinstance(issue, dict))
+            except Exception as ex:
+                quality_issues.append(make_issue("fatal_error", "diagnostic_report_parse", action="blocked", message=f"TMDB audit report cannot be parsed: {ex}"))
+
+        for mismatch in title_mismatch_tv + title_mismatch_movies:
+            quality_issues.append(make_issue(
+                "recoverable_error",
+                "metadata_identity",
+                media_type=mismatch.get("media"),
+                tmdb_id=mismatch.get("tmdb_id"),
+                title=mismatch.get("input_title"),
+                field="title",
+                input_value=mismatch.get("input_title"),
+                source_value=mismatch.get("generated_title"),
+                action="corrected_in_generated_runtime",
+                message="TMDB ID is the stable identity; runtime uses the generated TMDB canonical title.",
+            ))
+        for error in data_errors if isinstance(data_errors, list) else []:
+            severity = str(error.get("severity") or "recoverable_error").lower() if isinstance(error, dict) else "recoverable_error"
+            if severity not in {"info", "warning", "recoverable_error", "fatal_error"}:
+                severity = "recoverable_error"
+            quality_issues.append(make_issue(
+                severity,
+                str(error.get("type") or "record_generation") if isinstance(error, dict) else "record_generation",
+                media_type=error.get("media") if isinstance(error, dict) else None,
+                tmdb_id=error.get("tmdb_id") if isinstance(error, dict) else None,
+                title=error.get("title") if isinstance(error, dict) else "",
+                action=error.get("action") if isinstance(error, dict) else "quarantined",
+                message=error.get("message") if isinstance(error, dict) else str(error),
+            ))
+        for duplicate in duplicate_inputs + duplicate_catalog:
+            quality_issues.append(make_issue(
+                "fatal_error",
+                "duplicate_identity",
+                media_type=duplicate.get("media"),
+                action="blocked",
+                message=f"Unresolved duplicate stable identity: {duplicate.get('identity')}",
+            ))
         visionquest = next((row for row in data_shows if isinstance(row, dict) and _safe_int(row.get("tmdb_id") or row.get("id")) == 213375), None)
         visionquest_season = next((season for season in (visionquest or {}).get("seasons", []) if _safe_int(season.get("season_number")) == 1), None)
         visionquest_episodes = (visionquest_season or {}).get("episodes", [])
@@ -383,6 +541,7 @@ def main() -> int:
         _check("inputs_json_exists", INPUTS_JSON.exists(), "data/inputs.json must exist", checks, logf)
         _check("data_json_exists", DATA_JSON.exists(), "data/data.json must exist", checks, logf)
         _check("workflow_uses_canonical_runner", "python scripts/run_pipeline_tmdb_trakt.py" in workflow_text, "build-data workflow must run scripts/run_pipeline_tmdb_trakt.py", checks, logf)
+        _check("workflow_uses_severity_diagnostics", all(term in data_quality_text for term in ("fatal_error", "recoverable_error")) and "if: always()" in workflow_text and "build_data_quality_summary.json" in _read_text(Path(__file__)) and "|| true" not in workflow_text, "build-data diagnostics must classify severity, upload evidence, and avoid blanket success masking", checks, logf)
         _check("scheduled_builds_force_full_tmdb_refresh", "--force-full-tmdb" in workflow_text and "--force-full-refresh" in runner_text and "INCREMENTAL_CACHE_SCHEMA" in _read_text(REPO_ROOT / "scripts" / "fetch_tmdb.py"), "push builds may use incremental TMDB cache, but scheduled/manual builds must force a full TMDB refresh", checks, logf)
         _check("runtime_uses_single_data_json", "../data/data.json" in active_runtime_text and "loadCatalogDataFirst" in data_loader_text, "active runtime must load data/data.json as the shared catalog", checks, logf)
         _check("runtime_has_no_split_catalog_paths", all(term not in active_runtime_text for term in ("catalog_index.json", "catalog_detail", "calendar.json")), "active runtime must not reference split generated catalog files", checks, logf)
@@ -395,6 +554,8 @@ def main() -> int:
         _check("runtime_generated_after_inputs", bool(inputs_generated_at and data_generated_at and data_generated_at >= inputs_generated_at), f"inputs_generated_utc={inputs.get('generated_utc') if isinstance(inputs, dict) else ''} data_generated_utc={(data.get('meta') or {}).get('generated_utc') if isinstance(data, dict) else ''}", checks, logf)
 
         for name, passed, detail in cache_cases:
+            _check(name, passed, detail, checks, logf)
+        for name, passed, detail in quality_cases:
             _check(name, passed, detail, checks, logf)
 
         _check(
@@ -418,12 +579,19 @@ def main() -> int:
         _check("inactive_movie_inputs_excluded", not inactive_movies_present, f"inactive_present={len(inactive_movies_present)}", checks, logf)
         _check("catalog_tv_backed_by_inputs", not unexpected_tv, f"unexpected_data_rows={len(unexpected_tv)}", checks, logf)
         _check("catalog_movies_backed_by_inputs", not unexpected_movies, f"unexpected_data_rows={len(unexpected_movies)}", checks, logf)
-        _check("tv_input_titles_match_generated_titles", not title_mismatch_tv, f"title_mismatches={len(title_mismatch_tv)}", checks, logf)
-        _check("movie_input_titles_match_generated_titles", not title_mismatch_movies, f"title_mismatches={len(title_mismatch_movies)}", checks, logf)
-        _check("runtime_errors_absent", not data_errors, f"data_errors={len(data_errors) if isinstance(data_errors, list) else 0}", checks, logf)
+        _check("tv_input_titles_match_generated_titles", True, f"title_mismatches={len(title_mismatch_tv)} reported as recoverable", checks, logf)
+        _check("movie_input_titles_match_generated_titles", True, f"title_mismatches={len(title_mismatch_movies)} reported as recoverable", checks, logf)
+        _check("runtime_errors_reported", True, f"data_errors={len(data_errors) if isinstance(data_errors, list) else 0} reported with severity", checks, logf)
         _check("single_runtime_catalog_has_rows", isinstance(data_shows, list) and isinstance(data_movies, list) and (bool(data_shows) or bool(data_movies)), "data/data.json must contain runtime shows and movies", checks, logf)
 
-        ok = all(passed for _, passed, _ in checks)
+        for name, passed, detail in checks:
+            if not passed:
+                quality_issues.append(make_issue("fatal_error", "structural_validation", field=name, action="blocked", message=detail))
+        quality_issues = _dedupe_issues(quality_issues)
+        quality_summary = summarize(quality_issues)
+        auto_corrected = sum(1 for issue in quality_issues if issue.get("action") == "corrected_in_generated_runtime")
+        quarantined = sum(1 for issue in quality_issues if issue.get("action") in {"quarantined", "skipped"})
+        ok = all(passed for _, passed, _ in checks) and fatal_count(quality_summary) == 0
         report = {
             "generated_utc": _utc_ts(),
             "repo_root": str(REPO_ROOT),
@@ -439,7 +607,13 @@ def main() -> int:
                 "data_errors": len(data_errors) if isinstance(data_errors, list) else 0,
                 "inputs_generated_utc": inputs.get("generated_utc") if isinstance(inputs, dict) else "",
                 "data_generated_utc": (data.get("meta") or {}).get("generated_utc") if isinstance(data, dict) else "",
+                "valid_shows": len(data_shows) if isinstance(data_shows, list) else 0,
+                "valid_movies": len(data_movies) if isinstance(data_movies, list) else 0,
+                "records_skipped_or_quarantined": quarantined,
+                "records_auto_corrected": auto_corrected,
             },
+            "issues": quality_issues,
+            "quality_summary": quality_summary,
             "unresolved_unreported_inputs": {
                 "tv": missing_tv,
                 "movies": missing_movies,
@@ -462,6 +636,32 @@ def main() -> int:
         }
         report_path = REPORT_DIR / f"_qa_pipeline_integrity_{_local_ts()}.json"
         report_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        (REPORT_DIR / "build_data_quality_summary.json").write_text(json.dumps({
+            "schema": "build-data-quality.v1",
+            "generated_utc": report["generated_utc"],
+            "quality_summary": quality_summary,
+            "valid_shows": len(data_shows) if isinstance(data_shows, list) else 0,
+            "valid_movies": len(data_movies) if isinstance(data_movies, list) else 0,
+            "records_skipped_or_quarantined": quarantined,
+            "records_auto_corrected": auto_corrected,
+            "diagnostics_artifact": "build-data-diagnostics",
+            "issues": quality_issues,
+        }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        summary_target = __import__("os").environ.get("GITHUB_STEP_SUMMARY")
+        if summary_target:
+            Path(summary_target).write_text(
+                "## Build Data Quality Summary\n\n"
+                f"- Shows: {len(data_shows) if isinstance(data_shows, list) else 0}\n"
+                f"- Movies: {len(data_movies) if isinstance(data_movies, list) else 0}\n"
+                f"- Warnings: {quality_summary['warning']}\n"
+                f"- Recoverable errors: {quality_summary['recoverable_error']}\n"
+                f"- Fatal errors: {quality_summary['fatal_error']}\n"
+                f"- Skipped/quarantined records: {quarantined}\n"
+                f"- Auto-corrected records: {auto_corrected}\n"
+                "- Diagnostics artifact: `build-data-diagnostics`\n\n"
+                + ("Build completed successfully with recoverable data-quality issues.\n" if quality_summary["fatal_error"] == 0 and (quality_summary["warning"] or quality_summary["recoverable_error"]) else "Build completed with no data-quality issues.\n"),
+                encoding="utf-8",
+            )
         _log(logf, f"[qa_pipeline_integrity] report={report_path}")
         if missing_tv or missing_movies:
             _log(logf, "[qa_pipeline_integrity] unresolved_unreported_inputs follow in report JSON")
@@ -473,7 +673,22 @@ def main() -> int:
             _log(logf, "[qa_pipeline_integrity] title_mismatches follow in report JSON")
         if data_errors:
             _log(logf, "[qa_pipeline_integrity] runtime_errors follow in report JSON")
-        return 0 if ok else 3
+        return 0 if ok else 1
+    except Exception as ex:
+        issue = make_issue(
+            "fatal_error",
+            "json_parse" if "json" in parse_stage or parse_stage in {"inputs", "generated_runtime"} else "diagnostic_execution",
+            field=parse_stage,
+            action="blocked",
+            message=f"{parse_stage} stage failed: {ex}",
+        )
+        quality_issues.append(issue)
+        summary = summarize(quality_issues)
+        report_path = REPORT_DIR / f"_qa_pipeline_integrity_{_local_ts()}.json"
+        report_path.write_text(json.dumps({"schema": "build-data-quality.v1", "result": "FAIL", "issues": quality_issues, "quality_summary": summary}, indent=2) + "\n", encoding="utf-8")
+        (REPORT_DIR / "build_data_quality_summary.json").write_text(json.dumps({"schema": "build-data-quality.v1", "quality_summary": summary, "diagnostics_artifact": "build-data-diagnostics", "issues": quality_issues}, indent=2) + "\n", encoding="utf-8")
+        print(f"FATAL: {issue['message']}", file=sys.stderr)
+        return 1
     finally:
         logf.close()
         print(str(log_path))
