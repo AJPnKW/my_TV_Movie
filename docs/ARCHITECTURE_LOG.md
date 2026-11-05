@@ -1,5 +1,13 @@
 # Architecture Log
 
+## 2026-11-04
+
+- Root-caused the VisionQuest `213375` stale episode-date incident: unchanged TV inputs were treated as fresh by the incremental TMDB cache, so successful push builds reused old seasons/episodes while scheduled full-refresh builds failed before publishing. Direct TMDB data confirmed Season 1 dates and names for all eight episodes; TVmaze corroborated the dates but was not used as a production source.
+- Added deterministic TV metadata freshness to `scripts/fetch_tmdb.py`: active/current shows refresh after 24 hours, recently ended shows after 7 days, stable ended shows after 30 days, and missing/invalid fetched metadata is stale. Force-full refresh remains an explicit bypass; movie caching remains signature-based. Rebuilt VisionQuest retained `include_future=true` and all TMDB episode air dates.
+- Fixed the confirmed scheduled-build integrity failure by correcting the canonical `data/inputs.json` title for TMDB `1599993` from `Animals` to TMDB's `Animales`; added stage-labelled pipeline failures and updated the runtime validator's contract-lineage expectation. The retained Oct 29-Nov 4 failures had the same title-mismatch cause; earlier run logs were expired but showed the same failed pipeline/diagnostic steps.
+- Verified repair lineage: implementation commit `4e4efb9d33`, validator follow-up `d072757f8e`; successful build-data runs `41964916682` and `41966377002`; generated artifact commits `cd6350921b` and `f4230629db`; Pages deployments `41965309336` and `41966489817`. GitHub main and Pages `data/data.json` contain VisionQuest Season 1 dates `2026-10-13`, `2026-10-13`, `2026-10-20`, `2026-10-20`, `2026-10-27`, `2026-10-27`, `2026-11-03`, and `2026-11-10`. The rendered deployed show popup displayed all eight dates.
+- Validation: TMDB cache freshness regression cases passed; pipeline integrity passed; runtime validation passed after updating its stale contract header expectation; JS/Python syntax and `git diff --check` passed. No popup renderer change was needed because the existing `pickAirDate()` mapping already renders `episode.air_date`.
+
 ## 2026-09-16
 
 - Verified the Inputs Editor online publish that added 23 TV inputs, including `The Newsreader` `130842`, `Black Snow` `210178`, and `Kin` `112693`: input commit `9a93d762fd`, generated artifact commit `e20833765b`, Pages run `35048099402`, and local/remote/Pages runtime counts all at `316` shows and `134` movies with generated timestamp `2026-09-16T02:27:22Z`.
